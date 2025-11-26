@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel - Product Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #007fff;
+            --color-accent: #ff8000;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-neutral-900: #0f172a;
+            --color-neutral-700: #334155;
+            --color-neutral-500: #64748b;
+            --color-neutral-300: #cbd5e1;
+            --color-neutral-100: #f1f5f9;
+            --color-neutral-50: #f8fafc;
+            --color-white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--color-neutral-700);
+            background-color: var(--color-neutral-50);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--color-neutral-300);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.25rem;
+            color: var(--color-neutral-500);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--color-neutral-900);
+            margin: 3rem 0 1.5rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: var(--color-neutral-900);
+            margin: 2rem 0 1rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: var(--color-neutral-100);
+            border-left: 4px solid var(--color-primary);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--color-neutral-200);
+        }
+
+        .card h4 {
+            font-size: 1.1rem;
+            color: var(--color-neutral-900);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon-blue { background: #e6f3ff; color: var(--color-primary); }
+        .card-icon-orange { background: #fff3e6; color: var(--color-accent); }
+        .card-icon-green { background: #d1fae5; color: var(--color-success); }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-blue { background: #e6f3ff; color: var(--color-primary); }
+        .badge-orange { background: #fff3e6; color: #cc6600; }
+        .badge-green { background: #d1fae5; color: #059669; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: var(--color-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-neutral-100);
+        }
+
+        th {
+            background: var(--color-neutral-50);
+            font-weight: 600;
+            color: var(--color-neutral-900);
+        }
+
+        .flow-diagram {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 1px solid var(--color-neutral-200);
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .flow-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .flow-number {
+            width: 32px;
+            height: 32px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .flow-content h4 {
+            color: var(--color-neutral-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-content p {
+            color: var(--color-neutral-500);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-neutral-300);
+            text-align: center;
+            color: var(--color-neutral-500);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sentinel</h1>
+            <p>RFID Attendance Tracking for HMCS Chippawa</p>
+        </header>
+
+        <!-- ==================== OVERVIEW ==================== -->
+        <section>
+            <h2>What is Sentinel?</h2>
+            <p>
+                Sentinel is a standalone attendance tracking system built for HMCS Chippawa, a Royal Canadian Navy
+                reserve unit in Winnipeg. The system uses RFID badge scanning for fast, contactless check-ins and
+                operates independently from DWAN, with full offline support for reliable operation.
+            </p>
+
+            <div class="highlight">
+                <strong>Key Value Proposition:</strong> Simple, reliable attendance tracking that works offline,
+                with easy Excel-based member import and admin-friendly interfaces designed for non-technical users.
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>
+                        <span class="card-icon card-icon-blue">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        </span>
+                        Kiosk Terminals
+                    </h4>
+                    <p>Raspberry Pi 5 devices with NFC readers for badge scanning. Supports offline queuing when disconnected.</p>
+                </div>
+                <div class="card">
+                    <h4>
+                        <span class="card-icon card-icon-orange">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </span>
+                        Dashboard
+                    </h4>
+                    <p>Real-time web interface for monitoring presence, managing employees, and viewing reports.</p>
+                </div>
+                <div class="card">
+                    <h4>
+                        <span class="card-icon card-icon-green">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </span>
+                        Backend API
+                    </h4>
+                    <p>RESTful API with WebSocket support for real-time updates across all connected clients.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CORE FEATURES ==================== -->
+        <section>
+            <h2>Core Features</h2>
+
+            <h3>1. RFID Badge Scanning</h3>
+            <ul>
+                <li><strong>Contactless check-in/out</strong> - Members tap their badge on the NFC reader</li>
+                <li><strong>Sub-second recognition</strong> - Badge ID lookup and confirmation in under 500ms</li>
+                <li><strong>Visual and audio feedback</strong> - Clear success/error states with sound</li>
+                <li><strong>Automatic direction detection</strong> - System determines if it's a check-in or check-out based on current state</li>
+            </ul>
+
+            <h3>2. Offline-First Architecture</h3>
+            <ul>
+                <li><strong>Local queue storage</strong> - Check-ins are stored locally when network is unavailable</li>
+                <li><strong>Automatic sync</strong> - Queued events synchronize when connection is restored</li>
+                <li><strong>Conflict resolution</strong> - Server-side timestamp reconciliation for accurate records</li>
+                <li><strong>Status indicators</strong> - Clear visual feedback showing online/offline/syncing states</li>
+            </ul>
+
+            <h3>3. Real-Time Presence Monitoring</h3>
+            <ul>
+                <li><strong>Live dashboard updates</strong> - WebSocket-powered instant updates across all clients</li>
+                <li><strong>TV display mode</strong> - Large-format 10-foot UI for wall-mounted displays</li>
+                <li><strong>At-a-glance metrics</strong> - Present count, absent count, late arrivals, visitors</li>
+                <li><strong>Activity feed</strong> - Scrolling list of recent check-ins</li>
+            </ul>
+
+            <h3>4. Visitor Management</h3>
+            <ul>
+                <li><strong>Self-service sign-in</strong> - Touch-screen form for visitors without badges</li>
+                <li><strong>Host notification</strong> - Alert the employee being visited</li>
+                <li><strong>Visitor badges</strong> - Temporary badge assignment for recurring visitors</li>
+                <li><strong>Sign-out tracking</strong> - Complete visitor audit trail</li>
+            </ul>
+
+            <h3>5. Administrative Controls</h3>
+            <ul>
+                <li><strong>Member management</strong> - Add, edit, deactivate members and badges</li>
+                <li><strong>Division organization</strong> - Group members by division/department</li>
+                <li><strong>Manual adjustments</strong> - Admin override for missed punches or corrections</li>
+                <li><strong>Reporting</strong> - Attendance reports, parade state summaries</li>
+            </ul>
+
+            <h3>6. Excel Nominal Roll Import</h3>
+            <p>
+                Designed for non-technical administrators. Upload the unit's nominal roll spreadsheet and let the
+                system handle the rest.
+            </p>
+            <ul>
+                <li><strong>Drag-and-drop upload</strong> - Simple file selection, no complex forms</li>
+                <li><strong>Smart column detection</strong> - Automatically identifies name, service number, rank, division columns</li>
+                <li><strong>Error handling with guidance</strong> - Clear, plain-language explanations of any issues found</li>
+                <li><strong>Preview before commit</strong> - Review all changes (new members, updates, potential duplicates) before saving</li>
+                <li><strong>Fuzzy matching</strong> - Handles typos, name variations, and format inconsistencies</li>
+                <li><strong>Change history</strong> - Full audit trail of what was imported and when</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Admin-Friendly Design:</strong> Every screen includes help text. Error messages explain
+                what went wrong AND how to fix it. No technical jargon. Large buttons, clear labels, confirmation
+                dialogs for destructive actions.
+            </div>
+
+            <h3>7. Events & Temporary Groups</h3>
+            <p>
+                Host special events with temporary building access for non-unit personnel. Perfect for court martials,
+                training courses, inspections, and ceremonies where external attendees need temporary NFC badges.
+            </p>
+            <ul>
+                <li><strong>Event creation</strong> - Define event name, dates, and access window</li>
+                <li><strong>Attendee management</strong> - Add participants manually or via Excel/CSV import</li>
+                <li><strong>Temporary badge pool</strong> - Reusable visitor badges (V-###) assigned to event attendees</li>
+                <li><strong>Automatic expiration</strong> - Badges automatically disabled when event ends</li>
+                <li><strong>Separate monitoring</strong> - Dedicated views for event attendance, distinct from unit members</li>
+                <li><strong>Badge recovery tracking</strong> - Track which badges have been returned after event ends</li>
+                <li><strong>Audit trail</strong> - Complete log of all event badge scans for security</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Member Classifications:</strong>
+                <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                    <li><strong>Full-Time Staff</strong> - Class B/C personnel, present daily</li>
+                    <li><strong>Reserve Members</strong> - Class A personnel, parade nights + exercises</li>
+                    <li><strong>Event Attendees</strong> - Temporary access tied to specific events</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ==================== USER FLOWS ==================== -->
+        <section>
+            <h2>User Flows</h2>
+
+            <h3>Member Check-In</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Approach Kiosk</h4>
+                        <p>Member sees "Tap Your Badge" prompt with pulsing animation</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Tap Badge</h4>
+                        <p>NFC reader detects badge and reads unique ID</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Lookup & Record</h4>
+                        <p>System matches badge ID to member, records timestamp</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Confirmation</h4>
+                        <p>Success screen shows member name, rank, action (In/Out), and time. Returns to idle after 3 seconds.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Visitor Sign-In</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Select Visit Type</h4>
+                        <p>Choose reason: Meeting Someone, Work/Contractor, Recruitment, Course/Training, Special Event, or Other</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Link to Event (if applicable)</h4>
+                        <p>If "Special Event" selected, choose from active events (Court Martial, Training Course, etc.). Pre-registered attendees can scan their badge.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Enter Details</h4>
+                        <p>Name, organization, host member (searchable list). Additional context based on visit type.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Confirmation</h4>
+                        <p>Visitor receives confirmation. Host notified. Visit logged with type/event for reporting.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>Visit Types:</strong> General Visit, Contractor/Work, Recruitment, Course/Training, Event Attendee, Official Visit.
+                Admin can customize these categories and run reports by type (e.g., track recruitment visits over time).
+            </div>
+
+            <h3>Offline Recovery</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Network Lost</h4>
+                        <p>Kiosk detects disconnection, shows "Offline" indicator</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Continue Operating</h4>
+                        <p>Check-ins continue normally, stored in local queue with timestamps</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Connection Restored</h4>
+                        <p>Kiosk detects network, shows "Syncing" with queue count</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Sync Complete</h4>
+                        <p>All queued events uploaded, dashboard updates with historical data</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Excel Nominal Roll Import</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Upload File</h4>
+                        <p>Admin drags Excel file onto upload area or clicks to browse. Accepts .xlsx and .xls</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Column Mapping</h4>
+                        <p>System auto-detects columns. Admin confirms or adjusts if needed. Shows sample data for verification.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Review Changes</h4>
+                        <p>Preview shows: new members to add, existing members to update, potential issues (duplicates, missing data). Each issue has a "How to fix" suggestion.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Confirm Import</h4>
+                        <p>Admin clicks "Import" to apply changes. Success summary shows what was added/updated. Option to undo within 24 hours.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Event Setup (e.g., Court Martial)</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <h4>Create Event</h4>
+                        <p>Admin enters event name (e.g., "Court Martial - R v. Smith"), code (CM-2025-001), dates, and description.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <h4>Add Attendees</h4>
+                        <p>Import from Excel/CSV (downloaded from DWAN) or add manually. Include name, rank, organization, and role.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <h4>Assign Badges</h4>
+                        <p>Scan visitor badges to assign to attendees, or use bulk assignment. Each badge is linked to the event.</p>
+                    </div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <h4>Monitor & Close</h4>
+                        <p>Track attendance via dedicated event view. When event ends, badges auto-expire. Collect badges using recovery checklist.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SYSTEM INTERFACES ==================== -->
+        <section>
+            <h2>System Interfaces</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Interface</th>
+                        <th>Purpose</th>
+                        <th>Primary Users</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Primary Entrance Kiosk</strong></td>
+                        <td>Badge scanning with touchscreen, visitor sign-in</td>
+                        <td>All members, visitors</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rear Door Scanner</strong></td>
+                        <td>Badge scanning only (audio feedback, no display)</td>
+                        <td>Members using rear entrance</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TV Display</strong></td>
+                        <td>Real-time presence overview, viewable from distance</td>
+                        <td>Passive viewing (quarterdeck, common areas)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin Dashboard</strong></td>
+                        <td>Member management, Excel import, reports, settings</td>
+                        <td>Coxswain, administrators</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ==================== TECHNICAL ARCHITECTURE ==================== -->
+        <section>
+            <h2>Technical Architecture</h2>
+
+            <h3>Hardware Deployment</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Hardware</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Backend Server</strong></td>
+                        <td>Raspberry Pi 5 (8GB RAM, 128GB storage)</td>
+                        <td>Server room / secure location</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Primary Entrance Kiosk</strong></td>
+                        <td>Raspberry Pi 5 + Waveshare PN532 NFC HAT + GeeekPi 10.1" Touchscreen</td>
+                        <td>Main entrance / quarterdeck</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rear Door Scanner</strong></td>
+                        <td>Raspberry Pi 5 + Waveshare PN532 NFC HAT + Speaker (no display)</td>
+                        <td>Rear entrance</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight">
+                <strong>Standalone System:</strong> All devices communicate over local network only. No DWAN connection required.
+                The system is completely self-contained within the unit.
+            </div>
+
+            <h3>Software Stack</h3>
+            <div class="tech-stack">
+                <span class="badge badge-blue">TypeScript</span>
+                <span class="badge badge-blue">React</span>
+                <span class="badge badge-blue">Node.js</span>
+                <span class="badge badge-green">PostgreSQL</span>
+                <span class="badge badge-green">Redis</span>
+                <span class="badge badge-orange">WebSocket</span>
+                <span class="badge badge-orange">REST API</span>
+            </div>
+
+            <h3>Data Flow</h3>
+            <div class="highlight">
+                <strong>Kiosk</strong> &rarr; NFC scan event &rarr; <strong>Local Queue</strong> (if offline) &rarr; <strong>Backend API</strong> &rarr;
+                <strong>Database</strong> &rarr; WebSocket broadcast &rarr; <strong>Dashboard/TV</strong>
+            </div>
+
+            <h3>Key Technical Requirements</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Scan-to-confirmation latency</td>
+                        <td>&lt; 500ms (online), &lt; 200ms (offline)</td>
+                    </tr>
+                    <tr>
+                        <td>Offline queue capacity</td>
+                        <td>10,000+ events per kiosk</td>
+                    </tr>
+                    <tr>
+                        <td>Dashboard update latency</td>
+                        <td>&lt; 1 second via WebSocket</td>
+                    </tr>
+                    <tr>
+                        <td>Concurrent kiosks supported</td>
+                        <td>100+ per server instance</td>
+                    </tr>
+                    <tr>
+                        <td>Uptime target</td>
+                        <td>99.9% (kiosks operate offline if server down)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ==================== API OVERVIEW ==================== -->
+        <section>
+            <h2>API Overview</h2>
+
+            <h3>REST Endpoints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Method</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/api/checkin</code></td>
+                        <td>POST</td>
+                        <td>Record a badge scan event</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/checkin/bulk</code></td>
+                        <td>POST</td>
+                        <td>Sync offline queue (batch upload)</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/members</code></td>
+                        <td>GET, POST</td>
+                        <td>List/create members</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/members/:id</code></td>
+                        <td>GET, PUT, DELETE</td>
+                        <td>Manage individual member</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/presence</code></td>
+                        <td>GET</td>
+                        <td>Current presence status for all members</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/visitors</code></td>
+                        <td>GET, POST</td>
+                        <td>Visitor sign-in/out management</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/reports/attendance</code></td>
+                        <td>GET</td>
+                        <td>Attendance reports with date filters</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/import/nominal-roll</code></td>
+                        <td>POST</td>
+                        <td>Upload Excel file for member import</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/import/preview</code></td>
+                        <td>POST</td>
+                        <td>Preview import changes before committing</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>WebSocket Events</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Direction</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>checkin</code></td>
+                        <td>Server &rarr; Client</td>
+                        <td>New check-in recorded</td>
+                    </tr>
+                    <tr>
+                        <td><code>presence_update</code></td>
+                        <td>Server &rarr; Client</td>
+                        <td>Member presence status changed</td>
+                    </tr>
+                    <tr>
+                        <td><code>visitor_signin</code></td>
+                        <td>Server &rarr; Client</td>
+                        <td>New visitor signed in</td>
+                    </tr>
+                    <tr>
+                        <td><code>kiosk_status</code></td>
+                        <td>Client &rarr; Server</td>
+                        <td>Kiosk heartbeat/health report</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ==================== FUTURE ROADMAP ==================== -->
+        <section>
+            <h2>Future Enhancements</h2>
+            <ul>
+                <li><strong>Parade State Export</strong> - Generate formatted parade state reports for CO</li>
+                <li><strong>Training Night Mode</strong> - Special attendance tracking for regular training evenings</li>
+                <li><strong>Exercise/Deployment Tracking</strong> - Track attendance for special events and exercises</li>
+                <li><strong>Additional Scanners</strong> - Support for more entry points if needed</li>
+                <li><strong>Backup/Restore</strong> - Easy data backup and restore for system recovery</li>
+                <li><strong>Attendance Trends</strong> - Historical reporting on attendance patterns</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>Sentinel &bull; HMCS Chippawa &bull; Last Updated: November 2024</p>
+        </footer>
+    </div>
+</body>
+</html>

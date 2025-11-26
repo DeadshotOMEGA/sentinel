@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sql": {
+      "command": "node",
+      "args": ["$HOME/Code/MCP/sql/dist/index.js"],
+      "env": {
+        "SUPABASE_CONNECTION_STRING": "YOUR_SUPABASE_CONNECTION_STRING",
+        "SUPABASE_URL": "YOUR_SUPABASE_URL",
+        "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY": "YOUR_SUPABASE_SERVICE_KEY",
+        "ENABLED_TOOLS": "execute-sql,describe-table,describe-functions,list-tables,get-function-definition,upload-file,delete-file,list-files,download-file,create-bucket,delete-bucket,move-file,copy-file,generate-signed-url,get-file-info,list-buckets,empty-bucket"
+      }
+    }
+  }
+}
