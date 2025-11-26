@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Disable text selection on kiosk */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Allow text selection in input fields */
+  input,
+  textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
+  }
+}
+
+@layer components {
+  /* Primary kiosk button - large, high contrast */
+  .kiosk-button-primary {
+    @apply min-h-touch min-w-touch rounded-xl bg-primary px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply active:scale-95 active:bg-primary-600;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply transition-transform duration-100;
+  }
+
+  /* Secondary kiosk button - outlined style */
+  .kiosk-button-secondary {
+    @apply min-h-touch min-w-touch rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-xl font-semibold text-gray-700 shadow;
+    @apply active:scale-95 active:bg-gray-100;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply transition-transform duration-100;
+  }
+
+  /* Danger/cancel button */
+  .kiosk-button-danger {
+    @apply min-h-touch min-w-touch rounded-xl bg-danger px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply active:scale-95 active:bg-red-600;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply transition-transform duration-100;
+  }
+
+  /* Touch-optimized input fields */
+  .kiosk-input {
+    @apply min-h-touch w-full rounded-xl border-2 border-gray-300 px-6 text-xl;
+    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20;
+  }
+}

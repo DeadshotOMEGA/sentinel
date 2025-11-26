@@ -1,0 +1,46 @@
+{
+  "agent_255446": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "junior-engineer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "384cf4db-b132-4692-9097-8e35b66f9bb7",
+    "status": "in-progress"
+  },
+  "agent_249592": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "junior-engineer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "384cf4db-b132-4692-9097-8e35b66f9bb7",
+    "status": "in-progress"
+  },
+  "agent_400367": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "junior-engineer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "384cf4db-b132-4692-9097-8e35b66f9bb7",
+    "status": "in-progress"
+  },
+  "agent_864106": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "junior-engineer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "384cf4db-b132-4692-9097-8e35b66f9bb7",
+    "status": "in-progress"
+  }
+}
