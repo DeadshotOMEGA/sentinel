@@ -5,19 +5,18 @@
 **Tech Stack**: React + TypeScript + HeroUI Pro + Tailwind + PostgreSQL + Redis + WebSocket + Node.js + Bun
 **Hardware**: Raspberry Pi 5 (backend server + 2 kiosk devices with PN532 NFC HAT)
 
-github token: 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
-Monday.com token: eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjU5MDgwNjc3MywiYWFpIjoxMSwidWlkIjo5Njc2MDk3OCwiaWFkIjoiMjAyNS0xMS0yNlQwMzo0MDo0Ny40OTBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MzI2NjgxMjcsInJnbiI6InVzZTEifQ.pf1T9u5vnm8sHEavXzwA2kSoSCfxugYsdqghuzHdZDU
 ---
 
 ## Executive Summary
 
-This document outlines a 7-phase implementation plan for Sentinel, prioritized by dependencies and deliverable milestones. Each phase builds on the previous, allowing for incremental testing and deployment.
+This document outlines an 8-phase implementation plan for Sentinel, prioritized by dependencies and deliverable milestones. Each phase builds on the previous, allowing for incremental testing and deployment.
 
 ### Phase Overview
 
 | Phase | Focus | Duration | Complexity | Dependencies |
 |-------|-------|----------|------------|--------------|
-| **Phase 1** | Foundation & Core Data Model | 2-3 weeks | M | None |
+| **Phase 0** | Project Setup & Integrations | ✅ Complete | S | None |
+| **Phase 1** | Foundation & Core Data Model | 2-3 weeks | M | Phase 0 |
 | **Phase 2** | Backend API & WebSocket Infrastructure | 2-3 weeks | L | Phase 1 |
 | **Phase 3** | Admin Dashboard (Core Features) | 3-4 weeks | L | Phase 1, 2 |
 | **Phase 4** | Kiosk Interface & NFC Integration | 2-3 weeks | M | Phase 1, 2 |
@@ -26,6 +25,34 @@ This document outlines a 7-phase implementation plan for Sentinel, prioritized b
 | **Phase 7** | Events & Temporary Groups Feature | 2-3 weeks | M | Phase 1-4 |
 
 **Total Estimated Duration**: 14-20 weeks (3.5-5 months)
+
+---
+
+## Phase 0: Project Setup & Integrations ✅
+
+**Goal**: Establish version control, project management, and development tooling.
+
+**Status**: Complete
+
+**Deliverables**:
+- [x] GitHub repository initialized and pushed
+- [x] GitHub MCP server configured for Claude Code
+- [x] Monday.com MCP server configured for project tracking
+- [x] Agent/command files updated to use Task tool + Monday.com
+- [x] Design documentation committed
+
+### Configuration
+
+**Repository**: https://github.com/DeadshotOMEGA/sentinel
+
+**MCP Servers** (configured in user settings):
+- `github` - Repository operations, issues, PRs
+- `monday` - Board management, task tracking
+
+**Project Tracking**:
+- Use Monday.com for phase tracking and task management
+- Create board items for each implementation phase
+- Update status as work progresses
 
 ---
 
