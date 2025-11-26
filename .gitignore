@@ -56,3 +56,13 @@ secrets.json
 # Bun lock files
 bun.lock
 bun.lockb
+
+# Agent responses (generated)
+agent-responses/
+backend/agent-responses/
+
+# Investigation docs (temporary)
+docs/INVESTIGATION*.txt
+docs/*INVESTIGATION*.md
+docs/README_INVESTIGATION.md
+docs/QUICK_REFERENCE.md
