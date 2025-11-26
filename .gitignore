@@ -52,3 +52,7 @@ temp/
 *.key
 credentials.json
 secrets.json
+
+# Bun lock files
+bun.lock
+bun.lockb
