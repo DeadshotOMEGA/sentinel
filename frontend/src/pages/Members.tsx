@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Table,
@@ -17,6 +16,7 @@ import {
 } from '@heroui/react';
 import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
+import ImportModal from '../components/ImportModal';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division } from '@shared/types';
 
@@ -24,6 +24,7 @@ function MembersList() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberWithDivision | null>(null);
 
   const { data: membersData, isLoading, refetch } = useQuery({
@@ -45,12 +46,8 @@ function MembersList() {
     },
   });
 
-  const members = membersData?.members;
-  const divisions = divisionsData?.divisions;
-
-  if (!members || !divisions) {
-    throw new Error('Failed to load data');
-  }
+  const members = membersData?.members ?? [];
+  const divisions = divisionsData?.divisions ?? [];
 
   const handleEdit = (member: MemberWithDivision) => {
     setSelectedMember(member);
@@ -94,6 +91,9 @@ function MembersList() {
             <SelectItem key="">All</SelectItem>
           </Select>
           <div className="flex-1" />
+          <Button variant="bordered" onPress={() => setIsImportModalOpen(true)}>
+            Import Nominal Roll
+          </Button>
           <Button color="primary" onPress={handleAdd}>
             Add Member
           </Button>
@@ -110,6 +110,7 @@ function MembersList() {
               <TableColumn>NAME</TableColumn>
               <TableColumn>RANK</TableColumn>
               <TableColumn>DIVISION</TableColumn>
+              <TableColumn>MESS</TableColumn>
               <TableColumn>TYPE</TableColumn>
               <TableColumn>STATUS</TableColumn>
               <TableColumn>ACTIONS</TableColumn>
@@ -121,9 +122,22 @@ function MembersList() {
                   <TableCell>{member.firstName} {member.lastName}</TableCell>
                   <TableCell>{member.rank}</TableCell>
                   <TableCell>{member.division.name}</TableCell>
+                  <TableCell>{member.mess ?? '—'}</TableCell>
                   <TableCell>
-                    <Chip size="sm" variant="flat">
-                      {member.memberType === 'full-time' ? 'Full-Time' : 'Reserve'}
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={
+                        member.memberType === 'class_a' ? 'default' :
+                        member.memberType === 'class_b' ? 'success' :
+                        member.memberType === 'class_c' ? 'warning' :
+                        'primary'
+                      }
+                    >
+                      {member.memberType === 'class_a' ? 'Class A' :
+                       member.memberType === 'class_b' ? 'Class B' :
+                       member.memberType === 'class_c' ? 'Class C' :
+                       'Reg Force'}
                     </Chip>
                   </TableCell>
                   <TableCell>
@@ -153,14 +167,16 @@ function MembersList() {
         member={selectedMember}
         divisions={divisions}
       />
+
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportComplete={() => refetch()}
+      />
     </PageWrapper>
   );
 }
 
 export default function Members() {
-  return (
-    <Routes>
-      <Route index element={<MembersList />} />
-    </Routes>
-  );
+  return <MembersList />;
 }

@@ -38,17 +38,23 @@ export default function MemberModal({
     if (member) {
       setFormData({
         serviceNumber: member.serviceNumber,
+        employeeNumber: member.employeeNumber,
         firstName: member.firstName,
         lastName: member.lastName,
+        initials: member.initials,
         rank: member.rank,
         divisionId: member.divisionId,
-        memberType: member.memberType as 'full-time' | 'reserve',
+        mess: member.mess,
+        moc: member.moc,
+        memberType: member.memberType,
+        classDetails: member.classDetails,
         email: member.email,
-        phone: member.phone,
+        homePhone: member.homePhone,
+        mobilePhone: member.mobilePhone,
       });
     } else {
       setFormData({
-        memberType: 'reserve',
+        memberType: 'class_a',
       });
     }
     setError('');
@@ -94,6 +100,11 @@ export default function MemberModal({
               isRequired
             />
             <Input
+              label="Employee Number"
+              value={formData.employeeNumber ? formData.employeeNumber : ''}
+              onValueChange={(v) => setFormData({ ...formData, employeeNumber: v })}
+            />
+            <Input
               label="Rank"
               value={formData.rank ? formData.rank : ''}
               onValueChange={(v) => setFormData({ ...formData, rank: v })}
@@ -110,6 +121,12 @@ export default function MemberModal({
               value={formData.lastName ? formData.lastName : ''}
               onValueChange={(v) => setFormData({ ...formData, lastName: v })}
               isRequired
+            />
+            <Input
+              label="Initials"
+              value={formData.initials ? formData.initials : ''}
+              onValueChange={(v) => setFormData({ ...formData, initials: v })}
+              maxLength={10}
             />
             <Select
               label="Division"
@@ -129,14 +146,37 @@ export default function MemberModal({
               onSelectionChange={(keys) =>
                 setFormData({
                   ...formData,
-                  memberType: Array.from(keys)[0] as 'full-time' | 'reserve',
+                  memberType: Array.from(keys)[0] as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
                 })
               }
               isRequired
             >
-              <SelectItem key="full-time">Full-Time</SelectItem>
-              <SelectItem key="reserve">Reserve</SelectItem>
+              <SelectItem key="class_a">Class A</SelectItem>
+              <SelectItem key="class_b">Class B</SelectItem>
+              <SelectItem key="class_c">Class C</SelectItem>
+              <SelectItem key="reg_force">Reg Force</SelectItem>
             </Select>
+            <Select
+              label="Mess"
+              selectedKeys={formData.mess ? [formData.mess] : []}
+              onSelectionChange={(keys) =>
+                setFormData({ ...formData, mess: Array.from(keys)[0] as string })
+              }
+            >
+              <SelectItem key="Junior Ranks">Junior Ranks</SelectItem>
+              <SelectItem key="Wardroom">Wardroom</SelectItem>
+              <SelectItem key="C&POs">C&POs</SelectItem>
+            </Select>
+            <Input
+              label="MOC"
+              value={formData.moc ? formData.moc : ''}
+              onValueChange={(v) => setFormData({ ...formData, moc: v })}
+            />
+            <Input
+              label="Class Details"
+              value={formData.classDetails ? formData.classDetails : ''}
+              onValueChange={(v) => setFormData({ ...formData, classDetails: v })}
+            />
             <Input
               label="Email"
               type="email"
@@ -144,9 +184,14 @@ export default function MemberModal({
               onValueChange={(v) => setFormData({ ...formData, email: v })}
             />
             <Input
-              label="Phone"
-              value={formData.phone ? formData.phone : ''}
-              onValueChange={(v) => setFormData({ ...formData, phone: v })}
+              label="Home Phone"
+              value={formData.homePhone ? formData.homePhone : ''}
+              onValueChange={(v) => setFormData({ ...formData, homePhone: v })}
+            />
+            <Input
+              label="Mobile Phone"
+              value={formData.mobilePhone ? formData.mobilePhone : ''}
+              onValueChange={(v) => setFormData({ ...formData, mobilePhone: v })}
             />
           </div>
         </ModalBody>
