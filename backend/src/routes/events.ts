@@ -84,6 +84,25 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   }
 });
 
+// GET /api/events/stats - Get event statistics
+router.get('/stats', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const events = await eventRepository.findAll();
+
+    const stats = {
+      total: events.length,
+      active: events.filter(e => e.status === 'active').length,
+      draft: events.filter(e => e.status === 'draft').length,
+      completed: events.filter(e => e.status === 'completed').length,
+      cancelled: events.filter(e => e.status === 'cancelled').length,
+    };
+
+    res.json({ stats });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/events/:id - Get event details with attendee count
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {

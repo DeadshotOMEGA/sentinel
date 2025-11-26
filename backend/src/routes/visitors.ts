@@ -13,11 +13,11 @@ const router = Router();
 const createVisitorSchema = z.object({
   name: z.string().min(1).max(255),
   organization: z.string().min(1).max(255),
-  visitType: z.enum(['meeting', 'contractor', 'recruitment', 'course', 'event', 'official', 'other']),
+  visitType: z.enum(['general', 'contractor', 'recruitment', 'course', 'event', 'official', 'other']),
   hostMemberId: z.string().uuid().optional(),
   eventId: z.string().uuid().optional(),
   purpose: z.string().optional(),
-  checkinTime: z.string().datetime().optional(),
+  checkInTime: z.string().datetime().optional(),
   badgeId: z.string().uuid().optional(),
 });
 
@@ -72,7 +72,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
       hostMemberId: data.hostMemberId,
       eventId: data.eventId,
       purpose: data.purpose,
-      checkinTime: data.checkinTime ? new Date(data.checkinTime) : undefined,
+      checkInTime: data.checkInTime ? new Date(data.checkInTime) : undefined,
       badgeId: data.badgeId,
     });
 
@@ -82,7 +82,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
       name: visitor.name,
       organization: visitor.organization,
       visitType: visitor.visitType,
-      checkInTime: visitor.checkinTime.toISOString(),
+      checkInTime: visitor.checkInTime.toISOString(),
     });
 
     // Broadcast updated presence stats
@@ -111,7 +111,7 @@ router.put('/:id/checkout', requireAuth, async (req: Request, res: Response, nex
     }
 
     // Check if already checked out
-    if (existing.checkoutTime) {
+    if (existing.checkOutTime) {
       throw new ConflictError(
         'Visitor already checked out',
         `Visitor ${id} is already checked out`,
@@ -122,13 +122,13 @@ router.put('/:id/checkout', requireAuth, async (req: Request, res: Response, nex
     const visitor = await visitorRepository.checkout(id);
 
     // Broadcast visitor signout event
-    if (!visitor.checkoutTime) {
+    if (!visitor.checkOutTime) {
       throw new Error('Checkout time was not set');
     }
 
     broadcastVisitorSignout({
       visitorId: visitor.id,
-      checkOutTime: visitor.checkoutTime.toISOString(),
+      checkOutTime: visitor.checkOutTime.toISOString(),
     });
 
     // Broadcast updated presence stats

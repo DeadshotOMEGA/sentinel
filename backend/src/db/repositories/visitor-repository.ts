@@ -89,8 +89,8 @@ export class VisitorRepository extends BaseRepository {
    * Create a new visitor
    */
   async create(data: CreateVisitorInput): Promise<Visitor> {
-    if (!data.checkinTime) {
-      data.checkinTime = new Date();
+    if (!data.checkInTime) {
+      data.checkInTime = new Date();
     }
 
     const query = `
@@ -109,7 +109,7 @@ export class VisitorRepository extends BaseRepository {
       data.hostMemberId !== undefined ? data.hostMemberId : null,
       data.eventId !== undefined ? data.eventId : null,
       data.purpose !== undefined ? data.purpose : null,
-      data.checkinTime,
+      data.checkInTime,
       data.badgeId !== undefined ? data.badgeId : null,
     ]);
 
