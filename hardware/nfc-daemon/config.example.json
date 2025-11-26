@@ -1,0 +1,7 @@
+{
+  "kioskId": "primary-entrance",
+  "apiUrl": "http://192.168.1.100:3000",
+  "kioskNotifyUrl": "http://localhost:5174",
+  "pollInterval": 100,
+  "debounceTime": 5000
+}

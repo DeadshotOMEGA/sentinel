@@ -1,0 +1,17 @@
+[Unit]
+Description=Sentinel NFC Badge Reader Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/sentinel/hardware/nfc-daemon
+ExecStart=/usr/local/bin/bun run src/main.ts
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=KIOSK_ID=primary-entrance
+Environment=API_URL=http://localhost:3000
+
+[Install]
+WantedBy=multi-user.target
