@@ -1,0 +1,8 @@
+{
+  "displayMode": "unit-overview",
+  "refreshInterval": 5000,
+  "activityFeedEnabled": true,
+  "eventId": null,
+  "apiUrl": "http://localhost:3000/api",
+  "wsUrl": "ws://localhost:3000"
+}

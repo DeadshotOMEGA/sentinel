@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tv-mode {
+  cursor: default;
+  font-size: 2rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+.tv-mode .kpi-stat-value {
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tv-mode .kpi-stat-label {
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Remove hover states for TV mode */
+.tv-mode button:hover,
+.tv-mode a:hover {
+  background-color: inherit;
+  transform: none;
+}
+
+.tv-mode button:active,
+.tv-mode a:active {
+  opacity: 0.9;
+}
+
+/* TV-specific layout utilities */
+.tv-card {
+  background-color: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+.tv-section {
+  padding: 2rem;
+  min-height: 0;
+}
+
+/* Activity feed styling for TV */
+.tv-activity-item {
+  padding: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.tv-activity-time {
+  font-size: 1.5rem;
+  font-weight: 600;
+  min-width: 12rem;
+}
+
+.tv-activity-name {
+  font-size: 2rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.tv-activity-badge {
+  font-size: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+}
+
+/* Status colors */
+.status-present {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-absent {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}
+
+.status-late {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Activity feed animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation: none;
+  }
+}
