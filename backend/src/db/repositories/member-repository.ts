@@ -179,7 +179,7 @@ export class MemberRepository extends BaseRepository {
     const query = `
       INSERT INTO members (
         service_number, first_name, last_name, rank, division_id,
-        member_type, status, email, phone, badge_id
+        member_type, status, email, mobile_phone, badge_id
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
@@ -194,7 +194,7 @@ export class MemberRepository extends BaseRepository {
       data.memberType,
       data.status,
       data.email !== undefined ? data.email : null,
-      data.phone !== undefined ? data.phone : null,
+      data.mobilePhone !== undefined ? data.mobilePhone : null,
       data.badgeId !== undefined ? data.badgeId : null,
     ]);
 
@@ -246,9 +246,9 @@ export class MemberRepository extends BaseRepository {
       updates.push(`email = $${paramIndex++}`);
       params.push(data.email);
     }
-    if (data.phone !== undefined) {
-      updates.push(`phone = $${paramIndex++}`);
-      params.push(data.phone);
+    if (data.mobilePhone !== undefined) {
+      updates.push(`mobile_phone = $${paramIndex++}`);
+      params.push(data.mobilePhone);
     }
     if (data.badgeId !== undefined) {
       updates.push(`badge_id = $${paramIndex++}`);
@@ -310,6 +310,213 @@ export class MemberRepository extends BaseRepository {
 
     const row = await this.queryOne<{ direction: 'in' | 'out' }>(query, [memberId]);
     return row?.direction === 'in' ? 'present' : 'absent';
+  }
+
+  /**
+   * Find members by service numbers (for import operations)
+   */
+  async findByServiceNumbers(serviceNumbers: string[]): Promise<Member[]> {
+    if (serviceNumbers.length === 0) {
+      return [];
+    }
+
+    const query = `
+      SELECT *
+      FROM members
+      WHERE service_number = ANY($1)
+    `;
+
+    const rows = await this.queryAll<Record<string, unknown>>(query, [serviceNumbers]);
+    return rows.map((row) => toCamelCase<Member>(row));
+  }
+
+  /**
+   * Bulk create members (for import operations)
+   */
+  async bulkCreate(members: CreateMemberInput[]): Promise<number> {
+    if (members.length === 0) {
+      return 0;
+    }
+
+    const client = await this.beginTransaction();
+
+    try {
+      let insertedCount = 0;
+
+      for (const member of members) {
+        if (!member.status) {
+          member.status = 'active';
+        }
+
+        const query = `
+          INSERT INTO members (
+            service_number, employee_number, first_name, last_name, initials, rank,
+            division_id, mess, moc, member_type, class_details, status, email,
+            home_phone, mobile_phone, badge_id
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        `;
+
+        await client.query(query, [
+          member.serviceNumber,
+          member.employeeNumber ?? null,
+          member.firstName,
+          member.lastName,
+          member.initials ?? null,
+          member.rank,
+          member.divisionId,
+          member.mess ?? null,
+          member.moc ?? null,
+          member.memberType,
+          member.classDetails ?? null,
+          member.status,
+          member.email ?? null,
+          member.homePhone ?? null,
+          member.mobilePhone ?? null,
+          member.badgeId ?? null,
+        ]);
+
+        insertedCount++;
+      }
+
+      await this.commitTransaction(client);
+      await this.invalidatePresenceCache();
+
+      return insertedCount;
+    } catch (error) {
+      await this.rollbackTransaction(client);
+      throw error;
+    }
+  }
+
+  /**
+   * Bulk update members (for import operations)
+   */
+  async bulkUpdate(updates: Array<{ id: string; data: UpdateMemberInput }>): Promise<number> {
+    if (updates.length === 0) {
+      return 0;
+    }
+
+    const client = await this.beginTransaction();
+
+    try {
+      let updatedCount = 0;
+
+      for (const { id, data } of updates) {
+        const updateFields: string[] = [];
+        const params: unknown[] = [];
+        let paramIndex = 1;
+
+        if (data.serviceNumber !== undefined) {
+          updateFields.push(`service_number = $${paramIndex++}`);
+          params.push(data.serviceNumber);
+        }
+        if (data.employeeNumber !== undefined) {
+          updateFields.push(`employee_number = $${paramIndex++}`);
+          params.push(data.employeeNumber);
+        }
+        if (data.firstName !== undefined) {
+          updateFields.push(`first_name = $${paramIndex++}`);
+          params.push(data.firstName);
+        }
+        if (data.lastName !== undefined) {
+          updateFields.push(`last_name = $${paramIndex++}`);
+          params.push(data.lastName);
+        }
+        if (data.initials !== undefined) {
+          updateFields.push(`initials = $${paramIndex++}`);
+          params.push(data.initials);
+        }
+        if (data.rank !== undefined) {
+          updateFields.push(`rank = $${paramIndex++}`);
+          params.push(data.rank);
+        }
+        if (data.divisionId !== undefined) {
+          updateFields.push(`division_id = $${paramIndex++}`);
+          params.push(data.divisionId);
+        }
+        if (data.mess !== undefined) {
+          updateFields.push(`mess = $${paramIndex++}`);
+          params.push(data.mess);
+        }
+        if (data.moc !== undefined) {
+          updateFields.push(`moc = $${paramIndex++}`);
+          params.push(data.moc);
+        }
+        if (data.memberType !== undefined) {
+          updateFields.push(`member_type = $${paramIndex++}`);
+          params.push(data.memberType);
+        }
+        if (data.classDetails !== undefined) {
+          updateFields.push(`class_details = $${paramIndex++}`);
+          params.push(data.classDetails);
+        }
+        if (data.status !== undefined) {
+          updateFields.push(`status = $${paramIndex++}`);
+          params.push(data.status);
+        }
+        if (data.email !== undefined) {
+          updateFields.push(`email = $${paramIndex++}`);
+          params.push(data.email);
+        }
+        if (data.homePhone !== undefined) {
+          updateFields.push(`home_phone = $${paramIndex++}`);
+          params.push(data.homePhone);
+        }
+        if (data.mobilePhone !== undefined) {
+          updateFields.push(`mobile_phone = $${paramIndex++}`);
+          params.push(data.mobilePhone);
+        }
+        if (data.badgeId !== undefined) {
+          updateFields.push(`badge_id = $${paramIndex++}`);
+          params.push(data.badgeId);
+        }
+
+        if (updateFields.length === 0) {
+          continue; // Skip if no fields to update
+        }
+
+        updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+        params.push(id);
+
+        const query = `
+          UPDATE members
+          SET ${updateFields.join(', ')}
+          WHERE id = $${paramIndex}
+        `;
+
+        const result = await client.query(query, params);
+        if (result.rowCount && result.rowCount > 0) {
+          updatedCount++;
+        }
+      }
+
+      await this.commitTransaction(client);
+      await this.invalidatePresenceCache();
+
+      return updatedCount;
+    } catch (error) {
+      await this.rollbackTransaction(client);
+      throw error;
+    }
+  }
+
+  /**
+   * Flag members for review (set status to pending_review)
+   */
+  async flagForReview(memberIds: string[]): Promise<void> {
+    if (memberIds.length === 0) {
+      return;
+    }
+
+    const query = `
+      UPDATE members
+      SET status = 'pending_review', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ANY($1)
+    `;
+
+    await this.query(query, [memberIds]);
+    await this.invalidatePresenceCache();
   }
 
   /**

@@ -2,35 +2,54 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { memberRepository } from '../db/repositories/member-repository';
 import { checkinRepository } from '../db/repositories/checkin-repository';
+import { importService } from '../services/import-service';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
-import type { MemberType, MemberStatus } from '../../../shared/types';
+import type {
+  MemberType,
+  MemberStatus,
+  CreateMemberInput,
+  UpdateMemberInput,
+} from '../../../shared/types';
 
 const router = Router();
 
 // Validation schemas
 const createMemberSchema = z.object({
   serviceNumber: z.string().min(1).max(20),
+  employeeNumber: z.string().optional(),
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
+  initials: z.string().optional(),
   rank: z.string().min(1).max(50),
   divisionId: z.string().uuid(),
-  memberType: z.enum(['full-time', 'reserve', 'event-attendee']),
+  mess: z.string().optional(),
+  moc: z.string().optional(),
+  memberType: z.enum(['class_a', 'class_b', 'class_c', 'reg_force']),
+  classDetails: z.string().optional(),
+  status: z.enum(['active', 'inactive', 'pending_review']).optional(),
   email: z.string().email().optional(),
-  phone: z.string().optional(),
+  homePhone: z.string().optional(),
+  mobilePhone: z.string().optional(),
   badgeId: z.string().uuid().optional(),
 });
 
 const updateMemberSchema = z.object({
   serviceNumber: z.string().min(1).max(20).optional(),
+  employeeNumber: z.string().optional(),
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
+  initials: z.string().optional(),
   rank: z.string().min(1).max(50).optional(),
   divisionId: z.string().uuid().optional(),
-  memberType: z.enum(['full-time', 'reserve', 'event-attendee']).optional(),
-  status: z.enum(['active', 'inactive', 'leave']).optional(),
+  mess: z.string().optional(),
+  moc: z.string().optional(),
+  memberType: z.enum(['class_a', 'class_b', 'class_c', 'reg_force']).optional(),
+  classDetails: z.string().optional(),
+  status: z.enum(['active', 'inactive', 'pending_review']).optional(),
   email: z.string().email().optional(),
-  phone: z.string().optional(),
+  homePhone: z.string().optional(),
+  mobilePhone: z.string().optional(),
   badgeId: z.string().uuid().optional(),
 });
 
@@ -87,7 +106,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
       );
     }
 
-    const data = validationResult.data;
+    const data = validationResult.data as CreateMemberInput;
 
     // Check if service number already exists
     const existing = await memberRepository.findByServiceNumber(data.serviceNumber);
@@ -121,7 +140,7 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: 
       );
     }
 
-    const data = validationResult.data;
+    const data = validationResult.data as UpdateMemberInput;
 
     // Check if member exists
     const existing = await memberRepository.findById(id);
@@ -203,5 +222,68 @@ router.get('/:id/history', requireAuth, async (req: Request, res: Response, next
     next(err);
   }
 });
+
+// POST /api/members/import/preview - Preview import changes
+const importPreviewSchema = z.object({
+  csv: z.string().min(1, 'CSV content is required'),
+});
+
+router.post(
+  '/import/preview',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const validationResult = importPreviewSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid import data',
+          validationResult.error.message,
+          'Please provide valid CSV content.'
+        );
+      }
+
+      const { csv } = validationResult.data;
+
+      const preview = await importService.generatePreview(csv);
+
+      res.json(preview);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/members/import/execute - Execute import
+const importExecuteSchema = z.object({
+  csv: z.string().min(1, 'CSV content is required'),
+  deactivateIds: z.array(z.string().uuid()).optional(),
+});
+
+router.post(
+  '/import/execute',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const validationResult = importExecuteSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid import data',
+          validationResult.error.message,
+          'Please provide valid CSV content and optional deactivate IDs.'
+        );
+      }
+
+      const { csv, deactivateIds } = validationResult.data;
+
+      const result = await importService.executeImport(csv, deactivateIds);
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export { router as memberRoutes };
