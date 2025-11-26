@@ -1,18 +1,24 @@
 // Member Types
-export type MemberType = 'full-time' | 'reserve' | 'event-attendee';
-export type MemberStatus = 'active' | 'inactive' | 'leave';
+export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force';
+export type MemberStatus = 'active' | 'inactive' | 'pending_review';
 
 export interface Member {
   id: string;
   serviceNumber: string;
+  employeeNumber?: string;
   firstName: string;
   lastName: string;
+  initials?: string;
   rank: string;
   divisionId: string;
+  mess?: string;
+  moc?: string;
   memberType: MemberType;
+  classDetails?: string;
   status: MemberStatus;
   email?: string;
-  phone?: string;
+  homePhone?: string;
+  mobilePhone?: string;
   badgeId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -24,28 +30,84 @@ export interface MemberWithDivision extends Member {
 
 export interface CreateMemberInput {
   serviceNumber: string;
+  employeeNumber?: string;
   firstName: string;
   lastName: string;
+  initials?: string;
   rank: string;
   divisionId: string;
+  mess?: string;
+  moc?: string;
   memberType: MemberType;
+  classDetails?: string;
   status?: MemberStatus;
   email?: string;
-  phone?: string;
+  homePhone?: string;
+  mobilePhone?: string;
   badgeId?: string;
 }
 
 export interface UpdateMemberInput {
   serviceNumber?: string;
+  employeeNumber?: string;
   firstName?: string;
   lastName?: string;
+  initials?: string;
   rank?: string;
   divisionId?: string;
+  mess?: string;
+  moc?: string;
   memberType?: MemberType;
+  classDetails?: string;
   status?: MemberStatus;
   email?: string;
-  phone?: string;
+  homePhone?: string;
+  mobilePhone?: string;
   badgeId?: string;
+}
+
+// Nominal Roll Import Types
+export interface NominalRollRow {
+  serviceNumber: string;
+  employeeNumber?: string;
+  rank: string;
+  lastName: string;
+  firstName: string;
+  initials?: string;
+  department: string;
+  mess?: string;
+  moc?: string;
+  email?: string;
+  homePhone?: string;
+  mobilePhone?: string;
+  details?: string;
+}
+
+export interface ImportPreviewMember {
+  current: Member;
+  incoming: NominalRollRow;
+  changes: string[];
+}
+
+export interface ImportPreview {
+  toAdd: NominalRollRow[];
+  toUpdate: ImportPreviewMember[];
+  toReview: Member[];
+  errors: ImportError[];
+  divisionMapping: Record<string, string>;
+}
+
+export interface ImportError {
+  row: number;
+  field?: string;
+  message: string;
+}
+
+export interface ImportResult {
+  added: number;
+  updated: number;
+  flaggedForReview: number;
+  errors: ImportError[];
 }
 
 // Division Types
@@ -130,7 +192,7 @@ export interface PresenceStats {
 
 // Visitor Types
 export type VisitType =
-  | 'meeting'
+  | 'general'
   | 'contractor'
   | 'recruitment'
   | 'course'
@@ -146,8 +208,8 @@ export interface Visitor {
   hostMemberId?: string;
   eventId?: string;
   purpose?: string;
-  checkinTime: Date;
-  checkoutTime?: Date;
+  checkInTime: Date;
+  checkOutTime?: Date;
   badgeId?: string;
   createdAt: Date;
 }
@@ -159,7 +221,7 @@ export interface CreateVisitorInput {
   hostMemberId?: string;
   eventId?: string;
   purpose?: string;
-  checkinTime?: Date;
+  checkInTime?: Date;
   badgeId?: string;
 }
 

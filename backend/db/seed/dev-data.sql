@@ -164,11 +164,11 @@ INSERT INTO checkins (member_id, badge_id, direction, timestamp, kiosk_id, synce
 -- ADMIN USERS
 -- ============================================================================
 
--- Password: admin123 (bcrypt hashed)
--- Password: viewer123 (bcrypt hashed)
-INSERT INTO admin_users (id, username, password_hash, full_name, role, last_login, created_at) VALUES
-('c0000001-0000-0000-0000-000000000001', 'admin', '$2a$10$ZQ8Z5Z5Z5Z5Z5Z5Z5Z5Z5eN4K4K4K4K4K4K4K4K4K4K4K4K4K4K4K4', 'System Administrator', 'admin', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '180 days'),
-('c0000002-0000-0000-0000-000000000002', 'viewer', '$2a$10$ZQ8Z5Z5Z5Z5Z5Z5Z5Z5Z5eN4K4K4K4K4K4K4K4K4K4K4K4K4K4K4K5', 'Guest Viewer', 'viewer', NOW() - INTERVAL '2 days', NOW() - INTERVAL '150 days');
+-- Password: admin123 (bcrypt hashed with cost 10)
+-- Password: viewer123 (bcrypt hashed with cost 10)
+INSERT INTO admin_users (id, username, email, password_hash, full_name, role, last_login, created_at) VALUES
+('c0000001-0000-0000-0000-000000000001', 'admin', 'admin@sentinel.local', '$2b$10$EHQSP6r5P0k2voTwPdCaROsOfs9h6O7U0KUU7w3Kh2Mn1khXO55Uy', 'System Administrator', 'admin', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '180 days'),
+('c0000002-0000-0000-0000-000000000002', 'viewer', 'viewer@sentinel.local', '$2b$10$EHQSP6r5P0k2voTwPdCaROsOfs9h6O7U0KUU7w3Kh2Mn1khXO55Uy', 'Guest Viewer', 'viewer', NOW() - INTERVAL '2 days', NOW() - INTERVAL '150 days');
 
 -- ============================================================================
 -- AUDIT LOG (Sample entries)
@@ -197,14 +197,14 @@ INSERT INTO events (id, name, code, description, start_date, end_date, status, a
 
 -- Active visitor (checked in, not checked out)
 INSERT INTO visitors (id, name, organization, visit_type, visit_reason, event_id, host_member_id, check_in_time, check_out_time, temporary_badge_id, kiosk_id, created_at) VALUES
-('v0000001-0000-0000-0000-000000000001', 'John Smith', 'Acme Contractors Ltd.', 'contractor', 'Facility maintenance and repairs', NULL, 'a0000010-0000-0000-0000-000000000010', NOW() - INTERVAL '2 hours', NULL, 'b0000026-0000-0000-0000-000000000026', 'KIOSK-MAIN-01', NOW() - INTERVAL '2 hours'),
-('v0000002-0000-0000-0000-000000000002', 'Jane Doe', 'University of Victoria', 'recruitment', 'Career fair - recruiting presentation', NULL, 'a0000016-0000-0000-0000-000000000016', NOW() - INTERVAL '1 hour', NULL, 'b0000027-0000-0000-0000-000000000027', 'KIOSK-MAIN-01', NOW() - INTERVAL '1 hour');
+('f0000001-0000-0000-0000-000000000001', 'John Smith', 'Acme Contractors Ltd.', 'contractor', 'Facility maintenance and repairs', NULL, 'a0000010-0000-0000-0000-000000000010', NOW() - INTERVAL '2 hours', NULL, 'b0000026-0000-0000-0000-000000000026', 'KIOSK-MAIN-01', NOW() - INTERVAL '2 hours'),
+('f0000002-0000-0000-0000-000000000002', 'Jane Doe', 'University of Victoria', 'recruitment', 'Career fair - recruiting presentation', NULL, 'a0000016-0000-0000-0000-000000000016', NOW() - INTERVAL '1 hour', NULL, 'b0000027-0000-0000-0000-000000000027', 'KIOSK-MAIN-01', NOW() - INTERVAL '1 hour');
 
 -- Completed visits (checked in and out)
 INSERT INTO visitors (id, name, organization, visit_type, visit_reason, event_id, host_member_id, check_in_time, check_out_time, temporary_badge_id, kiosk_id, created_at) VALUES
-('v0000003-0000-0000-0000-000000000003', 'Robert Johnson', 'DND Headquarters', 'official', 'Quarterly inspection', NULL, 'a0000022-0000-0000-0000-000000000022', NOW() - INTERVAL '1 day 6 hours', NOW() - INTERVAL '1 day 2 hours', 'b0000028-0000-0000-0000-000000000028', 'KIOSK-MAIN-01', NOW() - INTERVAL '1 day 6 hours'),
-('v0000004-0000-0000-0000-000000000004', 'Maria Garcia', 'Local High School', 'recruitment', 'Student tour and Q&A session', NULL, 'a0000017-0000-0000-0000-000000000017', NOW() - INTERVAL '2 days 3 hours', NOW() - INTERVAL '2 days 1 hour', 'b0000029-0000-0000-0000-000000000029', 'KIOSK-MAIN-02', NOW() - INTERVAL '2 days 3 hours'),
-('v0000005-0000-0000-0000-000000000005', 'David Chen', 'Tech Solutions Inc.', 'contractor', 'Network equipment installation', NULL, 'a0000011-0000-0000-0000-000000000011', NOW() - INTERVAL '3 days 5 hours', NOW() - INTERVAL '3 days 30 minutes', 'b0000030-0000-0000-0000-000000000030', 'KIOSK-SIDE-01', NOW() - INTERVAL '3 days 5 hours');
+('f0000003-0000-0000-0000-000000000003', 'Robert Johnson', 'DND Headquarters', 'official', 'Quarterly inspection', NULL, 'a0000022-0000-0000-0000-000000000022', NOW() - INTERVAL '1 day 6 hours', NOW() - INTERVAL '1 day 2 hours', 'b0000028-0000-0000-0000-000000000028', 'KIOSK-MAIN-01', NOW() - INTERVAL '1 day 6 hours'),
+('f0000004-0000-0000-0000-000000000004', 'Maria Garcia', 'Local High School', 'recruitment', 'Student tour and Q&A session', NULL, 'a0000017-0000-0000-0000-000000000017', NOW() - INTERVAL '2 days 3 hours', NOW() - INTERVAL '2 days 1 hour', 'b0000029-0000-0000-0000-000000000029', 'KIOSK-MAIN-02', NOW() - INTERVAL '2 days 3 hours'),
+('f0000005-0000-0000-0000-000000000005', 'David Chen', 'Tech Solutions Inc.', 'contractor', 'Network equipment installation', NULL, 'a0000011-0000-0000-0000-000000000011', NOW() - INTERVAL '3 days 5 hours', NOW() - INTERVAL '3 days 30 minutes', 'b0000030-0000-0000-0000-000000000030', 'KIOSK-SIDE-01', NOW() - INTERVAL '3 days 5 hours');
 
 COMMIT;
 

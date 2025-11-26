@@ -14,7 +14,9 @@ CREATE TABLE divisions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
   code VARCHAR(20) UNIQUE NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Members (Full-Time Staff + Reserve Members)
@@ -24,7 +26,10 @@ CREATE TABLE members (
   rank VARCHAR(50) NOT NULL,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255),
+  phone VARCHAR(50),
   division_id UUID REFERENCES divisions(id),
+  badge_id UUID,  -- Will be set as FK after badges table created
   member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('full_time', 'reserve')),
   status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMP DEFAULT NOW(),
@@ -90,6 +95,7 @@ CREATE TABLE visitors (
 CREATE TABLE admin_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(255),
   password_hash VARCHAR(255) NOT NULL,
   full_name VARCHAR(200) NOT NULL,
   role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'viewer')),
