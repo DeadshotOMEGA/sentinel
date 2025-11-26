@@ -1,6 +1,27 @@
-# Sentinel Frontend
+# Sentinel Admin Dashboard
 
-React admin dashboard for HMCS Chippawa RFID attendance system.
+React-based administration interface for the Sentinel RFID attendance system.
+
+## Features
+
+- Member management (CRUD, bulk import)
+- Real-time presence monitoring
+- Visitor tracking
+- Reports with CSV export
+- Event management
+- Settings for divisions and badges
+
+## Quick Start
+
+```bash
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
+```
+
+Open http://localhost:5173
 
 ## Tech Stack
 
@@ -19,10 +40,30 @@ React admin dashboard for HMCS Chippawa RFID attendance system.
 frontend/
 ├── src/
 │   ├── components/     # Reusable UI components
-│   ├── hooks/          # Custom React hooks
-│   ├── layouts/        # Page layout components
-│   ├── lib/            # API client, utilities
+│   │   ├── AddAttendeeModal.tsx
+│   │   ├── BadgeAssignmentModal.tsx
+│   │   ├── EventModal.tsx
+│   │   ├── MemberModal.tsx
+│   │   ├── PageWrapper.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── TopBar.tsx
+│   ├── hooks/          # Custom hooks
+│   │   ├── useAuth.ts      # Authentication state
+│   │   └── useSocket.ts    # WebSocket connection
+│   ├── layouts/        # Page layouts
+│   │   └── DashboardLayout.tsx
+│   ├── lib/            # Utilities
+│   │   └── api.ts          # Axios client
 │   ├── pages/          # Route page components
+│   │   ├── Dashboard.tsx
+│   │   ├── EventDetail.tsx
+│   │   ├── EventMonitor.tsx
+│   │   ├── Events.tsx
+│   │   ├── Login.tsx
+│   │   ├── Members.tsx
+│   │   ├── Reports.tsx
+│   │   ├── Settings.tsx
+│   │   └── Visitors.tsx
 │   ├── styles/         # Global CSS
 │   ├── App.tsx         # Main app with routing
 │   └── main.tsx        # Entry point
@@ -32,55 +73,69 @@ frontend/
 └── tsconfig.json       # TypeScript config
 ```
 
-## Development
+## Pages
 
-### Prerequisites
+### Dashboard
+- Presence summary cards (Present, Absent, Visitors)
+- Recent activity feed
+- Real-time WebSocket updates
 
-- Bun (package manager)
-- Node.js 18+
+### Members
+- Searchable/filterable table
+- Create/edit member modal
+- Badge assignment
+- Division assignment
 
-### Commands
+### Visitors
+- Active visitors tab
+- History tab
+- Sign-in modal
+- Sign-out action
 
-```bash
-# Install dependencies
-bun install
+### Reports
+- Current presence report
+- CSV export
+- Division filter
 
-# Start dev server (http://localhost:5173)
-bun run dev
+### Events
+- Event list with status tabs
+- Create/edit event
+- Attendee management
+- Badge assignment workflow
 
-# Build for production
-bun run build
+### Event Monitor
+- Real-time presence stats
+- Live activity feed
+- Attendee list with status
 
-# Preview production build
-bun run preview
+### Settings
+- Division management
+- Badge management
 
-# Type checking
-bun run typecheck
-```
-
-## Configuration
-
-### Environment Variables
+## Environment Variables
 
 Create `.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:3000/api
+VITE_WS_URL=http://localhost:3000
 ```
 
-### API Proxy
+## Scripts
 
-Vite dev server proxies `/api` and `/socket.io` to backend (port 3000).
+```bash
+# Development server
+bun run dev
 
-## Design System
+# Production build
+bun run build
 
-- **Light mode only** - No dark theme
-- **Primary color**: #007fff (Azure Blue)
-- **Accent color**: #ff8000 (Orange)
-- **Font**: Inter (sans-serif)
-- **WCAG AA compliant** - 4.5:1 minimum contrast
+# Type checking
+bun run tsc --noEmit
 
-See `/home/sauk/projects/sentinel/heroui-theme-config.ts` for complete theme tokens.
+# Preview production build
+bun run preview
+```
 
 ## Authentication
 
@@ -97,19 +152,25 @@ Uses Zustand with persist middleware. Token stored in localStorage as `sentinel-
 - **Zustand**: Client state (auth, UI)
 - **TanStack Query**: Server state (data fetching, caching)
 
-## Key Features
+## Real-Time Updates
 
-- ✅ TypeScript strict mode
-- ✅ Path aliases (`@/`, `@shared/`)
-- ✅ Auto token injection
-- ✅ Auto logout on 401
-- ✅ Persistent auth state
-- ✅ Real-time WebSocket support (Socket.IO)
+WebSocket connection managed via `useSocket` hook:
+- Auto-connects on dashboard mount
+- Subscribes to `presence_update` events
+- Updates React Query cache on events
+- Auto-reconnects on disconnect
+
+## Design System
+
+- **Light mode only** - No dark theme
+- **Primary color**: #007fff (Azure Blue)
+- **Accent color**: #ff8000 (Orange)
+- **Font**: Inter (sans-serif)
+- **WCAG AA compliant** - 4.5:1 minimum contrast
 
 ## Notes
 
 - Use `bun` not `npm` (better WSL2 performance)
 - Never use `any` type - look up actual types
 - Share types via `/shared/types/index.ts`
-- No dark mode implementation
-- Touch targets minimum 48px (kiosk: 56px)
+- Touch targets minimum 48px

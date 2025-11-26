@@ -1,10 +1,40 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview
 
-RFID attendance tracking system for **HMCS Chippawa** (Royal Canadian Navy reserve unit, Winnipeg). Standalone system - no DWAN integration.
+**Sentinel** - RFID attendance tracking system for **HMCS Chippawa** (Royal Canadian Navy reserve unit, Winnipeg). Standalone system with no DWAN integration.
+
+## Project Structure
+
+```
+sentinel/
+├── backend/          # Express API + WebSocket server (Bun)
+├── frontend/         # Admin dashboard (React + HeroUI)
+├── kiosk/            # Touch check-in interface (React)
+├── tv-display/       # Passive wall display (React)
+├── hardware/         # NFC daemon for Raspberry Pi
+├── shared/           # TypeScript types shared across apps
+└── docs/             # Implementation plan and specs
+```
+
+## Quick Commands
+
+```bash
+# All apps use Bun (not npm)
+cd backend && bun install && bun run dev
+cd frontend && bun install && bun run dev
+cd kiosk && bun install && bun run dev
+cd tv-display && bun install && bun run dev
+
+# Type checking
+cd <app> && bun run tsc --noEmit
+
+# Database
+cd backend && bun run db/migrate.ts
+cd backend && bun run db/seed.ts
+```
 
 ## Hardware Deployment
 
@@ -20,8 +50,23 @@ RFID attendance tracking system for **HMCS Chippawa** (Royal Canadian Navy reser
 - **WCAG AA required** - 4.5:1 contrast ratio minimum
 - **Touch targets 48px minimum** - Kiosk uses 56px
 - **Reduced animations on Pi** - Use `prefers-reduced-motion` media query
-- **Offline-first** - All kiosk operations must work without network
+- **Offline-first** - Kiosk operations must work without network
 - **Admins are non-technical** - Plain language errors with "how to fix" guidance
+- **Never use `any` type** - Look up actual types
+- **Throw errors early** - No silent fallbacks
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Runtime | Bun |
+| Backend | Express + Socket.IO |
+| Database | PostgreSQL |
+| Cache/Sessions | Redis |
+| Frontend | React + TypeScript + Vite |
+| UI Library | HeroUI (Tailwind-based) |
+| State | Zustand (client), React Query (server) |
+| Offline Storage | IndexedDB (kiosk) |
 
 ## Member Classifications
 
@@ -32,14 +77,12 @@ Three distinct types - never mix in queries:
 
 ## Design Tokens
 
-Primary: `#007fff` (Azure Blue)
-Accent: `#ff8000` (Orange)
-Font: Inter
-
-Use `heroui-theme-config.ts` for all color/spacing values - single source of truth.
-
-## Project Name
-Sentinel - RFID attendance tracking system
+```
+Primary: #007fff (Azure Blue)
+Accent:  #ff8000 (Orange)
+Success: #10b981 (Green)
+Font:    Inter
+```
 
 ## UI Mode Classes
 
@@ -48,31 +91,54 @@ Sentinel - RFID attendance tracking system
 .tv-mode     /* 10-foot UI, no hover states, cursor: default */
 ```
 
-## Key Technologies
-
-- HeroUI Pro (Application Pack) - use base primitives for kiosk/TV, Pro components for admin
-- Tailwind CSS with HeroUI plugin
-- React + TypeScript
-- Bun (not npm)
-
 ## Interface-Specific Rules
 
-| Interface | HeroUI Pro Components | Custom Components |
-|-----------|----------------------|-------------------|
+| Interface | HeroUI Pro | Custom Components |
+|-----------|------------|-------------------|
 | Admin Dashboard | Full Pro suite | Minimal |
-| Kiosk | Base primitives only | All layouts |
+| Kiosk | Base primitives | All layouts |
 | TV Display | KPI Stats (enlarged) | All layouts |
 | Rear Door | None | Audio feedback |
 
-## Documentation Files
+## API Patterns
 
+All API routes use:
+- Zod validation for inputs
+- Custom error classes (NotFoundError, ValidationError, ConflictError)
+- `requireAuth` middleware for protected routes
+- `requireRole('admin')` for admin-only operations
+- toCamelCase/toSnakeCase for DB row conversion
+
+## WebSocket Events
+
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `checkin` | Server→Client | Member check-in/out |
+| `presence_update` | Server→Client | Stats update |
+| `visitor_signin` | Server→Client | Visitor arrival |
+| `event_checkin` | Server→Client | Event attendee check-in |
+
+## Offline Sync (Kiosk)
+
+1. Check-ins stored in IndexedDB when offline
+2. Network status detected via `navigator.onLine` + health ping
+3. Auto-sync on reconnection with exponential backoff
+4. Bulk upload endpoint `/api/checkins/bulk`
+5. Timestamp validation (reject >7 days old, future timestamps)
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `shared/types/index.ts` | All TypeScript interfaces |
+| `backend/src/routes/index.ts` | API route mounting |
+| `backend/src/websocket/broadcast.ts` | Real-time event broadcasting |
+| `kiosk/src/state/kiosk-state.ts` | Kiosk screen state machine |
+| `kiosk/src/services/sync-service.ts` | Offline sync logic |
+
+## Documentation
+
+- `docs/implementation-plan.md` - 8-phase implementation plan
 - `product-overview.html` - Requirements and user flows
-- `docs/design-document.html` - Complete design system (visual reference for humans)
-- `design-system/` - Modular specs for Claude Code:
-  - `README.md` - Index and quick reference
-  - `tokens.md` - Colors, typography, spacing
-  - `components.md` - Buttons, forms, cards, tables
-  - `layouts.md` - Admin, TV, kiosk interfaces
-- `heroui-component-mapping.md` - Component selection guide
-- `heroui-dashboard-templates.md` - Admin UI wireframes
+- `design-system/` - Design tokens and component specs
 - `feature-events-groups.md` - Events/temporary access spec

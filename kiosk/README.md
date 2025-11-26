@@ -1,78 +1,186 @@
 # Sentinel Kiosk
 
-Touch-optimized kiosk interface for RFID badge scanning and visitor sign-in at HMCS Chippawa.
+Touch-friendly check-in interface for the Sentinel RFID attendance system.
 
 ## Features
 
-- **Badge Scanning**: RFID badge tap for check-in/check-out
-- **Visitor Sign-In**: Self-service visitor registration
-- **Touch-Optimized**: 56px minimum touch targets
-- **Audio Feedback**: Success/error sounds
-- **Auto-Reset**: Returns to idle screen after timeout
-- **Offline-Ready**: Works without network connection (with local queue)
+- Large touch targets (56px minimum)
+- Offline-first architecture
+- NFC badge scanning
+- Visitor sign-in flow
+- Event selection for event visitors
+- Audio feedback
+- Sync status indicator
+
+## Quick Start
+
+```bash
+# Install dependencies
+bun install
+
+# Configure environment
+cp .env.example .env
+
+# Start development server
+bun run dev
+```
+
+Open http://localhost:5174
 
 ## Tech Stack
 
-- React 19 + TypeScript
-- Vite
-- Tailwind CSS
-- Zustand (state management)
-- Axios (API client)
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Zustand** - State management
+- **Tailwind CSS** - Styling
+- **IndexedDB (idb)** - Offline storage
+- **Axios** - HTTP client
 
-## Setup
+## Project Structure
 
-1. Install dependencies:
-   ```bash
-   bun install
-   ```
-
-2. Copy environment variables:
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Update `.env` with your configuration:
-   - `VITE_API_URL`: Backend API URL
-   - `VITE_KIOSK_ID`: Unique kiosk identifier
-   - `VITE_VISITOR_MODE_ENABLED`: Enable/disable visitor sign-in
-
-4. Add sound files to `public/sounds/`:
-   - `success.mp3` - Check-in/check-out success
-   - `error.mp3` - Error alert
-   - `scan.mp3` - Badge scan feedback
-
-## Development
-
-```bash
-bun dev
+```
+kiosk/
+├── public/
+│   └── sounds/         # Audio feedback files
+├── src/
+│   ├── components/     # UI components
+│   │   ├── NetworkIndicator.tsx
+│   │   └── SyncStatus.tsx
+│   ├── db/             # IndexedDB
+│   │   └── queue.ts
+│   ├── hooks/          # Custom hooks
+│   │   └── useNetworkStatus.ts
+│   ├── lib/            # Utilities
+│   │   ├── api.ts
+│   │   ├── audio.ts
+│   │   └── config.ts
+│   ├── screens/        # Screen components
+│   │   ├── ErrorScreen.tsx
+│   │   ├── EventSelectionScreen.tsx
+│   │   ├── IdleScreen.tsx
+│   │   ├── ScanningScreen.tsx
+│   │   ├── SuccessScreen.tsx
+│   │   └── VisitorScreen.tsx
+│   ├── services/       # Business logic
+│   │   ├── event-service.ts
+│   │   ├── offline-queue.ts
+│   │   └── sync-service.ts
+│   ├── state/          # Zustand stores
+│   │   ├── kiosk-state.ts
+│   │   └── sync-state.ts
+│   ├── App.tsx
+│   └── main.tsx
+└── package.json
 ```
 
-## Production Build
+## Screen Flow
+
+```
+┌─────────────┐
+│    Idle     │◀──────────────────────┐
+│ "Tap Badge" │                       │
+└──────┬──────┘                       │
+       │ Badge Scan                   │
+       ▼                              │
+┌─────────────┐                       │
+│  Scanning   │                       │
+│ Processing  │                       │
+└──────┬──────┘                       │
+       │                              │
+   ┌───┴───┐                          │
+   ▼       ▼                          │
+┌──────┐ ┌──────┐                     │
+│Success│ │Error │                     │
+│ Info  │ │ Help │──────────┐         │
+└───┬───┘ └───┬──┘          │         │
+    │         │             │         │
+    └────┬────┘             │         │
+         │ 5s timeout       │ Retry   │
+         ▼                  ▼         │
+         └──────────────────┴─────────┘
+```
+
+## Offline Support
+
+### How It Works
+
+1. **Online Mode**: Check-ins POST directly to backend
+2. **Offline Mode**: Check-ins stored in IndexedDB queue
+3. **Network Detection**: `navigator.onLine` + health ping every 30s
+4. **Auto-Sync**: When connection restored, queue uploads automatically
+5. **Conflict Resolution**: Backend validates timestamps, deduplicates
+
+### Queue Storage
+
+```typescript
+interface QueuedCheckin {
+  id: string;           // UUID
+  serialNumber: string; // Badge serial
+  kioskId: string;
+  timestamp: Date;
+  retryCount: number;
+  createdAt: Date;
+}
+```
+
+### Sync Process
+
+1. Check queue size
+2. Batch items (100 per request)
+3. POST to `/api/checkins/bulk`
+4. Remove synced items on success
+5. Retry with exponential backoff on failure (5s, 15s, 45s, 2m max)
+
+## Environment Variables
+
+```env
+VITE_API_URL=http://localhost:3000/api
+VITE_WS_URL=http://localhost:3000
+VITE_KIOSK_ID=primary-entrance
+```
+
+## Audio Feedback
+
+Place audio files in `public/sounds/`:
+- `scan.mp3` - Badge detected
+- `success.mp3` - Check-in successful
+- `error.mp3` - Check-in failed
+
+## Scripts
 
 ```bash
+# Development server
+bun run dev
+
+# Production build
 bun run build
-bun preview
+
+# Type checking
+bun run tsc --noEmit
 ```
 
-## Screens
+## Deployment
 
-1. **IdleScreen**: Main waiting screen with "Tap Your Badge" prompt
-2. **ScanningScreen**: Processing indicator during badge scan
-3. **SuccessScreen**: Check-in/check-out confirmation
-4. **ErrorScreen**: Error display with "how to fix" guidance
-5. **VisitorScreen**: Multi-step visitor sign-in flow
+### Raspberry Pi Kiosk Mode
 
-## Hardware Integration
+1. Build the app: `bun run build`
+2. Serve via nginx or static server
+3. Configure Chromium kiosk mode:
 
-The kiosk expects badge scans to come from a PN532 NFC reader connected via GPIO. The reader should trigger API calls to `/api/checkins/scan` with the badge ID.
+```bash
+chromium-browser --kiosk --disable-restore-session-state http://localhost:5174
+```
 
-For development, you can simulate badge scans by calling the API directly or using the debug interface.
+### NFC Daemon
 
-## Kiosk Mode
+The NFC daemon runs separately to handle badge scans.
+See `hardware/nfc-daemon/README.md` for setup.
 
-For production deployment on Raspberry Pi:
+## Design
 
-1. Set up Chromium in kiosk mode
-2. Disable screensaver/power management
-3. Auto-start browser on boot
-4. Point to `http://localhost:5173` (dev) or production URL
+- **Light mode only** - No dark theme
+- **56px touch targets** - Accessible on touchscreen
+- **Large fonts** - Readable at arm's length
+- **High contrast** - WCAG AA compliant
+- **Reduced animations** - Respects `prefers-reduced-motion`
