@@ -51,8 +51,8 @@ function DivisionsSettings() {
   const { data: divisions, isLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
-      const response = await api.get<Division[]>('/divisions');
-      return response.data;
+      const response = await api.get<{ divisions: Division[] }>('/divisions');
+      return response.data.divisions;
     },
   });
 
@@ -200,8 +200,8 @@ function BadgesSettings() {
   const { data: badges, isLoading } = useQuery({
     queryKey: ['badges'],
     queryFn: async () => {
-      const response = await api.get<Badge[]>('/badges');
-      return response.data;
+      const response = await api.get<{ badges: Badge[] }>('/badges');
+      return response.data.badges;
     },
   });
 

@@ -18,6 +18,20 @@ body {
   @apply text-gray-600; /* 4.5:1 on white */
 }
 
+/* Ensure input text is always dark in light mode */
+input,
+textarea,
+select,
+[data-slot="input"],
+[data-slot="inner-wrapper"] input {
+  color: #0f172a !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
 /* Custom properties from theme */
 :root {
   /* Primary - Azure Blue */

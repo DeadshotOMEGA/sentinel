@@ -27,28 +27,46 @@ interface MemberPresence extends MemberWithDivision {
   lastCheckOut?: string;
 }
 
+interface MemberPresenceApiItem {
+  member: MemberWithDivision;
+  status: 'present' | 'absent';
+  lastCheckin?: {
+    id: string;
+    timestamp: string;
+    direction: 'in' | 'out';
+  };
+}
+
 export default function Reports() {
   const [tab, setTab] = useState('presence');
   const [divisionFilter, setDivisionFilter] = useState<string>('');
 
-  const { data: divisions } = useQuery({
+  const { data: divisions, isLoading: divisionsLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
-      const response = await api.get<Division[]>('/divisions');
-      return response.data;
+      const response = await api.get<{ divisions: Division[] }>('/divisions');
+      return response.data.divisions;
     },
   });
 
-  const { data: presenceList, isLoading } = useQuery({
+  const { data: presenceList, isLoading: presenceLoading, error: presenceError } = useQuery({
     queryKey: ['presence-list', divisionFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (divisionFilter) params.set('divisionId', divisionFilter);
-      const response = await api.get<MemberPresence[]>(`/checkins/presence/list?${params}`);
-      return response.data;
+      const response = await api.get<{ presenceList: MemberPresenceApiItem[] }>(`/checkins/presence/list?${params}`);
+      // Transform API response to flat MemberPresence structure
+      return response.data.presenceList.map((item): MemberPresence => ({
+        ...item.member,
+        currentStatus: item.status,
+        lastCheckIn: item.lastCheckin?.direction === 'in' ? item.lastCheckin.timestamp : undefined,
+        lastCheckOut: item.lastCheckin?.direction === 'out' ? item.lastCheckin.timestamp : undefined,
+      }));
     },
     enabled: tab === 'presence',
   });
+
+  const isLoading = presenceLoading || divisionsLoading;
 
   const presentCount = presenceList?.filter((m) => m.currentStatus === 'present').length ? presenceList.filter((m) => m.currentStatus === 'present').length : 0;
   const absentCount = presenceList?.filter((m) => m.currentStatus === 'absent').length ? presenceList.filter((m) => m.currentStatus === 'absent').length : 0;
@@ -134,6 +152,12 @@ export default function Reports() {
               <div className="flex justify-center py-12">
                 <Spinner size="lg" />
               </div>
+            ) : presenceError ? (
+              <Card>
+                <CardBody className="py-12 text-center text-danger">
+                  Failed to load presence data. Please try refreshing the page.
+                </CardBody>
+              </Card>
             ) : (
               <Table aria-label="Presence report">
                 <TableHeader>

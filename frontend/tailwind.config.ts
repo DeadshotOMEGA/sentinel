@@ -19,6 +19,9 @@ const config: Config = {
       themes: {
         light: {
           colors: {
+            // Base colors - critical for light mode text
+            background: '#ffffff',
+            foreground: '#0f172a',
             primary: {
               50: '#e6f3ff',
               100: '#b3daff',

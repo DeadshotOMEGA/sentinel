@@ -27,7 +27,7 @@ import { api } from '../lib/api';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
 
 const visitTypes: { key: VisitType; label: string }[] = [
-  { key: 'meeting', label: 'Meeting' },
+  { key: 'general', label: 'General' },
   { key: 'contractor', label: 'Contractor' },
   { key: 'recruitment', label: 'Recruitment' },
   { key: 'course', label: 'Course' },
@@ -44,8 +44,8 @@ export default function Visitors() {
   const { data: activeVisitors, isLoading: activeLoading } = useQuery({
     queryKey: ['visitors', 'active'],
     queryFn: async () => {
-      const response = await api.get<Visitor[]>('/visitors/active');
-      return response.data;
+      const response = await api.get<{ visitors: Visitor[] }>('/visitors/active');
+      return response.data.visitors;
     },
     enabled: tab === 'active',
   });
@@ -53,8 +53,8 @@ export default function Visitors() {
   const { data: allVisitors, isLoading: allLoading } = useQuery({
     queryKey: ['visitors', 'all'],
     queryFn: async () => {
-      const response = await api.get<Visitor[]>('/visitors');
-      return response.data;
+      const response = await api.get<{ visitors: Visitor[] }>('/visitors');
+      return response.data.visitors;
     },
     enabled: tab === 'history',
   });
@@ -104,10 +104,10 @@ export default function Visitors() {
                   <TableCell>
                     <Chip size="sm" variant="flat">{visitor.visitType}</Chip>
                   </TableCell>
-                  <TableCell>{format(new Date(visitor.checkinTime), 'MMM d, HH:mm')}</TableCell>
+                  <TableCell>{format(new Date(visitor.checkInTime), 'MMM d, HH:mm')}</TableCell>
                   <TableCell>
-                    {visitor.checkoutTime
-                      ? format(new Date(visitor.checkoutTime), 'HH:mm')
+                    {visitor.checkOutTime
+                      ? format(new Date(visitor.checkOutTime), 'HH:mm')
                       : '-'}
                   </TableCell>
                   <TableCell>
@@ -152,7 +152,7 @@ function VisitorSignInModal({
   onSuccess: () => void;
 }) {
   const [formData, setFormData] = useState<Partial<CreateVisitorInput>>({
-    visitType: 'meeting',
+    visitType: 'general',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -163,7 +163,7 @@ function VisitorSignInModal({
     try {
       await api.post('/visitors', formData);
       onSuccess();
-      setFormData({ visitType: 'meeting' });
+      setFormData({ visitType: 'general' });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const message = error.response?.data?.error?.message;
