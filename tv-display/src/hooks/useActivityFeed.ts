@@ -19,12 +19,23 @@ interface VisitorEvent {
   checkInTime: string;
 }
 
+interface ApiActivityItem {
+  type: 'checkin' | 'visitor';
+  id: string;
+  timestamp: string;
+  direction?: 'in' | 'out';
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;
+}
+
 interface UseActivityFeedResult {
   activities: ActivityItem[];
   isConnected: boolean;
 }
 
-const MAX_ACTIVITIES = 10;
+const MAX_ACTIVITIES = 15;
 
 export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -37,6 +48,30 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
     });
   }, []);
 
+  // Fetch initial activity on mount
+  useEffect(() => {
+    const fetchInitialActivity = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/checkins/recent?limit=${MAX_ACTIVITIES}`);
+        if (response.ok) {
+          const data = await response.json();
+          const mapped: ActivityItem[] = data.activity.map((item: ApiActivityItem) => ({
+            id: item.id,
+            type: item.type === 'visitor' ? 'visitor' : (item.direction === 'in' ? 'checkin' : 'checkout'),
+            name: item.name,
+            rank: item.rank,
+            division: item.division,
+            timestamp: item.timestamp,
+          }));
+          setActivities(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch initial activity:', err);
+      }
+    };
+    fetchInitialActivity();
+  }, [config.apiUrl]);
+
   useEffect(() => {
     const socket: Socket = io(config.wsUrl, {
       reconnection: true,
@@ -47,7 +82,7 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
 
     socket.on('connect', () => {
       setIsConnected(true);
-      socket.emit('subscribe_activity');
+      socket.emit('subscribe_presence');
     });
 
     socket.on('disconnect', () => {

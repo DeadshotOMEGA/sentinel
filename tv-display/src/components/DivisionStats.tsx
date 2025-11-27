@@ -18,32 +18,32 @@ export function DivisionStats({ divisions }: DivisionStatsProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6 w-full">
+    <div className="grid grid-cols-3 xl:grid-cols-4 gap-3 w-full">
       {divisions.map((division) => {
         const percentage = division.total > 0 ? (division.present / division.total) * 100 : 0;
 
         return (
           <div
             key={division.name}
-            className="bg-white border border-gray-300 rounded-lg p-6 tv-mode"
+            className="bg-white border border-gray-300 rounded-lg p-3 tv-mode"
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-2xl font-semibold text-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
                 {division.name}
               </h3>
-              <div className="text-xl text-gray-600">
+              <div className="text-base text-gray-600 ml-2 whitespace-nowrap">
                 {division.present}/{division.total}
               </div>
             </div>
 
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div
                 className="bg-emerald-600 h-full rounded-full transition-all"
                 style={{ width: `${percentage}%` }}
               />
             </div>
 
-            <div className="mt-2 text-lg font-medium text-gray-700">
+            <div className="mt-1 text-sm font-medium text-gray-700">
               {Math.round(percentage)}%
             </div>
           </div>
