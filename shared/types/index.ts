@@ -134,7 +134,7 @@ export interface UpdateDivisionInput {
 
 // Badge Types
 export type BadgeAssignmentType = 'member' | 'event' | 'unassigned';
-export type BadgeStatus = 'active' | 'inactive' | 'lost' | 'damaged';
+export type BadgeStatus = 'active' | 'disabled' | 'lost' | 'returned';
 
 export interface Badge {
   id: string;
@@ -192,12 +192,11 @@ export interface PresenceStats {
 
 // Visitor Types
 export type VisitType =
-  | 'general'
   | 'contractor'
   | 'recruitment'
-  | 'course'
   | 'event'
   | 'official'
+  | 'museum'
   | 'other';
 
 export interface Visitor {
@@ -231,7 +230,7 @@ export interface AdminUser {
   username: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
+  role: 'admin' | 'viewer';
   email: string;
   lastLogin?: Date;
   createdAt: Date;
@@ -246,7 +245,7 @@ export interface CreateAdminInput {
   username: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
+  role: 'admin' | 'viewer';
   email: string;
   password: string;
 }

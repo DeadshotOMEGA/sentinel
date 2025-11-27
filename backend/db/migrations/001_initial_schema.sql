@@ -80,7 +80,7 @@ CREATE TABLE visitors (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(200) NOT NULL,
   organization VARCHAR(200),
-  visit_type VARCHAR(50) NOT NULL CHECK (visit_type IN ('general', 'contractor', 'recruitment', 'course', 'event', 'official', 'other')),
+  visit_type VARCHAR(50) NOT NULL CHECK (visit_type IN ('contractor', 'recruitment', 'event', 'official', 'museum', 'other')),
   visit_reason TEXT,
   event_id UUID REFERENCES events(id),
   host_member_id UUID REFERENCES members(id),
