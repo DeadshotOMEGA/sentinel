@@ -14,6 +14,7 @@ export interface PresentMember {
   lastName: string;
   rank: string;
   division: string;
+  mess: string | null;
   checkedInAt: string;
 }
 

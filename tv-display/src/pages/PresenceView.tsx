@@ -1,8 +1,6 @@
 import { usePresenceData } from '../hooks/usePresenceData';
-import { Clock } from '../components/Clock';
 import { PresenceCards } from '../components/PresenceCards';
 import { PersonCards } from '../components/PersonCards';
-import { DivisionStats } from '../components/DivisionStats';
 import { ActivityFeed } from '../components/ActivityFeed';
 import { ConnectionStatus } from '../components/ConnectionStatus';
 import type { TVConfig } from '../lib/config';
@@ -21,24 +19,13 @@ export function PresenceView({ config }: PresenceViewProps) {
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 tv-mode">
       <div className="flex h-screen">
         {/* Main content - 75% */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-6">
-              <h1 className="text-4xl font-bold text-gray-900">
-                HMCS Chippawa
-              </h1>
-              <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${connectionStatus}`} />
-                <span className="text-base text-gray-600">
-                  {connectionText}
-                </span>
-              </div>
+        <div className="flex-1 p-4 overflow-y-auto">
+          {/* Compact header: connection status + presence stats */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${connectionStatus}`} />
+              <span className="text-sm text-gray-600">{connectionText}</span>
             </div>
-
-            <Clock />
-          </div>
-
-          <div className="mb-4">
             <PresenceCards
               present={data.present}
               absent={data.absent}
@@ -47,8 +34,8 @@ export function PresenceView({ config }: PresenceViewProps) {
           </div>
 
           {/* Person Cards - Who's in the building */}
-          <div className="mb-4 flex-1 overflow-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          <div className="flex-1 overflow-auto">
+            <h2 className="text-xl font-semibold text-gray-800 mb-3">
               Currently In Building
             </h2>
             <PersonCards
@@ -56,18 +43,11 @@ export function PresenceView({ config }: PresenceViewProps) {
               activeVisitors={data.activeVisitors}
             />
           </div>
-
-          <div className="mt-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Division Breakdown
-            </h2>
-            <DivisionStats divisions={data.divisions} />
-          </div>
         </div>
 
-        {/* Activity Feed - 25% */}
+        {/* Activity Feed - 18% */}
         {config.activityFeedEnabled && (
-          <div className="w-[25%] border-l border-gray-200 bg-gray-50">
+          <div className="w-[18%] border-l border-gray-200 bg-gray-50">
             <ActivityFeed config={config} />
           </div>
         )}

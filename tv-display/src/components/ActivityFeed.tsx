@@ -55,32 +55,25 @@ export function ActivityFeed({ config }: ActivityFeedProps) {
             <p className="text-xl text-gray-400">Waiting for activity...</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {activities.map((activity, index) => {
               const styles = getActivityStyles(activity.type);
               return (
                 <div
                   key={activity.id}
-                  className={`border-l-4 ${styles.border} ${styles.bg} px-3 py-2 rounded-r-lg animate-fade-in`}
+                  className={`border-l-3 ${styles.border} ${styles.bg} px-2 py-1 rounded-r animate-fade-in flex items-center gap-2`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-mono text-gray-700">
-                      {formatTime(activity.timestamp)}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-600">
-                      {styles.label}
-                    </span>
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900 truncate">
+                  <span className="text-xs font-mono text-gray-500 shrink-0">
+                    {formatTime(activity.timestamp)}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900 truncate">
                     {activity.rank ? `${activity.rank} ` : ''}
                     {activity.name}
-                  </div>
-                  {activity.division && (
-                    <div className="text-sm text-gray-600 truncate">
-                      {activity.division}
-                    </div>
-                  )}
+                  </span>
+                  <span className="text-xs font-medium text-gray-500 shrink-0 ml-auto">
+                    {styles.label}
+                  </span>
                 </div>
               );
             })}
