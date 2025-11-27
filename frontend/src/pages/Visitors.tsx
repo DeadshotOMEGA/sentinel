@@ -27,12 +27,11 @@ import { api } from '../lib/api';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
 
 const visitTypes: { key: VisitType; label: string }[] = [
-  { key: 'general', label: 'General' },
-  { key: 'contractor', label: 'Contractor' },
+  { key: 'contractor', label: 'Contractor/SSC' },
   { key: 'recruitment', label: 'Recruitment' },
-  { key: 'course', label: 'Course' },
   { key: 'event', label: 'Event' },
   { key: 'official', label: 'Official' },
+  { key: 'museum', label: 'Museum' },
   { key: 'other', label: 'Other' },
 ];
 
@@ -152,7 +151,7 @@ function VisitorSignInModal({
   onSuccess: () => void;
 }) {
   const [formData, setFormData] = useState<Partial<CreateVisitorInput>>({
-    visitType: 'general',
+    visitType: 'contractor',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -163,7 +162,7 @@ function VisitorSignInModal({
     try {
       await api.post('/visitors', formData);
       onSuccess();
-      setFormData({ visitType: 'general' });
+      setFormData({ visitType: 'contractor' });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const message = error.response?.data?.error?.message;

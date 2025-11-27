@@ -13,12 +13,13 @@ interface PresenceStats {
   visitors: number;
 }
 
-interface RecentCheckin {
+interface RecentActivity {
   id: string;
-  memberName: string;
-  rank: string;
-  division: string;
-  direction: 'in' | 'out';
+  type: 'checkin' | 'checkout' | 'visitor';
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;
   timestamp: string;
 }
 
@@ -33,10 +34,21 @@ function StatCard({ label, value, color }: { label: string; value: number; color
   );
 }
 
+interface ApiActivityItem {
+  type: 'checkin' | 'visitor';
+  id: string;
+  timestamp: string;
+  direction?: 'in' | 'out';
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;
+}
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
-  const { onPresenceUpdate, onCheckin } = useSocket();
-  const [recentActivity, setRecentActivity] = useState<RecentCheckin[]>([]);
+  const { onPresenceUpdate, onCheckin, onVisitorSignin } = useSocket();
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['presence-stats'],
@@ -45,6 +57,25 @@ export default function Dashboard() {
       return response.data.stats;
     },
     refetchInterval: 60000,
+  });
+
+  // Fetch initial recent activity from database
+  useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: async () => {
+      const response = await api.get<{ activity: ApiActivityItem[] }>('/checkins/recent?limit=10');
+      const mapped: RecentActivity[] = response.data.activity.map((item) => ({
+        id: item.id,
+        type: item.type === 'visitor' ? 'visitor' : (item.direction === 'in' ? 'checkin' : 'checkout'),
+        name: item.name,
+        rank: item.rank,
+        division: item.division,
+        organization: item.organization,
+        timestamp: item.timestamp,
+      }));
+      setRecentActivity(mapped);
+      return mapped;
+    },
   });
 
   useEffect(() => {
@@ -61,11 +92,24 @@ export default function Dashboard() {
       setRecentActivity((prev) => [
         {
           id: crypto.randomUUID(),
-          memberName: data.memberName,
+          type: data.direction === 'in' ? 'checkin' : 'checkout',
+          name: data.memberName,
           rank: data.rank,
           division: data.division,
-          direction: data.direction,
           timestamp: data.timestamp,
+        },
+        ...prev.slice(0, 9),
+      ]);
+    });
+
+    const unsubVisitor = onVisitorSignin((data) => {
+      setRecentActivity((prev) => [
+        {
+          id: crypto.randomUUID(),
+          type: 'visitor',
+          name: data.name,
+          organization: data.organization,
+          timestamp: data.checkInTime,
         },
         ...prev.slice(0, 9),
       ]);
@@ -74,8 +118,9 @@ export default function Dashboard() {
     return () => {
       unsubPresence();
       unsubCheckin();
+      unsubVisitor();
     };
-  }, [onPresenceUpdate, onCheckin, queryClient]);
+  }, [onPresenceUpdate, onCheckin, onVisitorSignin, queryClient]);
 
   if (isLoading) {
     return (
@@ -114,19 +159,23 @@ export default function Dashboard() {
                   <li key={item.id} className="flex items-center justify-between py-3">
                     <div>
                       <p className="font-medium">
-                        {item.rank} {item.memberName}
+                        {item.rank ? `${item.rank} ` : ''}{item.name}
                       </p>
-                      <p className="text-sm text-gray-500">{item.division}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.type === 'visitor' ? item.organization : item.division}
+                      </p>
                     </div>
                     <div className="text-right">
                       <span
                         className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                          item.direction === 'in'
+                          item.type === 'checkin'
                             ? 'bg-success-100 text-success-700'
-                            : 'bg-warning-100 text-warning-700'
+                            : item.type === 'checkout'
+                            ? 'bg-warning-100 text-warning-700'
+                            : 'bg-primary-100 text-primary-700'
                         }`}
                       >
-                        {item.direction === 'in' ? 'Checked In' : 'Checked Out'}
+                        {item.type === 'checkin' ? 'Checked In' : item.type === 'checkout' ? 'Checked Out' : 'Visitor'}
                       </span>
                       <p className="mt-1 text-xs text-gray-500">
                         {format(new Date(item.timestamp), 'HH:mm')}

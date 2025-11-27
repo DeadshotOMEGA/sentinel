@@ -6,7 +6,7 @@ interface PresenceStats {
   present: number;
   absent: number;
   visitors: number;
-  total: number;
+  totalMembers: number;
 }
 
 interface CheckinEvent {
@@ -16,6 +16,14 @@ interface CheckinEvent {
   division: string;
   direction: 'in' | 'out';
   timestamp: string;
+}
+
+interface VisitorSigninEvent {
+  visitorId: string;
+  name: string;
+  organization: string;
+  visitType: string;
+  checkInTime: string;
 }
 
 type SocketCallback<T> = (data: T) => void;
@@ -49,5 +57,10 @@ export function useSocket() {
     return () => socketRef.current?.off('checkin', callback);
   }, []);
 
-  return { onPresenceUpdate, onCheckin };
+  const onVisitorSignin = useCallback((callback: SocketCallback<VisitorSigninEvent>) => {
+    socketRef.current?.on('visitor_signin', callback);
+    return () => socketRef.current?.off('visitor_signin', callback);
+  }, []);
+
+  return { onPresenceUpdate, onCheckin, onVisitorSignin };
 }
