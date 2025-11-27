@@ -1,17 +1,59 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* Import shared Sentinel theme variables */
+@import "../../../shared/ui/theme.css";
+
+@theme {
+  --font-family-sans: "Inter", system-ui, sans-serif;
+
+  /* Kiosk touch targets */
+  --spacing-touch: 56px;
+
+  /* Semantic colors for Tailwind utilities */
+  --color-primary-50: #e6f3ff;
+  --color-primary-100: #b3daff;
+  --color-primary-200: #80c1ff;
+  --color-primary-300: #4da8ff;
+  --color-primary-400: #1a8fff;
+  --color-primary-500: #007fff;
+  --color-primary-600: #0066cc;
+  --color-primary-700: #004d99;
+  --color-primary-800: #003366;
+  --color-primary-900: #001a33;
+  --color-primary: #007fff;
+
+  --color-danger-50: #ffe6e6;
+  --color-danger-100: #ffb3b3;
+  --color-danger-200: #ff8080;
+  --color-danger-300: #ff4d4d;
+  --color-danger-400: #ff1a1a;
+  --color-danger-500: #dc2626;
+  --color-danger-600: #b31e1e;
+  --color-danger-700: #8a1717;
+  --color-danger-800: #610f0f;
+  --color-danger-900: #380808;
+  --color-danger: #dc2626;
+
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+}
 
 @layer base {
-  html,
-  body,
-  #root {
+  html, body, #root {
     @apply h-full w-full m-0 p-0;
   }
 
   body {
     @apply font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   /* Disable text selection on kiosk */
@@ -23,8 +65,7 @@
   }
 
   /* Allow text selection in input fields */
-  input,
-  textarea {
+  input, textarea {
     -webkit-user-select: text;
     -moz-user-select: text;
     user-select: text;
@@ -34,7 +75,7 @@
 @layer components {
   /* Primary kiosk button - large, high contrast */
   .kiosk-button-primary {
-    @apply min-h-touch min-w-touch rounded-xl bg-primary px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply min-h-[56px] min-w-[56px] rounded-xl bg-primary px-8 py-4 text-xl font-semibold text-white shadow-lg;
     @apply active:scale-95 active:bg-primary-600;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
     @apply transition-transform duration-100;
@@ -42,7 +83,7 @@
 
   /* Secondary kiosk button - outlined style */
   .kiosk-button-secondary {
-    @apply min-h-touch min-w-touch rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-xl font-semibold text-gray-700 shadow;
+    @apply min-h-[56px] min-w-[56px] rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-xl font-semibold text-gray-700 shadow;
     @apply active:scale-95 active:bg-gray-100;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
     @apply transition-transform duration-100;
@@ -50,7 +91,7 @@
 
   /* Danger/cancel button */
   .kiosk-button-danger {
-    @apply min-h-touch min-w-touch rounded-xl bg-danger px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply min-h-[56px] min-w-[56px] rounded-xl bg-danger px-8 py-4 text-xl font-semibold text-white shadow-lg;
     @apply active:scale-95 active:bg-red-600;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
     @apply transition-transform duration-100;
@@ -58,7 +99,7 @@
 
   /* Touch-optimized input fields */
   .kiosk-input {
-    @apply min-h-touch w-full rounded-xl border-2 border-gray-300 px-6 text-xl;
-    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20;
+    @apply min-h-[56px] w-full rounded-xl border-2 border-gray-300 px-6 text-xl;
+    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
   }
 }
