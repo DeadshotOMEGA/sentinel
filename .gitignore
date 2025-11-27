@@ -35,6 +35,13 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
+.playwright/
+
+# Service management
+.logs/
+.service-pids
 
 # Database
 *.db
@@ -69,3 +76,16 @@ docs/QUICK_REFERENCE.md
 frontend/agent-responses/
 kiosk/agent-responses/
 tv-display/agent-responses/
+
+# Root-level investigation/temp docs
+CODEBASE-EXPLORATION.md
+FINDINGS-SUMMARY.md
+FIX-SPECIFICATIONS.md
+INVESTIGATION-COMPLETE.md
+detailed-trace.md
+investigation-*.md
+
+# Root workspace config (not needed)
+/package.json
+/playwright.config.ts
+/docker-compose.test.yml
