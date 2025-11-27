@@ -32,6 +32,7 @@ interface PresentMember {
   lastName: string;
   rank: string;
   division: string;
+  mess: string | null;
   checkedInAt: string;
 }
 
@@ -243,6 +244,7 @@ export class CheckinRepository extends BaseRepository {
         m.first_name,
         m.last_name,
         m.rank,
+        m.mess,
         d.name as division_name,
         lc.timestamp as checked_in_at
       FROM members m
@@ -259,6 +261,7 @@ export class CheckinRepository extends BaseRepository {
       lastName: row.last_name as string,
       rank: row.rank as string,
       division: row.division_name as string,
+      mess: (row.mess as string) ?? null,
       checkedInAt: (row.checked_in_at as Date).toISOString(),
     }));
   }

@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useKioskStore } from '../state/kiosk-state';
 import { getConfig } from '../lib/config';
+import DevPanel from '../components/DevPanel';
 
-export default function IdleScreen() {
+interface IdleScreenProps {
+  onSimulateScan: (serialNumber: string) => void;
+}
+
+export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
   const { enterVisitorMode, setScreen } = useKioskStore();
   const config = getConfig();
 
@@ -12,6 +17,9 @@ export default function IdleScreen() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center bg-gray-100 p-8">
+      {/* DEV Panel (hidden, activated by 5 corner taps) */}
+      <DevPanel onSimulateScan={onSimulateScan} />
+
       {/* Logo/Header */}
       <div className="mb-12 text-center">
         <h1 className="text-4xl font-bold text-primary">HMCS Chippawa</h1>

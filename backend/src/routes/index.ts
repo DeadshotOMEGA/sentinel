@@ -6,6 +6,7 @@ import { divisionRoutes } from './divisions';
 import { badgeRoutes } from './badges';
 import { authRoutes } from './auth';
 import { eventRoutes } from './events';
+import { devRoutes } from './dev';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/divisions', divisionRoutes);
 router.use('/badges', badgeRoutes);
 router.use('/auth', authRoutes);
 router.use('/events', eventRoutes);
+router.use('/dev', devRoutes);
 
 export { router as apiRoutes };

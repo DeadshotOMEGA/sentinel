@@ -132,3 +132,38 @@ export async function recordVisitor(
     kioskId,
   });
 }
+
+// ============================================
+// DEV Testing API Functions
+// ============================================
+
+export interface DevMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  rank: string;
+  division: string;
+  divisionId: string;
+  mess: string | null;
+  badgeSerialNumber: string | null;
+  isPresent: boolean;
+}
+
+interface DevMembersResponse {
+  members: DevMember[];
+}
+
+export async function getDevMembers(): Promise<DevMember[]> {
+  const response = await api.get<DevMembersResponse>('/dev/members');
+  return response.data.members;
+}
+
+interface ClearAllResponse {
+  message: string;
+  clearedCount: number;
+}
+
+export async function clearAllCheckins(): Promise<ClearAllResponse> {
+  const response = await api.delete<ClearAllResponse>('/dev/checkins/clear-all');
+  return response.data;
+}

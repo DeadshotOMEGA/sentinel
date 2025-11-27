@@ -15,7 +15,7 @@ export default function App() {
   const { currentScreen } = useKioskStore();
 
   // Initialize badge scanner (listens for NFC keyboard input)
-  useBadgeScanner();
+  const { simulateScan } = useBadgeScanner();
 
   // Initialize sync service on mount
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function App() {
   const renderScreen = () => {
     switch (currentScreen) {
       case 'idle':
-        return <IdleScreen />;
+        return <IdleScreen onSimulateScan={simulateScan} />;
       case 'scanning':
         return <ScanningScreen />;
       case 'success':
