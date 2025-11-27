@@ -58,6 +58,19 @@ export class ImportService {
     result.data.forEach((csvRow, index) => {
       const rowNumber = index + 2; // +2 because header is row 1, and we're 0-indexed
 
+      // Skip completely empty rows (all required fields blank)
+      const hasAnyRequiredField =
+        csvRow.SN?.trim() ||
+        csvRow['FIRST NAME']?.trim() ||
+        csvRow['LAST NAME']?.trim() ||
+        csvRow.RANK?.trim() ||
+        csvRow.DEPT?.trim();
+
+      if (!hasAnyRequiredField) {
+        // Silently skip empty rows (common in CSV exports)
+        return;
+      }
+
       // Validate required fields
       if (!csvRow.SN?.trim()) {
         errors.push({

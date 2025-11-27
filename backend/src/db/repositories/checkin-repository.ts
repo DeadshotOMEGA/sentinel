@@ -223,7 +223,7 @@ export class CheckinRepository extends BaseRepository {
     const query = `
       SELECT
         m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.phone,
+        m.division_id, m.member_type, m.status, m.email, m.mobile_phone,
         m.badge_id, m.created_at as member_created_at, m.updated_at as member_updated_at,
         d.id as division_id, d.name as division_name, d.code as division_code,
         d.description as division_description, d.created_at as division_created_at,

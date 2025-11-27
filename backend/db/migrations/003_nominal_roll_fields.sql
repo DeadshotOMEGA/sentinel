@@ -6,13 +6,15 @@
 -- UPDATE MEMBER_TYPE CONSTRAINT
 -- ============================================================================
 
--- Drop old constraint and add new one with updated values
+-- Drop old constraint first
 ALTER TABLE members DROP CONSTRAINT IF EXISTS members_member_type_check;
+
+-- Convert existing members to class_a BEFORE adding new constraint
+UPDATE members SET member_type = 'class_a' WHERE member_type IN ('full_time', 'reserve');
+
+-- Now add new constraint with updated values
 ALTER TABLE members ADD CONSTRAINT members_member_type_check
   CHECK (member_type IN ('class_a', 'class_b', 'class_c', 'reg_force'));
-
--- Convert existing members to class_a (default for reservists)
-UPDATE members SET member_type = 'class_a' WHERE member_type IN ('full_time', 'reserve');
 
 -- ============================================================================
 -- ADD NEW COLUMNS TO MEMBERS TABLE
