@@ -2,28 +2,30 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
+  Input,
   Button,
   Chip,
   Spinner,
-  Input,
   Card,
   CardBody,
   CardHeader,
   Select,
   SelectItem,
-} from '@heroui/react';
+} from '../components/ui/heroui-polyfills';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
 import AddAttendeeModal from '../components/AddAttendeeModal';
 import BadgeAssignmentModal from '../components/BadgeAssignmentModal';
 import { api } from '../lib/api';
 import type { Event, EventAttendee } from '@shared/types';
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '../components/ui/SentinelTable';
 
 interface EventDetailResponse {
   event: Event;
@@ -152,7 +154,7 @@ export default function EventDetail() {
       case 'expired':
         return 'danger';
       default:
-        return 'default';
+        throw new Error(`Unknown status: ${status}`);
     }
   };
 
@@ -225,15 +227,18 @@ export default function EventDetail() {
               <Input
                 placeholder="Search attendees..."
                 value={search}
-                onValueChange={setSearch}
+                onChange={(e) => setSearch(e.target.value)}
                 className="max-w-xs"
                 isClearable
               />
               <Select
-                label="Filter by Role"
                 selectedKeys={roleFilter ? [roleFilter] : []}
-                onSelectionChange={(keys) => setRoleFilter(Array.from(keys)[0] as string)}
+                onSelectionChange={(keys) => {
+                  const key = Array.from(keys)[0];
+                  setRoleFilter(key as string);
+                }}
                 className="max-w-[200px]"
+                label="Filter by Role"
               >
                 <SelectItem key="">All Roles</SelectItem>
                 <SelectItem key="participant">Participant</SelectItem>
@@ -257,7 +262,7 @@ export default function EventDetail() {
                 </span>
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="bordered"
                   onPress={handleBulkAssignBadges}
                 >
                   Assign Badges
@@ -265,7 +270,7 @@ export default function EventDetail() {
                 <Button
                   size="sm"
                   color="danger"
-                  variant="flat"
+                  variant="bordered"
                   onPress={handleRemoveSelected}
                   isLoading={removeAttendeeMutation.isPending}
                 >

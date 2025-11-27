@@ -7,17 +7,12 @@ import {
   Tab,
   Select,
   SelectItem,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Spinner,
   Button,
-} from '@heroui/react';
+} from '../components/ui/heroui-polyfills';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division } from '@shared/types';
 
@@ -128,24 +123,34 @@ export default function Reports() {
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-4">
-              <Select
-                label="Division"
-                selectedKeys={divisionFilter ? [divisionFilter] : []}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string | undefined;
-                  setDivisionFilter(selected ? selected : '');
-                }}
-                className="max-w-[200px]"
-                items={[{ id: '', name: 'All Divisions' }, ...(divisions ? divisions : [])]}
-              >
-                {(item) => <SelectItem key={item.id}>{item.name}</SelectItem>}
-              </Select>
-              <div className="flex-1" />
-              <Button variant="flat" onPress={handleExport}>
-                Export CSV
-              </Button>
-            </div>
+            {divisions && (
+              <div className="flex items-center gap-4">
+                <Select
+                  label="Division"
+                  selectedKeys={divisionFilter ? [divisionFilter] : []}
+                  onSelectionChange={(keys) => {
+                    const key = Array.from(keys)[0];
+                    if (typeof key === 'string') {
+                      setDivisionFilter(key);
+                    } else {
+                      setDivisionFilter('');
+                    }
+                  }}
+                  className="max-w-[200px]"
+                >
+                  {[
+                    <SelectItem key="">All Divisions</SelectItem>,
+                    ...divisions.map((division) => (
+                      <SelectItem key={division.id}>{division.name}</SelectItem>
+                    ))
+                  ]}
+                </Select>
+                <div className="flex-1" />
+                <Button variant="flat" onPress={handleExport}>
+                  Export CSV
+                </Button>
+              </div>
+            )}
 
             {/* Table */}
             {isLoading ? (

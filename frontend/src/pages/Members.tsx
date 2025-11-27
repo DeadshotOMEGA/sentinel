@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Button,
+  Chip,
+  Spinner,
+  Input,
+  Select,
+  SelectItem,
+} from '../components/ui/heroui-polyfills';
+import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-  Input,
-  Button,
-  Chip,
-  Spinner,
-  Select,
-  SelectItem,
-} from '@heroui/react';
+} from '../components/ui/SentinelTable';
 import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
 import ImportModal from '../components/ImportModal';
@@ -76,15 +78,18 @@ function MembersList() {
           <Input
             placeholder="Search members..."
             value={search}
-            onValueChange={setSearch}
+            onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
             isClearable
           />
           <Select
-            label="Status"
-            selectedKeys={[statusFilter]}
-            onSelectionChange={(keys) => setStatusFilter(Array.from(keys)[0] as string)}
+            selectedKeys={statusFilter ? [statusFilter] : []}
+            onSelectionChange={(keys) => {
+              const key = Array.from(keys)[0];
+              setStatusFilter(key as string);
+            }}
             className="max-w-[150px]"
+            label="Status"
           >
             <SelectItem key="active">Active</SelectItem>
             <SelectItem key="inactive">Inactive</SelectItem>

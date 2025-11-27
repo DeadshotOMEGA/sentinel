@@ -5,12 +5,6 @@ import {
   Tab,
   Card,
   CardBody,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Button,
   Input,
   Modal,
@@ -20,8 +14,9 @@ import {
   ModalFooter,
   Chip,
   Spinner,
-} from '@heroui/react';
+} from '../components/ui/heroui-polyfills';
 import PageWrapper from '../components/PageWrapper';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { Division, Badge, CreateDivisionInput } from '@shared/types';
 
@@ -171,8 +166,8 @@ function DivisionModal({
               label="Code"
               value={formData.code ? formData.code : ''}
               onValueChange={(v) => setFormData({ ...formData, code: v })}
-              isRequired
               maxLength={20}
+              isRequired
             />
             <Input
               label="Name"

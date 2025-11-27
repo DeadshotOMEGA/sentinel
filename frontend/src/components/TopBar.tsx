@@ -1,4 +1,4 @@
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from '@heroui/react';
+import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from './ui/heroui-polyfills';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,7 @@ export default function TopBar({ title }: TopBarProps) {
           <DropdownTrigger>
             <Button variant="light" className="flex items-center gap-2">
               <Avatar
-                name={`${user?.firstName} ${user?.lastName}`}
+                name={user ? `${user.firstName} ${user.lastName}` : "User"}
                 size="sm"
                 className="bg-primary text-white"
               />

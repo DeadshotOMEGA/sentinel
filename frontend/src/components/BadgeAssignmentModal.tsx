@@ -6,21 +6,22 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Button,
   Input,
+  Button,
   Tabs,
   Tab,
   Spinner,
   Card,
   CardBody,
-} from '@heroui/react';
+} from './ui/heroui-polyfills';
 import { api } from '../lib/api';
 import type { EventAttendee, Badge } from '@shared/types';
 
 interface BadgeAssignmentModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onOpenChange?: (isOpen: boolean) => void;
   onSuccess: () => void;
+  onClose?: () => void;
   attendee: EventAttendee;
   eventId: string;
 }
@@ -31,7 +32,7 @@ interface UnassignedBadgesResponse {
 
 export default function BadgeAssignmentModal({
   isOpen,
-  onClose,
+  onOpenChange,
   onSuccess,
   attendee,
   eventId,
@@ -60,6 +61,7 @@ export default function BadgeAssignmentModal({
     },
     onSuccess: () => {
       onSuccess();
+      onOpenChange?.(false);
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
@@ -77,6 +79,7 @@ export default function BadgeAssignmentModal({
     },
     onSuccess: () => {
       onSuccess();
+      onOpenChange?.(false);
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
@@ -153,140 +156,143 @@ export default function BadgeAssignmentModal({
   const badges = badgesData?.badges;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
       <ModalContent>
-        <ModalHeader>
-          {attendee.badgeId ? 'Manage Badge Assignment' : 'Assign Badge'}
-        </ModalHeader>
-        <ModalBody>
-          {error && (
-            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
-              {error}
-            </div>
-          )}
-
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-1">{attendee.name}</p>
-            <p className="text-xs text-gray-600">
-              {attendee.rank ? `${attendee.rank} • ` : ''}
-              {attendee.organization}
-            </p>
-          </div>
-
-          {attendee.badgeId ? (
-            <Card>
-              <CardBody className="text-center py-6">
-                <p className="text-sm text-gray-600 mb-2">Currently Assigned Badge</p>
-                <p className="text-xl font-mono font-bold text-success">{attendee.badgeId}</p>
-                <Button
-                  color="warning"
-                  variant="flat"
-                  size="sm"
-                  onPress={handleUnassign}
-                  isLoading={unassignMutation.isPending}
-                  className="mt-4"
-                >
-                  Unassign Badge
-                </Button>
-              </CardBody>
-            </Card>
-          ) : (
-            <>
-              <Tabs
-                selectedKey={tab}
-                onSelectionChange={(k) => setTab(k as string)}
-                className="mb-4"
-              >
-                <Tab key="scan" title="Scan Badge" />
-                <Tab key="select" title="Select from List" />
-              </Tabs>
-
-              {tab === 'scan' && (
-                <div className="space-y-4">
-                  <Input
-                    label="Badge Serial Number"
-                    placeholder="Scan or enter badge number"
-                    value={serialNumber}
-                    onValueChange={setSerialNumber}
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleScanAssign();
-                      }
-                    }}
-                  />
-                  <p className="text-xs text-gray-600">
-                    Tap into the field and scan the RFID badge, or manually enter the serial
-                    number
-                  </p>
+        {(onClose) => (
+          <>
+            <ModalHeader>
+              {attendee.badgeId ? 'Manage Badge Assignment' : 'Assign Badge'}
+            </ModalHeader>
+            <ModalBody>
+              {error && (
+                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                  {error}
                 </div>
               )}
 
-              {tab === 'select' && (
-                <div className="space-y-4">
-                  {badgesLoading ? (
-                    <div className="flex justify-center py-8">
-                      <Spinner size="lg" />
-                    </div>
-                  ) : badges && badges.length > 0 ? (
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                      {badges.map((badge) => (
-                        <Card
-                          key={badge.id}
-                          isPressable
-                          isHoverable
-                          onPress={() => setSelectedBadgeId(badge.id)}
-                          className={
-                            selectedBadgeId === badge.id
-                              ? 'border-2 border-primary'
-                              : ''
+              <div className="mb-4">
+                <p className="text-sm font-medium mb-1">{attendee.name}</p>
+                <p className="text-xs text-gray-600">
+                  {attendee.rank ? `${attendee.rank} • ` : ''}
+                  {attendee.organization}
+                </p>
+              </div>
+
+              {attendee.badgeId ? (
+                <Card>
+                  <CardBody className="text-center py-6">
+                    <p className="text-sm text-gray-600 mb-2">Currently Assigned Badge</p>
+                    <p className="text-xl font-mono font-bold text-success">{attendee.badgeId}</p>
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onPress={handleUnassign}
+                      isLoading={unassignMutation.isPending}
+                      className="mt-4"
+                    >
+                      Unassign Badge
+                    </Button>
+                  </CardBody>
+                </Card>
+              ) : (
+                <>
+                  <Tabs
+                    selectedKey={tab}
+                    onSelectionChange={(k) => setTab(k as string)}
+                    className="mb-4"
+                  >
+                    <Tab key="scan" title="Scan Badge" />
+                    <Tab key="select" title="Select from List" />
+                  </Tabs>
+
+                  {tab === 'scan' && (
+                    <div className="space-y-4">
+                      <Input
+                        label="Badge Serial Number"
+                        placeholder="Scan or enter badge number"
+                        value={serialNumber}
+                        onValueChange={setSerialNumber}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleScanAssign();
                           }
-                        >
-                          <CardBody className="py-3">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-mono font-medium">
-                                  {badge.serialNumber}
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  Last used:{' '}
-                                  {badge.lastUsed
-                                    ? new Date(badge.lastUsed).toLocaleDateString()
-                                    : 'Never'}
-                                </p>
-                              </div>
-                              {selectedBadgeId === badge.id && (
-                                <span className="text-primary text-xl">✓</span>
-                              )}
-                            </div>
-                          </CardBody>
-                        </Card>
-                      ))}
+                        }}
+                      />
+                      <p className="text-xs text-gray-600">
+                        Tap into the field and scan the RFID badge, or manually enter the serial
+                        number
+                      </p>
                     </div>
-                  ) : (
-                    <p className="text-center text-gray-500 py-8">
-                      No unassigned badges available
-                    </p>
                   )}
-                </div>
+
+                  {tab === 'select' && (
+                    <div className="space-y-4">
+                      {badgesLoading ? (
+                        <div className="flex justify-center py-8">
+                          <Spinner size="lg" />
+                        </div>
+                      ) : badges && badges.length > 0 ? (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                          {badges.map((badge) => (
+                            <Card
+                              key={badge.id}
+                              isPressable
+                              isHoverable
+                              onPress={() => setSelectedBadgeId(badge.id)}
+                              className={
+                                selectedBadgeId === badge.id
+                                  ? 'border-2 border-primary'
+                                  : ''
+                              }
+                            >
+                              <CardBody className="py-3">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-mono font-medium">
+                                      {badge.serialNumber}
+                                    </p>
+                                    <p className="text-xs text-gray-600">
+                                      Last used:{' '}
+                                      {badge.lastUsed
+                                        ? new Date(badge.lastUsed).toLocaleDateString()
+                                        : 'Never'}
+                                    </p>
+                                  </div>
+                                  {selectedBadgeId === badge.id && (
+                                    <span className="text-primary text-xl">✓</span>
+                                  )}
+                                </div>
+                              </CardBody>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-gray-500 py-8">
+                          No unassigned badges available
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          {!attendee.badgeId && (
-            <Button
-              color="primary"
-              onPress={tab === 'scan' ? handleScanAssign : handleSelectAssign}
-              isLoading={assignMutation.isPending}
-            >
-              Assign Badge
-            </Button>
-          )}
-        </ModalFooter>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={onClose}>
+                Cancel
+              </Button>
+              {!attendee.badgeId && (
+                <Button
+                  color="primary"
+                  onPress={tab === 'scan' ? handleScanAssign : handleSelectAssign}
+                  isLoading={assignMutation.isPending}
+                >
+                  Assign Badge
+                </Button>
+              )}
+            </ModalFooter>
+          </>
+        )}
       </ModalContent>
     </Modal>
   );

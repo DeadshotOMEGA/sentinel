@@ -1,14 +1,17 @@
 import {
   Accordion,
   AccordionItem,
+  ListboxItem,
+  ListboxSection,
+  Listbox,
+  Tooltip,
   type ListboxProps,
   type ListboxSectionProps,
   type Selection,
-} from "@heroui/react";
+} from "../ui/heroui-polyfills";
 import React from "react";
-import {Listbox, Tooltip, ListboxItem, ListboxSection} from "@heroui/react";
+import { cn } from "@heroui/react";
 import {Icon} from "@iconify/react";
-import {cn} from "@heroui/react";
 
 export enum SidebarItemType {
   Nest = "nest",

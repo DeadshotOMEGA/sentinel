@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardBody, CardHeader, Spinner } from '@heroui/react';
+import { Card, CardBody, CardHeader, Spinner } from '../components/ui/heroui-polyfills';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';

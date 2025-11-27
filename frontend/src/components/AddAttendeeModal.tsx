@@ -5,18 +5,19 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Button,
   Input,
+  Button,
   Select,
   SelectItem,
-} from '@heroui/react';
+} from './ui/heroui-polyfills';
 import { api } from '../lib/api';
 import type { Event } from '@shared/types';
 
 interface AddAttendeeModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onOpenChange?: (isOpen: boolean) => void;
   onSuccess: () => void;
+  onClose?: () => void;
   eventId: string;
   event: Event;
 }
@@ -39,7 +40,7 @@ const roles = [
 
 export default function AddAttendeeModal({
   isOpen,
-  onClose,
+  onOpenChange,
   onSuccess,
   eventId,
   event,
@@ -113,6 +114,7 @@ export default function AddAttendeeModal({
 
       await api.post(`/events/${eventId}/attendees`, payload);
       onSuccess();
+      onOpenChange?.(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const message = error.response?.data?.error?.message;
@@ -126,75 +128,84 @@ export default function AddAttendeeModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
       <ModalContent>
-        <ModalHeader>Add Attendee</ModalHeader>
-        <ModalBody>
-          {error && (
-            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
-              {error}
-            </div>
-          )}
-          <div className="space-y-4">
-            <Input
-              label="Name"
-              placeholder="Full name"
-              value={formData.name}
-              onValueChange={(v) => setFormData({ ...formData, name: v })}
-              isRequired
-              autoFocus
-            />
-            <Input
-              label="Rank"
-              placeholder="e.g., Lt(N), Cdr, civilian (optional)"
-              value={formData.rank}
-              onValueChange={(v) => setFormData({ ...formData, rank: v })}
-            />
-            <Input
-              label="Organization"
-              placeholder="e.g., HMCS Chippawa, 38 Brigade"
-              value={formData.organization}
-              onValueChange={(v) => setFormData({ ...formData, organization: v })}
-              isRequired
-            />
-            <Select
-              label="Role"
-              selectedKeys={[formData.role]}
-              onSelectionChange={(keys) =>
-                setFormData({ ...formData, role: Array.from(keys)[0] as string })
-              }
-              isRequired
-            >
-              {roles.map((role) => (
-                <SelectItem key={role.key}>{role.label}</SelectItem>
-              ))}
-            </Select>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                type="date"
-                label="Access Start"
-                value={formData.accessStart}
-                onValueChange={(v) => setFormData({ ...formData, accessStart: v })}
-                description="Defaults to event start"
-              />
-              <Input
-                type="date"
-                label="Access End"
-                value={formData.accessEnd}
-                onValueChange={(v) => setFormData({ ...formData, accessEnd: v })}
-                description="Defaults to event end"
-              />
-            </div>
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="light" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
-            Add Attendee
-          </Button>
-        </ModalFooter>
+        {(onClose) => (
+          <>
+            <ModalHeader>Add Attendee</ModalHeader>
+            <ModalBody>
+              {error && (
+                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-4">
+                <Input
+                  label="Name"
+                  placeholder="Full name"
+                  value={formData.name}
+                  onValueChange={(v) => setFormData({ ...formData, name: v })}
+                  isRequired
+                  autoFocus
+                />
+                <Input
+                  label="Rank"
+                  placeholder="e.g., Lt(N), Cdr, civilian (optional)"
+                  value={formData.rank}
+                  onValueChange={(v) => setFormData({ ...formData, rank: v })}
+                />
+                <Input
+                  label="Organization"
+                  placeholder="e.g., HMCS Chippawa, 38 Brigade"
+                  value={formData.organization}
+                  onValueChange={(v) => setFormData({ ...formData, organization: v })}
+                  isRequired
+                />
+                <Select
+                  label="Role"
+                  selectedKeys={[formData.role]}
+                  onSelectionChange={(keys) => {
+                    const key = Array.from(keys)[0] as string;
+                    setFormData({ ...formData, role: key });
+                  }}
+                  isRequired
+                >
+                  {roles.map((role) => (
+                    <SelectItem key={role.key}>{role.label}</SelectItem>
+                  ))}
+                </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Input
+                      label="Access Start"
+                      type="date"
+                      value={formData.accessStart}
+                      onValueChange={(v) => setFormData({ ...formData, accessStart: v })}
+                    />
+                    <span className="mt-1 block text-xs text-gray-600">Defaults to event start</span>
+                  </div>
+                  <div>
+                    <Input
+                      label="Access End"
+                      type="date"
+                      value={formData.accessEnd}
+                      onValueChange={(v) => setFormData({ ...formData, accessEnd: v })}
+                    />
+                    <span className="mt-1 block text-xs text-gray-600">Defaults to event end</span>
+                  </div>
+                </div>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={onClose}>
+                Cancel
+              </Button>
+              <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+                Add Attendee
+              </Button>
+            </ModalFooter>
+          </>
+        )}
       </ModalContent>
     </Modal>
   );

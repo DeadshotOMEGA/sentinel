@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Avatar } from "@heroui/react";
+import { Avatar } from "./ui/heroui-polyfills";
 import { useAuth } from "../hooks/useAuth";
 import Sidebar from "./pro/Sidebar";
 import { sidebarItems } from "./pro/nav-items";

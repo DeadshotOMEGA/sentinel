@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardBody, CardHeader, Input, Button, Checkbox } from '@heroui/react';
+import { Card, CardHeader, CardBody, Button, Input, Checkbox } from '../components/ui/heroui-polyfills';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,8 +19,11 @@ export default function Login() {
     try {
       await login(username, password);
       navigate('/');
-    } catch (err) {
-      setError('Invalid username or password');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Invalid username or password';
+      setError(message.includes('401') || message.includes('unauthorized')
+        ? 'Invalid username or password'
+        : message);
     } finally {
       setIsLoading(false);
     }
@@ -31,7 +34,9 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-1 px-6 pt-6">
           <h1 className="text-2xl font-bold text-primary">Sentinel</h1>
-          <p className="text-sm text-gray-600">HMCS Chippawa Attendance System</p>
+          <p className="text-sm text-gray-600">
+            HMCS Chippawa Attendance System
+          </p>
         </CardHeader>
         <CardBody className="px-6 pb-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -60,10 +65,10 @@ export default function Login() {
             <Button
               type="submit"
               color="primary"
-              isLoading={isLoading}
+              isDisabled={isLoading}
               className="mt-2"
             >
-              Sign In
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </CardBody>

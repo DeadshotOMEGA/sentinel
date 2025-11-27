@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Button,
+  Chip,
+  Spinner,
+  Card,
+  CardBody,
+} from '../components/ui/heroui-polyfills';
+import { format } from 'date-fns';
+import PageWrapper from '../components/PageWrapper';
+import EventModal from '../components/EventModal';
+import { api } from '../lib/api';
+import type { Event, EventStatus } from '@shared/types';
+import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-  Button,
-  Chip,
-  Spinner,
-  Tabs,
-  Tab,
-  Card,
-  CardBody,
-} from '@heroui/react';
-import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
-import EventModal from '../components/EventModal';
-import { api } from '../lib/api';
-import type { Event, EventStatus } from '@shared/types';
+} from '../components/ui/SentinelTable';
 
 interface EventsResponse {
   events: Event[];
@@ -41,6 +41,13 @@ function StatCard({ label, value, color }: { label: string; value: number; color
     </Card>
   );
 }
+
+const TAB_OPTIONS = [
+  { id: 'all', label: 'All' },
+  { id: 'active', label: 'Active' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'completed', label: 'Completed' },
+] as const;
 
 export default function Events() {
   const [tab, setTab] = useState<string>('all');
@@ -119,12 +126,18 @@ export default function Events() {
         )}
 
         <div className="flex items-center justify-between">
-          <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-            <Tab key="all" title="All" />
-            <Tab key="active" title="Active" />
-            <Tab key="upcoming" title="Upcoming" />
-            <Tab key="completed" title="Completed" />
-          </Tabs>
+          <div className="flex gap-2">
+            {TAB_OPTIONS.map((option) => (
+              <Button
+                key={option.id}
+                color={tab === option.id ? 'primary' : 'default'}
+                variant={tab === option.id ? 'solid' : 'light'}
+                onPress={() => setTab(option.id)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
           <Button color="primary" onPress={handleAdd}>
             Create Event
           </Button>

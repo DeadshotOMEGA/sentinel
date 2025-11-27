@@ -5,15 +5,9 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  TextArea,
   Button,
-  Textarea,
   Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Checkbox,
   Spinner,
   Tabs,
@@ -23,10 +17,18 @@ import {
   CardHeader,
   Listbox,
   ListboxItem,
-  Progress,
-} from '@heroui/react';
+  ProgressBar,
+} from './ui/heroui-polyfills';
 import { Icon } from '@iconify/react';
 import { api } from '../lib/api';
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from './ui/SentinelTable';
 import type {
   ImportPreview,
   ImportResult,
@@ -38,8 +40,9 @@ import type {
 
 interface ImportModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onOpenChange?: (isOpen: boolean) => void;
   onImportComplete: () => void;
+  onClose?: () => void;
 }
 
 type Step = 'upload' | 'preview' | 'result';
@@ -67,7 +70,7 @@ const importSteps = [
 
 export default function ImportModal({
   isOpen,
-  onClose,
+  onOpenChange,
   onImportComplete,
 }: ImportModalProps) {
   const [step, setStep] = useState<Step>('upload');
@@ -90,7 +93,7 @@ export default function ImportModal({
 
   const handleClose = () => {
     resetState();
-    onClose();
+    onOpenChange?.(false);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,8 +124,11 @@ export default function ImportModal({
       setStep('preview');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
-      const errorMessage = error.response?.data?.error?.message ?? 'Failed to preview import';
+      const errorMessage = error.response?.data?.error?.message;
       const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to preview import - no error message received');
+      }
       setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
     } finally {
       setIsLoading(false);
@@ -143,8 +149,11 @@ export default function ImportModal({
       onImportComplete();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
-      const errorMessage = error.response?.data?.error?.message ?? 'Failed to execute import';
+      const errorMessage = error.response?.data?.error?.message;
       const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to execute import - no error message received');
+      }
       setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
     } finally {
       setIsLoading(false);
@@ -205,7 +214,7 @@ export default function ImportModal({
             </div>
           </div>
 
-          <Textarea
+          <TextArea
             label="CSV Content"
             placeholder="Paste CSV content here..."
             value={csvContent}
@@ -231,162 +240,162 @@ export default function ImportModal({
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-success">{preview.toAdd.length}</p>
-                  <p className="text-sm text-default-500">To Add</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-primary">{preview.toUpdate.length}</p>
-                  <p className="text-sm text-default-500">To Update</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-warning">{preview.toReview.length}</p>
-                  <p className="text-sm text-default-500">For Review</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-danger">{preview.errors.length}</p>
-                  <p className="text-sm text-default-500">Errors</p>
-                </CardBody>
-              </Card>
-            </div>
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-success">{preview.toAdd.length}</p>
+              <p className="text-sm text-default-500">To Add</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-primary">{preview.toUpdate.length}</p>
+              <p className="text-sm text-default-500">To Update</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-warning">{preview.toReview.length}</p>
+              <p className="text-sm text-default-500">For Review</p>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-danger">{preview.errors.length}</p>
+              <p className="text-sm text-default-500">Errors</p>
+            </CardBody>
+          </Card>
+        </div>
 
-            {/* Tabs for details */}
-            <Tabs aria-label="Import preview tabs">
-              {preview.toAdd.length > 0 && (
-                <Tab key="add" title={`To Add (${preview.toAdd.length})`}>
-                  <div className="max-h-64 overflow-auto">
-                    <Table aria-label="Members to add">
-                      <TableHeader>
-                        <TableColumn>SERVICE #</TableColumn>
-                        <TableColumn>NAME</TableColumn>
-                        <TableColumn>RANK</TableColumn>
-                        <TableColumn>DEPARTMENT</TableColumn>
-                        <TableColumn>TYPE</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toAdd.map((row: NominalRollRow, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell>{row.serviceNumber}</TableCell>
-                            <TableCell>{row.firstName} {row.lastName}</TableCell>
-                            <TableCell>{row.rank}</TableCell>
-                            <TableCell>{row.department}</TableCell>
-                            <TableCell>
-                              <Chip size="sm" variant="flat">
-                                {row.details ? row.details : 'Class A'}
+        {/* Tabs for details */}
+        <Tabs aria-label="Import preview tabs">
+          {preview.toAdd.length > 0 && (
+            <Tab key="add" title={`To Add (${preview.toAdd.length})`}>
+              <div className="max-h-64 overflow-auto">
+                <Table aria-label="Members to add">
+                  <TableHeader>
+                    <TableColumn>SERVICE #</TableColumn>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>RANK</TableColumn>
+                    <TableColumn>DEPARTMENT</TableColumn>
+                    <TableColumn>TYPE</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.toAdd.map((row: NominalRollRow, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{row.serviceNumber}</TableCell>
+                        <TableCell>{row.firstName} {row.lastName}</TableCell>
+                        <TableCell>{row.rank}</TableCell>
+                        <TableCell>{row.department}</TableCell>
+                        <TableCell>
+                          <Chip size="sm" variant="flat">
+                            {row.details || 'Class A'}
+                          </Chip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Tab>
+          )}
+
+          {preview.toUpdate.length > 0 && (
+            <Tab key="update" title={`To Update (${preview.toUpdate.length})`}>
+              <div className="max-h-64 overflow-auto">
+                <Table aria-label="Members to update">
+                  <TableHeader>
+                    <TableColumn>SERVICE #</TableColumn>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>CHANGES</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.toUpdate.map((item: ImportPreviewMember, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{item.current.serviceNumber}</TableCell>
+                        <TableCell>{item.current.firstName} {item.current.lastName}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {item.changes.map((change: string, i: number) => (
+                              <Chip key={i} size="sm" variant="flat" color="primary">
+                                {change}
                               </Chip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </Tab>
-              )}
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Tab>
+          )}
 
-              {preview.toUpdate.length > 0 && (
-                <Tab key="update" title={`To Update (${preview.toUpdate.length})`}>
-                  <div className="max-h-64 overflow-auto">
-                    <Table aria-label="Members to update">
-                      <TableHeader>
-                        <TableColumn>SERVICE #</TableColumn>
-                        <TableColumn>NAME</TableColumn>
-                        <TableColumn>CHANGES</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toUpdate.map((item: ImportPreviewMember, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell>{item.current.serviceNumber}</TableCell>
-                            <TableCell>{item.current.firstName} {item.current.lastName}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {item.changes.map((change: string, i: number) => (
-                                  <Chip key={i} size="sm" variant="flat" color="primary">
-                                    {change}
-                                  </Chip>
-                                ))}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </Tab>
-              )}
+          {preview.toReview.length > 0 && (
+            <Tab key="review" title={`For Review (${preview.toReview.length})`}>
+              <div className="mb-2 rounded-lg bg-warning-50 p-3 text-sm text-warning-700">
+                These members exist in the database but were not found in the CSV.
+                Select members to deactivate, or leave unchecked to keep them active.
+              </div>
+              <div className="max-h-64 overflow-auto">
+                <Table aria-label="Members for review">
+                  <TableHeader>
+                    <TableColumn>DEACTIVATE</TableColumn>
+                    <TableColumn>SERVICE #</TableColumn>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>RANK</TableColumn>
+                    <TableColumn>STATUS</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.toReview.map((member: Member) => (
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <Checkbox
+                            isSelected={selectedDeactivateIds.has(member.id)}
+                            onChange={() => toggleDeactivate(member.id)}
+                          />
+                        </TableCell>
+                        <TableCell>{member.serviceNumber}</TableCell>
+                        <TableCell>{member.firstName} {member.lastName}</TableCell>
+                        <TableCell>{member.rank}</TableCell>
+                        <TableCell>
+                          <Chip
+                            size="sm"
+                            color={member.status === 'active' ? 'success' : 'default'}
+                          >
+                            {member.status}
+                          </Chip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Tab>
+          )}
 
-              {preview.toReview.length > 0 && (
-                <Tab key="review" title={`For Review (${preview.toReview.length})`}>
-                  <div className="mb-2 rounded-lg bg-warning-50 p-3 text-sm text-warning-700">
-                    These members exist in the database but were not found in the CSV.
-                    Select members to deactivate, or leave unchecked to keep them active.
-                  </div>
-                  <div className="max-h-64 overflow-auto">
-                    <Table aria-label="Members for review">
-                      <TableHeader>
-                        <TableColumn width={50}>DEACTIVATE</TableColumn>
-                        <TableColumn>SERVICE #</TableColumn>
-                        <TableColumn>NAME</TableColumn>
-                        <TableColumn>RANK</TableColumn>
-                        <TableColumn>STATUS</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toReview.map((member: Member) => (
-                          <TableRow key={member.id}>
-                            <TableCell>
-                              <Checkbox
-                                isSelected={selectedDeactivateIds.has(member.id)}
-                                onValueChange={() => toggleDeactivate(member.id)}
-                              />
-                            </TableCell>
-                            <TableCell>{member.serviceNumber}</TableCell>
-                            <TableCell>{member.firstName} {member.lastName}</TableCell>
-                            <TableCell>{member.rank}</TableCell>
-                            <TableCell>
-                              <Chip
-                                size="sm"
-                                color={member.status === 'active' ? 'success' : 'default'}
-                              >
-                                {member.status}
-                              </Chip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </Tab>
-              )}
-
-              {preview.errors.length > 0 && (
-                <Tab key="errors" title={`Errors (${preview.errors.length})`}>
-                  <div className="max-h-64 overflow-auto">
-                    <Table aria-label="Import errors">
-                      <TableHeader>
-                        <TableColumn>ROW</TableColumn>
-                        <TableColumn>FIELD</TableColumn>
-                        <TableColumn>ERROR</TableColumn>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.errors.map((err: ImportError, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell>{err.row}</TableCell>
-                            <TableCell>{err.field ?? '—'}</TableCell>
-                            <TableCell>{err.message}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </Tab>
-              )}
-            </Tabs>
+          {preview.errors.length > 0 && (
+            <Tab key="errors" title={`Errors (${preview.errors.length})`}>
+              <div className="max-h-64 overflow-auto">
+                <Table aria-label="Import errors">
+                  <TableHeader>
+                    <TableColumn>ROW</TableColumn>
+                    <TableColumn>FIELD</TableColumn>
+                    <TableColumn>ERROR</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {preview.errors.map((err: ImportError, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{err.row}</TableCell>
+                        <TableCell>{err.field || '—'}</TableCell>
+                        <TableCell>{err.message}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Tab>
+          )}
+        </Tabs>
       </div>
     );
   };
@@ -455,7 +464,7 @@ export default function ImportModal({
         <div className="from-secondary-300 to-primary-500 flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br">
           <Icon className="text-white" icon="solar:database-linear" width={24} />
         </div>
-        <Progress
+        <ProgressBar
           showValueLabel
           classNames={{
             label: 'font-medium',
@@ -514,74 +523,78 @@ export default function ImportModal({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="5xl" scrollBehavior="inside">
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="5xl" scrollBehavior="inside">
       <ModalContent>
-        <ModalHeader>Import Nominal Roll</ModalHeader>
+        {() => (
+          <>
+            <ModalHeader>Import Nominal Roll</ModalHeader>
 
-        <ModalBody>
-          <div className="flex gap-6">
-            {/* Step Checklist Sidebar */}
-            <div className="hidden md:block">
-              {renderStepChecklist()}
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              {isLoading && step === 'upload' ? (
-                <div className="flex justify-center py-12">
-                  <Spinner size="lg" />
+            <ModalBody>
+              <div className="flex gap-6">
+                {/* Step Checklist Sidebar */}
+                <div className="hidden md:block">
+                  {renderStepChecklist()}
                 </div>
-              ) : (
-                <>
-                  {step === 'upload' && renderUploadContent()}
-                  {step === 'preview' && renderPreviewContent()}
-                  {step === 'result' && renderResultContent()}
-                </>
-              )}
-            </div>
-          </div>
-        </ModalBody>
 
-        {step === 'upload' && (
-          <ModalFooter>
-            <Button variant="light" onPress={handleClose}>
-              Cancel
-            </Button>
-            <Button
-              color="primary"
-              onPress={handlePreview}
-              isLoading={isLoading}
-              isDisabled={!csvContent.trim()}
-            >
-              Preview Changes
-            </Button>
-          </ModalFooter>
-        )}
+                {/* Main Content */}
+                <div className="flex-1">
+                  {isLoading && step === 'upload' ? (
+                    <div className="flex justify-center py-12">
+                      <Spinner size="lg" />
+                    </div>
+                  ) : (
+                    <>
+                      {step === 'upload' && renderUploadContent()}
+                      {step === 'preview' && renderPreviewContent()}
+                      {step === 'result' && renderResultContent()}
+                    </>
+                  )}
+                </div>
+              </div>
+            </ModalBody>
 
-        {step === 'preview' && preview && (
-          <ModalFooter>
-            <Button variant="light" onPress={() => setStep('upload')}>
-              Back
-            </Button>
-            <Button
-              color="primary"
-              onPress={handleExecute}
-              isLoading={isLoading}
-              isDisabled={preview.errors.length > 0 || (preview.toAdd.length === 0 && preview.toUpdate.length === 0)}
-            >
-              {preview.errors.length > 0
-                ? 'Fix Errors to Continue'
-                : `Import ${preview.toAdd.length + preview.toUpdate.length} Members`}
-            </Button>
-          </ModalFooter>
-        )}
+            {step === 'upload' && (
+              <ModalFooter>
+                <Button variant="light" onPress={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={handlePreview}
+                  isLoading={isLoading}
+                  isDisabled={!csvContent.trim()}
+                >
+                  Preview Changes
+                </Button>
+              </ModalFooter>
+            )}
 
-        {step === 'result' && (
-          <ModalFooter>
-            <Button color="primary" onPress={handleClose}>
-              Done
-            </Button>
-          </ModalFooter>
+            {step === 'preview' && preview && (
+              <ModalFooter>
+                <Button variant="light" onPress={() => setStep('upload')}>
+                  Back
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={handleExecute}
+                  isLoading={isLoading}
+                  isDisabled={preview.errors.length > 0 || (preview.toAdd.length === 0 && preview.toUpdate.length === 0)}
+                >
+                  {preview.errors.length > 0
+                    ? 'Fix Errors to Continue'
+                    : `Import ${preview.toAdd.length + preview.toUpdate.length} Members`}
+                </Button>
+              </ModalFooter>
+            )}
+
+            {step === 'result' && (
+              <ModalFooter>
+                <Button color="primary" onPress={handleClose}>
+                  Done
+                </Button>
+              </ModalFooter>
+            )}
+          </>
         )}
       </ModalContent>
     </Modal>

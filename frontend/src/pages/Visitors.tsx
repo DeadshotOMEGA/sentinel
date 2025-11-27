@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Button,
   Chip,
   Spinner,
@@ -20,9 +14,10 @@ import {
   ModalFooter,
   Select,
   SelectItem,
-} from '@heroui/react';
+} from '../components/ui/heroui-polyfills';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
 
@@ -199,9 +194,12 @@ function VisitorSignInModal({
             <Select
               label="Visit Type"
               selectedKeys={formData.visitType ? [formData.visitType] : []}
-              onSelectionChange={(keys) =>
-                setFormData({ ...formData, visitType: Array.from(keys)[0] as VisitType })
-              }
+              onSelectionChange={(keys) => {
+                const key = Array.from(keys)[0] as string;
+                if (key) {
+                  setFormData({ ...formData, visitType: key as VisitType });
+                }
+              }}
               isRequired
             >
               {visitTypes.map((t) => (
