@@ -38,6 +38,22 @@ export const colors = {
     foreground: "#ffffff",
   },
 
+  // Accent - Orange (alias for secondary, semantic naming)
+  accent: {
+    50: "#fff5e6",
+    100: "#ffe0b3",
+    200: "#ffcc80",
+    300: "#ffb84d",
+    400: "#ffa31a",
+    500: "#ff8000",
+    600: "#cc6600",
+    700: "#994d00",
+    800: "#663300",
+    900: "#331a00",
+    DEFAULT: "#ff8000",
+    foreground: "#ffffff",
+  },
+
   // Success - Green
   success: {
     50: "#e6f9ed",
@@ -152,6 +168,7 @@ export const sentinelTheme = {
         foreground: colors.foreground,
         primary: colors.primary,
         secondary: colors.secondary,
+        accent: colors.accent,
         success: colors.success,
         warning: colors.warning,
         danger: colors.danger,
