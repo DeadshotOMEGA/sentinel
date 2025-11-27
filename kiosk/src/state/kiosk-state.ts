@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type KioskScreen = 'idle' | 'scanning' | 'success' | 'error' | 'visitor' | 'event-selection';
+export type KioskScreen = 'idle' | 'scanning' | 'success' | 'error' | 'visitor' | 'visitor-success' | 'event-selection';
 
 export interface CheckinResult {
   memberName: string;
@@ -20,11 +20,13 @@ interface KioskState {
   checkinResult: CheckinResult | null;
   error: KioskError | null;
   selectedEventId: string | null;
+  visitorName: string | null;
 
   // Actions
   setScreen: (screen: KioskScreen) => void;
   setCheckinResult: (result: CheckinResult) => void;
   setError: (error: KioskError) => void;
+  setVisitorSuccess: (name: string) => void;
   reset: () => void;
   enterVisitorMode: () => void;
   selectEvent: (eventId: string) => void;
@@ -36,6 +38,7 @@ export const useKioskStore = create<KioskState>((set) => ({
   checkinResult: null,
   error: null,
   selectedEventId: null,
+  visitorName: null,
 
   setScreen: (screen) => set({ currentScreen: screen }),
 
@@ -53,12 +56,20 @@ export const useKioskStore = create<KioskState>((set) => ({
       checkinResult: null,
     }),
 
+  setVisitorSuccess: (name) =>
+    set({
+      visitorName: name,
+      currentScreen: 'visitor-success',
+      error: null,
+    }),
+
   reset: () =>
     set({
       currentScreen: 'idle',
       checkinResult: null,
       error: null,
       selectedEventId: null,
+      visitorName: null,
     }),
 
   enterVisitorMode: () =>

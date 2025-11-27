@@ -4,17 +4,16 @@ import { recordVisitor } from '../lib/api';
 import { getConfig } from '../lib/config';
 
 const VISIT_TYPES = [
-  { value: 'meeting', label: 'Meeting' },
-  { value: 'contractor', label: 'Contractor' },
+  { value: 'contractor', label: 'Contractor/SSC' },
   { value: 'recruitment', label: 'Recruitment' },
-  { value: 'course', label: 'Course/Training' },
   { value: 'event', label: 'Event' },
-  { value: 'official', label: 'Official Visit' },
+  { value: 'official', label: 'Official' },
+  { value: 'museum', label: 'Museum' },
   { value: 'other', label: 'Other' },
 ];
 
 export default function VisitorScreen() {
-  const { reset, setError, selectedEventId } = useKioskStore();
+  const { reset, setError, setVisitorSuccess, selectedEventId } = useKioskStore();
   const config = getConfig();
 
   const [formData, setFormData] = useState({
@@ -45,9 +44,8 @@ export default function VisitorScreen() {
         ...(selectedEventId && { eventId: selectedEventId }),
       };
       await recordVisitor(visitorData, config.kioskId);
-      // Show success briefly then return to idle
-      alert('Visitor check-in successful!');
-      reset();
+      // Show success screen
+      setVisitorSuccess(formData.name);
     } catch (err) {
       if (err instanceof Error) {
         console.error('Failed to record visitor:', err.message);

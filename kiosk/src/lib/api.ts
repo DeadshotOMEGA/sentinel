@@ -8,9 +8,17 @@ if (!API_BASE_URL) {
   throw new Error('VITE_API_URL environment variable is not set');
 }
 
+const KIOSK_API_KEY = import.meta.env.VITE_KIOSK_API_KEY;
+if (!KIOSK_API_KEY) {
+  throw new Error('VITE_KIOSK_API_KEY environment variable is not set');
+}
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 5000,
+  headers: {
+    'X-Kiosk-API-Key': KIOSK_API_KEY,
+  },
 });
 
 interface CheckinApiResponse {
