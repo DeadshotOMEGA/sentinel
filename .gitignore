@@ -66,3 +66,6 @@ docs/INVESTIGATION*.txt
 docs/*INVESTIGATION*.md
 docs/README_INVESTIGATION.md
 docs/QUICK_REFERENCE.md
+frontend/agent-responses/
+kiosk/agent-responses/
+tv-display/agent-responses/
