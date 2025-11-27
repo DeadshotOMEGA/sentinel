@@ -13,7 +13,7 @@ const router = Router();
 const createVisitorSchema = z.object({
   name: z.string().min(1).max(255),
   organization: z.string().min(1).max(255),
-  visitType: z.enum(['general', 'contractor', 'recruitment', 'course', 'event', 'official', 'other']),
+  visitType: z.enum(['contractor', 'recruitment', 'event', 'official', 'museum', 'other']),
   hostMemberId: z.string().uuid().optional(),
   eventId: z.string().uuid().optional(),
   purpose: z.string().optional(),
@@ -41,8 +41,8 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   }
 });
 
-// GET /api/visitors/active - Currently signed-in visitors
-router.get('/active', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/visitors/active - Currently signed-in visitors (public for TV display)
+router.get('/active', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const visitors = await visitorRepository.findActive();
     res.json({ visitors });
@@ -51,8 +51,8 @@ router.get('/active', requireAuth, async (req: Request, res: Response, next: Nex
   }
 });
 
-// POST /api/visitors - Record visitor sign-in
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// POST /api/visitors - Record visitor sign-in (public for kiosk self-service)
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = createVisitorSchema.safeParse(req.body);
     if (!validationResult.success) {

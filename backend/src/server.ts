@@ -24,10 +24,11 @@ if (!process.env.CORS_ORIGIN) {
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration - supports comma-separated origins
+const allowedOrigins = process.env.CORS_ORIGIN.split(',').map((o) => o.trim());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
   })
 );

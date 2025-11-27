@@ -12,9 +12,10 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
     throw new Error('CORS_ORIGIN environment variable is required');
   }
 
+  const allowedOrigins = process.env.CORS_ORIGIN.split(',').map((o) => o.trim());
   io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN,
+      origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
       methods: ['GET', 'POST'],
     },
     pingTimeout: 60000,

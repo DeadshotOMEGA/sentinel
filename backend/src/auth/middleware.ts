@@ -1,11 +1,25 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getSession, type Session } from './session';
 
+// Kiosk API key for device authentication (unattended kiosks)
+function getKioskApiKey(): string {
+  const key = process.env.KIOSK_API_KEY;
+  if (!key) {
+    // In development, use a default key. In production, this should be set.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('KIOSK_API_KEY environment variable must be set in production');
+    }
+    return 'kiosk-dev-key-change-in-production';
+  }
+  return key;
+}
+
 declare global {
   namespace Express {
     interface Request {
       session?: Session;
       user?: { id: string; username: string; role: string };
+      isKiosk?: boolean;
     }
   }
 }
@@ -26,8 +40,30 @@ function extractToken(req: Request): string | null {
   return parts[1];
 }
 
+function extractKioskApiKey(req: Request): string | null {
+  return req.headers['x-kiosk-api-key'] as string | null;
+}
+
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    // First, check for kiosk API key (for unattended kiosk devices)
+    const kioskApiKey = extractKioskApiKey(req);
+    if (kioskApiKey) {
+      if (kioskApiKey === getKioskApiKey()) {
+        req.isKiosk = true;
+        req.user = {
+          id: 'kiosk-device',
+          username: 'kiosk',
+          role: 'kiosk',
+        };
+        next();
+        return;
+      }
+      res.status(401).json({ error: 'Invalid kiosk API key.' });
+      return;
+    }
+
+    // Otherwise, check for Bearer token (admin users)
     const token = extractToken(req);
 
     if (!token) {

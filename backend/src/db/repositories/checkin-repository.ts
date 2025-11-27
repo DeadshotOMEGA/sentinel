@@ -26,6 +26,15 @@ interface MemberPresenceItem {
   lastCheckin?: Checkin;
 }
 
+interface PresentMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  rank: string;
+  division: string;
+  checkedInAt: string;
+}
+
 export class CheckinRepository extends BaseRepository {
   private readonly PRESENCE_CACHE_KEY = 'presence:stats';
   private readonly PRESENCE_CACHE_TTL = 60; // 60 seconds
@@ -217,6 +226,44 @@ export class CheckinRepository extends BaseRepository {
   }
 
   /**
+   * Get currently present members (public for TV display)
+   */
+  async getPresentMembers(): Promise<PresentMember[]> {
+    const query = `
+      WITH latest_checkins AS (
+        SELECT DISTINCT ON (member_id)
+          member_id,
+          direction,
+          timestamp
+        FROM checkins
+        ORDER BY member_id, timestamp DESC
+      )
+      SELECT
+        m.id,
+        m.first_name,
+        m.last_name,
+        m.rank,
+        d.name as division_name,
+        lc.timestamp as checked_in_at
+      FROM members m
+      INNER JOIN divisions d ON m.division_id = d.id
+      INNER JOIN latest_checkins lc ON m.id = lc.member_id
+      WHERE m.status = 'active' AND lc.direction = 'in'
+      ORDER BY lc.timestamp DESC
+    `;
+
+    const rows = await this.queryAll<Record<string, unknown>>(query);
+    return rows.map((row) => ({
+      id: row.id as string,
+      firstName: row.first_name as string,
+      lastName: row.last_name as string,
+      rank: row.rank as string,
+      division: row.division_name as string,
+      checkedInAt: (row.checked_in_at as Date).toISOString(),
+    }));
+  }
+
+  /**
    * Get member presence list with their current status
    */
   async getMemberPresenceList(): Promise<MemberPresenceItem[]> {
@@ -302,6 +349,71 @@ export class CheckinRepository extends BaseRepository {
   private async invalidatePresenceCache(): Promise<void> {
     await redis.del(this.PRESENCE_CACHE_KEY);
   }
+
+  /**
+   * Get recent activity (checkins + visitors) for display
+   */
+  async getRecentActivity(limit: number = 10): Promise<RecentActivityItem[]> {
+    const query = `
+      (
+        SELECT
+          'checkin' as type,
+          c.id,
+          c.timestamp,
+          c.direction,
+          m.first_name || ' ' || m.last_name as name,
+          m.rank,
+          d.name as division,
+          NULL as organization
+        FROM checkins c
+        JOIN members m ON c.member_id = m.id
+        LEFT JOIN divisions d ON m.division_id = d.id
+        ORDER BY c.timestamp DESC
+        LIMIT $1
+      )
+      UNION ALL
+      (
+        SELECT
+          'visitor' as type,
+          v.id,
+          v.check_in_time as timestamp,
+          'in' as direction,
+          v.name,
+          NULL as rank,
+          NULL as division,
+          v.organization
+        FROM visitors v
+        WHERE v.check_in_time > NOW() - INTERVAL '24 hours'
+        ORDER BY v.check_in_time DESC
+        LIMIT $1
+      )
+      ORDER BY timestamp DESC
+      LIMIT $1
+    `;
+
+    const rows = await this.queryAll<Record<string, unknown>>(query, [limit]);
+    return rows.map((row) => ({
+      type: row.type as 'checkin' | 'visitor',
+      id: row.id as string,
+      timestamp: (row.timestamp as Date).toISOString(),
+      direction: row.direction as 'in' | 'out' | undefined,
+      name: row.name as string,
+      rank: row.rank as string | undefined,
+      division: row.division as string | undefined,
+      organization: row.organization as string | undefined,
+    }));
+  }
+}
+
+interface RecentActivityItem {
+  type: 'checkin' | 'visitor';
+  id: string;
+  timestamp: string;
+  direction?: 'in' | 'out';
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;
 }
 
 export const checkinRepository = new CheckinRepository();

@@ -188,11 +188,21 @@ router.post('/bulk', requireAuth, async (req: Request, res: Response, next: Next
   }
 });
 
-// GET /api/checkins/presence - Current presence stats
-router.get('/presence', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/checkins/presence - Current presence stats (public for TV display)
+router.get('/presence', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const stats = await checkinRepository.getPresenceStats();
     res.json({ stats });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/checkins/presence/present - Currently present members (public for TV display)
+router.get('/presence/present', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const presentMembers = await checkinRepository.getPresentMembers();
+    res.json({ members: presentMembers });
   } catch (err) {
     next(err);
   }
@@ -203,6 +213,17 @@ router.get('/presence/list', requireAuth, async (req: Request, res: Response, ne
   try {
     const presenceList = await checkinRepository.getMemberPresenceList();
     res.json({ presenceList });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/checkins/recent - Recent activity (checkins + visitors) - public for TV display
+router.get('/recent', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
+    const activity = await checkinRepository.getRecentActivity(limit);
+    res.json({ activity });
   } catch (err) {
     next(err);
   }
