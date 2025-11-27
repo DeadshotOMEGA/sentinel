@@ -1,0 +1,23 @@
+{
+  "name": "@sentinel/ui",
+  "version": "1.0.0",
+  "description": "Sentinel design system - HeroUI components with Sentinel theming",
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./tokens": "./tokens.ts",
+    "./hero": "./hero.ts",
+    "./theme.css": "./theme.css"
+  },
+  "peerDependencies": {
+    "@heroui/react": "^2.8.5",
+    "framer-motion": "^12.23.24",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3"
+  }
+}
