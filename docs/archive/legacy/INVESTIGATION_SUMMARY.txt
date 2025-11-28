@@ -1,0 +1,414 @@
+================================================================================
+SENTINEL NOMINAL ROLL IMPORT - INVESTIGATION COMPLETE
+================================================================================
+
+INVESTIGATION DOCUMENTS CREATED:
+1. /docs/NOMINAL_ROLL_INVESTIGATION.md (12 sections, comprehensive)
+2. /docs/QUICK_REFERENCE.md (copy-paste code patterns)
+3. /docs/NOMINAL_ROLL_IMPLEMENTATION_PLAN.md (step-by-step guide)
+4. /docs/INVESTIGATION_SUMMARY.txt (this file)
+
+================================================================================
+ARCHITECTURE SUMMARY
+================================================================================
+
+BACKEND STRUCTURE:
+  Entry Point:      /backend/src/routes/index.ts
+  Member Routes:    /backend/src/routes/members.ts (206 lines)
+  Division Routes:  /backend/src/routes/divisions.ts (135 lines)
+  Auth:             requireAuth + requireRole('admin') middleware
+  Validation:       Zod schemas on every input
+  Database:         PostgreSQL with repository pattern
+
+FRONTEND STRUCTURE:
+  Member Page:      /frontend/src/pages/Members.tsx
+  Member Modal:     /frontend/src/components/MemberModal.tsx
+  API Client:       /frontend/src/lib/api.ts (axios instance)
+  Auth:             JWT tokens in localStorage
+  State:            React Query for server state
+
+DATABASE STRUCTURE:
+  Tables:           divisions, members, badges, checkins, visitors, events, admin_users, audit_log
+  Schema:           /backend/db/schema.sql (250 lines, full with triggers & views)
+  Seed Data:        /backend/db/seed/dev-data.sql (210 lines, 25 test members)
+  No ORM:           Raw SQL with parameterized queries via pg library
+
+================================================================================
+CURRENT API ENDPOINTS - MEMBERS
+================================================================================
+
+GET    /api/members                     List all members (with filters)
+GET    /api/members/:id                 Get single member
+GET    /api/members/:id/history         Get member checkin history
+POST   /api/members                     Create member (admin only)
+PUT    /api/members/:id                 Update member (admin only)
+DELETE /api/members/:id                 Soft delete member (admin only)
+
+POST   /api/members/import              [NEEDS TO BE CREATED]
+
+================================================================================
+DIVISIONS IN DATABASE
+================================================================================
+
+Code  | Name              | Usage
+------|-------------------|-------
+OPS   | Operations        | 9 members in test data
+ADMIN | Administration    | 6 members in test data
+TRAIN | Training          | 6 members in test data
+CMD   | Command           | 5 members in test data
+
+All divisions are pre-seeded. Division codes are UNIQUE.
+
+================================================================================
+MEMBER TYPE VALUES
+================================================================================
+
+⚠️  IMPORTANT: Database uses underscore, routes accept hyphen
+
+Database column:      full_time | reserve
+Frontend form shows:  Full-Time | Reserve
+Zod validation:       'full-time' | 'reserve' | 'event-attendee'
+TypeScript type:      MemberType = 'full_time' | 'reserve'
+
+For CSV import, use: full-time or reserve (will be converted to full_time)
+
+================================================================================
+KEY FILES FOR NOMINAL ROLL IMPORT
+================================================================================
+
+CREATE THESE NEW FILES:
+  1. /backend/src/services/import-service.ts     - CSV parsing & bulk validation
+  2. /backend/src/routes/members/import.ts       - OR add to existing members.ts
+  3. /frontend/src/components/ImportModal.tsx    - File upload UI
+
+MODIFY THESE FILES:
+  1. /backend/src/routes/members.ts              - Add import route
+  2. /backend/src/db/repositories/member-repository.ts - Add bulkImport() method
+  3. /frontend/src/pages/Members.tsx             - Add import button & modal
+
+REFERENCE THESE FOR PATTERNS:
+  1. /backend/src/db/repositories/base-repository.ts  - Query patterns
+  2. /backend/src/utils/errors.ts                     - Error classes
+  3. /backend/src/middleware/error-handler.ts         - Error handling
+  4. /frontend/src/components/MemberModal.tsx         - Form patterns
+
+================================================================================
+ERROR HANDLING PATTERN
+================================================================================
+
+All errors use custom error classes with this structure:
+
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Service number already exists",
+    "details": "Service number V123456 is already assigned",
+    "howToFix": "Update CSV with unique service numbers or remove duplicates"
+  }
+}
+
+Available error classes:
+  - NotFoundError (404)
+  - ValidationError (400)
+  - ConflictError (409)
+  - UnauthorizedError (401)
+  - ForbiddenError (403)
+
+All include message + details + howToFix (for non-technical admins)
+
+================================================================================
+VALIDATION CONSTRAINTS
+================================================================================
+
+Service Number:  VARCHAR(20) UNIQUE, required
+First Name:      VARCHAR(100) required
+Last Name:       VARCHAR(100) required
+Rank:            VARCHAR(50) required
+Division Code:   Must exist in divisions table
+Member Type:     Enum: full-time | reserve (database: full_time | reserve)
+Status:          Enum: active | inactive (default: active)
+Email:           Optional, must be valid format if provided
+Phone:           Optional
+Badge ID:        Optional UUID, must reference existing badge
+
+================================================================================
+REPOSITORY PATTERN
+================================================================================
+
+All data access goes through repository classes in /backend/src/db/repositories/
+
+Base class provides:
+  - query<T>(text, params)
+  - queryOne<T>(text, params)
+  - queryAll<T>(text, params)
+  - beginTransaction()
+  - commitTransaction()
+  - rollbackTransaction()
+  - toCamelCase<T>()
+  - toSnakeCase()
+
+Member Repository provides:
+  - findAll(filters?)
+  - findById(id)
+  - findByServiceNumber(serviceNumber)
+  - create(data)
+  - update(id, data)
+  - delete(id)
+  - getPresenceStatus(memberId)
+  - invalidatePresenceCache()
+  + bulkImport(members) [NEEDS TO BE ADDED]
+
+Division Repository provides:
+  - findAll()
+  - findById(id)
+  - findByCode(code)
+  - create(data)
+  - update(id, data)
+  - delete(id)
+
+================================================================================
+BULK OPERATIONS REFERENCE
+================================================================================
+
+Existing bulk pattern: /api/checkins/bulk (in /backend/src/routes/checkins.ts)
+
+This endpoint shows how to:
+  1. Accept array of objects
+  2. Validate each item
+  3. Process in transaction
+  4. Track errors per item
+  5. Return summary: { successful: N, failed: N, errors: [...] }
+
+================================================================================
+FRONTEND PATTERNS
+================================================================================
+
+Component State:
+  - React Query (useQuery) for server state
+  - Local useState for UI state (search, filters, form data)
+  - Modal for CRUD operations
+
+API Calls:
+  - Axios instance with JWT interceptor
+  - GET /members?search=term&status=active
+  - POST /members (create)
+  - PUT /members/:id (update)
+  - DELETE /members/:id (delete)
+
+Error Handling:
+  - Catch API errors, display message
+  - Show "howToFix" guidance for users
+  - Re-throw or handle silently
+
+Loading States:
+  - isLoading boolean for spinners
+  - isLoading button prop for disabled + loader
+
+Refetch on Change:
+  - refetch() from useQuery
+  - Called after successful POST/PUT
+  - Modal closes automatically
+
+================================================================================
+DEPENDENCIES - WHAT'S AVAILABLE
+================================================================================
+
+Backend Available:
+  ✓ express              - Web framework
+  ✓ pg                   - PostgreSQL (raw SQL, no ORM)
+  ✓ zod                  - Schema validation
+  ✓ bcrypt               - Password hashing
+  ✓ jsonwebtoken         - JWT tokens
+  ✓ helmet               - Security headers
+  ✓ compression          - Response compression
+  ✓ winston              - Logging
+  ✓ ioredis              - Redis client
+  ✗ multer               - File upload (needs to be added if using multipart)
+  ✗ papaparse            - CSV parsing (needs to be added)
+
+Frontend Available:
+  ✓ react                - UI framework
+  ✓ react-router-dom     - Routing
+  ✓ @tanstack/react-query - Server state
+  ✓ axios                - HTTP client
+  ✓ @heroui/react        - UI components
+  ✓ tailwindcss          - Styling
+
+================================================================================
+IMPLEMENTATION APPROACH - TWO OPTIONS
+================================================================================
+
+OPTION 1: JSON with CSV Text (RECOMMENDED)
+  - Frontend sends CSV as text in JSON body
+  - POST /api/members/import { csv: "ServiceNumber,FirstName,...\nV100001,John,..." }
+  - No need for multipart/form-data
+  - No need for multer library
+  - Just need papaparse for CSV parsing
+  - Simplest implementation
+
+OPTION 2: Multipart File Upload
+  - Frontend sends actual file via FormData
+  - POST /api/members/import (multipart/form-data)
+  - Need to add multer middleware
+  - More standard file upload pattern
+  - More complex setup
+
+Recommendation: Go with OPTION 1 (JSON with CSV text)
+  - Faster implementation (no multer setup)
+  - Clearer error messages (full row access)
+  - Better for preview functionality
+  - Still user-friendly (paste or drag-and-drop file)
+
+================================================================================
+TEST DATA AVAILABLE
+================================================================================
+
+Divisions:
+  - 4 pre-seeded (OPS, ADMIN, TRAIN, CMD)
+  - IDs are UUIDs in test data (but will be random on fresh seed)
+
+Members:
+  - 25 active members across all divisions
+  - 1 inactive member
+  - All have assigned badges
+  - Check-in history from last 2 days
+
+Service Numbers (DO NOT USE - WILL CONFLICT):
+  V123456, V234567, V345678, ... V567892 (from seed data)
+
+For testing import:
+  - Use V200001, V200002, etc. (new numbers)
+  - Use OPS, ADMIN, TRAIN, CMD (valid division codes)
+
+================================================================================
+ESTIMATED IMPLEMENTATION TIME
+================================================================================
+
+Backend (Step-by-step):
+  1. Add papaparse to package.json              15 min
+  2. Create import-service.ts                   1.5 hours
+  3. Add bulkImport() to memberRepository       1 hour
+  4. Add POST /api/members/import route         30 min
+  5. Test with curl/Postman                     30 min
+  Subtotal: ~4 hours
+
+Frontend:
+  1. Create ImportModal.tsx                     1.5 hours
+  2. Add to Members.tsx (button + modal)        30 min
+  3. Test with UI                               1 hour
+  Subtotal: ~3 hours
+
+Testing & Polish:
+  1. Error cases & edge conditions              1.5 hours
+  2. Documentation & templates                  1 hour
+  Subtotal: ~2.5 hours
+
+TOTAL: ~9.5 hours (~1-2 days of focused development)
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. READ DOCUMENTS (in this order):
+   - QUICK_REFERENCE.md (5 min) - Overview
+   - NOMINAL_ROLL_INVESTIGATION.md (30 min) - Deep dive
+   - NOMINAL_ROLL_IMPLEMENTATION_PLAN.md (30 min) - Step-by-step guide
+
+2. INSTALL DEPENDENCIES:
+   cd /backend && bun install papaparse
+
+3. IMPLEMENT BACKEND (following Implementation Plan Phase 1):
+   - Create /backend/src/services/import-service.ts
+   - Add route to /backend/src/routes/members.ts
+   - Add method to /backend/src/db/repositories/member-repository.ts
+
+4. IMPLEMENT FRONTEND (following Implementation Plan Phase 2):
+   - Create /frontend/src/components/ImportModal.tsx
+   - Update /frontend/src/pages/Members.tsx
+
+5. TEST:
+   - Use curl/Postman for backend endpoint
+   - Use UI for full flow
+   - Test error cases
+
+6. DOCUMENT:
+   - Create user guide
+   - Create CSV template
+   - Add to README
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+⚠️  DATABASE:
+    - All member inserts/updates trigger updated_at timestamp
+    - Service number UNIQUE constraint prevents duplicates
+    - Division FK constraint prevents invalid divisions
+    - Consider transaction for atomicity in bulk import
+
+⚠️  AUTHENTICATION:
+    - All endpoints require JWT token
+    - Import endpoint requires 'admin' role
+    - Token is added by axios interceptor automatically
+
+⚠️  TYPE SYSTEM:
+    - Frontend/Zod uses: 'full-time' (hyphen)
+    - Database uses: 'full_time' (underscore)
+    - Repository converts automatically via toCamelCase/toSnakeCase
+
+⚠️  DIVISION CODES:
+    - Must match existing divisions exactly (OPS, ADMIN, TRAIN, CMD)
+    - Are case-sensitive
+    - Are UNIQUE in database
+    - Cannot create new divisions during import (current design)
+
+⚠️  ERROR MESSAGES:
+    - Include "howToFix" guidance (admins are non-technical)
+    - List valid options when possible
+    - Show row numbers for validation errors
+    - Be specific about what went wrong
+
+⚠️  PERFORMANCE:
+    - Service number index exists for fast lookups
+    - Division FK index exists
+    - Consider batching for very large imports (1000+ rows)
+    - Transaction per batch recommended
+
+================================================================================
+QUICK START - COPY/PASTE READY CODE
+================================================================================
+
+See QUICK_REFERENCE.md for:
+  ✓ Route handler template
+  ✓ Repository query patterns
+  ✓ Transaction pattern
+  ✓ Frontend API call pattern
+  ✓ Frontend form pattern
+  ✓ Error handling examples
+  ✓ Type definitions
+  ✓ SQL snippets
+
+See NOMINAL_ROLL_IMPLEMENTATION_PLAN.md for:
+  ✓ Full service.ts implementation
+  ✓ Full route handler implementation
+  ✓ Full ImportModal.tsx implementation
+  ✓ Test cases
+  ✓ Error messages
+  ✓ CSV format specification
+
+================================================================================
+END OF INVESTIGATION SUMMARY
+================================================================================
+
+All information needed to implement Nominal Roll import is documented.
+Architecture is ready. Implementation is straightforward.
+
+Questions? Check the detailed documents or trace through the code examples.
+
+Next step: Read QUICK_REFERENCE.md (5 minutes)
+Then read: NOMINAL_ROLL_IMPLEMENTATION_PLAN.md (30 minutes)
+Then implement: Follow Phase 1, 2, 3 steps in plan
+
+Good luck! 🚀
+
+================================================================================
