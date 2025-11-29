@@ -68,6 +68,15 @@ bun.lockb
 agent-responses/
 backend/agent-responses/
 
+# Audit/test screenshots and reports
+audit-screenshots/
+screenshots/
+test-screenshots/
+review-screenshots/
+*.spec.ts-snapshots/
+FRONTEND-AUDIT-REPORT.md
+audit-screenshots.ts
+
 # Investigation docs (temporary)
 docs/INVESTIGATION*.txt
 docs/*INVESTIGATION*.md
