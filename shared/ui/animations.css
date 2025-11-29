@@ -1,0 +1,338 @@
+/**
+ * Sentinel Micro-Transitions
+ *
+ * Subtle, functional transitions that enhance UX without being distracting.
+ * All animations respect prefers-reduced-motion for accessibility.
+ */
+
+:root {
+  /* Transition durations - use CSS custom properties for consistency */
+  --sentinel-transition-micro: 150ms;
+  --sentinel-transition-small: 200ms;
+  --sentinel-transition-medium: 300ms;
+  --sentinel-transition-large: 400ms;
+
+  /* Easing functions - ease-out for most interactions */
+  --sentinel-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --sentinel-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --sentinel-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Shadow elevations for hover states */
+  --sentinel-shadow-hover: 0 6px 12px -2px rgb(0 0 0 / 0.12),
+    0 3px 7px -3px rgb(0 0 0 / 0.08);
+  --sentinel-shadow-active: 0 2px 4px -1px rgb(0 0 0 / 0.08),
+    0 1px 2px -1px rgb(0 0 0 / 0.04);
+}
+
+/* ============================================
+   UTILITY CLASSES - Common Transition Patterns
+   ============================================ */
+
+/**
+ * .transition-colors
+ * For color/background changes (buttons, badges, table rows)
+ */
+.transition-colors {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              border-color var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+/**
+ * .transition-opacity
+ * For fade in/out effects
+ */
+.transition-opacity {
+  transition: opacity var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+/**
+ * .transition-transform
+ * For subtle scale/translate effects (buttons, cards)
+ */
+.transition-transform {
+  transition: transform var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+/**
+ * .transition-shadow
+ * For elevation changes on hover
+ */
+.transition-shadow {
+  transition: box-shadow var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+/**
+ * .transition-all
+ * Combined transitions for complex interactive elements
+ */
+.transition-all {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              border-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              box-shadow var(--sentinel-transition-small) var(--sentinel-ease-out),
+              transform var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              opacity var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+/* ============================================
+   BUTTON TRANSITIONS
+   ============================================ */
+
+/**
+ * .btn-transition
+ * Standard button hover/active states
+ */
+.btn-transition {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              border-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              transform var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              opacity var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+.btn-transition:hover {
+  transform: translateY(-1px);
+}
+
+.btn-transition:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+/**
+ * .btn-subtle
+ * Minimal button transitions (ghost buttons, icon buttons)
+ */
+.btn-subtle {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              opacity var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+.btn-subtle:active {
+  opacity: 0.7;
+}
+
+/* ============================================
+   CARD TRANSITIONS
+   ============================================ */
+
+/**
+ * .card-hover
+ * Elevated shadow on hover for interactive cards
+ */
+.card-hover {
+  transition: box-shadow var(--sentinel-transition-small) var(--sentinel-ease-out),
+              transform var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+.card-hover:hover {
+  box-shadow: var(--sentinel-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.card-hover:active {
+  box-shadow: var(--sentinel-shadow-active);
+  transform: translateY(0);
+}
+
+/**
+ * .card-subtle
+ * Minimal card hover (non-clickable cards with subtle visual feedback)
+ */
+.card-subtle {
+  transition: box-shadow var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+.card-subtle:hover {
+  box-shadow: var(--sentinel-shadow-sm);
+}
+
+/* ============================================
+   TABLE TRANSITIONS
+   ============================================ */
+
+/**
+ * .table-row-hover
+ * Background fade for table rows
+ */
+.table-row-hover {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+/**
+ * .table-header-hover
+ * Sortable header hover state
+ */
+.table-header-hover {
+  transition: background-color var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+/* ============================================
+   BADGE TRANSITIONS
+   ============================================ */
+
+/**
+ * .badge-appear
+ * Smooth appearance with scale + fade
+ */
+.badge-appear {
+  animation: badge-appear var(--sentinel-transition-small) var(--sentinel-ease-out);
+}
+
+@keyframes badge-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   MODAL/DIALOG TRANSITIONS
+   ============================================ */
+
+/**
+ * .modal-overlay
+ * Modal backdrop fade in
+ */
+.modal-overlay {
+  animation: modal-overlay-appear var(--sentinel-transition-medium) var(--sentinel-ease-out);
+}
+
+@keyframes modal-overlay-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * .modal-content
+ * Modal content scale + fade
+ */
+.modal-content {
+  animation: modal-content-appear var(--sentinel-transition-medium) var(--sentinel-ease-out);
+}
+
+@keyframes modal-content-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ============================================
+   FOCUS STATES
+   ============================================ */
+
+/**
+ * Enhanced focus ring transition
+ */
+:focus-visible {
+  transition: outline-offset var(--sentinel-transition-micro) var(--sentinel-ease-out),
+              outline-color var(--sentinel-transition-micro) var(--sentinel-ease-out);
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+/**
+ * .fade-in
+ * Generic fade in for content loading
+ */
+.fade-in {
+  animation: fade-in var(--sentinel-transition-medium) var(--sentinel-ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * .slide-in-up
+ * Slide up with fade for toasts/notifications
+ */
+.slide-in-up {
+  animation: slide-in-up var(--sentinel-transition-medium) var(--sentinel-ease-out);
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY - REDUCED MOTION
+   ============================================ */
+
+/**
+ * Disable non-essential animations when user prefers reduced motion
+ * This is CRITICAL for Raspberry Pi performance and accessibility
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* Override all custom properties to minimal values */
+  :root {
+    --sentinel-transition-micro: 0ms;
+    --sentinel-transition-small: 0ms;
+    --sentinel-transition-medium: 0ms;
+    --sentinel-transition-large: 0ms;
+  }
+
+  /* Disable all utility class transitions */
+  .transition-colors,
+  .transition-opacity,
+  .transition-transform,
+  .transition-shadow,
+  .transition-all,
+  .btn-transition,
+  .btn-subtle,
+  .card-hover,
+  .card-subtle,
+  .table-row-hover,
+  .table-header-hover {
+    transition: none !important;
+  }
+
+  /* Disable animations but preserve final state */
+  .badge-appear,
+  .modal-overlay,
+  .modal-content,
+  .fade-in,
+  .slide-in-up {
+    animation: none !important;
+  }
+
+  /* Disable transforms for hover states */
+  .btn-transition:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  /* Keep focus transitions extremely fast but present for accessibility */
+  :focus-visible {
+    transition: outline-offset 1ms linear,
+                outline-color 1ms linear;
+  }
+}

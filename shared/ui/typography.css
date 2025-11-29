@@ -1,0 +1,131 @@
+/**
+ * Sentinel Typography Utilities
+ *
+ * Consistent text styles across all Sentinel apps.
+ * Based on Inter font with defined type scale and vertical rhythm.
+ *
+ * Usage Examples:
+ *   <h1 className="heading-1">Page Title</h1>
+ *   <h2 className="heading-2">Section Header</h2>
+ *   <p className="body">Standard paragraph text</p>
+ *   <span className="caption">Supporting detail text</span>
+ *   <div className="overline">Section Label</div>
+ *
+ * Design Notes:
+ *   - All headings use tight line-height (1.25) for compact spacing
+ *   - Body text uses normal line-height (1.5) for readability
+ *   - Caption/label text uses normal line-height for legibility at small sizes
+ *   - Font weights: normal (400), medium (500), semibold (600), bold (700)
+ *   - Type scale based on rem units for consistent sizing
+ */
+
+/* ===========================
+   Heading Styles
+   =========================== */
+
+/**
+ * Main page title - Use sparingly (1 per page)
+ * 36px / 2.25rem, bold weight, tight leading
+ */
+.heading-1 {
+  @apply text-4xl font-bold leading-tight;
+}
+
+/**
+ * Section headers - Major content divisions
+ * 30px / 1.875rem, semibold weight, tight leading
+ */
+.heading-2 {
+  @apply text-3xl font-semibold leading-tight;
+}
+
+/**
+ * Subsection headers - Content groupings
+ * 24px / 1.5rem, semibold weight, tight leading
+ */
+.heading-3 {
+  @apply text-2xl font-semibold leading-tight;
+}
+
+/**
+ * Minor headers - Card titles, panels
+ * 20px / 1.25rem, semibold weight, normal leading
+ */
+.heading-4 {
+  @apply text-xl font-semibold leading-normal;
+}
+
+/**
+ * Small headers - Inline emphasis
+ * 18px / 1.125rem, medium weight, normal leading
+ */
+.heading-5 {
+  @apply text-lg font-medium leading-normal;
+}
+
+/**
+ * Smallest headers - List items, compact sections
+ * 16px / 1rem, medium weight, normal leading
+ */
+.heading-6 {
+  @apply text-base font-medium leading-normal;
+}
+
+/* ===========================
+   Body Text Styles
+   =========================== */
+
+/**
+ * Large body text - Introductory paragraphs, featured content
+ * 18px / 1.125rem, normal weight, relaxed leading
+ */
+.body-lg {
+  @apply text-lg leading-relaxed;
+}
+
+/**
+ * Standard body text - Default paragraph style
+ * 16px / 1rem, normal weight, normal leading
+ */
+.body {
+  @apply text-base leading-normal;
+}
+
+/**
+ * Small body text - Compact content, tables
+ * 14px / 0.875rem, normal weight, normal leading
+ */
+.body-sm {
+  @apply text-sm leading-normal;
+}
+
+/* ===========================
+   Utility Text Styles
+   =========================== */
+
+/**
+ * Caption text - Image captions, footnotes, timestamps
+ * 12px / 0.75rem, normal weight, gray-500 color, normal leading
+ * Uses muted text color for de-emphasized content
+ */
+.caption {
+  @apply text-xs text-gray-500 leading-normal;
+}
+
+/**
+ * Overline text - Section labels, category tags
+ * 12px / 0.75rem, semibold weight, uppercase, wider tracking
+ * All caps with letter-spacing for emphasis and hierarchy
+ */
+.overline {
+  @apply text-xs font-semibold uppercase tracking-wider;
+}
+
+/**
+ * Label text - Form labels, button text, navigation
+ * 14px / 0.875rem, medium weight, normal leading
+ * Medium weight for emphasis without being too heavy
+ */
+.label {
+  @apply text-sm font-medium;
+}

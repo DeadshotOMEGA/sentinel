@@ -5,6 +5,12 @@
  * HeroUI also sets its own CSS variables via the theme.
  */
 
+/* Import typography utilities */
+@import './typography.css';
+
+/* Import animation utilities */
+@import './animations.css';
+
 :root {
   /* Primary - Azure Blue */
   --sentinel-primary: #007fff;
@@ -27,6 +33,69 @@
   --sentinel-neutral-700: #334155;
   --sentinel-neutral-900: #0f172a;
 
+  /* Text colors - WCAG AA compliant */
+  --sentinel-text-primary: #0f172a;
+  --sentinel-text-secondary: #475569;
+  --sentinel-text-muted: #64748b;
+  --sentinel-text-inverse: #ffffff;
+
+  /* Status colors - success */
+  --sentinel-status-success-bg: #dcfce7;
+  --sentinel-status-success-text: #166534;
+  --sentinel-status-success-border: #86efac;
+
+  /* Status colors - warning */
+  --sentinel-status-warning-bg: #fef3c7;
+  --sentinel-status-warning-text: #92400e;
+  --sentinel-status-warning-border: #fcd34d;
+
+  /* Status colors - error */
+  --sentinel-status-error-bg: #fee2e2;
+  --sentinel-status-error-text: #991b1b;
+  --sentinel-status-error-border: #fca5a5;
+
+  /* Status colors - info */
+  --sentinel-status-info-bg: #dbeafe;
+  --sentinel-status-info-text: #1e40af;
+  --sentinel-status-info-border: #93c5fd;
+
+  /* Status colors - neutral */
+  --sentinel-status-neutral-bg: #f3f4f6;
+  --sentinel-status-neutral-text: #374151;
+  --sentinel-status-neutral-border: #d1d5db;
+
+  /* Badge colors - present */
+  --sentinel-badge-present-bg: #dcfce7;
+  --sentinel-badge-present-text: #166534;
+
+  /* Badge colors - absent */
+  --sentinel-badge-absent-bg: #fee2e2;
+  --sentinel-badge-absent-text: #991b1b;
+
+  /* Badge colors - visitor */
+  --sentinel-badge-visitor-bg: #dbeafe;
+  --sentinel-badge-visitor-text: #1e40af;
+
+  /* Badge colors - active */
+  --sentinel-badge-active-bg: #dcfce7;
+  --sentinel-badge-active-text: #166534;
+
+  /* Badge colors - inactive */
+  --sentinel-badge-inactive-bg: #f3f4f6;
+  --sentinel-badge-inactive-text: #475569;
+
+  /* Badge colors - draft */
+  --sentinel-badge-draft-bg: #fef3c7;
+  --sentinel-badge-draft-text: #92400e;
+
+  /* Badge colors - pending */
+  --sentinel-badge-pending-bg: #fef3c7;
+  --sentinel-badge-pending-text: #92400e;
+
+  /* Badge colors - excused */
+  --sentinel-badge-excused-bg: #f3f4f6;
+  --sentinel-badge-excused-text: #374151;
+
   /* Typography */
   --sentinel-font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
@@ -44,9 +113,51 @@
   --sentinel-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
     0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-  /* Touch targets */
-  --sentinel-touch-min: 48px;
-  --sentinel-touch-lg: 56px;
+  /* Touch targets - WCAG AAA */
+  --sentinel-touch-min: 44px;
+  --sentinel-touch-kiosk: 56px;
+  --sentinel-touch-comfortable: 64px;
+
+  /* Focus ring - keyboard navigation accessibility */
+  --sentinel-focus-ring: #007fff;
+  --sentinel-focus-ring-light: #ffffff;
+  --sentinel-focus-ring-offset: 2px;
+  --sentinel-focus-ring-width: 2px;
+  --sentinel-focus-ring-width-high-contrast: 3px;
+
+  /* Transitions */
+  --prefers-reduced-motion: 300ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --prefers-reduced-motion: 0.01ms;
+  }
+}
+
+/* Focus ring utility - consistent keyboard navigation across all interfaces */
+:focus-visible {
+  outline: var(--sentinel-focus-ring-width) solid var(--sentinel-focus-ring);
+  outline-offset: var(--sentinel-focus-ring-offset);
+}
+
+/* For dark backgrounds - use .focus-ring-light class on parent or element */
+.focus-ring-light:focus-visible,
+.focus-ring-light :focus-visible {
+  outline-color: var(--sentinel-focus-ring-light);
+}
+
+/* Remove default outline when using focus-visible */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast focus for accessibility */
+@media (prefers-contrast: more) {
+  :focus-visible {
+    outline-width: var(--sentinel-focus-ring-width-high-contrast);
+    outline-color: black;
+  }
 }
 
 /* Kiosk mode - larger touch targets */
@@ -59,13 +170,26 @@
   font-size: 1.125rem;
 }
 
-/* TV mode - 10-foot UI optimizations */
+/* TV mode - wall display optimizations */
 .tv-mode {
   --heroui-font-size-large: 2rem;
 }
 
 .tv-mode * {
   cursor: default !important;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Reduced motion for Raspberry Pi performance */
@@ -76,5 +200,124 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Skeleton loading states - static fallback for reduced motion */
+  .animate-pulse {
+    animation: none !important;
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   RESPONSIVE TABLE STYLES
+   ============================================ */
+
+/**
+ * .table-responsive-wrapper
+ * Horizontal scroll container for tables on mobile
+ * Touch-optimized with scroll shadows for visual feedback
+ */
+.table-responsive-wrapper {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+}
+
+/* Desktop - no special behavior needed */
+@media (min-width: 768px) {
+  .table-responsive-wrapper {
+    overflow-x: visible;
+  }
+
+  .table-sticky-col {
+    position: static !important;
+    background: transparent !important;
+  }
+}
+
+/* Mobile - enable horizontal scroll with sticky first column */
+@media (max-width: 767px) {
+  .table-responsive-wrapper {
+    /* Scroll shadow indicators */
+    background:
+      /* Shadow on right edge when content overflows */
+      linear-gradient(to right, white 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent 16px) 0 0,
+      /* Shadow on left edge when scrolled */
+      linear-gradient(to left, white 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(to left, rgba(0, 0, 0, 0.1), transparent 16px) 100% 0;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 16px 100%, 40px 100%, 16px 100%;
+    background-attachment: local, scroll, local, scroll;
+  }
+
+  /* Sticky first column */
+  .table-sticky-col {
+    position: sticky !important;
+    left: 0;
+    z-index: 10;
+    background-color: inherit;
+  }
+
+  /* Ensure sticky header cells have proper background */
+  thead .table-sticky-col {
+    background-color: #f9fafb; /* bg-gray-50 */
+  }
+
+  /* Ensure sticky body cells have proper background */
+  tbody tr .table-sticky-col {
+    background-color: white;
+  }
+
+  /* Sticky cells on hover rows need hover background */
+  tbody tr:hover .table-sticky-col {
+    background-color: #f9fafb; /* bg-gray-50 to match row hover */
+  }
+
+  /* Prevent table cells from crushing - minimum widths */
+  table th,
+  table td {
+    min-width: 120px;
+    white-space: nowrap;
+  }
+
+  /* First column can be slightly narrower but still readable */
+  table th:first-child,
+  table td:first-child {
+    min-width: 140px;
+  }
+
+  /* Ensure touch targets are at least 44px on mobile */
+  table th,
+  table td {
+    min-height: 44px;
+  }
+
+  /* Clickable rows need proper touch target */
+  tbody tr[role="button"] td {
+    padding-top: 0.75rem; /* 12px */
+    padding-bottom: 0.75rem; /* 12px */
+  }
+}
+
+/* Extra small devices - tighten spacing but maintain usability */
+@media (max-width: 375px) {
+  .table-responsive-wrapper table th,
+  .table-responsive-wrapper table td {
+    padding-left: 0.75rem; /* 12px */
+    padding-right: 0.75rem; /* 12px */
+    font-size: 0.875rem; /* 14px */
+  }
+
+  /* Reduce minimum width slightly on very small screens */
+  .table-responsive-wrapper table th,
+  .table-responsive-wrapper table td {
+    min-width: 100px;
+  }
+
+  .table-responsive-wrapper table th:first-child,
+  .table-responsive-wrapper table td:first-child {
+    min-width: 120px;
   }
 }

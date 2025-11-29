@@ -18,7 +18,7 @@ export const colors = {
     700: "#004d99",
     800: "#003366",
     900: "#001a33",
-    DEFAULT: "#007fff",
+    DEFAULT: "#0066cc",  // Changed from #007fff for WCAG AA contrast (4.5:1)
     foreground: "#ffffff",
   },
 
@@ -155,6 +155,39 @@ export const fonts = {
 } as const;
 
 /**
+ * Typography system - scales, weights, and line heights
+ * Based on Inter font with consistent vertical rhythm
+ */
+export const typography = {
+  fontFamily: {
+    sans: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    mono: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+  },
+  fontSize: {
+    xs: "0.75rem", // 12px
+    sm: "0.875rem", // 14px
+    base: "1rem", // 16px
+    lg: "1.125rem", // 18px
+    xl: "1.25rem", // 20px
+    "2xl": "1.5rem", // 24px
+    "3xl": "1.875rem", // 30px
+    "4xl": "2.25rem", // 36px
+    "5xl": "3rem", // 48px
+  },
+  fontWeight: {
+    normal: "400",
+    medium: "500",
+    semibold: "600",
+    bold: "700",
+  },
+  lineHeight: {
+    tight: "1.25",
+    normal: "1.5",
+    relaxed: "1.75",
+  },
+} as const;
+
+/**
  * HeroUI theme configuration object
  * Pass to heroui() plugin in hero.ts
  */
@@ -187,9 +220,91 @@ export const sentinelTheme = {
 } as const;
 
 /**
- * Status color mapping for attendance/member states
+ * Text color tokens - all meet WCAG AA (4.5:1) on white/gray-50 backgrounds
+ */
+export const textColors = {
+  primary: "#0f172a", // gray-900, 17.85:1 on white
+  secondary: "#475569", // gray-600, 7.58:1 on white
+  muted: "#64748b", // gray-500, 4.76:1 on white (minimum AA)
+  inverse: "#ffffff", // white on dark backgrounds
+} as const;
+
+/**
+ * Status colors with accessible foreground/background pairings
+ * All combinations meet WCAG AA (4.5:1 minimum)
  */
 export const statusColors = {
+  success: {
+    bg: "#dcfce7", // green-100
+    text: "#166534", // green-800, 6.49:1 contrast
+    border: "#86efac", // green-300
+  },
+  warning: {
+    bg: "#fef3c7", // amber-100
+    text: "#92400e", // amber-800, 6.37:1 contrast
+    border: "#fcd34d", // amber-300
+  },
+  error: {
+    bg: "#fee2e2", // red-100
+    text: "#991b1b", // red-800, 6.80:1 contrast
+    border: "#fca5a5", // red-300
+  },
+  info: {
+    bg: "#dbeafe", // blue-100
+    text: "#1e40af", // blue-800, 7.15:1 contrast
+    border: "#93c5fd", // blue-300
+  },
+  neutral: {
+    bg: "#f3f4f6", // gray-100
+    text: "#374151", // gray-700, 9.37:1 contrast
+    border: "#d1d5db", // gray-300
+  },
+} as const;
+
+/**
+ * Badge color variants for member/attendance states
+ * All combinations meet WCAG AA (4.5:1 minimum)
+ */
+export const badgeColors = {
+  present: {
+    bg: "#dcfce7", // green-100
+    text: "#166534", // green-800
+  },
+  absent: {
+    bg: "#fee2e2", // red-100
+    text: "#991b1b", // red-800
+  },
+  visitor: {
+    bg: "#dbeafe", // blue-100
+    text: "#1e40af", // blue-800
+  },
+  active: {
+    bg: "#dcfce7", // green-100
+    text: "#166534", // green-800
+  },
+  inactive: {
+    bg: "#f3f4f6", // gray-100
+    text: "#475569", // gray-600 (6.87:1 contrast - meets AA)
+  },
+  draft: {
+    bg: "#fef3c7", // amber-100
+    text: "#92400e", // amber-800
+  },
+  pending: {
+    bg: "#fef3c7", // amber-100
+    text: "#92400e", // amber-800
+  },
+  excused: {
+    bg: "#f3f4f6", // gray-100
+    text: "#374151", // gray-700
+  },
+} as const;
+
+/**
+ * Legacy status color mapping (for HeroUI color prop compatibility)
+ * @deprecated Use badgeColors or statusColors directly for better accessibility
+ */
+export const legacyStatusColors = {
   present: "success",
   absent: "danger",
   visitor: "secondary",
@@ -199,13 +314,51 @@ export const statusColors = {
   inactive: "default",
 } as const;
 
-export type StatusColor = (typeof statusColors)[keyof typeof statusColors];
+export type LegacyStatusColor =
+  (typeof legacyStatusColors)[keyof typeof legacyStatusColors];
 
-export function getStatusColor(status: keyof typeof statusColors): StatusColor {
-  if (!(status in statusColors)) {
+export function getStatusColor(
+  status: keyof typeof legacyStatusColors
+): LegacyStatusColor {
+  if (!(status in legacyStatusColors)) {
     throw new Error(
-      `Invalid status: ${status}. Valid: ${Object.keys(statusColors).join(", ")}`
+      `Invalid status: ${status}. Valid: ${Object.keys(legacyStatusColors).join(", ")}`
     );
   }
-  return statusColors[status];
+  return legacyStatusColors[status];
 }
+
+/**
+ * Touch target sizes in pixels
+ * Based on WCAG 2.1 Level AAA and kiosk accessibility requirements
+ */
+export const touchTargets = {
+  minimum: 44, // WCAG 2.1 Level AAA minimum
+  kiosk: 56, // Kiosk requirement for enhanced accessibility
+  comfortable: 64, // Extra large for high accessibility needs
+} as const;
+
+/**
+ * Focus ring tokens for keyboard navigation
+ * Ensures consistent, high-contrast focus indicators across all interfaces
+ */
+export const focus = {
+  ring: "#007fff", // Primary blue - matches primary brand color
+  ringLight: "#ffffff", // For dark backgrounds
+  ringOffset: "2px", // Space between element and focus ring
+  ringWidth: "2px", // Width of focus ring
+  ringWidthHighContrast: "3px", // Increased width for high contrast mode
+} as const;
+
+/**
+ * Transition timing tokens
+ * Use for consistent animation durations across all interfaces
+ */
+export const transitions = {
+  micro: "150ms", // Micro interactions (button hover, color changes)
+  small: "200ms", // Small animations (opacity, badges)
+  medium: "300ms", // Medium animations (modals, drawers)
+  large: "400ms", // Large animations (page transitions)
+  easeOut: "cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Standard ease-out
+  easeInOut: "cubic-bezier(0.45, 0, 0.55, 1)", // Standard ease-in-out
+} as const;
