@@ -2,6 +2,7 @@ import * as Papa from 'papaparse';
 import { memberRepository } from '../db/repositories/member-repository';
 import { divisionRepository } from '../db/repositories/division-repository';
 import { ValidationError } from '../utils/errors';
+import { normalizeName } from '../utils/name-normalizer';
 import type {
   NominalRollRow,
   ImportPreview,
@@ -117,18 +118,18 @@ export class ImportService {
         return;
       }
 
-      // Map CSV row to NominalRollRow
+      // Map CSV row to NominalRollRow with name normalization
       const nominalRow: NominalRollRow = {
         serviceNumber: csvRow.SN.replace(/\s/g, ''), // Remove all spaces
         employeeNumber: csvRow['EMPL #']?.trim() ? csvRow['EMPL #'].trim() : undefined,
         rank: csvRow.RANK.trim(),
-        lastName: csvRow['LAST NAME'].trim(),
-        firstName: csvRow['FIRST NAME'].trim(),
+        lastName: normalizeName(csvRow['LAST NAME'].trim()),
+        firstName: normalizeName(csvRow['FIRST NAME'].trim()),
         initials: csvRow.INITIALS?.trim() ? csvRow.INITIALS.trim() : undefined,
         department: csvRow.DEPT.trim(),
         mess: csvRow.MESS?.trim() ? csvRow.MESS.trim() : undefined,
         moc: csvRow.MOC?.trim() ? csvRow.MOC.trim() : undefined,
-        email: csvRow['EMAIL ADDRESS']?.trim() ? csvRow['EMAIL ADDRESS'].trim() : undefined,
+        email: csvRow['EMAIL ADDRESS']?.trim() ? csvRow['EMAIL ADDRESS'].trim().toLowerCase() : undefined,
         homePhone: csvRow['HOME PHONE']?.trim() ? csvRow['HOME PHONE'].trim() : undefined,
         mobilePhone: csvRow['MOBILE PHONE']?.trim() ? csvRow['MOBILE PHONE'].trim() : undefined,
         details: csvRow.DETAILS?.trim() ? csvRow.DETAILS.trim() : undefined,
