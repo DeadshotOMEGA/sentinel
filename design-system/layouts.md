@@ -35,7 +35,7 @@ Standard desktop web app with sidebar navigation.
 
 ---
 
-## TV Display (10-foot UI)
+## TV Display
 
 Passive display for wall-mounted screens. No interaction.
 

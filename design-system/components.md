@@ -96,7 +96,7 @@ Large stat display:
 - `.metric-trend` - Small trend indicator
 
 ### TV Card
-Enlarged for 10-foot UI. 5rem stat values.
+Enlarged for wall display. 5rem stat values.
 
 ### Alert Card
 Left border 4px colored by severity.
