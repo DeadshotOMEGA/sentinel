@@ -88,7 +88,7 @@ Font:    Inter
 
 ```css
 .kiosk-mode  /* 56px touch targets, larger fonts */
-.tv-mode     /* 10-foot UI, no hover states, cursor: default */
+.tv-mode     /* Wall display, no hover states, cursor: default */
 ```
 
 ## Interface-Specific Rules
