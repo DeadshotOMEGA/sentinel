@@ -33,13 +33,19 @@
   }
 }
 
-/* TV mode - disable cursor and hover effects */
+/* TV mode - disable cursor and hover effects, but keep focus visible for accessibility */
 .tv-mode {
   cursor: default !important;
 }
 
 .tv-mode * {
   cursor: default !important;
+}
+
+/* Ensure focus is visible even in TV mode (for remote controls, accessibility devices) */
+.tv-mode :focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 4px;
 }
 
 /* TV-specific KPI stat sizes */

@@ -3,11 +3,37 @@ import { loadConfig } from './lib/config'
 import type { TVConfig } from './lib/config'
 import { PresenceView } from './pages/PresenceView'
 import { EventView } from './pages/EventView'
+import { AdaptiveModeTest } from './components/AdaptiveModeTest'
+
+console.log('=== APP.TSX MODULE LOADED ===', window.location.search)
 
 export default function App(): React.ReactNode {
   const [config, setConfig] = useState<TVConfig | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Check if test mode is enabled via URL param
+  const searchParams = new URLSearchParams(window.location.search)
+  const testParam = searchParams.get('test')
+  const isTestMode = testParam === 'adaptive'
+
+  // DEBUG: Show params in page title
+  if (typeof document !== 'undefined') {
+    document.title = `TEST=${testParam} MODE=${isTestMode} SEARCH=${window.location.search}`
+  }
+
+  console.log('App: isTestMode =', isTestMode, 'testParam =', testParam, 'search =', window.location.search)
+
+  // Test mode bypass - check FIRST before any loading states
+  if (isTestMode) {
+    console.log('App: Rendering AdaptiveModeTest')
+    return (
+      <div style={{ padding: '50px', background: 'yellow', fontSize: '48px' }}>
+        TEST MODE ACTIVE - isTestMode = {String(isTestMode)}
+        <AdaptiveModeTest />
+      </div>
+    )
+  }
 
   useEffect(() => {
     const initializeConfig = async (): Promise<void> => {

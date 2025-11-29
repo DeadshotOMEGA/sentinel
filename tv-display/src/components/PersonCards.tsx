@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Textfit } from 'react-textfit';
 import type { PresentMember, ActiveVisitor } from '../hooks/usePresenceData';
 
 interface PersonCardsProps {
@@ -22,19 +23,62 @@ function getVisitTypeLabel(visitType: string): string {
   return 'Visitor';
 }
 
-// Mess priority order (lower = higher priority)
-const MESS_PRIORITY: Record<string, number> = {
-  'Wardroom': 1,
-  'C&POs': 2,
-  'Junior Ranks': 3,
+// RCN Rank priority (lower = higher rank) - from Canada.ca official structure
+// Officers first, then NCMs
+const RANK_PRIORITY: Record<string, number> = {
+  // Flag Officers
+  'Adm': 1,
+  'VAdm': 2,
+  'RAdm': 3,
+  'Cmdre': 4,
+  // Senior Officers
+  'Capt(N)': 5,
+  'Cdr': 6,
+  'LCdr': 7,
+  // Junior Officers
+  'Lt(N)': 8,
+  'SLt': 9,
+  'A/SLt': 10,
+  // Subordinate Officer
+  'NCdt': 11,
+  'OCdt': 11, // Officer Cadet (Army/Air Force equivalent)
+  // Senior NCMs
+  'CPO1': 20,
+  'CPO2': 21,
+  'PO1': 22,
+  'PO2': 23,
+  // Junior NCMs
+  'MS': 30,
+  'LS': 31,
+  'AB': 32,
+  'OS': 33,
+  // Civilian/Other
+  'Civ': 99,
 };
 
-function getMessPriority(mess: string | null): number {
-  if (!mess) return 99; // No mess = lowest priority
-  return MESS_PRIORITY[mess] ?? 50;
+function getRankPriority(rank: string | null): number {
+  if (!rank) return 100;
+  // Normalize rank: trim whitespace, handle common variations
+  const normalized = rank.trim();
+  if (normalized in RANK_PRIORITY) {
+    return RANK_PRIORITY[normalized];
+  }
+  // Try case-insensitive match
+  const upperRank = normalized.toUpperCase();
+  for (const [key, value] of Object.entries(RANK_PRIORITY)) {
+    if (key.toUpperCase() === upperRank) {
+      return value;
+    }
+  }
+  return 50; // Unknown rank goes middle
 }
 
-// Sort members: Command division first, then by mess, then division, then name
+function isOfficer(rank: string | null): boolean {
+  const priority = getRankPriority(rank);
+  return priority <= 11; // Officers are priority 1-11
+}
+
+// Sort members: Officers by rank, then NCMs by rank, then by name
 function sortMembers(members: PresentMember[]): PresentMember[] {
   return [...members].sort((a, b) => {
     // 1. Command division first
@@ -42,13 +86,14 @@ function sortMembers(members: PresentMember[]): PresentMember[] {
     const bIsCommand = b.division === 'Command' ? 0 : 1;
     if (aIsCommand !== bIsCommand) return aIsCommand - bIsCommand;
 
-    // 2. Mess priority (Wardroom > C&POs > Junior Ranks)
-    const messDiff = getMessPriority(a.mess) - getMessPriority(b.mess);
-    if (messDiff !== 0) return messDiff;
+    // 2. Officers before NCMs
+    const aIsOfficer = isOfficer(a.rank) ? 0 : 1;
+    const bIsOfficer = isOfficer(b.rank) ? 0 : 1;
+    if (aIsOfficer !== bIsOfficer) return aIsOfficer - bIsOfficer;
 
-    // 3. Division name (alphabetical)
-    const divisionDiff = a.division.localeCompare(b.division);
-    if (divisionDiff !== 0) return divisionDiff;
+    // 3. Sort by rank (higher rank first)
+    const rankDiff = getRankPriority(a.rank) - getRankPriority(b.rank);
+    if (rankDiff !== 0) return rankDiff;
 
     // 4. Last name (alphabetical)
     const lastNameDiff = a.lastName.localeCompare(b.lastName);
@@ -75,7 +120,7 @@ export function PersonCards({ presentMembers, activeVisitors }: PersonCardsProps
   if (!hasMembers && !hasVisitors) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 rounded-xl">
-        <p className="text-3xl text-gray-400">No one currently in building</p>
+        <p className="text-4xl text-gray-400">No one currently in building</p>
       </div>
     );
   }
@@ -85,23 +130,23 @@ export function PersonCards({ presentMembers, activeVisitors }: PersonCardsProps
       {/* Active Visitors Section */}
       {hasVisitors && (
         <div>
-          <h3 className="text-base text-gray-600 mb-2 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-sky-500" />
-            {activeVisitors.length}
+          <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+            Visitors ({activeVisitors.length})
           </h3>
-          <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {activeVisitors.map((visitor) => (
               <div
                 key={visitor.id}
-                className="border-l-4 border-l-sky-500 bg-white rounded-lg shadow-sm p-2"
+                className="border-l-3 border-l-sky-500 bg-white rounded-md shadow-sm px-2 py-1.5 min-w-0"
               >
-                <p className="text-xl font-bold text-gray-900 truncate">
+                <Textfit mode="single" max={16} className="font-bold text-gray-900 h-5">
                   {visitor.name}
-                </p>
-                <p className="text-base text-gray-700 truncate">
+                </Textfit>
+                <Textfit mode="single" max={14} className="text-gray-700 h-4">
                   {visitor.organization}
-                </p>
-                <p className="text-sm text-sky-600">
+                </Textfit>
+                <p className="text-xs text-sky-600">
                   {getVisitTypeLabel(visitor.visitType)}
                 </p>
               </div>
@@ -113,22 +158,22 @@ export function PersonCards({ presentMembers, activeVisitors }: PersonCardsProps
       {/* Command Members Section */}
       {commandMembers.length > 0 && (
         <div>
-          <h3 className="text-base text-gray-600 mb-2 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-500" />
-            {commandMembers.length}
+          <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+            Command ({commandMembers.length})
           </h3>
-          <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {commandMembers.map((member) => (
               <div
                 key={member.id}
-                className="border-l-4 border-l-amber-500 bg-white rounded-lg shadow-sm p-2"
+                className="border-l-3 border-l-amber-500 bg-white rounded-md shadow-sm px-2 py-1.5 min-w-0"
               >
-                <p className="text-xl font-bold text-gray-900 truncate">
+                <Textfit mode="single" max={16} className="font-bold text-gray-900 h-5">
                   {member.rank} {member.lastName}
-                </p>
-                <p className="text-base text-gray-700 truncate">
+                </Textfit>
+                <Textfit mode="single" max={14} className="text-gray-700 h-4">
                   {member.firstName}
-                </p>
+                </Textfit>
               </div>
             ))}
           </div>
@@ -138,23 +183,23 @@ export function PersonCards({ presentMembers, activeVisitors }: PersonCardsProps
       {/* Regular Members Section */}
       {regularMembers.length > 0 && (
         <div>
-          <h3 className="text-base text-gray-600 mb-2 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500" />
-            {regularMembers.length}
+          <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            Members ({regularMembers.length})
           </h3>
-          <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {regularMembers.map((member) => (
               <div
                 key={member.id}
-                className="border-l-4 border-l-emerald-500 bg-white rounded-lg shadow-sm p-2"
+                className="border-l-3 border-l-emerald-500 bg-white rounded-md shadow-sm px-2 py-1.5 min-w-0"
               >
-                <p className="text-xl font-bold text-gray-900 truncate">
+                <Textfit mode="single" max={16} className="font-bold text-gray-900 h-5">
                   {member.rank} {member.lastName}
-                </p>
-                <p className="text-base text-gray-700 truncate">
+                </Textfit>
+                <Textfit mode="single" max={14} className="text-gray-700 h-4">
                   {member.firstName}
-                </p>
-                <p className="text-sm text-gray-500">
+                </Textfit>
+                <p className="text-xs text-gray-500">
                   {member.division}
                 </p>
               </div>

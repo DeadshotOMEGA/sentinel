@@ -4,7 +4,7 @@ Passive wall-mounted display for the Sentinel RFID attendance system.
 
 ## Features
 
-- 10-foot UI (readable from distance)
+- Wall display optimized for readability
 - Real-time presence stats
 - Activity feed with auto-scroll
 - Division breakdown
@@ -185,6 +185,6 @@ Add to `/etc/xdg/lxsession/LXDE-pi/autostart`:
 
 - **Light mode only** - No dark theme
 - **No interactivity** - Passive display
-- **10-foot viewing** - Large fonts, high contrast
+- **Large fonts, high contrast** - Optimized for wall display
 - **Auto-reconnect** - WebSocket reconnection
 - **Memory efficient** - Runs 24/7 without leaks

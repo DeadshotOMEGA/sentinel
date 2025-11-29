@@ -24,7 +24,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/src/*"]
+      "@shared/*": ["../shared/*"],
+      "@sentinel/ui": ["../shared/ui"]
     }
   },
   "include": ["src"],

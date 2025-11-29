@@ -1,9 +1,9 @@
 import { usePresenceData } from '../hooks/usePresenceData';
-import { PresenceCards } from '../components/PresenceCards';
-import { PersonCards } from '../components/PersonCards';
+import { AdaptivePresenceView } from '../components/AdaptivePresenceView';
 import { ActivityFeed } from '../components/ActivityFeed';
 import { ConnectionStatus } from '../components/ConnectionStatus';
 import type { TVConfig } from '../lib/config';
+import { Logo } from '@shared/ui';
 
 interface PresenceViewProps {
   config: TVConfig;
@@ -18,36 +18,40 @@ export function PresenceView({ config }: PresenceViewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 tv-mode">
       <div className="flex h-screen">
-        {/* Main content - 75% */}
+        {/* Main content - adaptive width based on activity feed */}
         <div className="flex-1 p-4 overflow-y-auto">
-          {/* Compact header: connection status + presence stats */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${connectionStatus}`} />
-              <span className="text-sm text-gray-600">{connectionText}</span>
+          {/* Compact header: logo + stats + connection status */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-6">
+              <Logo size="lg" />
+              {/* Inline stats - compact and non-prominent */}
+              <div className="flex items-center gap-4 text-lg">
+                <span className="text-green-600 font-semibold">{data.present} Present</span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-600">{data.absent} Absent</span>
+                <span className="text-gray-400">•</span>
+                <span className="text-blue-600">{data.visitors} Visitors</span>
+              </div>
             </div>
-            <PresenceCards
-              present={data.present}
-              absent={data.absent}
-              visitors={data.visitors}
-            />
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${connectionStatus}`} />
+              <span className="text-base text-gray-500">{connectionText}</span>
+            </div>
           </div>
 
-          {/* Person Cards - Who's in the building */}
-          <div className="flex-1 overflow-auto">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3">
-              Currently In Building
-            </h2>
-            <PersonCards
-              presentMembers={data.presentMembers}
-              activeVisitors={data.activeVisitors}
-            />
-          </div>
+          {/* Adaptive Presence View - switches based on count */}
+          <AdaptivePresenceView
+            present={data.present}
+            absent={data.absent}
+            visitors={data.visitors}
+            presentMembers={data.presentMembers}
+            activeVisitors={data.activeVisitors}
+          />
         </div>
 
-        {/* Activity Feed - 18% */}
+        {/* Activity Feed - 24% (increased from 18%) */}
         {config.activityFeedEnabled && (
-          <div className="w-[18%] border-l border-gray-200 bg-gray-50">
+          <div className="w-[24%] border-l border-gray-200 bg-gray-50">
             <ActivityFeed config={config} />
           </div>
         )}

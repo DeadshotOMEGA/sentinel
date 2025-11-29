@@ -4,6 +4,7 @@ import { Clock } from '../components/Clock';
 import { ActivityFeed } from '../components/ActivityFeed';
 import { ConnectionStatus } from '../components/ConnectionStatus';
 import type { TVConfig } from '../lib/config';
+import { Logo } from '@shared/ui';
 
 interface EventViewProps {
   config: TVConfig;
@@ -23,6 +24,9 @@ export function EventView({ config, eventName }: EventViewProps) {
         <div className="flex-1 p-8 overflow-hidden flex flex-col">
           <div className="flex justify-between items-start mb-8">
             <div>
+              <div className="mb-4">
+                <Logo size="lg" />
+              </div>
               <h1 className="text-5xl font-bold text-gray-900 mb-2">
                 {eventName}
               </h1>
