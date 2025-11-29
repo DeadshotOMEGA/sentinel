@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useKioskStore } from './state/kiosk-state';
 import { syncService } from './services/sync-service';
 import { useBadgeScanner } from './hooks/useBadgeScanner';
-import SyncStatus from './components/SyncStatus';
+import NetworkIndicator from './components/NetworkIndicator';
 import IdleScreen from './screens/IdleScreen';
 import ScanningScreen from './screens/ScanningScreen';
 import SuccessScreen from './screens/SuccessScreen';
@@ -48,7 +48,7 @@ export default function App() {
 
   return (
     <>
-      <SyncStatus />
+      <NetworkIndicator />
       {renderScreen()}
     </>
   );

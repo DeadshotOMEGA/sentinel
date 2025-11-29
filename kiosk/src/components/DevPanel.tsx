@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getDevMembers, clearAllCheckins, type DevMember } from '../lib/api';
 import MemberPickerModal from './MemberPickerModal';
+import { Wrench, Dice5, Trash, User, X } from '@shared/ui/icons';
 
 interface DevPanelProps {
   onSimulateScan: (serialNumber: string) => void;
@@ -153,13 +154,15 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <span className="text-orange-500">🛠️</span> DEV Panel
+                <Wrench className="h-6 w-6 text-orange-500" aria-hidden="true" />
+                DEV Panel
               </h2>
               <button
                 onClick={handleClose}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="min-h-[56px] min-w-[56px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-lg active:bg-gray-100"
+                aria-label="Close DEV panel"
               >
-                ✕
+                <X className="h-8 w-8" aria-hidden="true" />
               </button>
             </div>
 
@@ -172,30 +175,34 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
               <div className="space-y-3">
                 <button
                   onClick={handleRandomCheckIn}
-                  className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  className="w-full min-h-[56px] px-6 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                 >
-                  <span>🎲</span> Random Check-In
+                  <Dice5 className="h-6 w-6" aria-hidden="true" />
+                  Random Check-In
                 </button>
 
                 <button
                   onClick={handleRandomCheckOut}
-                  className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  className="w-full min-h-[56px] px-6 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                 >
-                  <span>🎲</span> Random Check-Out
+                  <Dice5 className="h-6 w-6" aria-hidden="true" />
+                  Random Check-Out
                 </button>
 
                 <button
                   onClick={() => setShowConfirmClear(true)}
-                  className="w-full py-4 px-6 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  className="w-full min-h-[56px] px-6 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                 >
-                  <span>🧹</span> Clear All Check-Ins
+                  <Trash className="h-6 w-6" aria-hidden="true" />
+                  Clear All Check-Ins
                 </button>
 
                 <button
                   onClick={() => setShowMemberPicker(true)}
-                  className="w-full py-4 px-6 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  className="w-full min-h-[56px] px-6 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                 >
-                  <span>👤</span> Pick Specific Person
+                  <User className="h-6 w-6" aria-hidden="true" />
+                  Pick Specific Person
                 </button>
 
                 <div className="text-center text-sm text-gray-500 mt-4">
@@ -221,13 +228,13 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmClear(false)}
-                className="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold transition-colors"
+                className="flex-1 min-h-[56px] px-4 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 rounded-xl font-semibold transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearAll}
-                className="flex-1 py-3 px-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-colors"
+                className="flex-1 min-h-[56px] px-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold transition-colors"
               >
                 Clear All
               </button>

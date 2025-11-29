@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKioskStore } from '../state/kiosk-state';
 import { getConfig } from '../lib/config';
 import DevPanel from '../components/DevPanel';
+import { Logo } from '@shared/ui';
 
 interface IdleScreenProps {
   onSimulateScan: (serialNumber: string) => void;
@@ -16,21 +17,24 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
   };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center bg-gray-100 p-8">
+    <div className="flex h-screen flex-col items-center justify-center bg-gray-100 p-6 relative overflow-hidden">
       {/* DEV Panel (hidden, activated by 5 corner taps) */}
       <DevPanel onSimulateScan={onSimulateScan} />
 
-      {/* Logo/Header */}
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold text-primary">HMCS Chippawa</h1>
-        <p className="mt-2 text-xl text-gray-600">Attendance System</p>
+      {/* Logo/Header - Reduced spacing */}
+      <div className="mb-6 text-center">
+        <div className="flex justify-center mb-3">
+          <Logo size="xl" />
+        </div>
+        <h1 className="text-3xl font-semibold text-gray-800">HMCS Chippawa</h1>
+        <p className="mt-1 text-xl text-gray-600">Attendance System</p>
       </div>
 
-      {/* Main prompt */}
-      <div className="mb-16 flex flex-col items-center">
-        <div className="mb-8 rounded-full bg-primary-50 p-12">
+      {/* Main prompt - Optimized for landscape */}
+      <div className="mb-8 flex flex-col items-center">
+        <div className="mb-6 rounded-full bg-primary-50 p-10">
           <svg
-            className="h-32 w-32 text-primary"
+            className="h-28 w-28 text-primary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -44,11 +48,11 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
           </svg>
         </div>
         <h2 className="text-5xl font-bold text-gray-900">Tap Your Badge</h2>
-        <p className="mt-4 text-2xl text-gray-600">Hold your badge near the reader</p>
+        <p className="mt-3 text-2xl text-gray-600">Hold your badge near the reader</p>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-4 mb-8">
+      {/* Action buttons - gap-4 provides 16px spacing between 56px touch targets */}
+      <div className="flex gap-4 mb-6">
         {config.visitorModeEnabled && (
           <button
             className="kiosk-button-secondary"
@@ -66,7 +70,7 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
       </div>
 
       {/* Time display */}
-      <div className="absolute bottom-8 text-center">
+      <div className="absolute bottom-6 text-center">
         <Clock />
       </div>
     </div>

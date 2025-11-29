@@ -70,36 +70,87 @@
     -moz-user-select: text;
     user-select: text;
   }
+
+  /* Landscape optimization for 1280x800 */
+  @media (orientation: landscape) and (max-height: 800px) {
+    html {
+      font-size: 16px; /* Base font size for relative scaling */
+    }
+
+    /* Prevent overflow and scrolling */
+    body, #root {
+      overflow: hidden;
+    }
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
+  /**
+   * Kiosk Button Classes
+   *
+   * Touch Target Requirements:
+   * - Min height/width: 56px (exceeds WCAG AAA 44px minimum)
+   * - Min spacing between buttons: 8px (use gap-2 or gap-4 in flex/grid)
+   * - Padding: 16px vertical, 32px horizontal (px-8 py-4)
+   *
+   * Accessibility:
+   * - High contrast (WCAG AA 4.5:1 minimum)
+   * - Active state feedback (scale-95)
+   * - Disabled state clearly visible (opacity-50)
+   */
+
   /* Primary kiosk button - large, high contrast */
   .kiosk-button-primary {
     @apply min-h-[56px] min-w-[56px] rounded-xl bg-primary px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply transition-all duration-150 ease-in-out;
     @apply active:scale-95 active:bg-primary-600;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
-    @apply transition-transform duration-100;
+  }
+
+  .kiosk-button-primary:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
   }
 
   /* Secondary kiosk button - outlined style */
   .kiosk-button-secondary {
     @apply min-h-[56px] min-w-[56px] rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-xl font-semibold text-gray-700 shadow;
+    @apply transition-all duration-150 ease-in-out;
     @apply active:scale-95 active:bg-gray-100;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
-    @apply transition-transform duration-100;
   }
 
   /* Danger/cancel button */
   .kiosk-button-danger {
     @apply min-h-[56px] min-w-[56px] rounded-xl bg-danger px-8 py-4 text-xl font-semibold text-white shadow-lg;
+    @apply transition-all duration-150 ease-in-out;
     @apply active:scale-95 active:bg-red-600;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
-    @apply transition-transform duration-100;
+  }
+
+  .kiosk-button-danger:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
   }
 
   /* Touch-optimized input fields */
   .kiosk-input {
     @apply min-h-[56px] w-full rounded-xl border-2 border-gray-300 px-6 text-xl;
-    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
+
+  /* Focus styles inherited from shared/ui/theme.css :focus-visible */
+  .kiosk-input:focus {
+    border-color: var(--color-primary);
   }
 }

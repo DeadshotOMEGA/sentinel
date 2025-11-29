@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from '@sentinel/ui';
 import App from './App';
 import './styles/global.css';
 import { initAudio } from './lib/audio';
@@ -9,6 +10,8 @@ initAudio();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary variant="kiosk">
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );

@@ -60,30 +60,30 @@ export default function VisitorScreen() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-5xl font-bold text-primary-700 mb-2">
+    <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+      {/* Header - Reduced size */}
+      <div className="text-center mb-5">
+        <h1 className="text-4xl font-bold text-primary-700 mb-1">
           Visitor Check-In
         </h1>
-        <p className="text-2xl text-gray-600">
+        <p className="text-xl text-gray-600">
           Please provide your information
         </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-1 max-w-3xl mx-auto w-full">
-        <div className="space-y-6">
+      {/* Form - Optimized for landscape */}
+      <form onSubmit={handleSubmit} className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Name */}
           <div>
-            <label className="block text-2xl font-semibold text-gray-700 mb-3">
+            <label className="block text-xl font-semibold text-gray-700 mb-2">
               Full Name *
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-6 py-4 text-2xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none min-h-touch"
+              className="kiosk-input text-xl"
               placeholder="John Doe"
               disabled={isSubmitting}
             />
@@ -91,14 +91,14 @@ export default function VisitorScreen() {
 
           {/* Organization */}
           <div>
-            <label className="block text-2xl font-semibold text-gray-700 mb-3">
+            <label className="block text-xl font-semibold text-gray-700 mb-2">
               Organization *
             </label>
             <input
               type="text"
               value={formData.organization}
               onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-              className="w-full px-6 py-4 text-2xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none min-h-touch"
+              className="kiosk-input text-xl"
               placeholder="Company or Unit"
               disabled={isSubmitting}
             />
@@ -106,13 +106,13 @@ export default function VisitorScreen() {
 
           {/* Visit Type */}
           <div>
-            <label className="block text-2xl font-semibold text-gray-700 mb-3">
+            <label className="block text-xl font-semibold text-gray-700 mb-2">
               Visit Type *
             </label>
             <select
               value={formData.visitType}
               onChange={(e) => setFormData({ ...formData, visitType: e.target.value })}
-              className="w-full px-6 py-4 text-2xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none min-h-touch bg-white"
+              className="kiosk-input text-xl bg-white"
               disabled={isSubmitting}
             >
               <option value="">Select a type</option>
@@ -126,22 +126,22 @@ export default function VisitorScreen() {
 
           {/* Purpose (optional) */}
           <div>
-            <label className="block text-2xl font-semibold text-gray-700 mb-3">
+            <label className="block text-xl font-semibold text-gray-700 mb-2">
               Purpose (Optional)
             </label>
             <textarea
               value={formData.purpose}
               onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-              className="w-full px-6 py-4 text-2xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none"
-              rows={3}
-              placeholder="Brief description of visit"
+              className="w-full px-6 py-3 text-xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              rows={2}
+              placeholder="Brief description"
               disabled={isSubmitting}
             />
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 mt-8">
+        <div className="flex gap-4 mt-auto">
           <button
             type="button"
             onClick={reset}

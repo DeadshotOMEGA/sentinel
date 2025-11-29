@@ -28,7 +28,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "@sentinel/ui": ["../shared/ui"]
     }
   },
   "include": ["src", "../shared"]

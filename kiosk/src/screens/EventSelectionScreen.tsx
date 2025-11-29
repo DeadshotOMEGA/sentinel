@@ -42,12 +42,12 @@ export default function EventSelectionScreen() {
 
   if (loading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-8">
+      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
         <div className="text-center">
-          <div className="text-4xl font-bold mb-4 text-gray-900">
+          <div className="text-3xl font-bold mb-3 text-gray-900">
             Loading Events
           </div>
-          <div className="text-2xl text-gray-600">
+          <div className="text-xl text-gray-600">
             Please wait...
           </div>
         </div>
@@ -57,12 +57,12 @@ export default function EventSelectionScreen() {
 
   if (error || events.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-        <div className="text-center mb-8">
-          <div className="text-4xl font-bold mb-4 text-gray-900">
+      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+        <div className="text-center mb-6">
+          <div className="text-3xl font-bold mb-3 text-gray-900">
             No Events Available
           </div>
-          <div className="text-2xl text-gray-600">
+          <div className="text-xl text-gray-600">
             {error || 'There are no active events at this time.'}
           </div>
         </div>
@@ -77,35 +77,35 @@ export default function EventSelectionScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-primary-700 mb-2">
+    <div className="flex h-screen flex-col bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+      {/* Header - Reduced size */}
+      <div className="text-center mb-6">
+        <h1 className="text-4xl font-bold text-primary-700 mb-1">
           Select an Event
         </h1>
-        <p className="text-2xl text-gray-600">
+        <p className="text-xl text-gray-600">
           Choose which event you are attending
         </p>
       </div>
 
-      {/* Events Grid */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
+      {/* Events Grid - Scrollable area with max height */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="grid grid-cols-1 gap-3 max-w-4xl mx-auto pb-4">
           {events.map((event) => (
             <button
               key={event.id}
               onClick={() => handleEventSelect(event.id)}
-              className="kiosk-button-primary text-left p-8 h-auto min-h-32"
+              className="kiosk-button-primary text-left p-6 h-auto min-h-[56px]"
             >
-              <div className="text-3xl font-bold mb-2">
+              <div className="text-2xl font-bold mb-1">
                 {event.name}
               </div>
               {event.description && (
-                <div className="text-xl text-gray-600 mb-3">
+                <div className="text-lg text-white/90 mb-2">
                   {event.description}
                 </div>
               )}
-              <div className="text-lg text-gray-500">
+              <div className="text-base text-white/80">
                 {new Date(event.startTime).toLocaleTimeString('en-CA', {
                   hour: '2-digit',
                   minute: '2-digit',
@@ -120,7 +120,7 @@ export default function EventSelectionScreen() {
       </div>
 
       {/* Cancel Button */}
-      <div className="mt-8 flex justify-center">
+      <div className="mt-4 flex justify-center">
         <button
           className="kiosk-button-secondary"
           onClick={reset}

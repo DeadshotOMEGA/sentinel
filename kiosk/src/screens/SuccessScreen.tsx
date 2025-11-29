@@ -26,12 +26,12 @@ export default function SuccessScreen() {
   const isCheckingIn = checkinResult.direction === 'in';
 
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-success-50 to-success-100 p-8">
-      {/* Success Icon */}
-      <div className="mb-8">
-        <div className="w-32 h-32 bg-success rounded-full flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-success-50 to-success-100 p-6 overflow-hidden">
+      {/* Success Icon - Reduced size */}
+      <div className="mb-6">
+        <div className="w-28 h-28 bg-success rounded-full flex items-center justify-center">
           <svg
-            className="w-20 h-20 text-white"
+            className="w-18 h-18 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -47,20 +47,20 @@ export default function SuccessScreen() {
       </div>
 
       {/* Success Message */}
-      <div className="text-center mb-12">
-        <h2 className="text-6xl font-bold text-success-700 mb-6">
+      <div className="text-center mb-8">
+        <h2 className="text-5xl font-bold text-success-700 mb-4">
           {isCheckingIn ? 'Signed In' : 'Signed Out'}
         </h2>
 
         {/* Member Details */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 max-w-2xl">
-          <p className="text-4xl font-bold text-gray-800 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-4 max-w-2xl">
+          <p className="text-3xl font-bold text-gray-800 mb-3">
             {checkinResult.rank} {checkinResult.memberName}
           </p>
-          <p className="text-3xl text-gray-600 mb-4">
+          <p className="text-2xl text-gray-600 mb-3">
             {checkinResult.division}
           </p>
-          <p className="text-2xl text-gray-500">
+          <p className="text-xl text-gray-500">
             {new Date(checkinResult.timestamp).toLocaleTimeString('en-CA', {
               hour: '2-digit',
               minute: '2-digit',
@@ -69,7 +69,7 @@ export default function SuccessScreen() {
         </div>
 
         {/* Confirmation Text */}
-        <p className="text-3xl text-gray-700">
+        <p className="text-2xl text-gray-700">
           {isCheckingIn
             ? 'Welcome aboard!'
             : 'Fair winds and following seas!'}
@@ -77,7 +77,7 @@ export default function SuccessScreen() {
       </div>
 
       {/* Auto-return notice */}
-      <p className="text-xl text-gray-600">
+      <p className="text-lg text-gray-600">
         Returning to main screen...
       </p>
     </div>

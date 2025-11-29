@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { DevMember } from '../lib/api';
+import { X } from '@shared/ui/icons';
 
 interface MemberPickerModalProps {
   members: DevMember[];
@@ -48,9 +49,10 @@ export default function MemberPickerModal({ members, onSelect, onClose }: Member
           <h2 className="text-2xl font-bold text-gray-900">Select Member</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="min-h-[56px] min-w-[56px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-lg active:bg-gray-100"
+            aria-label="Close member picker"
           >
-            ✕
+            <X className="h-8 w-8" aria-hidden="true" />
           </button>
         </div>
 
@@ -63,13 +65,13 @@ export default function MemberPickerModal({ members, onSelect, onClose }: Member
                   ({divisionMembers.filter((m) => m.isPresent).length}/{divisionMembers.length})
                 </span>
               </h3>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {divisionMembers.map((member) => (
                   <button
                     key={member.id}
                     onClick={() => onSelect(member)}
                     disabled={!member.badgeSerialNumber}
-                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-colors ${
+                    className={`w-full text-left px-4 py-4 min-h-[56px] rounded-xl flex items-center justify-between transition-colors ${
                       !member.badgeSerialNumber
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         : member.isPresent
