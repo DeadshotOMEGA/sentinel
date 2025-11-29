@@ -9,6 +9,7 @@ import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import type { CheckinDirection } from '../../../shared/types';
 import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket';
 import { kioskLimiter, bulkLimiter } from '../middleware/rate-limit';
+import { validateCheckinTimestamp } from '../utils/timestamp-validator';
 
 const router = Router();
 
@@ -41,6 +42,22 @@ router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, 
 
     const { serialNumber, timestamp, kioskId } = validationResult.data;
     const scanTimestamp = timestamp ? new Date(timestamp) : new Date();
+
+    // Validate timestamp if provided
+    if (timestamp) {
+      const timestampValidation = validateCheckinTimestamp(scanTimestamp);
+      if (!timestampValidation.valid) {
+        const reason = timestampValidation.reason;
+        if (!reason) {
+          throw new Error('Timestamp validation failed but no reason provided');
+        }
+        throw new ValidationError(
+          'INVALID_TIMESTAMP',
+          reason,
+          reason
+        );
+      }
+    }
 
     // Look up badge by serial number
     const badge = await badgeRepository.findBySerialNumber(serialNumber);

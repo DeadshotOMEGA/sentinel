@@ -7,7 +7,7 @@ interface TimestampValidationResult {
   reason?: string;
 }
 
-const CLOCK_SKEW_TOLERANCE_MS = 60 * 1000; // 1 minute
+const CLOCK_SKEW_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_AGE_DAYS = 7;
 const MAX_AGE_MS = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
 
@@ -24,11 +24,11 @@ export function validateCheckinTimestamp(
   const now = new Date();
   const timeDiffMs = now.getTime() - timestamp.getTime();
 
-  // Check if timestamp is in the future (allow 1 minute tolerance for clock skew)
+  // Check if timestamp is in the future (allow 5 minutes tolerance for clock skew)
   if (timeDiffMs < -CLOCK_SKEW_TOLERANCE_MS) {
     return {
       valid: false,
-      reason: `Timestamp cannot be in the future (provided: ${timestamp.toISOString()})`,
+      reason: 'Timestamp in the future',
     };
   }
 
@@ -36,7 +36,7 @@ export function validateCheckinTimestamp(
   if (timeDiffMs > MAX_AGE_MS) {
     return {
       valid: false,
-      reason: `Timestamp is older than ${MAX_AGE_DAYS} days (provided: ${timestamp.toISOString()})`,
+      reason: 'Timestamp too old (>7 days)',
     };
   }
 

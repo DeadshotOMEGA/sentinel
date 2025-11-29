@@ -36,6 +36,19 @@ interface CSVRow {
  */
 export class ImportService {
   /**
+   * Sanitize CSV values to prevent formula injection attacks
+   * Prefixes dangerous characters with a single quote to neutralize formulas
+   */
+  private sanitizeCsvValue(value: string): string {
+    if (!value) return value;
+    const dangerousChars = ['=', '+', '-', '@', '\t', '\r'];
+    if (dangerousChars.some((char) => value.startsWith(char))) {
+      return `'${value}`;
+    }
+    return value;
+  }
+
+  /**
    * Parse CSV text and convert to NominalRollRow objects
    */
   private parseCSV(csvText: string): { rows: NominalRollRow[]; errors: ImportError[] } {
@@ -118,21 +131,21 @@ export class ImportService {
         return;
       }
 
-      // Map CSV row to NominalRollRow with name normalization
+      // Map CSV row to NominalRollRow with name normalization and CSV injection sanitization
       const nominalRow: NominalRollRow = {
-        serviceNumber: csvRow.SN.replace(/\s/g, ''), // Remove all spaces
-        employeeNumber: csvRow['EMPL #']?.trim() ? csvRow['EMPL #'].trim() : undefined,
-        rank: csvRow.RANK.trim(),
-        lastName: normalizeName(csvRow['LAST NAME'].trim()),
-        firstName: normalizeName(csvRow['FIRST NAME'].trim()),
-        initials: csvRow.INITIALS?.trim() ? csvRow.INITIALS.trim() : undefined,
-        department: csvRow.DEPT.trim(),
-        mess: csvRow.MESS?.trim() ? csvRow.MESS.trim() : undefined,
-        moc: csvRow.MOC?.trim() ? csvRow.MOC.trim() : undefined,
-        email: csvRow['EMAIL ADDRESS']?.trim() ? csvRow['EMAIL ADDRESS'].trim().toLowerCase() : undefined,
-        homePhone: csvRow['HOME PHONE']?.trim() ? csvRow['HOME PHONE'].trim() : undefined,
-        mobilePhone: csvRow['MOBILE PHONE']?.trim() ? csvRow['MOBILE PHONE'].trim() : undefined,
-        details: csvRow.DETAILS?.trim() ? csvRow.DETAILS.trim() : undefined,
+        serviceNumber: this.sanitizeCsvValue(csvRow.SN.replace(/\s/g, '')), // Remove all spaces
+        employeeNumber: csvRow['EMPL #']?.trim() ? this.sanitizeCsvValue(csvRow['EMPL #'].trim()) : undefined,
+        rank: this.sanitizeCsvValue(csvRow.RANK.trim()),
+        lastName: normalizeName(this.sanitizeCsvValue(csvRow['LAST NAME'].trim())),
+        firstName: normalizeName(this.sanitizeCsvValue(csvRow['FIRST NAME'].trim())),
+        initials: csvRow.INITIALS?.trim() ? this.sanitizeCsvValue(csvRow.INITIALS.trim()) : undefined,
+        department: this.sanitizeCsvValue(csvRow.DEPT.trim()),
+        mess: csvRow.MESS?.trim() ? this.sanitizeCsvValue(csvRow.MESS.trim()) : undefined,
+        moc: csvRow.MOC?.trim() ? this.sanitizeCsvValue(csvRow.MOC.trim()) : undefined,
+        email: csvRow['EMAIL ADDRESS']?.trim() ? this.sanitizeCsvValue(csvRow['EMAIL ADDRESS'].trim().toLowerCase()) : undefined,
+        homePhone: csvRow['HOME PHONE']?.trim() ? this.sanitizeCsvValue(csvRow['HOME PHONE'].trim()) : undefined,
+        mobilePhone: csvRow['MOBILE PHONE']?.trim() ? this.sanitizeCsvValue(csvRow['MOBILE PHONE'].trim()) : undefined,
+        details: csvRow.DETAILS?.trim() ? this.sanitizeCsvValue(csvRow.DETAILS.trim()) : undefined,
       };
 
       rows.push(nominalRow);

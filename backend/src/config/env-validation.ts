@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '../utils/logger';
 
 const envSchema = z.object({
   // Database - all required
@@ -37,24 +38,24 @@ export function validateEnv() {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    console.error('❌ Invalid environment configuration:');
-    console.error(result.error.format());
-    console.error('\n💡 See backend/.env.example for required variables');
+    logger.error('❌ Invalid environment configuration:');
+    logger.error(result.error.format());
+    logger.error('\n💡 See backend/.env.example for required variables');
     process.exit(1);
   }
 
   // Warn about development defaults in production
   if (result.data.NODE_ENV === 'production') {
     if (!process.env.REDIS_PASSWORD) {
-      console.warn('⚠️ REDIS_PASSWORD not set - Redis should be password protected in production');
+      logger.warn('⚠️ REDIS_PASSWORD not set - Redis should be password protected in production');
     }
 
     if (result.data.DB_PASSWORD.length < 16) {
-      console.warn('⚠️ DB_PASSWORD is weak - use at least 16 characters in production');
+      logger.warn('⚠️ DB_PASSWORD is weak - use at least 16 characters in production');
     }
 
     if (result.data.JWT_SECRET.length < 64) {
-      console.warn('⚠️ JWT_SECRET is weak - use at least 64 characters in production');
+      logger.warn('⚠️ JWT_SECRET is weak - use at least 64 characters in production');
     }
   }
 

@@ -2,6 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import type { ServerToClientEvents, ClientToServerEvents } from './events';
 import { getSession } from '../auth/session';
+import { logger } from '../utils/logger';
 
 type TypedServer = Server<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -66,7 +67,7 @@ async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
         return true;
       }
     } catch (error) {
-      console.error('JWT authentication error:', error);
+      logger.error('JWT authentication error:', error);
     }
   }
 
@@ -82,7 +83,7 @@ async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
       };
       return true;
     }
-    console.warn(`Invalid kiosk API key attempt from ${socket.handshake.address}`);
+    logger.warn(`Invalid kiosk API key attempt from ${socket.handshake.address}`);
     socket.disconnect(true);
     return false;
   }
@@ -100,14 +101,14 @@ async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
       return true;
     }
     if (expectedKey) {
-      console.warn(`Invalid display API key attempt from ${socket.handshake.address}`);
+      logger.warn(`Invalid display API key attempt from ${socket.handshake.address}`);
     }
     socket.disconnect(true);
     return false;
   }
 
   // No valid authentication provided
-  console.warn(`Unauthenticated connection attempt from ${socket.handshake.address}`);
+  logger.warn(`Unauthenticated connection attempt from ${socket.handshake.address}`);
   socket.disconnect(true);
   return false;
 }
@@ -137,47 +138,47 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
         next(new Error('Authentication failed. Please provide a valid token or API key.'));
       }
     } catch (error) {
-      console.error('WebSocket authentication error:', error);
+      logger.error('WebSocket authentication error:', error);
       next(new Error('Authentication error. Please try again.'));
     }
   });
 
   io.on('connection', (socket: TypedSocket) => {
     const authInfo = socket.auth ? ` (${socket.auth.authType}: ${socket.auth.username})` : '';
-    console.log(`Client connected: ${socket.id}${authInfo}`);
+    logger.info(`Client connected: ${socket.id}${authInfo}`);
 
     // Handle subscription to presence updates
     socket.on('subscribe_presence', () => {
       socket.join('presence');
-      console.log(`Client ${socket.id} subscribed to presence updates`);
+      logger.info(`Client ${socket.id} subscribed to presence updates`);
     });
 
     socket.on('unsubscribe_presence', () => {
       socket.leave('presence');
-      console.log(`Client ${socket.id} unsubscribed from presence updates`);
+      logger.info(`Client ${socket.id} unsubscribed from presence updates`);
     });
 
     // Handle event subscription (requires authentication - already validated)
     socket.on('subscribe_event', (data) => {
       if (!socket.auth) {
-        console.warn(`Unauthenticated event subscription attempt from ${socket.id}`);
+        logger.warn(`Unauthenticated event subscription attempt from ${socket.id}`);
         return;
       }
       const eventId = data.eventId;
       socket.join(`event:${eventId}`);
-      console.log(`Client ${socket.id} subscribed to event ${eventId}`);
+      logger.info(`Client ${socket.id} subscribed to event ${eventId}`);
     });
 
     socket.on('unsubscribe_event', (data) => {
       const eventId = data.eventId;
       socket.leave(`event:${eventId}`);
-      console.log(`Client ${socket.id} unsubscribed from event ${eventId}`);
+      logger.info(`Client ${socket.id} unsubscribed from event ${eventId}`);
     });
 
     // Handle kiosk heartbeats (kiosk auth only)
     socket.on('kiosk_heartbeat', (data) => {
       if (!socket.auth || socket.auth.role !== 'kiosk') {
-        console.warn(`Unauthorized kiosk heartbeat attempt from ${socket.id}`);
+        logger.warn(`Unauthorized kiosk heartbeat attempt from ${socket.id}`);
         return;
       }
       // Broadcast kiosk status to admin clients
@@ -190,7 +191,7 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
     });
 
     socket.on('disconnect', () => {
-      console.log(`Client disconnected: ${socket.id}`);
+      logger.info(`Client disconnected: ${socket.id}`);
     });
   });
 

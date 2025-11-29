@@ -23,6 +23,8 @@ interface SentinelQueueDB extends DBSchema {
 const DB_NAME = 'sentinel-queue';
 const DB_VERSION = 1;
 const STORE_NAME = 'checkins';
+const MAX_QUEUE_SIZE = 5000;
+const MAX_AGE_DAYS = 7;
 
 let db: IDBPDatabase<SentinelQueueDB> | null = null;
 
@@ -31,6 +33,52 @@ async function getDB(): Promise<IDBPDatabase<SentinelQueueDB>> {
     throw new Error('Database not initialized. Call initDB() first.');
   }
   return db;
+}
+
+async function pruneOldItems(): Promise<number> {
+  const database = await getDB();
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - MAX_AGE_DAYS);
+
+  const tx = database.transaction(STORE_NAME, 'readwrite');
+  const store = tx.store;
+  const index = store.index('by-timestamp');
+
+  let deletedCount = 0;
+  const allKeys = await index.getAllKeys();
+
+  for (const key of allKeys) {
+    const item = await store.get(key as string);
+    if (item && item.timestamp < cutoff) {
+      await store.delete(key);
+      deletedCount += 1;
+    } else {
+      // Since items are sorted by timestamp, we can break once we reach a non-expired item
+      break;
+    }
+  }
+
+  return deletedCount;
+}
+
+async function enforceQueueLimit(): Promise<void> {
+  const database = await getDB();
+  const count = await database.count(STORE_NAME);
+
+  if (count > MAX_QUEUE_SIZE) {
+    const tx = database.transaction(STORE_NAME, 'readwrite');
+    const store = tx.store;
+    const index = store.index('by-timestamp');
+
+    // Get all keys sorted by timestamp (oldest first)
+    const allKeys = await index.getAllKeys();
+
+    // Delete oldest items until we're under the limit
+    const toDelete = count - MAX_QUEUE_SIZE;
+    for (let i = 0; i < toDelete; i++) {
+      await store.delete(allKeys[i]);
+    }
+  }
 }
 
 export async function initDB(): Promise<void> {
@@ -49,11 +97,17 @@ export async function initDB(): Promise<void> {
       }
     },
   });
+
+  // Prune old items on initialization
+  await pruneOldItems();
 }
 
 export async function enqueue(checkin: QueuedCheckin): Promise<void> {
   const database = await getDB();
   await database.add(STORE_NAME, checkin);
+
+  // Enforce queue size limit after adding
+  await enforceQueueLimit();
 }
 
 export async function dequeue(): Promise<QueuedCheckin | undefined> {
