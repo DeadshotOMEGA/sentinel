@@ -5,6 +5,7 @@ import { verifyPassword } from '../auth/password';
 import { createSession, destroySession, refreshSession } from '../auth/session';
 import { requireAuth } from '../auth';
 import { UnauthorizedError, ValidationError } from '../utils/errors';
+import { authLimiter } from '../middleware/rate-limit';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ const loginSchema = z.object({
 });
 
 // POST /api/auth/login - Login with username/password
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Prevent committing secrets
+
+# Check for .env files with actual values
+if git diff --cached --name-only | grep -E '\.env$' | grep -v '\.example'; then
+  echo "ERROR: Attempting to commit .env file with secrets"
+  echo "Use .env.example for templates, never commit actual .env files"
+  exit 1
+fi
+
+# Check for common secret patterns
+if git diff --cached | grep -iE '(password|secret|api_key)\s*[:=]\s*["\x27][^"\x27]{8,}["\x27]' | grep -v 'CHANGE_ME'; then
+  echo "WARNING: Possible hardcoded secrets detected"
+  echo "Review your changes carefully"
+fi

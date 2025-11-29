@@ -1,11 +1,116 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import type { ServerToClientEvents, ClientToServerEvents } from './events';
+import { getSession } from '../auth/session';
 
 type TypedServer = Server<ClientToServerEvents, ServerToClientEvents>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 
+interface SocketAuth {
+  userId: string;
+  username: string;
+  role: 'admin' | 'coxswain' | 'readonly' | 'kiosk' | 'display';
+  authType: 'jwt' | 'kiosk_key' | 'display_key';
+}
+
+// Extend Socket type to include auth data
+declare module 'socket.io' {
+  interface Socket {
+    auth?: SocketAuth;
+  }
+}
+
 let io: TypedServer;
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return secret;
+}
+
+function getKioskApiKey(): string {
+  const key = process.env.KIOSK_API_KEY;
+  if (!key) {
+    throw new Error('KIOSK_API_KEY environment variable is required');
+  }
+  return key;
+}
+
+function getDisplayApiKey(): string | undefined {
+  return process.env.DISPLAY_API_KEY;
+}
+
+/**
+ * Authenticate Socket.IO connections
+ * Supports three authentication methods:
+ * 1. JWT token (admin users)
+ * 2. Kiosk API key (kiosk terminals)
+ * 3. Display API key (TV displays - read-only)
+ */
+async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
+  const auth = socket.handshake.auth as Record<string, unknown>;
+
+  // 1. Try JWT token authentication
+  if (auth.token && typeof auth.token === 'string') {
+    try {
+      const session = await getSession(auth.token);
+      if (session) {
+        socket.auth = {
+          userId: session.userId,
+          username: session.username,
+          role: session.role,
+          authType: 'jwt',
+        };
+        return true;
+      }
+    } catch (error) {
+      console.error('JWT authentication error:', error);
+    }
+  }
+
+  // 2. Try kiosk API key authentication
+  if (auth.kioskApiKey && typeof auth.kioskApiKey === 'string') {
+    const expectedKey = getKioskApiKey();
+    if (auth.kioskApiKey === expectedKey) {
+      socket.auth = {
+        userId: 'kiosk-device',
+        username: 'kiosk',
+        role: 'kiosk',
+        authType: 'kiosk_key',
+      };
+      return true;
+    }
+    console.warn(`Invalid kiosk API key attempt from ${socket.handshake.address}`);
+    socket.disconnect(true);
+    return false;
+  }
+
+  // 3. Try display API key authentication
+  if (auth.displayApiKey && typeof auth.displayApiKey === 'string') {
+    const expectedKey = getDisplayApiKey();
+    if (expectedKey && auth.displayApiKey === expectedKey) {
+      socket.auth = {
+        userId: 'display-device',
+        username: 'display',
+        role: 'display',
+        authType: 'display_key',
+      };
+      return true;
+    }
+    if (expectedKey) {
+      console.warn(`Invalid display API key attempt from ${socket.handshake.address}`);
+    }
+    socket.disconnect(true);
+    return false;
+  }
+
+  // No valid authentication provided
+  console.warn(`Unauthenticated connection attempt from ${socket.handshake.address}`);
+  socket.disconnect(true);
+  return false;
+}
 
 export function initializeWebSocket(httpServer: HttpServer): TypedServer {
   if (!process.env.CORS_ORIGIN) {
@@ -22,8 +127,24 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
     pingInterval: 25000,
   });
 
+  // Authentication middleware
+  io.use(async (socket, next) => {
+    try {
+      const isAuthenticated = await authenticateSocket(socket);
+      if (isAuthenticated) {
+        next();
+      } else {
+        next(new Error('Authentication failed. Please provide a valid token or API key.'));
+      }
+    } catch (error) {
+      console.error('WebSocket authentication error:', error);
+      next(new Error('Authentication error. Please try again.'));
+    }
+  });
+
   io.on('connection', (socket: TypedSocket) => {
-    console.log(`Client connected: ${socket.id}`);
+    const authInfo = socket.auth ? ` (${socket.auth.authType}: ${socket.auth.username})` : '';
+    console.log(`Client connected: ${socket.id}${authInfo}`);
 
     // Handle subscription to presence updates
     socket.on('subscribe_presence', () => {
@@ -36,8 +157,29 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
       console.log(`Client ${socket.id} unsubscribed from presence updates`);
     });
 
-    // Handle kiosk heartbeats
+    // Handle event subscription (requires authentication - already validated)
+    socket.on('subscribe_event', (data) => {
+      if (!socket.auth) {
+        console.warn(`Unauthenticated event subscription attempt from ${socket.id}`);
+        return;
+      }
+      const eventId = data.eventId;
+      socket.join(`event:${eventId}`);
+      console.log(`Client ${socket.id} subscribed to event ${eventId}`);
+    });
+
+    socket.on('unsubscribe_event', (data) => {
+      const eventId = data.eventId;
+      socket.leave(`event:${eventId}`);
+      console.log(`Client ${socket.id} unsubscribed from event ${eventId}`);
+    });
+
+    // Handle kiosk heartbeats (kiosk auth only)
     socket.on('kiosk_heartbeat', (data) => {
+      if (!socket.auth || socket.auth.role !== 'kiosk') {
+        console.warn(`Unauthorized kiosk heartbeat attempt from ${socket.id}`);
+        return;
+      }
       // Broadcast kiosk status to admin clients
       io.emit('kiosk_status', {
         kioskId: data.kioskId,

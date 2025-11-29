@@ -4,10 +4,11 @@ import { checkinRepository } from '../db/repositories/checkin-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { memberRepository } from '../db/repositories/member-repository';
 import { processBulkCheckins } from '../services/sync-service';
-import { requireAuth } from '../auth';
+import { requireAuth, requireDisplayAuth } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import type { CheckinDirection } from '../../../shared/types';
 import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket';
+import { kioskLimiter, bulkLimiter } from '../middleware/rate-limit';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ const bulkCheckinSchema = z.object({
 });
 
 // POST /api/checkins - Record badge scan (auto-detect in/out)
-router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = badgeScanSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -161,7 +162,7 @@ router.post('/', requireAuth, async (req: Request, res: Response, next: NextFunc
 });
 
 // POST /api/checkins/bulk - Sync offline queue (batch)
-router.post('/bulk', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/bulk', bulkLimiter, requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = bulkCheckinSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -188,8 +189,8 @@ router.post('/bulk', requireAuth, async (req: Request, res: Response, next: Next
   }
 });
 
-// GET /api/checkins/presence - Current presence stats (public for TV display)
-router.get('/presence', async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/checkins/presence - Current presence stats (requires display auth)
+router.get('/presence', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const stats = await checkinRepository.getPresenceStats();
     res.json({ stats });
@@ -198,10 +199,13 @@ router.get('/presence', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-// GET /api/checkins/presence/present - Currently present members (public for TV display)
-router.get('/presence/present', async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/checkins/presence/present - Currently present members (requires display auth)
+router.get('/presence/present', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const presentMembers = await checkinRepository.getPresentMembers();
+
+    // Display auth already gets filtered data (no service numbers, contact info)
+    // Full admin auth gets all available fields
     res.json({ members: presentMembers });
   } catch (err) {
     next(err);
@@ -218,8 +222,8 @@ router.get('/presence/list', requireAuth, async (req: Request, res: Response, ne
   }
 });
 
-// GET /api/checkins/recent - Recent activity (checkins + visitors) - public for TV display
-router.get('/recent', async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/checkins/recent - Recent activity (checkins + visitors) - requires display auth
+router.get('/recent', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
     const activity = await checkinRepository.getRecentActivity(limit);

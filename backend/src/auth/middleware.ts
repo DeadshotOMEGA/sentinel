@@ -5,11 +5,7 @@ import { getSession, type Session } from './session';
 function getKioskApiKey(): string {
   const key = process.env.KIOSK_API_KEY;
   if (!key) {
-    // In development, use a default key. In production, this should be set.
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('KIOSK_API_KEY environment variable must be set in production');
-    }
-    return 'kiosk-dev-key-change-in-production';
+    throw new Error('KIOSK_API_KEY environment variable is required');
   }
   return key;
 }
@@ -20,6 +16,7 @@ declare global {
       session?: Session;
       user?: { id: string; username: string; role: string };
       isKiosk?: boolean;
+      isDisplayAuth?: boolean;
     }
   }
 }
@@ -115,4 +112,76 @@ export function requireRole(...roles: string[]): (req: Request, res: Response, n
       res.status(500).json({ error: 'Role check failed. Please try again.' });
     }
   };
+}
+
+/**
+ * Display authentication middleware
+ * Allows read-only access to presence/activity data for TV displays
+ * Accepts:
+ * - Full admin JWT auth (Bearer token)
+ * - Kiosk auth (x-kiosk-api-key)
+ * - Display API key (x-display-api-key) - read-only access
+ */
+export async function requireDisplayAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    // 1. Check for admin JWT auth
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      // Delegate to full admin auth
+      return requireAuth(req, res, next);
+    }
+
+    // 2. Check for kiosk API key
+    const kioskKey = extractKioskApiKey(req);
+    if (kioskKey) {
+      if (kioskKey === getKioskApiKey()) {
+        req.isKiosk = true;
+        req.user = {
+          id: 'kiosk-device',
+          username: 'kiosk',
+          role: 'kiosk',
+        };
+        next();
+        return;
+      }
+      res.status(401).json({
+        error: 'Invalid kiosk API key.',
+        code: 'INVALID_KIOSK_KEY'
+      });
+      return;
+    }
+
+    // 3. Check for display API key (read-only)
+    const displayKey = req.headers['x-display-api-key'] as string | undefined;
+    const expectedDisplayKey = process.env.DISPLAY_API_KEY;
+
+    if (!expectedDisplayKey) {
+      // If no display key configured, require admin auth
+      res.status(401).json({
+        error: 'Authentication required. Display API key not configured.',
+        code: 'AUTH_REQUIRED'
+      });
+      return;
+    }
+
+    if (displayKey && displayKey === expectedDisplayKey) {
+      // Mark request as display-authenticated (limited access)
+      req.isDisplayAuth = true;
+      req.user = {
+        id: 'display-device',
+        username: 'display',
+        role: 'display',
+      };
+      next();
+      return;
+    }
+
+    // No valid auth provided
+    res.status(401).json({
+      error: 'Authentication required. Please provide a valid Bearer token, kiosk API key, or display API key.',
+      code: 'AUTH_REQUIRED'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Authentication check failed. Please try again.' });
+  }
 }
