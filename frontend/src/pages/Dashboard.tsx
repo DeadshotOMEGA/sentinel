@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardBody, CardHeader, Spinner } from '../components/ui/heroui-polyfills';
 import { format } from 'date-fns';
+import { Users, UserCheck, UserX, DoorOpen } from '@shared/ui/icons';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
+import { StatsCard, Badge, EmptyState } from '@shared/ui';
 
 interface PresenceStats {
   totalMembers: number;
@@ -23,17 +25,6 @@ interface RecentActivity {
   timestamp: string;
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Card className="flex-1">
-      <CardBody className="text-center">
-        <p className={`text-4xl font-bold ${color}`}>{value}</p>
-        <p className="text-sm text-gray-600">{label}</p>
-      </CardBody>
-    </Card>
-  );
-}
-
 interface ApiActivityItem {
   type: 'checkin' | 'visitor';
   id: string;
@@ -50,7 +41,7 @@ export default function Dashboard() {
   const { onPresenceUpdate, onCheckin, onVisitorSignin } = useSocket();
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['presence-stats'],
     queryFn: async () => {
       const response = await api.get<{ stats: PresenceStats }>('/checkins/presence');
@@ -60,7 +51,7 @@ export default function Dashboard() {
   });
 
   // Fetch initial recent activity from database
-  useQuery({
+  const { isLoading: activityLoading } = useQuery({
     queryKey: ['recent-activity'],
     queryFn: async () => {
       const response = await api.get<{ activity: ApiActivityItem[] }>('/checkins/recent?limit=10');
@@ -122,28 +113,38 @@ export default function Dashboard() {
     };
   }, [onPresenceUpdate, onCheckin, onVisitorSignin, queryClient]);
 
-  if (isLoading) {
-    return (
-      <PageWrapper title="Dashboard">
-        <div className="flex justify-center py-12">
-          <Spinner size="lg" />
-        </div>
-      </PageWrapper>
-    );
-  }
-
-  if (!stats) {
-    throw new Error('Failed to load presence stats');
-  }
-
   return (
     <PageWrapper title="Dashboard">
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Present" value={stats.present} color="text-success" />
-          <StatCard label="Absent" value={stats.absent} color="text-gray-600" />
-          <StatCard label="Visitors" value={stats.visitors} color="text-primary" />
-          <StatCard label="Total Members" value={stats.totalMembers} color="text-gray-900" />
+          <StatsCard
+            value={stats?.present ?? 0}
+            label="Present"
+            variant="success"
+            icon={UserCheck}
+            loading={statsLoading}
+          />
+          <StatsCard
+            value={stats?.absent ?? 0}
+            label="Absent"
+            variant="neutral"
+            icon={UserX}
+            loading={statsLoading}
+          />
+          <StatsCard
+            value={stats?.visitors ?? 0}
+            label="Visitors"
+            variant="info"
+            icon={DoorOpen}
+            loading={statsLoading}
+          />
+          <StatsCard
+            value={stats?.totalMembers ?? 0}
+            label="Total Members"
+            variant="neutral"
+            icon={Users}
+            loading={statsLoading}
+          />
         </div>
 
         <Card>
@@ -151,12 +152,20 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold">Recent Activity</h2>
           </CardHeader>
           <CardBody>
-            {recentActivity.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No recent activity</p>
+            {activityLoading ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : recentActivity.length === 0 ? (
+              <EmptyState
+                variant="no-data"
+                heading="No recent activity"
+                description="Check-ins and visitor activity will appear here"
+              />
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100" role="feed" aria-label="Recent activity feed">
                 {recentActivity.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-3">
+                  <li key={item.id} className="flex items-center justify-between py-3" role="article">
                     <div>
                       <p className="font-medium">
                         {item.rank ? `${item.rank} ` : ''}{item.name}
@@ -166,18 +175,13 @@ export default function Dashboard() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span
-                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                          item.type === 'checkin'
-                            ? 'bg-success-100 text-success-700'
-                            : item.type === 'checkout'
-                            ? 'bg-warning-100 text-warning-700'
-                            : 'bg-primary-100 text-primary-700'
-                        }`}
+                      <Badge
+                        variant={item.type === 'checkin' ? 'success' : item.type === 'checkout' ? 'warning' : 'visitor'}
+                        size="sm"
                       >
                         {item.type === 'checkin' ? 'Checked In' : item.type === 'checkout' ? 'Checked Out' : 'Visitor'}
-                      </span>
-                      <p className="mt-1 text-xs text-gray-500">
+                      </Badge>
+                      <p className="mt-1 text-xs text-gray-500" aria-hidden="true">
                         {format(new Date(item.timestamp), 'HH:mm')}
                       </p>
                     </div>

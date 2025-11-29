@@ -47,9 +47,14 @@ export {
   Tooltip,
   Divider,
   Badge,
+  ButtonGroup,
   // Provider
   HeroUIProvider,
 } from '@heroui/react';
+
+// Date components
+export { DateRangePicker } from '@heroui/date-picker';
+export type { DateRangePickerProps } from '@heroui/date-picker';
 
 // Re-export types
 export type {

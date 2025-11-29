@@ -16,6 +16,7 @@ import {
 } from './ui/heroui-polyfills';
 import { api } from '../lib/api';
 import type { EventAttendee, Badge } from '@shared/types';
+import { Check } from '@shared/ui/icons';
 
 interface BadgeAssignmentModalProps {
   isOpen: boolean;
@@ -260,7 +261,7 @@ export default function BadgeAssignmentModal({
                                     </p>
                                   </div>
                                   {selectedBadgeId === badge.id && (
-                                    <span className="text-primary text-xl">✓</span>
+                                    <Check className="h-5 w-5 text-primary" aria-hidden="true" />
                                   )}
                                 </div>
                               </CardBody>

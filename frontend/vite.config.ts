@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared'),
+      '@sentinel/ui': path.resolve(__dirname, '../shared/ui'),
     },
   },
   server: {

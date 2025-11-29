@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
-  Chip,
   Spinner,
   Tabs,
   Tab,
@@ -20,6 +19,7 @@ import PageWrapper from '../components/PageWrapper';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
+import { Badge, SearchBar, ConfirmDialog, EmptyState } from '@sentinel/ui';
 
 const visitTypes: { key: VisitType; label: string }[] = [
   { key: 'contractor', label: 'Contractor/SSC' },
@@ -31,8 +31,10 @@ const visitTypes: { key: VisitType; label: string }[] = [
 ];
 
 export default function Visitors() {
-  const [tab, setTab] = useState('active');
+  const [tab, setTab] = useState('current');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [visitorToSignOut, setVisitorToSignOut] = useState<Visitor | null>(null);
   const queryClient = useQueryClient();
 
   const { data: activeVisitors, isLoading: activeLoading } = useQuery({
@@ -41,7 +43,7 @@ export default function Visitors() {
       const response = await api.get<{ visitors: Visitor[] }>('/visitors/active');
       return response.data.visitors;
     },
-    enabled: tab === 'active',
+    enabled: tab === 'current',
   });
 
   const { data: allVisitors, isLoading: allLoading } = useQuery({
@@ -57,46 +59,119 @@ export default function Visitors() {
     mutationFn: (id: string) => api.put(`/visitors/${id}/checkout`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visitors'] });
+      setVisitorToSignOut(null);
     },
   });
 
-  const visitors = tab === 'active' ? activeVisitors : allVisitors;
-  const isLoading = tab === 'active' ? activeLoading : allLoading;
+  const currentVisitors = activeVisitors ?? [];
+  const historyVisitors = allVisitors ?? [];
+
+  const visitors = tab === 'current' ? currentVisitors : historyVisitors;
+  const isLoading = tab === 'current' ? activeLoading : allLoading;
+
+  // Filter visitors based on search query
+  const filteredVisitors = useMemo(() => {
+    if (!search.trim()) return visitors;
+
+    const searchLower = search.toLowerCase();
+    return visitors.filter((visitor) =>
+      visitor.name.toLowerCase().includes(searchLower) ||
+      visitor.organization.toLowerCase().includes(searchLower) ||
+      visitor.visitType.toLowerCase().includes(searchLower)
+    );
+  }, [visitors, search]);
+
+  function handleSignOut() {
+    if (visitorToSignOut) {
+      checkoutMutation.mutate(visitorToSignOut.id);
+    }
+  }
 
   return (
     <PageWrapper title="Visitors">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-            <Tab key="active" title="Currently In Building" />
-            <Tab key="history" title="History" />
+          <Tabs
+            selectedKey={tab}
+            onSelectionChange={(k) => setTab(k as string)}
+            aria-label="Visitor view tabs"
+          >
+            <Tab
+              key="current"
+              title={
+                <div className="flex items-center gap-2">
+                  Currently Signed In
+                  <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                    {currentVisitors.length}
+                  </span>
+                </div>
+              }
+            />
+            <Tab
+              key="history"
+              title={
+                <div className="flex items-center gap-2">
+                  History
+                  <span className="bg-default-300 text-default-700 text-xs px-2 py-0.5 rounded-full">
+                    {historyVisitors.length}
+                  </span>
+                </div>
+              }
+            />
           </Tabs>
           <Button color="primary" onPress={() => setIsModalOpen(true)}>
             Sign In Visitor
           </Button>
         </div>
 
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder="Search visitors..."
+          aria-label="Search visitors"
+        />
+
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Spinner size="lg" />
           </div>
+        ) : filteredVisitors.length === 0 ? (
+          search.trim() ? (
+            <EmptyState
+              variant="no-results"
+              heading="No visitors found"
+              description="Try adjusting your search"
+            />
+          ) : tab === 'current' ? (
+            <EmptyState
+              variant="no-data"
+              heading="No visitors currently signed in"
+              description="Visitors will appear here when they check in"
+            />
+          ) : (
+            <EmptyState
+              variant="no-data"
+              heading="No visitor history"
+              description="Visitor check-ins and check-outs will appear here"
+            />
+          )
         ) : (
-          <Table aria-label="Visitors table">
+          <Table aria-label={tab === 'current' ? 'Currently present visitors' : 'Visitor history'}>
             <TableHeader>
               <TableColumn>NAME</TableColumn>
               <TableColumn>ORGANIZATION</TableColumn>
               <TableColumn>TYPE</TableColumn>
               <TableColumn>CHECK IN</TableColumn>
               <TableColumn>CHECK OUT</TableColumn>
-              <TableColumn>{tab === 'active' ? 'ACTIONS' : ''}</TableColumn>
+              <TableColumn>{tab === 'current' ? 'ACTIONS' : ''}</TableColumn>
             </TableHeader>
             <TableBody emptyContent="No visitors">
-              {(visitors ? visitors : []).map((visitor) => (
+              {filteredVisitors.map((visitor) => (
                 <TableRow key={visitor.id}>
                   <TableCell>{visitor.name}</TableCell>
                   <TableCell>{visitor.organization}</TableCell>
                   <TableCell>
-                    <Chip size="sm" variant="flat">{visitor.visitType}</Chip>
+                    <Badge variant="visitor" size="sm">{visitor.visitType}</Badge>
                   </TableCell>
                   <TableCell>{format(new Date(visitor.checkInTime), 'MMM d, HH:mm')}</TableCell>
                   <TableCell>
@@ -105,13 +180,14 @@ export default function Visitors() {
                       : '-'}
                   </TableCell>
                   <TableCell>
-                    {tab === 'active' ? (
+                    {tab === 'current' ? (
                       <Button
                         size="sm"
-                        color="warning"
+                        color="default"
                         variant="flat"
-                        isLoading={checkoutMutation.isPending}
-                        onPress={() => checkoutMutation.mutate(visitor.id)}
+                        isDisabled={checkoutMutation.isPending}
+                        onPress={() => setVisitorToSignOut(visitor)}
+                        aria-label={`Sign out ${visitor.name}`}
                       >
                         Sign Out
                       </Button>
@@ -123,6 +199,21 @@ export default function Visitors() {
           </Table>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={visitorToSignOut !== null}
+        onClose={() => setVisitorToSignOut(null)}
+        onConfirm={handleSignOut}
+        title="Sign Out Visitor"
+        message={
+          visitorToSignOut
+            ? `Sign out ${visitorToSignOut.name} from ${visitorToSignOut.organization}?`
+            : ''
+        }
+        confirmLabel="Sign Out"
+        variant="warning"
+        isLoading={checkoutMutation.isPending}
+      />
 
       <VisitorSignInModal
         isOpen={isModalOpen}
@@ -172,7 +263,7 @@ function VisitorSignInModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true">
         <ModalHeader>Sign In Visitor</ModalHeader>
         <ModalBody>
           {error && (

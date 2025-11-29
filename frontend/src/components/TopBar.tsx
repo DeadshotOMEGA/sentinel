@@ -16,13 +16,16 @@ export default function TopBar({ title }: TopBarProps) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
-      <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
-      
+    <header
+      className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6"
+      role="banner"
+    >
+      <h1 id="page-title" className="text-xl font-semibold text-gray-900">{title}</h1>
+
       <div className="flex items-center gap-4">
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
-            <Button variant="light" className="flex items-center gap-2">
+            <Button variant="light" className="flex items-center gap-2" aria-label="User menu">
               <Avatar
                 name={user ? `${user.firstName} ${user.lastName}` : "User"}
                 size="sm"

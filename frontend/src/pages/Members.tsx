@@ -1,26 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Button,
   Chip,
-  Spinner,
   Input,
   Select,
   SelectItem,
 } from '../components/ui/heroui-polyfills';
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-} from '../components/ui/SentinelTable';
 import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
 import ImportModal from '../components/ImportModal';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division } from '@shared/types';
+import {
+  Badge,
+  ConfirmDialog,
+  DataTable,
+  EmptyState,
+  icons,
+  type Column,
+  type SortDirection,
+} from '@sentinel/ui';
+
+const { Trash2 } = icons;
 
 function MembersList() {
   const [search, setSearch] = useState('');
@@ -28,6 +30,10 @@ function MembersList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberWithDivision | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<MemberWithDivision | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>('serviceNumber');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const { data: membersData, isLoading, refetch } = useQuery({
     queryKey: ['members', { search, status: statusFilter }],
@@ -71,6 +77,202 @@ function MembersList() {
     handleClose();
   };
 
+  const handleDeleteMember = async () => {
+    if (!memberToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await api.delete(`/members/${memberToDelete.id}`);
+      await refetch();
+      setMemberToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete member:', error);
+      // Error will be shown via toast/notification in future enhancement
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handle sort changes
+  const handleSort = (column: string, direction: SortDirection) => {
+    setSortColumn(column);
+    setSortDirection(direction);
+  };
+
+  // Sort members client-side
+  const sortedMembers = useMemo(() => {
+    if (!sortDirection || !sortColumn) {
+      return members;
+    }
+
+    return [...members].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      // Get values based on column key
+      switch (sortColumn) {
+        case 'name':
+          aValue = `${a.lastName}, ${a.firstName}`.toLowerCase();
+          bValue = `${b.lastName}, ${b.firstName}`.toLowerCase();
+          break;
+        case 'serviceNumber':
+          aValue = a.serviceNumber;
+          bValue = b.serviceNumber;
+          break;
+        case 'rank':
+          // Rank is required per schema
+          if (!a.rank || !b.rank) {
+            throw new Error('Member missing required rank field');
+          }
+          aValue = a.rank.toLowerCase();
+          bValue = b.rank.toLowerCase();
+          break;
+        case 'division':
+          aValue = a.division.name.toLowerCase();
+          bValue = b.division.name.toLowerCase();
+          break;
+        case 'mess':
+          // Mess is optional - sort empty values last using high Unicode character
+          aValue = a.mess ? a.mess.toLowerCase() : '\uffff';
+          bValue = b.mess ? b.mess.toLowerCase() : '\uffff';
+          break;
+        default:
+          throw new Error(`Unknown sort column: ${sortColumn}`);
+      }
+
+      // Compare values
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [members, sortColumn, sortDirection]);
+
+  // Get member type display helper
+  const getMemberTypeDisplay = (memberType: MemberWithDivision['memberType']) => {
+    switch (memberType) {
+      case 'class_a':
+        return 'Class A';
+      case 'class_b':
+        return 'Class B';
+      case 'class_c':
+        return 'Class C';
+      case 'reg_force':
+        return 'Reg Force';
+      default:
+        throw new Error(`Unknown member type: ${memberType}`);
+    }
+  };
+
+  // Get member type chip color
+  const getMemberTypeColor = (memberType: MemberWithDivision['memberType']) => {
+    switch (memberType) {
+      case 'class_a':
+        return 'default' as const;
+      case 'class_b':
+        return 'success' as const;
+      case 'class_c':
+        return 'warning' as const;
+      case 'reg_force':
+        return 'primary' as const;
+      default:
+        throw new Error(`Unknown member type: ${memberType}`);
+    }
+  };
+
+  // Define columns for DataTable
+  const columns: Column<MemberWithDivision>[] = [
+    {
+      key: 'serviceNumber',
+      header: 'Service #',
+      sortable: true,
+      width: '120px',
+    },
+    {
+      key: 'name',
+      header: 'Name',
+      sortable: true,
+      render: (member) => `${member.lastName}, ${member.firstName}`,
+    },
+    {
+      key: 'rank',
+      header: 'Rank',
+      sortable: true,
+      width: '100px',
+    },
+    {
+      key: 'division',
+      header: 'Division',
+      sortable: true,
+      render: (member) => member.division.name,
+    },
+    {
+      key: 'mess',
+      header: 'Mess',
+      sortable: true,
+      width: '100px',
+      render: (member) => {
+        if (!member.mess) {
+          return '—';
+        }
+        return member.mess;
+      },
+    },
+    {
+      key: 'memberType',
+      header: 'Type',
+      width: '120px',
+      render: (member) => (
+        <Chip
+          size="sm"
+          variant="flat"
+          color={getMemberTypeColor(member.memberType)}
+        >
+          {getMemberTypeDisplay(member.memberType)}
+        </Chip>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '100px',
+      render: (member) => (
+        <Badge
+          variant={member.status === 'active' ? 'active' : 'inactive'}
+          size="sm"
+        >
+          {member.status}
+        </Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      width: '150px',
+      render: (member) => (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="light"
+            onPress={() => handleEdit(member)}
+            aria-label={`Edit ${member.rank ? member.rank + ' ' : ''}${member.firstName} ${member.lastName}`}
+          >
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="light"
+            color="danger"
+            isIconOnly
+            onPress={() => setMemberToDelete(member)}
+            aria-label={`Delete ${member.firstName} ${member.lastName}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <PageWrapper title="Members">
       <div className="space-y-4">
@@ -81,6 +283,7 @@ function MembersList() {
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
             isClearable
+            aria-label="Search members"
           />
           <Select
             selectedKeys={statusFilter ? [statusFilter] : []}
@@ -90,6 +293,7 @@ function MembersList() {
             }}
             className="max-w-[150px]"
             label="Status"
+            aria-label="Filter members by status"
           >
             <SelectItem key="active">Active</SelectItem>
             <SelectItem key="inactive">Inactive</SelectItem>
@@ -104,64 +308,36 @@ function MembersList() {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Spinner size="lg" />
-          </div>
+        {sortedMembers.length === 0 && !isLoading ? (
+          <EmptyState
+            variant={search || statusFilter ? 'no-results' : 'no-data'}
+            heading="No members found"
+            description={
+              search || statusFilter
+                ? 'Try adjusting your search or filters'
+                : 'Add your first member to get started'
+            }
+            action={
+              !search && !statusFilter
+                ? {
+                    label: 'Add Member',
+                    onClick: handleAdd,
+                  }
+                : undefined
+            }
+          />
         ) : (
-          <Table aria-label="Members table">
-            <TableHeader>
-              <TableColumn>SERVICE #</TableColumn>
-              <TableColumn>NAME</TableColumn>
-              <TableColumn>RANK</TableColumn>
-              <TableColumn>DIVISION</TableColumn>
-              <TableColumn>MESS</TableColumn>
-              <TableColumn>TYPE</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent="No members found">
-              {members.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell>{member.serviceNumber}</TableCell>
-                  <TableCell>{member.firstName} {member.lastName}</TableCell>
-                  <TableCell>{member.rank}</TableCell>
-                  <TableCell>{member.division.name}</TableCell>
-                  <TableCell>{member.mess ?? '—'}</TableCell>
-                  <TableCell>
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color={
-                        member.memberType === 'class_a' ? 'default' :
-                        member.memberType === 'class_b' ? 'success' :
-                        member.memberType === 'class_c' ? 'warning' :
-                        'primary'
-                      }
-                    >
-                      {member.memberType === 'class_a' ? 'Class A' :
-                       member.memberType === 'class_b' ? 'Class B' :
-                       member.memberType === 'class_c' ? 'Class C' :
-                       'Reg Force'}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      size="sm"
-                      color={member.status === 'active' ? 'success' : 'default'}
-                    >
-                      {member.status}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="light" onPress={() => handleEdit(member)}>
-                      Edit
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={columns}
+            data={sortedMembers}
+            keyExtractor={(member) => member.id}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            loading={isLoading}
+            emptyMessage="No members found"
+            aria-label="Members list"
+          />
         )}
       </div>
 
@@ -177,6 +353,21 @@ function MembersList() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImportComplete={() => refetch()}
+      />
+
+      <ConfirmDialog
+        isOpen={memberToDelete !== null}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={handleDeleteMember}
+        title="Delete Member"
+        message={
+          memberToDelete
+            ? `Are you sure you want to delete ${memberToDelete.firstName} ${memberToDelete.lastName}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </PageWrapper>
   );

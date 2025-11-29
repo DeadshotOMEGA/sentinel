@@ -38,6 +38,7 @@ export const useAuth = create<AuthState>()(
           token: response.data.token,
           user: response.data.user,
           isAuthenticated: true,
+          isLoading: false,
         });
       },
       

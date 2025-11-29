@@ -29,23 +29,31 @@ export default function AppSidebar() {
   });
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-divider bg-content1">
+    <aside
+      className="hidden md:flex h-screen w-64 flex-col border-r border-divider bg-content1"
+      role="complementary"
+      aria-label="Sidebar"
+    >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-divider px-6">
+      <div className="flex h-16 items-center border-b border-divider px-6" role="banner">
         <span className="text-xl font-bold text-primary">Sentinel</span>
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 py-4">
+      <nav
+        id="primary-navigation"
+        className="flex-1 overflow-y-auto px-3 py-4"
+        aria-label="Primary navigation"
+      >
         <Sidebar
           items={filteredItems}
           defaultSelectedKey={currentKey}
           onSelect={handleSelect}
         />
-      </div>
+      </nav>
 
       {/* User section */}
-      <div className="border-t border-divider p-4">
+      <div className="border-t border-divider p-4" role="contentinfo" aria-label="User information">
         <div className="flex items-center gap-3">
           <Avatar
             size="sm"
