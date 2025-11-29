@@ -40,6 +40,7 @@ class SyncService {
   private currentRetryAttempt: number = 0;
   private handleOnlineRef: (() => Promise<void>) | null = null;
   private handleOfflineRef: (() => void) | null = null;
+  private syncPromise: Promise<void> | null = null; // Lock to prevent concurrent syncs
 
   async startSync(): Promise<void> {
     if (this.isRunning) {
@@ -89,10 +90,21 @@ class SyncService {
   }
 
   async syncNow(): Promise<void> {
-    if (this.state === 'syncing') {
-      return; // Already syncing
+    // Use promise-based lock to prevent concurrent syncs (race condition fix)
+    if (this.syncPromise) {
+      return this.syncPromise; // Return existing sync promise
     }
 
+    this.syncPromise = this.doSync();
+
+    try {
+      await this.syncPromise;
+    } finally {
+      this.syncPromise = null;
+    }
+  }
+
+  private async doSync(): Promise<void> {
     const queueSize = await offlineQueue.getQueueSize();
 
     if (queueSize === 0) {
