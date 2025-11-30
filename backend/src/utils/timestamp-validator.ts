@@ -1,5 +1,8 @@
+import { logger } from './logger';
+
 /**
  * Validates check-in timestamps according to business rules
+ * Prevents timestamp manipulation attacks (HIGH-6)
  */
 
 interface TimestampValidationResult {
@@ -7,12 +10,13 @@ interface TimestampValidationResult {
   reason?: string;
 }
 
-const CLOCK_SKEW_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
-const MAX_AGE_DAYS = 7;
-const MAX_AGE_MS = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+// Security settings to prevent backdated check-ins
+const MAX_PAST_MS = 5 * 60 * 1000; // 5 minutes - reject anything older
+const MAX_FUTURE_MS = 30 * 1000; // 30 seconds - allow for clock drift tolerance
 
 export function validateCheckinTimestamp(
-  timestamp: Date
+  timestamp: Date,
+  serverTime: Date = new Date()
 ): TimestampValidationResult {
   if (!(timestamp instanceof Date) || isNaN(timestamp.getTime())) {
     return {
@@ -21,22 +25,37 @@ export function validateCheckinTimestamp(
     };
   }
 
-  const now = new Date();
-  const timeDiffMs = now.getTime() - timestamp.getTime();
+  const timeDiffMs = serverTime.getTime() - timestamp.getTime();
 
-  // Check if timestamp is in the future (allow 5 minutes tolerance for clock skew)
-  if (timeDiffMs < -CLOCK_SKEW_TOLERANCE_MS) {
+  // Check if timestamp is too far in the future
+  if (timeDiffMs < -MAX_FUTURE_MS) {
+    const secondsInFuture = Math.round(-timeDiffMs / 1000);
+    logger.warn('Suspicious timestamp detected', {
+      type: 'timestamp_future',
+      timestamp: timestamp.toISOString(),
+      serverTime: serverTime.toISOString(),
+      secondsInFuture,
+      securityViolation: 'HIGH-6',
+    });
     return {
       valid: false,
-      reason: 'Timestamp in the future',
+      reason: `Timestamp is ${secondsInFuture} seconds in the future. Check-in timestamps cannot be in the future.`,
     };
   }
 
-  // Check if timestamp is older than 7 days
-  if (timeDiffMs > MAX_AGE_MS) {
+  // Check if timestamp is too old (backdated)
+  if (timeDiffMs > MAX_PAST_MS) {
+    const secondsInPast = Math.round(timeDiffMs / 1000);
+    logger.warn('Suspicious timestamp detected', {
+      type: 'timestamp_backdated',
+      timestamp: timestamp.toISOString(),
+      serverTime: serverTime.toISOString(),
+      secondsInPast,
+      securityViolation: 'HIGH-6',
+    });
     return {
       valid: false,
-      reason: 'Timestamp too old (>7 days)',
+      reason: `Timestamp is ${secondsInPast} seconds in the past. Check-in timestamps must be within 5 minutes of current time.`,
     };
   }
 
