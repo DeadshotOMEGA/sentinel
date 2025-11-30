@@ -13,19 +13,30 @@ CREATE TABLE divisions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(100) NOT NULL,
   code VARCHAR(20) UNIQUE NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Members (Full-Time Staff + Reserve Members)
 CREATE TABLE members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_number VARCHAR(20) UNIQUE NOT NULL,
+  employee_number VARCHAR(20),
   rank VARCHAR(50) NOT NULL,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
+  initials VARCHAR(10),
   division_id UUID REFERENCES divisions(id),
-  member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('full_time', 'reserve')),
-  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  mess VARCHAR(50),
+  moc VARCHAR(100),
+  member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('class_a', 'class_b', 'class_c', 'reg_force')),
+  class_details VARCHAR(100),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending_review')),
+  email VARCHAR(255),
+  home_phone VARCHAR(30),
+  mobile_phone VARCHAR(30),
+  badge_id UUID,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -116,6 +127,10 @@ CREATE TABLE audit_log (
 CREATE INDEX idx_members_service_number ON members(service_number);
 CREATE INDEX idx_members_division ON members(division_id);
 CREATE INDEX idx_members_status ON members(status);
+CREATE INDEX idx_members_employee_number ON members(employee_number);
+CREATE INDEX idx_members_email ON members(email);
+CREATE INDEX idx_members_mess ON members(mess);
+CREATE INDEX idx_members_moc ON members(moc);
 
 -- Badges indexes
 CREATE INDEX idx_badges_serial_number ON badges(serial_number);
@@ -156,6 +171,9 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+CREATE TRIGGER update_divisions_updated_at BEFORE UPDATE ON divisions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_members_updated_at BEFORE UPDATE ON members
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -188,10 +206,18 @@ CREATE VIEW active_members_view AS
 SELECT
     m.id,
     m.service_number,
+    m.employee_number,
     m.rank,
     m.first_name,
     m.last_name,
+    m.initials,
     m.member_type,
+    m.class_details,
+    m.mess,
+    m.moc,
+    m.email,
+    m.home_phone,
+    m.mobile_phone,
     d.name as division_name,
     d.code as division_code,
     m.created_at
@@ -209,7 +235,9 @@ SELECT DISTINCT ON (member_id)
     m.service_number,
     m.rank,
     m.first_name,
-    m.last_name
+    m.last_name,
+    m.initials,
+    m.mess
 FROM checkins c
 JOIN members m ON c.member_id = m.id
 WHERE m.status = 'active'
