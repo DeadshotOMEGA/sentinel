@@ -102,6 +102,7 @@ export function errorHandler(
   }
 
   // Handle unknown errors as 500 - NEVER expose internal details
+  // Always use generic message for unknown errors to prevent information leakage
   const response: ErrorResponse = {
     error: {
       code: 'INTERNAL_SERVER_ERROR',

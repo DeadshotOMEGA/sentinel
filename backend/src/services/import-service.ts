@@ -3,6 +3,7 @@ import { memberRepository } from '../db/repositories/member-repository';
 import { divisionRepository } from '../db/repositories/division-repository';
 import { ValidationError } from '../utils/errors';
 import { normalizeName } from '../utils/name-normalizer';
+import { sanitizeCsvValue } from '../utils/csv-sanitizer';
 import type {
   NominalRollRow,
   ImportPreview,
@@ -33,20 +34,9 @@ interface CSVRow {
 
 /**
  * Service for handling Nominal Roll CSV imports
+ * Uses centralized CSV sanitization to prevent injection attacks (HIGH-7)
  */
 export class ImportService {
-  /**
-   * Sanitize CSV values to prevent formula injection attacks
-   * Prefixes dangerous characters with a single quote to neutralize formulas
-   */
-  private sanitizeCsvValue(value: string): string {
-    if (!value) return value;
-    const dangerousChars = ['=', '+', '-', '@', '\t', '\r'];
-    if (dangerousChars.some((char) => value.startsWith(char))) {
-      return `'${value}`;
-    }
-    return value;
-  }
 
   /**
    * Parse CSV text and convert to NominalRollRow objects
@@ -133,19 +123,19 @@ export class ImportService {
 
       // Map CSV row to NominalRollRow with name normalization and CSV injection sanitization
       const nominalRow: NominalRollRow = {
-        serviceNumber: this.sanitizeCsvValue(csvRow.SN.replace(/\s/g, '')), // Remove all spaces
-        employeeNumber: csvRow['EMPL #']?.trim() ? this.sanitizeCsvValue(csvRow['EMPL #'].trim()) : undefined,
-        rank: this.sanitizeCsvValue(csvRow.RANK.trim()),
-        lastName: normalizeName(this.sanitizeCsvValue(csvRow['LAST NAME'].trim())),
-        firstName: normalizeName(this.sanitizeCsvValue(csvRow['FIRST NAME'].trim())),
-        initials: csvRow.INITIALS?.trim() ? this.sanitizeCsvValue(csvRow.INITIALS.trim()) : undefined,
-        department: this.sanitizeCsvValue(csvRow.DEPT.trim()),
-        mess: csvRow.MESS?.trim() ? this.sanitizeCsvValue(csvRow.MESS.trim()) : undefined,
-        moc: csvRow.MOC?.trim() ? this.sanitizeCsvValue(csvRow.MOC.trim()) : undefined,
-        email: csvRow['EMAIL ADDRESS']?.trim() ? this.sanitizeCsvValue(csvRow['EMAIL ADDRESS'].trim().toLowerCase()) : undefined,
-        homePhone: csvRow['HOME PHONE']?.trim() ? this.sanitizeCsvValue(csvRow['HOME PHONE'].trim()) : undefined,
-        mobilePhone: csvRow['MOBILE PHONE']?.trim() ? this.sanitizeCsvValue(csvRow['MOBILE PHONE'].trim()) : undefined,
-        details: csvRow.DETAILS?.trim() ? this.sanitizeCsvValue(csvRow.DETAILS.trim()) : undefined,
+        serviceNumber: sanitizeCsvValue(csvRow.SN.replace(/\s/g, '')), // Remove all spaces
+        employeeNumber: csvRow['EMPL #']?.trim() ? sanitizeCsvValue(csvRow['EMPL #'].trim()) : undefined,
+        rank: sanitizeCsvValue(csvRow.RANK.trim()),
+        lastName: normalizeName(sanitizeCsvValue(csvRow['LAST NAME'].trim())),
+        firstName: normalizeName(sanitizeCsvValue(csvRow['FIRST NAME'].trim())),
+        initials: csvRow.INITIALS?.trim() ? sanitizeCsvValue(csvRow.INITIALS.trim()) : undefined,
+        department: sanitizeCsvValue(csvRow.DEPT.trim()),
+        mess: csvRow.MESS?.trim() ? sanitizeCsvValue(csvRow.MESS.trim()) : undefined,
+        moc: csvRow.MOC?.trim() ? sanitizeCsvValue(csvRow.MOC.trim()) : undefined,
+        email: csvRow['EMAIL ADDRESS']?.trim() ? sanitizeCsvValue(csvRow['EMAIL ADDRESS'].trim().toLowerCase()) : undefined,
+        homePhone: csvRow['HOME PHONE']?.trim() ? sanitizeCsvValue(csvRow['HOME PHONE'].trim()) : undefined,
+        mobilePhone: csvRow['MOBILE PHONE']?.trim() ? sanitizeCsvValue(csvRow['MOBILE PHONE'].trim()) : undefined,
+        details: csvRow.DETAILS?.trim() ? sanitizeCsvValue(csvRow.DETAILS.trim()) : undefined,
       };
 
       rows.push(nominalRow);
@@ -376,13 +366,10 @@ export class ImportService {
       );
     }
 
-    // Get all divisions for mapping
-    const divisions = await divisionRepository.findAll();
-    const divisionMap = new Map<string, string>();
-    divisions.forEach((div) => {
-      divisionMap.set(div.code.toUpperCase(), div.id);
-      divisionMap.set(div.name.toUpperCase(), div.id);
-    });
+    // Reuse division mapping from preview to avoid redundant query
+    const divisionMap = new Map<string, string>(
+      Object.entries(preview.divisionMapping)
+    );
 
     const result: ImportResult = {
       added: 0,

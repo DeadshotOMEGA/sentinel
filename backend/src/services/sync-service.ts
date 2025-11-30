@@ -1,4 +1,4 @@
-import type { CheckinDirection } from '../../../shared/types';
+import type { CheckinDirection, Badge, MemberWithDivision } from '../../../shared/types';
 import { checkinRepository } from '../db/repositories/checkin-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { memberRepository } from '../db/repositories/member-repository';
@@ -9,6 +9,8 @@ export interface BulkCheckinInput {
   serialNumber: string;
   timestamp: string;
   kioskId?: string;
+  localTimestamp?: number;
+  sequenceNumber?: number;
 }
 
 export interface BulkCheckinSuccess {
@@ -42,11 +44,40 @@ interface CheckinItem {
   timestamp: Date;
   kioskId: string;
   originalTimestampStr: string;
+  localTimestamp?: number;
+  sequenceNumber?: number;
+  flaggedForReview: boolean;
+  flagReason?: string;
 }
 
 interface DeduplicationKey {
   badgeId: string;
   kioskId: string;
+}
+
+/**
+ * Validate clock drift and flag suspicious timestamps
+ */
+function validateClockDrift(
+  localTimestamp: number | undefined,
+  serverTime: Date
+): { flagged: boolean; reason?: string } {
+  if (!localTimestamp) {
+    return { flagged: false };
+  }
+
+  const drift = Math.abs(serverTime.getTime() - localTimestamp);
+  const MAX_DRIFT = 5 * 60 * 1000; // 5 minutes
+
+  if (drift > MAX_DRIFT) {
+    const driftMinutes = Math.floor(drift / 60000);
+    return {
+      flagged: true,
+      reason: `Clock drift: ${driftMinutes} minute(s)`,
+    };
+  }
+
+  return { flagged: false };
 }
 
 /**
@@ -58,8 +89,9 @@ export async function processBulkCheckins(
   const results: BulkCheckinItemResult[] = [];
   const validatedCheckins: CheckinItem[] = [];
   const errorMap = new Map<number, string>();
+  const serverTime = new Date();
 
-  // Step 1: Validate all timestamps
+  // Step 1: Validate all timestamps and detect clock drift
   for (let i = 0; i < checkins.length; i++) {
     const checkin = checkins[i];
     const timestamp = new Date(checkin.timestamp);
@@ -74,11 +106,18 @@ export async function processBulkCheckins(
       continue;
     }
 
+    // Check for clock drift
+    const driftCheck = validateClockDrift(checkin.localTimestamp, serverTime);
+
     validatedCheckins.push({
       serialNumber: checkin.serialNumber,
       timestamp,
       kioskId: checkin.kioskId ? checkin.kioskId : '',
       originalTimestampStr: checkin.timestamp,
+      localTimestamp: checkin.localTimestamp,
+      sequenceNumber: checkin.sequenceNumber,
+      flaggedForReview: driftCheck.flagged,
+      flagReason: driftCheck.reason,
     });
   }
 
@@ -114,14 +153,39 @@ export async function processBulkCheckins(
     }
   }
 
-  // Step 4: Process valid, deduplicated checkins
+  // Step 4: Batch load all required data upfront
+  const serialNumbers = deduplicatedCheckins.map((c) => c.serialNumber);
+
+  // Load all badges in one query
+  const badges = await badgeRepository.findBySerialNumbers(serialNumbers);
+  const badgeMap = new Map<string, Badge>();
+  badges.forEach((badge) => {
+    badgeMap.set(badge.serialNumber, badge);
+  });
+
+  // Extract member IDs from badges
+  const memberIds = badges
+    .filter((b) => b.assignmentType === 'member' && b.assignedToId)
+    .map((b) => b.assignedToId as string);
+
+  // Load all members in one query
+  const members = await memberRepository.findByIds(memberIds);
+  const memberMap = new Map<string, MemberWithDivision>();
+  members.forEach((member) => {
+    memberMap.set(member.id, member);
+  });
+
+  // Load all latest checkins in one query
+  const latestCheckinsMap = await checkinRepository.findLatestByMembers(memberIds);
+
+  // Step 5: Process valid, deduplicated checkins with batch-loaded data
   for (const checkinItem of deduplicatedCheckins) {
     try {
       const { serialNumber, timestamp, kioskId, originalTimestampStr } =
         checkinItem;
 
-      // Look up badge
-      const badge = await badgeRepository.findBySerialNumber(serialNumber);
+      // Look up badge from batch-loaded data
+      const badge = badgeMap.get(serialNumber);
       if (!badge || badge.assignmentType !== 'member' || !badge.assignedToId) {
         results.push({
           serialNumber,
@@ -145,12 +209,12 @@ export async function processBulkCheckins(
         continue;
       }
 
-      // Get last checkin to determine direction
-      const lastCheckin = await checkinRepository.findLatestByMember(memberId);
+      // Get last checkin from batch-loaded data
+      const lastCheckin = latestCheckinsMap.get(memberId);
       const direction: CheckinDirection =
         lastCheckin?.direction === 'in' ? 'out' : 'in';
 
-      // Create checkin record
+      // Create checkin record with flagging if clock drift detected
       const checkin = await checkinRepository.create({
         memberId,
         badgeId: badge.id,
@@ -158,10 +222,12 @@ export async function processBulkCheckins(
         timestamp,
         kioskId: checkinItem.kioskId,
         synced: true,
+        flaggedForReview: checkinItem.flaggedForReview,
+        flagReason: checkinItem.flagReason,
       });
 
-      // Get member info for broadcast
-      const member = await memberRepository.findById(memberId);
+      // Get member info from batch-loaded data
+      const member = memberMap.get(memberId);
       if (member && checkinItem.kioskId) {
         broadcastCheckin({
           memberId: member.id,
@@ -208,6 +274,28 @@ export async function processBulkCheckins(
   if (successCount > 0) {
     const stats = await checkinRepository.getPresenceStats();
     broadcastPresenceUpdate(stats);
+  }
+
+  // Log flagged items for admin review
+  const flaggedItems = deduplicatedCheckins.filter((item) => item.flaggedForReview);
+  if (flaggedItems.length > 0) {
+    const firstKioskId = flaggedItems[0]?.kioskId;
+    if (!firstKioskId) {
+      throw new Error('Flagged item missing kioskId');
+    }
+    console.warn('[Sync] Bulk sync has flagged items', {
+      kioskId: firstKioskId,
+      flaggedCount: flaggedItems.length,
+      items: flaggedItems.map((item) => ({
+        serialNumber: item.serialNumber,
+        timestamp: item.timestamp.toISOString(),
+        localTimestamp: item.localTimestamp,
+        drift: item.localTimestamp
+          ? Math.abs(serverTime.getTime() - item.localTimestamp)
+          : null,
+        reason: item.flagReason,
+      })),
+    });
   }
 
   // Add errors from timestamp validation

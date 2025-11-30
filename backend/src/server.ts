@@ -7,6 +7,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import { logger } from './utils/logger.js';
 import { requestLogger } from './middleware/request-logger.js';
@@ -117,6 +118,9 @@ app.use(compression());
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Cookie parsing middleware (for httpOnly auth cookies)
+app.use(cookieParser());
 
 // Request logging
 app.use(requestLogger);
