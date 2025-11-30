@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { TVConfig } from '../lib/config';
+import { authenticatedFetch } from '../lib/api';
 
 interface DivisionStats {
   name: string;
@@ -63,9 +64,9 @@ export function usePresenceData({ config }: UsePresenceDataProps) {
   const fetchInitialData = useCallback(async () => {
     try {
       const [presenceRes, visitorsRes, presentMembersRes] = await Promise.all([
-        fetch(`${config.apiUrl}/checkins/presence`),
-        fetch(`${config.apiUrl}/visitors/active`),
-        fetch(`${config.apiUrl}/checkins/presence/present`),
+        authenticatedFetch(`${config.apiUrl}/checkins/presence`),
+        authenticatedFetch(`${config.apiUrl}/visitors/active`),
+        authenticatedFetch(`${config.apiUrl}/checkins/presence/present`),
       ]);
 
       if (presenceRes.ok) {

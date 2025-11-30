@@ -35,31 +35,58 @@ export function useSocket() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    socketRef.current = io({
+    const socket = io({
       path: '/socket.io',
       transports: ['websocket', 'polling'],
     });
 
-    socketRef.current.emit('subscribe_presence');
+    socketRef.current = socket;
+
+    const handleConnect = () => {
+      socket.emit('subscribe_presence');
+    };
+
+    const handleDisconnect = () => {
+      // Socket will auto-reconnect, no action needed
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+
+    // Initial subscription if already connected
+    if (socket.connected) {
+      socket.emit('subscribe_presence');
+    }
 
     return () => {
-      socketRef.current?.disconnect();
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.disconnect();
     };
   }, [isAuthenticated]);
 
   const onPresenceUpdate = useCallback((callback: SocketCallback<{ stats: PresenceStats }>) => {
-    socketRef.current?.on('presence_update', callback);
-    return () => socketRef.current?.off('presence_update', callback);
+    const socket = socketRef.current;
+    if (!socket) return () => {};
+
+    socket.on('presence_update', callback);
+    return () => socket.off('presence_update', callback);
   }, []);
 
   const onCheckin = useCallback((callback: SocketCallback<CheckinEvent>) => {
-    socketRef.current?.on('checkin', callback);
-    return () => socketRef.current?.off('checkin', callback);
+    const socket = socketRef.current;
+    if (!socket) return () => {};
+
+    socket.on('checkin', callback);
+    return () => socket.off('checkin', callback);
   }, []);
 
   const onVisitorSignin = useCallback((callback: SocketCallback<VisitorSigninEvent>) => {
-    socketRef.current?.on('visitor_signin', callback);
-    return () => socketRef.current?.off('visitor_signin', callback);
+    const socket = socketRef.current;
+    if (!socket) return () => {};
+
+    socket.on('visitor_signin', callback);
+    return () => socket.off('visitor_signin', callback);
   }, []);
 
   return { onPresenceUpdate, onCheckin, onVisitorSignin };

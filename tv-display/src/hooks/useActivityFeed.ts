@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { ActivityItem } from '../types/activity';
 import type { TVConfig } from '../lib/config';
+import { authenticatedFetch } from '../lib/api';
 
 interface CheckinEvent {
   memberId: string;
@@ -52,7 +53,7 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
   useEffect(() => {
     const fetchInitialActivity = async () => {
       try {
-        const response = await fetch(`${config.apiUrl}/checkins/recent?limit=${MAX_ACTIVITIES}`);
+        const response = await authenticatedFetch(`${config.apiUrl}/checkins/recent?limit=${MAX_ACTIVITIES}`);
         if (response.ok) {
           const data = await response.json();
           const mapped: ActivityItem[] = data.activity.map((item: ApiActivityItem) => ({
