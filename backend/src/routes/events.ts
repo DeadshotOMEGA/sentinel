@@ -6,6 +6,7 @@ import { eventService } from '../services/event-service';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { broadcastEventCheckin, broadcastEventPresenceUpdate } from '../websocket';
+import { audit } from '../middleware/audit';
 import type { EventStatus } from '../../../shared/types';
 
 const router = Router();
@@ -133,6 +134,7 @@ router.post(
   '/',
   requireAuth,
   requireRole('admin'),
+  audit('event_create', 'event'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validationResult = createEventSchema.safeParse(req.body);
@@ -180,6 +182,7 @@ router.put(
   '/:id',
   requireAuth,
   requireRole('admin'),
+  audit('event_update', 'event'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -242,6 +245,7 @@ router.delete(
   '/:id',
   requireAuth,
   requireRole('admin'),
+  audit('event_delete', 'event'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;

@@ -25,6 +25,8 @@ const bulkCheckinSchema = z.object({
     serialNumber: z.string().min(1),
     timestamp: z.string().datetime(),
     kioskId: z.string().optional(),
+    localTimestamp: z.number().optional(),
+    sequenceNumber: z.number().optional(),
   })),
 });
 
@@ -59,15 +61,17 @@ router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, 
       }
     }
 
-    // Look up badge by serial number
-    const badge = await badgeRepository.findBySerialNumber(serialNumber);
-    if (!badge) {
+    // Look up badge by serial number with joined member data (single query)
+    const badgeWithMember = await badgeRepository.findBySerialNumberWithMember(serialNumber);
+    if (!badgeWithMember) {
       throw new NotFoundError(
         'BADGE_NOT_FOUND',
         `Badge with serial number ${serialNumber} not found`,
         'This badge is not registered in the system. Please contact an administrator.'
       );
     }
+
+    const { badge, member } = badgeWithMember;
 
     // Check if badge is assigned
     if (badge.assignmentType === 'unassigned' || !badge.assignedToId) {
@@ -98,8 +102,7 @@ router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, 
 
     const memberId = badge.assignedToId;
 
-    // Get member info
-    const member = await memberRepository.findById(memberId);
+    // Validate member was loaded
     if (!member) {
       throw new NotFoundError(
         'MEMBER_NOT_FOUND',

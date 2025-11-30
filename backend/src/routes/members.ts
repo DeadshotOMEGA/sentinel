@@ -5,11 +5,14 @@ import { checkinRepository } from '../db/repositories/checkin-repository';
 import { importService } from '../services/import-service';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
+import { audit } from '../middleware/audit';
 import type {
   MemberType,
   MemberStatus,
   CreateMemberInput,
   UpdateMemberInput,
+  PaginatedResponse,
+  MemberWithDivision,
 } from '../../../shared/types';
 
 const router = Router();
@@ -53,22 +56,69 @@ const updateMemberSchema = z.object({
   badgeId: z.string().uuid().optional(),
 });
 
-// GET /api/members - List members with filters
+const paginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  sortBy: z.enum(['lastName', 'firstName', 'rank', 'status', 'serviceNumber']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  all: z.string().optional(),
+});
+
+// GET /api/members - List members with filters and pagination
 router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Parse pagination params
+    const paginationResult = paginationSchema.safeParse(req.query);
+    if (!paginationResult.success) {
+      throw new ValidationError(
+        'Invalid pagination parameters',
+        paginationResult.error.message,
+        'Please check pagination parameters (page >= 1, limit 1-100).'
+      );
+    }
+
+    const { page, limit, sortBy, sortOrder, all } = paginationResult.data;
+
+    // Parse filters
     const divisionId = req.query.divisionId as string | undefined;
     const memberType = req.query.memberType as MemberType | undefined;
     const status = req.query.status as MemberStatus | undefined;
     const search = req.query.search as string | undefined;
 
-    const members = await memberRepository.findAll({
+    const filters = {
       divisionId,
       memberType,
       status,
       search,
-    });
+    };
 
-    res.json({ members });
+    // Backward compatibility: if 'all=true' is specified, return all members without pagination
+    if (all === 'true') {
+      const members = await memberRepository.findAll(filters);
+      res.json({ members });
+      return;
+    }
+
+    // Use paginated query
+    const { members, total } = await memberRepository.findPaginated(
+      { page, limit, sortBy, sortOrder },
+      filters
+    );
+
+    const totalPages = Math.ceil(total / limit);
+    const response: PaginatedResponse<MemberWithDivision> = {
+      data: members,
+      pagination: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+
+    res.json(response);
   } catch (err) {
     next(err);
   }
@@ -95,7 +145,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 });
 
 // POST /api/members - Create member
-router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, requireRole('admin'), audit('member_create', 'member'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = createMemberSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -127,7 +177,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
 });
 
 // PUT /api/members/:id - Update member
-router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', requireAuth, requireRole('admin'), audit('member_update', 'member'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -173,7 +223,7 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: 
 });
 
 // DELETE /api/members/:id - Soft delete (set inactive)
-router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', requireAuth, requireRole('admin'), audit('member_delete', 'member'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -195,12 +245,32 @@ router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, re
   }
 });
 
-// GET /api/members/:id/history - Get member's checkin history
+// GET /api/members/:id/history - Get member's checkin history with pagination
 router.get('/:id/history', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+
+    // Parse pagination params
+    const historyPaginationSchema = z.object({
+      page: z.coerce.number().int().positive().default(1),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
+      sortBy: z.enum(['timestamp', 'direction']).optional(),
+      sortOrder: z.enum(['asc', 'desc']).default('desc'),
+      all: z.string().optional(),
+    });
+
+    const paginationResult = historyPaginationSchema.safeParse(req.query);
+    if (!paginationResult.success) {
+      throw new ValidationError(
+        'Invalid pagination parameters',
+        paginationResult.error.message,
+        'Please check pagination parameters (page >= 1, limit 1-100).'
+      );
+    }
+
+    const { page, limit, sortBy, sortOrder, all } = paginationResult.data;
 
     // Check if member exists
     const member = await memberRepository.findById(id);
@@ -212,12 +282,38 @@ router.get('/:id/history', requireAuth, async (req: Request, res: Response, next
       );
     }
 
-    const checkins = await checkinRepository.findAll({
+    const filters = {
       memberId: id,
       dateRange: startDate && endDate ? { start: startDate, end: endDate } : undefined,
-    });
+    };
 
-    res.json({ checkins });
+    // Backward compatibility: if 'all=true' is specified, return all checkins without pagination
+    if (all === 'true') {
+      const checkins = await checkinRepository.findAll(filters);
+      res.json({ checkins });
+      return;
+    }
+
+    // Use paginated query
+    const { checkins, total } = await checkinRepository.findPaginated(
+      { page, limit, sortBy, sortOrder },
+      filters
+    );
+
+    const totalPages = Math.ceil(total / limit);
+    const response: PaginatedResponse<typeof checkins[0]> = {
+      data: checkins,
+      pagination: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+
+    res.json(response);
   } catch (err) {
     next(err);
   }
@@ -232,6 +328,7 @@ router.post(
   '/import/preview',
   requireAuth,
   requireRole('admin'),
+  audit('import_preview', 'member'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validationResult = importPreviewSchema.safeParse(req.body);
@@ -264,6 +361,7 @@ router.post(
   '/import/execute',
   requireAuth,
   requireRole('admin'),
+  audit('import_execute', 'member'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const validationResult = importExecuteSchema.safeParse(req.body);

@@ -7,6 +7,7 @@ import type {
   MemberWithDivision,
   Member,
   Division,
+  PaginationParams,
 } from '../../../../shared/types';
 import { redis } from '../redis';
 
@@ -84,6 +85,98 @@ export class CheckinRepository extends BaseRepository {
   }
 
   /**
+   * Find paginated checkins with optional filters
+   */
+  async findPaginated(
+    params: PaginationParams,
+    filters?: CheckinFilters
+  ): Promise<{ checkins: Checkin[]; total: number }> {
+    if (!params.page || params.page < 1) {
+      throw new Error('Invalid page number: must be >= 1');
+    }
+    if (!params.limit || params.limit < 1 || params.limit > 100) {
+      throw new Error('Invalid limit: must be between 1 and 100');
+    }
+
+    const page = params.page;
+    const limit = params.limit;
+    const sortOrder = params.sortOrder ? params.sortOrder : 'desc';
+
+    // Validate and sanitize sortBy column (allowlist to prevent SQL injection)
+    const allowedSortColumns: Record<string, string> = {
+      timestamp: 'timestamp',
+      direction: 'direction',
+    };
+    const sortByColumn = params.sortBy && allowedSortColumns[params.sortBy]
+      ? allowedSortColumns[params.sortBy]
+      : 'timestamp';
+
+    const offset = (page - 1) * limit;
+
+    // Build WHERE conditions
+    const conditions: string[] = [];
+    const queryParams: unknown[] = [];
+    let paramIndex = 1;
+
+    if (filters?.memberId) {
+      conditions.push(`member_id = $${paramIndex++}`);
+      queryParams.push(filters.memberId);
+    }
+
+    if (filters?.badgeId) {
+      conditions.push(`badge_id = $${paramIndex++}`);
+      queryParams.push(filters.badgeId);
+    }
+
+    if (filters?.kioskId) {
+      conditions.push(`kiosk_id = $${paramIndex++}`);
+      queryParams.push(filters.kioskId);
+    }
+
+    if (filters?.dateRange) {
+      conditions.push(`timestamp >= $${paramIndex++}`);
+      queryParams.push(filters.dateRange.start);
+      conditions.push(`timestamp <= $${paramIndex++}`);
+      queryParams.push(filters.dateRange.end);
+    }
+
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+
+    // Execute count and data queries in parallel
+    const countQuery = `
+      SELECT COUNT(*) as count
+      FROM checkins
+      ${whereClause}
+    `;
+
+    const dataQuery = `
+      SELECT *
+      FROM checkins
+      ${whereClause}
+      ORDER BY ${sortByColumn} ${sortOrder.toUpperCase()}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const paginationParams = [...queryParams, limit, offset];
+
+    const [countResult, rows] = await Promise.all([
+      this.queryOne<{ count: string }>(countQuery, queryParams),
+      this.queryAll<Record<string, unknown>>(dataQuery, paginationParams),
+    ]);
+
+    if (!countResult) {
+      throw new Error('Failed to get checkin count');
+    }
+
+    const checkins = rows.map((row) => toCamelCase<Checkin>(row));
+
+    return {
+      checkins,
+      total: parseInt(countResult.count),
+    };
+  }
+
+  /**
    * Find checkin by ID
    */
   async findById(id: string): Promise<Checkin | null> {
@@ -122,6 +215,33 @@ export class CheckinRepository extends BaseRepository {
   }
 
   /**
+   * Find latest checkins for multiple members (batch operation to prevent N+1 queries)
+   * Returns a map of memberId -> latest checkin
+   */
+  async findLatestByMembers(memberIds: string[]): Promise<Map<string, Checkin>> {
+    if (memberIds.length === 0) {
+      return new Map();
+    }
+
+    const query = `
+      SELECT DISTINCT ON (member_id) *
+      FROM checkins
+      WHERE member_id = ANY($1)
+      ORDER BY member_id, timestamp DESC
+    `;
+
+    const rows = await this.queryAll<Record<string, unknown>>(query, [memberIds]);
+    const resultMap = new Map<string, Checkin>();
+
+    rows.forEach((row) => {
+      const checkin = toCamelCase<Checkin>(row);
+      resultMap.set(checkin.memberId, checkin);
+    });
+
+    return resultMap;
+  }
+
+  /**
    * Create a new checkin
    */
   async create(data: CreateCheckinInput): Promise<Checkin> {
@@ -129,11 +249,14 @@ export class CheckinRepository extends BaseRepository {
       data.synced = true;
     }
 
+    // HIGH-15 FIX: Invalidate cache BEFORE insert to prevent race condition
+    await this.invalidatePresenceCache();
+
     const query = `
       INSERT INTO checkins (
-        member_id, badge_id, direction, timestamp, kiosk_id, synced
+        member_id, badge_id, direction, timestamp, kiosk_id, synced, flagged_for_review, flag_reason
       )
-      VALUES ($1, $2, $3, $4, $5, $6)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -144,13 +267,14 @@ export class CheckinRepository extends BaseRepository {
       data.timestamp,
       data.kioskId !== undefined ? data.kioskId : null,
       data.synced,
+      data.flaggedForReview ?? false,
+      data.flagReason ?? null,
     ]);
 
     if (!row) {
       throw new Error('Failed to create checkin');
     }
 
-    await this.invalidatePresenceCache();
     return toCamelCase<Checkin>(row);
   }
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
+import { audit } from '../middleware/audit';
 import type { BadgeAssignmentType, BadgeStatus } from '../../../shared/types';
 
 const router = Router();
@@ -10,7 +11,7 @@ const router = Router();
 // Validation schemas
 const createBadgeSchema = z.object({
   serialNumber: z.string().min(1).max(255),
-  status: z.enum(['active', 'inactive', 'lost', 'damaged']).optional(),
+  status: z.enum(['active', 'disabled', 'lost', 'returned']).optional(),
 });
 
 const assignBadgeSchema = z.object({
@@ -19,7 +20,7 @@ const assignBadgeSchema = z.object({
 });
 
 const updateStatusSchema = z.object({
-  status: z.enum(['active', 'inactive', 'lost', 'damaged']),
+  status: z.enum(['active', 'disabled', 'lost', 'returned']),
 });
 
 // GET /api/badges - List badges with filters
@@ -40,7 +41,7 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
 });
 
 // POST /api/badges - Register new badge
-router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', requireAuth, requireRole('admin'), audit('badge_create', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = createBadgeSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -76,7 +77,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
 });
 
 // PUT /api/badges/:id/assign - Assign badge to member
-router.put('/:id/assign', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/assign', requireAuth, requireRole('admin'), audit('badge_assign', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -119,7 +120,7 @@ router.put('/:id/assign', requireAuth, requireRole('admin'), async (req: Request
 });
 
 // PUT /api/badges/:id/unassign - Unassign badge
-router.put('/:id/unassign', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/unassign', requireAuth, requireRole('admin'), audit('badge_unassign', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
@@ -151,7 +152,7 @@ router.put('/:id/unassign', requireAuth, requireRole('admin'), async (req: Reque
 });
 
 // PUT /api/badges/:id/status - Update badge status
-router.put('/:id/status', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/status', requireAuth, requireRole('admin'), audit('badge_status_change', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
