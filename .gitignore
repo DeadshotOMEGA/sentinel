@@ -60,6 +60,10 @@ temp/
 credentials.json
 secrets.json
 
+# Build artifacts
+shared/ui/**/*.js
+*.js.map
+
 # Bun lock files
 bun.lock
 bun.lockb
