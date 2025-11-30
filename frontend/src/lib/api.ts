@@ -6,15 +6,8 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
-
-// Request interceptor to add auth token
-api.interceptors.request.use((config) => {
-  const token = useAuth.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  // Send httpOnly cookies with requests (CORS credentials)
+  withCredentials: true,
 });
 
 // Response interceptor for auth errors

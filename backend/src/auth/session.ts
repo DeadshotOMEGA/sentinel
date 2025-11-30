@@ -1,11 +1,11 @@
 import { randomUUID } from 'crypto';
 import { redis } from '../db/redis';
-import type { AdminUser } from '../../../shared/types/index';
+import type { AdminUser, AdminRole } from '../../../shared/types/index';
 
 export interface Session {
   userId: string;
   username: string;
-  role: 'admin' | 'coxswain' | 'readonly';
+  role: AdminRole;
   createdAt: number;
   expiresAt: number;
 }

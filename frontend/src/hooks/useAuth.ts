@@ -12,7 +12,6 @@ interface User {
 }
 
 interface AuthState {
-  token: string | null;
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -23,52 +22,49 @@ interface AuthState {
 
 export const useAuth = create<AuthState>()(
   persist(
-    (set, get) => ({
-      token: null,
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: true,
-      
+
       login: async (username: string, password: string) => {
-        const response = await api.post<{ token: string; user: User }>('/auth/login', {
+        // Token is now set as httpOnly cookie by the server
+        const response = await api.post<{ user: User }>('/auth/login', {
           username,
           password,
         });
         set({
-          token: response.data.token,
           user: response.data.user,
           isAuthenticated: true,
           isLoading: false,
         });
       },
-      
+
       logout: async () => {
         try {
           await api.post('/auth/logout');
         } catch {
-          // Ignore logout errors
+          // Ignore logout errors - cookie cleared server-side
         }
-        set({ token: null, user: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false });
       },
-      
+
       checkAuth: async () => {
-        const { token } = get();
-        if (!token) {
-          set({ isAuthenticated: false, isLoading: false });
-          return;
-        }
+        // Check if httpOnly cookie is valid by calling /auth/me
         try {
           const response = await api.get<{ user: User }>('/auth/me');
           set({ user: response.data.user, isAuthenticated: true, isLoading: false });
         } catch {
-          set({ token: null, user: null, isAuthenticated: false, isLoading: false });
+          set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
     }),
     {
       name: 'sentinel-auth',
-      partialize: (state) => ({ token: state.token, user: state.user }),
+      // Only persist user info for display (NOT the token - that's in httpOnly cookie)
+      partialize: (state) => ({ user: state.user }),
       onRehydrateStorage: () => (state) => {
+        // Always verify session with server on hydrate
         state?.checkAuth();
       },
     }

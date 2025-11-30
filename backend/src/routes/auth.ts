@@ -6,17 +6,19 @@ import { createSession, destroySession, refreshSession } from '../auth/session';
 import { requireAuth } from '../auth';
 import { UnauthorizedError, ValidationError } from '../utils/errors';
 import { authLimiter } from '../middleware/rate-limit';
+import { passwordSchema } from '../utils/password-policy';
+import { audit } from '../middleware/audit';
 
 const router = Router();
 
 // Validation schemas
 const loginSchema = z.object({
   username: z.string().min(1),
-  password: z.string().min(1),
+  password: z.string().min(1), // Login uses basic validation (full policy only on registration/change)
 });
 
 // POST /api/auth/login - Login with username/password
-router.post('/login', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', authLimiter, audit('login', 'session'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -55,9 +57,18 @@ router.post('/login', authLimiter, async (req: Request, res: Response, next: Nex
     // Update last login timestamp
     await adminUserRepository.updateLastLogin(user.id);
 
-    // Return token and user info (without password hash)
+    // Set httpOnly cookie for secure token storage (XSS protection)
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('auth_token', token, {
+      httpOnly: true, // Prevent JavaScript access (XSS protection)
+      secure: isProduction, // HTTPS only in production
+      sameSite: 'strict', // CSRF protection
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours (matches session TTL)
+      path: '/',
+    });
+
+    // Return user info only (token is in httpOnly cookie)
     res.json({
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -73,31 +84,28 @@ router.post('/login', authLimiter, async (req: Request, res: Response, next: Nex
 });
 
 // POST /api/auth/logout - Destroy session
-router.post('/logout', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/logout', requireAuth, audit('logout', 'session'), async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    const token = req.cookies?.auth_token as string | undefined;
+
+    if (!token) {
       throw new UnauthorizedError(
         'No token provided',
-        'Missing Authorization header',
+        'Missing auth_token cookie',
         'Please provide an authentication token.'
       );
     }
 
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      throw new UnauthorizedError(
-        'Invalid token format',
-        'Authorization header must be in format: Bearer <token>',
-        'Please provide a valid authentication token.'
-      );
-    }
-
-    const token = parts[1];
-
     // Destroy session
     await destroySession(token);
+
+    // Clear httpOnly cookie
+    res.clearCookie('auth_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
 
     res.status(204).send();
   } catch (err) {
@@ -135,26 +143,15 @@ router.get('/me', requireAuth, async (req: Request, res: Response, next: NextFun
 // POST /api/auth/refresh - Refresh session
 router.post('/refresh', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    const token = req.cookies?.auth_token as string | undefined;
+
+    if (!token) {
       throw new UnauthorizedError(
         'No token provided',
-        'Missing Authorization header',
+        'Missing auth_token cookie',
         'Please provide an authentication token.'
       );
     }
-
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      throw new UnauthorizedError(
-        'Invalid token format',
-        'Authorization header must be in format: Bearer <token>',
-        'Please provide a valid authentication token.'
-      );
-    }
-
-    const token = parts[1];
 
     // Refresh session
     const success = await refreshSession(token);
@@ -167,6 +164,76 @@ router.post('/refresh', requireAuth, async (req: Request, res: Response, next: N
     }
 
     res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/change-password - Change password for current user
+router.post('/change-password', requireAuth, authLimiter, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const changePasswordSchema = z.object({
+      currentPassword: z.string().min(1),
+      newPassword: passwordSchema, // HIGH-2 FIX: Enforce strong password policy
+    });
+
+    const validationResult = changePasswordSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        'Password change validation failed',
+        validationResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('; '),
+        'Please ensure your new password meets all requirements.'
+      );
+    }
+
+    const { currentPassword, newPassword } = validationResult.data;
+
+    if (!req.user) {
+      throw new UnauthorizedError(
+        'Not authenticated',
+        'User information not found in request',
+        'Please log in again.'
+      );
+    }
+
+    // Fetch user with password hash
+    const user = await adminUserRepository.findByUsername(req.user.username);
+    if (!user) {
+      throw new UnauthorizedError(
+        'User not found',
+        `User ${req.user.username} not found`,
+        'Your user account may have been deleted. Please contact an administrator.'
+      );
+    }
+
+    // Verify current password
+    const isValidPassword = await verifyPassword(currentPassword, user.passwordHash);
+    if (!isValidPassword) {
+      throw new UnauthorizedError(
+        'Invalid current password',
+        'Current password verification failed',
+        'The current password you entered is incorrect.'
+      );
+    }
+
+    // Check if new password is same as current (prevent reuse)
+    const isSamePassword = await verifyPassword(newPassword, user.passwordHash);
+    if (isSamePassword) {
+      throw new ValidationError(
+        'New password must be different',
+        'New password matches current password',
+        'Please choose a different password from your current one.'
+      );
+    }
+
+    // Hash new password
+    const { hashPassword } = await import('../auth/password');
+    const newPasswordHash = await hashPassword(newPassword);
+
+    // Update password
+    await adminUserRepository.update(user.id, { passwordHash: newPasswordHash });
+
+    res.json({ success: true, message: 'Password changed successfully' });
   } catch (err) {
     next(err);
   }
