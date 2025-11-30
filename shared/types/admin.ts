@@ -1,16 +1,28 @@
-export type AdminRole = 'admin' | 'viewer';
+export type AdminRole = 'admin' | 'coxswain' | 'readonly';
 
 export interface AdminUser {
   id: string;
   username: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   role: AdminRole;
-  lastLogin: Date | null;
+  email: string;
+  lastLogin?: Date;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 // Internal type for database operations - includes password hash
 // Do NOT expose this type in API responses
-export interface AdminUserInternal extends AdminUser {
+export interface AdminUserWithPassword extends AdminUser {
   passwordHash: string;
+}
+
+export interface CreateAdminInput {
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: AdminRole;
+  email: string;
+  password: string;
 }
