@@ -8,6 +8,8 @@ interface BulkCheckinPayload {
     serialNumber: string;
     timestamp: Date;
     kioskId: string;
+    localTimestamp: number;
+    sequenceNumber: number;
   }>;
 }
 
@@ -37,6 +39,7 @@ class SyncService {
   private isRunning: boolean = false;
   private syncInterval: NodeJS.Timeout | null = null;
   private networkCheckInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private currentRetryAttempt: number = 0;
   private handleOnlineRef: (() => Promise<void>) | null = null;
   private handleOfflineRef: (() => void) | null = null;
@@ -58,6 +61,9 @@ class SyncService {
     // Set up network status monitoring
     this.setupNetworkMonitoring();
 
+    // Set up periodic cleanup of expired items (every 6 hours)
+    this.setupPeriodicCleanup();
+
     // Attempt initial sync
     await this.syncNow();
   }
@@ -73,6 +79,11 @@ class SyncService {
     if (this.networkCheckInterval) {
       clearInterval(this.networkCheckInterval);
       this.networkCheckInterval = null;
+    }
+
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
 
     // Remove event listeners
@@ -172,6 +183,8 @@ class SyncService {
         serialNumber: checkin.serialNumber,
         timestamp: checkin.timestamp,
         kioskId: checkin.kioskId,
+        localTimestamp: checkin.localTimestamp,
+        sequenceNumber: checkin.sequenceNumber,
       })),
     };
 
@@ -274,6 +287,18 @@ class SyncService {
   private async updateQueueSize(): Promise<void> {
     const size = await offlineQueue.getQueueSize();
     useSyncStore.setState({ queueSize: size });
+  }
+
+  private setupPeriodicCleanup(): void {
+    // Clean expired items every 6 hours
+    this.cleanupInterval = setInterval(async () => {
+      try {
+        await offlineQueue.cleanExpired();
+        await this.updateQueueSize();
+      } catch (error) {
+        console.error('[SyncService] Failed to clean expired items:', error);
+      }
+    }, 6 * 60 * 60 * 1000); // 6 hours in milliseconds
   }
 }
 

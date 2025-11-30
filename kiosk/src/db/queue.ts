@@ -5,6 +5,8 @@ export interface QueuedCheckin {
   serialNumber: string; // Badge serial
   kioskId: string;
   timestamp: Date;
+  localTimestamp: number; // Device time in ms (for clock drift detection)
+  sequenceNumber: number; // Monotonic counter per kiosk
   retryCount: number;
   createdAt: Date;
 }
@@ -23,7 +25,7 @@ interface SentinelQueueDB extends DBSchema {
 const DB_NAME = 'sentinel-queue';
 const DB_VERSION = 1;
 const STORE_NAME = 'checkins';
-const MAX_QUEUE_SIZE = 5000;
+const MAX_QUEUE_SIZE = 10000;
 const MAX_AGE_DAYS = 7;
 
 let db: IDBPDatabase<SentinelQueueDB> | null = null;
@@ -58,6 +60,10 @@ async function pruneOldItems(): Promise<number> {
     }
   }
 
+  if (deletedCount > 0) {
+    console.info(`[Queue] Cleaned ${deletedCount} expired items older than ${MAX_AGE_DAYS} days`);
+  }
+
   return deletedCount;
 }
 
@@ -75,6 +81,8 @@ async function enforceQueueLimit(): Promise<void> {
 
     // Delete oldest items until we're under the limit
     const toDelete = count - MAX_QUEUE_SIZE;
+    console.warn(`[Queue] Queue at max capacity (${count}/${MAX_QUEUE_SIZE}), dropping ${toDelete} oldest items`);
+
     for (let i = 0; i < toDelete; i++) {
       await store.delete(allKeys[i]);
     }
@@ -186,4 +194,8 @@ export async function incrementRetry(id: string): Promise<void> {
 
   checkin.retryCount += 1;
   await store.put(checkin);
+}
+
+export async function cleanExpiredItems(): Promise<number> {
+  return await pruneOldItems();
 }
