@@ -119,11 +119,13 @@ async function createProgrammaticSeedData(): Promise<void> {
     }
 
     // Create admin user
+    // HIGH-2 FIX: Use password that meets security policy
+    // Password must be at least 12 chars with uppercase, lowercase, number, and special character
     console.log('Creating admin user...');
-    const passwordHash = await hashPassword('admin123');
+    const passwordHash = await hashPassword('Admin123!@#Dev');
     await client.query(
-      'INSERT INTO admin_users (username, password_hash, full_name, role) VALUES ($1, $2, $3, $4)',
-      ['admin', passwordHash, 'System Administrator', 'admin']
+      'INSERT INTO admin_users (username, password_hash, full_name, role, email) VALUES ($1, $2, $3, $4, $5)',
+      ['admin', passwordHash, 'System Administrator', 'admin', 'admin@chippawa.local']
     );
 
     await client.query('COMMIT');
@@ -164,7 +166,7 @@ async function runSeed(): Promise<void> {
     console.log('\n✓ Database seeding complete!');
     console.log('\nDefault admin credentials:');
     console.log('  Username: admin');
-    console.log('  Password: admin123');
+    console.log('  Password: Admin123!@#Dev');
   } catch (error) {
     console.error('\n✗ Seeding failed:', error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.message.includes('ENOENT')) {

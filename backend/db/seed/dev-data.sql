@@ -164,11 +164,12 @@ INSERT INTO checkins (member_id, badge_id, direction, timestamp, kiosk_id, synce
 -- ADMIN USERS
 -- ============================================================================
 
--- Password: admin123 (bcrypt hashed with cost 10)
--- Password: viewer123 (bcrypt hashed with cost 10)
+-- HIGH-2 FIX: Strong passwords that meet security policy requirements
+-- Password: Admin123!@#Dev (12+ chars, uppercase, lowercase, number, special char)
+-- Password: Viewer123!@#Dev (12+ chars, uppercase, lowercase, number, special char)
 INSERT INTO admin_users (id, username, email, password_hash, full_name, role, last_login, created_at) VALUES
-('c0000001-0000-0000-0000-000000000001', 'admin', 'admin@sentinel.local', '$2b$10$EHQSP6r5P0k2voTwPdCaROsOfs9h6O7U0KUU7w3Kh2Mn1khXO55Uy', 'System Administrator', 'admin', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '180 days'),
-('c0000002-0000-0000-0000-000000000002', 'viewer', 'viewer@sentinel.local', '$2b$10$EHQSP6r5P0k2voTwPdCaROsOfs9h6O7U0KUU7w3Kh2Mn1khXO55Uy', 'Guest Viewer', 'viewer', NOW() - INTERVAL '2 days', NOW() - INTERVAL '150 days');
+('c0000001-0000-0000-0000-000000000001', 'admin', 'admin@sentinel.local', '$2b$12$WKrA7Bqcpsky5QBmPc7TReGp2.BxEKDy2ZxLiiQ0cqi3H52zfPq.e', 'System Administrator', 'admin', NOW() - INTERVAL '1 hour', NOW() - INTERVAL '180 days'),
+('c0000002-0000-0000-0000-000000000002', 'viewer', 'viewer@sentinel.local', '$2b$12$vr9oekUrI11ttciuRf5qIeU8R.1omYMf2IrGjhNrU29cWnICrE38C', 'Guest Viewer', 'viewer', NOW() - INTERVAL '2 days', NOW() - INTERVAL '150 days');
 
 -- ============================================================================
 -- AUDIT LOG (Sample entries)

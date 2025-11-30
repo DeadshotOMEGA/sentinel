@@ -15,7 +15,7 @@ import type {
  */
 
 // Use vi.hoisted to create mock objects that vitest will hoist with the vi.mock calls
-const { mockMemberRepository, mockDivisionRepository } = vi.hoisted(() => ({
+const { mockMemberRepository, mockDivisionRepository, mockRedis } = vi.hoisted(() => ({
   mockMemberRepository: {
     findByServiceNumbers: vi.fn(),
     findAll: vi.fn(),
@@ -26,6 +26,17 @@ const { mockMemberRepository, mockDivisionRepository } = vi.hoisted(() => ({
   mockDivisionRepository: {
     findAll: vi.fn(),
   },
+  mockRedis: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    on: vi.fn(),
+  },
+}));
+
+// Mock redis before any imports that may use it
+vi.mock('../../db/redis', () => ({
+  redis: mockRedis,
 }));
 
 // Mock the repository modules before importing ImportService
@@ -105,7 +116,7 @@ const testMembers: Member[] = [
 ];
 
 // Create test CSV strings
-function createTestCSV(rows: Array<Record<string, string>>): string {
+function createTestCSV(rows: Array<Record<string, string | undefined>>): string {
   const headers = [
     'SN',
     'EMPL #',
