@@ -1,5 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { pool } from '../db/connection';
+import { prisma } from '../db/prisma';
 import { requireAuth } from '../auth';
 import { broadcastPresenceUpdate } from '../websocket';
 import { checkinRepository } from '../db/repositories/checkin-repository';
@@ -30,7 +30,19 @@ interface MemberWithBadge {
 // GET /api/dev/members - Get all members with badge info and presence status
 router.get('/members', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const query = `
+    interface MemberRow {
+      id: string;
+      first_name: string;
+      last_name: string;
+      rank: string;
+      mess: string | null;
+      division_id: string;
+      division_name: string;
+      badge_serial_number: string | null;
+      is_present: boolean;
+    }
+
+    const rows = await prisma.$queryRaw<MemberRow[]>`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
           member_id,
@@ -56,21 +68,7 @@ router.get('/members', requireAuth, async (req: Request, res: Response, next: Ne
       ORDER BY d.name, m.last_name, m.first_name
     `;
 
-    const result = await pool.query(query);
-
-    interface MemberRow {
-      id: string;
-      first_name: string;
-      last_name: string;
-      rank: string;
-      mess: string | null;
-      division_id: string;
-      division_name: string;
-      badge_serial_number: string | null;
-      is_present: boolean;
-    }
-
-    const members: MemberWithBadge[] = result.rows.map((row: MemberRow) => ({
+    const members: MemberWithBadge[] = rows.map((row) => ({
       id: row.id,
       firstName: row.first_name,
       lastName: row.last_name,
@@ -91,8 +89,13 @@ router.get('/members', requireAuth, async (req: Request, res: Response, next: Ne
 // DELETE /api/dev/checkins/clear-all - Check out all currently present members
 router.delete('/checkins/clear-all', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    interface PresentRow {
+      member_id: string;
+      badge_id: string;
+    }
+
     // Get all currently present members
-    const presentQuery = `
+    const presentRows = await prisma.$queryRaw<PresentRow[]>`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
           member_id,
@@ -106,15 +109,13 @@ router.delete('/checkins/clear-all', requireAuth, async (req: Request, res: Resp
       WHERE direction = 'in'
     `;
 
-    const presentResult = await pool.query(presentQuery);
-
-    if (presentResult.rows.length === 0) {
+    if (presentRows.length === 0) {
       res.json({ message: 'No one is currently checked in', clearedCount: 0 });
       return;
     }
 
     // Insert check-out records for all present members
-    const insertQuery = `
+    await prisma.$executeRaw`
       INSERT INTO checkins (member_id, badge_id, direction, timestamp, kiosk_id, synced)
       SELECT
         member_id,
@@ -138,15 +139,13 @@ router.delete('/checkins/clear-all', requireAuth, async (req: Request, res: Resp
       ) present_members
     `;
 
-    await pool.query(insertQuery);
-
     // Broadcast updated presence stats
     const stats = await checkinRepository.getPresenceStats();
     broadcastPresenceUpdate(stats);
 
     res.json({
-      message: `Cleared ${presentResult.rows.length} check-ins`,
-      clearedCount: presentResult.rows.length,
+      message: `Cleared ${presentRows.length} check-ins`,
+      clearedCount: presentRows.length,
     });
   } catch (err) {
     next(err);

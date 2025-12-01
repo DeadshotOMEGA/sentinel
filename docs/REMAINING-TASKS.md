@@ -43,63 +43,25 @@ The system has critical security, testing, and architecture issues that must be 
 
 ---
 
-## Architecture Issues (Week 2)
+## ~~Architecture Issues (Week 2)~~ ✅ COMPLETED
 
-### ARCH-01: N+1 Query Patterns
-**Severity:** CRITICAL | **Effort:** 2 days
-**Issue:** Every check-in triggers 3+ database queries
+### ~~ARCH-01: N+1 Query Patterns~~ ✅ DONE
+**Solution:** Redis direction cache (`member:direction:{memberId}`) reduces check-in to 1 query + 1 Redis GET
 
-**Action:**
-1. Implement DataLoader pattern for batching
-2. Add eager loading for member→badge→division relationships
-3. Add query logging in development to catch new N+1s
+### ~~ARCH-02: No Service Layer~~ ✅ DONE
+**Solution:** Created `checkin-service.ts`, `presence-service.ts`, `member-service.ts`, `badge-service.ts` with proper separation of concerns
 
-### ARCH-02: No Service Layer
-**Severity:** HIGH | **Effort:** 3 days
-**Issue:** Business logic scattered across routes
+### ~~ARCH-03: No Connection Pooling~~ ✅ DONE (Already Implemented)
+**Solution:** Pool configured with max:20, health checks, graceful error handling
 
-**Action:**
-Create service modules:
-- `checkin-service.ts` - Check-in validation, presence calculation
-- `member-service.ts` - Member CRUD, badge assignment
-- `badge-service.ts` - Badge lifecycle, assignment types
-- `presence-service.ts` - Real-time presence aggregation
+### ~~ARCH-04: No Transaction Boundaries~~ ✅ DONE
+**Solution:** Import operations wrapped in Prisma `$transaction` for atomicity
 
-### ARCH-03: No Connection Pooling
-**Severity:** CRITICAL | **Effort:** 4 hours
-**Issue:** Database crashes under load, exit(-1) on error
+### ~~ARCH-05: Race Conditions~~ ✅ DONE
+**Solution:** Defense in depth - Redis atomic operations + DB unique constraint + advisory locks
 
-**Action:**
-1. Configure pg-pool with proper limits
-2. Add connection health checks
-3. Implement graceful degradation
-
-### ARCH-04: No Transaction Boundaries
-**Severity:** HIGH | **Effort:** 1 day
-**Issue:** Bulk sync can cause partial data corruption
-
-**Action:**
-1. Wrap bulk operations in transactions
-2. Add rollback on any failure
-3. Implement idempotency keys for retries
-
-### ARCH-05: Race Conditions
-**Severity:** HIGH | **Effort:** 1 day
-**Issue:** Presence calculations have race conditions, cache invalidated after queries
-
-**Action:**
-1. Use database-level locking for presence updates
-2. Invalidate cache before queries
-3. Add optimistic concurrency control
-
-### ARCH-06: Type System Mismatch
-**Severity:** HIGH | **Effort:** 2 days
-**Issue:** Database schema doesn't match TypeScript types
-
-**Action:**
-1. Generate types from database schema (prisma/drizzle)
-2. Add CI check for type/schema sync
-3. Remove manual type definitions
+### ~~ARCH-06: Type System Mismatch~~ ✅ DONE
+**Solution:** Prisma migration with `db pull` + generated types from schema
 
 ---
 

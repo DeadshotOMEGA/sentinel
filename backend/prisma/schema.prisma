@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum AdminRole {
+  admin
+  viewer
+
+  @@map("admin_role")
+}
+
+enum BadgeAssignmentType {
+  member
+  event
+  unassigned
+
+  @@map("badge_assignment_type")
+}
+
+enum BadgeStatus {
+  active
+  disabled
+  lost
+  returned
+
+  @@map("badge_status")
+}
+
+enum CheckinDirection {
+  in
+  out
+
+  @@map("checkin_direction")
+}
+
+enum MemberType {
+  class_a
+  class_b
+  class_c
+  reg_force
+
+  @@map("member_type")
+}
+
+enum MemberStatus {
+  active
+  inactive
+  pending_review
+
+  @@map("member_status")
+}
+
+enum EventStatus {
+  draft
+  active
+  completed
+  cancelled
+
+  @@map("event_status")
+}
+
+enum AttendeeStatus {
+  pending
+  active
+  checked_out
+  expired
+
+  @@map("attendee_status")
+}
+
+enum VisitType {
+  contractor
+  recruitment
+  event
+  official
+  museum
+  other
+
+  @@map("visit_type")
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+model AdminUser {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username     String     @unique @db.VarChar(100)
+  email        String?    @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  fullName     String     @map("full_name") @db.VarChar(200)
+  role         String     @db.VarChar(20)
+  lastLogin    DateTime?  @map("last_login") @db.Timestamp(6)
+  createdAt    DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  auditLogs    AuditLog[]
+
+  @@map("admin_users")
+}
+
+model AuditLog {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminUserId String?    @map("admin_user_id") @db.Uuid
+  action      String     @db.VarChar(100)
+  entityType  String     @map("entity_type") @db.VarChar(50)
+  entityId    String?    @map("entity_id") @db.Uuid
+  details     Json?
+  ipAddress   String?    @map("ip_address") @db.Inet
+  createdAt   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([adminUserId, createdAt(sort: Desc)], map: "idx_audit_log_admin_created")
+  @@index([createdAt(sort: Desc)], map: "idx_audit_log_created")
+  @@index([entityType, entityId], map: "idx_audit_log_entity")
+  @@map("audit_log")
+}
+
+model Badge {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serialNumber   String              @unique @map("serial_number") @db.VarChar(100)
+  assignmentType String              @map("assignment_type") @db.VarChar(20)
+  assignedToId   String?             @map("assigned_to_id") @db.Uuid
+  status         String              @default("active") @db.VarChar(20)
+  lastUsed       DateTime?           @map("last_used") @db.Timestamp(6)
+  createdAt      DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime?           @default(now()) @map("updated_at") @db.Timestamp(6)
+  checkins       Checkin[]
+  eventAttendees EventAttendee[]
+  eventCheckins  EventCheckin[]
+  members        Member[]
+  visitors       Visitor[]
+
+  @@index([assignedToId], map: "idx_badges_assigned_to")
+  @@index([serialNumber], map: "idx_badges_serial_number")
+  @@index([status], map: "idx_badges_status")
+  @@map("badges")
+}
+
+model Checkin {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId  String?   @map("member_id") @db.Uuid
+  badgeId   String?   @map("badge_id") @db.Uuid
+  direction String    @db.VarChar(10)
+  timestamp DateTime  @default(now()) @db.Timestamp(6)
+  kioskId   String    @map("kiosk_id") @db.VarChar(50)
+  synced    Boolean?  @default(true)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  badge     Badge?    @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member    Member?   @relation(fields: [memberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([badgeId], map: "idx_checkins_badge")
+  @@index([kioskId, timestamp(sort: Desc)], map: "idx_checkins_kiosk")
+  @@index([memberId, timestamp(sort: Desc)], map: "idx_checkins_member_timestamp")
+  @@index([timestamp(sort: Desc)], map: "idx_checkins_timestamp")
+  @@map("checkins")
+}
+
+model Division {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String    @db.VarChar(100)
+  code        String    @unique @db.VarChar(20)
+  description String?
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+  members     Member[]
+
+  @@map("divisions")
+}
+
+model EventAttendee {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId         String         @map("event_id") @db.Uuid
+  name            String         @db.VarChar(200)
+  rank            String?        @db.VarChar(50)
+  organization    String         @db.VarChar(200)
+  role            String         @db.VarChar(100)
+  badgeId         String?        @map("badge_id") @db.Uuid
+  badgeAssignedAt DateTime?      @map("badge_assigned_at") @db.Timestamp(6)
+  accessStart     DateTime?      @map("access_start") @db.Date
+  accessEnd       DateTime?      @map("access_end") @db.Date
+  status          String         @default("pending") @db.VarChar(20)
+  createdAt       DateTime?      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?      @default(now()) @map("updated_at") @db.Timestamp(6)
+  badge           Badge?         @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  eventCheckins   EventCheckin[]
+
+  @@index([badgeId], map: "idx_event_attendees_badge_id")
+  @@index([eventId], map: "idx_event_attendees_event_id")
+  @@index([status], map: "idx_event_attendees_status")
+  @@map("event_attendees")
+}
+
+model EventCheckin {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventAttendeeId String        @map("event_attendee_id") @db.Uuid
+  badgeId         String        @map("badge_id") @db.Uuid
+  direction       String        @db.VarChar(10)
+  timestamp       DateTime      @default(now()) @db.Timestamp(6)
+  kioskId         String        @map("kiosk_id") @db.VarChar(50)
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  badge           Badge         @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eventAttendee   EventAttendee @relation(fields: [eventAttendeeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([eventAttendeeId, timestamp(sort: Desc)], map: "idx_event_checkins_attendee")
+  @@index([badgeId], map: "idx_event_checkins_badge")
+  @@index([kioskId, timestamp(sort: Desc)], map: "idx_event_checkins_kiosk")
+  @@index([timestamp(sort: Desc)], map: "idx_event_checkins_timestamp")
+  @@map("event_checkins")
+}
+
+model Event {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String          @db.VarChar(200)
+  code             String          @unique @db.VarChar(50)
+  description      String?
+  startDate        DateTime        @map("start_date") @db.Date
+  endDate          DateTime        @map("end_date") @db.Date
+  status           String          @default("draft") @db.VarChar(20)
+  autoExpireBadges Boolean?        @default(true) @map("auto_expire_badges")
+  createdBy        String?         @map("created_by") @db.Uuid
+  createdAt        DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime?       @default(now()) @map("updated_at") @db.Timestamp(6)
+  eventAttendees   EventAttendee[]
+  visitors         Visitor[]
+
+  @@index([startDate, endDate], map: "idx_events_dates")
+  @@index([status], map: "idx_events_status")
+  @@map("events")
+}
+
+model Member {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber  String    @unique @map("service_number") @db.VarChar(20)
+  employeeNumber String?   @map("employee_number") @db.VarChar(20)
+  firstName      String    @map("first_name") @db.VarChar(100)
+  lastName       String    @map("last_name") @db.VarChar(100)
+  initials       String?   @db.VarChar(10)
+  rank           String    @db.VarChar(50)
+  divisionId     String?   @map("division_id") @db.Uuid
+  mess           String?   @db.VarChar(50)
+  moc            String?   @db.VarChar(100)
+  memberType     String    @map("member_type") @db.VarChar(20)
+  classDetails   String?   @map("class_details") @db.VarChar(100)
+  status         String    @default("active") @db.VarChar(20)
+  email          String?   @db.VarChar(255)
+  homePhone      String?   @map("home_phone") @db.VarChar(30)
+  mobilePhone    String?   @map("mobile_phone") @db.VarChar(50)
+  badgeId        String?   @map("badge_id") @db.Uuid
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+  checkins       Checkin[]
+  badge          Badge?    @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  division       Division? @relation(fields: [divisionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  visitors       Visitor[]
+
+  @@index([divisionId], map: "idx_members_division")
+  @@index([employeeNumber], map: "idx_members_employee_number")
+  @@index([mess], map: "idx_members_mess")
+  @@index([moc], map: "idx_members_moc")
+  @@index([serviceNumber], map: "idx_members_service_number")
+  @@index([status], map: "idx_members_status")
+  @@map("members")
+}
+
+model Visitor {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String    @db.VarChar(200)
+  organization     String?   @db.VarChar(200)
+  visitType        String    @map("visit_type") @db.VarChar(50)
+  visitReason      String?   @map("visit_reason")
+  eventId          String?   @map("event_id") @db.Uuid
+  hostMemberId     String?   @map("host_member_id") @db.Uuid
+  checkInTime      DateTime  @default(now()) @map("check_in_time") @db.Timestamp(6)
+  checkOutTime     DateTime? @map("check_out_time") @db.Timestamp(6)
+  temporaryBadgeId String?   @map("temporary_badge_id") @db.Uuid
+  kioskId          String    @map("kiosk_id") @db.VarChar(50)
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  event            Event?    @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  hostMember       Member?   @relation(fields: [hostMemberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  badge            Badge?    @relation(fields: [temporaryBadgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([checkInTime(sort: Desc)], map: "idx_visitors_check_in_time")
+  @@index([checkOutTime], map: "idx_visitors_check_out_time")
+  @@index([eventId], map: "idx_visitors_event")
+  @@index([hostMemberId], map: "idx_visitors_host")
+  @@map("visitors")
+}

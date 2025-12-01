@@ -1,4 +1,5 @@
-import { BaseRepository, toCamelCase } from './base-repository';
+import { prisma } from '../prisma';
+import type { Visitor as PrismaVisitor } from '@prisma/client';
 import type {
   Visitor,
   CreateVisitorInput,
@@ -13,148 +14,165 @@ interface VisitorFilters {
   hostMemberId?: string;
 }
 
-export class VisitorRepository extends BaseRepository {
+export class VisitorRepository {
   /**
    * Find all visitors with optional filters
    */
   async findAll(filters?: VisitorFilters): Promise<Visitor[]> {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    const where: {
+      checkInTime?: { gte: Date; lte: Date };
+      visitType?: string;
+      hostMemberId?: string;
+    } = {};
 
     if (filters?.dateRange) {
-      conditions.push(`check_in_time >= $${paramIndex++}`);
-      params.push(filters.dateRange.start);
-      conditions.push(`check_in_time <= $${paramIndex++}`);
-      params.push(filters.dateRange.end);
+      where.checkInTime = {
+        gte: filters.dateRange.start,
+        lte: filters.dateRange.end,
+      };
     }
 
     if (filters?.visitType) {
-      conditions.push(`visit_type = $${paramIndex++}`);
-      params.push(filters.visitType);
+      where.visitType = filters.visitType;
     }
 
     if (filters?.hostMemberId) {
-      conditions.push(`host_member_id = $${paramIndex++}`);
-      params.push(filters.hostMemberId);
+      where.hostMemberId = filters.hostMemberId;
     }
 
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+    const visitors = await prisma.visitor.findMany({
+      where,
+      orderBy: {
+        checkInTime: 'desc',
+      },
+      include: {
+        event: true,
+        hostMember: true,
+        badge: true,
+      },
+    });
 
-    const query = `
-      SELECT *
-      FROM visitors
-      ${whereClause}
-      ORDER BY check_in_time DESC
-    `;
-
-    const rows = await this.queryAll<Record<string, unknown>>(query, params);
-    return rows.map((row) => toCamelCase<Visitor>(row));
+    return visitors.map(this.toVisitorType);
   }
 
   /**
    * Find visitor by ID
    */
   async findById(id: string): Promise<Visitor | null> {
-    const query = `
-      SELECT *
-      FROM visitors
-      WHERE id = $1
-    `;
+    const visitor = await prisma.visitor.findUnique({
+      where: { id },
+      include: {
+        event: true,
+        hostMember: true,
+        badge: true,
+      },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
+    if (!visitor) {
       return null;
     }
 
-    return toCamelCase<Visitor>(row);
+    return this.toVisitorType(visitor);
   }
 
   /**
    * Find active visitors (not checked out)
    */
   async findActive(): Promise<Visitor[]> {
-    const query = `
-      SELECT *
-      FROM visitors
-      WHERE check_out_time IS NULL
-      ORDER BY check_in_time DESC
-    `;
+    const visitors = await prisma.visitor.findMany({
+      where: {
+        checkOutTime: null,
+      },
+      orderBy: {
+        checkInTime: 'desc',
+      },
+      include: {
+        event: true,
+        hostMember: true,
+        badge: true,
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query);
-    return rows.map((row) => toCamelCase<Visitor>(row));
+    return visitors.map(this.toVisitorType);
   }
 
   /**
    * Create a new visitor
    */
   async create(data: CreateVisitorInput): Promise<Visitor> {
-    if (!data.checkInTime) {
-      data.checkInTime = new Date();
-    }
+    const visitor = await prisma.visitor.create({
+      data: {
+        name: data.name,
+        organization: data.organization,
+        visitType: data.visitType,
+        hostMemberId: data.hostMemberId ?? null,
+        eventId: data.eventId ?? null,
+        visitReason: data.purpose ?? null,
+        checkInTime: data.checkInTime ?? new Date(),
+        temporaryBadgeId: data.badgeId ?? null,
+        kioskId: 'admin',
+      },
+      include: {
+        event: true,
+        hostMember: true,
+        badge: true,
+      },
+    });
 
-    const query = `
-      INSERT INTO visitors (
-        name, organization, visit_type, host_member_id, event_id,
-        visit_reason, check_in_time, temporary_badge_id, kiosk_id
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'admin')
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.name,
-      data.organization,
-      data.visitType,
-      data.hostMemberId !== undefined ? data.hostMemberId : null,
-      data.eventId !== undefined ? data.eventId : null,
-      data.purpose !== undefined ? data.purpose : null,
-      data.checkInTime,
-      data.badgeId !== undefined ? data.badgeId : null,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to create visitor');
-    }
-
-    return toCamelCase<Visitor>(row);
+    return this.toVisitorType(visitor);
   }
 
   /**
    * Checkout a visitor (set checkout time to now)
    */
   async checkout(id: string): Promise<Visitor> {
-    const query = `
-      UPDATE visitors
-      SET check_out_time = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
-    `;
+    const visitor = await prisma.visitor.update({
+      where: { id },
+      data: {
+        checkOutTime: new Date(),
+      },
+      include: {
+        event: true,
+        hostMember: true,
+        badge: true,
+      },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
-      throw new Error(`Visitor not found: ${id}`);
-    }
-
-    return toCamelCase<Visitor>(row);
+    return this.toVisitorType(visitor);
   }
 
   /**
    * Get count of active visitors (currently signed in)
    */
   async getActiveCount(): Promise<number> {
-    const query = `
-      SELECT COUNT(*) as count
-      FROM visitors
-      WHERE check_out_time IS NULL
-    `;
+    return await prisma.visitor.count({
+      where: {
+        checkOutTime: null,
+      },
+    });
+  }
 
-    const row = await this.queryOne<{ count: string }>(query);
-    if (!row) {
-      throw new Error('Failed to get active visitor count');
+  /**
+   * Convert Prisma visitor to shared Visitor type
+   */
+  private toVisitorType(visitor: PrismaVisitor): Visitor {
+    if (!visitor.organization) {
+      throw new Error(`Visitor ${visitor.id} has no organization`);
     }
 
-    return parseInt(row.count);
+    return {
+      id: visitor.id,
+      name: visitor.name,
+      organization: visitor.organization,
+      visitType: visitor.visitType as Visitor['visitType'],
+      hostMemberId: visitor.hostMemberId ?? undefined,
+      eventId: visitor.eventId ?? undefined,
+      purpose: visitor.visitReason ?? undefined,
+      checkInTime: visitor.checkInTime,
+      checkOutTime: visitor.checkOutTime ?? undefined,
+      badgeId: visitor.temporaryBadgeId ?? undefined,
+      createdAt: visitor.createdAt ?? new Date(),
+    };
   }
 }
 

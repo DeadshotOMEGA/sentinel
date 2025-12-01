@@ -5,7 +5,10 @@ import { redis } from '../db/redis';
 
 // Create Redis store for distributed rate limiting
 const createRedisStore = (prefix: string) => new RedisStore({
-  sendCommand: (...args: string[]) => redis.call(...args),
+  sendCommand: async (...args: string[]) => {
+    // Cast to satisfy rate-limit-redis types
+    return redis.call(args[0], ...args.slice(1)) as Promise<number | string>;
+  },
   prefix: `rl:${prefix}:`,
 });
 

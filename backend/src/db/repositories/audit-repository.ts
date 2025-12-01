@@ -1,4 +1,5 @@
-import { BaseRepository } from './base-repository';
+import { prisma } from '../prisma';
+import type { AuditLog as PrismaAuditLog, Prisma } from '@prisma/client';
 
 export type AuditAction =
   | 'login'
@@ -29,20 +30,18 @@ interface AuditLogEntry {
   ipAddress: string;
 }
 
-export class AuditRepository extends BaseRepository {
+export class AuditRepository {
   async log(entry: AuditLogEntry): Promise<void> {
-    await this.query(
-      `INSERT INTO audit_log (admin_user_id, action, entity_type, entity_id, details, ip_address, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [
-        entry.adminUserId,
-        entry.action,
-        entry.entityType,
-        entry.entityId,
-        JSON.stringify(entry.details),
-        entry.ipAddress,
-      ]
-    );
+    await prisma.auditLog.create({
+      data: {
+        adminUserId: entry.adminUserId,
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        details: entry.details as Prisma.JsonObject,
+        ipAddress: entry.ipAddress,
+      },
+    });
   }
 }
 

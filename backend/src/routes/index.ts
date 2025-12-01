@@ -7,7 +7,7 @@ import { badgeRoutes } from './badges';
 import { authRoutes } from './auth';
 import { eventRoutes } from './events';
 import { devRoutes } from './dev';
-import { checkDatabaseHealth } from '../db/connection';
+import { checkDatabaseHealth } from '../db/prisma';
 import { redis } from '../db/redis';
 import { logger } from '../utils/logger';
 

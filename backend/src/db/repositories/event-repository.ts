@@ -1,4 +1,9 @@
-import { BaseRepository, toCamelCase, toSnakeCase } from './base-repository';
+import { prisma } from '../prisma';
+import type {
+  Event as PrismaEvent,
+  EventAttendee as PrismaEventAttendee,
+  EventCheckin as PrismaEventCheckin,
+} from '@prisma/client';
 import type {
   Event,
   EventAttendee,
@@ -20,7 +25,62 @@ interface EventPresenceStats {
   expired: number;
 }
 
-export class EventRepository extends BaseRepository {
+/**
+ * Convert Prisma Event to shared Event type
+ */
+function mapToEvent(event: PrismaEvent): Event {
+  return {
+    id: event.id,
+    name: event.name,
+    code: event.code,
+    description: event.description,
+    startDate: event.startDate,
+    endDate: event.endDate,
+    status: event.status as Event['status'],
+    autoExpireBadges: event.autoExpireBadges ?? true,
+    createdBy: event.createdBy,
+    createdAt: event.createdAt ?? new Date(),
+    updatedAt: event.updatedAt ?? new Date(),
+  };
+}
+
+/**
+ * Convert Prisma EventAttendee to shared EventAttendee type
+ */
+function mapToEventAttendee(attendee: PrismaEventAttendee): EventAttendee {
+  return {
+    id: attendee.id,
+    eventId: attendee.eventId,
+    name: attendee.name,
+    rank: attendee.rank,
+    organization: attendee.organization,
+    role: attendee.role,
+    badgeId: attendee.badgeId,
+    badgeAssignedAt: attendee.badgeAssignedAt,
+    accessStart: attendee.accessStart,
+    accessEnd: attendee.accessEnd,
+    status: attendee.status as EventAttendee['status'],
+    createdAt: attendee.createdAt ?? new Date(),
+    updatedAt: attendee.updatedAt ?? new Date(),
+  };
+}
+
+/**
+ * Convert Prisma EventCheckin to shared EventCheckin type
+ */
+function mapToEventCheckin(checkin: PrismaEventCheckin): EventCheckin {
+  return {
+    id: checkin.id,
+    eventAttendeeId: checkin.eventAttendeeId,
+    badgeId: checkin.badgeId,
+    direction: checkin.direction as EventCheckin['direction'],
+    timestamp: checkin.timestamp,
+    kioskId: checkin.kioskId,
+    createdAt: checkin.createdAt ?? new Date(),
+  };
+}
+
+export class EventRepository {
   // ============================================================================
   // EVENT CRUD OPERATIONS
   // ============================================================================
@@ -29,157 +89,128 @@ export class EventRepository extends BaseRepository {
    * Find all events
    */
   async findAll(): Promise<Event[]> {
-    const query = `
-      SELECT *
-      FROM events
-      ORDER BY start_date DESC
-    `;
+    const events = await prisma.event.findMany({
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query);
-    return rows.map((row) => toCamelCase<Event>(row));
+    return events.map(mapToEvent);
   }
 
   /**
    * Find event by ID
    */
   async findById(id: string): Promise<Event | null> {
-    const query = `
-      SELECT *
-      FROM events
-      WHERE id = $1
-    `;
+    const event = await prisma.event.findUnique({
+      where: { id },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<Event>(row);
+    return event ? mapToEvent(event) : null;
   }
 
   /**
    * Find event by code
    */
   async findByCode(code: string): Promise<Event | null> {
-    const query = `
-      SELECT *
-      FROM events
-      WHERE code = $1
-    `;
+    const event = await prisma.event.findUnique({
+      where: { code },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [code]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<Event>(row);
+    return event ? mapToEvent(event) : null;
   }
 
   /**
    * Create a new event
    */
   async create(data: CreateEventInput): Promise<Event> {
-    const status = data.status || 'draft';
-    const autoExpire = data.autoExpireBadges ?? true;
-
-    const query = `
-      INSERT INTO events (
-        name, code, description, start_date, end_date,
-        status, auto_expire_badges, created_by
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.name,
-      data.code,
-      data.description || null,
-      data.startDate,
-      data.endDate,
-      status,
-      autoExpire,
-      data.createdBy || null,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to create event');
+    if (!data.status) {
+      throw new Error('Event status is required');
+    }
+    if (data.autoExpireBadges === undefined) {
+      throw new Error('autoExpireBadges must be explicitly set');
     }
 
-    return toCamelCase<Event>(row);
+    const event = await prisma.event.create({
+      data: {
+        name: data.name,
+        code: data.code,
+        description: data.description ?? null,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        status: data.status,
+        autoExpireBadges: data.autoExpireBadges,
+        createdBy: data.createdBy ?? null,
+      },
+    });
+
+    return mapToEvent(event);
   }
 
   /**
    * Update an event
    */
   async update(id: string, data: UpdateEventInput): Promise<Event> {
-    const updates: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    // Build update data object dynamically
+    const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      params.push(data.name);
+      updateData.name = data.name;
     }
     if (data.code !== undefined) {
-      updates.push(`code = $${paramIndex++}`);
-      params.push(data.code);
+      updateData.code = data.code;
     }
     if (data.description !== undefined) {
-      updates.push(`description = $${paramIndex++}`);
-      params.push(data.description);
+      updateData.description = data.description;
     }
     if (data.startDate !== undefined) {
-      updates.push(`start_date = $${paramIndex++}`);
-      params.push(data.startDate);
+      updateData.startDate = data.startDate;
     }
     if (data.endDate !== undefined) {
-      updates.push(`end_date = $${paramIndex++}`);
-      params.push(data.endDate);
+      updateData.endDate = data.endDate;
     }
     if (data.status !== undefined) {
-      updates.push(`status = $${paramIndex++}`);
-      params.push(data.status);
+      updateData.status = data.status;
     }
     if (data.autoExpireBadges !== undefined) {
-      updates.push(`auto_expire_badges = $${paramIndex++}`);
-      params.push(data.autoExpireBadges);
+      updateData.autoExpireBadges = data.autoExpireBadges;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       throw new Error('No fields to update');
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
+    // updatedAt is automatically handled by Prisma default
+    updateData.updatedAt = new Date();
 
-    const query = `
-      UPDATE events
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
+    try {
+      const event = await prisma.event.update({
+        where: { id },
+        data: updateData,
+      });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, params);
-    if (!row) {
-      throw new Error(`Event not found: ${id}`);
+      return mapToEvent(event);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event not found: ${id}`);
+      }
+      throw error;
     }
-
-    return toCamelCase<Event>(row);
   }
 
   /**
    * Delete an event (hard delete)
    */
   async delete(id: string): Promise<void> {
-    const query = `
-      DELETE FROM events
-      WHERE id = $1
-    `;
-
-    const result = await this.query(query, [id]);
-    if (result.rowCount === 0) {
-      throw new Error(`Event not found: ${id}`);
+    try {
+      await prisma.event.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event not found: ${id}`);
+      }
+      throw error;
     }
   }
 
@@ -191,149 +222,123 @@ export class EventRepository extends BaseRepository {
    * Find all attendees for an event
    */
   async findByEventId(eventId: string): Promise<EventAttendee[]> {
-    const query = `
-      SELECT *
-      FROM event_attendees
-      WHERE event_id = $1
-      ORDER BY name ASC
-    `;
+    const attendees = await prisma.eventAttendee.findMany({
+      where: { eventId },
+      orderBy: {
+        name: 'asc',
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [eventId]);
-    return rows.map((row) => toCamelCase<EventAttendee>(row));
+    return attendees.map(mapToEventAttendee);
   }
 
   /**
    * Find attendee by ID
    */
   async findAttendeeById(id: string): Promise<EventAttendee | null> {
-    const query = `
-      SELECT *
-      FROM event_attendees
-      WHERE id = $1
-    `;
+    const attendee = await prisma.eventAttendee.findUnique({
+      where: { id },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<EventAttendee>(row);
+    return attendee ? mapToEventAttendee(attendee) : null;
   }
 
   /**
    * Add a new attendee to an event
    */
   async addAttendee(data: CreateAttendeeInput): Promise<EventAttendee> {
-    const status = data.status || 'pending';
-
-    const query = `
-      INSERT INTO event_attendees (
-        event_id, name, rank, organization, role,
-        badge_id, badge_assigned_at, access_start, access_end, status
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.eventId,
-      data.name,
-      data.rank || null,
-      data.organization,
-      data.role,
-      data.badgeId || null,
-      data.badgeAssignedAt || null,
-      data.accessStart || null,
-      data.accessEnd || null,
-      status,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to add event attendee');
+    if (!data.status) {
+      throw new Error('Attendee status is required');
     }
 
-    return toCamelCase<EventAttendee>(row);
+    const attendee = await prisma.eventAttendee.create({
+      data: {
+        eventId: data.eventId,
+        name: data.name,
+        rank: data.rank ?? null,
+        organization: data.organization,
+        role: data.role,
+        badgeId: data.badgeId ?? null,
+        badgeAssignedAt: data.badgeAssignedAt ?? null,
+        accessStart: data.accessStart ?? null,
+        accessEnd: data.accessEnd ?? null,
+        status: data.status,
+      },
+    });
+
+    return mapToEventAttendee(attendee);
   }
 
   /**
    * Update an event attendee
    */
   async updateAttendee(id: string, data: UpdateAttendeeInput): Promise<EventAttendee> {
-    const updates: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    // Build update data object dynamically
+    const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      params.push(data.name);
+      updateData.name = data.name;
     }
     if (data.rank !== undefined) {
-      updates.push(`rank = $${paramIndex++}`);
-      params.push(data.rank);
+      updateData.rank = data.rank;
     }
     if (data.organization !== undefined) {
-      updates.push(`organization = $${paramIndex++}`);
-      params.push(data.organization);
+      updateData.organization = data.organization;
     }
     if (data.role !== undefined) {
-      updates.push(`role = $${paramIndex++}`);
-      params.push(data.role);
+      updateData.role = data.role;
     }
     if (data.badgeId !== undefined) {
-      updates.push(`badge_id = $${paramIndex++}`);
-      params.push(data.badgeId);
+      updateData.badgeId = data.badgeId;
     }
     if (data.badgeAssignedAt !== undefined) {
-      updates.push(`badge_assigned_at = $${paramIndex++}`);
-      params.push(data.badgeAssignedAt);
+      updateData.badgeAssignedAt = data.badgeAssignedAt;
     }
     if (data.accessStart !== undefined) {
-      updates.push(`access_start = $${paramIndex++}`);
-      params.push(data.accessStart);
+      updateData.accessStart = data.accessStart;
     }
     if (data.accessEnd !== undefined) {
-      updates.push(`access_end = $${paramIndex++}`);
-      params.push(data.accessEnd);
+      updateData.accessEnd = data.accessEnd;
     }
     if (data.status !== undefined) {
-      updates.push(`status = $${paramIndex++}`);
-      params.push(data.status);
+      updateData.status = data.status;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       throw new Error('No fields to update');
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
+    // updatedAt is automatically handled by Prisma default
+    updateData.updatedAt = new Date();
 
-    const query = `
-      UPDATE event_attendees
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
+    try {
+      const attendee = await prisma.eventAttendee.update({
+        where: { id },
+        data: updateData,
+      });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, params);
-    if (!row) {
-      throw new Error(`Event attendee not found: ${id}`);
+      return mapToEventAttendee(attendee);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event attendee not found: ${id}`);
+      }
+      throw error;
     }
-
-    return toCamelCase<EventAttendee>(row);
   }
 
   /**
    * Remove an attendee from an event
    */
   async removeAttendee(id: string): Promise<void> {
-    const query = `
-      DELETE FROM event_attendees
-      WHERE id = $1
-    `;
-
-    const result = await this.query(query, [id]);
-    if (result.rowCount === 0) {
-      throw new Error(`Event attendee not found: ${id}`);
+    try {
+      await prisma.eventAttendee.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event attendee not found: ${id}`);
+      }
+      throw error;
     }
   }
 
@@ -345,38 +350,46 @@ export class EventRepository extends BaseRepository {
    * Assign a badge to an event attendee
    */
   async assignBadge(attendeeId: string, badgeId: string): Promise<EventAttendee> {
-    const query = `
-      UPDATE event_attendees
-      SET badge_id = $1, badge_assigned_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
-      RETURNING *
-    `;
+    try {
+      const attendee = await prisma.eventAttendee.update({
+        where: { id: attendeeId },
+        data: {
+          badgeId,
+          badgeAssignedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [badgeId, attendeeId]);
-    if (!row) {
-      throw new Error(`Event attendee not found: ${attendeeId}`);
+      return mapToEventAttendee(attendee);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event attendee not found: ${attendeeId}`);
+      }
+      throw error;
     }
-
-    return toCamelCase<EventAttendee>(row);
   }
 
   /**
    * Unassign a badge from an event attendee
    */
   async unassignBadge(attendeeId: string): Promise<EventAttendee> {
-    const query = `
-      UPDATE event_attendees
-      SET badge_id = NULL, badge_assigned_at = NULL, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
-    `;
+    try {
+      const attendee = await prisma.eventAttendee.update({
+        where: { id: attendeeId },
+        data: {
+          badgeId: null,
+          badgeAssignedAt: null,
+          updatedAt: new Date(),
+        },
+      });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [attendeeId]);
-    if (!row) {
-      throw new Error(`Event attendee not found: ${attendeeId}`);
+      return mapToEventAttendee(attendee);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new Error(`Event attendee not found: ${attendeeId}`);
+      }
+      throw error;
     }
-
-    return toCamelCase<EventAttendee>(row);
   }
 
   // ============================================================================
@@ -387,61 +400,42 @@ export class EventRepository extends BaseRepository {
    * Get presence statistics for an event
    */
   async getEventPresenceStats(eventId: string): Promise<EventPresenceStats> {
-    const query = `
-      SELECT
-        event_id,
-        COUNT(*) as total_attendees,
-        COUNT(*) FILTER (WHERE status = 'active') as active_attendees,
-        COUNT(*) FILTER (WHERE status = 'checked_out') as checked_out,
-        COUNT(*) FILTER (WHERE status = 'expired') as expired
-      FROM event_attendees
-      WHERE event_id = $1
-      GROUP BY event_id
-    `;
+    // Use Prisma's groupBy for aggregated statistics
+    const attendees = await prisma.eventAttendee.findMany({
+      where: { eventId },
+      select: { status: true },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [eventId]);
-    if (!row) {
+    if (attendees.length === 0) {
       throw new Error(`No attendees found for event: ${eventId}`);
     }
 
-    const eventIdValue = row.event_id;
-    const totalAttendeesValue = row.total_attendees;
-    const activeAttendeesValue = row.active_attendees;
-    const checkedOutValue = row.checked_out;
-    const expiredValue = row.expired;
-
-    if (
-      typeof eventIdValue !== 'string' ||
-      typeof totalAttendeesValue === 'undefined' ||
-      typeof activeAttendeesValue === 'undefined' ||
-      typeof checkedOutValue === 'undefined' ||
-      typeof expiredValue === 'undefined'
-    ) {
-      throw new Error('Invalid response from presence statistics query');
-    }
-
-    return {
-      eventId: eventIdValue,
-      totalAttendees: parseInt(totalAttendeesValue as string, 10),
-      activeAttendees: parseInt(activeAttendeesValue as string, 10),
-      checkedOut: parseInt(checkedOutValue as string, 10),
-      expired: parseInt(expiredValue as string, 10),
+    const stats = {
+      eventId,
+      totalAttendees: attendees.length,
+      activeAttendees: attendees.filter((a) => a.status === 'active').length,
+      checkedOut: attendees.filter((a) => a.status === 'checked_out').length,
+      expired: attendees.filter((a) => a.status === 'expired').length,
     };
+
+    return stats;
   }
 
   /**
    * Get active attendees for an event
    */
   async getActiveAttendees(eventId: string): Promise<EventAttendee[]> {
-    const query = `
-      SELECT *
-      FROM event_attendees
-      WHERE event_id = $1 AND status = 'active'
-      ORDER BY name ASC
-    `;
+    const attendees = await prisma.eventAttendee.findMany({
+      where: {
+        eventId,
+        status: 'active',
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [eventId]);
-    return rows.map((row) => toCamelCase<EventAttendee>(row));
+    return attendees.map(mapToEventAttendee);
   }
 
   /**
@@ -454,60 +448,48 @@ export class EventRepository extends BaseRepository {
     kioskId: string,
     timestamp: Date = new Date()
   ): Promise<EventCheckin> {
-    const query = `
-      INSERT INTO event_checkins (
-        event_attendee_id, badge_id, direction, timestamp, kiosk_id
-      )
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
-    `;
+    const checkin = await prisma.eventCheckin.create({
+      data: {
+        eventAttendeeId,
+        badgeId,
+        direction,
+        timestamp,
+        kioskId,
+      },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      eventAttendeeId,
-      badgeId,
-      direction,
-      timestamp,
-      kioskId,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to record event check-in');
-    }
-
-    return toCamelCase<EventCheckin>(row);
+    return mapToEventCheckin(checkin);
   }
 
   /**
    * Get check-in history for an event attendee
    */
   async getAttendeeCheckins(eventAttendeeId: string): Promise<EventCheckin[]> {
-    const query = `
-      SELECT *
-      FROM event_checkins
-      WHERE event_attendee_id = $1
-      ORDER BY timestamp DESC
-    `;
+    const checkins = await prisma.eventCheckin.findMany({
+      where: { eventAttendeeId },
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [eventAttendeeId]);
-    return rows.map((row) => toCamelCase<EventCheckin>(row));
+    return checkins.map(mapToEventCheckin);
   }
 
   /**
    * Get last check-in direction for an attendee (to determine current status)
    */
   async getLastCheckinDirection(eventAttendeeId: string): Promise<EventCheckinDirection | null> {
-    const query = `
-      SELECT direction
-      FROM event_checkins
-      WHERE event_attendee_id = $1
-      ORDER BY timestamp DESC
-      LIMIT 1
-    `;
+    const checkin = await prisma.eventCheckin.findFirst({
+      where: { eventAttendeeId },
+      orderBy: {
+        timestamp: 'desc',
+      },
+      select: {
+        direction: true,
+      },
+    });
 
-    const row = await this.queryOne<{ direction: EventCheckinDirection }>(query, [
-      eventAttendeeId,
-    ]);
-    return row?.direction || null;
+    return (checkin?.direction as EventCheckinDirection) || null;
   }
 }
 

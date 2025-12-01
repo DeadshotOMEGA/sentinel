@@ -1,4 +1,3 @@
-import { BaseRepository, toCamelCase } from './base-repository';
 import type {
   Checkin,
   CheckinWithMember,
@@ -9,6 +8,7 @@ import type {
   Division,
   PaginationParams,
 } from '../../../../shared/types';
+import { prisma, Prisma } from '../prisma';
 import { redis } from '../redis';
 
 interface CheckinFilters {
@@ -37,51 +37,79 @@ interface PresentMember {
   checkedInAt: string;
 }
 
-export class CheckinRepository extends BaseRepository {
+export class CheckinRepository {
   private readonly PRESENCE_CACHE_KEY = 'presence:stats';
   private readonly PRESENCE_CACHE_TTL = 60; // 60 seconds
+
+  /**
+   * Build Prisma where clause from filters
+   */
+  private buildWhereClause(filters?: CheckinFilters): Prisma.CheckinWhereInput {
+    const where: Prisma.CheckinWhereInput = {};
+
+    if (filters?.memberId) {
+      where.memberId = filters.memberId;
+    }
+
+    if (filters?.badgeId) {
+      where.badgeId = filters.badgeId;
+    }
+
+    if (filters?.kioskId) {
+      where.kioskId = filters.kioskId;
+    }
+
+    if (filters?.dateRange) {
+      where.timestamp = {
+        gte: filters.dateRange.start,
+        lte: filters.dateRange.end,
+      };
+    }
+
+    return where;
+  }
+
+  /**
+   * Convert Prisma Checkin to application Checkin type
+   */
+  private toCheckin(prismaCheckin: {
+    id: string;
+    memberId: string | null;
+    badgeId: string | null;
+    direction: string;
+    timestamp: Date;
+    kioskId: string;
+    synced: boolean | null;
+    createdAt: Date | null;
+  }): Checkin {
+    if (!prismaCheckin.memberId || !prismaCheckin.badgeId) {
+      throw new Error('Checkin missing required memberId or badgeId');
+    }
+
+    return {
+      id: prismaCheckin.id,
+      memberId: prismaCheckin.memberId,
+      badgeId: prismaCheckin.badgeId,
+      direction: prismaCheckin.direction as 'in' | 'out',
+      timestamp: prismaCheckin.timestamp,
+      kioskId: prismaCheckin.kioskId,
+      synced: prismaCheckin.synced ?? true,
+      createdAt: prismaCheckin.createdAt ?? prismaCheckin.timestamp,
+    };
+  }
 
   /**
    * Find all checkins with optional filters
    */
   async findAll(filters?: CheckinFilters): Promise<Checkin[]> {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    const where = this.buildWhereClause(filters);
 
-    if (filters?.memberId) {
-      conditions.push(`member_id = $${paramIndex++}`);
-      params.push(filters.memberId);
-    }
+    const checkins = await prisma.checkin.findMany({
+      where,
+      orderBy: { timestamp: 'desc' },
+    });
 
-    if (filters?.badgeId) {
-      conditions.push(`badge_id = $${paramIndex++}`);
-      params.push(filters.badgeId);
-    }
-
-    if (filters?.kioskId) {
-      conditions.push(`kiosk_id = $${paramIndex++}`);
-      params.push(filters.kioskId);
-    }
-
-    if (filters?.dateRange) {
-      conditions.push(`timestamp >= $${paramIndex++}`);
-      params.push(filters.dateRange.start);
-      conditions.push(`timestamp <= $${paramIndex++}`);
-      params.push(filters.dateRange.end);
-    }
-
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
-
-    const query = `
-      SELECT *
-      FROM checkins
-      ${whereClause}
-      ORDER BY timestamp DESC
-    `;
-
-    const rows = await this.queryAll<Record<string, unknown>>(query, params);
-    return rows.map((row) => toCamelCase<Checkin>(row));
+    return checkins.map((c) => this.toCheckin(c));
   }
 
   /**
@@ -100,10 +128,10 @@ export class CheckinRepository extends BaseRepository {
 
     const page = params.page;
     const limit = params.limit;
-    const sortOrder = params.sortOrder ? params.sortOrder : 'desc';
+    const sortOrder = params.sortOrder ?? 'desc';
 
-    // Validate and sanitize sortBy column (allowlist to prevent SQL injection)
-    const allowedSortColumns: Record<string, string> = {
+    // Validate sortBy column
+    const allowedSortColumns: Record<string, keyof Prisma.CheckinOrderByWithRelationInput> = {
       timestamp: 'timestamp',
       direction: 'direction',
     };
@@ -111,68 +139,22 @@ export class CheckinRepository extends BaseRepository {
       ? allowedSortColumns[params.sortBy]
       : 'timestamp';
 
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
+    const where = this.buildWhereClause(filters);
 
-    // Build WHERE conditions
-    const conditions: string[] = [];
-    const queryParams: unknown[] = [];
-    let paramIndex = 1;
-
-    if (filters?.memberId) {
-      conditions.push(`member_id = $${paramIndex++}`);
-      queryParams.push(filters.memberId);
-    }
-
-    if (filters?.badgeId) {
-      conditions.push(`badge_id = $${paramIndex++}`);
-      queryParams.push(filters.badgeId);
-    }
-
-    if (filters?.kioskId) {
-      conditions.push(`kiosk_id = $${paramIndex++}`);
-      queryParams.push(filters.kioskId);
-    }
-
-    if (filters?.dateRange) {
-      conditions.push(`timestamp >= $${paramIndex++}`);
-      queryParams.push(filters.dateRange.start);
-      conditions.push(`timestamp <= $${paramIndex++}`);
-      queryParams.push(filters.dateRange.end);
-    }
-
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
-
-    // Execute count and data queries in parallel
-    const countQuery = `
-      SELECT COUNT(*) as count
-      FROM checkins
-      ${whereClause}
-    `;
-
-    const dataQuery = `
-      SELECT *
-      FROM checkins
-      ${whereClause}
-      ORDER BY ${sortByColumn} ${sortOrder.toUpperCase()}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-
-    const paginationParams = [...queryParams, limit, offset];
-
-    const [countResult, rows] = await Promise.all([
-      this.queryOne<{ count: string }>(countQuery, queryParams),
-      this.queryAll<Record<string, unknown>>(dataQuery, paginationParams),
+    const [total, checkins] = await Promise.all([
+      prisma.checkin.count({ where }),
+      prisma.checkin.findMany({
+        where,
+        orderBy: { [sortByColumn]: sortOrder },
+        skip,
+        take: limit,
+      }),
     ]);
 
-    if (!countResult) {
-      throw new Error('Failed to get checkin count');
-    }
-
-    const checkins = rows.map((row) => toCamelCase<Checkin>(row));
-
     return {
-      checkins,
-      total: parseInt(countResult.count),
+      checkins: checkins.map((c) => this.toCheckin(c)),
+      total,
     };
   }
 
@@ -180,38 +162,31 @@ export class CheckinRepository extends BaseRepository {
    * Find checkin by ID
    */
   async findById(id: string): Promise<Checkin | null> {
-    const query = `
-      SELECT *
-      FROM checkins
-      WHERE id = $1
-    `;
+    const checkin = await prisma.checkin.findUnique({
+      where: { id },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
+    if (!checkin) {
       return null;
     }
 
-    return toCamelCase<Checkin>(row);
+    return this.toCheckin(checkin);
   }
 
   /**
    * Find latest checkin for a member
    */
   async findLatestByMember(memberId: string): Promise<Checkin | null> {
-    const query = `
-      SELECT *
-      FROM checkins
-      WHERE member_id = $1
-      ORDER BY timestamp DESC
-      LIMIT 1
-    `;
+    const checkin = await prisma.checkin.findFirst({
+      where: { memberId },
+      orderBy: { timestamp: 'desc' },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [memberId]);
-    if (!row) {
+    if (!checkin) {
       return null;
     }
 
-    return toCamelCase<Checkin>(row);
+    return this.toCheckin(checkin);
   }
 
   /**
@@ -223,19 +198,38 @@ export class CheckinRepository extends BaseRepository {
       return new Map();
     }
 
-    const query = `
+    // Use raw query for DISTINCT ON (not supported in Prisma)
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        member_id: string;
+        badge_id: string;
+        direction: string;
+        timestamp: Date;
+        kiosk_id: string;
+        synced: boolean | null;
+        created_at: Date | null;
+      }>
+    >`
       SELECT DISTINCT ON (member_id) *
       FROM checkins
-      WHERE member_id = ANY($1)
+      WHERE member_id = ANY(${memberIds}::uuid[])
       ORDER BY member_id, timestamp DESC
     `;
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [memberIds]);
     const resultMap = new Map<string, Checkin>();
 
     rows.forEach((row) => {
-      const checkin = toCamelCase<Checkin>(row);
-      resultMap.set(checkin.memberId, checkin);
+      resultMap.set(row.member_id, {
+        id: row.id,
+        memberId: row.member_id,
+        badgeId: row.badge_id,
+        direction: row.direction as 'in' | 'out',
+        timestamp: row.timestamp,
+        kioskId: row.kiosk_id,
+        synced: row.synced ?? true,
+        createdAt: row.created_at ?? row.timestamp,
+      });
     });
 
     return resultMap;
@@ -245,6 +239,10 @@ export class CheckinRepository extends BaseRepository {
    * Create a new checkin
    */
   async create(data: CreateCheckinInput): Promise<Checkin> {
+    if (!data.kioskId) {
+      throw new Error('kioskId is required for checkin creation');
+    }
+
     if (data.synced === undefined) {
       data.synced = true;
     }
@@ -252,30 +250,20 @@ export class CheckinRepository extends BaseRepository {
     // HIGH-15 FIX: Invalidate cache BEFORE insert to prevent race condition
     await this.invalidatePresenceCache();
 
-    const query = `
-      INSERT INTO checkins (
-        member_id, badge_id, direction, timestamp, kiosk_id, synced, flagged_for_review, flag_reason
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `;
+    const checkin = await prisma.checkin.create({
+      data: {
+        memberId: data.memberId,
+        badgeId: data.badgeId,
+        direction: data.direction,
+        timestamp: data.timestamp,
+        kioskId: data.kioskId,
+        synced: data.synced,
+        // Note: flaggedForReview and flagReason are not in the current schema
+        // If they need to be added, update the Prisma schema first
+      },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.memberId,
-      data.badgeId,
-      data.direction,
-      data.timestamp,
-      data.kioskId !== undefined ? data.kioskId : null,
-      data.synced,
-      data.flaggedForReview ?? false,
-      data.flagReason ?? null,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to create checkin');
-    }
-
-    return toCamelCase<Checkin>(row);
+    return this.toCheckin(checkin);
   }
 
   /**
@@ -288,8 +276,17 @@ export class CheckinRepository extends BaseRepository {
       return JSON.parse(cached);
     }
 
-    // Calculate stats
-    const query = `
+    // Calculate stats using raw query for performance (preserves complex CTEs)
+    const rows = await prisma.$queryRaw<
+      Array<{
+        total_members: bigint;
+        present: bigint;
+        absent: bigint;
+        on_leave: bigint;
+        late_arrivals: bigint;
+        visitors: bigint;
+      }>
+    >`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
           member_id,
@@ -330,18 +327,18 @@ export class CheckinRepository extends BaseRepository {
       CROSS JOIN active_visitors av
     `;
 
-    const row = await this.queryOne<Record<string, unknown>>(query);
-    if (!row) {
+    if (!rows || rows.length === 0) {
       throw new Error('Failed to get presence stats');
     }
 
+    const row = rows[0];
     const stats: PresenceStats = {
-      totalMembers: Number(row.total_members || 0),
-      present: Number(row.present || 0),
-      absent: Number(row.absent || 0),
-      onLeave: Number(row.on_leave || 0),
-      lateArrivals: Number(row.late_arrivals || 0),
-      visitors: Number(row.visitors || 0),
+      totalMembers: Number(row.total_members),
+      present: Number(row.present),
+      absent: Number(row.absent),
+      onLeave: Number(row.on_leave),
+      lateArrivals: Number(row.late_arrivals),
+      visitors: Number(row.visitors),
     };
 
     // Cache the result
@@ -354,7 +351,17 @@ export class CheckinRepository extends BaseRepository {
    * Get currently present members (public for TV display)
    */
   async getPresentMembers(): Promise<PresentMember[]> {
-    const query = `
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        rank: string;
+        mess: string | null;
+        division_name: string;
+        checked_in_at: Date;
+      }>
+    >`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
           member_id,
@@ -378,15 +385,14 @@ export class CheckinRepository extends BaseRepository {
       ORDER BY lc.timestamp DESC
     `;
 
-    const rows = await this.queryAll<Record<string, unknown>>(query);
     return rows.map((row) => ({
-      id: row.id as string,
-      firstName: row.first_name as string,
-      lastName: row.last_name as string,
-      rank: row.rank as string,
-      division: row.division_name as string,
-      mess: (row.mess as string) ?? null,
-      checkedInAt: (row.checked_in_at as Date).toISOString(),
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      rank: row.rank,
+      division: row.division_name,
+      mess: row.mess,
+      checkedInAt: row.checked_in_at.toISOString(),
     }));
   }
 
@@ -394,10 +400,45 @@ export class CheckinRepository extends BaseRepository {
    * Get member presence list with their current status
    */
   async getMemberPresenceList(): Promise<MemberPresenceItem[]> {
-    const query = `
+    const rows = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        service_number: string;
+        employee_number: string | null;
+        first_name: string;
+        last_name: string;
+        initials: string | null;
+        rank: string;
+        division_id: string;
+        mess: string | null;
+        moc: string | null;
+        member_type: string;
+        class_details: string | null;
+        status: string;
+        email: string | null;
+        home_phone: string | null;
+        mobile_phone: string | null;
+        badge_id: string | null;
+        member_created_at: Date;
+        member_updated_at: Date;
+        division_name: string;
+        division_code: string;
+        division_description: string | null;
+        division_created_at: Date;
+        division_updated_at: Date;
+        checkin_id: string | null;
+        checkin_member_id: string | null;
+        checkin_badge_id: string | null;
+        direction: string | null;
+        timestamp: Date | null;
+        kiosk_id: string | null;
+        synced: boolean | null;
+        checkin_created_at: Date | null;
+      }>
+    >`
       SELECT
-        m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.mobile_phone,
+        m.id, m.service_number, m.employee_number, m.first_name, m.last_name, m.initials, m.rank,
+        m.division_id, m.mess, m.moc, m.member_type, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
         m.badge_id, m.created_at as member_created_at, m.updated_at as member_updated_at,
         d.id as division_id, d.name as division_name, d.code as division_code,
         d.description as division_description, d.created_at as division_created_at,
@@ -417,45 +458,48 @@ export class CheckinRepository extends BaseRepository {
       ORDER BY m.last_name, m.first_name
     `;
 
-    const rows = await this.queryAll<Record<string, unknown>>(query);
-
     return rows.map((row) => {
       const member: MemberWithDivision = {
-        id: row.id as string,
-        serviceNumber: row.service_number as string,
-        firstName: row.first_name as string,
-        lastName: row.last_name as string,
-        rank: row.rank as string,
-        divisionId: row.division_id as string,
+        id: row.id,
+        serviceNumber: row.service_number,
+        employeeNumber: row.employee_number ?? undefined,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        initials: row.initials ?? undefined,
+        rank: row.rank,
+        divisionId: row.division_id,
+        mess: row.mess ?? undefined,
+        moc: row.moc ?? undefined,
         memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+        classDetails: row.class_details ?? undefined,
         status: row.status as 'active' | 'inactive' | 'pending_review',
-        email: row.email as string | undefined,
-        homePhone: row.home_phone as string | undefined,
-        mobilePhone: row.mobile_phone as string | undefined,
-        badgeId: row.badge_id as string | undefined,
-        createdAt: row.member_created_at as Date,
-        updatedAt: row.member_updated_at as Date,
+        email: row.email ?? undefined,
+        homePhone: row.home_phone ?? undefined,
+        mobilePhone: row.mobile_phone ?? undefined,
+        badgeId: row.badge_id ?? undefined,
+        createdAt: row.member_created_at,
+        updatedAt: row.member_updated_at,
         division: {
-          id: row.division_id as string,
-          name: row.division_name as string,
-          code: row.division_code as string,
-          description: row.division_description as string | undefined,
-          createdAt: row.division_created_at as Date,
-          updatedAt: row.division_updated_at as Date,
+          id: row.division_id,
+          name: row.division_name,
+          code: row.division_code,
+          description: row.division_description ?? undefined,
+          createdAt: row.division_created_at,
+          updatedAt: row.division_updated_at,
         },
       };
 
       let lastCheckin: Checkin | undefined;
-      if (row.checkin_id) {
+      if (row.checkin_id && row.checkin_member_id && row.checkin_badge_id && row.timestamp && row.kiosk_id !== null) {
         lastCheckin = {
-          id: row.checkin_id as string,
-          memberId: row.checkin_member_id as string,
-          badgeId: row.checkin_badge_id as string,
+          id: row.checkin_id,
+          memberId: row.checkin_member_id,
+          badgeId: row.checkin_badge_id,
           direction: row.direction as 'in' | 'out',
-          timestamp: row.timestamp as Date,
-          kioskId: row.kiosk_id as string | undefined,
-          synced: row.synced as boolean,
-          createdAt: row.checkin_created_at as Date,
+          timestamp: row.timestamp,
+          kioskId: row.kiosk_id,
+          synced: row.synced ?? true,
+          createdAt: row.checkin_created_at ?? row.timestamp,
         };
       }
 
@@ -481,7 +525,19 @@ export class CheckinRepository extends BaseRepository {
    * Get recent activity (checkins + visitors) for display
    */
   async getRecentActivity(limit: number = 10): Promise<RecentActivityItem[]> {
-    const query = `
+    // Use raw query for UNION (not supported in Prisma)
+    const rows = await prisma.$queryRaw<
+      Array<{
+        type: string;
+        id: string;
+        timestamp: Date;
+        direction: string | null;
+        name: string;
+        rank: string | null;
+        division: string | null;
+        organization: string | null;
+      }>
+    >`
       (
         SELECT
           'checkin' as type,
@@ -496,7 +552,7 @@ export class CheckinRepository extends BaseRepository {
         JOIN members m ON c.member_id = m.id
         LEFT JOIN divisions d ON m.division_id = d.id
         ORDER BY c.timestamp DESC
-        LIMIT $1
+        LIMIT ${limit}
       )
       UNION ALL
       (
@@ -512,22 +568,21 @@ export class CheckinRepository extends BaseRepository {
         FROM visitors v
         WHERE v.check_in_time > NOW() - INTERVAL '24 hours'
         ORDER BY v.check_in_time DESC
-        LIMIT $1
+        LIMIT ${limit}
       )
       ORDER BY timestamp DESC
-      LIMIT $1
+      LIMIT ${limit}
     `;
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [limit]);
     return rows.map((row) => ({
       type: row.type as 'checkin' | 'visitor',
-      id: row.id as string,
-      timestamp: (row.timestamp as Date).toISOString(),
+      id: row.id,
+      timestamp: row.timestamp.toISOString(),
       direction: row.direction as 'in' | 'out' | undefined,
-      name: row.name as string,
-      rank: row.rank as string | undefined,
-      division: row.division as string | undefined,
-      organization: row.organization as string | undefined,
+      name: row.name,
+      rank: row.rank ?? undefined,
+      division: row.division ?? undefined,
+      organization: row.organization ?? undefined,
     }));
   }
 }

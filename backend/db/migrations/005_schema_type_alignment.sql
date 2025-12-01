@@ -30,7 +30,8 @@ ALTER TABLE divisions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW(
 COMMENT ON COLUMN divisions.updated_at IS 'Timestamp of last update';
 
 -- Create trigger to auto-update divisions.updated_at
-CREATE TRIGGER IF NOT EXISTS update_divisions_updated_at BEFORE UPDATE ON divisions
+DROP TRIGGER IF EXISTS update_divisions_updated_at ON divisions;
+CREATE TRIGGER update_divisions_updated_at BEFORE UPDATE ON divisions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
@@ -40,7 +41,8 @@ CREATE TRIGGER IF NOT EXISTS update_divisions_updated_at BEFORE UPDATE ON divisi
 -- Add new columns for proper name separation (required by AdminUser interface)
 ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
 ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100);
-ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS email VARCHAR(255) NOT NULL UNIQUE;
+-- Add email as nullable first, will add constraint after data migration
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
 
 -- For existing rows, split full_name into first_name and last_name
@@ -60,8 +62,19 @@ ALTER TABLE admin_users ALTER COLUMN first_name SET NOT NULL;
 ALTER TABLE admin_users ALTER COLUMN last_name SET NOT NULL;
 
 -- Create trigger for updated_at on admin_users
-CREATE TRIGGER IF NOT EXISTS update_admin_users_updated_at BEFORE UPDATE ON admin_users
+DROP TRIGGER IF EXISTS update_admin_users_updated_at ON admin_users;
+CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Add unique constraint on email after data is populated
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'admin_users_email_key'
+  ) THEN
+    ALTER TABLE admin_users ADD CONSTRAINT admin_users_email_key UNIQUE (email);
+  END IF;
+END $$;
 
 -- Add comments explaining the columns
 COMMENT ON COLUMN admin_users.first_name IS 'First name of admin user (required by AdminUser interface)';

@@ -1,15 +1,11 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { checkinRepository } from '../db/repositories/checkin-repository';
-import { badgeRepository } from '../db/repositories/badge-repository';
-import { memberRepository } from '../db/repositories/member-repository';
+import { checkinService } from '../services/checkin-service';
+import { presenceService } from '../services/presence-service';
 import { processBulkCheckins } from '../services/sync-service';
 import { requireAuth, requireDisplayAuth } from '../auth';
-import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
-import type { CheckinDirection } from '../../../shared/types';
-import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket';
+import { ValidationError } from '../utils/errors';
 import { kioskLimiter, bulkLimiter } from '../middleware/rate-limit';
-import { validateCheckinTimestamp } from '../utils/timestamp-validator';
 
 const router = Router();
 
@@ -43,138 +39,24 @@ router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, 
     }
 
     const { serialNumber, timestamp, kioskId } = validationResult.data;
-    const scanTimestamp = timestamp ? new Date(timestamp) : new Date();
 
-    // Validate timestamp if provided
-    if (timestamp) {
-      const timestampValidation = validateCheckinTimestamp(scanTimestamp);
-      if (!timestampValidation.valid) {
-        const reason = timestampValidation.reason;
-        if (!reason) {
-          throw new Error('Timestamp validation failed but no reason provided');
-        }
-        throw new ValidationError(
-          'INVALID_TIMESTAMP',
-          reason,
-          reason
-        );
-      }
-    }
-
-    // Look up badge by serial number with joined member data (single query)
-    const badgeWithMember = await badgeRepository.findBySerialNumberWithMember(serialNumber);
-    if (!badgeWithMember) {
-      throw new NotFoundError(
-        'BADGE_NOT_FOUND',
-        `Badge with serial number ${serialNumber} not found`,
-        'This badge is not registered in the system. Please contact an administrator.'
-      );
-    }
-
-    const { badge, member } = badgeWithMember;
-
-    // Check if badge is assigned
-    if (badge.assignmentType === 'unassigned' || !badge.assignedToId) {
-      throw new ValidationError(
-        'BADGE_NOT_ASSIGNED',
-        `Badge ${serialNumber} is not assigned to any member`,
-        'This badge is not assigned to a member. Please contact an administrator.'
-      );
-    }
-
-    // Check badge status
-    if (badge.status !== 'active') {
-      throw new ValidationError(
-        'BADGE_INACTIVE',
-        `Badge ${serialNumber} is ${badge.status}`,
-        `This badge is ${badge.status}. Please contact an administrator.`
-      );
-    }
-
-    // Only support member badges for now (not event attendees)
-    if (badge.assignmentType !== 'member') {
-      throw new ValidationError(
-        'UNSUPPORTED_BADGE_TYPE',
-        `Badge type ${badge.assignmentType} not supported for check-in`,
-        'This badge type is not supported for check-in. Please contact an administrator.'
-      );
-    }
-
-    const memberId = badge.assignedToId;
-
-    // Validate member was loaded
-    if (!member) {
-      throw new NotFoundError(
-        'MEMBER_NOT_FOUND',
-        `Member ${memberId} not found`,
-        'The member assigned to this badge does not exist. Please contact an administrator.'
-      );
-    }
-
-    // Get member's last checkin to determine direction
-    const lastCheckin = await checkinRepository.findLatestByMember(memberId);
-
-    // Determine direction (opposite of last, or 'in' if no history)
-    let direction: CheckinDirection = 'in';
-    if (lastCheckin) {
-      direction = lastCheckin.direction === 'in' ? 'out' : 'in';
-
-      // Check for duplicate scans within 5 seconds
-      const timeDiff = scanTimestamp.getTime() - lastCheckin.timestamp.getTime();
-      if (Math.abs(timeDiff) < 5000) {
-        throw new ConflictError(
-          'DUPLICATE_SCAN',
-          'Duplicate scan within 5 seconds',
-          'Please wait a few seconds before scanning again.'
-        );
-      }
-    }
-
-    // Create checkin record
-    const checkin = await checkinRepository.create({
-      memberId,
-      badgeId: badge.id,
-      direction,
-      timestamp: scanTimestamp,
-      kioskId,
-      synced: true,
-    });
-
-    // Broadcast checkin event to WebSocket clients
-    if (!kioskId) {
-      throw new ValidationError(
-        'KIOSK_ID_REQUIRED',
-        'Kiosk ID is required for broadcasting checkin events',
-        'Please ensure the kiosk ID is provided in the request.'
-      );
-    }
-
-    broadcastCheckin({
-      memberId: member.id,
-      memberName: `${member.firstName} ${member.lastName}`,
-      rank: member.rank,
-      division: member.division.name,
-      direction,
-      timestamp: scanTimestamp.toISOString(),
+    // Delegate to service - handles all business logic
+    const result = await checkinService.processCheckin(serialNumber, {
+      timestamp: timestamp ? new Date(timestamp) : undefined,
       kioskId,
     });
 
-    // Broadcast updated presence stats
-    const stats = await checkinRepository.getPresenceStats();
-    broadcastPresenceUpdate(stats);
-
-    // Return member info + direction
     res.status(201).json({
-      checkin,
+      checkin: result.checkin,
       member: {
-        id: member.id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        rank: member.rank,
-        serviceNumber: member.serviceNumber,
-        division: member.division,
+        id: result.member.id,
+        firstName: result.member.firstName,
+        lastName: result.member.lastName,
+        rank: result.member.rank,
+        serviceNumber: result.member.serviceNumber,
+        division: result.member.division,
       },
-      direction,
+      direction: result.direction,
     });
   } catch (err) {
     next(err);
@@ -212,7 +94,7 @@ router.post('/bulk', bulkLimiter, requireAuth, async (req: Request, res: Respons
 // GET /api/checkins/presence - Current presence stats (requires display auth)
 router.get('/presence', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const stats = await checkinRepository.getPresenceStats();
+    const stats = await presenceService.getStats();
     res.json({ stats });
   } catch (err) {
     next(err);
@@ -222,10 +104,7 @@ router.get('/presence', requireDisplayAuth, async (req: Request, res: Response, 
 // GET /api/checkins/presence/present - Currently present members (requires display auth)
 router.get('/presence/present', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const presentMembers = await checkinRepository.getPresentMembers();
-
-    // Display auth already gets filtered data (no service numbers, contact info)
-    // Full admin auth gets all available fields
+    const presentMembers = await presenceService.getPresentMembers();
     res.json({ members: presentMembers });
   } catch (err) {
     next(err);
@@ -235,7 +114,7 @@ router.get('/presence/present', requireDisplayAuth, async (req: Request, res: Re
 // GET /api/checkins/presence/list - All members with presence status
 router.get('/presence/list', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const presenceList = await checkinRepository.getMemberPresenceList();
+    const presenceList = await presenceService.getMemberPresenceList();
     res.json({ presenceList });
   } catch (err) {
     next(err);
@@ -246,7 +125,7 @@ router.get('/presence/list', requireAuth, async (req: Request, res: Response, ne
 router.get('/recent', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
-    const activity = await checkinRepository.getRecentActivity(limit);
+    const activity = await presenceService.getRecentActivity(limit);
     res.json({ activity });
   } catch (err) {
     next(err);

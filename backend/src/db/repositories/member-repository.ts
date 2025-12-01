@@ -1,4 +1,3 @@
-import { BaseRepository, toCamelCase } from './base-repository';
 import type {
   Member,
   MemberWithDivision,
@@ -8,6 +7,8 @@ import type {
   MemberStatus,
   PaginationParams,
 } from '../../../../shared/types';
+import type { Member as PrismaMember } from '@prisma/client';
+import { prisma } from '../prisma';
 import { redis } from '../redis';
 
 interface MemberFilters {
@@ -17,94 +18,108 @@ interface MemberFilters {
   search?: string;
 }
 
-export class MemberRepository extends BaseRepository {
+/**
+ * Convert Prisma Member (with null) to shared Member type (with undefined)
+ */
+function toMember(prismaMember: PrismaMember): Member {
+  if (!prismaMember.divisionId) {
+    throw new Error('Member must have a divisionId');
+  }
+
+  return {
+    id: prismaMember.id,
+    serviceNumber: prismaMember.serviceNumber,
+    employeeNumber: prismaMember.employeeNumber ?? undefined,
+    firstName: prismaMember.firstName,
+    lastName: prismaMember.lastName,
+    initials: prismaMember.initials ?? undefined,
+    rank: prismaMember.rank,
+    divisionId: prismaMember.divisionId,
+    mess: prismaMember.mess ?? undefined,
+    moc: prismaMember.moc ?? undefined,
+    memberType: prismaMember.memberType as MemberType,
+    classDetails: prismaMember.classDetails ?? undefined,
+    status: prismaMember.status as MemberStatus,
+    email: prismaMember.email ?? undefined,
+    homePhone: prismaMember.homePhone ?? undefined,
+    mobilePhone: prismaMember.mobilePhone ?? undefined,
+    badgeId: prismaMember.badgeId ?? undefined,
+    createdAt: prismaMember.createdAt ?? new Date(),
+    updatedAt: prismaMember.updatedAt ?? new Date(),
+  };
+}
+
+/**
+ * Convert Prisma Member with Division to MemberWithDivision type
+ */
+function toMemberWithDivision(
+  prismaMember: PrismaMember & {
+    division: {
+      id: string;
+      name: string;
+      code: string;
+      description: string | null;
+      createdAt: Date | null;
+      updatedAt: Date | null;
+    } | null
+  }
+): MemberWithDivision {
+  if (!prismaMember.division) {
+    throw new Error('Member must have a division loaded');
+  }
+
+  return {
+    ...toMember(prismaMember),
+    division: {
+      id: prismaMember.division.id,
+      name: prismaMember.division.name,
+      code: prismaMember.division.code,
+      description: prismaMember.division.description ?? undefined,
+      createdAt: prismaMember.division.createdAt ?? new Date(),
+      updatedAt: prismaMember.division.updatedAt ?? new Date(),
+    },
+  };
+}
+
+export class MemberRepository {
   /**
    * Find all members with optional filters
    */
   async findAll(filters?: MemberFilters): Promise<MemberWithDivision[]> {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    const where: Record<string, unknown> = {};
 
     if (filters?.divisionId) {
-      conditions.push(`m.division_id = $${paramIndex++}`);
-      params.push(filters.divisionId);
+      where.divisionId = filters.divisionId;
     }
 
     if (filters?.memberType) {
-      conditions.push(`m.member_type = $${paramIndex++}`);
-      params.push(filters.memberType);
+      where.memberType = filters.memberType;
     }
 
     if (filters?.status) {
-      conditions.push(`m.status = $${paramIndex++}`);
-      params.push(filters.status);
+      where.status = filters.status;
     }
 
     if (filters?.search) {
-      conditions.push(`(
-        m.first_name ILIKE $${paramIndex} OR
-        m.last_name ILIKE $${paramIndex} OR
-        m.service_number ILIKE $${paramIndex}
-      )`);
-      params.push(`%${filters.search}%`);
-      paramIndex++;
+      where.OR = [
+        { firstName: { contains: filters.search, mode: 'insensitive' } },
+        { lastName: { contains: filters.search, mode: 'insensitive' } },
+        { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
 
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
-
-    const query = `
-      SELECT
-        m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.mobile_phone, m.home_phone,
-        m.employee_number, m.initials, m.mess, m.moc, m.class_details,
-        m.badge_id, m.created_at, m.updated_at,
-        d.id as division_id, d.name as division_name, d.code as division_code,
-        d.description as division_description, d.created_at as division_created_at,
-        d.updated_at as division_updated_at
-      FROM members m
-      INNER JOIN divisions d ON m.division_id = d.id
-      ${whereClause}
-      ORDER BY m.last_name, m.first_name
-    `;
-
-    const rows = await this.queryAll<Record<string, unknown>>(query, params);
-
-    return rows.map((row) => {
-      const member = toCamelCase<Member>({
-        id: row.id,
-        service_number: row.service_number,
-        first_name: row.first_name,
-        last_name: row.last_name,
-        rank: row.rank,
-        division_id: row.division_id,
-        member_type: row.member_type,
-        status: row.status,
-        email: row.email,
-        mobile_phone: row.mobile_phone,
-        home_phone: row.home_phone,
-        employee_number: row.employee_number,
-        initials: row.initials,
-        mess: row.mess,
-        moc: row.moc,
-        class_details: row.class_details,
-        badge_id: row.badge_id,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      });
-
-      return {
-        ...member,
-        division: {
-          id: row.division_id as string,
-          name: row.division_name as string,
-          code: row.division_code as string,
-          description: row.division_description as string | undefined,
-          createdAt: row.division_created_at as Date,
-          updatedAt: row.division_updated_at as Date,
-        },
-      };
+    const members = await prisma.member.findMany({
+      where,
+      include: {
+        division: true,
+      },
+      orderBy: [
+        { lastName: 'asc' },
+        { firstName: 'asc' },
+      ],
     });
+
+    return members.map(toMemberWithDivision);
   }
 
   /**
@@ -125,125 +140,63 @@ export class MemberRepository extends BaseRepository {
     const limit = params.limit;
     const sortOrder = params.sortOrder ? params.sortOrder : 'asc';
 
-    // Validate and sanitize sortBy column (allowlist to prevent SQL injection)
-    const allowedSortColumns: Record<string, string> = {
-      lastName: 'last_name',
+    // Validate and sanitize sortBy column (allowlist)
+    const allowedSortColumns: Record<string, 'lastName' | 'rank' | 'status' | 'firstName' | 'serviceNumber'> = {
+      lastName: 'lastName',
       rank: 'rank',
       status: 'status',
-      firstName: 'first_name',
-      serviceNumber: 'service_number',
+      firstName: 'firstName',
+      serviceNumber: 'serviceNumber',
     };
     const sortByColumn = params.sortBy && allowedSortColumns[params.sortBy]
       ? allowedSortColumns[params.sortBy]
-      : 'last_name';
+      : 'lastName';
 
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    // Build WHERE conditions
-    const conditions: string[] = [];
-    const queryParams: unknown[] = [];
-    let paramIndex = 1;
+    // Build where conditions
+    const where: Record<string, unknown> = {};
 
     if (filters?.divisionId) {
-      conditions.push(`m.division_id = $${paramIndex++}`);
-      queryParams.push(filters.divisionId);
+      where.divisionId = filters.divisionId;
     }
 
     if (filters?.memberType) {
-      conditions.push(`m.member_type = $${paramIndex++}`);
-      queryParams.push(filters.memberType);
+      where.memberType = filters.memberType;
     }
 
     if (filters?.status) {
-      conditions.push(`m.status = $${paramIndex++}`);
-      queryParams.push(filters.status);
+      where.status = filters.status;
     }
 
     if (filters?.search) {
-      conditions.push(`(
-        m.first_name ILIKE $${paramIndex} OR
-        m.last_name ILIKE $${paramIndex} OR
-        m.service_number ILIKE $${paramIndex}
-      )`);
-      queryParams.push(`%${filters.search}%`);
-      paramIndex++;
+      where.OR = [
+        { firstName: { contains: filters.search, mode: 'insensitive' } },
+        { lastName: { contains: filters.search, mode: 'insensitive' } },
+        { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
-
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
     // Execute count and data queries in parallel
-    const countQuery = `
-      SELECT COUNT(*) as count
-      FROM members m
-      ${whereClause}
-    `;
-
-    const dataQuery = `
-      SELECT
-        m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.mobile_phone, m.home_phone,
-        m.employee_number, m.initials, m.mess, m.moc, m.class_details,
-        m.badge_id, m.created_at, m.updated_at,
-        d.id as division_id, d.name as division_name, d.code as division_code,
-        d.description as division_description, d.created_at as division_created_at,
-        d.updated_at as division_updated_at
-      FROM members m
-      INNER JOIN divisions d ON m.division_id = d.id
-      ${whereClause}
-      ORDER BY m.${sortByColumn} ${sortOrder.toUpperCase()}, m.first_name ${sortOrder.toUpperCase()}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-
-    const paginationParams = [...queryParams, limit, offset];
-
-    const [countResult, rows] = await Promise.all([
-      this.queryOne<{ count: string }>(countQuery, queryParams),
-      this.queryAll<Record<string, unknown>>(dataQuery, paginationParams),
+    const [total, members] = await Promise.all([
+      prisma.member.count({ where }),
+      prisma.member.findMany({
+        where,
+        include: {
+          division: true,
+        },
+        orderBy: [
+          { [sortByColumn]: sortOrder },
+          { firstName: sortOrder },
+        ],
+        skip,
+        take: limit,
+      }),
     ]);
 
-    if (!countResult) {
-      throw new Error('Failed to get member count');
-    }
-
-    const members = rows.map((row) => {
-      const member = toCamelCase<Member>({
-        id: row.id,
-        service_number: row.service_number,
-        first_name: row.first_name,
-        last_name: row.last_name,
-        rank: row.rank,
-        division_id: row.division_id,
-        member_type: row.member_type,
-        status: row.status,
-        email: row.email,
-        mobile_phone: row.mobile_phone,
-        home_phone: row.home_phone,
-        employee_number: row.employee_number,
-        initials: row.initials,
-        mess: row.mess,
-        moc: row.moc,
-        class_details: row.class_details,
-        badge_id: row.badge_id,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      });
-
-      return {
-        ...member,
-        division: {
-          id: row.division_id as string,
-          name: row.division_name as string,
-          code: row.division_code as string,
-          description: row.division_description as string | undefined,
-          createdAt: row.division_created_at as Date,
-          updatedAt: row.division_updated_at as Date,
-        },
-      };
-    });
-
     return {
-      members,
-      total: parseInt(countResult.count),
+      members: members.map(toMemberWithDivision),
+      total,
     };
   }
 
@@ -251,231 +204,137 @@ export class MemberRepository extends BaseRepository {
    * Find member by ID
    */
   async findById(id: string): Promise<MemberWithDivision | null> {
-    const query = `
-      SELECT
-        m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.mobile_phone, m.home_phone,
-        m.employee_number, m.initials, m.mess, m.moc, m.class_details,
-        m.badge_id, m.created_at, m.updated_at,
-        d.id as division_id, d.name as division_name, d.code as division_code,
-        d.description as division_description, d.created_at as division_created_at,
-        d.updated_at as division_updated_at
-      FROM members m
-      INNER JOIN divisions d ON m.division_id = d.id
-      WHERE m.id = $1
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
-      return null;
-    }
-
-    const member = toCamelCase<Member>({
-      id: row.id,
-      service_number: row.service_number,
-      first_name: row.first_name,
-      last_name: row.last_name,
-      rank: row.rank,
-      division_id: row.division_id,
-      member_type: row.member_type,
-      status: row.status,
-      email: row.email,
-      mobile_phone: row.mobile_phone,
-      home_phone: row.home_phone,
-      employee_number: row.employee_number,
-      initials: row.initials,
-      mess: row.mess,
-      moc: row.moc,
-      class_details: row.class_details,
-      badge_id: row.badge_id,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+    const member = await prisma.member.findUnique({
+      where: { id },
+      include: {
+        division: true,
+      },
     });
 
-    return {
-      ...member,
-      division: {
-        id: row.division_id as string,
-        name: row.division_name as string,
-        code: row.division_code as string,
-        description: row.division_description as string | undefined,
-        createdAt: row.division_created_at as Date,
-        updatedAt: row.division_updated_at as Date,
-      },
-    };
+    return member ? toMemberWithDivision(member) : null;
   }
 
   /**
    * Find member by service number
    */
   async findByServiceNumber(serviceNumber: string): Promise<Member | null> {
-    const query = `
-      SELECT *
-      FROM members
-      WHERE service_number = $1
-    `;
+    const member = await prisma.member.findUnique({
+      where: { serviceNumber },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [serviceNumber]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<Member>(row);
+    return member ? toMember(member) : null;
   }
 
   /**
    * Create a new member
    */
   async create(data: CreateMemberInput): Promise<Member> {
-    if (!data.status) {
-      data.status = 'active';
-    }
-
-    const query = `
-      INSERT INTO members (
-        service_number, employee_number, first_name, last_name, initials, rank,
-        division_id, mess, moc, member_type, class_details, status, email,
-        home_phone, mobile_phone, badge_id
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.serviceNumber,
-      data.employeeNumber ?? null,
-      data.firstName,
-      data.lastName,
-      data.initials ?? null,
-      data.rank,
-      data.divisionId,
-      data.mess ?? null,
-      data.moc ?? null,
-      data.memberType,
-      data.classDetails ?? null,
-      data.status,
-      data.email ?? null,
-      data.homePhone ?? null,
-      data.mobilePhone ?? null,
-      data.badgeId ?? null,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to create member');
-    }
+    const member = await prisma.member.create({
+      data: {
+        serviceNumber: data.serviceNumber,
+        employeeNumber: data.employeeNumber !== undefined ? data.employeeNumber : null,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        initials: data.initials !== undefined ? data.initials : null,
+        rank: data.rank,
+        divisionId: data.divisionId,
+        mess: data.mess !== undefined ? data.mess : null,
+        moc: data.moc !== undefined ? data.moc : null,
+        memberType: data.memberType,
+        classDetails: data.classDetails !== undefined ? data.classDetails : null,
+        status: data.status !== undefined ? data.status : 'active',
+        email: data.email !== undefined ? data.email : null,
+        homePhone: data.homePhone !== undefined ? data.homePhone : null,
+        mobilePhone: data.mobilePhone !== undefined ? data.mobilePhone : null,
+        badgeId: data.badgeId !== undefined ? data.badgeId : null,
+      },
+    });
 
     await this.invalidatePresenceCache();
-    return toCamelCase<Member>(row);
+    return toMember(member);
   }
 
   /**
    * Update a member
    */
   async update(id: string, data: UpdateMemberInput): Promise<Member> {
-    const updates: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
+    const updateData: Record<string, unknown> = {};
 
     if (data.serviceNumber !== undefined) {
-      updates.push(`service_number = $${paramIndex++}`);
-      params.push(data.serviceNumber);
+      updateData.serviceNumber = data.serviceNumber;
     }
     if (data.employeeNumber !== undefined) {
-      updates.push(`employee_number = $${paramIndex++}`);
-      params.push(data.employeeNumber);
+      updateData.employeeNumber = data.employeeNumber;
     }
     if (data.firstName !== undefined) {
-      updates.push(`first_name = $${paramIndex++}`);
-      params.push(data.firstName);
+      updateData.firstName = data.firstName;
     }
     if (data.lastName !== undefined) {
-      updates.push(`last_name = $${paramIndex++}`);
-      params.push(data.lastName);
+      updateData.lastName = data.lastName;
     }
     if (data.initials !== undefined) {
-      updates.push(`initials = $${paramIndex++}`);
-      params.push(data.initials);
+      updateData.initials = data.initials;
     }
     if (data.rank !== undefined) {
-      updates.push(`rank = $${paramIndex++}`);
-      params.push(data.rank);
+      updateData.rank = data.rank;
     }
     if (data.divisionId !== undefined) {
-      updates.push(`division_id = $${paramIndex++}`);
-      params.push(data.divisionId);
+      updateData.divisionId = data.divisionId;
     }
     if (data.mess !== undefined) {
-      updates.push(`mess = $${paramIndex++}`);
-      params.push(data.mess);
+      updateData.mess = data.mess;
     }
     if (data.moc !== undefined) {
-      updates.push(`moc = $${paramIndex++}`);
-      params.push(data.moc);
+      updateData.moc = data.moc;
     }
     if (data.memberType !== undefined) {
-      updates.push(`member_type = $${paramIndex++}`);
-      params.push(data.memberType);
+      updateData.memberType = data.memberType;
     }
     if (data.classDetails !== undefined) {
-      updates.push(`class_details = $${paramIndex++}`);
-      params.push(data.classDetails);
+      updateData.classDetails = data.classDetails;
     }
     if (data.status !== undefined) {
-      updates.push(`status = $${paramIndex++}`);
-      params.push(data.status);
+      updateData.status = data.status;
     }
     if (data.email !== undefined) {
-      updates.push(`email = $${paramIndex++}`);
-      params.push(data.email);
+      updateData.email = data.email;
     }
     if (data.homePhone !== undefined) {
-      updates.push(`home_phone = $${paramIndex++}`);
-      params.push(data.homePhone);
+      updateData.homePhone = data.homePhone;
     }
     if (data.mobilePhone !== undefined) {
-      updates.push(`mobile_phone = $${paramIndex++}`);
-      params.push(data.mobilePhone);
+      updateData.mobilePhone = data.mobilePhone;
     }
     if (data.badgeId !== undefined) {
-      updates.push(`badge_id = $${paramIndex++}`);
-      params.push(data.badgeId);
+      updateData.badgeId = data.badgeId;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       throw new Error('No fields to update');
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
-
-    const query = `
-      UPDATE members
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, params);
-    if (!row) {
-      throw new Error(`Member not found: ${id}`);
-    }
+    // updatedAt is automatically set by Prisma
+    const member = await prisma.member.update({
+      where: { id },
+      data: updateData,
+    });
 
     await this.invalidatePresenceCache();
-    return toCamelCase<Member>(row);
+    return toMember(member);
   }
 
   /**
    * Delete (soft delete) a member
    */
   async delete(id: string): Promise<void> {
-    const query = `
-      UPDATE members
-      SET status = 'inactive', updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-    `;
+    const result = await prisma.member.updateMany({
+      where: { id },
+      data: {
+        status: 'inactive',
+      },
+    });
 
-    const result = await this.query(query, [id]);
-    if (result.rowCount === 0) {
+    if (result.count === 0) {
       throw new Error(`Member not found: ${id}`);
     }
 
@@ -486,16 +345,13 @@ export class MemberRepository extends BaseRepository {
    * Get presence status for a member (present/absent)
    */
   async getPresenceStatus(memberId: string): Promise<'present' | 'absent'> {
-    const query = `
-      SELECT direction
-      FROM checkins
-      WHERE member_id = $1
-      ORDER BY timestamp DESC
-      LIMIT 1
-    `;
+    const checkin = await prisma.checkin.findFirst({
+      where: { memberId },
+      orderBy: { timestamp: 'desc' },
+      select: { direction: true },
+    });
 
-    const row = await this.queryOne<{ direction: 'in' | 'out' }>(query, [memberId]);
-    return row?.direction === 'in' ? 'present' : 'absent';
+    return checkin?.direction === 'in' ? 'present' : 'absent';
   }
 
   /**
@@ -506,57 +362,16 @@ export class MemberRepository extends BaseRepository {
       return [];
     }
 
-    const query = `
-      SELECT
-        m.id, m.service_number, m.first_name, m.last_name, m.rank,
-        m.division_id, m.member_type, m.status, m.email, m.mobile_phone, m.home_phone,
-        m.employee_number, m.initials, m.mess, m.moc, m.class_details,
-        m.badge_id, m.created_at, m.updated_at,
-        d.id as division_id, d.name as division_name, d.code as division_code,
-        d.description as division_description, d.created_at as division_created_at,
-        d.updated_at as division_updated_at
-      FROM members m
-      INNER JOIN divisions d ON m.division_id = d.id
-      WHERE m.id = ANY($1)
-    `;
-
-    const rows = await this.queryAll<Record<string, unknown>>(query, [ids]);
-
-    return rows.map((row) => {
-      const member = toCamelCase<Member>({
-        id: row.id,
-        service_number: row.service_number,
-        first_name: row.first_name,
-        last_name: row.last_name,
-        rank: row.rank,
-        division_id: row.division_id,
-        member_type: row.member_type,
-        status: row.status,
-        email: row.email,
-        mobile_phone: row.mobile_phone,
-        home_phone: row.home_phone,
-        employee_number: row.employee_number,
-        initials: row.initials,
-        mess: row.mess,
-        moc: row.moc,
-        class_details: row.class_details,
-        badge_id: row.badge_id,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      });
-
-      return {
-        ...member,
-        division: {
-          id: row.division_id as string,
-          name: row.division_name as string,
-          code: row.division_code as string,
-          description: row.division_description as string | undefined,
-          createdAt: row.division_created_at as Date,
-          updatedAt: row.division_updated_at as Date,
-        },
-      };
+    const members = await prisma.member.findMany({
+      where: {
+        id: { in: ids },
+      },
+      include: {
+        division: true,
+      },
     });
+
+    return members.map(toMemberWithDivision);
   }
 
   /**
@@ -567,14 +382,13 @@ export class MemberRepository extends BaseRepository {
       return [];
     }
 
-    const query = `
-      SELECT *
-      FROM members
-      WHERE service_number = ANY($1)
-    `;
+    const members = await prisma.member.findMany({
+      where: {
+        serviceNumber: { in: serviceNumbers },
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query, [serviceNumbers]);
-    return rows.map((row) => toCamelCase<Member>(row));
+    return members.map(toMember);
   }
 
   /**
@@ -585,55 +399,39 @@ export class MemberRepository extends BaseRepository {
       return 0;
     }
 
-    const client = await this.beginTransaction();
-
-    try {
+    const result = await prisma.$transaction(async (tx) => {
       let insertedCount = 0;
 
-      for (const member of members) {
-        if (!member.status) {
-          member.status = 'active';
-        }
-
-        const query = `
-          INSERT INTO members (
-            service_number, employee_number, first_name, last_name, initials, rank,
-            division_id, mess, moc, member_type, class_details, status, email,
-            home_phone, mobile_phone, badge_id
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-        `;
-
-        await client.query(query, [
-          member.serviceNumber,
-          member.employeeNumber ?? null,
-          member.firstName,
-          member.lastName,
-          member.initials ?? null,
-          member.rank,
-          member.divisionId,
-          member.mess ?? null,
-          member.moc ?? null,
-          member.memberType,
-          member.classDetails ?? null,
-          member.status,
-          member.email ?? null,
-          member.homePhone ?? null,
-          member.mobilePhone ?? null,
-          member.badgeId ?? null,
-        ]);
+      for (const memberData of members) {
+        await tx.member.create({
+          data: {
+            serviceNumber: memberData.serviceNumber,
+            employeeNumber: memberData.employeeNumber !== undefined ? memberData.employeeNumber : null,
+            firstName: memberData.firstName,
+            lastName: memberData.lastName,
+            initials: memberData.initials !== undefined ? memberData.initials : null,
+            rank: memberData.rank,
+            divisionId: memberData.divisionId,
+            mess: memberData.mess !== undefined ? memberData.mess : null,
+            moc: memberData.moc !== undefined ? memberData.moc : null,
+            memberType: memberData.memberType,
+            classDetails: memberData.classDetails !== undefined ? memberData.classDetails : null,
+            status: memberData.status !== undefined ? memberData.status : 'active',
+            email: memberData.email !== undefined ? memberData.email : null,
+            homePhone: memberData.homePhone !== undefined ? memberData.homePhone : null,
+            mobilePhone: memberData.mobilePhone !== undefined ? memberData.mobilePhone : null,
+            badgeId: memberData.badgeId !== undefined ? memberData.badgeId : null,
+          },
+        });
 
         insertedCount++;
       }
 
-      await this.commitTransaction(client);
-      await this.invalidatePresenceCache();
-
       return insertedCount;
-    } catch (error) {
-      await this.rollbackTransaction(client);
-      throw error;
-    }
+    });
+
+    await this.invalidatePresenceCache();
+    return result;
   }
 
   /**
@@ -644,108 +442,80 @@ export class MemberRepository extends BaseRepository {
       return 0;
     }
 
-    const client = await this.beginTransaction();
-
-    try {
+    const result = await prisma.$transaction(async (tx) => {
       let updatedCount = 0;
 
       for (const { id, data } of updates) {
-        const updateFields: string[] = [];
-        const params: unknown[] = [];
-        let paramIndex = 1;
+        const updateData: Record<string, unknown> = {};
 
         if (data.serviceNumber !== undefined) {
-          updateFields.push(`service_number = $${paramIndex++}`);
-          params.push(data.serviceNumber);
+          updateData.serviceNumber = data.serviceNumber;
         }
         if (data.employeeNumber !== undefined) {
-          updateFields.push(`employee_number = $${paramIndex++}`);
-          params.push(data.employeeNumber);
+          updateData.employeeNumber = data.employeeNumber;
         }
         if (data.firstName !== undefined) {
-          updateFields.push(`first_name = $${paramIndex++}`);
-          params.push(data.firstName);
+          updateData.firstName = data.firstName;
         }
         if (data.lastName !== undefined) {
-          updateFields.push(`last_name = $${paramIndex++}`);
-          params.push(data.lastName);
+          updateData.lastName = data.lastName;
         }
         if (data.initials !== undefined) {
-          updateFields.push(`initials = $${paramIndex++}`);
-          params.push(data.initials);
+          updateData.initials = data.initials;
         }
         if (data.rank !== undefined) {
-          updateFields.push(`rank = $${paramIndex++}`);
-          params.push(data.rank);
+          updateData.rank = data.rank;
         }
         if (data.divisionId !== undefined) {
-          updateFields.push(`division_id = $${paramIndex++}`);
-          params.push(data.divisionId);
+          updateData.divisionId = data.divisionId;
         }
         if (data.mess !== undefined) {
-          updateFields.push(`mess = $${paramIndex++}`);
-          params.push(data.mess);
+          updateData.mess = data.mess;
         }
         if (data.moc !== undefined) {
-          updateFields.push(`moc = $${paramIndex++}`);
-          params.push(data.moc);
+          updateData.moc = data.moc;
         }
         if (data.memberType !== undefined) {
-          updateFields.push(`member_type = $${paramIndex++}`);
-          params.push(data.memberType);
+          updateData.memberType = data.memberType;
         }
         if (data.classDetails !== undefined) {
-          updateFields.push(`class_details = $${paramIndex++}`);
-          params.push(data.classDetails);
+          updateData.classDetails = data.classDetails;
         }
         if (data.status !== undefined) {
-          updateFields.push(`status = $${paramIndex++}`);
-          params.push(data.status);
+          updateData.status = data.status;
         }
         if (data.email !== undefined) {
-          updateFields.push(`email = $${paramIndex++}`);
-          params.push(data.email);
+          updateData.email = data.email;
         }
         if (data.homePhone !== undefined) {
-          updateFields.push(`home_phone = $${paramIndex++}`);
-          params.push(data.homePhone);
+          updateData.homePhone = data.homePhone;
         }
         if (data.mobilePhone !== undefined) {
-          updateFields.push(`mobile_phone = $${paramIndex++}`);
-          params.push(data.mobilePhone);
+          updateData.mobilePhone = data.mobilePhone;
         }
         if (data.badgeId !== undefined) {
-          updateFields.push(`badge_id = $${paramIndex++}`);
-          params.push(data.badgeId);
+          updateData.badgeId = data.badgeId;
         }
 
-        if (updateFields.length === 0) {
+        if (Object.keys(updateData).length === 0) {
           continue; // Skip if no fields to update
         }
 
-        updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
-        params.push(id);
+        const updateResult = await tx.member.updateMany({
+          where: { id },
+          data: updateData,
+        });
 
-        const query = `
-          UPDATE members
-          SET ${updateFields.join(', ')}
-          WHERE id = $${paramIndex}
-        `;
-
-        const result = await client.query(query, params);
-        if (result.rowCount && result.rowCount > 0) {
+        if (updateResult.count > 0) {
           updatedCount++;
         }
       }
 
-      await this.commitTransaction(client);
-      await this.invalidatePresenceCache();
-
       return updatedCount;
-    } catch (error) {
-      await this.rollbackTransaction(client);
-      throw error;
-    }
+    });
+
+    await this.invalidatePresenceCache();
+    return result;
   }
 
   /**
@@ -756,13 +526,15 @@ export class MemberRepository extends BaseRepository {
       return;
     }
 
-    const query = `
-      UPDATE members
-      SET status = 'pending_review', updated_at = CURRENT_TIMESTAMP
-      WHERE id = ANY($1)
-    `;
+    await prisma.member.updateMany({
+      where: {
+        id: { in: memberIds },
+      },
+      data: {
+        status: 'pending_review',
+      },
+    });
 
-    await this.query(query, [memberIds]);
     await this.invalidatePresenceCache();
   }
 

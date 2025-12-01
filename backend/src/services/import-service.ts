@@ -4,6 +4,8 @@ import { divisionRepository } from '../db/repositories/division-repository';
 import { ValidationError } from '../utils/errors';
 import { normalizeName } from '../utils/name-normalizer';
 import { sanitizeCsvValue } from '../utils/csv-sanitizer';
+import { prisma } from '../db/prisma';
+import { LOCK_KEYS } from '../utils/advisory-lock';
 import type {
   NominalRollRow,
   ImportPreview,
@@ -353,9 +355,10 @@ export class ImportService {
 
   /**
    * Execute the import: add new members, update existing, flag missing for review
+   * Wrapped in advisory lock + transaction for atomicity and concurrency protection
    */
   async executeImport(csvText: string, deactivateIds?: string[]): Promise<ImportResult> {
-    // Generate preview first to validate
+    // Generate preview first to validate (read-only, outside transaction)
     const preview = await this.generatePreview(csvText);
 
     if (preview.errors.length > 0) {
@@ -371,87 +374,104 @@ export class ImportService {
       Object.entries(preview.divisionMapping)
     );
 
-    const result: ImportResult = {
-      added: 0,
-      updated: 0,
-      flaggedForReview: 0,
-      errors: [],
-    };
+    // Use advisory lock + transaction to prevent concurrent imports
+    // withAdvisoryLock already wraps in a transaction, so we use that transaction
+    return prisma.$transaction(async (tx) => {
+      // Acquire advisory lock within transaction
+      const lockId = this.hashLockKey(LOCK_KEYS.MEMBER_IMPORT);
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(${lockId})`;
 
-    // Prepare data for bulk operations
-    const membersToCreate: CreateMemberInput[] = [];
-    const membersToUpdate: Array<{ id: string; data: UpdateMemberInput }> = [];
+      let added = 0;
+      let updated = 0;
+      let flaggedForReview = 0;
 
-    // Process additions
-    for (const row of preview.toAdd) {
-      const divisionId = divisionMap.get(row.department.toUpperCase());
-      if (!divisionId) {
-        continue; // Should not happen after preview validation
+      // Process additions - create members one by one
+      for (const row of preview.toAdd) {
+        const divisionId = divisionMap.get(row.department.toUpperCase());
+        if (!divisionId) {
+          continue; // Should not happen after preview validation
+        }
+
+        await tx.member.create({
+          data: {
+            serviceNumber: row.serviceNumber,
+            employeeNumber: row.employeeNumber,
+            firstName: row.firstName,
+            lastName: row.lastName,
+            initials: row.initials,
+            rank: row.rank,
+            divisionId,
+            mess: row.mess,
+            moc: row.moc,
+            memberType: this.deriveMemberType(row.details),
+            classDetails: row.details,
+            status: 'active',
+            email: row.email,
+            homePhone: row.homePhone,
+            mobilePhone: row.mobilePhone,
+          },
+        });
+        added++;
       }
 
-      membersToCreate.push({
-        serviceNumber: row.serviceNumber,
-        employeeNumber: row.employeeNumber,
-        firstName: row.firstName,
-        lastName: row.lastName,
-        initials: row.initials,
-        rank: row.rank,
-        divisionId,
-        mess: row.mess,
-        moc: row.moc,
-        memberType: this.deriveMemberType(row.details),
-        classDetails: row.details,
-        status: 'active',
-        email: row.email,
-        homePhone: row.homePhone,
-        mobilePhone: row.mobilePhone,
-      });
-    }
+      // Process updates - update members one by one
+      for (const update of preview.toUpdate) {
+        const divisionId = divisionMap.get(update.incoming.department.toUpperCase());
+        if (!divisionId) {
+          continue; // Should not happen after preview validation
+        }
 
-    // Process updates
-    for (const update of preview.toUpdate) {
-      const divisionId = divisionMap.get(update.incoming.department.toUpperCase());
-      if (!divisionId) {
-        continue; // Should not happen after preview validation
+        await tx.member.update({
+          where: { id: update.current.id },
+          data: {
+            serviceNumber: update.incoming.serviceNumber,
+            employeeNumber: update.incoming.employeeNumber,
+            firstName: update.incoming.firstName,
+            lastName: update.incoming.lastName,
+            initials: update.incoming.initials,
+            rank: update.incoming.rank,
+            divisionId,
+            mess: update.incoming.mess,
+            moc: update.incoming.moc,
+            memberType: this.deriveMemberType(update.incoming.details),
+            classDetails: update.incoming.details,
+            email: update.incoming.email,
+            homePhone: update.incoming.homePhone,
+            mobilePhone: update.incoming.mobilePhone,
+          },
+        });
+        updated++;
       }
 
-      membersToUpdate.push({
-        id: update.current.id,
-        data: {
-          serviceNumber: update.incoming.serviceNumber,
-          employeeNumber: update.incoming.employeeNumber,
-          firstName: update.incoming.firstName,
-          lastName: update.incoming.lastName,
-          initials: update.incoming.initials,
-          rank: update.incoming.rank,
-          divisionId,
-          mess: update.incoming.mess,
-          moc: update.incoming.moc,
-          memberType: this.deriveMemberType(update.incoming.details),
-          classDetails: update.incoming.details,
-          email: update.incoming.email,
-          homePhone: update.incoming.homePhone,
-          mobilePhone: update.incoming.mobilePhone,
-        },
-      });
-    }
+      // Flag members for review if requested
+      if (deactivateIds && deactivateIds.length > 0) {
+        await tx.member.updateMany({
+          where: { id: { in: deactivateIds } },
+          data: { status: 'pending_review' },
+        });
+        flaggedForReview = deactivateIds.length;
+      }
 
-    // Execute bulk operations
-    if (membersToCreate.length > 0) {
-      result.added = await memberRepository.bulkCreate(membersToCreate);
-    }
+      return {
+        added,
+        updated,
+        flaggedForReview,
+        errors: [],
+      };
+    });
+  }
 
-    if (membersToUpdate.length > 0) {
-      result.updated = await memberRepository.bulkUpdate(membersToUpdate);
+  /**
+   * Hash string key to numeric ID for advisory locks
+   */
+  private hashLockKey(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
     }
-
-    // Flag members for review if requested
-    if (deactivateIds && deactivateIds.length > 0) {
-      await memberRepository.flagForReview(deactivateIds);
-      result.flaggedForReview = deactivateIds.length;
-    }
-
-    return result;
+    return hash;
   }
 }
 

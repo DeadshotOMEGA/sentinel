@@ -1,127 +1,98 @@
-import { BaseRepository, toCamelCase } from './base-repository';
+import { prisma } from '../prisma';
+import type { Division as PrismaDivision } from '@prisma/client';
 import type {
   Division,
   CreateDivisionInput,
   UpdateDivisionInput,
 } from '../../../../shared/types';
 
-export class DivisionRepository extends BaseRepository {
+/**
+ * Convert Prisma Division (null) to shared Division (undefined)
+ */
+function toDivision(d: PrismaDivision): Division {
+  return {
+    id: d.id,
+    name: d.name,
+    code: d.code,
+    description: d.description ?? undefined,
+    createdAt: d.createdAt ?? new Date(),
+    updatedAt: d.updatedAt ?? new Date(),
+  };
+}
+
+export class DivisionRepository {
   /**
    * Find all divisions
    */
   async findAll(): Promise<Division[]> {
-    const query = `
-      SELECT *
-      FROM divisions
-      ORDER BY code
-    `;
+    const divisions = await prisma.division.findMany({
+      orderBy: {
+        code: 'asc',
+      },
+    });
 
-    const rows = await this.queryAll<Record<string, unknown>>(query);
-    return rows.map((row) => toCamelCase<Division>(row));
+    return divisions.map(toDivision);
   }
 
   /**
    * Find division by ID
    */
   async findById(id: string): Promise<Division | null> {
-    const query = `
-      SELECT *
-      FROM divisions
-      WHERE id = $1
-    `;
+    const division = await prisma.division.findUnique({
+      where: { id },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [id]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<Division>(row);
+    return division ? toDivision(division) : null;
   }
 
   /**
    * Find division by code
    */
   async findByCode(code: string): Promise<Division | null> {
-    const query = `
-      SELECT *
-      FROM divisions
-      WHERE code = $1
-    `;
+    const division = await prisma.division.findUnique({
+      where: { code },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [code]);
-    if (!row) {
-      return null;
-    }
-
-    return toCamelCase<Division>(row);
+    return division ? toDivision(division) : null;
   }
 
   /**
    * Create a new division
    */
   async create(data: CreateDivisionInput): Promise<Division> {
-    const query = `
-      INSERT INTO divisions (
-        name, code, description
-      )
-      VALUES ($1, $2, $3)
-      RETURNING *
-    `;
+    const division = await prisma.division.create({
+      data: {
+        name: data.name,
+        code: data.code,
+        description: data.description ?? null,
+      },
+    });
 
-    const row = await this.queryOne<Record<string, unknown>>(query, [
-      data.name,
-      data.code,
-      data.description !== undefined ? data.description : null,
-    ]);
-
-    if (!row) {
-      throw new Error('Failed to create division');
-    }
-
-    return toCamelCase<Division>(row);
+    return toDivision(division);
   }
 
   /**
    * Update a division
    */
   async update(id: string, data: UpdateDivisionInput): Promise<Division> {
-    const updates: string[] = [];
-    const params: unknown[] = [];
-    let paramIndex = 1;
-
-    if (data.name !== undefined) {
-      updates.push(`name = $${paramIndex++}`);
-      params.push(data.name);
-    }
-    if (data.code !== undefined) {
-      updates.push(`code = $${paramIndex++}`);
-      params.push(data.code);
-    }
-    if (data.description !== undefined) {
-      updates.push(`description = $${paramIndex++}`);
-      params.push(data.description);
-    }
-
-    if (updates.length === 0) {
+    if (Object.keys(data).length === 0) {
       throw new Error('No fields to update');
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
+    try {
+      const division = await prisma.division.update({
+        where: { id },
+        data: {
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.code !== undefined && { code: data.code }),
+          ...(data.description !== undefined && { description: data.description }),
+        },
+      });
 
-    const query = `
-      UPDATE divisions
-      SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const row = await this.queryOne<Record<string, unknown>>(query, params);
-    if (!row) {
+      return toDivision(division);
+    } catch (error) {
       throw new Error(`Division not found: ${id}`);
     }
-
-    return toCamelCase<Division>(row);
   }
 
   /**
@@ -129,29 +100,19 @@ export class DivisionRepository extends BaseRepository {
    */
   async delete(id: string): Promise<void> {
     // Check if any members are assigned to this division
-    const checkQuery = `
-      SELECT COUNT(*) as count
-      FROM members
-      WHERE division_id = $1
-    `;
+    const memberCount = await prisma.member.count({
+      where: { divisionId: id },
+    });
 
-    const checkRow = await this.queryOne<{ count: string }>(checkQuery, [id]);
-    if (!checkRow) {
-      throw new Error('Failed to check member count');
-    }
-
-    const memberCount = parseInt(checkRow.count);
     if (memberCount > 0) {
       throw new Error(`Cannot delete division with ${memberCount} assigned members`);
     }
 
-    const query = `
-      DELETE FROM divisions
-      WHERE id = $1
-    `;
-
-    const result = await this.query(query, [id]);
-    if (result.rowCount === 0) {
+    try {
+      await prisma.division.delete({
+        where: { id },
+      });
+    } catch (error) {
       throw new Error(`Division not found: ${id}`);
     }
   }
