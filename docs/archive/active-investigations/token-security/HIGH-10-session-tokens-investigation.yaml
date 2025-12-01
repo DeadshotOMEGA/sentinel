@@ -1,0 +1,79 @@
+# Investigation: Session Tokens in localStorage (HIGH-10)
+# Security audit for token storage vulnerability
+
+title: Session Token Storage Vulnerability - localStorage XSS Attack Vector
+goal: Identify all locations storing authentication tokens in localStorage and plan migration to httpOnly cookies
+
+keyFiles:
+  entryPoints:
+    - /home/sauk/projects/sentinel/frontend/src/pages/Login.tsx:15-30 - User login submission
+    - /home/sauk/projects/sentinel/frontend/src/hooks/useAuth.ts:32-42 - Token capture from login response
+
+  coreLogic:
+    - /home/sauk/projects/sentinel/frontend/src/hooks/useAuth.ts:24-76 - Zustand auth store with localStorage persistence
+    - /home/sauk/projects/sentinel/frontend/src/lib/api.ts:12-18 - Token injection into Authorization header
+    - /home/sauk/projects/sentinel/backend/src/routes/auth.ts:19-73 - Login endpoint returning JWT token
+    - /home/sauk/projects/sentinel/backend/src/auth/session.ts:19-35 - Session creation and token generation
+
+  apiDatabase:
+    - /home/sauk/projects/sentinel/backend/src/auth/middleware.ts:24-38 - Token extraction from Authorization header
+    - /home/sauk/projects/sentinel/backend/src/auth/session.ts - Redis-backed session storage (server-side)
+
+  configuration:
+    - /home/sauk/projects/sentinel/backend/src/server.ts:96-112 - CORS config with credentials: true
+    - /home/sauk/projects/sentinel/backend/src/server.ts:24-65 - Helmet security headers (no Set-Cookie directives)
+
+databaseTables:
+  - sessions: Stored in Redis with format "session:{token}" containing userId, username, role, createdAt, expiresAt
+
+dataFlow:
+  1. User submits credentials → frontend/src/pages/Login.tsx:15
+  2. POST /api/auth/login called → backend/src/routes/auth.ts:19
+  3. Backend creates session with random UUID token → backend/src/auth/session.ts:20
+  4. Token returned in JSON response (NOT in Set-Cookie) → backend/src/routes/auth.ts:59
+  5. Frontend Zustand store captures token → frontend/src/hooks/useAuth.ts:38
+  6. Zustand persist middleware stores in localStorage automatically → frontend/src/hooks/useAuth.ts:68-74
+  7. Axios interceptor retrieves from localStorage and adds to Authorization header → frontend/src/lib/api.ts:12-18
+  8. Backend middleware extracts from Authorization header → backend/src/auth/middleware.ts:24-38
+
+patterns:
+  authentication: Bearer token in Authorization header (JWT/UUID pattern)
+  tokenGeneration: "randomUUID()" from crypto - server-generated, unique per session
+  sessionManagement: Dual-storage - server (Redis) + client (localStorage)
+  errorHandling: On 401 response, frontend automatically calls logout()
+  validation: Zod schema validation on login input, session TTL validation on backend
+
+integrationPoints:
+  - Zustand persist middleware: Automatic localStorage serialization (data stored as "sentinel-auth" key)
+  - Axios request interceptor: Adds "Authorization: Bearer {token}" header to all API calls
+  - localStorage API: Used implicitly by Zustand persist, no direct localStorage calls visible
+  - CORS credentials: Set to true, allowing credentials to be sent cross-origin
+  - Redis sessions: Server-side session store independent of client storage
+
+vulnerabilities:
+  - TOKEN STORED IN PLAINTEXT LOCALSTORAGE: XSS attacks can steal token via localStorage.getItem()
+  - TOKEN NOT HTTPONLY: Token accessible to JavaScript, violating httpOnly best practice
+  - TOKEN NOT SECURE FLAG: Not restricted to HTTPS transport
+  - TOKEN NOT SAMESITE: No CSRF protection through cookie SameSite attribute
+  - NO TOKEN ROTATION: Token persists for 8 hours without refresh mechanism
+  - ZUSTAND PERSIST PATTERN: partialize() only filters what's stored, doesn't change storage method
+
+currentAuth:
+  description: Bearer token in Authorization header from localStorage
+  flow: |
+    1. Login endpoint returns JWT/UUID token in JSON body
+    2. Frontend stores token in localStorage via Zustand persist
+    3. Axios interceptor injects "Authorization: Bearer {token}" on every request
+    4. Backend extracts token from header and validates against Redis sessions
+    5. Token persists for 8 hours or until manual logout
+    6. On 401 response, frontend clears localStorage and logs out
+
+notes:
+  - Token is NOT sent via Set-Cookie header - 100% localStorage dependent
+  - No refresh token mechanism - single long-lived token (8 hours)
+  - Zustand persist is opaque - partialize() doesn't provide option for httpOnly storage
+  - CORS credentials: true suggests intent to support cookies but implementation missing
+  - Backend validates session TTL on every request - no expiration bypass possible server-side
+  - Helmet config doesn't restrict Set-Cookie - ready for httpOnly migration
+  - Session destruction works correctly - POST /api/auth/logout deletes Redis entry immediately
+

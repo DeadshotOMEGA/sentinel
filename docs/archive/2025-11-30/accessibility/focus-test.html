@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel Focus-Visible Test</title>
+  <style>
+    /* Import Sentinel focus styles */
+    :root {
+      --sentinel-focus-ring: #007fff;
+      --sentinel-focus-ring-light: #ffffff;
+      --sentinel-focus-ring-offset: 2px;
+      --sentinel-focus-ring-width: 2px;
+      --sentinel-focus-ring-width-high-contrast: 3px;
+
+      --color-primary: #007fff;
+      --color-danger: #dc2626;
+    }
+
+    /* Global focus-visible styles */
+    :focus-visible {
+      outline: var(--sentinel-focus-ring-width) solid var(--sentinel-focus-ring);
+      outline-offset: var(--sentinel-focus-ring-offset);
+    }
+
+    .focus-ring-light:focus-visible,
+    .focus-ring-light :focus-visible {
+      outline-color: var(--sentinel-focus-ring-light);
+    }
+
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    @media (prefers-contrast: more) {
+      :focus-visible {
+        outline-width: var(--sentinel-focus-ring-width-high-contrast);
+        outline-color: black;
+      }
+    }
+
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      padding: 2rem;
+      background: #f8fafc;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 2rem;
+    }
+
+    .section {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      color: #334155;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Button styles */
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.1s;
+      min-height: 44px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:focus-visible {
+      outline-color: var(--sentinel-focus-ring-light);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #334155;
+      border: 2px solid #e2e8f0;
+    }
+
+    .btn-danger {
+      background: var(--color-danger);
+      color: white;
+    }
+
+    .btn-danger:focus-visible {
+      outline-color: var(--sentinel-focus-ring-light);
+    }
+
+    /* Input styles */
+    input, textarea, select {
+      padding: 0.75rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      width: 100%;
+      min-height: 44px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--color-primary);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    /* Navigation */
+    nav {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      color: #334155;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      min-height: 44px;
+      line-height: 1.5;
+    }
+
+    nav a:hover {
+      background: #f1f5f9;
+    }
+
+    /* Dark background section */
+    .dark-section {
+      background: #1e293b;
+      color: white;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .dark-section h2 {
+      color: white;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: #dbeafe;
+      border: 2px solid #93c5fd;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .instructions h3 {
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+    }
+
+    .instructions p {
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+    }
+
+    .instructions ul {
+      color: #1e40af;
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Sentinel Focus-Visible Test</h1>
+    <p class="subtitle">Test keyboard navigation and focus indicators</p>
+
+    <div class="instructions">
+      <h3>Test Instructions</h3>
+      <p><strong>Press Tab</strong> to navigate through interactive elements.</p>
+      <ul>
+        <li>Focus should be visible as a blue outline (2px)</li>
+        <li>On dark backgrounds, outline should be white</li>
+        <li>Enable system high contrast mode for 3px black outline</li>
+        <li>Click with mouse - no outline should appear</li>
+      </ul>
+    </div>
+
+    <!-- Navigation Test -->
+    <div class="section">
+      <h2>Navigation Links</h2>
+      <nav>
+        <a href="#test1">Dashboard</a>
+        <a href="#test2">Members</a>
+        <a href="#test3">Events</a>
+        <a href="#test4">Reports</a>
+        <a href="#test5">Settings</a>
+      </nav>
+    </div>
+
+    <!-- Button Tests -->
+    <div class="section">
+      <h2>Buttons (Light Background)</h2>
+      <div class="grid">
+        <button class="btn-primary">Primary Button</button>
+        <button class="btn-secondary">Secondary Button</button>
+        <button class="btn-danger">Danger Button</button>
+      </div>
+    </div>
+
+    <!-- Dark Background Test -->
+    <div class="dark-section focus-ring-light">
+      <h2>Buttons (Dark Background)</h2>
+      <div class="grid">
+        <button class="btn-primary">Primary on Dark</button>
+        <button class="btn-secondary">Secondary on Dark</button>
+        <button class="btn-danger">Danger on Dark</button>
+      </div>
+    </div>
+
+    <!-- Form Input Tests -->
+    <div class="section">
+      <h2>Form Inputs</h2>
+      <div class="form-group">
+        <label for="text-input">Text Input</label>
+        <input type="text" id="text-input" placeholder="Enter text...">
+      </div>
+
+      <div class="form-group">
+        <label for="email-input">Email Input</label>
+        <input type="email" id="email-input" placeholder="email@example.com">
+      </div>
+
+      <div class="form-group">
+        <label for="select-input">Select Dropdown</label>
+        <select id="select-input">
+          <option>Option 1</option>
+          <option>Option 2</option>
+          <option>Option 3</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="textarea-input">Textarea</label>
+        <textarea id="textarea-input" rows="3" placeholder="Enter multiple lines..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" style="width: auto; margin-right: 0.5rem;">
+          Checkbox Option
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="radio" name="radio-group" style="width: auto; margin-right: 0.5rem;">
+          Radio Option 1
+        </label>
+        <label>
+          <input type="radio" name="radio-group" style="width: auto; margin-right: 0.5rem;">
+          Radio Option 2
+        </label>
+      </div>
+    </div>
+
+    <!-- Kiosk-style Large Buttons -->
+    <div class="section">
+      <h2>Kiosk Touch Targets (56px min height)</h2>
+      <div class="grid">
+        <button class="btn-primary" style="min-height: 56px; font-size: 1.25rem; padding: 1rem 2rem;">
+          Large Touch Target
+        </button>
+        <button class="btn-secondary" style="min-height: 56px; font-size: 1.25rem; padding: 1rem 2rem;">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="section">
+      <h2>✅ Test Checklist</h2>
+      <ul style="margin-left: 1.5rem; color: #334155;">
+        <li>All buttons show blue (or white on dark) focus ring when tabbed to</li>
+        <li>All form inputs show blue focus ring when tabbed to</li>
+        <li>Navigation links show focus ring</li>
+        <li>Focus ring disappears when clicking with mouse</li>
+        <li>2px outline width in normal mode</li>
+        <li>3px black outline in high contrast mode</li>
+        <li>2px offset between element and outline</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Log focus events for debugging
+    document.addEventListener('focus', (e) => {
+      console.log('Focused:', e.target.tagName, e.target.className);
+    }, true);
+
+    document.addEventListener('blur', (e) => {
+      console.log('Blurred:', e.target.tagName);
+    }, true);
+  </script>
+</body>
+</html>

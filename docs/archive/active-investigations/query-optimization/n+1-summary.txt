@@ -1,0 +1,84 @@
+HIGH-5: N+1 QUERY PATTERNS - INVESTIGATION SUMMARY
+====================================================
+
+CRITICAL ISSUES FOUND: 7 major N+1 patterns identified
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. EVENT ATTENDEE EXPIRATION LOOP [SEVERITY: HIGH]
+   File: /home/sauk/projects/sentinel/backend/src/services/event-service.ts:31-39
+   Issue: For each attendee, runs UPDATE query
+   Example: 100 attendees = 101 queries (1 SELECT + 100 UPDATEs)
+   Fix: Batch UPDATE with WHERE clause
+
+2. BULK CHECKIN MEMBER LOOKUP [SEVERITY: CRITICAL]
+   File: /home/sauk/projects/sentinel/backend/src/services/sync-service.ts:118-204
+   Issue: 3 queries per checkin (badge, lastCheckin, member)
+   Example: 50 offline syncs = 150 queries instead of 3
+   Fix: Add memberRepository.findByIds(), batch load upfront
+
+3. IMPORT SERVICE MEMBER QUERIES [SEVERITY: HIGH]
+   File: /home/sauk/projects/sentinel/backend/src/services/import-service.ts:293-353
+   Issue: Gets service numbers, then ALL active members separately
+   Example: 500 member import = ~503 queries
+   Fix: Fetch all active once, filter in-memory
+
+4. BADGE ASSIGNMENT IN EVENT ATTENDEE UPDATE [SEVERITY: HIGH]
+   File: /home/sauk/projects/sentinel/backend/src/routes/events.ts:410-435
+   Issue: Badge lookup + unassign + assign per attendee update
+   Example: Updating 50 attendees = 150+ queries
+   Fix: Batch badge operations in transaction
+
+5. SINGLE CHECKIN CREATION [SEVERITY: MEDIUM]
+   File: /home/sauk/projects/sentinel/backend/src/routes/checkins.ts:63-138
+   Issue: Sequential queries - badge, member, lastCheckin, create, stats
+   Current: 5 queries per check-in
+   Fix: Join badge→member in single query
+
+6. IMPORT DIVISION REDUNDANCY [SEVERITY: MEDIUM]
+   File: /home/sauk/projects/sentinel/backend/src/services/import-service.ts:282, 380
+   Issue: Calls divisionRepository.findAll() twice
+   Fix: Cache divisions or pass as parameter
+
+7. EVENT ATTENDEE LOOKUP BEFORE BADGE ASSIGNMENT [SEVERITY: MEDIUM]
+   File: /home/sauk/projects/sentinel/backend/src/services/event-service.ts:51-111
+   Issue: Sequential: event → attendee → badge → assign (5 queries)
+   Example: Bulk assigning badges = 5 queries per assignment
+   Fix: Create composite method in event repository
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT'S WORKING WELL:
+✓ Presence list uses LATERAL JOIN correctly (no N+1)
+✓ Presence stats uses CTE efficiently (single query)
+✓ Badge findAll with filters is direct query
+✓ Member findAll includes division JOIN upfront
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RECOMMENDED FIXES (Priority Order):
+
+P0 - CRITICAL (Implement First):
+□ memberRepository.findByIds(ids: string[]) - for bulk checkin sync
+□ eventRepository.expireAttendees(eventId) - for event close
+□ badgeRepository.findBySerialNumbers(numbers) - for batch lookups
+□ Refactor sync-service.ts to use batch methods
+
+P1 - HIGH (Implement Next):
+□ Optimize single checkin flow (badge+member join)
+□ Refactor import-service member lookups
+□ Cache divisions in memory
+
+P2 - MEDIUM (Nice to Have):
+□ Add database indexes for common lookups
+□ Implement badge assignment as composite operation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESTIMATED IMPACT:
+• Import 500 members: 503 → 3 queries (99% reduction)
+• Sync 50 checkins: 150 → 4 queries (97% reduction)
+• Close event with 100 attendees: 101 → 2 queries (98% reduction)
+• Single checkin: 5 → 2 queries (60% reduction)
+
+Full investigation: docs/temp/n+1-query-investigation.md

@@ -1,0 +1,118 @@
+================================================================================
+HIGH-9: REFERENTIAL INTEGRITY CONSTRAINTS SUMMARY
+================================================================================
+
+SCHEMA FILES:
+  - /home/sauk/projects/sentinel/backend/db/schema.sql (PRIMARY)
+  - /home/sauk/projects/sentinel/backend/db/migrations/001_initial_schema.sql
+  - /home/sauk/projects/sentinel/backend/db/migrations/002_event_attendees.sql
+
+================================================================================
+CRITICAL MISSING/BROKEN CONSTRAINTS (DO FIRST)
+================================================================================
+
+1. CHECKINS → MEMBERS
+   Current: UUID REFERENCES members(id)               [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE CASCADE                         [Historical data follows member]
+   Risk:    Orphaned checkins if member deactivated
+   
+2. CHECKINS → BADGES  
+   Current: UUID REFERENCES badges(id)               [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE RESTRICT                       [Prevent badge deletion in use]
+   Risk:    Badge deletion breaks attendance records
+
+3. VISITORS → MEMBERS
+   Current: UUID REFERENCES members(id)              [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE RESTRICT                       [Prevent host deletion]
+   Risk:    Visitor records orphaned if host deleted
+
+4. VISITORS → BADGES
+   Current: UUID REFERENCES badges(id)               [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE SET NULL                       [Badge lifecycle independent]
+   Risk:    Visitor records broken if temp badge deleted
+
+5. VISITORS → EVENTS
+   Current: UUID REFERENCES events(id)               [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE CASCADE                        [Event-tied visitors cascade]
+   Risk:    Visitor records orphaned if event deleted
+
+6. BADGES → MEMBERS (MISSING FK ENTIRELY!)
+   Current: assigned_to_id UUID                      [NOT A FK - DATA INTEGRITY LOST]
+   Fix:     ON DELETE SET NULL                       [Optional assignment]
+   Risk:    Can assign badge to non-existent member ID
+
+================================================================================
+SECONDARY CONSTRAINTS (DO AFTER CRITICAL)
+================================================================================
+
+7. AUDIT_LOG → ADMIN_USERS
+   Current: UUID REFERENCES admin_users(id)         [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE RESTRICT                      [Immutable audit trail]
+   Risk:    Audit records become orphaned
+
+8. EVENT_CHECKINS → BADGES
+   Current: UUID NOT NULL REFERENCES badges(id)     [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE RESTRICT                      [Prevent badge deletion if used]
+   Risk:    Event check-in records break
+
+9. MEMBERS → DIVISIONS
+   Current: UUID REFERENCES divisions(id)           [NO CASCADE/RESTRICT]
+   Fix:     ON DELETE RESTRICT                      [Prevent division deletion]
+   Risk:    Members orphaned if division deleted
+
+================================================================================
+ALREADY CORRECT (NO CHANGE NEEDED)
+================================================================================
+
+✓ event_attendees → events              [ON DELETE CASCADE]
+✓ event_checkins → event_attendees      [ON DELETE CASCADE]
+
+================================================================================
+APPLICATION CODE IMPACT
+================================================================================
+
+Files to Update:
+  /home/sauk/projects/sentinel/backend/src/db/repositories/
+    - member-repository.ts        (line 298: soft delete - OK, needs error handling)
+    - badge-repository.ts         (line 152: unassign - OK, add delete method)
+    - event-repository.ts         (verify delete exists + error handling)
+    - visitor-repository.ts       (add FK error handling)
+
+Changes Needed:
+  1. Create migration/006_referential_integrity.sql
+  2. Add FK constraint error handling (FK code 23503)
+  3. Add validation helper queries
+  4. Test cascade behavior in dev
+
+================================================================================
+SOFT DELETE PATTERN NOTE
+================================================================================
+
+Members use soft delete (status='inactive'), NOT hard delete.
+This is GOOD for audit trail but creates FK confusion:
+  - members.id still exists → FK constraints fine
+  - But inactive members still referenced by checkins/visitors/badges
+  - Queries must filter status='active' when joining
+
+Recommendation: Add comment in schema explaining this pattern
+
+================================================================================
+IMPLEMENTATION PRIORITY
+================================================================================
+
+IMMEDIATE (High Risk):
+  1. checkins.member_id        → CASCADE
+  2. visitors.host_member_id   → RESTRICT
+  3. badges.assigned_to_id     → ADD FK + SET NULL
+
+SOON (Medium Risk):
+  4. checkins.badge_id         → RESTRICT
+  5. visitors.badges           → SET NULL
+  6. visitors.events           → CASCADE
+
+STANDARD (Low Risk):
+  7. audit_log.admin_user_id   → RESTRICT
+  8. event_checkins.badge_id   → RESTRICT
+  9. members.division_id       → RESTRICT
+
+================================================================================

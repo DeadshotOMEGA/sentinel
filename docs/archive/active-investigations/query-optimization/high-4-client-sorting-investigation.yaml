@@ -1,0 +1,115 @@
+# Investigation: HIGH-4 Client-Side Sorting Issue
+# Analysis of unpaginated API endpoints and client-side sorting patterns
+
+title: Client-Side Sorting and Unpaginated Data Issue
+goal: Identify API endpoints returning unpaginated data and client-side sorting implementations that should be server-side
+
+keyFiles:
+  entryPoints:
+    - "/frontend/src/pages/Members.tsx:44" - Fetches all members via /members endpoint
+    - "/frontend/src/pages/Reports.tsx:110" - Fetches all presence list via /checkins/presence/list
+    - "/tv-display/src/hooks/usePresenceData.ts:66-70" - Fetches all present members and visitors
+    - "/kiosk/src/components/DevPanel.tsx:53" - Calls getDevMembers() for dev testing
+    - "/kiosk/src/components/MemberPickerModal.tsx:13-43" - Client-side sorting of passed members
+
+  coreLogic:
+    - "/frontend/src/pages/Members.tsx:103-148" - Client-side sort using useMemo, sorts members array
+    - "/kiosk/src/components/MemberPickerModal.tsx:27-43" - useMemo groups and sorts members by division, name
+    - "/tv-display/src/components/DenseView.tsx:60-78" - sortMembers() function, sorts by division, rank, name
+    - "/tv-display/src/components/PersonCards.tsx:82-105" - sortMembers() duplicate logic
+    - "/tv-display/src/components/ScrollView.tsx:21-38" - sortMembers() for scrolling display
+
+  apiDatabase:
+    - "/backend/src/routes/members.ts:56-75" - GET /api/members endpoint (UNPAGINATED)
+    - "/backend/src/routes/members.ts:199-224" - GET /api/members/:id/history (UNPAGINATED)
+    - "/backend/src/routes/checkins.ts:219-230" - GET /api/checkins/presence/present (UNPAGINATED)
+    - "/backend/src/routes/checkins.ts:232-240" - GET /api/checkins/presence/list (UNPAGINATED)
+    - "/backend/src/routes/visitors.ts:24-52" - GET /api/visitors (UNPAGINATED)
+    - "/backend/src/routes/visitors.ts:44-52" - GET /api/visitors/active (UNPAGINATED)
+    - "/backend/src/routes/dev.ts:31-89" - GET /api/dev/members (UNPAGINATED, returns all active members)
+
+dataFlow:
+  1. Frontend requests full dataset
+     - Members.tsx line 44: `api.get<{ members: MemberWithDivision[] }>(/members)`
+     - Reports.tsx line 110: `api.get<{ presenceList: MemberPresenceApiItem[] }>(/checkins/presence/list)`
+     - TV-Display usePresenceData line 69: `authenticatedFetch(/checkins/presence/present)`
+  2. Backend returns complete result set (no pagination)
+     - members.ts line 71: `res.json({ members })`
+     - No LIMIT/OFFSET in queries
+     - No pagination metadata
+  3. Frontend client-side sorts in useMemo
+     - Members.tsx 103-148: [...members].sort((a, b) => {...})
+     - Kiosk MemberPickerModal 27-43: groups.values().forEach(list => list.sort())
+  4. TV-Display sorts multiple times
+     - DenseView, PersonCards, ScrollView all have duplicate sortMembers() function
+     - All sort client-side: [...members].sort(...)
+  5. Sort criteria applied per-component
+     - Members.tsx: configurable by user (sortColumn, sortDirection)
+     - TV-Display: hard-coded hierarchy (Command, Officers, NCMs, by rank)
+
+patterns:
+  clientSideSorting:
+    - "Members.tsx:108 - [...members].sort() with useMemo optimization"
+    - "MemberPickerModal.tsx:28 - memberList.sort() within groups"
+    - "DenseView.tsx:61 - [...members].sort() with rank hierarchy"
+    - "PersonCards.tsx:83 - [...members].sort() with rank hierarchy"
+    - "ScrollView.tsx:22 - [...members].sort() with mess priority"
+
+  unpaginatedEndpoints:
+    - "/members - no limit/offset parameters in handler"
+    - "/checkins/presence/present - returns all present members"
+    - "/checkins/presence/list - returns all members with status"
+    - "/visitors/active - returns all active visitors"
+    - "/dev/members - returns all active members (for dev panel)"
+
+  duplicateLogic:
+    - "Rank priority mapping exists in 3 places:"
+    - "  - DenseView.tsx:29-54 (RANK_PRIORITY object)"
+    - "  - PersonCards.tsx:28-74 (RANK_PRIORITY object)"
+    - "  - ScrollView.tsx:10-18 (MESS_PRIORITY object)"
+    - "All have identical sort logic but different sorting criteria"
+
+integrationPoints:
+  # Current state - client-side
+  - "MemberPickerModal receives members prop (no sorting by API)"
+  - "DevPanel calls getDevMembers() then filters in memory"
+  - "Frontend receives full presenceList, sorts after fetch"
+  - "TV-Display fetches presentMembers list, sorts in component"
+
+notes: |
+  CRITICAL ISSUES:
+  1. Frontend sorts entire member list in useMemo - N*log(N) complexity on client
+  2. TV-Display re-fetches present members list on EVERY presence_update event
+     (line 140: fetchInitialData() called on each WebSocket update)
+  3. Three TV-Display components have duplicate sortMembers() functions
+  4. No pagination means ALL members/data fetched even if only 10 visible
+  5. Kiosk dev panel loads ALL members (~100+ records) for dev UI testing
+  6. API endpoints have search/filter support but no pagination
+
+  DATABASE SCALABILITY:
+  - Members endpoint: No LIMIT clause - returns entire table
+  - Presence list: Joins across members, checkins, badges - could be 1000+ rows
+  - /dev/members query: 6-table join with no LIMIT
+
+  RECOMMENDED FIXES (Priority Order):
+  1. Add pagination params (limit, offset/cursor) to all list endpoints
+     - /members?limit=50&offset=0
+     - /checkins/presence/list?limit=100&offset=0
+     - /visitors/active?limit=50
+
+  2. Consolidate sort logic to backend (query ORDER BY clauses)
+     - Members: support sort parameter (serviceNumber, name, rank, division, mess)
+     - TV-Display: sort only presentation (fixed hierarchy OK for small lists)
+
+  3. Fix TV-Display refetch pattern
+     - Don't call fetchInitialData() on presence_update
+     - Update only the count/stats, keep cached member list
+     - Refetch members only on manual refresh or if count changes significantly
+
+  4. Optimize dev endpoint
+     - Add pagination or result limit to /dev/members
+     - Or load members lazily when dev panel opened
+
+  5. Remove duplicate sortMembers() functions
+     - Create shared utility (tv-display/src/lib/sort-utils.ts)
+     - Export sortByRank(), sortByMess(), sortByDivision() functions

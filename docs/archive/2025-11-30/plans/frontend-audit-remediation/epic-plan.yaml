@@ -1,0 +1,904 @@
+# Implementation Plan – Sentinel Frontend Audit Remediation Epic
+
+# Overview
+overview:
+  related_items:
+    feature_specs: []
+    user_stories: []
+    user_flows: []
+  related_docs: |
+    - "FRONTEND-AUDIT-REPORT.md"
+    - "CLAUDE.md"
+    - "docs/features/*.yaml"
+  epic_scope: |
+    Comprehensive frontend remediation addressing ALL critical, major, and polish issues
+    identified in the Sentinel Frontend Audit Report across three interfaces:
+    - Admin Dashboard (React + HeroUI)
+    - Kiosk Interface (React, touch-optimized)
+    - TV Display (React, passive display)
+
+    Total estimated effort: 2-3 weeks for complete implementation
+    Phased approach enables incremental deployment with critical fixes first
+
+# Problem
+problem: |
+  Sentinel frontends are functional (Grade B-) but lack professional polish, accessibility
+  compliance, and optimal user experience. Specific issues:
+
+  CRITICAL:
+  - WCAG AA contrast violations throughout all interfaces
+  - Kiosk touch targets 48px (need 56px minimum per requirements)
+  - Badge colors alone convey meaning (accessibility violation)
+  - No ARIA labels on complex controls
+  - Focus indicators missing
+
+  MAJOR (Visual Design):
+  - Stats cards use border-only design (weak visual impact)
+  - No color coding (Present=green, Absent=gray, Visitors=blue)
+  - Weak typography hierarchy throughout
+  - Inconsistent badge color system
+  - Missing icons (no icon library)
+  - Generic emoji icons instead of proper SVG icons
+
+  MAJOR (UX/Usability):
+  - Tables lack hover states, sorting, filtering, pagination
+  - No search on Events and Settings pages
+  - No empty states
+  - No confirmation dialogs for destructive actions
+  - Missing loading skeletons
+  - No error boundaries
+
+  MAJOR (Responsive):
+  - Mobile nav needs hamburger menu
+  - Tables overflow on small screens
+  - Kiosk landscape poorly optimized
+
+  MAJOR (Polish):
+  - No animations or transitions
+  - Generic error messages
+  - No branding/logo
+  - No micro-interactions
+
+# Solution
+solution: |
+  Phased remediation plan organized into 4 major phases with parallelizable tasks:
+
+  **Phase 1 (Week 1): Critical Accessibility & Touch Targets**
+  Fix WCAG AA violations, increase kiosk touch targets, add ARIA labels, implement
+  focus indicators, and create accessible badge system that doesn't rely on color alone.
+
+  **Phase 2 (Week 1-2): Visual Design System Overhaul**
+  Implement Lucide icon library, redesign stats cards with filled backgrounds and color
+  coding, establish typography hierarchy system, create consistent badge components,
+  and add proper color theming.
+
+  **Phase 3 (Week 2): UX Enhancements**
+  Add table features (hover, sort, filter, pagination), implement confirmation dialogs,
+  create loading skeletons, add empty states, improve error handling with user-friendly
+  messages, and add search functionality.
+
+  **Phase 4 (Week 2-3): Polish & Responsive**
+  Mobile responsive fixes, kiosk landscape optimization, TV display improvements,
+  micro-interactions, transitions, branding elements, and final QA pass.
+
+# Current System
+current_system:
+  description: |
+    Monorepo structure with three React frontends sharing types and UI components:
+
+    - /frontend/src - Admin dashboard (React 19 + HeroUI + React Query)
+      - pages/: Dashboard.tsx, Members.tsx, Visitors.tsx, Events.tsx, Reports.tsx, Settings.tsx
+      - components/: Modals, tables, navigation
+      - Uses HeroUI Pro components (licensed)
+
+    - /kiosk/src - Touch kiosk interface (React 19 + HeroUI)
+      - screens/: ScanningScreen.tsx, SuccessScreen.tsx, EventSelectionScreen.tsx
+      - components/: NetworkIndicator.tsx, SyncStatus.tsx
+      - Touch-optimized with large targets
+
+    - /tv-display/src - Passive wall display (React 19 + HeroUI)
+      - pages/: PresenceView.tsx, EventView.tsx
+      - components/: ActivityFeed.tsx, PresenceCards.tsx, Clock.tsx
+      - Wall display with no interactions
+
+    - /shared/ui - Design system components
+      - tokens.ts - Design tokens (colors, spacing)
+      - HeroUI theme configuration
+      - Currently uses emoji icons (⚠️), needs proper icon library
+
+    All apps use Bun, Vite, TypeScript, Tailwind CSS
+    HeroUI provides base components but customization needed
+    No systematic accessibility testing in place
+    No loading states or error boundaries implemented
+
+# Changes Required
+changes_required:
+  - path: "shared/ui/package.json"
+    changes: |
+      - Add dependency: "lucide-react": "^0.294.0" (icon library)
+      - Ensure "@heroui/react" at latest stable version
+
+  - path: "shared/ui/tokens.ts"
+    changes: |
+      - Add semantic color tokens: presentGreen, absentGray, visitorBlue
+      - Add accessible contrast ratios (4.5:1 minimum)
+      - Add focus ring color token
+      - Add touch target size tokens (kiosk: 56px)
+
+  - path: "shared/ui/components/Badge.tsx"
+    changes: |
+      - Create new accessible Badge component
+      - Add icon prop (from lucide-react)
+      - Ensure contrast ratios meet WCAG AA
+      - Add ARIA labels
+      - Never rely on color alone
+
+  - path: "shared/ui/components/StatsCard.tsx"
+    changes: |
+      - Create new StatsCard component with filled backgrounds
+      - Support color variants: success, neutral, info
+      - Include icon prop
+      - Add loading skeleton state
+      - Proper ARIA labels for screen readers
+
+  - path: "shared/ui/components/DataTable.tsx"
+    changes: |
+      - Create reusable DataTable component
+      - Hover states
+      - Sortable columns with ARIA
+      - Built-in pagination
+      - Loading skeleton
+      - Empty state
+      - Accessible column headers
+
+  - path: "shared/ui/components/ConfirmDialog.tsx"
+    changes: |
+      - Create confirmation modal component
+      - Danger/warning/neutral variants
+      - Focus trap
+      - Keyboard navigation (ESC to cancel, Enter to confirm)
+      - ARIA attributes
+
+  - path: "shared/ui/components/SearchBar.tsx"
+    changes: |
+      - Create accessible search component
+      - Debounced input
+      - Clear button
+      - Keyboard shortcuts (Cmd+K)
+      - ARIA live region for results
+
+  - path: "shared/ui/components/LoadingSkeleton.tsx"
+    changes: |
+      - Create skeleton components for tables, cards, lists
+      - Animated pulse effect
+      - Respect prefers-reduced-motion
+
+  - path: "shared/ui/components/EmptyState.tsx"
+    changes: |
+      - Create empty state component
+      - Icon, heading, description, action button
+      - Multiple variants (no data, no results, error)
+
+  - path: "shared/ui/theme.css"
+    changes: |
+      - Add focus-visible styles for keyboard navigation
+      - Increase contrast for all text elements
+      - Define touch target minimum sizes
+      - Add transition utilities
+      - Mobile responsive breakpoints
+
+  - path: "frontend/src/pages/Dashboard.tsx"
+    changes: |
+      - Replace stats cards with new StatsCard component
+      - Add color coding (Present=green, Absent=gray, Visitors=blue, Total=neutral)
+      - Add icons from lucide-react
+      - Add loading skeletons
+      - Improve typography hierarchy
+      - Add max-width container
+      - Add connection status indicator
+
+  - path: "frontend/src/pages/Members.tsx"
+    changes: |
+      - Replace table with new DataTable component
+      - Add sorting on all columns
+      - Add pagination
+      - Improve badge design
+      - Add bulk actions
+      - Add member count
+      - Fix ARIA labels
+      - Add confirmation for delete
+
+  - path: "frontend/src/pages/Visitors.tsx"
+    changes: |
+      - Add "Currently Signed In" vs "History" tabs
+      - Replace table with DataTable
+      - Add search functionality
+      - Add date range filter
+      - Fix "Sign Out" button color
+      - Add confirmation modal
+      - Add visitor count badges on tabs
+
+  - path: "frontend/src/pages/Events.tsx"
+    changes: |
+      - Fix stats cards (show actual numbers)
+      - Add complete filter controls (All, Draft, Active, Completed)
+      - Add search
+      - Add calendar view option
+      - Replace table with DataTable
+      - Fix status badge colors
+      - Add event count
+
+  - path: "frontend/src/pages/Reports.tsx"
+    changes: |
+      - Redesign stats cards with filled backgrounds
+      - Add date range picker
+      - Add attendance trend chart
+      - Replace table with DataTable
+      - Add export options (CSV, PDF)
+      - Add print stylesheet
+      - Show report timestamp
+
+  - path: "frontend/src/pages/Settings.tsx"
+    changes: |
+      - Fix tab naming ("Divisions" not "Badges")
+      - Replace table with DataTable
+      - Add search
+      - Add confirmation for delete
+      - Consistent badge colors
+
+  - path: "frontend/src/components/Sidebar.tsx"
+    changes: |
+      - Add mobile hamburger menu
+      - Add icons from lucide-react
+      - Improve active state indicators
+      - Add keyboard navigation
+      - ARIA landmarks
+
+  - path: "frontend/src/layouts/DashboardLayout.tsx"
+    changes: |
+      - Add error boundary
+      - Add focus management
+      - Add skip navigation link
+      - ARIA landmarks
+      - Mobile responsive
+
+  - path: "kiosk/src/screens/ScanningScreen.tsx"
+    changes: |
+      - Increase all button sizes to 56px minimum
+      - Add pressed states
+      - Improve touch feedback
+      - WCAG AA contrast fixes
+
+  - path: "kiosk/src/screens/EventSelectionScreen.tsx"
+    changes: |
+      - Increase touch targets to 56px
+      - Add icons
+      - Improve landscape layout
+      - Better visual hierarchy
+
+  - path: "kiosk/src/screens/SuccessScreen.tsx"
+    changes: |
+      - Increase button size
+      - Add success icon (from lucide-react)
+      - Improve animation (respect prefers-reduced-motion)
+
+  - path: "kiosk/src/components/NetworkIndicator.tsx"
+    changes: |
+      - Increase size for visibility
+      - Add text label (not just color)
+      - WCAG AA contrast
+      - Position improvement
+
+  - path: "tv-display/src/pages/PresenceView.tsx"
+    changes: |
+      - Redesign presence stats (larger, colored)
+      - Improve typography scale
+      - Fix contrast issues
+      - Add micro-transitions
+
+  - path: "tv-display/src/components/ActivityFeed.tsx"
+    changes: |
+      - Fix cramped layout
+      - Prevent text truncation
+      - Improve contrast
+      - Better spacing
+
+  - path: "tv-display/src/components/PresenceCards.tsx"
+    changes: |
+      - Redesign with filled backgrounds
+      - Color coding
+      - Icons
+      - Larger text
+
+# Task Breakdown
+task_breakdown:
+  # PHASE 1: Critical Accessibility & Touch Targets (Week 1)
+
+  - id: "T1.1"
+    description: |
+      Install Lucide React icon library and create icon usage patterns.
+      Set up centralized icon exports for consistency across all apps.
+    agent: "programmer"
+    depends_on: []
+    effort: "S"
+    files:
+      - "shared/ui/package.json" - modify - add lucide-react dependency
+      - "shared/ui/icons.ts" - create - export commonly used icons with consistent naming
+
+  - id: "T1.2"
+    description: |
+      Audit and fix ALL color contrast violations to meet WCAG AA (4.5:1 for normal text).
+      Update tokens.ts with accessible colors and run automated testing.
+    agent: "programmer"
+    depends_on: []
+    effort: "M"
+    files:
+      - "shared/ui/tokens.ts" - modify - update color values for contrast
+      - "shared/ui/theme.css" - modify - update CSS custom properties
+      - "shared/ui/contrast-test.ts" - create - automated contrast checker utility
+
+  - id: "T1.3"
+    description: |
+      Create accessible Badge component that never relies on color alone.
+      Include icon support, proper ARIA labels, and multiple visual cues.
+    agent: "programmer"
+    depends_on: ["T1.1", "T1.2"]
+    effort: "M"
+    files:
+      - "shared/ui/components/Badge.tsx" - create - accessible badge component
+      - "shared/ui/components/Badge.test.tsx" - create - accessibility tests
+
+  - id: "T1.4"
+    description: |
+      Implement focus-visible styles for keyboard navigation across all interactive elements.
+      Ensure 2px focus ring with high contrast color.
+    agent: "programmer"
+    depends_on: ["T1.2"]
+    effort: "M"
+    files:
+      - "shared/ui/theme.css" - modify - add focus-visible global styles
+      - "shared/ui/tokens.ts" - modify - add focus ring color token
+
+  - id: "T1.5"
+    description: |
+      Increase ALL kiosk touch targets to 56px minimum (currently 48px).
+      Update button components and verify on actual hardware.
+    agent: "programmer"
+    depends_on: []
+    effort: "M"
+    files:
+      - "shared/ui/tokens.ts" - modify - add kiosk touch target tokens
+      - "kiosk/src/screens/ScanningScreen.tsx" - modify - update button sizes
+      - "kiosk/src/screens/EventSelectionScreen.tsx" - modify - update button sizes
+      - "kiosk/src/screens/SuccessScreen.tsx" - modify - update button sizes
+      - "kiosk/src/screens/VisitorScreen.tsx" - modify - update button sizes
+
+  - id: "T1.6"
+    description: |
+      Add comprehensive ARIA labels to all complex controls, tables, and interactive elements.
+      Implement proper semantic HTML throughout.
+    agent: "programmer"
+    depends_on: []
+    effort: "L"
+    files:
+      - "frontend/src/pages/Dashboard.tsx" - modify - add ARIA labels to stats
+      - "frontend/src/pages/Members.tsx" - modify - add table ARIA attributes
+      - "frontend/src/pages/Visitors.tsx" - modify - add ARIA labels
+      - "frontend/src/pages/Events.tsx" - modify - add ARIA labels
+      - "frontend/src/pages/Reports.tsx" - modify - add ARIA labels
+      - "frontend/src/pages/Settings.tsx" - modify - add ARIA labels
+
+  # PHASE 2: Visual Design System Overhaul (Week 1-2)
+
+  - id: "T2.1"
+    description: |
+      Create StatsCard component with filled backgrounds, color variants, and icon support.
+      Support loading skeleton state and proper visual hierarchy.
+    agent: "programmer"
+    depends_on: ["T1.1", "T1.2", "T1.3"]
+    effort: "M"
+    files:
+      - "shared/ui/components/StatsCard.tsx" - create - stats card with filled bg
+      - "shared/ui/components/StatsCard.test.tsx" - create - component tests
+
+  - id: "T2.2"
+    description: |
+      Establish typography hierarchy system with consistent heading scales and text sizes.
+      Create utility classes and document usage patterns.
+    agent: "programmer"
+    depends_on: ["T1.2"]
+    effort: "M"
+    files:
+      - "shared/ui/typography.css" - create - typography scale and utilities
+      - "shared/ui/tokens.ts" - modify - add typography tokens
+
+  - id: "T2.3"
+    description: |
+      Replace all emoji icons with Lucide React icons across all three interfaces.
+      Ensure consistent sizing and color usage.
+    agent: "programmer"
+    depends_on: ["T1.1", "T2.2"]
+    effort: "M"
+    files:
+      - "frontend/src/pages/Dashboard.tsx" - modify - replace emojis with icons
+      - "frontend/src/pages/Members.tsx" - modify - replace emojis
+      - "frontend/src/pages/Events.tsx" - modify - replace emojis
+      - "frontend/src/components/Sidebar.tsx" - modify - add nav icons
+      - "kiosk/src/screens/*.tsx" - modify - replace emojis with icons
+      - "tv-display/src/components/*.tsx" - modify - replace emojis with icons
+
+  - id: "T2.4"
+    description: |
+      Redesign Admin Dashboard stats cards with filled backgrounds and semantic colors.
+      Present=green, Absent=gray, Visitors=blue, Total=neutral.
+    agent: "programmer"
+    depends_on: ["T2.1", "T2.3"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Dashboard.tsx" - modify - implement new StatsCard component
+
+  - id: "T2.5"
+    description: |
+      Create consistent badge color system with clear semantics and update all badge usage.
+      Document badge variants and proper usage patterns.
+    agent: "programmer"
+    depends_on: ["T1.3"]
+    effort: "M"
+    files:
+      - "shared/ui/components/Badge.tsx" - modify - add semantic variants
+      - "docs/design-system/badge-usage.md" - create - badge documentation
+
+  - id: "T2.6"
+    description: |
+      Redesign Reports page stats cards with filled backgrounds matching Dashboard style.
+      Add icons and improve visual hierarchy.
+    agent: "programmer"
+    depends_on: ["T2.1", "T2.4"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Reports.tsx" - modify - update stats cards
+
+  - id: "T2.7"
+    description: |
+      Redesign TV Display presence stats with larger size, color coding, and better contrast.
+      Optimize for wall display viewing.
+    agent: "programmer"
+    depends_on: ["T2.1", "T2.2"]
+    effort: "M"
+    files:
+      - "tv-display/src/components/PresenceCards.tsx" - modify - redesign with filled bg
+      - "tv-display/src/pages/PresenceView.tsx" - modify - improve layout
+
+  # PHASE 3: UX Enhancements (Week 2)
+
+  - id: "T3.1"
+    description: |
+      Create reusable DataTable component with sorting, hover states, and proper ARIA.
+      Include column header components with sort indicators.
+    agent: "programmer"
+    depends_on: ["T1.6", "T2.2"]
+    effort: "L"
+    files:
+      - "shared/ui/components/DataTable.tsx" - create - sortable table component
+      - "shared/ui/components/DataTable.test.tsx" - create - table tests
+      - "shared/ui/components/TableColumn.tsx" - create - column header component
+
+  - id: "T3.2"
+    description: |
+      Add pagination to DataTable component with accessible controls and page info.
+      Support configurable page sizes and total count display.
+    agent: "programmer"
+    depends_on: ["T3.1"]
+    effort: "M"
+    files:
+      - "shared/ui/components/DataTable.tsx" - modify - add pagination
+      - "shared/ui/components/Pagination.tsx" - create - pagination controls
+
+  - id: "T3.3"
+    description: |
+      Create LoadingSkeleton components for tables, cards, and lists.
+      Implement pulse animation respecting prefers-reduced-motion.
+    agent: "programmer"
+    depends_on: []
+    effort: "M"
+    files:
+      - "shared/ui/components/LoadingSkeleton.tsx" - create - skeleton component
+      - "shared/ui/components/TableSkeleton.tsx" - create - table skeleton
+      - "shared/ui/components/CardSkeleton.tsx" - create - card skeleton
+
+  - id: "T3.4"
+    description: |
+      Create EmptyState component with icon, heading, description, and action button.
+      Multiple variants for no-data, no-results, and error states.
+    agent: "programmer"
+    depends_on: ["T1.1"]
+    effort: "S"
+    files:
+      - "shared/ui/components/EmptyState.tsx" - create - empty state component
+
+  - id: "T3.5"
+    description: |
+      Create ConfirmDialog component for destructive actions with danger/warning variants.
+      Implement focus trap and keyboard navigation.
+    agent: "programmer"
+    depends_on: ["T1.4"]
+    effort: "M"
+    files:
+      - "shared/ui/components/ConfirmDialog.tsx" - create - confirmation modal
+      - "shared/ui/components/ConfirmDialog.test.tsx" - create - modal tests
+
+  - id: "T3.6"
+    description: |
+      Create SearchBar component with debounce, clear button, and keyboard shortcuts.
+      Include ARIA live region for results count.
+    agent: "programmer"
+    depends_on: ["T1.6"]
+    effort: "M"
+    files:
+      - "shared/ui/components/SearchBar.tsx" - create - search component
+      - "shared/ui/hooks/useDebounce.ts" - create - debounce hook
+
+  - id: "T3.7"
+    description: |
+      Replace Members page table with new DataTable component.
+      Add sorting, pagination, hover states, and loading skeletons.
+    agent: "programmer"
+    depends_on: ["T3.1", "T3.2", "T3.3"]
+    effort: "M"
+    files:
+      - "frontend/src/pages/Members.tsx" - modify - integrate DataTable
+
+  - id: "T3.8"
+    description: |
+      Add delete confirmation to Members page and improve bulk actions.
+      Show member count and filter chips.
+    agent: "programmer"
+    depends_on: ["T3.5", "T3.7"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Members.tsx" - modify - add confirmation and bulk actions
+
+  - id: "T3.9"
+    description: |
+      Redesign Visitors page with "Currently Signed In" vs "History" tabs.
+      Add search, date range filter, and DataTable integration.
+    agent: "programmer"
+    depends_on: ["T3.1", "T3.6"]
+    effort: "M"
+    files:
+      - "frontend/src/pages/Visitors.tsx" - modify - add tabs and search
+      - "frontend/src/components/DateRangePicker.tsx" - create - date range filter
+
+  - id: "T3.10"
+    description: |
+      Add sign-out confirmation to Visitors page and fix button color (neutral instead of warning).
+      Show visitor count badges on tabs.
+    agent: "programmer"
+    depends_on: ["T3.5", "T3.9"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Visitors.tsx" - modify - add confirmation and tab badges
+
+  - id: "T3.11"
+    description: |
+      Add search functionality to Events page and complete filter controls.
+      Integrate DataTable and add event count display.
+    agent: "programmer"
+    depends_on: ["T3.1", "T3.6"]
+    effort: "M"
+    files:
+      - "frontend/src/pages/Events.tsx" - modify - add search and filters
+
+  - id: "T3.12"
+    description: |
+      Add search to Settings page and integrate DataTable.
+      Fix tab naming consistency and add delete confirmation.
+    agent: "programmer"
+    depends_on: ["T3.1", "T3.5", "T3.6"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Settings.tsx" - modify - add search and confirmation
+
+  - id: "T3.13"
+    description: |
+      Add date range picker to Reports page and implement attendance trend chart.
+      Show report timestamp and add export options.
+    agent: "programmer"
+    depends_on: ["T3.9"]
+    effort: "L"
+    files:
+      - "frontend/src/pages/Reports.tsx" - modify - add date picker and chart
+      - "frontend/src/components/AttendanceChart.tsx" - create - trend chart component
+
+  - id: "T3.14"
+    description: |
+      Add loading states to all StatsCard components across Dashboard and Reports pages.
+      Integrate LoadingSkeleton for initial data fetch.
+    agent: "programmer"
+    depends_on: ["T2.1", "T3.3"]
+    effort: "S"
+    files:
+      - "frontend/src/pages/Dashboard.tsx" - modify - add loading states
+      - "frontend/src/pages/Reports.tsx" - modify - add loading states
+
+  - id: "T3.15"
+    description: |
+      Add empty states to all tables and lists across admin dashboard.
+      Use EmptyState component with appropriate messaging.
+    agent: "programmer"
+    depends_on: ["T3.4", "T3.7"]
+    effort: "M"
+    files:
+      - "frontend/src/pages/Members.tsx" - modify - add empty state
+      - "frontend/src/pages/Visitors.tsx" - modify - add empty state
+      - "frontend/src/pages/Events.tsx" - modify - add empty state
+      - "frontend/src/pages/Settings.tsx" - modify - add empty state
+
+  # PHASE 4: Polish & Responsive (Week 2-3)
+
+  - id: "T4.1"
+    description: |
+      Add mobile hamburger menu to admin dashboard navigation.
+      Implement drawer with smooth transitions and proper focus management.
+    agent: "programmer"
+    depends_on: ["T2.3"]
+    effort: "M"
+    files:
+      - "frontend/src/components/Sidebar.tsx" - modify - add mobile menu
+      - "frontend/src/components/MobileNav.tsx" - create - mobile navigation drawer
+
+  - id: "T4.2"
+    description: |
+      Make all admin tables responsive with horizontal scroll on mobile.
+      Add sticky column headers and optimize for touch.
+    agent: "programmer"
+    depends_on: ["T3.1"]
+    effort: "M"
+    files:
+      - "shared/ui/components/DataTable.tsx" - modify - add responsive styles
+      - "shared/ui/theme.css" - modify - add mobile breakpoint utilities
+
+  - id: "T4.3"
+    description: |
+      Optimize kiosk landscape layout for 10.1" touchscreen.
+      Test on actual hardware and adjust spacing.
+    agent: "programmer"
+    depends_on: ["T1.5"]
+    effort: "M"
+    files:
+      - "kiosk/src/screens/ScanningScreen.tsx" - modify - optimize landscape
+      - "kiosk/src/screens/EventSelectionScreen.tsx" - modify - optimize landscape
+      - "kiosk/src/App.css" - modify - add landscape media queries
+
+  - id: "T4.4"
+    description: |
+      Improve kiosk NetworkIndicator component visibility and accessibility.
+      Add text label and increase size, fix positioning.
+    agent: "programmer"
+    depends_on: ["T1.2", "T1.3"]
+    effort: "S"
+    files:
+      - "kiosk/src/components/NetworkIndicator.tsx" - modify - improve visibility
+
+  - id: "T4.5"
+    description: |
+      Fix TV Display ActivityFeed cramped layout and text truncation.
+      Improve spacing and contrast for wall display viewing.
+    agent: "programmer"
+    depends_on: ["T2.2", "T2.7"]
+    effort: "M"
+    files:
+      - "tv-display/src/components/ActivityFeed.tsx" - modify - fix layout
+      - "tv-display/src/App.css" - modify - improve typography scale
+
+  - id: "T4.6"
+    description: |
+      Add micro-transitions to all interactive elements respecting prefers-reduced-motion.
+      Button hover, card elevation, drawer open/close.
+    agent: "programmer"
+    depends_on: []
+    effort: "M"
+    files:
+      - "shared/ui/theme.css" - modify - add transition utilities
+      - "shared/ui/animations.css" - create - reusable animation classes
+
+  - id: "T4.7"
+    description: |
+      Add error boundaries to all three apps with user-friendly error messages.
+      Include recovery actions and error reporting.
+    agent: "programmer"
+    depends_on: []
+    effort: "M"
+    files:
+      - "shared/ui/components/ErrorBoundary.tsx" - create - error boundary component
+      - "frontend/src/App.tsx" - modify - wrap with error boundary
+      - "kiosk/src/App.tsx" - modify - wrap with error boundary
+      - "tv-display/src/App.tsx" - modify - wrap with error boundary
+
+  - id: "T4.8"
+    description: |
+      Add branding elements (logo, unit crest) to all interfaces.
+      Create Logo component with multiple size variants.
+    agent: "programmer"
+    depends_on: []
+    effort: "S"
+    files:
+      - "shared/ui/components/Logo.tsx" - create - logo component
+      - "frontend/src/layouts/DashboardLayout.tsx" - modify - add logo
+      - "kiosk/src/screens/IdleScreen.tsx" - modify - add branding
+      - "tv-display/src/App.tsx" - modify - add unit crest
+
+  - id: "T4.9"
+    description: |
+      Add skip navigation link and ARIA landmarks to admin dashboard layout.
+      Implement proper heading hierarchy (h1, h2, h3).
+    agent: "programmer"
+    depends_on: ["T1.6"]
+    effort: "S"
+    files:
+      - "frontend/src/layouts/DashboardLayout.tsx" - modify - add landmarks
+      - "shared/ui/components/SkipNav.tsx" - create - skip navigation component
+
+  - id: "T4.10"
+    description: |
+      Final accessibility QA pass with automated tools (axe, WAVE) and manual testing.
+      Fix any remaining WCAG AA violations and document results.
+    agent: "programmer"
+    depends_on: ["T1.2", "T1.3", "T1.4", "T1.6", "T4.9"]
+    effort: "L"
+    files:
+      - "tests/accessibility/*.spec.ts" - create - automated a11y tests
+      - "docs/accessibility-audit.md" - create - audit results document
+
+  - id: "T4.11"
+    description: |
+      Responsive testing on mobile devices (iOS, Android) and tablets.
+      Fix breakpoint issues and touch target problems.
+    agent: "programmer"
+    depends_on: ["T4.1", "T4.2"]
+    effort: "M"
+    files:
+      - "shared/ui/theme.css" - modify - fix responsive issues
+      - "tests/responsive/*.spec.ts" - create - responsive tests
+
+  - id: "T4.12"
+    description: |
+      Kiosk hardware testing on Raspberry Pi 5 with 10.1" capacitive touchscreen.
+      Verify touch targets, performance, and animations on actual hardware.
+    agent: "programmer"
+    depends_on: ["T1.5", "T4.3", "T4.6"]
+    effort: "M"
+    files:
+      - "docs/hardware-testing.md" - create - hardware test results
+      - "kiosk/src/App.css" - modify - any hardware-specific fixes
+
+# Data/Schema Changes
+data_schema_changes:
+  migrations: []
+  api_changes: []
+  notes: |
+    No backend changes required. All remediation is frontend-only.
+
+# Expected Result
+expected_result:
+  outcome: |
+    All three Sentinel frontends upgraded from Grade B- to Grade A:
+    - Full WCAG AA compliance
+    - Professional visual design with consistent color system
+    - Excellent UX with sorting, filtering, search, pagination
+    - Mobile responsive across all devices
+    - Accessible to keyboard and screen reader users
+    - Polished animations and micro-interactions
+    - User-friendly error handling
+    - Production-ready for Canadian Armed Forces deployment
+
+  example: |
+    Admin Dashboard:
+    - Stats cards with green (Present: 23), gray (Absent: 137), blue (Visitors: 4) backgrounds
+    - Icons from Lucide: Users, UserX, UserPlus, Users2
+    - All tables sortable by clicking column headers
+    - Hover states on all rows
+    - Search functionality with Cmd+K shortcut
+    - Confirmation dialogs before deleting members
+    - Loading skeletons during data fetch
+    - Mobile menu on screens < 768px
+
+    Kiosk:
+    - All buttons 56px minimum touch target
+    - High contrast (4.5:1+) for all text
+    - Network indicator visible with text label
+    - Success screen with animated checkmark icon
+
+    TV Display:
+    - Large presence stats with color backgrounds
+    - Activity feed with proper spacing and contrast
+    - UI optimized for wall-mounted display
+
+# Notes
+notes:
+  - "All tasks use bun for package management (not npm)"
+  - "HeroUI Pro license already in place for admin dashboard"
+  - "Lucide React chosen over Heroicons for better tree-shaking"
+  - "prefers-reduced-motion must be respected on Raspberry Pi hardware"
+  - "Light mode only - no dark theme implementation needed"
+  - "Target browsers: Chrome 120+, Safari 17+, Firefox 120+"
+  - "Automated accessibility testing with Playwright + axe-core"
+  - "Hardware testing on actual Raspberry Pi 5 + touchscreen required"
+  - "Design tokens centralized in shared/ui for consistency"
+  - "No breaking changes to existing API contracts"
+
+# Success Metrics
+success_metrics:
+  accessibility:
+    - "100% WCAG AA compliance (automated axe-core tests)"
+    - "Zero contrast violations below 4.5:1"
+    - "All interactive elements keyboard accessible"
+    - "Screen reader tested with NVDA and VoiceOver"
+
+  ux:
+    - "All tables sortable and paginated"
+    - "Search on 100% of list pages"
+    - "Confirmation dialogs on all destructive actions"
+    - "Loading skeletons on all async operations"
+    - "Empty states on all lists/tables"
+
+  visual:
+    - "Consistent badge system across all interfaces"
+    - "Color-coded stats cards (green/gray/blue/neutral)"
+    - "Icons on 100% of navigation and stats"
+    - "Typography hierarchy documented and enforced"
+
+  responsive:
+    - "Mobile hamburger menu on admin dashboard"
+    - "All tables scroll horizontally on mobile"
+    - "Kiosk landscape optimized for 10.1\" screen"
+    - "Touch targets 56px minimum on kiosk"
+
+  polish:
+    - "Micro-transitions on interactive elements"
+    - "Error boundaries on all apps"
+    - "Branding elements present"
+    - "User-friendly error messages"
+
+# Parallel Execution Strategy
+parallel_execution:
+  phase_1:
+    - "T1.1, T1.2 can run in parallel (icon library + contrast fixes)"
+    - "T1.5 can run parallel to T1.3, T1.4 (kiosk touch targets independent)"
+    - "T1.6 depends on semantic understanding but can start early"
+
+  phase_2:
+    - "T2.1, T2.2 can run in parallel (StatsCard + typography)"
+    - "T2.3 depends on T1.1 but can run parallel to T2.2"
+    - "T2.4, T2.6, T2.7 all depend on T2.1 but can run in parallel to each other"
+    - "T2.5 can run parallel to T2.4, T2.6, T2.7"
+
+  phase_3:
+    - "T3.1 is critical path for most Phase 3 tasks"
+    - "T3.3, T3.4, T3.5, T3.6 can all run in parallel (different components)"
+    - "T3.7-T3.15 depend on T3.1 but can be assigned to different programmers"
+
+  phase_4:
+    - "T4.1, T4.3, T4.6, T4.7, T4.8 can all run in parallel"
+    - "T4.10, T4.11, T4.12 are QA tasks that should run near end"
+    - "T4.9 depends on T1.6 but can run parallel to other Phase 4 tasks"
+
+# Risk Mitigation
+risks:
+  - risk: "HeroUI component API changes during implementation"
+    mitigation: "Pin HeroUI version, test thoroughly before upgrading"
+
+  - risk: "Lucide React bundle size impact"
+    mitigation: "Use tree-shaking, only import needed icons, monitor bundle size"
+
+  - risk: "Raspberry Pi performance with animations"
+    mitigation: "Test early on hardware (T4.12), use prefers-reduced-motion, optimize animations"
+
+  - risk: "Breaking existing functionality during table redesign"
+    mitigation: "Create new DataTable component first, migrate incrementally, comprehensive testing"
+
+  - risk: "Accessibility regressions during visual redesign"
+    mitigation: "Automated axe-core tests in CI, manual testing after each phase"
+
+  - risk: "Mobile responsive issues discovered late"
+    mitigation: "Test mobile early (T4.11), use responsive design from start"
