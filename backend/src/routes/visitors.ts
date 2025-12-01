@@ -2,7 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { visitorRepository } from '../db/repositories/visitor-repository';
 import { checkinRepository } from '../db/repositories/checkin-repository';
-import { requireAuth } from '../auth';
+import { requireAuth, requireDisplayAuth } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import type { VisitType } from '../../../shared/types';
 import { broadcastVisitorSignin, broadcastVisitorSignout, broadcastPresenceUpdate } from '../websocket';
@@ -41,8 +41,8 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   }
 });
 
-// GET /api/visitors/active - Currently signed-in visitors (public for TV display)
-router.get('/active', async (req: Request, res: Response, next: NextFunction) => {
+// GET /api/visitors/active - Currently signed-in visitors (requires display/kiosk/admin auth)
+router.get('/active', requireDisplayAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const visitors = await visitorRepository.findActive();
     res.json({ visitors });

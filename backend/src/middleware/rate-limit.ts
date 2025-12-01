@@ -1,9 +1,18 @@
 import rateLimit from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
 import type { Request } from 'express';
+import { redis } from '../db/redis';
+
+// Create Redis store for distributed rate limiting
+const createRedisStore = (prefix: string) => new RedisStore({
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `rl:${prefix}:`,
+});
 
 // Standard API rate limit - 100 requests per minute
 // Uses default keyGenerator which properly handles IPv6
 export const standardLimiter = rateLimit({
+  store: createRedisStore('standard'),
   windowMs: 60 * 1000, // 1 minute
   max: 100,
   standardHeaders: true,
@@ -18,6 +27,7 @@ export const standardLimiter = rateLimit({
 
 // Strict rate limit for auth endpoints - 5 attempts per 15 minutes
 export const authLimiter = rateLimit({
+  store: createRedisStore('auth'),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,
   standardHeaders: true,
@@ -48,6 +58,7 @@ export const authLimiter = rateLimit({
 
 // Kiosk badge scan rate limit - 60 scans per minute per kiosk
 export const kioskLimiter = rateLimit({
+  store: createRedisStore('kiosk'),
   windowMs: 60 * 1000, // 1 minute
   max: 60,
   standardHeaders: true,
@@ -75,6 +86,7 @@ export const kioskLimiter = rateLimit({
 
 // Bulk operation rate limit - 10 per hour
 export const bulkLimiter = rateLimit({
+  store: createRedisStore('bulk'),
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10,
   standardHeaders: true,
