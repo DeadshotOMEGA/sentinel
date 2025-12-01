@@ -1,8 +1,8 @@
 # Sentinel - Remaining Tasks
 
-> **Last Updated:** November 30, 2025
+> **Last Updated:** December 1, 2025
 > **System Grade:** D+ (55/100) - NOT PRODUCTION READY
-> **Estimated Timeline:** 6 weeks to production readiness
+> **Estimated Timeline:** 5 weeks to production readiness
 
 ---
 
@@ -21,55 +21,25 @@ The system has critical security, testing, and architecture issues that must be 
 
 ---
 
-## Critical Blockers (Week 1)
+## ~~Critical Blockers (Week 1)~~ COMPLETED
 
-### SECURITY-01: Hardcoded Credentials in Git
-**Severity:** CRITICAL | **Effort:** 4 hours
-**Issue:** API keys and database passwords committed to repository history
-- `kiosk-dev-key-change-in-production` in `/backend/src/auth/middleware.ts:12`
-- Database password `sentinel_dev` in git history
+### ~~SECURITY-01: Hardcoded Credentials in Git~~ ✅ DONE
+- Credentials rotated
+- Git history cleaned with `git-filter-repo`
+- seed.ts now uses `SEED_ADMIN_PASSWORD` env var
 
-**Action:**
-1. Rotate all credentials immediately
-2. Run `git-filter-repo` to remove from history
-3. Update deployment to use environment variables only
-4. Revoke all existing tokens/keys
+### ~~SECURITY-02: Unauthenticated PII Access~~ ✅ DONE
+- Added `requireDisplayAuth` to `/api/visitors/active`
 
-### SECURITY-02: Unauthenticated PII Access
-**Severity:** CRITICAL | **Effort:** 1 day
-**Issue:** Member data accessible without authentication on some endpoints
+### ~~SECURITY-03: No Rate Limiting~~ ✅ DONE
+- Redis-backed rate limiting implemented
+- All endpoints protected with appropriate limits
 
-**Action:**
-1. Add authentication middleware to all protected endpoints
-2. Audit all routes for authorization requirements
-3. Add integration tests for auth enforcement
+### ~~SECURITY-04: Token Storage~~ ✅ DONE (Already Implemented)
+- httpOnly cookies with SameSite:strict already in place
 
-### SECURITY-03: No Rate Limiting
-**Severity:** CRITICAL | **Effort:** 4 hours
-**Issue:** Vulnerable to brute force and DoS attacks
-
-**Action:**
-1. Install `express-rate-limit`
-2. Apply to all public endpoints
-3. Configure Redis-backed rate limiting for distributed deployment
-
-### SECURITY-04: Token Storage
-**Severity:** HIGH | **Effort:** 1 day
-**Issue:** JWT stored in localStorage (XSS vulnerable)
-
-**Action:**
-1. Migrate to httpOnly cookies
-2. Add CSRF protection
-3. Update frontend auth flow
-
-### SECURITY-05: Missing Security Headers
-**Severity:** HIGH | **Effort:** 2 hours
-**Issue:** No CSRF, CSP, X-Frame-Options headers
-
-**Action:**
-1. Add helmet.js middleware
-2. Configure Content-Security-Policy
-3. Set X-Frame-Options: DENY
+### ~~SECURITY-05: Missing Security Headers~~ ✅ DONE (Already Implemented)
+- helmet.js fully configured with CSP, HSTS, X-Frame-Options
 
 ---
 
