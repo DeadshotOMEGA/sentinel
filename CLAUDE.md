@@ -126,6 +126,29 @@ All API routes use:
 | `presence_update` | Server→Client | Stats update |
 | `visitor_signin` | Server→Client | Visitor arrival |
 | `event_checkin` | Server→Client | Event attendee check-in |
+| `session_expired` | Server→Client | Session expired, client should re-auth |
+
+### WebSocket Authentication
+- **JWT token** - Admin users via session cookie
+- **Kiosk API key** - `KIOSK_API_KEY` env var
+- **Display API key** - `DISPLAY_API_KEY` env var
+- Connection rate limiting: 10 conn/IP/min
+- Event rate limiting: 100 events/socket/min
+- Session expiry monitoring with auto-disconnect
+
+## Health & Monitoring Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/live` | Kubernetes liveness probe |
+| `/api/ready` | Kubernetes readiness probe (checks DB + Redis) |
+| `/api/health` | Detailed health status |
+| `/api/metrics` | Request stats, latencies, error rates, WS connections |
+
+### Observability
+- Correlation IDs auto-propagated via AsyncLocalStorage
+- Response headers: `x-correlation-id`, `x-request-id`
+- Structured JSON logging in production
 
 ## Offline Sync (Kiosk)
 
@@ -140,9 +163,13 @@ All API routes use:
 | File | Purpose |
 |------|---------|
 | `shared/types/index.ts` | All TypeScript interfaces |
-| `backend/src/routes/index.ts` | API route mounting |
-| `backend/src/websocket/broadcast.ts` | Real-time event broadcasting |
+| `backend/src/routes/index.ts` | API route mounting + health endpoints |
+| `backend/src/websocket/server.ts` | WebSocket server with auth + rate limiting |
+| `backend/src/websocket/rate-limit.ts` | Connection + event rate limiting |
+| `backend/src/utils/request-context.ts` | AsyncLocalStorage correlation IDs |
+| `backend/src/utils/metrics.ts` | Request/connection metrics |
 | `backend/src/services/import-service.ts` | CSV import with transactions |
+| `frontend/src/lib/config.ts` | Environment variable loading |
 | `kiosk/src/state/kiosk-state.ts` | Kiosk screen state machine |
 | `kiosk/src/services/sync-service.ts` | Offline sync logic |
 | `kiosk/src/db/queue.ts` | IndexedDB offline queue |
