@@ -191,31 +191,39 @@ export default function Reports() {
               <CardBody>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div className="flex-1">
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    <label id="date-range-label" className="text-sm font-medium text-gray-700 mb-2 block">
                       Select Date Range
                     </label>
-                    <ButtonGroup variant="flat" size="sm">
+                    <ButtonGroup variant="flat" size="sm" aria-labelledby="date-range-label" role="group">
                       <Button
                         onPress={() => handlePresetClick('today')}
                         color={datePreset === 'today' ? 'primary' : 'default'}
+                        aria-pressed={datePreset === 'today'}
+                        aria-label="Show today's report"
                       >
                         Today
                       </Button>
                       <Button
                         onPress={() => handlePresetClick('yesterday')}
                         color={datePreset === 'yesterday' ? 'primary' : 'default'}
+                        aria-pressed={datePreset === 'yesterday'}
+                        aria-label="Show yesterday's report"
                       >
                         Yesterday
                       </Button>
                       <Button
                         onPress={() => handlePresetClick('week')}
                         color={datePreset === 'week' ? 'primary' : 'default'}
+                        aria-pressed={datePreset === 'week'}
+                        aria-label="Show this week's report"
                       >
                         This Week
                       </Button>
                       <Button
                         onPress={() => handlePresetClick('month')}
                         color={datePreset === 'month' ? 'primary' : 'default'}
+                        aria-pressed={datePreset === 'month'}
+                        aria-label="Show this month's report"
                       >
                         This Month
                       </Button>

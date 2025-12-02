@@ -161,17 +161,17 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
         {(onClose) => (
           <>
-            <ModalHeader>{event ? 'Edit Event' : 'Create Event'}</ModalHeader>
+            <ModalHeader id="event-modal-title">{event ? 'Edit Event' : 'Create Event'}</ModalHeader>
             <ModalBody>
               {error && (
-                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                <div id="event-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert">
                   {error}
                 </div>
               )}
-              <div className="space-y-4">
+              <div className="space-y-4" aria-describedby={error ? 'event-modal-error' : undefined}>
                 <div>
                   <Input
                     label="Event Name"
@@ -180,6 +180,7 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
                     onValueChange={handleNameChange}
                     isRequired
                     autoFocus
+                    aria-invalid={error ? 'true' : 'false'}
                   />
                 </div>
                 <div>
@@ -189,8 +190,10 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
                     value={formData.code}
                     onValueChange={handleCodeChange}
                     isRequired
+                    aria-describedby="event-code-hint"
+                    aria-invalid={error ? 'true' : 'false'}
                   />
-                  <span className="mt-1 block text-xs text-gray-600">
+                  <span id="event-code-hint" className="mt-1 block text-xs text-gray-600">
                     {!codeManual && !event
                       ? 'Auto-generated from name (edit to customize)'
                       : 'Unique identifier for the event'}
@@ -212,6 +215,7 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
                     value={formData.startDate}
                     onValueChange={(v) => setFormData({ ...formData, startDate: v })}
                     isRequired
+                    aria-invalid={error ? 'true' : 'false'}
                   />
                   <Input
                     label="End Date"
@@ -219,6 +223,7 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
                     value={formData.endDate}
                     onValueChange={(v) => setFormData({ ...formData, endDate: v })}
                     isRequired
+                    aria-invalid={error ? 'true' : 'false'}
                   />
                 </div>
                 <Switch

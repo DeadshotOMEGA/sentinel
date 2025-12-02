@@ -86,22 +86,23 @@ export default function MemberModal({
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
         {(onClose) => (
           <>
-            <ModalHeader>{isEdit ? 'Edit Member' : 'Add Member'}</ModalHeader>
+            <ModalHeader id="member-modal-title">{isEdit ? 'Edit Member' : 'Add Member'}</ModalHeader>
             <ModalBody>
               {error && (
-                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                <div id="member-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
                   {error}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4" aria-describedby={error ? 'member-modal-error' : undefined}>
                 <Input
                   label="Service Number"
                   value={formData.serviceNumber || ''}
                   onValueChange={(v) => setFormData({ ...formData, serviceNumber: v })}
                   isRequired
+                  aria-invalid={error ? 'true' : 'false'}
                 />
                 <Input
                   label="Employee Number"

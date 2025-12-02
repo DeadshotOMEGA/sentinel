@@ -158,15 +158,15 @@ export default function BadgeAssignmentModal({
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="badge-modal-title">
         {(onClose) => (
           <>
-            <ModalHeader>
+            <ModalHeader id="badge-modal-title">
               {attendee.badgeId ? 'Manage Badge Assignment' : 'Assign Badge'}
             </ModalHeader>
             <ModalBody>
               {error && (
-                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                <div id="badge-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
                   {error}
                 </div>
               )}
@@ -207,20 +207,22 @@ export default function BadgeAssignmentModal({
                   </Tabs>
 
                   {tab === 'scan' && (
-                    <div className="space-y-4">
+                    <div className="space-y-4" aria-describedby={error ? 'badge-modal-error' : undefined}>
                       <Input
                         label="Badge Serial Number"
                         placeholder="Scan or enter badge number"
                         value={serialNumber}
                         onValueChange={setSerialNumber}
                         autoFocus
+                        aria-describedby="badge-scan-hint"
+                        aria-invalid={error ? 'true' : 'false'}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             handleScanAssign();
                           }
                         }}
                       />
-                      <p className="text-xs text-gray-600">
+                      <p id="badge-scan-hint" className="text-xs text-gray-600">
                         Tap into the field and scan the RFID badge, or manually enter the serial
                         number
                       </p>

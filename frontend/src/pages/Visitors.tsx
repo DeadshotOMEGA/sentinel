@@ -263,18 +263,19 @@ function VisitorSignInModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent role="dialog" aria-modal="true">
-        <ModalHeader>Sign In Visitor</ModalHeader>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="visitor-modal-title">
+        <ModalHeader id="visitor-modal-title">Sign In Visitor</ModalHeader>
         <ModalBody>
           {error && (
-            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">{error}</div>
+            <div id="visitor-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">{error}</div>
           )}
-          <div className="space-y-4">
+          <div className="space-y-4" aria-describedby={error ? 'visitor-modal-error' : undefined}>
             <Input
               label="Name"
               value={formData.name ? formData.name : ''}
               onValueChange={(v) => setFormData({ ...formData, name: v })}
               isRequired
+              aria-invalid={error ? 'true' : 'false'}
             />
             <Input
               label="Organization"

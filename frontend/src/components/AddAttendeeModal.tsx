@@ -129,17 +129,17 @@ export default function AddAttendeeModal({
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="attendee-modal-title">
         {(onClose) => (
           <>
-            <ModalHeader>Add Attendee</ModalHeader>
+            <ModalHeader id="attendee-modal-title">Add Attendee</ModalHeader>
             <ModalBody>
               {error && (
-                <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+                <div id="attendee-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
                   {error}
                 </div>
               )}
-              <div className="space-y-4">
+              <div className="space-y-4" aria-describedby={error ? 'attendee-modal-error' : undefined}>
                 <Input
                   label="Name"
                   placeholder="Full name"
@@ -147,6 +147,7 @@ export default function AddAttendeeModal({
                   onValueChange={(v) => setFormData({ ...formData, name: v })}
                   isRequired
                   autoFocus
+                  aria-invalid={error ? 'true' : 'false'}
                 />
                 <Input
                   label="Rank"

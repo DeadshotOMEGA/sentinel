@@ -33,15 +33,15 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-1 px-6 pt-6">
-          <h1 className="text-2xl font-bold text-primary">Sentinel</h1>
+          <h1 id="login-title" className="text-2xl font-bold text-primary">Sentinel</h1>
           <p className="text-sm text-gray-600">
             HMCS Chippawa Attendance System
           </p>
         </CardHeader>
         <CardBody className="px-6 pb-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" aria-labelledby="login-title" aria-describedby={error ? 'login-error' : undefined}>
             {error && (
-              <div className="rounded-lg bg-danger-50 p-3 text-sm text-danger">
+              <div id="login-error" className="rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
                 {error}
               </div>
             )}
@@ -51,6 +51,8 @@ export default function Login() {
               onValueChange={setUsername}
               isRequired
               autoFocus
+              autoComplete="username"
+              aria-invalid={error ? 'true' : 'false'}
             />
             <Input
               label="Password"
@@ -58,6 +60,8 @@ export default function Login() {
               value={password}
               onValueChange={setPassword}
               isRequired
+              autoComplete="current-password"
+              aria-invalid={error ? 'true' : 'false'}
             />
             <Checkbox isSelected={remember} onValueChange={setRemember}>
               Remember me

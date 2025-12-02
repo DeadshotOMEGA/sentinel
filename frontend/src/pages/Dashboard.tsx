@@ -163,9 +163,9 @@ export default function Dashboard() {
                 description="Check-ins and visitor activity will appear here"
               />
             ) : (
-              <ul className="divide-y divide-gray-100" role="feed" aria-label="Recent activity feed">
+              <ul className="divide-y divide-gray-100" role="feed" aria-label="Recent activity feed" aria-live="polite" aria-atomic="false">
                 {recentActivity.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-3" role="article">
+                  <li key={item.id} className="flex items-center justify-between py-3" role="article" aria-label={`${item.rank ? item.rank + ' ' : ''}${item.name} ${item.type === 'checkin' ? 'checked in' : item.type === 'checkout' ? 'checked out' : 'visitor signed in'} at ${format(new Date(item.timestamp), 'HH:mm')}`}>
                     <div>
                       <p className="font-medium">
                         {item.rank ? `${item.rank} ` : ''}{item.name}
