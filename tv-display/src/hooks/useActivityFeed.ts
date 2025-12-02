@@ -34,6 +34,8 @@ interface ApiActivityItem {
 interface UseActivityFeedResult {
   activities: ActivityItem[];
   isConnected: boolean;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const MAX_ACTIVITIES = 15;
@@ -41,8 +43,12 @@ const MAX_ACTIVITIES = 15;
 export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const addActivity = useCallback((activity: ActivityItem) => {
+    // Clear error when we receive live data
+    setError(null);
     setActivities((prev) => {
       const updated = [activity, ...prev];
       return updated.slice(0, MAX_ACTIVITIES);
@@ -52,6 +58,8 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
   // Fetch initial activity on mount
   useEffect(() => {
     const fetchInitialActivity = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await authenticatedFetch(`${config.apiUrl}/checkins/recent?limit=${MAX_ACTIVITIES}`);
         if (response.ok) {
@@ -65,10 +73,13 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
             timestamp: item.timestamp,
           }));
           setActivities(mapped);
+        } else {
+          setError('Failed to load activity');
         }
       } catch (err) {
-        // Silently fail - WebSocket events will populate activities
-        // Empty array is already set as default
+        setError('Unable to connect');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchInitialActivity();
@@ -118,5 +129,5 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
     };
   }, [config.wsUrl, addActivity]);
 
-  return { activities, isConnected };
+  return { activities, isConnected, isLoading, error };
 }

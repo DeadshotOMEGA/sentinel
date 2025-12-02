@@ -46,20 +46,54 @@ function getActionStyles(type: ActivityItem['type']): {
   }
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-2" role="status" aria-label="Loading activity">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="border-l-3 border-l-gray-200 bg-white rounded-md shadow-sm px-2 py-1.5 animate-pulse"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="h-5 bg-gray-200 rounded w-3/4 mb-1" />
+              <div className="h-3 bg-gray-100 rounded w-12" />
+            </div>
+            <div className="h-5 bg-gray-200 rounded w-8" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ActivityFeed({ config }: ActivityFeedProps) {
-  const { activities } = useActivityFeed(config);
+  const { activities, isLoading, error, isConnected } = useActivityFeed(config);
 
   return (
     <div className="h-full flex flex-col p-4">
       <h3 className="text-sm text-gray-500 mb-2 flex items-center gap-1.5">
-        <span className="w-2.5 h-2.5 rounded-full bg-gray-400" aria-hidden="true" />
+        <span
+          className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-gray-400'}`}
+          aria-hidden="true"
+        />
         Recent Activity
+        {!isConnected && !isLoading && (
+          <span className="text-xs text-orange-500 ml-auto">Reconnecting...</span>
+        )}
       </h3>
 
       <div className="flex-1 overflow-hidden" aria-live="polite" aria-atomic="false">
-        {activities.length === 0 ? (
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : error && activities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-32 text-center" role="alert">
+            <p className="text-base text-orange-500">{error}</p>
+            <p className="text-sm text-gray-400 mt-1">Live updates will appear when connected</p>
+          </div>
+        ) : activities.length === 0 ? (
           <div className="flex items-center justify-center h-32">
-            <p className="text-base text-gray-400">Waiting for activity...</p>
+            <p className="text-base text-gray-400">No recent activity</p>
           </div>
         ) : (
           <div className="space-y-2">
