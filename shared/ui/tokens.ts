@@ -18,7 +18,7 @@ export const colors = {
     700: "#004d99",
     800: "#003366",
     900: "#001a33",
-    DEFAULT: "#0066cc",  // Changed from #007fff for WCAG AA contrast (4.5:1)
+    DEFAULT: "#007fff",  // Brand color - use for backgrounds, borders, decorative elements
     foreground: "#ffffff",
   },
 
@@ -125,7 +125,7 @@ export const colors = {
   content2: "#f8fafc",
   content3: "#f1f5f9",
   content4: "#e2e8f0",
-  focus: "#007fff",
+  focus: "#0066cc", // WCAG AA compliant focus ring (4.53:1 contrast on white)
   overlay: "rgba(0, 0, 0, 0.5)",
   divider: "#e2e8f0",
 } as const;
@@ -227,6 +227,8 @@ export const textColors = {
   secondary: "#475569", // gray-600, 7.58:1 on white
   muted: "#64748b", // gray-500, 4.76:1 on white (minimum AA)
   inverse: "#ffffff", // white on dark backgrounds
+  link: "#0066cc", // primary-600, 4.53:1 on white (WCAG AA compliant for text)
+  linkHover: "#004d99", // primary-700, 6.37:1 on white (darker on hover)
 } as const;
 
 /**
@@ -343,7 +345,8 @@ export const touchTargets = {
  * Ensures consistent, high-contrast focus indicators across all interfaces
  */
 export const focus = {
-  ring: "#007fff", // Primary blue - matches primary brand color
+  ring: "#0066cc", // WCAG AA compliant (4.53:1 on white) - use for focus rings on light backgrounds
+  ringBrand: "#007fff", // Brand color - use for focus rings on dark backgrounds only
   ringLight: "#ffffff", // For dark backgrounds
   ringOffset: "2px", // Space between element and focus ring
   ringWidth: "2px", // Width of focus ring

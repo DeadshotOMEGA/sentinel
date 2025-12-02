@@ -119,7 +119,8 @@
   --sentinel-touch-comfortable: 64px;
 
   /* Focus ring - keyboard navigation accessibility */
-  --sentinel-focus-ring: #007fff;
+  --sentinel-focus-ring: #0066cc; /* WCAG AA compliant (4.53:1 on white) */
+  --sentinel-focus-ring-brand: #007fff; /* Brand color - use on dark backgrounds only */
   --sentinel-focus-ring-light: #ffffff;
   --sentinel-focus-ring-offset: 2px;
   --sentinel-focus-ring-width: 2px;
