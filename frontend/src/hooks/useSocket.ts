@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './useAuth';
+import { config } from '../lib/config';
 
 interface PresenceStats {
   present: number;
@@ -35,9 +36,10 @@ export function useSocket() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const socket = io({
+    const socket = io(config.wsUrl, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
+      withCredentials: true,
     });
 
     socketRef.current = socket;

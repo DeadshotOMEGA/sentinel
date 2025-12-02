@@ -1,8 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useSocket } from '../useSocket';
 import type { Socket } from 'socket.io-client';
 import { io as mockIoFn } from 'socket.io-client';
+
+// Mock config - must use vi.hoisted for mock factory
+const mockConfig = vi.hoisted(() => ({
+  apiUrl: 'http://localhost:3000/api',
+  wsUrl: 'ws://localhost:3000',
+}));
+vi.mock('../../lib/config', () => ({
+  config: mockConfig,
+}));
 
 // Mock socket instance
 const mockSocket: Partial<Socket> = {
@@ -53,9 +62,10 @@ describe('useSocket', () => {
 
       renderHook(() => useSocket());
 
-      expect(mockIo).toHaveBeenCalledWith({
+      expect(mockIo).toHaveBeenCalledWith(mockConfig.wsUrl, {
         path: '/socket.io',
         transports: ['websocket', 'polling'],
+        withCredentials: true,
       });
     });
 

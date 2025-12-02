@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
+import { config } from './config';
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
