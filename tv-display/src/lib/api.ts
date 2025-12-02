@@ -3,7 +3,7 @@
  * Adds display authentication header to all requests
  */
 
-const DISPLAY_API_KEY = import.meta.env.VITE_DISPLAY_API_KEY;
+export const DISPLAY_API_KEY = import.meta.env.VITE_DISPLAY_API_KEY;
 
 if (!DISPLAY_API_KEY) {
   throw new Error('VITE_DISPLAY_API_KEY environment variable is not set');

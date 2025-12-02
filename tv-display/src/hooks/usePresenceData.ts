@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { TVConfig } from '../lib/config';
-import { authenticatedFetch } from '../lib/api';
+import { authenticatedFetch, DISPLAY_API_KEY } from '../lib/api';
 
 interface DivisionStats {
   name: string;
@@ -117,6 +117,9 @@ export function usePresenceData({ config }: UsePresenceDataProps) {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: Infinity,
+      auth: {
+        displayApiKey: DISPLAY_API_KEY,
+      },
     });
 
     socketRef.current.on('connect', () => {
