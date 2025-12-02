@@ -21,8 +21,8 @@ export function EventView({ config, eventName }: EventViewProps) {
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 tv-mode">
       <div className="flex h-screen">
         {/* Main content - 70% */}
-        <div className="flex-1 p-8 overflow-hidden flex flex-col">
-          <div className="flex justify-between items-start mb-8">
+        <div className="flex-1 p-8 overflow-hidden flex flex-col" role="main" aria-label="Event attendance display">
+          <div className="flex justify-between items-start mb-8" role="banner">
             <div>
               <div className="mb-4">
                 <Logo size="lg" />
@@ -33,8 +33,8 @@ export function EventView({ config, eventName }: EventViewProps) {
               <p className="text-xl text-gray-600">
                 Event Attendance Overview
               </p>
-              <div className="mt-4 flex items-center gap-2">
-                <div className={`w-4 h-4 rounded-full ${connectionStatus}`} />
+              <div className="mt-4 flex items-center gap-2" role="status" aria-label="Connection status">
+                <div className={`w-4 h-4 rounded-full ${connectionStatus}`} aria-hidden="true" />
                 <span className="text-lg text-gray-700">
                   {connectionText}
                 </span>
@@ -44,7 +44,7 @@ export function EventView({ config, eventName }: EventViewProps) {
             <Clock />
           </div>
 
-          <div className="mb-8">
+          <div className="mb-8" role="region" aria-label="Attendance statistics" aria-live="polite">
             <EventPresenceCards
               present={data.present}
               away={data.away}
@@ -52,11 +52,11 @@ export function EventView({ config, eventName }: EventViewProps) {
             />
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden" role="region" aria-label="Event attendees list">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">
               Attendees
             </h2>
-            <div className="overflow-y-auto space-y-3 pr-4">
+            <div className="overflow-y-auto space-y-3 pr-4" aria-live="polite">
               {data.attendees.length === 0 ? (
                 <p className="text-2xl text-gray-400">
                   No attendees yet...
@@ -101,7 +101,7 @@ export function EventView({ config, eventName }: EventViewProps) {
 
         {/* Activity Feed - 30% */}
         {config.activityFeedEnabled && (
-          <div className="w-[30%] border-l border-gray-200 bg-gray-50">
+          <div className="w-[30%] border-l border-gray-200 bg-gray-50" role="complementary" aria-label="Activity feed">
             <ActivityFeed config={config} />
           </div>
         )}

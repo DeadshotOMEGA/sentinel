@@ -111,10 +111,10 @@ export function DenseView({
           {/* Active Visitors Section - Compact */}
           {hasVisitors && (
             <div>
-              <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+              <h2 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500" aria-hidden="true" />
                 Visitors ({activeVisitors.length})
-              </h3>
+              </h2>
               <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2">
                 {activeVisitors.map((visitor) => (
                   <div
@@ -139,10 +139,10 @@ export function DenseView({
           {/* Command Members Section - Compact */}
           {commandMembers.length > 0 && (
             <div>
-              <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <h2 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" aria-hidden="true" />
                 Command ({commandMembers.length})
-              </h3>
+              </h2>
               <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2">
                 {commandMembers.map((member) => (
                   <div
@@ -164,10 +164,10 @@ export function DenseView({
           {/* Regular Members Section - Compact */}
           {regularMembers.length > 0 && (
             <div>
-              <h3 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <h2 className="text-sm text-gray-500 mb-1.5 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" aria-hidden="true" />
                 Members ({regularMembers.length})
-              </h3>
+              </h2>
               <div className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-2">
                 {regularMembers.map((member) => (
                   <div

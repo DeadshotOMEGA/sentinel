@@ -51,12 +51,12 @@ export function ActivityFeed({ config }: ActivityFeedProps) {
 
   return (
     <div className="h-full flex flex-col p-4">
-      <h2 className="text-sm text-gray-500 mb-2 flex items-center gap-1.5">
-        <span className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+      <h3 className="text-sm text-gray-500 mb-2 flex items-center gap-1.5">
+        <span className="w-2.5 h-2.5 rounded-full bg-gray-400" aria-hidden="true" />
         Recent Activity
-      </h2>
+      </h3>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" aria-live="polite" aria-atomic="false">
         {activities.length === 0 ? (
           <div className="flex items-center justify-center h-32">
             <p className="text-base text-gray-400">Waiting for activity...</p>

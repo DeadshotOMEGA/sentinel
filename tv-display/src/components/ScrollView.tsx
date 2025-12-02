@@ -68,8 +68,12 @@ export function ScrollView({
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Large prominent count header */}
-      <div className="bg-gradient-to-r from-green-100 via-emerald-100 to-green-100 border-b-4 border-green-500 px-8 py-8 text-center shadow-lg">
-        <div className="flex items-center justify-center gap-4">
+      <div
+        className="bg-gradient-to-r from-green-100 via-emerald-100 to-green-100 border-b-4 border-green-500 px-8 py-8 text-center shadow-lg"
+        role="region"
+        aria-label="Attendance summary"
+      >
+        <div className="flex items-center justify-center gap-4" aria-live="polite" aria-atomic="true">
           <span className="text-8xl font-bold text-green-700">{present}</span>
           <span className="text-5xl font-semibold text-gray-700">Present</span>
         </div>
@@ -80,7 +84,11 @@ export function ScrollView({
       </div>
 
       {/* Scrolling names container */}
-      <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+      <div
+        className="flex-1 relative overflow-hidden bg-gradient-to-b from-gray-50 to-white"
+        role="region"
+        aria-label="Present personnel list"
+      >
         <div
           className={`scroll-container ${isPaused ? 'paused' : ''}`}
           style={{
@@ -91,10 +99,10 @@ export function ScrollView({
           <div className="space-y-1 py-4">
             {activeVisitors.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-3xl font-bold text-sky-700 mb-3 px-8 flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-sky-500" />
+                <h2 className="text-3xl font-bold text-sky-700 mb-3 px-8 flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-sky-500" aria-hidden="true" />
                   Visitors
-                </h3>
+                </h2>
                 {activeVisitors.map((visitor) => (
                   <div
                     key={`a-${visitor.id}`}
@@ -113,10 +121,10 @@ export function ScrollView({
 
             {sortedMembers.length > 0 && (
               <div>
-                <h3 className="text-3xl font-bold text-emerald-700 mb-3 px-8 flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-emerald-500" />
+                <h2 className="text-3xl font-bold text-emerald-700 mb-3 px-8 flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500" aria-hidden="true" />
                   Members
-                </h3>
+                </h2>
                 {sortedMembers.map((member) => (
                   <div
                     key={`a-${member.id}`}

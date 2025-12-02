@@ -16,13 +16,13 @@ export function Clock() {
   const dateString = format(time, 'EEEE, MMMM dd, yyyy');
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="font-mono text-8xl font-bold text-gray-900 leading-none">
+    <div className="flex flex-col items-end gap-2" role="timer" aria-label="Current time and date" aria-live="off">
+      <time className="font-mono text-8xl font-bold text-gray-900 leading-none" dateTime={time.toISOString()}>
         {timeString}
-      </div>
-      <div className="text-xl text-gray-600 font-medium">
+      </time>
+      <time className="text-xl text-gray-600 font-medium" dateTime={time.toISOString().split('T')[0]}>
         {dateString}
-      </div>
+      </time>
     </div>
   );
 }
