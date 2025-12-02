@@ -19,7 +19,17 @@ import {
   ListboxItem,
   ProgressBar,
 } from './ui/heroui-polyfills';
-import { Icon } from '@iconify/react';
+import {
+  Upload,
+  Eye,
+  CheckCircle,
+  FolderOpen,
+  UserPlus,
+  RefreshCw,
+  UserMinus,
+  AlertTriangle,
+  BarChart3,
+} from '@shared/ui/icons';
 import { api } from '../lib/api';
 import {
   Table,
@@ -50,19 +60,19 @@ type Step = 'upload' | 'preview' | 'result';
 const importSteps = [
   {
     key: 'upload',
-    icon: 'solar:upload-linear',
+    icon: Upload,
     title: 'Upload CSV File',
     description: 'Upload or paste your Nominal Roll CSV export from DWAN.',
   },
   {
     key: 'preview',
-    icon: 'solar:eye-linear',
+    icon: Eye,
     title: 'Preview Changes',
     description: 'Review members to add, update, and flag for review.',
   },
   {
     key: 'result',
-    icon: 'solar:check-circle-linear',
+    icon: CheckCircle,
     title: 'Complete Import',
     description: 'Confirm changes and finalize the import process.',
   },
@@ -201,12 +211,12 @@ export default function ImportModal({
               className="hidden"
             />
             <div className="flex flex-col items-center gap-3 w-full">
-              <Icon icon="solar:upload-bold-duotone" className="text-primary" width={48} />
+              <Upload className="text-primary" size={48} />
               <Button
                 variant="bordered"
                 color="primary"
                 onPress={() => fileInputRef.current?.click()}
-                startContent={<Icon icon="solar:folder-open-linear" width={18} />}
+                startContent={<FolderOpen size={18} />}
               >
                 Choose CSV File
               </Button>
@@ -408,7 +418,7 @@ export default function ImportModal({
         <Card className="border-success-200 bg-success-50">
           <CardBody className="flex flex-col items-center gap-4 py-8">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success">
-              <Icon icon="solar:check-circle-bold" className="text-white" width={40} />
+              <CheckCircle className="text-white" size={40} />
             </div>
             <h3 className="text-xl font-semibold text-success-700">Import Complete!</h3>
           </CardBody>
@@ -417,21 +427,21 @@ export default function ImportModal({
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardBody className="text-center">
-              <Icon icon="solar:user-plus-bold-duotone" className="mx-auto mb-2 text-success" width={32} />
+              <UserPlus className="mx-auto mb-2 text-success" size={32} />
               <p className="text-3xl font-bold text-success">{result.added}</p>
               <p className="text-sm text-default-500">Members Added</p>
             </CardBody>
           </Card>
           <Card>
             <CardBody className="text-center">
-              <Icon icon="solar:refresh-bold-duotone" className="mx-auto mb-2 text-primary" width={32} />
+              <RefreshCw className="mx-auto mb-2 text-primary" size={32} />
               <p className="text-3xl font-bold text-primary">{result.updated}</p>
               <p className="text-sm text-default-500">Members Updated</p>
             </CardBody>
           </Card>
           <Card>
             <CardBody className="text-center">
-              <Icon icon="solar:user-minus-bold-duotone" className="mx-auto mb-2 text-warning" width={32} />
+              <UserMinus className="mx-auto mb-2 text-warning" size={32} />
               <p className="text-3xl font-bold text-warning">{result.flaggedForReview}</p>
               <p className="text-sm text-default-500">Deactivated</p>
             </CardBody>
@@ -442,7 +452,7 @@ export default function ImportModal({
           <Card className="border-danger-200 bg-danger-50">
             <CardBody>
               <div className="flex items-center gap-2">
-                <Icon icon="solar:danger-triangle-bold" className="text-danger" width={20} />
+                <AlertTriangle className="text-danger" size={20} />
                 <span className="text-sm font-medium text-danger">
                   {result.errors.length} error(s) occurred during import
                 </span>
@@ -462,7 +472,7 @@ export default function ImportModal({
     <Card className="min-w-[280px] py-1 md:py-4">
       <CardHeader className="flex items-center gap-3 px-5 pt-3 pb-0 md:px-6 md:pt-5">
         <div className="from-secondary-300 to-primary-500 flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br">
-          <Icon className="text-white" icon="solar:database-linear" width={24} />
+          <BarChart3 className="text-white" size={24} />
         </div>
         <ProgressBar
           showValueLabel
@@ -487,6 +497,7 @@ export default function ImportModal({
             const itemIndex = getStepIndex(item.key as Step);
             const isCompleted = itemIndex < currentStepIndex || (step === 'result' && result);
             const isCurrent = item.key === step;
+            const IconComponent = item.icon;
 
             return (
               <ListboxItem
@@ -500,17 +511,17 @@ export default function ImportModal({
                 endContent={
                   <div className="flex flex-none">
                     {isCompleted ? (
-                      <Icon className="text-success" icon="solar:check-circle-bold" width={24} />
+                      <CheckCircle className="text-success" size={24} />
                     ) : isCurrent ? (
-                      <Icon className="text-primary" icon="solar:arrow-right-bold" width={24} />
+                      <CheckCircle className="text-primary" size={24} />
                     ) : (
-                      <Icon className="text-default-300" icon="solar:circle-linear" width={24} />
+                      <CheckCircle className="text-default-300" size={24} />
                     )}
                   </div>
                 }
                 startContent={
                   <div className={`flex items-center justify-center rounded-medium border p-2 ${isCurrent ? 'border-primary bg-primary-50' : 'border-divider'}`}>
-                    <Icon className={isCurrent ? 'text-primary' : 'text-secondary'} icon={item.icon} width={20} />
+                    <IconComponent className={isCurrent ? 'text-primary' : 'text-secondary'} size={20} />
                   </div>
                 }
                 title={item.title}
@@ -524,10 +535,10 @@ export default function ImportModal({
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="5xl" scrollBehavior="inside">
-      <ModalContent>
+      <ModalContent role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
         {() => (
           <>
-            <ModalHeader>Import Nominal Roll</ModalHeader>
+            <ModalHeader id="import-modal-title">Import Nominal Roll</ModalHeader>
 
             <ModalBody>
               <div className="flex gap-6">

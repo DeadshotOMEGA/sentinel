@@ -1,40 +1,48 @@
 import { type SidebarItem } from "./Sidebar";
+import {
+  BarChart3,
+  Users,
+  UserPlus,
+  Calendar,
+  FileText,
+  Settings,
+} from '@shared/ui/icons';
 
 export const sidebarItems: SidebarItem[] = [
   {
     key: "dashboard",
     href: "/",
-    icon: "solar:chart-2-outline",
+    icon: BarChart3,
     title: "Dashboard",
   },
   {
     key: "members",
     href: "/members",
-    icon: "solar:users-group-two-rounded-outline",
+    icon: Users,
     title: "Members",
   },
   {
     key: "visitors",
     href: "/visitors",
-    icon: "solar:user-plus-rounded-outline",
+    icon: UserPlus,
     title: "Visitors",
   },
   {
     key: "events",
     href: "/events",
-    icon: "solar:calendar-outline",
+    icon: Calendar,
     title: "Events",
   },
   {
     key: "reports",
     href: "/reports",
-    icon: "solar:document-text-outline",
+    icon: FileText,
     title: "Reports",
   },
   {
     key: "settings",
     href: "/settings",
-    icon: "solar:settings-outline",
+    icon: Settings,
     title: "Settings",
   },
 ];

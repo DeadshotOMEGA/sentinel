@@ -4,7 +4,6 @@ import { Menu, X } from '@shared/ui/icons';
 import { useAuth } from '../hooks/useAuth';
 import { sidebarItems } from './pro/nav-items';
 import { create } from 'zustand';
-import { Icon } from '@iconify/react';
 
 interface MobileNavStore {
   isOpen: boolean;
@@ -189,6 +188,7 @@ export default function MobileNav() {
           <ul className="space-y-1" role="list">
             {filteredItems.map((item) => {
               const isActive = currentKey === item.key;
+              const IconComponent = item.icon;
               return (
                 <li key={item.key}>
                   <button
@@ -200,8 +200,8 @@ export default function MobileNav() {
                     }`}
                     style={{ minHeight: '48px' }}
                   >
-                    {item.icon && (
-                      <Icon icon={item.icon} className="h-5 w-5" aria-hidden="true" />
+                    {IconComponent && (
+                      <IconComponent className="h-5 w-5" aria-hidden="true" />
                     )}
                     {item.title}
                   </button>

@@ -11,7 +11,7 @@ import {
 } from "../ui/heroui-polyfills";
 import React from "react";
 import { cn } from "@heroui/react";
-import {Icon} from "@iconify/react";
+import { type LucideIcon } from '@shared/ui/icons';
 
 export enum SidebarItemType {
   Nest = "nest",
@@ -20,7 +20,7 @@ export enum SidebarItemType {
 export type SidebarItem = {
   key: string;
   title: string;
-  icon?: string;
+  icon?: LucideIcon;
   href?: string;
   type?: SidebarItemType.Nest;
   startContent?: React.ReactNode;
@@ -108,14 +108,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
             }
             startContent={
               isCompact || isNestType ? null : item.icon ? (
-                <Icon
-                  className={cn(
+                React.createElement(item.icon, {
+                  className: cn(
                     "text-default-500 group-data-[selected=true]:text-foreground",
                     iconClassName,
-                  )}
-                  icon={item.icon}
-                  width={24}
-                />
+                  ),
+                  size: 24,
+                })
               ) : (
                 (item.startContent ?? null)
               )
@@ -126,14 +125,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               <Tooltip content={item.title} placement="right">
                 <div className="flex w-full items-center justify-center">
                   {item.icon ? (
-                    <Icon
-                      className={cn(
+                    React.createElement(item.icon, {
+                      className: cn(
                         "text-default-500 group-data-[selected=true]:text-foreground",
                         iconClassName,
-                      )}
-                      icon={item.icon}
-                      width={24}
-                    />
+                      ),
+                      size: 24,
+                    })
                   ) : (
                     (item.startContent ?? null)
                   )}
@@ -153,14 +151,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                   title={
                     item.icon ? (
                       <div className={"flex h-11 items-center gap-2 px-2 py-1.5"}>
-                        <Icon
-                          className={cn(
+                        {React.createElement(item.icon, {
+                          className: cn(
                             "text-default-500 group-data-[selected=true]:text-foreground",
                             iconClassName,
-                          )}
-                          icon={item.icon}
-                          width={24}
-                        />
+                          ),
+                          size: 24,
+                        })}
                         <span className="text-small text-default-500 group-data-[selected=true]:text-foreground font-medium">
                           {item.title}
                         </span>
@@ -210,14 +207,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
             endContent={isCompact || hideEndContent ? null : (item.endContent ?? null)}
             startContent={
               isCompact ? null : item.icon ? (
-                <Icon
-                  className={cn(
+                React.createElement(item.icon, {
+                  className: cn(
                     "text-default-500 group-data-[selected=true]:text-foreground",
                     iconClassName,
-                  )}
-                  icon={item.icon}
-                  width={24}
-                />
+                  ),
+                  size: 24,
+                })
               ) : (
                 (item.startContent ?? null)
               )
@@ -229,14 +225,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               <Tooltip content={item.title} placement="right">
                 <div className="flex w-full items-center justify-center">
                   {item.icon ? (
-                    <Icon
-                      className={cn(
+                    React.createElement(item.icon, {
+                      className: cn(
                         "text-default-500 group-data-[selected=true]:text-foreground",
                         iconClassName,
-                      )}
-                      icon={item.icon}
-                      width={24}
-                    />
+                      ),
+                      size: 24,
+                    })
                   ) : (
                     (item.startContent ?? null)
                   )}
