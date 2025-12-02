@@ -1,19 +1,16 @@
 import Redis from 'ioredis';
 import { logger } from '../utils/logger';
 
-function getRedisConfig(): { host: string; port: number; password: string } {
+function getRedisConfig(): { host: string; port: number; password: string | undefined } {
   const host = process.env.REDIS_HOST;
   const port = process.env.REDIS_PORT;
-  const password = process.env.REDIS_PASSWORD;
+  const password = process.env.REDIS_PASSWORD || undefined;
 
   if (!host) {
     throw new Error('REDIS_HOST environment variable is required');
   }
   if (!port) {
     throw new Error('REDIS_PORT environment variable is required');
-  }
-  if (!password) {
-    throw new Error('REDIS_PASSWORD environment variable is required');
   }
 
   const portNumber = parseInt(port, 10);

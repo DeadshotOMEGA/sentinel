@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.0.1",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
@@ -25,7 +26,7 @@
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.2",
     "papaparse": "^5.5.3",
-    "pg": "^8.11.3",
+    "pg": "^8.16.3",
     "prisma": "^7.0.1",
     "rate-limit-redis": "^4.3.1",
     "socket.io": "^4.7.2",

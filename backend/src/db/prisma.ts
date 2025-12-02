@@ -1,5 +1,16 @@
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/logger';
+
+// Build connection string from env vars
+const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+
+// Create pg pool
+const pool = new Pool({ connectionString });
+
+// Create Prisma adapter
+const adapter = new PrismaPg(pool);
 
 // Singleton PrismaClient instance
 const globalForPrisma = globalThis as unknown as {
@@ -14,6 +25,7 @@ const logConfig = process.env.NODE_ENV === 'development'
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    adapter,
     log: logConfig,
   });
 
@@ -44,6 +56,7 @@ export async function checkDatabaseHealth(): Promise<boolean> {
  */
 export async function disconnectDatabase(): Promise<void> {
   await prisma.$disconnect();
+  await pool.end();
 }
 
 // Re-export Prisma types for convenience
