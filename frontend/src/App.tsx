@@ -12,8 +12,9 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  // Wait for auth check to complete
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -21,8 +22,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+
+  // Only render children if truly authenticated (both flag and user data)
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 export default function App() {

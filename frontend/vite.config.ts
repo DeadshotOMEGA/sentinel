@@ -18,10 +18,13 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        // Ensure cookies are forwarded properly
+        cookieDomainRewrite: 'localhost',
       },
       '/socket.io': {
         target: 'http://localhost:3000',
         ws: true,
+        changeOrigin: true,
       },
     },
   },

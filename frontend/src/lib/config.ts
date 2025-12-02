@@ -1,28 +1,14 @@
 /**
  * Frontend configuration loaded from environment variables.
- * All URLs are validated at startup to fail fast on misconfiguration.
+ * Supports both absolute URLs (production) and relative paths (dev with Vite proxy).
  */
 
-function getRequiredEnvVar(name: string): string {
+function getEnvVar(name: string, defaultValue = ''): string {
   const value = import.meta.env[name];
   if (!value || typeof value !== 'string') {
-    throw new Error(`Required environment variable ${name} is not set`);
+    return defaultValue;
   }
   return value;
-}
-
-function validateHttpUrl(url: string, name: string): string {
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    throw new Error(`${name} must be a valid HTTP(S) URL, got: ${url}`);
-  }
-  return url;
-}
-
-function validateWsUrl(url: string, name: string): string {
-  if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
-    throw new Error(`${name} must be a valid WebSocket URL, got: ${url}`);
-  }
-  return url;
 }
 
 export interface AppConfig {
@@ -31,13 +17,14 @@ export interface AppConfig {
 }
 
 function loadConfig(): AppConfig {
-  const apiUrl = getRequiredEnvVar('VITE_API_URL');
-  const wsUrl = getRequiredEnvVar('VITE_WS_URL');
+  // API URL: relative path like '/api' for Vite proxy, or full URL for production
+  const apiUrl = getEnvVar('VITE_API_URL', '/api');
 
-  return {
-    apiUrl: validateHttpUrl(apiUrl, 'VITE_API_URL'),
-    wsUrl: validateWsUrl(wsUrl, 'VITE_WS_URL'),
-  };
+  // WebSocket URL: empty for same-origin (Vite proxy), or full URL for production
+  // Empty string means use window.location to build the WebSocket URL
+  const wsUrl = getEnvVar('VITE_WS_URL', '');
+
+  return { apiUrl, wsUrl };
 }
 
 export const config = loadConfig();
