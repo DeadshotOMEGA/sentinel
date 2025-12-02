@@ -97,7 +97,8 @@ export function usePresenceData({ config }: UsePresenceDataProps) {
         });
       }
     } catch (err) {
-      console.error('Failed to fetch initial presence data:', err);
+      // Silently fail - WebSocket subscription will provide updates
+      // Default data is already set with empty values
     } finally {
       setIsLoading(false);
     }

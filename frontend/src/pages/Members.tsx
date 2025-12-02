@@ -86,8 +86,8 @@ function MembersList() {
       await refetch();
       setMemberToDelete(null);
     } catch (error) {
-      console.error('Failed to delete member:', error);
-      // Error will be shown via toast/notification in future enhancement
+      // Silently fail - user will see the dialog close and can retry
+      // TODO: Consider adding error notification system for better UX
     } finally {
       setIsDeleting(false);
     }

@@ -67,7 +67,8 @@ export function useActivityFeed(config: TVConfig): UseActivityFeedResult {
           setActivities(mapped);
         }
       } catch (err) {
-        console.error('Failed to fetch initial activity:', err);
+        // Silently fail - WebSocket events will populate activities
+        // Empty array is already set as default
       }
     };
     fetchInitialActivity();

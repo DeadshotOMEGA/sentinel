@@ -6,7 +6,7 @@
 const DISPLAY_API_KEY = import.meta.env.VITE_DISPLAY_API_KEY;
 
 if (!DISPLAY_API_KEY) {
-  console.error('VITE_DISPLAY_API_KEY environment variable is not set');
+  throw new Error('VITE_DISPLAY_API_KEY environment variable is not set');
 }
 
 interface FetchOptions extends RequestInit {
