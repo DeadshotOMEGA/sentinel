@@ -9,6 +9,7 @@ export interface ServerToClientEvents {
   kiosk_status: (data: KioskStatusEvent) => void;
   event_checkin: (data: EventCheckinEvent) => void;
   event_presence_update: (data: EventPresenceUpdateEvent) => void;
+  session_expired: () => void;
 }
 
 // Client -> Server events

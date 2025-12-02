@@ -191,7 +191,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { token: 'valid-jwt-token' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -214,7 +214,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { token: 'invalid-jwt-token' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -231,7 +231,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { token: 'some-token' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -249,7 +249,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { kioskApiKey: 'test-kiosk-key' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -269,7 +269,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { kioskApiKey: 'invalid-kiosk-key' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -288,7 +288,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { kioskApiKey: 'wrong-key' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, () => {
@@ -304,7 +304,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { displayApiKey: 'test-display-key' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -324,7 +324,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = { displayApiKey: 'invalid-display-key' };
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -363,7 +363,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.auth = {};
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, (err?: Error) => {
@@ -383,7 +383,7 @@ describe('WebSocket Server', () => {
         mocks.mockSocket.handshake.address = '192.168.1.100';
 
         const middlewares = mocks.mockIo._getMiddlewares();
-        const authMiddleware = middlewares[0];
+        const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
         await new Promise<void>((resolve) => {
           authMiddleware(mocks.mockSocket, () => {
@@ -407,7 +407,7 @@ describe('WebSocket Server', () => {
       // Authenticate socket first
       mocks.mockSocket.handshake.auth = { kioskApiKey: 'test-kiosk-key' };
       const middlewares = mocks.mockIo._getMiddlewares();
-      const authMiddleware = middlewares[0];
+      const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
       await new Promise<void>((resolve) => {
         authMiddleware(mocks.mockSocket, () => {
@@ -447,7 +447,15 @@ describe('WebSocket Server', () => {
     });
 
     describe('event room', () => {
-      it('should join event room on subscribe_event', () => {
+      it('should join event room on subscribe_event with admin role', () => {
+        // Override auth to use admin role (kiosk role cannot subscribe to events)
+        mocks.mockSocket.auth = {
+          userId: 'admin-user',
+          username: 'admin',
+          role: 'admin',
+          authType: 'jwt',
+        };
+
         const handler = mocks.mockSocket._getHandler('subscribe_event');
         expect(handler).toBeDefined();
 
@@ -456,6 +464,18 @@ describe('WebSocket Server', () => {
         expect(mocks.mockSocket.join).toHaveBeenCalledWith('event:event-123');
         expect(mocks.mockLogger.info).toHaveBeenCalledWith(
           expect.stringContaining('subscribed to event event-123')
+        );
+      });
+
+      it('should not allow kiosk role to subscribe to events', () => {
+        // kiosk auth is set in beforeEach
+        const handler = mocks.mockSocket._getHandler('subscribe_event');
+
+        handler({ eventId: 'event-123' });
+
+        expect(mocks.mockSocket.join).not.toHaveBeenCalled();
+        expect(mocks.mockLogger.warn).toHaveBeenCalledWith(
+          expect.stringContaining('Unauthorized event subscription attempt')
         );
       });
 
@@ -498,7 +518,7 @@ describe('WebSocket Server', () => {
       // Authenticate as kiosk
       mocks.mockSocket.handshake.auth = { kioskApiKey: 'test-kiosk-key' };
       const middlewares = mocks.mockIo._getMiddlewares();
-      const authMiddleware = middlewares[0];
+      const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
       await new Promise<void>((resolve) => {
         authMiddleware(mocks.mockSocket, () => {
@@ -540,7 +560,7 @@ describe('WebSocket Server', () => {
       mocks.mockSocket.handshake.auth = { token: 'valid-jwt-token' };
 
       const middlewares = mocks.mockIo._getMiddlewares();
-      const authMiddleware = middlewares[0];
+      const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
       await new Promise<void>((resolve) => {
         authMiddleware(mocks.mockSocket, () => {
@@ -603,7 +623,7 @@ describe('WebSocket Server', () => {
       mocks.mockSocket.handshake.auth = { kioskApiKey: 'test-kiosk-key' };
 
       const middlewares = mocks.mockIo._getMiddlewares();
-      const authMiddleware = middlewares[0];
+      const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
       await new Promise<void>((resolve) => {
         authMiddleware(mocks.mockSocket, () => {
@@ -623,7 +643,7 @@ describe('WebSocket Server', () => {
       mocks.mockSocket.handshake.auth = { kioskApiKey: 'test-kiosk-key' };
 
       const middlewares = mocks.mockIo._getMiddlewares();
-      const authMiddleware = middlewares[0];
+      const authMiddleware = middlewares[1]; // [0] is rate limiting, [1] is auth
 
       await new Promise<void>((resolve) => {
         authMiddleware(mocks.mockSocket, () => {
