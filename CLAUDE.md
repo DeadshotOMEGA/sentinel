@@ -34,6 +34,15 @@ cd <app> && bun run tsc --noEmit
 # Database
 cd backend && bun run db/migrate.ts
 cd backend && bun run db/seed.ts
+
+# Testing (use npx vitest, not bun test)
+cd backend && npx vitest run
+cd kiosk && npx vitest run
+cd frontend && npx vitest run
+cd tv-display && npx vitest run
+
+# E2E tests (requires running apps)
+npx playwright test tests/e2e/
 ```
 
 ## Hardware Deployment
@@ -133,11 +142,24 @@ All API routes use:
 | `shared/types/index.ts` | All TypeScript interfaces |
 | `backend/src/routes/index.ts` | API route mounting |
 | `backend/src/websocket/broadcast.ts` | Real-time event broadcasting |
+| `backend/src/services/import-service.ts` | CSV import with transactions |
 | `kiosk/src/state/kiosk-state.ts` | Kiosk screen state machine |
 | `kiosk/src/services/sync-service.ts` | Offline sync logic |
+| `kiosk/src/db/queue.ts` | IndexedDB offline queue |
+
+## Test Coverage
+
+| App | Test Location | Coverage |
+|-----|---------------|----------|
+| backend | `src/**/__tests__/*.test.ts` | Services, WebSocket, import |
+| kiosk | `src/**/__tests__/*.test.ts` | Queue, offline sync, services |
+| frontend | `src/hooks/__tests__/*.test.ts` | WebSocket hooks |
+| tv-display | `src/hooks/__tests__/*.test.ts` | Presence data hooks |
+| e2e | `tests/e2e/**/*.spec.ts` | Badge check-in flows |
 
 ## Documentation
 
+- `docs/REMAINING-TASKS.md` - Current project status and remaining work
 - `docs/implementation-plan.md` - 8-phase implementation plan
 - `product-overview.html` - Requirements and user flows
 - `design-system/` - Design tokens and component specs
