@@ -26,15 +26,16 @@ export default function SuccessScreen() {
   const isCheckingIn = checkinResult.direction === 'in';
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-success-50 to-success-100 p-6 overflow-hidden">
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-success-50 to-success-100 p-6 overflow-hidden" role="main" aria-live="polite">
       {/* Success Icon - Reduced size */}
       <div className="mb-6">
-        <div className="w-28 h-28 bg-success rounded-full flex items-center justify-center">
+        <div className="w-28 h-28 bg-success rounded-full flex items-center justify-center" aria-hidden="true">
           <svg
             className="w-18 h-18 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

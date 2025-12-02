@@ -54,7 +54,6 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
       setMembers(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Failed to load members:', errorMessage);
       setMessage(`Failed to load members: ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -97,7 +96,6 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
       await loadMembers();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Failed to clear check-ins:', errorMessage);
       setMessage(`Failed to clear check-ins: ${errorMessage}`);
     } finally {
       setIsLoading(false);
@@ -150,10 +148,10 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
 
       {/* DEV Panel */}
       {isVisible && (
-        <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="dev-panel-title">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h2 id="dev-panel-title" className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                 <Wrench className="h-6 w-6 text-orange-500" aria-hidden="true" />
                 DEV Panel
               </h2>
@@ -176,6 +174,7 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
                 <button
                   onClick={handleRandomCheckIn}
                   className="w-full min-h-[56px] px-6 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  aria-label="Simulate random member check-in"
                 >
                   <Dice5 className="h-6 w-6" aria-hidden="true" />
                   Random Check-In
@@ -184,6 +183,7 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
                 <button
                   onClick={handleRandomCheckOut}
                   className="w-full min-h-[56px] px-6 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  aria-label="Simulate random member check-out"
                 >
                   <Dice5 className="h-6 w-6" aria-hidden="true" />
                   Random Check-Out
@@ -192,6 +192,7 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
                 <button
                   onClick={() => setShowConfirmClear(true)}
                   className="w-full min-h-[56px] px-6 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  aria-label="Clear all member check-ins"
                 >
                   <Trash className="h-6 w-6" aria-hidden="true" />
                   Clear All Check-Ins
@@ -200,6 +201,7 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
                 <button
                   onClick={() => setShowMemberPicker(true)}
                   className="w-full min-h-[56px] px-6 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
+                  aria-label="Pick specific member to check in or out"
                 >
                   <User className="h-6 w-6" aria-hidden="true" />
                   Pick Specific Person
@@ -218,9 +220,9 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
 
       {/* Confirm Clear Dialog */}
       {showConfirmClear && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="confirm-clear-title">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Clear All Check-Ins?</h3>
+            <h3 id="confirm-clear-title" className="text-xl font-bold text-gray-900 mb-4">Clear All Check-Ins?</h3>
             <p className="text-gray-600 mb-6">
               This will check out all {members.filter((m) => m.isPresent).length} currently
               present members.
@@ -229,12 +231,14 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
               <button
                 onClick={() => setShowConfirmClear(false)}
                 className="flex-1 min-h-[56px] px-4 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 rounded-xl font-semibold transition-colors"
+                aria-label="Cancel clearing check-ins"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClearAll}
                 className="flex-1 min-h-[56px] px-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold transition-colors"
+                aria-label="Confirm clear all check-ins"
               >
                 Clear All
               </button>

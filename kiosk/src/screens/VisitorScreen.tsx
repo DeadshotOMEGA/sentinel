@@ -47,9 +47,6 @@ export default function VisitorScreen() {
       // Show success screen
       setVisitorSuccess(formData.name);
     } catch (err) {
-      if (err instanceof Error) {
-        console.error('Failed to record visitor:', err.message);
-      }
       setError({
         message: 'Failed to record visitor',
         howToFix: 'Please contact the Duty Watch for assistance.',
@@ -60,7 +57,7 @@ export default function VisitorScreen() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+    <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden" role="main">
       {/* Header - Reduced size */}
       <div className="text-center mb-5">
         <h1 className="text-4xl font-bold text-primary-700 mb-1">
@@ -72,48 +69,57 @@ export default function VisitorScreen() {
       </div>
 
       {/* Form - Optimized for landscape */}
-      <form onSubmit={handleSubmit} className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
+      <form onSubmit={handleSubmit} className="flex-1 max-w-4xl mx-auto w-full flex flex-col" aria-label="Visitor check-in form">
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Name */}
           <div>
-            <label className="block text-xl font-semibold text-gray-700 mb-2">
+            <label htmlFor="visitor-name" className="block text-xl font-semibold text-gray-700 mb-2">
               Full Name *
             </label>
             <input
+              id="visitor-name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="kiosk-input text-xl"
               placeholder="John Doe"
               disabled={isSubmitting}
+              required
+              aria-required="true"
             />
           </div>
 
           {/* Organization */}
           <div>
-            <label className="block text-xl font-semibold text-gray-700 mb-2">
+            <label htmlFor="visitor-organization" className="block text-xl font-semibold text-gray-700 mb-2">
               Organization *
             </label>
             <input
+              id="visitor-organization"
               type="text"
               value={formData.organization}
               onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
               className="kiosk-input text-xl"
               placeholder="Company or Unit"
               disabled={isSubmitting}
+              required
+              aria-required="true"
             />
           </div>
 
           {/* Visit Type */}
           <div>
-            <label className="block text-xl font-semibold text-gray-700 mb-2">
+            <label htmlFor="visitor-type" className="block text-xl font-semibold text-gray-700 mb-2">
               Visit Type *
             </label>
             <select
+              id="visitor-type"
               value={formData.visitType}
               onChange={(e) => setFormData({ ...formData, visitType: e.target.value })}
               className="kiosk-input text-xl bg-white"
               disabled={isSubmitting}
+              required
+              aria-required="true"
             >
               <option value="">Select a type</option>
               {VISIT_TYPES.map((type) => (
@@ -126,16 +132,18 @@ export default function VisitorScreen() {
 
           {/* Purpose (optional) */}
           <div>
-            <label className="block text-xl font-semibold text-gray-700 mb-2">
+            <label htmlFor="visitor-purpose" className="block text-xl font-semibold text-gray-700 mb-2">
               Purpose (Optional)
             </label>
             <textarea
+              id="visitor-purpose"
               value={formData.purpose}
               onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
               className="w-full px-6 py-3 text-xl border-2 border-gray-300 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               rows={2}
               placeholder="Brief description"
               disabled={isSubmitting}
+              aria-label="Purpose of visit"
             />
           </div>
         </div>
@@ -147,6 +155,7 @@ export default function VisitorScreen() {
             onClick={reset}
             className="kiosk-button-secondary flex-1"
             disabled={isSubmitting}
+            aria-label="Cancel visitor check-in and return to home"
           >
             Cancel
           </button>
@@ -154,6 +163,7 @@ export default function VisitorScreen() {
             type="submit"
             className="kiosk-button-primary flex-1"
             disabled={isSubmitting}
+            aria-label={isSubmitting ? 'Submitting visitor information' : 'Submit visitor check-in'}
           >
             {isSubmitting ? 'Submitting...' : 'Check In'}
           </button>

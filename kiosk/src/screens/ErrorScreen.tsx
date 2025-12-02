@@ -24,15 +24,16 @@ export default function ErrorScreen() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-danger-50 to-danger-100 p-6 overflow-hidden relative">
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-danger-50 to-danger-100 p-6 overflow-hidden relative" role="alert" aria-live="assertive">
       {/* Error Icon - Reduced size */}
       <div className="mb-5">
-        <div className="w-24 h-24 bg-danger rounded-full flex items-center justify-center">
+        <div className="w-24 h-24 bg-danger rounded-full flex items-center justify-center" aria-hidden="true">
           <svg
             className="w-16 h-16 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -73,6 +74,7 @@ export default function ErrorScreen() {
         <button
           onClick={reset}
           className="kiosk-button-primary flex-1"
+          aria-label="Try badge scan again"
         >
           Try Again
         </button>
@@ -83,6 +85,7 @@ export default function ErrorScreen() {
             reset();
           }}
           className="kiosk-button-secondary flex-1"
+          aria-label="Contact Duty Watch for assistance"
         >
           Contact Duty Watch
         </button>

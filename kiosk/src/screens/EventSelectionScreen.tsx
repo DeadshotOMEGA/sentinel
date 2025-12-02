@@ -42,7 +42,7 @@ export default function EventSelectionScreen() {
 
   if (loading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden" role="main" aria-live="polite" aria-busy="true">
         <div className="text-center">
           <div className="text-3xl font-bold mb-3 text-gray-900">
             Loading Events
@@ -57,7 +57,7 @@ export default function EventSelectionScreen() {
 
   if (error || events.length === 0) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden" role="main">
         <div className="text-center mb-6">
           <div className="text-3xl font-bold mb-3 text-gray-900">
             No Events Available
@@ -69,6 +69,7 @@ export default function EventSelectionScreen() {
         <button
           className="kiosk-button-secondary"
           onClick={reset}
+          aria-label="Return to home screen"
         >
           Back to Home
         </button>
@@ -77,7 +78,7 @@ export default function EventSelectionScreen() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden">
+    <div className="flex h-screen flex-col bg-gradient-to-b from-gray-50 to-gray-100 p-6 overflow-hidden" role="main">
       {/* Header - Reduced size */}
       <div className="text-center mb-6">
         <h1 className="text-4xl font-bold text-primary-700 mb-1">
@@ -89,13 +90,14 @@ export default function EventSelectionScreen() {
       </div>
 
       {/* Events Grid - Scrollable area with max height */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0" role="region" aria-label="Available events">
         <div className="grid grid-cols-1 gap-3 max-w-4xl mx-auto pb-4">
           {events.map((event) => (
             <button
               key={event.id}
               onClick={() => handleEventSelect(event.id)}
               className="kiosk-button-primary text-left p-6 h-auto min-h-[56px]"
+              aria-label={`Check in to ${event.name}, ${new Date(event.startTime).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })} to ${new Date(event.endTime).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}`}
             >
               <div className="text-2xl font-bold mb-1">
                 {event.name}
@@ -124,6 +126,7 @@ export default function EventSelectionScreen() {
         <button
           className="kiosk-button-secondary"
           onClick={reset}
+          aria-label="Cancel event selection and return to home"
         >
           Cancel
         </button>

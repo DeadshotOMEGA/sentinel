@@ -17,7 +17,7 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-gray-100 p-6 relative overflow-hidden">
+    <div className="flex h-screen flex-col items-center justify-center bg-gray-100 p-6 relative overflow-hidden" role="main">
       {/* DEV Panel (hidden, activated by 5 corner taps) */}
       <DevPanel onSimulateScan={onSimulateScan} />
 
@@ -39,6 +39,7 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={1.5}
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -57,6 +58,7 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
           <button
             className="kiosk-button-secondary"
             onClick={enterVisitorMode}
+            aria-label="Sign in as visitor"
           >
             Visitor Sign-In
           </button>
@@ -64,13 +66,14 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
         <button
           className="kiosk-button-secondary"
           onClick={handleEventSelection}
+          aria-label="Check in to event"
         >
           Event Check-In
         </button>
       </div>
 
       {/* Time display */}
-      <div className="absolute bottom-6 text-center">
+      <div className="absolute bottom-6 text-center" role="timer" aria-live="off">
         <Clock />
       </div>
     </div>
