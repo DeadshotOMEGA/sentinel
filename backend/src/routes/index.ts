@@ -10,10 +10,49 @@ import { devRoutes } from './dev';
 import { checkDatabaseHealth } from '../db/prisma';
 import { redis } from '../db/redis';
 import { logger } from '../utils/logger';
+import { getMetrics } from '../utils/metrics';
 
 const router = Router();
 
-// Health check endpoint - checks database and Redis connectivity
+// Liveness probe - is the process running?
+// Used by Kubernetes to know if the container should be restarted
+router.get('/live', (req, res) => {
+  res.status(200).json({
+    status: 'alive',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Readiness probe - can the service accept traffic?
+// Used by Kubernetes to know if traffic should be routed to this pod
+router.get('/ready', async (req, res) => {
+  const checks = {
+    database: false,
+    redis: false,
+  };
+
+  try {
+    checks.database = await checkDatabaseHealth();
+  } catch (err) {
+    logger.warn('Readiness check: database not ready', { error: err });
+  }
+
+  try {
+    await redis.ping();
+    checks.redis = true;
+  } catch (err) {
+    logger.warn('Readiness check: redis not ready', { error: err });
+  }
+
+  const ready = checks.database && checks.redis;
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not_ready',
+    checks,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Health check endpoint - detailed health status
 router.get('/health', async (req, res) => {
   const checks = {
     database: false,
@@ -39,6 +78,12 @@ router.get('/health', async (req, res) => {
     checks,
     timestamp: new Date().toISOString(),
   });
+});
+
+// Metrics endpoint - request statistics
+router.get('/metrics', (req, res) => {
+  const metrics = getMetrics();
+  res.status(200).json(metrics);
 });
 
 // Mount all routes
