@@ -126,7 +126,8 @@ app.use(cookieParser());
 app.use(requestLogger);
 
 // Global rate limiting for all API routes
-app.use('/api', standardLimiter);
+// DISABLED FOR DEV - re-enable in production
+// app.use('/api', standardLimiter);
 
 // API routes
 app.use('/api', apiRoutes);

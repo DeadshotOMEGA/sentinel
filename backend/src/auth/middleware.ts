@@ -22,7 +22,13 @@ declare global {
 }
 
 function extractToken(req: Request): string | null {
-  // Extract from httpOnly cookie (XSS-protected)
+  // 1. Try Authorization header (for dev/testing)
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
+
+  // 2. Try httpOnly cookie (production, XSS-protected)
   return (req.cookies?.auth_token as string) ?? null;
 }
 

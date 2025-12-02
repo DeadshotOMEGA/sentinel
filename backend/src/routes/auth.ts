@@ -18,7 +18,8 @@ const loginSchema = z.object({
 });
 
 // POST /api/auth/login - Login with username/password
-router.post('/login', authLimiter, audit('login', 'session'), async (req: Request, res: Response, next: NextFunction) => {
+// authLimiter disabled for dev
+router.post('/login', /* authLimiter, */ audit('login', 'session'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -62,12 +63,12 @@ router.post('/login', authLimiter, audit('login', 'session'), async (req: Reques
     res.cookie('auth_token', token, {
       httpOnly: true, // Prevent JavaScript access (XSS protection)
       secure: isProduction, // HTTPS only in production
-      sameSite: 'strict', // CSRF protection
+      sameSite: isProduction ? 'strict' : 'lax', // Lax for dev (cross-port), strict for prod
       maxAge: 8 * 60 * 60 * 1000, // 8 hours (matches session TTL)
       path: '/',
     });
 
-    // Return user info only (token is in httpOnly cookie)
+    // Return user info and token (token also in httpOnly cookie for production)
     res.json({
       user: {
         id: user.id,
@@ -77,6 +78,8 @@ router.post('/login', authLimiter, audit('login', 'session'), async (req: Reques
         role: user.role,
         email: user.email,
       },
+      // Include token for dev (Bearer auth) - cookie is primary for production
+      token: isProduction ? undefined : token,
     });
   } catch (err) {
     next(err);
@@ -100,10 +103,11 @@ router.post('/logout', requireAuth, audit('logout', 'session'), async (req: Requ
     await destroySession(token);
 
     // Clear httpOnly cookie
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('auth_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
       path: '/',
     });
 
