@@ -5,6 +5,12 @@ import {
   Tab,
   Card,
   CardBody,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
   Button,
   Input,
   Modal,
@@ -14,23 +20,17 @@ import {
   ModalFooter,
   Chip,
   Spinner,
-} from '../components/ui/heroui-polyfills';
+} from '@heroui/react';
 import PageWrapper from '../components/PageWrapper';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { Division, Badge, CreateDivisionInput } from '@shared/types';
-import { SearchBar, ConfirmDialog, EmptyState } from '@sentinel/ui';
 
 export default function Settings() {
   const [tab, setTab] = useState('divisions');
 
   return (
     <PageWrapper title="Settings">
-      <Tabs
-        selectedKey={tab}
-        onSelectionChange={(k) => setTab(k as string)}
-        aria-label="Settings categories"
-      >
+      <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
         <Tab key="divisions" title="Divisions" />
         <Tab key="badges" title="Badges" />
       </Tabs>
@@ -44,26 +44,17 @@ export default function Settings() {
 }
 
 function DivisionsSettings() {
-  const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editDivision, setEditDivision] = useState<Division | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<Division | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: divisions, isLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
-      const response = await api.get<{ divisions: Division[] }>('/divisions');
-      return response.data.divisions;
+      const response = await api.get<Division[]>('/divisions');
+      return response.data;
     },
   });
-
-  // Filter divisions by search query
-  const filteredDivisions = divisions?.filter((division) =>
-    division.name.toLowerCase().includes(search.toLowerCase()) ||
-    division.code.toLowerCase().includes(search.toLowerCase())
-  );
 
   const handleAdd = () => {
     setEditDivision(null);
@@ -81,116 +72,44 @@ function DivisionsSettings() {
     setEditDivision(null);
   };
 
-  const handleDelete = async () => {
-    if (!deleteConfirm) return;
-
-    setIsDeleting(true);
-    try {
-      await api.delete(`/divisions/${deleteConfirm.id}`);
-      queryClient.invalidateQueries({ queryKey: ['divisions'] });
-      setDeleteConfirm(null);
-    } catch (error) {
-      // Silently fail - user will see the dialog close and can retry
-      // TODO: Consider adding error notification system for better UX
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   if (isLoading) {
     return <div className="flex justify-center py-12"><Spinner size="lg" /></div>;
   }
 
   return (
     <>
-      <div className="mb-4 space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-            placeholder="Search divisions..."
-            aria-label="Search divisions"
-            className="flex-1 max-w-md"
-          />
-          <Button color="primary" onPress={handleAdd}>Add Division</Button>
-        </div>
+      <div className="mb-4 flex justify-end">
+        <Button color="primary" onPress={handleAdd}>Add Division</Button>
       </div>
 
-      {filteredDivisions && filteredDivisions.length === 0 ? (
-        search.trim() ? (
-          <EmptyState
-            variant="no-results"
-            heading="No divisions found"
-            description="Try adjusting your search"
-          />
-        ) : (
-          <EmptyState
-            variant="no-data"
-            heading="No divisions yet"
-            description="Add your first division to get started"
-            action={{
-              label: "Add Division",
-              onClick: handleAdd
-            }}
-          />
-        )
-      ) : (
-        <Table aria-label="Divisions list">
-          <TableHeader>
-            <TableColumn>CODE</TableColumn>
-            <TableColumn>NAME</TableColumn>
-            <TableColumn>DESCRIPTION</TableColumn>
-            <TableColumn>ACTIONS</TableColumn>
-          </TableHeader>
-          <TableBody emptyContent="No divisions">
-            {(filteredDivisions ? filteredDivisions : []).map((division) => (
-              <TableRow key={division.id}>
-                <TableCell><Chip size="sm">{division.code}</Chip></TableCell>
-                <TableCell>{division.name}</TableCell>
-                <TableCell>{division.description ? division.description : '-'}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="light"
-                      onPress={() => handleEdit(division)}
-                      aria-label={`Edit division ${division.name}`}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      onPress={() => setDeleteConfirm(division)}
-                      aria-label={`Delete division ${division.name}`}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <Table aria-label="Divisions">
+        <TableHeader>
+          <TableColumn>CODE</TableColumn>
+          <TableColumn>NAME</TableColumn>
+          <TableColumn>DESCRIPTION</TableColumn>
+          <TableColumn>ACTIONS</TableColumn>
+        </TableHeader>
+        <TableBody emptyContent="No divisions">
+          {(divisions ? divisions : []).map((division) => (
+            <TableRow key={division.id}>
+              <TableCell><Chip size="sm">{division.code}</Chip></TableCell>
+              <TableCell>{division.name}</TableCell>
+              <TableCell>{division.description ? division.description : '-'}</TableCell>
+              <TableCell>
+                <Button size="sm" variant="light" onPress={() => handleEdit(division)}>
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
       <DivisionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
         division={editDivision}
-      />
-
-      <ConfirmDialog
-        isOpen={!!deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
-        onConfirm={handleDelete}
-        title="Delete Division"
-        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        variant="danger"
-        isLoading={isDeleting}
       />
     </>
   );
@@ -243,18 +162,17 @@ function DivisionModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent role="dialog" aria-modal="true" aria-labelledby="division-modal-title">
-        <ModalHeader id="division-modal-title">{division ? 'Edit Division' : 'Add Division'}</ModalHeader>
+      <ModalContent>
+        <ModalHeader>{division ? 'Edit Division' : 'Add Division'}</ModalHeader>
         <ModalBody>
-          {error && <div id="division-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">{error}</div>}
-          <div className="space-y-4" aria-describedby={error ? 'division-modal-error' : undefined}>
+          {error && <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">{error}</div>}
+          <div className="space-y-4">
             <Input
               label="Code"
               value={formData.code ? formData.code : ''}
               onValueChange={(v) => setFormData({ ...formData, code: v })}
-              maxLength={20}
               isRequired
-              aria-invalid={error ? 'true' : 'false'}
+              maxLength={20}
             />
             <Input
               label="Name"
@@ -282,8 +200,8 @@ function BadgesSettings() {
   const { data: badges, isLoading } = useQuery({
     queryKey: ['badges'],
     queryFn: async () => {
-      const response = await api.get<{ badges: Badge[] }>('/badges');
-      return response.data.badges;
+      const response = await api.get<Badge[]>('/badges');
+      return response.data;
     },
   });
 
@@ -298,29 +216,26 @@ function BadgesSettings() {
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <CardBody className="text-center" role="region" aria-label={`Total badges: ${badges?.length ? badges.length : 0}`}>
-            <span className="sr-only">Total badges: </span>
-            <p className="text-2xl font-bold" aria-hidden="true">{badges?.length ? badges.length : 0}</p>
-            <p className="text-sm text-gray-600" aria-hidden="true">Total Badges</p>
+          <CardBody className="text-center">
+            <p className="text-2xl font-bold">{badges?.length ? badges.length : 0}</p>
+            <p className="text-sm text-gray-600">Total Badges</p>
           </CardBody>
         </Card>
         <Card>
-          <CardBody className="text-center" role="region" aria-label={`Assigned badges: ${assigned}`}>
-            <span className="sr-only">Assigned badges: </span>
-            <p className="text-2xl font-bold text-success" aria-hidden="true">{assigned}</p>
-            <p className="text-sm text-gray-600" aria-hidden="true">Assigned</p>
+          <CardBody className="text-center">
+            <p className="text-2xl font-bold text-success">{assigned}</p>
+            <p className="text-sm text-gray-600">Assigned</p>
           </CardBody>
         </Card>
         <Card>
-          <CardBody className="text-center" role="region" aria-label={`Available badges: ${unassigned}`}>
-            <span className="sr-only">Available badges: </span>
-            <p className="text-2xl font-bold text-gray-500" aria-hidden="true">{unassigned}</p>
-            <p className="text-sm text-gray-600" aria-hidden="true">Available</p>
+          <CardBody className="text-center">
+            <p className="text-2xl font-bold text-gray-500">{unassigned}</p>
+            <p className="text-sm text-gray-600">Available</p>
           </CardBody>
         </Card>
       </div>
 
-      <Table aria-label="Badges list">
+      <Table aria-label="Badges">
         <TableHeader>
           <TableColumn>SERIAL NUMBER</TableColumn>
           <TableColumn>TYPE</TableColumn>

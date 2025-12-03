@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardBody, CardHeader, Spinner } from '../components/ui/heroui-polyfills';
+import { Card, CardBody, CardHeader, Spinner } from '@heroui/react';
 import { format } from 'date-fns';
-import { Users, UserCheck, UserX, DoorOpen } from '@shared/ui/icons';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
-import { StatsCard, Badge, EmptyState } from '@shared/ui';
 
 interface PresenceStats {
   totalMembers: number;
@@ -15,58 +13,38 @@ interface PresenceStats {
   visitors: number;
 }
 
-interface RecentActivity {
+interface RecentCheckin {
   id: string;
-  type: 'checkin' | 'checkout' | 'visitor';
-  name: string;
-  rank?: string;
-  division?: string;
-  organization?: string;
+  memberName: string;
+  rank: string;
+  division: string;
+  direction: 'in' | 'out';
   timestamp: string;
 }
 
-interface ApiActivityItem {
-  type: 'checkin' | 'visitor';
-  id: string;
-  timestamp: string;
-  direction?: 'in' | 'out';
-  name: string;
-  rank?: string;
-  division?: string;
-  organization?: string;
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <Card className="flex-1">
+      <CardBody className="text-center">
+        <p className={`text-4xl font-bold ${color}`}>{value}</p>
+        <p className="text-sm text-gray-600">{label}</p>
+      </CardBody>
+    </Card>
+  );
 }
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
-  const { onPresenceUpdate, onCheckin, onVisitorSignin } = useSocket();
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const { onPresenceUpdate, onCheckin } = useSocket();
+  const [recentActivity, setRecentActivity] = useState<RecentCheckin[]>([]);
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery({
     queryKey: ['presence-stats'],
     queryFn: async () => {
       const response = await api.get<{ stats: PresenceStats }>('/checkins/presence');
       return response.data.stats;
     },
     refetchInterval: 60000,
-  });
-
-  // Fetch initial recent activity from database
-  const { isLoading: activityLoading } = useQuery({
-    queryKey: ['recent-activity'],
-    queryFn: async () => {
-      const response = await api.get<{ activity: ApiActivityItem[] }>('/checkins/recent?limit=10');
-      const mapped: RecentActivity[] = response.data.activity.map((item) => ({
-        id: item.id,
-        type: item.type === 'visitor' ? 'visitor' : (item.direction === 'in' ? 'checkin' : 'checkout'),
-        name: item.name,
-        rank: item.rank,
-        division: item.division,
-        organization: item.organization,
-        timestamp: item.timestamp,
-      }));
-      setRecentActivity(mapped);
-      return mapped;
-    },
   });
 
   useEffect(() => {
@@ -83,24 +61,11 @@ export default function Dashboard() {
       setRecentActivity((prev) => [
         {
           id: crypto.randomUUID(),
-          type: data.direction === 'in' ? 'checkin' : 'checkout',
-          name: data.memberName,
+          memberName: data.memberName,
           rank: data.rank,
           division: data.division,
+          direction: data.direction,
           timestamp: data.timestamp,
-        },
-        ...prev.slice(0, 9),
-      ]);
-    });
-
-    const unsubVisitor = onVisitorSignin((data) => {
-      setRecentActivity((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: 'visitor',
-          name: data.name,
-          organization: data.organization,
-          timestamp: data.checkInTime,
         },
         ...prev.slice(0, 9),
       ]);
@@ -109,42 +74,31 @@ export default function Dashboard() {
     return () => {
       unsubPresence();
       unsubCheckin();
-      unsubVisitor();
     };
-  }, [onPresenceUpdate, onCheckin, onVisitorSignin, queryClient]);
+  }, [onPresenceUpdate, onCheckin, queryClient]);
+
+  if (isLoading) {
+    return (
+      <PageWrapper title="Dashboard">
+        <div className="flex justify-center py-12">
+          <Spinner size="lg" />
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  if (!stats) {
+    throw new Error('Failed to load presence stats');
+  }
 
   return (
     <PageWrapper title="Dashboard">
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
-            value={stats?.present ?? 0}
-            label="Present"
-            variant="success"
-            icon={UserCheck}
-            loading={statsLoading}
-          />
-          <StatsCard
-            value={stats?.absent ?? 0}
-            label="Absent"
-            variant="neutral"
-            icon={UserX}
-            loading={statsLoading}
-          />
-          <StatsCard
-            value={stats?.visitors ?? 0}
-            label="Visitors"
-            variant="info"
-            icon={DoorOpen}
-            loading={statsLoading}
-          />
-          <StatsCard
-            value={stats?.totalMembers ?? 0}
-            label="Total Members"
-            variant="neutral"
-            icon={Users}
-            loading={statsLoading}
-          />
+          <StatCard label="Present" value={stats.present} color="text-success" />
+          <StatCard label="Absent" value={stats.absent} color="text-gray-600" />
+          <StatCard label="Visitors" value={stats.visitors} color="text-primary" />
+          <StatCard label="Total Members" value={stats.totalMembers} color="text-gray-900" />
         </div>
 
         <Card>
@@ -152,36 +106,29 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold">Recent Activity</h2>
           </CardHeader>
           <CardBody>
-            {activityLoading ? (
-              <div className="flex justify-center py-12">
-                <Spinner size="lg" />
-              </div>
-            ) : recentActivity.length === 0 ? (
-              <EmptyState
-                variant="no-data"
-                heading="No recent activity"
-                description="Check-ins and visitor activity will appear here"
-              />
+            {recentActivity.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">No recent activity</p>
             ) : (
-              <ul className="divide-y divide-gray-100" role="feed" aria-label="Recent activity feed" aria-live="polite" aria-atomic="false">
+              <ul className="divide-y divide-gray-100">
                 {recentActivity.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-3" role="article" aria-label={`${item.rank ? item.rank + ' ' : ''}${item.name} ${item.type === 'checkin' ? 'checked in' : item.type === 'checkout' ? 'checked out' : 'visitor signed in'} at ${format(new Date(item.timestamp), 'HH:mm')}`}>
+                  <li key={item.id} className="flex items-center justify-between py-3">
                     <div>
                       <p className="font-medium">
-                        {item.rank ? `${item.rank} ` : ''}{item.name}
+                        {item.rank} {item.memberName}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {item.type === 'visitor' ? item.organization : item.division}
-                      </p>
+                      <p className="text-sm text-gray-500">{item.division}</p>
                     </div>
                     <div className="text-right">
-                      <Badge
-                        variant={item.type === 'checkin' ? 'success' : item.type === 'checkout' ? 'warning' : 'visitor'}
-                        size="sm"
+                      <span
+                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+                          item.direction === 'in'
+                            ? 'bg-success-100 text-success-700'
+                            : 'bg-warning-100 text-warning-700'
+                        }`}
                       >
-                        {item.type === 'checkin' ? 'Checked In' : item.type === 'checkout' ? 'Checked Out' : 'Visitor'}
-                      </Badge>
-                      <p className="mt-1 text-xs text-gray-500" aria-hidden="true">
+                        {item.direction === 'in' ? 'Checked In' : 'Checked Out'}
+                      </span>
+                      <p className="mt-1 text-xs text-gray-500">
                         {format(new Date(item.timestamp), 'HH:mm')}
                       </p>
                     </div>

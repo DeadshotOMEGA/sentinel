@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardHeader, CardBody, Button, Input, Checkbox } from '../components/ui/heroui-polyfills';
+import { Card, CardBody, CardHeader, Input, Button, Checkbox } from '@heroui/react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,11 +19,8 @@ export default function Login() {
     try {
       await login(username, password);
       navigate('/');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Invalid username or password';
-      setError(message.includes('401') || message.includes('unauthorized')
-        ? 'Invalid username or password'
-        : message);
+    } catch (err) {
+      setError('Invalid username or password');
     } finally {
       setIsLoading(false);
     }
@@ -33,15 +30,13 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-1 px-6 pt-6">
-          <h1 id="login-title" className="text-2xl font-bold text-primary">Sentinel</h1>
-          <p className="text-sm text-gray-600">
-            HMCS Chippawa Attendance System
-          </p>
+          <h1 className="text-2xl font-bold text-primary">Sentinel</h1>
+          <p className="text-sm text-gray-600">HMCS Chippawa Attendance System</p>
         </CardHeader>
         <CardBody className="px-6 pb-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" aria-labelledby="login-title" aria-describedby={error ? 'login-error' : undefined}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && (
-              <div id="login-error" className="rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
+              <div className="rounded-lg bg-danger-50 p-3 text-sm text-danger">
                 {error}
               </div>
             )}
@@ -51,8 +46,6 @@ export default function Login() {
               onValueChange={setUsername}
               isRequired
               autoFocus
-              autoComplete="username"
-              aria-invalid={error ? 'true' : 'false'}
             />
             <Input
               label="Password"
@@ -60,8 +53,6 @@ export default function Login() {
               value={password}
               onValueChange={setPassword}
               isRequired
-              autoComplete="current-password"
-              aria-invalid={error ? 'true' : 'false'}
             />
             <Checkbox isSelected={remember} onValueChange={setRemember}>
               Remember me
@@ -69,10 +60,10 @@ export default function Login() {
             <Button
               type="submit"
               color="primary"
-              isDisabled={isLoading}
+              isLoading={isLoading}
               className="mt-2"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              Sign In
             </Button>
           </form>
         </CardBody>

@@ -11,7 +11,7 @@ import {
   Select,
   SelectItem,
   Button,
-} from '../components/ui/heroui-polyfills';
+} from '@heroui/react';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
@@ -129,7 +129,7 @@ export default function EventMonitor() {
       case 'expired':
         return 'danger';
       default:
-        throw new Error(`Unknown status: ${status}`);
+        return 'default';
     }
   };
 
@@ -239,20 +239,17 @@ export default function EventMonitor() {
                 <Input
                   placeholder="Search..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onValueChange={setSearch}
                   className="max-w-xs"
                   size="sm"
                   isClearable
                 />
                 <Select
+                  label="Role"
                   selectedKeys={roleFilter ? [roleFilter] : []}
-                  onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0];
-                    setRoleFilter(key as string);
-                  }}
+                  onSelectionChange={(keys) => setRoleFilter(Array.from(keys)[0] as string)}
                   className="max-w-[150px]"
                   size="sm"
-                  label="Role"
                 >
                   <SelectItem key="">All</SelectItem>
                   <SelectItem key="participant">Participant</SelectItem>

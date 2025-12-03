@@ -2,30 +2,28 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Input,
-  Button,
-  Chip,
-  Spinner,
-  Card,
-  CardBody,
-  CardHeader,
-  Select,
-  SelectItem,
-} from '../components/ui/heroui-polyfills';
-import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
-import AddAttendeeModal from '../components/AddAttendeeModal';
-import BadgeAssignmentModal from '../components/BadgeAssignmentModal';
-import { api } from '../lib/api';
-import type { Event, EventAttendee } from '@shared/types';
-import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-} from '../components/ui/SentinelTable';
+  Button,
+  Chip,
+  Spinner,
+  Input,
+  Card,
+  CardBody,
+  CardHeader,
+  Select,
+  SelectItem,
+} from '@heroui/react';
+import { format } from 'date-fns';
+import PageWrapper from '../components/PageWrapper';
+import AddAttendeeModal from '../components/AddAttendeeModal';
+import BadgeAssignmentModal from '../components/BadgeAssignmentModal';
+import { api } from '../lib/api';
+import type { Event, EventAttendee } from '@shared/types';
 
 interface EventDetailResponse {
   event: Event;
@@ -154,7 +152,7 @@ export default function EventDetail() {
       case 'expired':
         return 'danger';
       default:
-        throw new Error(`Unknown status: ${status}`);
+        return 'default';
     }
   };
 
@@ -227,18 +225,15 @@ export default function EventDetail() {
               <Input
                 placeholder="Search attendees..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onValueChange={setSearch}
                 className="max-w-xs"
                 isClearable
               />
               <Select
-                selectedKeys={roleFilter ? [roleFilter] : []}
-                onSelectionChange={(keys) => {
-                  const key = Array.from(keys)[0];
-                  setRoleFilter(key as string);
-                }}
-                className="max-w-[200px]"
                 label="Filter by Role"
+                selectedKeys={roleFilter ? [roleFilter] : []}
+                onSelectionChange={(keys) => setRoleFilter(Array.from(keys)[0] as string)}
+                className="max-w-[200px]"
               >
                 <SelectItem key="">All Roles</SelectItem>
                 <SelectItem key="participant">Participant</SelectItem>
@@ -262,7 +257,7 @@ export default function EventDetail() {
                 </span>
                 <Button
                   size="sm"
-                  variant="bordered"
+                  variant="flat"
                   onPress={handleBulkAssignBadges}
                 >
                   Assign Badges
@@ -270,7 +265,7 @@ export default function EventDetail() {
                 <Button
                   size="sm"
                   color="danger"
-                  variant="bordered"
+                  variant="flat"
                   onPress={handleRemoveSelected}
                   isLoading={removeAttendeeMutation.isPending}
                 >

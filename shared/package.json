@@ -4,8 +4,5 @@
   "description": "Shared types and utilities for Sentinel",
   "type": "module",
   "main": "index.ts",
-  "types": "index.ts",
-  "dependencies": {
-    "lucide-react": "^0.555.0"
-  }
+  "types": "index.ts"
 }

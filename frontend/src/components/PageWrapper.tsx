@@ -9,7 +9,7 @@ export default function PageWrapper({ title, children }: PageWrapperProps) {
   return (
     <>
       <TopBar title={title} />
-      <div className="flex-1 overflow-auto p-6" role="region" aria-labelledby="page-title">
+      <div className="flex-1 overflow-auto p-6">
         {children}
       </div>
     </>

@@ -1,7 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
   Button,
+  Chip,
   Spinner,
   Tabs,
   Tab,
@@ -13,44 +20,41 @@ import {
   ModalFooter,
   Select,
   SelectItem,
-} from '../components/ui/heroui-polyfills';
+} from '@heroui/react';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '../components/ui/SentinelTable';
 import { api } from '../lib/api';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
-import { Badge, SearchBar, ConfirmDialog, EmptyState } from '@sentinel/ui';
 
 const visitTypes: { key: VisitType; label: string }[] = [
-  { key: 'contractor', label: 'Contractor/SSC' },
+  { key: 'meeting', label: 'Meeting' },
+  { key: 'contractor', label: 'Contractor' },
   { key: 'recruitment', label: 'Recruitment' },
+  { key: 'course', label: 'Course' },
   { key: 'event', label: 'Event' },
   { key: 'official', label: 'Official' },
-  { key: 'museum', label: 'Museum' },
   { key: 'other', label: 'Other' },
 ];
 
 export default function Visitors() {
-  const [tab, setTab] = useState('current');
+  const [tab, setTab] = useState('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [visitorToSignOut, setVisitorToSignOut] = useState<Visitor | null>(null);
   const queryClient = useQueryClient();
 
   const { data: activeVisitors, isLoading: activeLoading } = useQuery({
     queryKey: ['visitors', 'active'],
     queryFn: async () => {
-      const response = await api.get<{ visitors: Visitor[] }>('/visitors/active');
-      return response.data.visitors;
+      const response = await api.get<Visitor[]>('/visitors/active');
+      return response.data;
     },
-    enabled: tab === 'current',
+    enabled: tab === 'active',
   });
 
   const { data: allVisitors, isLoading: allLoading } = useQuery({
     queryKey: ['visitors', 'all'],
     queryFn: async () => {
-      const response = await api.get<{ visitors: Visitor[] }>('/visitors');
-      return response.data.visitors;
+      const response = await api.get<Visitor[]>('/visitors');
+      return response.data;
     },
     enabled: tab === 'history',
   });
@@ -59,135 +63,61 @@ export default function Visitors() {
     mutationFn: (id: string) => api.put(`/visitors/${id}/checkout`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visitors'] });
-      setVisitorToSignOut(null);
     },
   });
 
-  const currentVisitors = activeVisitors ?? [];
-  const historyVisitors = allVisitors ?? [];
-
-  const visitors = tab === 'current' ? currentVisitors : historyVisitors;
-  const isLoading = tab === 'current' ? activeLoading : allLoading;
-
-  // Filter visitors based on search query
-  const filteredVisitors = useMemo(() => {
-    if (!search.trim()) return visitors;
-
-    const searchLower = search.toLowerCase();
-    return visitors.filter((visitor) =>
-      visitor.name.toLowerCase().includes(searchLower) ||
-      visitor.organization.toLowerCase().includes(searchLower) ||
-      visitor.visitType.toLowerCase().includes(searchLower)
-    );
-  }, [visitors, search]);
-
-  function handleSignOut() {
-    if (visitorToSignOut) {
-      checkoutMutation.mutate(visitorToSignOut.id);
-    }
-  }
+  const visitors = tab === 'active' ? activeVisitors : allVisitors;
+  const isLoading = tab === 'active' ? activeLoading : allLoading;
 
   return (
     <PageWrapper title="Visitors">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Tabs
-            selectedKey={tab}
-            onSelectionChange={(k) => setTab(k as string)}
-            aria-label="Visitor view tabs"
-          >
-            <Tab
-              key="current"
-              title={
-                <div className="flex items-center gap-2">
-                  Currently Signed In
-                  <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
-                    {currentVisitors.length}
-                  </span>
-                </div>
-              }
-            />
-            <Tab
-              key="history"
-              title={
-                <div className="flex items-center gap-2">
-                  History
-                  <span className="bg-default-300 text-default-700 text-xs px-2 py-0.5 rounded-full">
-                    {historyVisitors.length}
-                  </span>
-                </div>
-              }
-            />
+          <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
+            <Tab key="active" title="Currently In Building" />
+            <Tab key="history" title="History" />
           </Tabs>
           <Button color="primary" onPress={() => setIsModalOpen(true)}>
             Sign In Visitor
           </Button>
         </div>
 
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Search visitors..."
-          aria-label="Search visitors"
-        />
-
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Spinner size="lg" />
           </div>
-        ) : filteredVisitors.length === 0 ? (
-          search.trim() ? (
-            <EmptyState
-              variant="no-results"
-              heading="No visitors found"
-              description="Try adjusting your search"
-            />
-          ) : tab === 'current' ? (
-            <EmptyState
-              variant="no-data"
-              heading="No visitors currently signed in"
-              description="Visitors will appear here when they check in"
-            />
-          ) : (
-            <EmptyState
-              variant="no-data"
-              heading="No visitor history"
-              description="Visitor check-ins and check-outs will appear here"
-            />
-          )
         ) : (
-          <Table aria-label={tab === 'current' ? 'Currently present visitors' : 'Visitor history'}>
+          <Table aria-label="Visitors table">
             <TableHeader>
               <TableColumn>NAME</TableColumn>
               <TableColumn>ORGANIZATION</TableColumn>
               <TableColumn>TYPE</TableColumn>
               <TableColumn>CHECK IN</TableColumn>
               <TableColumn>CHECK OUT</TableColumn>
-              <TableColumn>{tab === 'current' ? 'ACTIONS' : ''}</TableColumn>
+              <TableColumn>{tab === 'active' ? 'ACTIONS' : ''}</TableColumn>
             </TableHeader>
             <TableBody emptyContent="No visitors">
-              {filteredVisitors.map((visitor) => (
+              {(visitors ? visitors : []).map((visitor) => (
                 <TableRow key={visitor.id}>
                   <TableCell>{visitor.name}</TableCell>
                   <TableCell>{visitor.organization}</TableCell>
                   <TableCell>
-                    <Badge variant="visitor" size="sm">{visitor.visitType}</Badge>
+                    <Chip size="sm" variant="flat">{visitor.visitType}</Chip>
                   </TableCell>
-                  <TableCell>{format(new Date(visitor.checkInTime), 'MMM d, HH:mm')}</TableCell>
+                  <TableCell>{format(new Date(visitor.checkinTime), 'MMM d, HH:mm')}</TableCell>
                   <TableCell>
-                    {visitor.checkOutTime
-                      ? format(new Date(visitor.checkOutTime), 'HH:mm')
+                    {visitor.checkoutTime
+                      ? format(new Date(visitor.checkoutTime), 'HH:mm')
                       : '-'}
                   </TableCell>
                   <TableCell>
-                    {tab === 'current' ? (
+                    {tab === 'active' ? (
                       <Button
                         size="sm"
-                        color="default"
+                        color="warning"
                         variant="flat"
-                        isDisabled={checkoutMutation.isPending}
-                        onPress={() => setVisitorToSignOut(visitor)}
-                        aria-label={`Sign out ${visitor.name}`}
+                        isLoading={checkoutMutation.isPending}
+                        onPress={() => checkoutMutation.mutate(visitor.id)}
                       >
                         Sign Out
                       </Button>
@@ -199,21 +129,6 @@ export default function Visitors() {
           </Table>
         )}
       </div>
-
-      <ConfirmDialog
-        isOpen={visitorToSignOut !== null}
-        onClose={() => setVisitorToSignOut(null)}
-        onConfirm={handleSignOut}
-        title="Sign Out Visitor"
-        message={
-          visitorToSignOut
-            ? `Sign out ${visitorToSignOut.name} from ${visitorToSignOut.organization}?`
-            : ''
-        }
-        confirmLabel="Sign Out"
-        variant="warning"
-        isLoading={checkoutMutation.isPending}
-      />
 
       <VisitorSignInModal
         isOpen={isModalOpen}
@@ -237,7 +152,7 @@ function VisitorSignInModal({
   onSuccess: () => void;
 }) {
   const [formData, setFormData] = useState<Partial<CreateVisitorInput>>({
-    visitType: 'contractor',
+    visitType: 'meeting',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -248,7 +163,7 @@ function VisitorSignInModal({
     try {
       await api.post('/visitors', formData);
       onSuccess();
-      setFormData({ visitType: 'contractor' });
+      setFormData({ visitType: 'meeting' });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const message = error.response?.data?.error?.message;
@@ -263,19 +178,18 @@ function VisitorSignInModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent role="dialog" aria-modal="true" aria-labelledby="visitor-modal-title">
-        <ModalHeader id="visitor-modal-title">Sign In Visitor</ModalHeader>
+      <ModalContent>
+        <ModalHeader>Sign In Visitor</ModalHeader>
         <ModalBody>
           {error && (
-            <div id="visitor-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">{error}</div>
+            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">{error}</div>
           )}
-          <div className="space-y-4" aria-describedby={error ? 'visitor-modal-error' : undefined}>
+          <div className="space-y-4">
             <Input
               label="Name"
               value={formData.name ? formData.name : ''}
               onValueChange={(v) => setFormData({ ...formData, name: v })}
               isRequired
-              aria-invalid={error ? 'true' : 'false'}
             />
             <Input
               label="Organization"
@@ -286,12 +200,9 @@ function VisitorSignInModal({
             <Select
               label="Visit Type"
               selectedKeys={formData.visitType ? [formData.visitType] : []}
-              onSelectionChange={(keys) => {
-                const key = Array.from(keys)[0] as string;
-                if (key) {
-                  setFormData({ ...formData, visitType: key as VisitType });
-                }
-              }}
+              onSelectionChange={(keys) =>
+                setFormData({ ...formData, visitType: Array.from(keys)[0] as VisitType })
+              }
               isRequired
             >
               {visitTypes.map((t) => (

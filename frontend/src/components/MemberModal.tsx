@@ -5,26 +5,25 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input,
   Button,
+  Input,
   Select,
   SelectItem,
-} from './ui/heroui-polyfills';
+} from '@heroui/react';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division, CreateMemberInput } from '@shared/types';
 
 interface MemberModalProps {
   isOpen: boolean;
-  onOpenChange?: (isOpen: boolean) => void;
+  onClose: () => void;
   onSave: () => void;
-  onClose?: () => void;
   member: MemberWithDivision | null;
   divisions: Division[];
 }
 
 export default function MemberModal({
   isOpen,
-  onOpenChange,
+  onClose,
   onSave,
   member,
   divisions,
@@ -71,7 +70,6 @@ export default function MemberModal({
         await api.post('/members', formData);
       }
       onSave();
-      onOpenChange?.(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const errorMessage = error.response?.data?.error?.message;
@@ -85,131 +83,126 @@ export default function MemberModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
-      <ModalContent role="dialog" aria-modal="true" aria-labelledby="member-modal-title">
-        {(onClose) => (
-          <>
-            <ModalHeader id="member-modal-title">{isEdit ? 'Edit Member' : 'Add Member'}</ModalHeader>
-            <ModalBody>
-              {error && (
-                <div id="member-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert" aria-live="assertive">
-                  {error}
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4" aria-describedby={error ? 'member-modal-error' : undefined}>
-                <Input
-                  label="Service Number"
-                  value={formData.serviceNumber || ''}
-                  onValueChange={(v) => setFormData({ ...formData, serviceNumber: v })}
-                  isRequired
-                  aria-invalid={error ? 'true' : 'false'}
-                />
-                <Input
-                  label="Employee Number"
-                  value={formData.employeeNumber || ''}
-                  onValueChange={(v) => setFormData({ ...formData, employeeNumber: v })}
-                />
-                <Input
-                  label="Rank"
-                  value={formData.rank || ''}
-                  onValueChange={(v) => setFormData({ ...formData, rank: v })}
-                  isRequired
-                />
-                <Input
-                  label="First Name"
-                  value={formData.firstName || ''}
-                  onValueChange={(v) => setFormData({ ...formData, firstName: v })}
-                  isRequired
-                />
-                <Input
-                  label="Last Name"
-                  value={formData.lastName || ''}
-                  onValueChange={(v) => setFormData({ ...formData, lastName: v })}
-                  isRequired
-                />
-                <Input
-                  label="Initials"
-                  value={formData.initials || ''}
-                  onValueChange={(v) => setFormData({ ...formData, initials: v })}
-                  maxLength={10}
-                />
-                <Select
-                  label="Division"
-                  selectedKeys={formData.divisionId ? [formData.divisionId] : []}
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
-                    setFormData({ ...formData, divisionId: selectedKey });
-                  }}
-                  isRequired
-                >
-                  {divisions.map((d) => (
-                    <SelectItem key={d.id}>{d.name}</SelectItem>
-                  ))}
-                </Select>
-                <Select
-                  label="Member Type"
-                  selectedKeys={formData.memberType ? [formData.memberType] : []}
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
-                    setFormData({ ...formData, memberType: selectedKey as 'class_a' | 'class_b' | 'class_c' | 'reg_force' });
-                  }}
-                  isRequired
-                >
-                  <SelectItem key="class_a">Class A</SelectItem>
-                  <SelectItem key="class_b">Class B</SelectItem>
-                  <SelectItem key="class_c">Class C</SelectItem>
-                  <SelectItem key="reg_force">Reg Force</SelectItem>
-                </Select>
-                <Select
-                  label="Mess"
-                  selectedKeys={formData.mess ? [formData.mess] : []}
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
-                    setFormData({ ...formData, mess: selectedKey });
-                  }}
-                >
-                  <SelectItem key="Junior Ranks">Junior Ranks</SelectItem>
-                  <SelectItem key="Wardroom">Wardroom</SelectItem>
-                  <SelectItem key="C&POs">C&POs</SelectItem>
-                </Select>
-                <Input
-                  label="MOC"
-                  value={formData.moc || ''}
-                  onValueChange={(v) => setFormData({ ...formData, moc: v })}
-                />
-                <Input
-                  label="Class Details"
-                  value={formData.classDetails || ''}
-                  onValueChange={(v) => setFormData({ ...formData, classDetails: v })}
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  value={formData.email || ''}
-                  onValueChange={(v) => setFormData({ ...formData, email: v })}
-                />
-                <Input
-                  label="Home Phone"
-                  value={formData.homePhone || ''}
-                  onValueChange={(v) => setFormData({ ...formData, homePhone: v })}
-                />
-                <Input
-                  label="Mobile Phone"
-                  value={formData.mobilePhone || ''}
-                  onValueChange={(v) => setFormData({ ...formData, mobilePhone: v })}
-                />
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="light" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
-                {isEdit ? 'Save Changes' : 'Add Member'}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+      <ModalContent>
+        <ModalHeader>{isEdit ? 'Edit Member' : 'Add Member'}</ModalHeader>
+        <ModalBody>
+          {error && (
+            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+              {error}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Service Number"
+              value={formData.serviceNumber ? formData.serviceNumber : ''}
+              onValueChange={(v) => setFormData({ ...formData, serviceNumber: v })}
+              isRequired
+            />
+            <Input
+              label="Employee Number"
+              value={formData.employeeNumber ? formData.employeeNumber : ''}
+              onValueChange={(v) => setFormData({ ...formData, employeeNumber: v })}
+            />
+            <Input
+              label="Rank"
+              value={formData.rank ? formData.rank : ''}
+              onValueChange={(v) => setFormData({ ...formData, rank: v })}
+              isRequired
+            />
+            <Input
+              label="First Name"
+              value={formData.firstName ? formData.firstName : ''}
+              onValueChange={(v) => setFormData({ ...formData, firstName: v })}
+              isRequired
+            />
+            <Input
+              label="Last Name"
+              value={formData.lastName ? formData.lastName : ''}
+              onValueChange={(v) => setFormData({ ...formData, lastName: v })}
+              isRequired
+            />
+            <Input
+              label="Initials"
+              value={formData.initials ? formData.initials : ''}
+              onValueChange={(v) => setFormData({ ...formData, initials: v })}
+              maxLength={10}
+            />
+            <Select
+              label="Division"
+              selectedKeys={formData.divisionId ? [formData.divisionId] : []}
+              onSelectionChange={(keys) =>
+                setFormData({ ...formData, divisionId: Array.from(keys)[0] as string })
+              }
+              isRequired
+            >
+              {divisions.map((d) => (
+                <SelectItem key={d.id}>{d.name}</SelectItem>
+              ))}
+            </Select>
+            <Select
+              label="Member Type"
+              selectedKeys={formData.memberType ? [formData.memberType] : []}
+              onSelectionChange={(keys) =>
+                setFormData({
+                  ...formData,
+                  memberType: Array.from(keys)[0] as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+                })
+              }
+              isRequired
+            >
+              <SelectItem key="class_a">Class A</SelectItem>
+              <SelectItem key="class_b">Class B</SelectItem>
+              <SelectItem key="class_c">Class C</SelectItem>
+              <SelectItem key="reg_force">Reg Force</SelectItem>
+            </Select>
+            <Select
+              label="Mess"
+              selectedKeys={formData.mess ? [formData.mess] : []}
+              onSelectionChange={(keys) =>
+                setFormData({ ...formData, mess: Array.from(keys)[0] as string })
+              }
+            >
+              <SelectItem key="Junior Ranks">Junior Ranks</SelectItem>
+              <SelectItem key="Wardroom">Wardroom</SelectItem>
+              <SelectItem key="C&POs">C&POs</SelectItem>
+            </Select>
+            <Input
+              label="MOC"
+              value={formData.moc ? formData.moc : ''}
+              onValueChange={(v) => setFormData({ ...formData, moc: v })}
+            />
+            <Input
+              label="Class Details"
+              value={formData.classDetails ? formData.classDetails : ''}
+              onValueChange={(v) => setFormData({ ...formData, classDetails: v })}
+            />
+            <Input
+              label="Email"
+              type="email"
+              value={formData.email ? formData.email : ''}
+              onValueChange={(v) => setFormData({ ...formData, email: v })}
+            />
+            <Input
+              label="Home Phone"
+              value={formData.homePhone ? formData.homePhone : ''}
+              onValueChange={(v) => setFormData({ ...formData, homePhone: v })}
+            />
+            <Input
+              label="Mobile Phone"
+              value={formData.mobilePhone ? formData.mobilePhone : ''}
+              onValueChange={(v) => setFormData({ ...formData, mobilePhone: v })}
+            />
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="light" onPress={onClose}>
+            Cancel
+          </Button>
+          <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+            {isEdit ? 'Save Changes' : 'Add Member'}
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

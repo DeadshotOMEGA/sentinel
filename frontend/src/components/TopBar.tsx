@@ -1,4 +1,4 @@
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from './ui/heroui-polyfills';
+import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from '@heroui/react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,18 +16,15 @@ export default function TopBar({ title }: TopBarProps) {
   };
 
   return (
-    <header
-      className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6"
-      role="banner"
-    >
-      <h1 id="page-title" className="text-xl font-semibold text-gray-900">{title}</h1>
-
+    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
+      <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+      
       <div className="flex items-center gap-4">
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
-            <Button variant="light" className="flex items-center gap-2" aria-label="User menu">
+            <Button variant="light" className="flex items-center gap-2">
               <Avatar
-                name={user ? `${user.firstName} ${user.lastName}` : "User"}
+                name={`${user?.firstName} ${user?.lastName}`}
                 size="sm"
                 className="bg-primary text-white"
               />

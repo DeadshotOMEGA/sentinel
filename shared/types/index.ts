@@ -1,6 +1,3 @@
-// Re-export admin types
-export * from './admin';
-
 // Member Types
 export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force';
 export type MemberStatus = 'active' | 'inactive' | 'pending_review';
@@ -137,7 +134,7 @@ export interface UpdateDivisionInput {
 
 // Badge Types
 export type BadgeAssignmentType = 'member' | 'event' | 'unassigned';
-export type BadgeStatus = 'active' | 'disabled' | 'lost' | 'returned';
+export type BadgeStatus = 'active' | 'inactive' | 'lost' | 'damaged';
 
 export interface Badge {
   id: string;
@@ -182,8 +179,6 @@ export interface CreateCheckinInput {
   timestamp: Date;
   kioskId?: string;
   synced?: boolean;
-  flaggedForReview?: boolean;
-  flagReason?: string;
 }
 
 export interface PresenceStats {
@@ -197,11 +192,12 @@ export interface PresenceStats {
 
 // Visitor Types
 export type VisitType =
+  | 'general'
   | 'contractor'
   | 'recruitment'
+  | 'course'
   | 'event'
   | 'official'
-  | 'museum'
   | 'other';
 
 export interface Visitor {
@@ -227,6 +223,32 @@ export interface CreateVisitorInput {
   purpose?: string;
   checkInTime?: Date;
   badgeId?: string;
+}
+
+// Admin User Types
+export interface AdminUser {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'coxswain' | 'readonly';
+  email: string;
+  lastLogin?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AdminUserWithPassword extends AdminUser {
+  passwordHash: string;
+}
+
+export interface CreateAdminInput {
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'coxswain' | 'readonly';
+  email: string;
+  password: string;
 }
 
 // Event Types
@@ -318,24 +340,4 @@ export interface EventCheckin {
   timestamp: Date;
   kioskId: string;
   createdAt: Date;
-}
-
-// Pagination Types
-export interface PaginationParams {
-  page?: number;     // 1-indexed, default 1
-  limit?: number;    // default 20, max 100
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalItems: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
 }

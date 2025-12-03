@@ -5,19 +5,18 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input,
-  TextArea,
   Button,
+  Input,
+  Textarea,
   Switch,
-} from './ui/heroui-polyfills';
+} from '@heroui/react';
 import { api } from '../lib/api';
 import type { Event } from '@shared/types';
 
 interface EventModalProps {
   isOpen: boolean;
-  onOpenChange?: (isOpen: boolean) => void;
+  onClose: () => void;
   onSave: () => void;
-  onClose?: () => void;
   event?: Event | null;
 }
 
@@ -30,7 +29,7 @@ interface EventFormData {
   autoExpireBadges: boolean;
 }
 
-export default function EventModal({ isOpen, onOpenChange, onSave, event }: EventModalProps) {
+export default function EventModal({ isOpen, onClose, onSave, event }: EventModalProps) {
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
     code: '',
@@ -146,7 +145,6 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
       }
 
       onSave();
-      onOpenChange?.(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string } } } };
       const message = error.response?.data?.error?.message;
@@ -160,95 +158,80 @@ export default function EventModal({ isOpen, onOpenChange, onSave, event }: Even
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl">
-      <ModalContent role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
-        {(onClose) => (
-          <>
-            <ModalHeader id="event-modal-title">{event ? 'Edit Event' : 'Create Event'}</ModalHeader>
-            <ModalBody>
-              {error && (
-                <div id="event-modal-error" className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger" role="alert">
-                  {error}
-                </div>
-              )}
-              <div className="space-y-4" aria-describedby={error ? 'event-modal-error' : undefined}>
-                <div>
-                  <Input
-                    label="Event Name"
-                    placeholder="e.g., Annual Training Exercise"
-                    value={formData.name}
-                    onValueChange={handleNameChange}
-                    isRequired
-                    autoFocus
-                    aria-invalid={error ? 'true' : 'false'}
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Event Code"
-                    placeholder="e.g., ATE001"
-                    value={formData.code}
-                    onValueChange={handleCodeChange}
-                    isRequired
-                    aria-describedby="event-code-hint"
-                    aria-invalid={error ? 'true' : 'false'}
-                  />
-                  <span id="event-code-hint" className="mt-1 block text-xs text-gray-600">
-                    {!codeManual && !event
-                      ? 'Auto-generated from name (edit to customize)'
-                      : 'Unique identifier for the event'}
-                  </span>
-                </div>
-                <div>
-                  <TextArea
-                    label="Description"
-                    placeholder="Optional event description"
-                    value={formData.description}
-                    onValueChange={(v) => setFormData({ ...formData, description: v })}
-                    minRows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Start Date"
-                    type="date"
-                    value={formData.startDate}
-                    onValueChange={(v) => setFormData({ ...formData, startDate: v })}
-                    isRequired
-                    aria-invalid={error ? 'true' : 'false'}
-                  />
-                  <Input
-                    label="End Date"
-                    type="date"
-                    value={formData.endDate}
-                    onValueChange={(v) => setFormData({ ...formData, endDate: v })}
-                    isRequired
-                    aria-invalid={error ? 'true' : 'false'}
-                  />
-                </div>
-                <Switch
-                  isSelected={formData.autoExpireBadges}
-                  onValueChange={(v) => setFormData({ ...formData, autoExpireBadges: v })}
-                >
-                  <div>
-                    <p className="text-sm font-medium">Auto-expire badges</p>
-                    <p className="text-xs text-gray-600">
-                      Automatically deactivate attendee badges after event end date
-                    </p>
-                  </div>
-                </Switch>
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+      <ModalContent>
+        <ModalHeader>{event ? 'Edit Event' : 'Create Event'}</ModalHeader>
+        <ModalBody>
+          {error && (
+            <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">
+              {error}
+            </div>
+          )}
+          <div className="space-y-4">
+            <Input
+              label="Event Name"
+              placeholder="e.g., Annual Training Exercise"
+              value={formData.name}
+              onValueChange={handleNameChange}
+              isRequired
+              autoFocus
+            />
+            <Input
+              label="Event Code"
+              placeholder="e.g., ATE001"
+              value={formData.code}
+              onValueChange={handleCodeChange}
+              description={
+                !codeManual && !event
+                  ? 'Auto-generated from name (edit to customize)'
+                  : 'Unique identifier for the event'
+              }
+              isRequired
+            />
+            <Textarea
+              label="Description"
+              placeholder="Optional event description"
+              value={formData.description}
+              onValueChange={(v) => setFormData({ ...formData, description: v })}
+              minRows={3}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                type="date"
+                label="Start Date"
+                value={formData.startDate}
+                onValueChange={(v) => setFormData({ ...formData, startDate: v })}
+                isRequired
+              />
+              <Input
+                type="date"
+                label="End Date"
+                value={formData.endDate}
+                onValueChange={(v) => setFormData({ ...formData, endDate: v })}
+                isRequired
+              />
+            </div>
+            <Switch
+              isSelected={formData.autoExpireBadges}
+              onValueChange={(v) => setFormData({ ...formData, autoExpireBadges: v })}
+            >
+              <div>
+                <p className="text-sm font-medium">Auto-expire badges</p>
+                <p className="text-xs text-gray-600">
+                  Automatically deactivate attendee badges after event end date
+                </p>
               </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="light" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
-                {event ? 'Save Changes' : 'Create Event'}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+            </Switch>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="light" onPress={onClose}>
+            Cancel
+          </Button>
+          <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+            {event ? 'Save Changes' : 'Create Event'}
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

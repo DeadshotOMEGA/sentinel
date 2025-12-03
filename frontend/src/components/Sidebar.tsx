@@ -1,31 +1,20 @@
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuth } from '../hooks/useAuth';
-import { Logo } from '@shared/ui';
-import {
-  LayoutDashboard,
-  Users,
-  DoorOpen,
-  Calendar,
-  BarChart3,
-  Settings,
-  type LucideIcon,
-} from '@shared/ui/icons';
 
 interface NavItem {
   label: string;
   path: string;
-  icon: LucideIcon;
+  icon: string;
   adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { label: 'Members', path: '/members', icon: Users },
-  { label: 'Visitors', path: '/visitors', icon: DoorOpen },
-  { label: 'Events', path: '/events', icon: Calendar },
-  { label: 'Reports', path: '/reports', icon: BarChart3 },
-  { label: 'Settings', path: '/settings', icon: Settings, adminOnly: true },
+  { label: 'Dashboard', path: '/', icon: '📊' },
+  { label: 'Members', path: '/members', icon: '👥' },
+  { label: 'Visitors', path: '/visitors', icon: '🚪' },
+  { label: 'Reports', path: '/reports', icon: '📈' },
+  { label: 'Settings', path: '/settings', icon: '⚙️', adminOnly: true },
 ];
 
 export default function Sidebar() {
@@ -39,16 +28,15 @@ export default function Sidebar() {
     <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <Logo size="sm" />
+        <span className="text-xl font-bold text-primary">Sentinel</span>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="space-y-1">
           {filteredItems.map((item) => {
-            const isActive = location.pathname === item.path ||
+            const isActive = location.pathname === item.path || 
               (item.path !== '/' && location.pathname.startsWith(item.path));
-            const Icon = item.icon;
             return (
               <li key={item.path}>
                 <Link
@@ -60,7 +48,7 @@ export default function Sidebar() {
                       : 'text-gray-700 hover:bg-gray-100'
                   )}
                 >
-                  <Icon className="h-5 w-5" aria-hidden="true" />
+                  <span>{item.icon}</span>
                   {item.label}
                 </Link>
               </li>
