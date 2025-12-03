@@ -55,7 +55,6 @@ npx playwright test tests/e2e/
 
 ## Critical Constraints
 
-- **Light mode only** - No dark theme implementation
 - **WCAG AA required** - 4.5:1 contrast ratio minimum
 - **Touch targets 48px minimum** - Kiosk uses 56px
 - **Reduced animations on Pi** - Use `prefers-reduced-motion` media query
