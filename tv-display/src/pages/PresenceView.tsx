@@ -26,11 +26,11 @@ export function PresenceView({ config }: PresenceViewProps) {
               <Logo size="lg" />
               {/* Inline stats - compact and non-prominent */}
               <div className="flex items-center gap-4 text-lg" role="region" aria-label="Attendance statistics" aria-live="polite">
+                <span className="text-blue-600">{data.visitors} Visitors</span>
+                <span className="text-gray-400" aria-hidden="true">•</span>
                 <span className="text-green-600 font-semibold">{data.present} Present</span>
                 <span className="text-gray-400" aria-hidden="true">•</span>
                 <span className="text-gray-600">{data.absent} Absent</span>
-                <span className="text-gray-400" aria-hidden="true">•</span>
-                <span className="text-blue-600">{data.visitors} Visitors</span>
               </div>
             </div>
             <div className="flex items-center gap-3" role="status" aria-label="Connection status">
