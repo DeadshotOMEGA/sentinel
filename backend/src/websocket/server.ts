@@ -9,6 +9,7 @@ import {
   SocketEventRateLimiter,
 } from './rate-limit';
 import { incrementWsConnections, decrementWsConnections } from '../utils/metrics';
+import { presenceService } from '../services/presence-service';
 
 // Session validation interval (5 minutes)
 const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
@@ -199,13 +200,22 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
     }
 
     // Handle subscription to presence updates
-    socket.on('subscribe_presence', () => {
+    socket.on('subscribe_presence', async () => {
       // Rate limit check
       if (socket.rateLimiter && !socket.rateLimiter.checkEvent()) {
         return;
       }
       socket.join('presence');
       logger.info(`Client ${socket.id} subscribed to presence updates`);
+
+      // Send activity backfill
+      try {
+        const activity = await presenceService.getRecentActivity(50);
+        socket.emit('activity_backfill', { activity });
+        logger.info(`Sent activity backfill (${activity.length} items) to ${socket.id}`);
+      } catch (error) {
+        logger.error(`Failed to send activity backfill to ${socket.id}:`, error);
+      }
     });
 
     socket.on('unsubscribe_presence', () => {

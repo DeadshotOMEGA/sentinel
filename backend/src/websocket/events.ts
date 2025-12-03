@@ -1,5 +1,17 @@
 import type { PresenceStats } from '../../../shared/types';
 
+// RecentActivityItem type from presence-service
+export interface RecentActivityItem {
+  type: 'checkin' | 'visitor';
+  id: string;
+  timestamp: string;
+  direction?: 'in' | 'out';
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;
+}
+
 // Server -> Client events
 export interface ServerToClientEvents {
   checkin: (data: CheckinEvent) => void;
@@ -10,6 +22,7 @@ export interface ServerToClientEvents {
   event_checkin: (data: EventCheckinEvent) => void;
   event_presence_update: (data: EventPresenceUpdateEvent) => void;
   session_expired: () => void;
+  activity_backfill: (data: ActivityBackfillEvent) => void;
 }
 
 // Client -> Server events
@@ -79,4 +92,8 @@ export interface EventPresenceUpdateEvent {
     checkedOut: number;
     expired: number;
   };
+}
+
+export interface ActivityBackfillEvent {
+  activity: RecentActivityItem[];
 }

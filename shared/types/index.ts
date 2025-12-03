@@ -341,3 +341,15 @@ export interface EventCheckin {
   kioskId: string;
   createdAt: Date;
 }
+
+// Activity Feed Types
+export interface ActivityItem {
+  type: 'checkin' | 'visitor';
+  id: string;
+  timestamp: string;
+  direction?: 'in' | 'out';  // checkin only
+  name: string;
+  rank?: string;
+  division?: string;
+  organization?: string;  // visitor only
+}

@@ -1,25 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardBody, CardHeader, Spinner } from '@heroui/react';
-import { format } from 'date-fns';
+import { Card, CardBody, Spinner } from '@heroui/react';
 import PageWrapper from '../components/PageWrapper';
+import ActivityPanel from '../components/ActivityPanel';
 import { api } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
+import type { ActivityItem } from '../../../shared/types';
 
 interface PresenceStats {
   totalMembers: number;
   present: number;
   absent: number;
   visitors: number;
-}
-
-interface RecentCheckin {
-  id: string;
-  memberName: string;
-  rank: string;
-  division: string;
-  direction: 'in' | 'out';
-  timestamp: string;
 }
 
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
@@ -35,8 +27,8 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
-  const { onPresenceUpdate, onCheckin } = useSocket();
-  const [recentActivity, setRecentActivity] = useState<RecentCheckin[]>([]);
+  const { onPresenceUpdate, onCheckin, onActivityBackfill, onVisitorSignin } = useSocket();
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['presence-stats'],
@@ -57,25 +49,45 @@ export default function Dashboard() {
       });
     });
 
+    const unsubActivityBackfill = onActivityBackfill((data) => {
+      setActivity(data.activity);
+    });
+
     const unsubCheckin = onCheckin((data) => {
-      setRecentActivity((prev) => [
-        {
+      setActivity((prev) => {
+        const newItem: ActivityItem = {
+          type: 'checkin',
           id: crypto.randomUUID(),
-          memberName: data.memberName,
+          timestamp: data.timestamp,
+          direction: data.direction,
+          name: data.memberName,
           rank: data.rank,
           division: data.division,
-          direction: data.direction,
-          timestamp: data.timestamp,
-        },
-        ...prev.slice(0, 9),
-      ]);
+        };
+        return [newItem, ...prev.slice(0, 99)];
+      });
+    });
+
+    const unsubVisitorSignin = onVisitorSignin((data) => {
+      setActivity((prev) => {
+        const newItem: ActivityItem = {
+          type: 'visitor',
+          id: crypto.randomUUID(),
+          timestamp: data.checkInTime,
+          name: data.name,
+          organization: data.organization,
+        };
+        return [newItem, ...prev.slice(0, 99)];
+      });
     });
 
     return () => {
       unsubPresence();
+      unsubActivityBackfill();
       unsubCheckin();
+      unsubVisitorSignin();
     };
-  }, [onPresenceUpdate, onCheckin, queryClient]);
+  }, [onPresenceUpdate, onCheckin, onActivityBackfill, onVisitorSignin, queryClient]);
 
   if (isLoading) {
     return (
@@ -101,43 +113,7 @@ export default function Dashboard() {
           <StatCard label="Total Members" value={stats.totalMembers} color="text-gray-900" />
         </div>
 
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Recent Activity</h2>
-          </CardHeader>
-          <CardBody>
-            {recentActivity.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No recent activity</p>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {recentActivity.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="font-medium">
-                        {item.rank} {item.memberName}
-                      </p>
-                      <p className="text-sm text-gray-500">{item.division}</p>
-                    </div>
-                    <div className="text-right">
-                      <span
-                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                          item.direction === 'in'
-                            ? 'bg-success-100 text-success-700'
-                            : 'bg-warning-100 text-warning-700'
-                        }`}
-                      >
-                        {item.direction === 'in' ? 'Checked In' : 'Checked Out'}
-                      </span>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {format(new Date(item.timestamp), 'HH:mm')}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardBody>
-        </Card>
+        <ActivityPanel activity={activity} />
       </div>
     </PageWrapper>
   );
