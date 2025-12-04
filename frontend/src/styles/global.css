@@ -75,6 +75,58 @@ body {
   cursor: default !important;
 }
 
+/* Remove HeroUI focus rings - cleaner look */
+[data-focus-visible="true"],
+[data-focus="true"],
+[data-focus-within="true"] {
+  outline: none !important;
+}
+
+/* Override HeroUI input focus styles - remove all ring/outline effects */
+[data-slot="input-wrapper"],
+[data-slot="inner-wrapper"],
+[data-slot="input"] {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+[data-slot="input-wrapper"][data-focus="true"],
+[data-slot="input-wrapper"][data-focus-within="true"],
+[data-slot="input-wrapper"]:focus-within {
+  border-color: var(--sentinel-primary) !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
+
+/* Remove inner focus highlight on inputs */
+.group[data-focus-within="true"] [data-slot="inner-wrapper"],
+.group[data-focus="true"] [data-slot="inner-wrapper"],
+[data-slot="input"]:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Fade in up animation for table rows */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out forwards;
+}
+
 /* Reduced motion for Pi performance */
 @media (prefers-reduced-motion: reduce) {
   *,
