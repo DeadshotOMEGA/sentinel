@@ -2,10 +2,13 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { visitorRepository } from '../db/repositories/visitor-repository';
 import { checkinRepository } from '../db/repositories/checkin-repository';
+import { memberRepository } from '../db/repositories/member-repository';
 import { requireAuth, requireDisplayAuth } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
+import { getKioskName } from '../utils/kiosk-names';
 import type { VisitType } from '../../../shared/types';
 import { broadcastVisitorSignin, broadcastVisitorSignout, broadcastPresenceUpdate } from '../websocket';
+import { prisma } from '../db/prisma';
 
 const router = Router();
 
@@ -19,6 +22,7 @@ const createVisitorSchema = z.object({
   purpose: z.string().optional(),
   checkInTime: z.string().datetime().optional(),
   badgeId: z.string().uuid().optional(),
+  kioskId: z.string().min(1, 'Kiosk ID is required'),
 });
 
 // GET /api/visitors - List visitors with filters
@@ -76,12 +80,33 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       badgeId: data.badgeId,
     });
 
+    // Fetch related data for broadcast
+    const visitorWithRelations = await prisma.visitor.findUnique({
+      where: { id: visitor.id },
+      include: {
+        hostMember: { select: { firstName: true, lastName: true, rank: true } },
+        event: { select: { name: true } },
+      },
+    });
+
+    if (!visitorWithRelations) {
+      throw new Error(`Visitor ${visitor.id} not found after creation`);
+    }
+
     // Broadcast visitor signin event
     broadcastVisitorSignin({
       visitorId: visitor.id,
       name: visitor.name,
       organization: visitor.organization,
       visitType: visitor.visitType,
+      visitReason: visitor.purpose ?? null,
+      hostName: visitorWithRelations.hostMember
+        ? `${visitorWithRelations.hostMember.rank} ${visitorWithRelations.hostMember.firstName} ${visitorWithRelations.hostMember.lastName}`
+        : null,
+      eventId: visitor.eventId ?? null,
+      eventName: visitorWithRelations.event?.name ?? null,
+      kioskId: data.kioskId,
+      kioskName: getKioskName(data.kioskId),
       checkInTime: visitor.checkInTime.toISOString(),
     });
 

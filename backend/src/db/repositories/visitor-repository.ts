@@ -174,6 +174,23 @@ export class VisitorRepository {
       createdAt: visitor.createdAt ?? new Date(),
     };
   }
+
+  /**
+   * Convert Prisma visitor with relations to extended type for activity feed
+   */
+  toVisitorWithRelations(visitor: PrismaVisitor & {
+    hostMember?: { firstName: string; lastName: string; rank: string } | null;
+    event?: { name: string } | null;
+  }): Visitor & { hostName?: string; eventName?: string } {
+    const base = this.toVisitorType(visitor);
+    return {
+      ...base,
+      hostName: visitor.hostMember
+        ? `${visitor.hostMember.rank} ${visitor.hostMember.firstName} ${visitor.hostMember.lastName}`
+        : undefined,
+      eventName: visitor.event?.name ?? undefined,
+    };
+  }
 }
 
 export const visitorRepository = new VisitorRepository();

@@ -64,11 +64,22 @@ interface RecentActivityItem {
   type: 'checkin' | 'visitor';
   id: string;
   timestamp: string;
-  direction?: 'in' | 'out';
+  direction: 'in' | 'out';
   name: string;
+  // Member fields
   rank?: string;
   division?: string;
+  // Location
+  kioskId?: string;
+  kioskName?: string;
+  // Visitor fields
   organization?: string;
+  visitType?: string;
+  visitReason?: string;
+  hostName?: string;
+  // Event context
+  eventId?: string;
+  eventName?: string;
 }
 
 /**

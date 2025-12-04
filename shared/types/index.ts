@@ -347,9 +347,20 @@ export interface ActivityItem {
   type: 'checkin' | 'visitor';
   id: string;
   timestamp: string;
-  direction?: 'in' | 'out';  // checkin only
+  direction: 'in' | 'out';
   name: string;
+  // Member fields
   rank?: string;
   division?: string;
-  organization?: string;  // visitor only
+  // Location
+  kioskId?: string;
+  kioskName?: string;
+  // Visitor fields
+  organization?: string;
+  visitType?: string;
+  visitReason?: string;
+  hostName?: string;
+  // Event context
+  eventId?: string;
+  eventName?: string;
 }

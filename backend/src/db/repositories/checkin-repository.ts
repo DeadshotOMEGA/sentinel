@@ -10,6 +10,7 @@ import type {
 } from '../../../../shared/types';
 import { prisma, Prisma } from '../prisma';
 import { redis } from '../redis';
+import { getKioskName } from '../../utils/kiosk-names';
 
 interface CheckinFilters {
   memberId?: string;
@@ -531,11 +532,17 @@ export class CheckinRepository {
         type: string;
         id: string;
         timestamp: Date;
-        direction: string | null;
+        direction: string;
         name: string;
         rank: string | null;
         division: string | null;
+        kiosk_id: string | null;
         organization: string | null;
+        visit_type: string | null;
+        visit_reason: string | null;
+        host_name: string | null;
+        event_id: string | null;
+        event_name: string | null;
       }>
     >`
       (
@@ -547,7 +554,13 @@ export class CheckinRepository {
           m.first_name || ' ' || m.last_name as name,
           m.rank,
           d.name as division,
-          NULL as organization
+          c.kiosk_id,
+          NULL as organization,
+          NULL as visit_type,
+          NULL as visit_reason,
+          NULL as host_name,
+          NULL as event_id,
+          NULL as event_name
         FROM checkins c
         JOIN members m ON c.member_id = m.id
         LEFT JOIN divisions d ON m.division_id = d.id
@@ -560,12 +573,20 @@ export class CheckinRepository {
           'visitor' as type,
           v.id,
           v.check_in_time as timestamp,
-          'in' as direction,
+          CASE WHEN v.check_out_time IS NULL THEN 'in' ELSE 'out' END as direction,
           v.name,
           NULL as rank,
           NULL as division,
-          v.organization
+          v.kiosk_id,
+          v.organization,
+          v.visit_type,
+          v.visit_reason,
+          CASE WHEN hm.id IS NOT NULL THEN hm.rank || ' ' || hm.first_name || ' ' || hm.last_name ELSE NULL END as host_name,
+          v.event_id,
+          e.name as event_name
         FROM visitors v
+        LEFT JOIN members hm ON v.host_member_id = hm.id
+        LEFT JOIN events e ON v.event_id = e.id
         WHERE v.check_in_time > NOW() - INTERVAL '24 hours'
         ORDER BY v.check_in_time DESC
         LIMIT ${limit}
@@ -578,11 +599,18 @@ export class CheckinRepository {
       type: row.type as 'checkin' | 'visitor',
       id: row.id,
       timestamp: row.timestamp.toISOString(),
-      direction: row.direction as 'in' | 'out' | undefined,
+      direction: row.direction as 'in' | 'out',
       name: row.name,
       rank: row.rank ?? undefined,
       division: row.division ?? undefined,
+      kioskId: row.kiosk_id ?? undefined,
+      kioskName: row.kiosk_id ? getKioskName(row.kiosk_id) : undefined,
       organization: row.organization ?? undefined,
+      visitType: row.visit_type ?? undefined,
+      visitReason: row.visit_reason ?? undefined,
+      hostName: row.host_name ?? undefined,
+      eventId: row.event_id ?? undefined,
+      eventName: row.event_name ?? undefined,
     }));
   }
 }
@@ -591,11 +619,22 @@ interface RecentActivityItem {
   type: 'checkin' | 'visitor';
   id: string;
   timestamp: string;
-  direction?: 'in' | 'out';
+  direction: 'in' | 'out';
   name: string;
+  // Member fields
   rank?: string;
   division?: string;
+  // Location
+  kioskId?: string;
+  kioskName?: string;
+  // Visitor fields
   organization?: string;
+  visitType?: string;
+  visitReason?: string;
+  hostName?: string;
+  // Event context
+  eventId?: string;
+  eventName?: string;
 }
 
 export const checkinRepository = new CheckinRepository();

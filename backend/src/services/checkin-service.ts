@@ -3,6 +3,7 @@ import { badgeRepository } from '../db/repositories/badge-repository';
 import { presenceService } from './presence-service';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { validateCheckinTimestamp } from '../utils/timestamp-validator';
+import { getKioskName } from '../utils/kiosk-names';
 import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket';
 import type {
   Checkin,
@@ -147,6 +148,7 @@ export class CheckinService {
       direction,
       timestamp: scanTimestamp.toISOString(),
       kioskId: options.kioskId,
+      kioskName: getKioskName(options.kioskId),
     });
 
     // Broadcast updated presence stats

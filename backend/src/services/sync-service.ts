@@ -3,6 +3,7 @@ import { checkinRepository } from '../db/repositories/checkin-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { memberRepository } from '../db/repositories/member-repository';
 import { validateCheckinTimestamp } from '../utils/timestamp-validator';
+import { getKioskName } from '../utils/kiosk-names';
 import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket';
 
 export interface BulkCheckinInput {
@@ -237,6 +238,7 @@ export async function processBulkCheckins(
           direction,
           timestamp: timestamp.toISOString(),
           kioskId: checkinItem.kioskId,
+          kioskName: getKioskName(checkinItem.kioskId),
         });
       }
 

@@ -1,15 +1,26 @@
 import type { PresenceStats } from '../../../shared/types';
 
-// RecentActivityItem type from presence-service
+// RecentActivityItem type - matches shared/types ActivityItem
 export interface RecentActivityItem {
   type: 'checkin' | 'visitor';
   id: string;
   timestamp: string;
-  direction?: 'in' | 'out';
+  direction: 'in' | 'out';
   name: string;
+  // Member fields
   rank?: string;
   division?: string;
+  // Location
+  kioskId?: string;
+  kioskName?: string;
+  // Visitor fields
   organization?: string;
+  visitType?: string;
+  visitReason?: string;
+  hostName?: string;
+  // Event context
+  eventId?: string;
+  eventName?: string;
 }
 
 // Server -> Client events
@@ -43,6 +54,7 @@ export interface CheckinEvent {
   direction: 'in' | 'out';
   timestamp: string;
   kioskId: string;
+  kioskName: string;
 }
 
 export interface PresenceUpdateEvent {
@@ -54,6 +66,12 @@ export interface VisitorSigninEvent {
   name: string;
   organization: string;
   visitType: string;
+  visitReason: string | null;
+  hostName: string | null;
+  eventId: string | null;
+  eventName: string | null;
+  kioskId: string;
+  kioskName: string;
   checkInTime: string;
 }
 

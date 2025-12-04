@@ -682,7 +682,8 @@ describe('WebSocket Server', () => {
           division: 'Operations',
           direction: 'in',
           timestamp: '2025-12-01T10:00:00Z',
-          kioskId: 'kiosk-001',
+          kioskId: 'front-kiosk',
+          kioskName: 'Front Kiosk',
         };
 
         broadcastCheckin(checkinEvent);
@@ -699,7 +700,8 @@ describe('WebSocket Server', () => {
           division: 'Administration',
           direction: 'out',
           timestamp: '2025-12-01T18:00:00Z',
-          kioskId: 'kiosk-002',
+          kioskId: 'rear-exit',
+          kioskName: 'Rear Exit',
         };
 
         broadcastCheckin(checkoutEvent);
@@ -738,6 +740,12 @@ describe('WebSocket Server', () => {
           name: 'Bob Johnson',
           organization: 'HMCS Winnipeg',
           visitType: 'official',
+          visitReason: 'Meeting with CO',
+          hostName: 'PO1 Smith',
+          eventId: null,
+          eventName: null,
+          kioskId: 'front-kiosk',
+          kioskName: 'Front Kiosk',
           checkInTime: '2025-12-01T09:00:00Z',
         };
 
