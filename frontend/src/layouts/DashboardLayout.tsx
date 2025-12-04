@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import { AppSidebar } from '../components/sidebar';
 
 export default function DashboardLayout() {
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+    <div className="flex h-screen bg-white">
+      <AppSidebar />
       <main className="flex flex-1 flex-col overflow-hidden">
         <Outlet />
       </main>

@@ -17,6 +17,8 @@ interface CheckinEvent {
   division: string;
   direction: 'in' | 'out';
   timestamp: string;
+  kioskId: string;
+  kioskName: string;
 }
 
 interface VisitorSigninEvent {
@@ -24,6 +26,12 @@ interface VisitorSigninEvent {
   name: string;
   organization: string;
   visitType: string;
+  visitReason: string | null;
+  hostName: string | null;
+  eventId: string | null;
+  eventName: string | null;
+  kioskId: string;
+  kioskName: string;
   checkInTime: string;
 }
 

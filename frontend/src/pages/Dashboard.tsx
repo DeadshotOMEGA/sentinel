@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardBody, Spinner } from '@heroui/react';
+import { Spinner } from '@heroui/react';
 import PageWrapper from '../components/PageWrapper';
 import ActivityPanel from '../components/ActivityPanel';
 import { api } from '../lib/api';
@@ -14,16 +14,6 @@ interface PresenceStats {
   visitors: number;
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Card className="flex-1">
-      <CardBody className="text-center">
-        <p className={`text-4xl font-bold ${color}`}>{value}</p>
-        <p className="text-sm text-gray-600">{label}</p>
-      </CardBody>
-    </Card>
-  );
-}
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -63,6 +53,8 @@ export default function Dashboard() {
           name: data.memberName,
           rank: data.rank,
           division: data.division,
+          kioskId: data.kioskId,
+          kioskName: data.kioskName,
         };
         return [newItem, ...prev.slice(0, 99)];
       });
@@ -74,8 +66,16 @@ export default function Dashboard() {
           type: 'visitor',
           id: crypto.randomUUID(),
           timestamp: data.checkInTime,
+          direction: 'in',
           name: data.name,
           organization: data.organization,
+          visitType: data.visitType,
+          visitReason: data.visitReason ?? undefined,
+          hostName: data.hostName ?? undefined,
+          eventId: data.eventId ?? undefined,
+          eventName: data.eventName ?? undefined,
+          kioskId: data.kioskId,
+          kioskName: data.kioskName,
         };
         return [newItem, ...prev.slice(0, 99)];
       });
@@ -100,21 +100,21 @@ export default function Dashboard() {
   }
 
   if (!stats) {
-    throw new Error('Failed to load presence stats');
+    return (
+      <PageWrapper title="Dashboard">
+        <div className="flex justify-center py-12">
+          <p className="text-default-500">Failed to load presence stats. Is the backend running?</p>
+        </div>
+      </PageWrapper>
+    );
   }
 
   return (
     <PageWrapper title="Dashboard">
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Present" value={stats.present} color="text-success" />
-          <StatCard label="Absent" value={stats.absent} color="text-gray-600" />
-          <StatCard label="Visitors" value={stats.visitors} color="text-primary" />
-          <StatCard label="Total Members" value={stats.totalMembers} color="text-gray-900" />
-        </div>
-
-        <ActivityPanel activity={activity} />
-      </div>
+      <ActivityPanel
+        activity={activity}
+        stats={{ members: stats.present, visitors: stats.visitors }}
+      />
     </PageWrapper>
   );
 }
