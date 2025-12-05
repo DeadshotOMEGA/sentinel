@@ -9,7 +9,11 @@ export default defineConfig({
     alias: {
       '@shared': path.resolve(__dirname, '../shared'),
       '@sentinel/ui': path.resolve(__dirname, '../shared/ui'),
+      // Force all React imports to use tv-display's copy
+      'react': path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
+    dedupe: ['react', 'react-dom', 'framer-motion'],
   },
   server: {
     port: 5175,

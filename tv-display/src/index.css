@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@heroui/styles";
 
 /* Import shared Sentinel theme variables */
 @import "../../shared/ui/theme.css";
