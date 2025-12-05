@@ -24,20 +24,34 @@ import {
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
 import type { Division, Badge, CreateDivisionInput } from '@shared/types';
+import TrainingYearSettings from '../components/settings/TrainingYearSettings';
+import WorkingHoursSettings from '../components/settings/WorkingHoursSettings';
+import ReportSettingsForm from '../components/settings/ReportSettingsForm';
+import BMQCoursesSettings from '../components/settings/BMQCoursesSettings';
 
 export default function Settings() {
   const [tab, setTab] = useState('divisions');
 
   return (
     <PageWrapper title="Settings">
-      <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-        <Tab key="divisions" title="Divisions" />
-        <Tab key="badges" title="Badges" />
-      </Tabs>
+      <div className="min-h-0 flex-1 overflow-auto pb-6">
+        <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
+          <Tab key="divisions" title="Divisions" />
+          <Tab key="badges" title="Badges" />
+          <Tab key="training-year" title="Training Year" />
+          <Tab key="working-hours" title="Working Hours" />
+          <Tab key="report-settings" title="Report Settings" />
+          <Tab key="bmq-courses" title="BMQ Courses" />
+        </Tabs>
 
-      <div className="mt-6">
-        {tab === 'divisions' && <DivisionsSettings />}
-        {tab === 'badges' && <BadgesSettings />}
+        <div className="mt-6">
+          {tab === 'divisions' && <DivisionsSettings />}
+          {tab === 'badges' && <BadgesSettings />}
+          {tab === 'training-year' && <TrainingYearSettings />}
+          {tab === 'working-hours' && <WorkingHoursSettings />}
+          {tab === 'report-settings' && <ReportSettingsForm />}
+          {tab === 'bmq-courses' && <BMQCoursesSettings />}
+        </div>
       </div>
     </PageWrapper>
   );
@@ -198,13 +212,14 @@ function DivisionModal({
 }
 
 function BadgesSettings() {
-  const { data: badges, isLoading } = useQuery({
+  const { data: badgesData, isLoading } = useQuery({
     queryKey: ['badges'],
     queryFn: async () => {
-      const response = await api.get<Badge[]>('/badges');
+      const response = await api.get<{ badges: Badge[] }>('/badges');
       return response.data;
     },
   });
+  const badges = badgesData?.badges;
 
   if (isLoading) {
     return <div className="flex justify-center py-12"><Spinner size="lg" /></div>;
