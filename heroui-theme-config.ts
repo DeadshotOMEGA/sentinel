@@ -34,51 +34,51 @@ export const designTokens = {
       foreground: "#ffffff",
     },
 
-    // Accent - Orange (alerts, highlights)
+    // Accent - Purple (alerts, highlights)
     secondary: {
-      50: "#fff5e6",
-      100: "#ffe0b3",
-      200: "#ffcc80",
-      300: "#ffb84d",
-      400: "#ffa31a",
-      500: "#ff8000", // Main accent
-      600: "#cc6600",
-      700: "#994d00",
-      800: "#663300",
-      900: "#331a00",
-      DEFAULT: "#ff8000",
+      50: "#eee4f8",
+      100: "#d7bfef",
+      200: "#bf99e5",
+      300: "#a773db",
+      400: "#904ed2",
+      500: "#7828c8", // Main accent
+      600: "#6321a5",
+      700: "#4e1a82",
+      800: "#39135f",
+      900: "#240c3c",
+      DEFAULT: "#7828c8",
       foreground: "#ffffff",
     },
 
     // Success - Green
     success: {
-      50: "#e6f9ed",
-      100: "#b3ecc9",
-      200: "#80dfa5",
-      300: "#4dd281",
-      400: "#1ac55d",
-      500: "#00b847",
-      600: "#009339",
-      700: "#006e2b",
-      800: "#00491c",
-      900: "#00250e",
-      DEFAULT: "#00b847",
-      foreground: "#ffffff",
+      50: "#e2f8ec",
+      100: "#b9efd1",
+      200: "#91e5b5",
+      300: "#68dc9a",
+      400: "#40d27f",
+      500: "#17c964",
+      600: "#13a653",
+      700: "#0f8341",
+      800: "#0b5f30",
+      900: "#073c1e",
+      DEFAULT: "#17c964",
+      foreground: "#000000",
     },
 
     // Warning - Amber
     warning: {
-      50: "#fffce6",
-      100: "#fff5b3",
-      200: "#ffee80",
-      300: "#ffe74d",
-      400: "#ffe01a",
-      500: "#ffc107",
-      600: "#cc9a00",
-      700: "#997300",
-      800: "#664d00",
-      900: "#332600",
-      DEFAULT: "#ffc107",
+      50: "#fef4e4",
+      100: "#fce4bd",
+      200: "#fad497",
+      300: "#f9c571",
+      400: "#f7b54a",
+      500: "#f5a524",
+      600: "#ca881e",
+      700: "#9f6b17",
+      800: "#744e11",
+      900: "#4a320b",
+      DEFAULT: "#f5a524",
       foreground: "#000000",
     },
 
@@ -100,25 +100,37 @@ export const designTokens = {
 
     // Neutral - Slate (from design spec)
     default: {
-      50: "#f8fafc",
-      100: "#f1f5f9",
-      200: "#e2e8f0",
-      300: "#cbd5e1",
-      400: "#94a3b8",
-      500: "#64748b",
-      600: "#475569",
-      700: "#334155", // Main neutral
-      800: "#1e293b",
-      900: "#0f172a",
-      DEFAULT: "#334155",
-      foreground: "#ffffff",
+      50: "#fafafa",
+      100: "#f2f2f3",
+      200: "#ebebec",
+      300: "#e3e3e6",
+      400: "#dcdcdf",
+      500: "#d4d4d8",
+      600: "#afafb2",
+      700: "#8a8a8c",
+      800: "#656567",
+      900: "#404041",
+      DEFAULT: "#d4d4d8",
+      foreground: "#000000",
     },
 
     // Content colors
-    content1: "#ffffff",
-    content2: "#f8fafc",
-    content3: "#f1f5f9",
-    content4: "#e2e8f0",
+    content1: {
+      DEFAULT: "#ffffff",
+      foreground: "#000000",
+    },
+    content2: {
+      DEFAULT: "#f8fafc",
+      foreground: "#000000",
+    },
+    content3: {
+      DEFAULT: "#f1f5f9",
+      foreground: "#000000",
+    },
+    content4: {
+      DEFAULT: "#e2e8f0",
+      foreground: "#000000",
+    },
 
     // Focus ring
     focus: "#007fff",
@@ -147,7 +159,7 @@ export const designTokens = {
     },
 
     // Disabled opacity
-    disabledOpacity: "0.5",
+    disabledOpacity: "0.2",
 
     // Box shadow
     boxShadow: {
@@ -174,7 +186,131 @@ export const sentinelTheme = {
       colors: designTokens.colors as unknown as ThemeColors,
       layout: designTokens.layout,
     },
-    // We only support light mode per requirements
+    dark: {
+      colors: {
+        // Primary - Azure Blue (inverted scale)
+        primary: {
+          50: "#001a33",
+          100: "#003366",
+          200: "#004d99",
+          300: "#0066cc",
+          400: "#007fff",
+          500: "#1a8fff",
+          600: "#4da8ff",
+          700: "#80c1ff",
+          800: "#b3daff",
+          900: "#e6f3ff",
+          DEFAULT: "#007fff",
+          foreground: "#ffffff",
+        },
+
+        // Accent - Purple (inverted scale)
+        secondary: {
+          50: "#240c3c",
+          100: "#39135f",
+          200: "#4e1a82",
+          300: "#6321a5",
+          400: "#7828c8",
+          500: "#904ed2",
+          600: "#a773db",
+          700: "#bf99e5",
+          800: "#d7bfef",
+          900: "#eee4f8",
+          DEFAULT: "#7828c8",
+          foreground: "#ffffff",
+        },
+
+        // Success - Green (inverted scale)
+        success: {
+          50: "#073c1e",
+          100: "#0b5f30",
+          200: "#0f8341",
+          300: "#13a653",
+          400: "#17c964",
+          500: "#40d27f",
+          600: "#68dc9a",
+          700: "#91e5b5",
+          800: "#b9efd1",
+          900: "#e2f8ec",
+          DEFAULT: "#17c964",
+          foreground: "#000000",
+        },
+
+        // Warning - Amber (inverted scale)
+        warning: {
+          50: "#4a320b",
+          100: "#744e11",
+          200: "#9f6b17",
+          300: "#ca881e",
+          400: "#f5a524",
+          500: "#f7b54a",
+          600: "#f9c571",
+          700: "#fad497",
+          800: "#fce4bd",
+          900: "#fef4e4",
+          DEFAULT: "#f5a524",
+          foreground: "#000000",
+        },
+
+        // Danger - Red (inverted scale)
+        danger: {
+          50: "#380808",
+          100: "#610f0f",
+          200: "#8a1717",
+          300: "#b31e1e",
+          400: "#dc2626",
+          500: "#ff1a1a",
+          600: "#ff4d4d",
+          700: "#ff8080",
+          800: "#ffb3b3",
+          900: "#ffe6e6",
+          DEFAULT: "#dc2626",
+          foreground: "#ffffff",
+        },
+
+        // Neutral (inverted scale)
+        default: {
+          50: "#404041",
+          100: "#656567",
+          200: "#8a8a8c",
+          300: "#afafb2",
+          400: "#d4d4d8",
+          500: "#dcdcdf",
+          600: "#e3e3e6",
+          700: "#ebebec",
+          800: "#f2f2f3",
+          900: "#fafafa",
+          DEFAULT: "#d4d4d8",
+          foreground: "#ffffff",
+        },
+
+        // Content colors for dark mode
+        content1: {
+          DEFAULT: "#18181b",
+          foreground: "#ffffff",
+        },
+        content2: {
+          DEFAULT: "#27272a",
+          foreground: "#ffffff",
+        },
+        content3: {
+          DEFAULT: "#3f3f46",
+          foreground: "#ffffff",
+        },
+        content4: {
+          DEFAULT: "#52525b",
+          foreground: "#ffffff",
+        },
+
+        // Dark mode specific
+        background: "#000000",
+        foreground: "#ffffff",
+        focus: "#007fff",
+        overlay: "#ffffff",
+        divider: "#3f3f46",
+      } as unknown as ThemeColors,
+      layout: designTokens.layout,
+    },
   },
 };
 
@@ -205,7 +341,7 @@ export const tailwindExtend = {
   colors: {
     // Semantic aliases for common use
     "sentinel-blue": designTokens.colors.primary.DEFAULT,
-    "sentinel-orange": designTokens.colors.secondary.DEFAULT,
+    "sentinel-purple": designTokens.colors.secondary.DEFAULT,
   },
 
   fontFamily: {
@@ -268,7 +404,7 @@ export const cssVariables = `
   --sentinel-primary-hover: ${designTokens.colors.primary[600]};
   --sentinel-primary-light: ${designTokens.colors.primary[100]};
 
-  /* Accent - Orange */
+  /* Accent - Purple */
   --sentinel-accent: ${designTokens.colors.secondary.DEFAULT};
   --sentinel-accent-hover: ${designTokens.colors.secondary[600]};
 
