@@ -3,17 +3,22 @@ import { z } from 'zod';
 import { memberRepository } from '../db/repositories/member-repository';
 import { checkinRepository } from '../db/repositories/checkin-repository';
 import { importService } from '../services/import-service';
-import { requireAuth, requireRole } from '../auth';
+import { requireAuth, requireRole } from '../auth/middleware';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { audit } from '../middleware/audit';
+import { pool } from '../db/connection';
 import type {
   MemberType,
   MemberStatus,
   CreateMemberInput,
   UpdateMemberInput,
-  PaginatedResponse,
   MemberWithDivision,
 } from '../../../shared/types';
+import type { PaginatedResponse } from '../../../shared/types/api';
+import type {
+  BMQEnrollmentWithCourse,
+  BMQEnrollmentStatus,
+} from '../../../shared/types/reports';
 
 const router = Router();
 
@@ -383,5 +388,69 @@ router.post(
     }
   }
 );
+
+// GET /api/members/:id/bmq-enrollments - Get member's BMQ enrollments
+router.get('/:id/bmq-enrollments', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    // Check if member exists
+    const member = await memberRepository.findById(id);
+    if (!member) {
+      throw new NotFoundError(
+        'Member not found',
+        `Member ${id} not found`,
+        'Please check the member ID and try again.'
+      );
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        e.*,
+        c.id as course_id,
+        c.name as course_name,
+        c.start_date,
+        c.end_date,
+        c.training_day,
+        c.training_start_time,
+        c.training_end_time,
+        c.is_active,
+        c.created_at as course_created_at,
+        c.updated_at as course_updated_at
+      FROM bmq_enrollments e
+      INNER JOIN bmq_courses c ON e.bmq_course_id = c.id
+      WHERE e.member_id = $1
+      ORDER BY c.start_date DESC
+      `,
+      [id]
+    );
+
+    const enrollments: BMQEnrollmentWithCourse[] = result.rows.map((row) => ({
+      id: row.id,
+      memberId: row.member_id,
+      bmqCourseId: row.bmq_course_id,
+      enrolledAt: row.enrolled_at,
+      completedAt: row.completed_at,
+      status: row.status as BMQEnrollmentStatus,
+      course: {
+        id: row.course_id,
+        name: row.course_name,
+        startDate: row.start_date,
+        endDate: row.end_date,
+        trainingDay: row.training_day,
+        trainingStartTime: row.training_start_time,
+        trainingEndTime: row.training_end_time,
+        isActive: row.is_active,
+        createdAt: row.course_created_at,
+        updatedAt: row.course_updated_at,
+      },
+    }));
+
+    res.json({ enrollments });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export { router as memberRoutes };
