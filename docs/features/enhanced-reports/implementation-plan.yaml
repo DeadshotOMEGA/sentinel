@@ -1,0 +1,482 @@
+# Implementation Plan – Enhanced Reports System
+
+# Overview
+overview:
+  related_items:
+    feature_specs:
+      - "docs/features/enhanced-reports/requirements.md"
+    user_stories: []
+    user_flows: []
+  related_docs: |
+    - "docs/features/enhanced-reports/*.md"
+    - "docs/features/enhanced-reports/*.yaml"
+
+# Problem
+problem: |
+  Currently Sentinel only supports CSV exports for presence and visitor data. Command staff require
+  professional PDF reports with official letterhead for meetings and performance reviews. Additionally,
+  the system lacks training year awareness, BMQ course tracking, and configurable attendance thresholds
+  that are needed for proper military reporting standards.
+
+# Solution
+solution: |
+  Build a comprehensive PDF reporting system using @react-pdf/renderer with five report types: Daily
+  Check-In Summary, Training Night Attendance, BMQ Attendance, Personnel Roster, and Visitor Activity
+  Summary. Add admin-configurable settings for training years (September-May cycle with holiday exclusions),
+  attendance thresholds (warning/critical flags), working hours schedules, and BMQ course management.
+  Reports will feature official HMCS Chippawa letterhead with unit crest and follow CAF presentation
+  standards. All reports include intelligent member handling (new member grace periods, minimum attendance
+  thresholds, trend indicators).
+
+# Current System
+current_system:
+  description: |
+    Reports page exists at frontend/src/pages/Reports.tsx with CSV export for current presence and
+    visitor history. Settings page exists at frontend/src/pages/Settings.tsx with tabs for Divisions
+    and Badges. Backend API routes follow pattern in backend/src/routes/*.ts with Zod validation and
+    custom error classes. Database migrations in backend/db/migrations/ numbered sequentially
+    (currently at 009). Shared types in shared/types/*.ts. Member model includes service_number,
+    rank, first_name, last_name, division_id, member_type (class_a/b/c/reg_force), status (active/inactive).
+    Check-ins table tracks attendance with member_id, badge_id, direction (in/out), timestamp, kiosk_id.
+
+# Changes Required
+changes_required:
+  - path: "backend/db/migrations/010_training_years.sql"
+    changes: |
+      - Create `training_years` table (id, name, start_date, end_date, holiday_exclusions JSONB, is_current)
+      - Add indexes on start_date, end_date, is_current
+      - Add trigger to ensure only one training year has is_current = true
+      - Add comments for table documentation
+
+  - path: "backend/db/migrations/011_bmq_courses.sql"
+    changes: |
+      - Create `bmq_courses` table (id, name, start_date, end_date, training_day, training_start_time, training_end_time, is_active)
+      - Create `bmq_enrollments` table (id, member_id FK, bmq_course_id FK, enrolled_at, completed_at, status enum: enrolled/completed/withdrawn)
+      - Add unique constraint on (member_id, bmq_course_id) in bmq_enrollments
+      - Add indexes on bmq_courses.is_active, bmq_enrollments.status, bmq_enrollments.member_id
+      - Add comments for table documentation
+
+  - path: "backend/db/migrations/012_report_settings.sql"
+    changes: |
+      - Create `report_settings` table (key VARCHAR(100) PRIMARY KEY, value JSONB, updated_at)
+      - Insert default settings for all categories (thresholds, member_handling, formatting, schedule, working_hours)
+      - Add index on key for fast lookups
+      - Add trigger to auto-update updated_at timestamp
+
+  - path: "backend/db/migrations/013_report_audit_log.sql"
+    changes: |
+      - Create `report_audit_log` table (id, report_type, report_config JSONB, generated_by FK to admin_users, is_scheduled, scheduled_report_id, generated_at, file_size_bytes, generation_time_ms)
+      - Add indexes on report_type, generated_by, generated_at, is_scheduled
+      - Add comments for audit trail documentation
+
+  - path: "shared/types/reports.ts"
+    changes: |
+      - Add type `TrainingYear` (id, name, startDate, endDate, holidayExclusions: Array<{start: Date, end: Date, name: string}>, isCurrent)
+      - Add type `BMQCourse` (id, name, startDate, endDate, trainingDay, trainingStartTime, trainingEndTime, isActive)
+      - Add type `BMQEnrollment` (id, memberId, bmqCourseId, enrolledAt, completedAt, status: 'enrolled' | 'completed' | 'withdrawn')
+      - Add type `ReportSettings` (key, value: unknown, updatedAt)
+      - Add type `ReportType` enum: 'daily_checkin' | 'training_night_attendance' | 'bmq_attendance' | 'personnel_roster' | 'visitor_summary'
+      - Add type `AttendanceCalculation` (status: 'new' | 'insufficient_data' | 'calculated', percentage, attended, possible, flag: 'none' | 'warning' | 'critical', badge, display)
+      - Add type `TrendIndicator` (trend: 'up' | 'down' | 'stable' | 'none', delta)
+      - Add interface `TrainingNightReportConfig` (period, organizationOption, divisionId, memberId, includeFTStaff, showBMQBadge)
+      - Add interface `ReportAuditLog` (id, reportType, reportConfig, generatedBy, isScheduled, scheduledReportId, generatedAt, fileSizeBytes, generationTimeMs)
+
+  - path: "shared/types/settings.ts"
+    changes: |
+      - Add type `ScheduleSettings` (trainingNightDay, trainingNightStart, trainingNightEnd, adminNightDay, adminNightStart, adminNightEnd)
+      - Add type `WorkingHoursSettings` (regularWeekdayStart, regularWeekdayEnd, regularWeekdays, summerStartDate, summerEndDate, summerWeekdayStart, summerWeekdayEnd)
+      - Add type `ThresholdSettings` (warningThreshold, criticalThreshold, showThresholdFlags, bmqSeparateThresholds, bmqWarningThreshold, bmqCriticalThreshold)
+      - Add type `MemberHandlingSettings` (newMemberGracePeriod, minimumTrainingNights, includeFTStaff, showBMQBadge, showTrendIndicators)
+      - Add type `FormattingSettings` (defaultSortOrder, showServiceNumber, dateFormat, pageSize: 'letter' | 'a4')
+
+  - path: "backend/src/routes/training-years.ts"
+    changes: |
+      - Add GET /api/training-years - fetch all training years ordered by start_date DESC
+      - Add GET /api/training-years/current - fetch current training year where is_current = true
+      - Add POST /api/training-years - create new training year with Zod validation
+      - Add PUT /api/training-years/:id - update existing training year
+      - Add PUT /api/training-years/:id/set-current - set as current training year (unsets all others)
+      - Add DELETE /api/training-years/:id - delete training year (only if not current)
+      - Use requireAuth and requireRole('admin') middleware
+
+  - path: "backend/src/routes/bmq-courses.ts"
+    changes: |
+      - Add GET /api/bmq-courses - fetch all courses with optional filter ?active=true
+      - Add GET /api/bmq-courses/:id - fetch single course with enrollment count
+      - Add POST /api/bmq-courses - create new course with Zod validation
+      - Add PUT /api/bmq-courses/:id - update course details
+      - Add DELETE /api/bmq-courses/:id - delete course (cascade delete enrollments with warning)
+      - Add GET /api/bmq-courses/:id/enrollments - fetch all enrollments for a course with member details
+      - Add POST /api/bmq-courses/:courseId/enrollments - enroll member in course (memberId in body)
+      - Add PUT /api/bmq-enrollments/:id - update enrollment status (completed_at, status)
+      - Add DELETE /api/bmq-enrollments/:id - remove enrollment
+      - Use requireAuth and requireRole('admin') middleware
+
+  - path: "backend/src/routes/report-settings.ts"
+    changes: |
+      - Add GET /api/report-settings - fetch all settings as key-value map
+      - Add GET /api/report-settings/:key - fetch specific setting by key
+      - Add PUT /api/report-settings/:key - update specific setting with Zod validation for value structure
+      - Add PUT /api/report-settings/bulk - batch update multiple settings
+      - Use requireAuth and requireRole('admin') middleware
+      - Validate value structure matches expected schema for each settings category
+
+  - path: "backend/src/routes/reports.ts"
+    changes: |
+      - Add POST /api/reports/daily-checkin - generate daily check-in summary data (filters: division, memberType)
+      - Add POST /api/reports/training-night-attendance - generate training night attendance data (config: period, organization, filters)
+      - Add POST /api/reports/bmq-attendance - generate BMQ attendance data (config: courseId, organization, filters)
+      - Add POST /api/reports/personnel-roster - generate personnel roster data (config: sortBy, divisionId)
+      - Add POST /api/reports/visitor-summary - generate visitor summary data (config: dateRange, visitType, organization)
+      - All endpoints log to report_audit_log with report_type, config, generated_by, file_size, generation_time
+      - All endpoints require requireAuth middleware
+      - Return structured JSON data (not PDF) for frontend to render
+
+  - path: "backend/src/services/attendance-calculator.ts"
+    changes: |
+      - Add function `calculateTrainingNightAttendance(memberId: string, periodStart: Date, periodEnd: Date, settings: ThresholdSettings, memberHandling: MemberHandlingSettings): AttendanceCalculation`
+      - Add function `getTrainingNights(startDate: Date, endDate: Date, trainingDay: string, holidayExclusions: Array): Date[]` - returns all training nights in range excluding holidays
+      - Add function `getTrainingNightCheckins(memberId: string, startDate: Date, endDate: Date, trainingNightStart: string, trainingNightEnd: string): CheckIn[]`
+      - Add function `calculateTrend(memberId: string, currentPeriod: DateRange, previousPeriod: DateRange): TrendIndicator`
+      - Add function `getThresholdFlag(percentage: number, settings: ThresholdSettings, isBMQ: boolean): 'none' | 'warning' | 'critical'`
+
+  - path: "backend/src/services/bmq-attendance-calculator.ts"
+    changes: |
+      - Add function `calculateBMQAttendance(memberId: string, courseId: string, settings: ThresholdSettings): AttendanceCalculation`
+      - Add function `getBMQSessions(courseId: string): Date[]` - returns all course session dates based on training_day
+      - Add function `getBMQCheckins(memberId: string, courseId: string, sessionDates: Date[]): CheckIn[]`
+
+  - path: "frontend/package.json"
+    changes: |
+      - Add dependency "@react-pdf/renderer": "^3.1.14"
+      - Add dependency "@react-pdf/types": "^2.3.7"
+      - Add dependency "file-saver": "^2.0.5"
+      - Add devDependency "@types/file-saver": "^2.0.5"
+
+  - path: "frontend/src/components/reports/PDFLetterhead.tsx"
+    changes: |
+      - Create new component using @react-pdf/renderer primitives (View, Text, Image, StyleSheet)
+      - Add HMCS CHIPPAWA crest in header (path: /home/sauk/projects/images/hmcs_chippawa_crest.jpg)
+      - Add unit name, address (1 Navy Way, Winnipeg MB), contact info in header
+      - Add footer with report title, generated timestamp, page numbers, classification (UNCLASSIFIED)
+      - Export as `PDFLetterhead` component accepting props: reportTitle, generatedAt, classification
+
+  - path: "frontend/src/components/reports/DailyCheckinPDF.tsx"
+    changes: |
+      - Create PDF document component using @react-pdf/renderer Document, Page
+      - Use PDFLetterhead component
+      - Render full-time staff present/absent list
+      - Render reserve members checked in list
+      - Render summary statistics by division
+      - Style with tables, consistent typography (Inter font family if available)
+      - Export as `DailyCheckinPDF` component accepting data prop
+
+  - path: "frontend/src/components/reports/TrainingNightAttendancePDF.tsx"
+    changes: |
+      - Create PDF document with PDFLetterhead
+      - Render member-by-member attendance table with columns: rank, name, division, attended/possible, percentage, flags, trend
+      - Support organization options: full unit, grouped by division (sections), separated by division (page breaks), specific division, specific member
+      - Render threshold flags as colored indicators (green >warning, yellow >critical, red ≤critical)
+      - Render trend indicators as arrows (↑ up, ↓ down, → stable)
+      - Render "New" badge for members within grace period
+      - Render "BMQ" badge if showBMQBadge enabled and member enrolled
+      - Show "X of Y" for members below minimum training nights instead of percentage
+      - Export as `TrainingNightAttendancePDF` component
+
+  - path: "frontend/src/components/reports/BMQAttendancePDF.tsx"
+    changes: |
+      - Create PDF document with PDFLetterhead
+      - Render BMQ course name and date range in header
+      - Render student attendance table with columns: rank, name, division, attended/possible, percentage, flags
+      - Use BMQ-specific thresholds if bmqSeparateThresholds enabled
+      - Support same organization options as Training Night report
+      - Export as `BMQAttendancePDF` component
+
+  - path: "frontend/src/components/reports/PersonnelRosterPDF.tsx"
+    changes: |
+      - Create PDF document with PDFLetterhead
+      - Render active members table with columns: service number (if enabled), rank, name, division, classification, enrollment date
+      - Support sort options: by division, by rank, alphabetical
+      - Export as `PersonnelRosterPDF` component
+
+  - path: "frontend/src/components/reports/VisitorSummaryPDF.tsx"
+    changes: |
+      - Create PDF document with PDFLetterhead
+      - Render visitors table with columns: name, organization, visit type, purpose, host, check-in time, check-out time, duration
+      - Render summary statistics section: total visitors, by type, by organization
+      - Support filters: date range, visit type, organization
+      - Export as `VisitorSummaryPDF` component
+
+  - path: "frontend/src/pages/Reports.tsx"
+    changes: |
+      - Add new tabs: "Training Night Attendance", "BMQ Attendance", "Personnel Roster" (Visitor History already exists)
+      - For each tab, add filter controls (period selector, division selector, organization style radio group)
+      - Add "Generate PDF" button for each report type that calls backend API and renders PDF component
+      - Use pdf() function from @react-pdf/renderer to generate blob
+      - Use file-saver to trigger download with proper filename (e.g., "training-night-attendance-2024-12-04.pdf")
+      - Add loading state during PDF generation
+      - Handle errors with user-friendly messages
+
+  - path: "frontend/src/pages/Settings.tsx"
+    changes: |
+      - Add new tabs: "Training Year", "Working Hours", "Report Settings", "BMQ Courses"
+      - Existing tabs "Divisions" and "Badges" remain unchanged
+      - Each new tab renders corresponding settings component
+      - Use same pattern as DivisionsSettings (useQuery, modal for edit, invalidate on save)
+
+  - path: "frontend/src/components/settings/TrainingYearSettings.tsx"
+    changes: |
+      - Create component that fetches training years from API
+      - Display table of training years with columns: name, start date, end date, is current, actions
+      - Add "Add Training Year" button to open modal
+      - Add "Set as Current" button for each non-current training year
+      - Add "Edit" and "Delete" buttons for each training year
+      - Modal form includes: name, start_date, end_date date pickers
+      - Holiday exclusions as nested form (add/remove date ranges with name labels)
+      - Export as `TrainingYearSettings` component
+
+  - path: "frontend/src/components/settings/WorkingHoursSettings.tsx"
+    changes: |
+      - Create component that fetches working hours settings from API
+      - Display form with sections: Regular Hours, Summer Hours
+      - Regular Hours: weekday checkboxes (Mon/Tue/Wed/Thu/Fri), start time, end time
+      - Summer Hours: start date, end date, start time, end time
+      - Save button calls PUT /api/report-settings/bulk with all working hours keys
+      - Export as `WorkingHoursSettings` component
+
+  - path: "frontend/src/components/settings/ReportSettingsForm.tsx"
+    changes: |
+      - Create component with three sections: Attendance Thresholds, Member Handling, Formatting
+      - Attendance Thresholds: warning threshold %, critical threshold %, show flags toggle, BMQ separate thresholds toggle, BMQ warning %, BMQ critical %
+      - Member Handling: new member grace period (weeks), minimum training nights, include FT staff toggle, show BMQ badge toggle, show trend indicators toggle
+      - Formatting: default sort order dropdown, show service number toggle, date format dropdown, page size radio (Letter/A4)
+      - Save button calls PUT /api/report-settings/bulk
+      - Export as `ReportSettingsForm` component
+
+  - path: "frontend/src/components/settings/BMQCoursesSettings.tsx"
+    changes: |
+      - Create component that fetches BMQ courses from API
+      - Display tabs: Active Courses, Past Courses
+      - Table columns: name, dates, training schedule, enrollment count, actions
+      - Add "Create Course" button to open modal
+      - Modal form: name, start_date, end_date, training_day dropdown, training_start_time, training_end_time
+      - Add "View Enrollments" button that navigates to course detail view
+      - Add "Edit" and "Delete" buttons
+      - Export as `BMQCoursesSettings` component
+
+  - path: "frontend/src/pages/MemberDetail.tsx"
+    changes: |
+      - Add "BMQ Enrollment" section to member profile
+      - Display current BMQ enrollment status (enrolled in X, completed Y, withdrawn from Z)
+      - Add "Enroll in BMQ Course" button that opens modal with course dropdown
+      - Add "Update Status" button for active enrollments (mark completed/withdrawn with date picker)
+      - Display BMQ attendance history table if enrolled
+
+  - path: "backend/src/routes/index.ts"
+    changes: |
+      - Import and mount trainingYearRoutes at /api/training-years
+      - Import and mount bmqCourseRoutes at /api/bmq-courses
+      - Import and mount reportSettingsRoutes at /api/report-settings
+      - Import and mount reportRoutes at /api/reports
+
+# Task Breakdown
+task_breakdown:
+  - id: "T1"
+    description: "Create database migrations for training years, BMQ courses, report settings, and report audit log. This establishes the data model foundation that all other features depend on."
+    agent: "programmer"
+    depends_on: []
+    files:
+      - "backend/db/migrations/010_training_years.sql" - create - CREATE TABLE with columns, indexes, trigger
+      - "backend/db/migrations/011_bmq_courses.sql" - create - CREATE TABLE for courses and enrollments with FKs
+      - "backend/db/migrations/012_report_settings.sql" - create - CREATE TABLE with default settings INSERT statements
+      - "backend/db/migrations/013_report_audit_log.sql" - create - CREATE TABLE with indexes for audit logging
+
+  - id: "T2"
+    description: "Define shared TypeScript types for reports, training years, BMQ courses, and settings. These types are shared between frontend and backend and must be completed before any other TypeScript work."
+    agent: "programmer"
+    depends_on: []
+    files:
+      - "shared/types/reports.ts" - create - export types TrainingYear, BMQCourse, BMQEnrollment, ReportSettings, ReportType, AttendanceCalculation, TrendIndicator, TrainingNightReportConfig, ReportAuditLog
+      - "shared/types/settings.ts" - create - export types ScheduleSettings, WorkingHoursSettings, ThresholdSettings, MemberHandlingSettings, FormattingSettings
+
+  - id: "T3"
+    description: "Implement attendance calculation service that computes training night and BMQ attendance percentages, applies thresholds, calculates trends, and handles special cases (new members, minimum nights). Core business logic used by report generation."
+    agent: "programmer"
+    depends_on: ["T2"]
+    files:
+      - "backend/src/services/attendance-calculator.ts" - create - functions: calculateTrainingNightAttendance(memberId, periodStart, periodEnd, settings, memberHandling): AttendanceCalculation, getTrainingNights(startDate, endDate, trainingDay, holidayExclusions): Date[], getTrainingNightCheckins(memberId, startDate, endDate, trainingNightStart, trainingNightEnd): CheckIn[], calculateTrend(memberId, currentPeriod, previousPeriod): TrendIndicator, getThresholdFlag(percentage, settings, isBMQ): string
+      - "backend/src/services/bmq-attendance-calculator.ts" - create - functions: calculateBMQAttendance(memberId, courseId, settings): AttendanceCalculation, getBMQSessions(courseId): Date[], getBMQCheckins(memberId, courseId, sessionDates): CheckIn[]
+
+  - id: "T4"
+    description: "Create backend API routes for training years management (CRUD operations, set current year). Includes Zod validation schemas and admin authorization."
+    agent: "programmer"
+    depends_on: ["T1", "T2"]
+    files:
+      - "backend/src/routes/training-years.ts" - create - GET /, GET /current, POST /, PUT /:id, PUT /:id/set-current, DELETE /:id with Zod validation and requireAuth/requireRole middleware
+
+  - id: "T5"
+    description: "Create backend API routes for BMQ courses and enrollments (CRUD courses, manage enrollments, fetch course details with enrollment counts). Includes Zod validation and admin authorization."
+    agent: "programmer"
+    depends_on: ["T1", "T2"]
+    files:
+      - "backend/src/routes/bmq-courses.ts" - create - GET /, GET /:id, POST /, PUT /:id, DELETE /:id, GET /:id/enrollments, POST /:courseId/enrollments, PUT /enrollments/:id, DELETE /enrollments/:id with Zod validation and requireAuth/requireRole middleware
+
+  - id: "T6"
+    description: "Create backend API routes for report settings management (get all settings, get by key, update single setting, bulk update). Includes validation for each settings category structure."
+    agent: "programmer"
+    depends_on: ["T1", "T2"]
+    files:
+      - "backend/src/routes/report-settings.ts" - create - GET /, GET /:key, PUT /:key, PUT /bulk with Zod validation for value schemas and requireAuth/requireRole middleware
+
+  - id: "T7"
+    description: "Create backend API routes for report data generation (all five report types). Each endpoint queries database, applies attendance calculations, logs to audit table, and returns structured JSON for frontend rendering."
+    agent: "programmer"
+    depends_on: ["T1", "T2", "T3"]
+    files:
+      - "backend/src/routes/reports.ts" - create - POST /daily-checkin, POST /training-night-attendance, POST /bmq-attendance, POST /personnel-roster, POST /visitor-summary with requireAuth middleware and report_audit_log integration
+
+  - id: "T8"
+    description: "Mount new API routes in main router. Updates backend/src/routes/index.ts to expose training years, BMQ courses, report settings, and reports endpoints."
+    agent: "programmer"
+    depends_on: ["T4", "T5", "T6", "T7"]
+    files:
+      - "backend/src/routes/index.ts" - modify - import and router.use() for trainingYearRoutes, bmqCourseRoutes, reportSettingsRoutes, reportRoutes
+
+  - id: "T9"
+    description: "Install frontend dependencies for PDF generation and file download. Adds @react-pdf/renderer, @react-pdf/types, file-saver and their type definitions."
+    agent: "programmer"
+    depends_on: []
+    files:
+      - "frontend/package.json" - modify - add dependencies: @react-pdf/renderer, @react-pdf/types, file-saver, @types/file-saver
+
+  - id: "T10"
+    description: "Create reusable PDF letterhead component with HMCS CHIPPAWA branding. Includes unit crest, header with address/contact, footer with page numbers and classification. Used by all report PDF components."
+    agent: "programmer"
+    depends_on: ["T9"]
+    files:
+      - "frontend/src/components/reports/PDFLetterhead.tsx" - create - React component using @react-pdf/renderer View/Text/Image/StyleSheet, props: reportTitle, generatedAt, classification
+
+  - id: "T11"
+    description: "Create PDF components for all five report types. Each component renders structured report data into professional PDF format using react-pdf/renderer primitives with letterhead, tables, threshold flags, and styling."
+    agent: "programmer"
+    depends_on: ["T2", "T10"]
+    files:
+      - "frontend/src/components/reports/DailyCheckinPDF.tsx" - create - PDF Document with FT staff, reserve members, summary stats
+      - "frontend/src/components/reports/TrainingNightAttendancePDF.tsx" - create - PDF Document with attendance table, flags, trends, badges, organization options
+      - "frontend/src/components/reports/BMQAttendancePDF.tsx" - create - PDF Document with BMQ course header, student attendance table
+      - "frontend/src/components/reports/PersonnelRosterPDF.tsx" - create - PDF Document with active members table, sort options
+      - "frontend/src/components/reports/VisitorSummaryPDF.tsx" - create - PDF Document with visitors table, summary statistics
+
+  - id: "T12"
+    description: "Create Training Year settings UI component. Displays training years table with CRUD operations, set current year action, and holiday exclusions management. Follows existing Settings page patterns."
+    agent: "programmer"
+    depends_on: ["T2", "T4"]
+    files:
+      - "frontend/src/components/settings/TrainingYearSettings.tsx" - create - React component with table, modal form for add/edit, date pickers, holiday exclusions array, useQuery/invalidate pattern
+
+  - id: "T13"
+    description: "Create Working Hours settings UI component. Form-based UI for configuring regular weekday hours and summer hours with date ranges and time pickers."
+    agent: "programmer"
+    depends_on: ["T2", "T6"]
+    files:
+      - "frontend/src/components/settings/WorkingHoursSettings.tsx" - create - React component with form sections, date/time inputs, weekday checkboxes, save to bulk update endpoint
+
+  - id: "T14"
+    description: "Create Report Settings UI component with three sections: Attendance Thresholds, Member Handling, Formatting. Form-based configuration for all report behavior settings."
+    agent: "programmer"
+    depends_on: ["T2", "T6"]
+    files:
+      - "frontend/src/components/settings/ReportSettingsForm.tsx" - create - React component with three-section form, toggles, number inputs, dropdowns, save to bulk update endpoint
+
+  - id: "T15"
+    description: "Create BMQ Courses settings UI component. Displays active/past courses in tabs with CRUD operations, enrollment counts, and course detail navigation."
+    agent: "programmer"
+    depends_on: ["T2", "T5"]
+    files:
+      - "frontend/src/components/settings/BMQCoursesSettings.tsx" - create - React component with tabs, table, modal form for add/edit, date/time inputs, training day dropdown
+
+  - id: "T16"
+    description: "Update Settings page to add new tabs for Training Year, Working Hours, Report Settings, and BMQ Courses. Integrates new settings components into existing Settings page structure."
+    agent: "programmer"
+    depends_on: ["T12", "T13", "T14", "T15"]
+    files:
+      - "frontend/src/pages/Settings.tsx" - modify - add new Tab components, render new settings components in tab content
+
+  - id: "T17"
+    description: "Update Reports page to add new report tabs with filter controls and PDF generation. Adds Training Night Attendance, BMQ Attendance, Personnel Roster tabs. Implements API calls, PDF rendering, and file download."
+    agent: "programmer"
+    depends_on: ["T2", "T7", "T11"]
+    files:
+      - "frontend/src/pages/Reports.tsx" - modify - add new Tab components, filter controls (period selector, division dropdown, organization radio group), Generate PDF buttons, API calls to report endpoints, pdf() function usage, file-saver integration, loading/error states
+
+  - id: "T18"
+    description: "Add BMQ enrollment section to member detail page. Displays enrollment status, allows enrolling in courses, updating enrollment status, and viewing BMQ attendance history."
+    agent: "programmer"
+    depends_on: ["T2", "T5"]
+    files:
+      - "frontend/src/pages/MemberDetail.tsx" - modify - add BMQ Enrollment section, current enrollments display, Enroll in Course button/modal with course dropdown, Update Status button/modal, BMQ attendance history table
+
+# Data/Schema Changes
+data_schema_changes:
+  migrations:
+    - file: "010_training_years.sql"
+      summary: "Add training_years table with holiday exclusions JSONB and is_current flag"
+    - file: "011_bmq_courses.sql"
+      summary: "Add bmq_courses and bmq_enrollments tables with FK to members"
+    - file: "012_report_settings.sql"
+      summary: "Add report_settings key-value table with JSONB values, populated with defaults"
+    - file: "013_report_audit_log.sql"
+      summary: "Add report_audit_log table to track all report generation events"
+  api_changes:
+    - endpoint: "POST /api/reports/training-night-attendance"
+      changes: "New endpoint - returns attendance data with calculations and flags"
+    - endpoint: "POST /api/reports/bmq-attendance"
+      changes: "New endpoint - returns BMQ course attendance data"
+    - endpoint: "POST /api/reports/daily-checkin"
+      changes: "New endpoint - returns current presence summary"
+    - endpoint: "POST /api/reports/personnel-roster"
+      changes: "New endpoint - returns active members roster data"
+    - endpoint: "POST /api/reports/visitor-summary"
+      changes: "New endpoint - returns visitor activity data"
+    - endpoint: "GET /api/training-years"
+      changes: "New endpoint - CRUD for training years"
+    - endpoint: "GET /api/bmq-courses"
+      changes: "New endpoint - CRUD for BMQ courses and enrollments"
+    - endpoint: "GET /api/report-settings"
+      changes: "New endpoint - manage all report configuration settings"
+
+# Expected Result
+expected_result:
+  outcome: |
+    Admin can configure training year (September-May), holiday exclusions, working hours schedules,
+    and report settings (thresholds, grace periods, formatting). Admin can create/manage BMQ courses
+    and enroll members. Reports page has five report types with filter controls and "Generate PDF"
+    buttons. Clicking Generate PDF fetches data from backend, renders professional PDF with HMCS
+    Chippawa letterhead, and downloads file. Training Night and BMQ attendance reports show threshold
+    flags (green/yellow/red), trend indicators (↑↓→), new member badges, and BMQ badges. All report
+    generation is logged to audit table with user ID and generation metrics.
+
+  example: |
+    Admin navigates to Reports > Training Night Attendance tab, selects period "Current Training Year",
+    organization "Grouped by Division", clicks "Generate PDF". Backend calculates attendance for all
+    active members, applies 75%/50% thresholds, computes trends from previous period. Frontend renders
+    multi-page PDF with letterhead, divison-grouped attendance tables showing "LS Smith, J - Deck -
+    18/20 (90%) [green flag] [↑ +5%]". PDF downloads as "training-night-attendance-2024-12-04.pdf".
+    Audit log records report_type=training_night_attendance, generated_by=admin_user_id, file_size=125KB.
+
+# Notes
+notes:
+  - "Unit crest asset available at /home/sauk/projects/images/hmcs_chippawa_crest.jpg"
+  - "Phase 3 (Email & Automation) deferred - requires Resend integration, BullMQ setup, scheduled_reports table"
+  - "Backend uses Prisma ORM but migrations are raw SQL in db/migrations/"
+  - "Run migrations with: cd backend && bun run db/migrate.ts"
+  - "Frontend uses HeroUI components (Tabs, Table, Modal, Button, Input, etc.)"
+  - "All API routes use requireAuth middleware from backend/src/middleware/auth.ts"
+  - "Existing pattern: backend toCamelCase/toSnakeCase for DB row conversion"
+  - "Member classification stored as member_type enum: class_a | class_b | class_c | reg_force"
+  - "Attendance calculation logic specified in requirements.md lines 351-406"
+  - "React Query used for data fetching: useQuery with queryKey, invalidateQueries pattern"
+  - "PDF generation happens client-side using @react-pdf/renderer, not server-side"
+  - "report_audit_log tracks generation metrics for monitoring and analytics"
+  - "BMQ courses independent of training years - courses can span multiple training years"
+  - "Holiday exclusions stored as JSONB array: [{start: '2024-12-20', end: '2024-12-27', name: 'Christmas Break'}]"
