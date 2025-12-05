@@ -20,7 +20,10 @@ import {
   ModalFooter,
   Chip,
   Spinner,
+  Tooltip,
 } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { TruncatedText } from '../components/tooltips';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
 import type { Division, Badge, CreateDivisionInput } from '@shared/types';
@@ -28,20 +31,50 @@ import TrainingYearSettings from '../components/settings/TrainingYearSettings';
 import WorkingHoursSettings from '../components/settings/WorkingHoursSettings';
 import ReportSettingsForm from '../components/settings/ReportSettingsForm';
 import BMQCoursesSettings from '../components/settings/BMQCoursesSettings';
+import DevToolsSection from '../components/settings/DevToolsSection';
 
 export default function Settings() {
   const [tab, setTab] = useState('divisions');
 
   return (
     <PageWrapper title="Settings">
-      <div className="min-h-0 flex-1 overflow-auto pb-6">
+      <div className="-mx-1 -mt-1 min-h-0 flex-1 overflow-auto px-1 pt-1 pb-6">
         <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-          <Tab key="divisions" title="Divisions" />
-          <Tab key="badges" title="Badges" />
-          <Tab key="training-year" title="Training Year" />
-          <Tab key="working-hours" title="Working Hours" />
-          <Tab key="report-settings" title="Report Settings" />
-          <Tab key="bmq-courses" title="BMQ Courses" />
+          <Tab key="divisions" title={
+            <Tooltip content="Manage unit divisions and departments">
+              <span>Divisions</span>
+            </Tooltip>
+          } />
+          <Tab key="badges" title={
+            <Tooltip content="View and manage RFID badges">
+              <span>Badges</span>
+            </Tooltip>
+          } />
+          <Tab key="training-year" title={
+            <Tooltip content="Configure training year start/end dates">
+              <span>Training Year</span>
+            </Tooltip>
+          } />
+          <Tab key="working-hours" title={
+            <Tooltip content="Set building operating hours">
+              <span>Working Hours</span>
+            </Tooltip>
+          } />
+          <Tab key="report-settings" title={
+            <Tooltip content="Configure report headers and formats">
+              <span>Report Settings</span>
+            </Tooltip>
+          } />
+          <Tab key="bmq-courses" title={
+            <Tooltip content="Manage Basic Military Qualification courses">
+              <span>BMQ Courses</span>
+            </Tooltip>
+          } />
+          <Tab key="dev-tools" title={
+            <Tooltip content="Developer tools and database utilities">
+              <span>Dev Tools</span>
+            </Tooltip>
+          } />
         </Tabs>
 
         <div className="mt-6">
@@ -51,6 +84,7 @@ export default function Settings() {
           {tab === 'working-hours' && <WorkingHoursSettings />}
           {tab === 'report-settings' && <ReportSettingsForm />}
           {tab === 'bmq-courses' && <BMQCoursesSettings />}
+          {tab === 'dev-tools' && <DevToolsSection />}
         </div>
       </div>
     </PageWrapper>
@@ -94,7 +128,11 @@ function DivisionsSettings() {
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Button color="primary" onPress={handleAdd}>Add Division</Button>
+        <Tooltip content="Create a new division for organizing members">
+          <Button color="primary" onPress={handleAdd} startContent={<Icon icon="solar:add-circle-linear" width={18} />}>
+            Add Division
+          </Button>
+        </Tooltip>
       </div>
 
       <Table aria-label="Divisions">
@@ -107,13 +145,25 @@ function DivisionsSettings() {
         <TableBody emptyContent="No divisions">
           {(divisions ? divisions : []).map((division) => (
             <TableRow key={division.id}>
-              <TableCell><Chip size="sm">{division.code}</Chip></TableCell>
-              <TableCell>{division.name}</TableCell>
-              <TableCell>{division.description ? division.description : '-'}</TableCell>
               <TableCell>
-                <Button size="sm" variant="light" onPress={() => handleEdit(division)}>
-                  Edit
-                </Button>
+                <Tooltip content="Division code used in reports">
+                  <Chip size="sm">{division.code}</Chip>
+                </Tooltip>
+              </TableCell>
+              <TableCell>{division.name}</TableCell>
+              <TableCell>
+                {division.description ? (
+                  <TruncatedText content={division.description} className="truncate max-w-xs" />
+                ) : (
+                  <span className="text-default-400">-</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <Tooltip content="Edit division details">
+                  <Button size="sm" variant="light" onPress={() => handleEdit(division)}>
+                    Edit
+                  </Button>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}
@@ -231,24 +281,30 @@ function BadgesSettings() {
   return (
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <CardBody className="text-center">
-            <p className="text-2xl font-bold">{badges?.length ? badges.length : 0}</p>
-            <p className="text-sm text-gray-600">Total Badges</p>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody className="text-center">
-            <p className="text-2xl font-bold text-success">{assigned}</p>
-            <p className="text-sm text-gray-600">Assigned</p>
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody className="text-center">
-            <p className="text-2xl font-bold text-gray-500">{unassigned}</p>
-            <p className="text-sm text-gray-600">Available</p>
-          </CardBody>
-        </Card>
+        <Tooltip content="Total number of RFID badges in the system">
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold">{badges?.length ? badges.length : 0}</p>
+              <p className="text-sm text-default-500">Total Badges</p>
+            </CardBody>
+          </Card>
+        </Tooltip>
+        <Tooltip content="Badges currently assigned to members or kiosks">
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-success">{assigned}</p>
+              <p className="text-sm text-default-500">Assigned</p>
+            </CardBody>
+          </Card>
+        </Tooltip>
+        <Tooltip content="Badges available for assignment">
+          <Card>
+            <CardBody className="text-center">
+              <p className="text-2xl font-bold text-default-400">{unassigned}</p>
+              <p className="text-sm text-default-500">Available</p>
+            </CardBody>
+          </Card>
+        </Tooltip>
       </div>
 
       <Table aria-label="Badges">
@@ -261,24 +317,45 @@ function BadgesSettings() {
         <TableBody emptyContent="No badges registered">
           {(badges ? badges : []).map((badge) => (
             <TableRow key={badge.id}>
-              <TableCell className="font-mono">{badge.serialNumber}</TableCell>
               <TableCell>
-                <Chip size="sm" variant="flat">
-                  {badge.assignmentType}
-                </Chip>
+                <Tooltip content="Badge serial number (from RFID chip)">
+                  <span className="font-mono">{badge.serialNumber}</span>
+                </Tooltip>
               </TableCell>
               <TableCell>
-                <Chip
-                  size="sm"
-                  color={badge.status === 'active' ? 'success' : 'default'}
-                >
-                  {badge.status}
-                </Chip>
+                <Tooltip content={
+                  badge.assignmentType === 'member' ? 'Assigned to a unit member' :
+                  badge.assignmentType === 'event' ? 'Assigned to an event' :
+                  'Not currently assigned'
+                }>
+                  <Chip size="sm" variant="flat">
+                    {badge.assignmentType}
+                  </Chip>
+                </Tooltip>
               </TableCell>
               <TableCell>
-                {badge.lastUsed
-                  ? new Date(badge.lastUsed).toLocaleDateString()
-                  : 'Never'}
+                <Tooltip content={
+                  badge.status === 'active' ? 'Badge is active and can be used' :
+                  badge.status === 'lost' ? 'Badge reported lost' :
+                  badge.status === 'damaged' ? 'Badge is damaged' :
+                  'Badge is inactive'
+                }>
+                  <Chip
+                    size="sm"
+                    color={badge.status === 'active' ? 'success' : badge.status === 'lost' ? 'danger' : 'default'}
+                  >
+                    {badge.status}
+                  </Chip>
+                </Tooltip>
+              </TableCell>
+              <TableCell>
+                <Tooltip content={badge.lastUsed ? `Last scan: ${new Date(badge.lastUsed).toLocaleString()}` : 'Badge has never been scanned'}>
+                  <span className="cursor-help">
+                    {badge.lastUsed
+                      ? new Date(badge.lastUsed).toLocaleDateString()
+                      : 'Never'}
+                  </span>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

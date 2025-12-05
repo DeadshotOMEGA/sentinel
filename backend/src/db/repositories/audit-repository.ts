@@ -19,7 +19,11 @@ export type AuditAction =
   | 'import_execute'
   | 'event_create'
   | 'event_update'
-  | 'event_delete';
+  | 'event_delete'
+  | 'dev_tools_access'
+  | 'dev_tools_clear_all'
+  | 'dev_tools_clear_table'
+  | 'dev_tools_reset';
 
 interface AuditLogEntry {
   adminUserId: string | null;

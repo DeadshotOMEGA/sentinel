@@ -7,6 +7,7 @@ import { badgeRoutes } from './badges';
 import { authRoutes } from './auth';
 import { eventRoutes } from './events';
 import { devRoutes } from './dev';
+import { devToolsRoutes } from './dev-tools';
 import { alertRoutes } from './alerts';
 import { reportSettingsRoutes } from './report-settings';
 import { trainingYearRoutes } from './training-years';
@@ -105,5 +106,6 @@ router.use('/training-years', trainingYearRoutes);
 router.use('/bmq-courses', bmqCoursesRoutes);
 router.use('/reports', reportRoutes);
 router.use('/dev', devRoutes);
+router.use('/dev-tools', devToolsRoutes);
 
 export { router as apiRoutes };
