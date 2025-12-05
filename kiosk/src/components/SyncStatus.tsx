@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSyncStore } from '../state/sync-state';
+import { Button } from '@heroui/react';
 
 export default function SyncStatus() {
   const {
@@ -55,9 +56,11 @@ export default function SyncStatus() {
   return (
     <div className="fixed right-4 top-4 z-50">
       {/* Main status indicator button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
+      <Button
+        size="lg"
+        onPress={() => setIsExpanded(!isExpanded)}
         className="flex min-h-14 min-w-14 items-center gap-3 rounded-lg bg-white px-4 py-3 text-left shadow-md hover:shadow-lg active:shadow-sm transition-shadow"
+        variant="light"
         aria-label={`Sync status: ${getStatusText()}`}
         aria-expanded={isExpanded}
       >
@@ -71,7 +74,7 @@ export default function SyncStatus() {
         <span className={`text-sm font-medium ${textColor}`}>
           {getStatusText()}
         </span>
-      </button>
+      </Button>
 
       {/* Expanded panel with error details and retry button */}
       {isExpanded && lastSyncError && (
@@ -81,13 +84,14 @@ export default function SyncStatus() {
             <p className="mt-2 text-sm text-gray-600">{lastSyncError}</p>
           </div>
 
-          <button
-            onClick={handleRetry}
+          <Button
+            size="lg"
+            onPress={handleRetry}
             className="w-full min-h-14 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700 active:bg-blue-800 transition-colors"
             aria-label="Retry sync"
           >
             Retry Now
-          </button>
+          </Button>
         </div>
       )}
 

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { Selection, SortDescriptor } from '@heroui/react';
 import {
@@ -16,12 +17,14 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Link,
 } from '@heroui/react';
 import { SearchIcon } from '@heroui/shared-icons';
 import { Icon } from '@iconify/react';
 import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
 import ImportModal from '../components/ImportModal';
+import MemberDetail from './MemberDetail';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division } from '@shared/types';
 
@@ -55,6 +58,7 @@ const columns: Column[] = [
 const ITEMS_PER_BATCH = 20;
 
 function MembersList() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -190,7 +194,16 @@ function MembersList() {
       case 'serviceNumber':
         return <div className="text-small">{member.serviceNumber}</div>;
       case 'name':
-        return <div className="text-small">{member.firstName} {member.lastName}</div>;
+        return (
+          <Link
+            size="sm"
+            color="primary"
+            as="button"
+            onPress={() => navigate(`/members/${member.id}`)}
+          >
+            {member.firstName} {member.lastName}
+          </Link>
+        );
       case 'rank':
         return <div className="text-small">{member.rank}</div>;
       case 'division':
@@ -234,7 +247,7 @@ function MembersList() {
       default:
         return null;
     }
-  }, []);
+  }, [navigate]);
 
   const handleEdit = useCallback((member: MemberWithDivision) => {
     setSelectedMember(member);
@@ -408,5 +421,10 @@ function MembersList() {
 }
 
 export default function Members() {
-  return <MembersList />;
+  return (
+    <Routes>
+      <Route index element={<MembersList />} />
+      <Route path=":memberId" element={<MemberDetail />} />
+    </Routes>
+  );
 }

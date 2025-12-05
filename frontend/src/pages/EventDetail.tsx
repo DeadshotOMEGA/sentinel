@@ -17,6 +17,7 @@ import {
   CardHeader,
   Select,
   SelectItem,
+  Checkbox,
 } from '@heroui/react';
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
@@ -277,11 +278,9 @@ export default function EventDetail() {
             <Table aria-label="Event attendees table">
               <TableHeader>
                 <TableColumn>
-                  <input
-                    type="checkbox"
-                    checked={selectedAttendees.size === attendees.length && attendees.length > 0}
+                  <Checkbox
+                    isSelected={selectedAttendees.size === attendees.length && attendees.length > 0}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4"
                     aria-label="Select all attendees"
                   />
                 </TableColumn>
@@ -297,11 +296,9 @@ export default function EventDetail() {
                 {attendees.map((attendee) => (
                   <TableRow key={attendee.id}>
                     <TableCell>
-                      <input
-                        type="checkbox"
-                        checked={selectedAttendees.has(attendee.id)}
+                      <Checkbox
+                        isSelected={selectedAttendees.has(attendee.id)}
                         onChange={() => toggleAttendeeSelection(attendee.id)}
-                        className="w-4 h-4"
                         aria-label={`Select ${attendee.name}`}
                       />
                     </TableCell>

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { DevMember } from '../lib/api';
 import { X } from '@shared/ui/icons';
+import { Button } from '@heroui/react';
 
 interface MemberPickerModalProps {
   members: DevMember[];
@@ -47,13 +48,16 @@ export default function MemberPickerModal({ members, onSelect, onClose }: Member
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 id="member-picker-title" className="text-2xl font-bold text-gray-900">Select Member</h2>
-          <button
-            onClick={onClose}
-            className="min-h-[56px] min-w-[56px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-lg active:bg-gray-100"
+          <Button
+            size="lg"
+            isIconOnly
+            onPress={onClose}
+            className="min-h-[56px] min-w-[56px] text-gray-500 hover:text-gray-700"
+            variant="light"
             aria-label="Close member picker"
           >
             <X className="h-8 w-8" aria-hidden="true" />
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-4" role="region" aria-label="Member list grouped by division">
@@ -67,10 +71,11 @@ export default function MemberPickerModal({ members, onSelect, onClose }: Member
               </h3>
               <div className="space-y-2">
                 {divisionMembers.map((member) => (
-                  <button
+                  <Button
                     key={member.id}
-                    onClick={() => onSelect(member)}
-                    disabled={!member.badgeSerialNumber}
+                    size="lg"
+                    onPress={() => onSelect(member)}
+                    isDisabled={!member.badgeSerialNumber}
                     className={`w-full text-left px-4 py-4 min-h-[56px] rounded-xl flex items-center justify-between transition-colors ${
                       !member.badgeSerialNumber
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -105,7 +110,7 @@ export default function MemberPickerModal({ members, onSelect, onClose }: Member
                         <span className="text-blue-600">Check In →</span>
                       )}
                     </div>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

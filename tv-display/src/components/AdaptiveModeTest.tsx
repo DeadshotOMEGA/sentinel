@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button, Slider } from '@heroui/react';
 import { AdaptivePresenceView } from './AdaptivePresenceView';
 import type { PresentMember, ActiveVisitor } from '../hooks/usePresenceData';
 
@@ -60,12 +61,11 @@ export function AdaptiveModeTest() {
             <label className="block text-sm font-medium mb-1">
               Present Count: {count}
             </label>
-            <input
-              type="range"
-              min="5"
-              max="200"
+            <Slider
+              minValue={5}
+              maxValue={200}
               value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
+              onChange={(val) => setCount(val as number)}
               className="w-full"
               data-testid="test-slider"
             />
@@ -90,30 +90,38 @@ export function AdaptiveModeTest() {
             </p>
           </div>
           <div className="space-y-1">
-            <button
-              onClick={() => setCount(20)}
-              className="w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            <Button
+              color="success"
+              onPress={() => setCount(20)}
+              className="w-full"
+              data-testid="test-compact"
             >
               Test Compact (20)
-            </button>
-            <button
-              onClick={() => setCount(50)}
-              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => setCount(50)}
+              className="w-full"
+              data-testid="test-dense"
             >
               Test Dense (50)
-            </button>
-            <button
-              onClick={() => setCount(100)}
-              className="w-full px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600"
+            </Button>
+            <Button
+              color="secondary"
+              onPress={() => setCount(100)}
+              className="w-full"
+              data-testid="test-scroll"
             >
               Test Scroll (100)
-            </button>
-            <button
-              onClick={() => setCount(200)}
-              className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            </Button>
+            <Button
+              color="danger"
+              onPress={() => setCount(200)}
+              className="w-full"
+              data-testid="test-large"
             >
               Test Large (200)
-            </button>
+            </Button>
           </div>
         </div>
       </div>

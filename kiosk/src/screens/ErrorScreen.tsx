@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useKioskStore } from '../state/kiosk-state';
 import { playSound } from '../lib/audio';
 import { getConfig } from '../lib/config';
+import { Button } from '@heroui/react';
 
 export default function ErrorScreen() {
   const { error, reset } = useKioskStore();
@@ -71,24 +72,26 @@ export default function ErrorScreen() {
 
       {/* Action Buttons */}
       <div className="flex gap-4 w-full max-w-2xl mb-4">
-        <button
-          onClick={reset}
-          className="kiosk-button-primary flex-1"
+        <Button
+          size="lg"
+          onPress={reset}
+          className="kiosk-button-primary flex-1 min-h-[56px]"
           aria-label="Try badge scan again"
         >
           Try Again
-        </button>
+        </Button>
 
-        <button
-          onClick={() => {
+        <Button
+          size="lg"
+          onPress={() => {
             // Could implement help request functionality
             reset();
           }}
-          className="kiosk-button-secondary flex-1"
+          className="kiosk-button-secondary flex-1 min-h-[56px]"
           aria-label="Contact Duty Watch for assistance"
         >
           Contact Duty Watch
-        </button>
+        </Button>
       </div>
 
       {/* Auto-return notice */}

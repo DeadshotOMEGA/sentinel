@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { getDevMembers, clearAllCheckins, type DevMember } from '../lib/api';
 import MemberPickerModal from './MemberPickerModal';
 import { Wrench, Dice5, Trash, User, X } from '@shared/ui/icons';
+import { Button } from '@heroui/react';
 
 interface DevPanelProps {
   onSimulateScan: (serialNumber: string) => void;
@@ -155,13 +156,16 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
                 <Wrench className="h-6 w-6 text-orange-500" aria-hidden="true" />
                 DEV Panel
               </h2>
-              <button
-                onClick={handleClose}
-                className="min-h-[56px] min-w-[56px] flex items-center justify-center text-gray-500 hover:text-gray-700 rounded-lg active:bg-gray-100"
+              <Button
+                size="lg"
+                isIconOnly
+                onPress={handleClose}
+                className="min-h-[56px] min-w-[56px] text-gray-500 hover:text-gray-700"
+                variant="light"
                 aria-label="Close DEV panel"
               >
                 <X className="h-8 w-8" aria-hidden="true" />
-              </button>
+              </Button>
             </div>
 
             {isLoading ? (
@@ -171,41 +175,45 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                <button
-                  onClick={handleRandomCheckIn}
+                <Button
+                  size="lg"
+                  onPress={handleRandomCheckIn}
                   className="w-full min-h-[56px] px-6 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                   aria-label="Simulate random member check-in"
                 >
                   <Dice5 className="h-6 w-6" aria-hidden="true" />
                   Random Check-In
-                </button>
+                </Button>
 
-                <button
-                  onClick={handleRandomCheckOut}
+                <Button
+                  size="lg"
+                  onPress={handleRandomCheckOut}
                   className="w-full min-h-[56px] px-6 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                   aria-label="Simulate random member check-out"
                 >
                   <Dice5 className="h-6 w-6" aria-hidden="true" />
                   Random Check-Out
-                </button>
+                </Button>
 
-                <button
-                  onClick={() => setShowConfirmClear(true)}
+                <Button
+                  size="lg"
+                  onPress={() => setShowConfirmClear(true)}
                   className="w-full min-h-[56px] px-6 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                   aria-label="Clear all member check-ins"
                 >
                   <Trash className="h-6 w-6" aria-hidden="true" />
                   Clear All Check-Ins
-                </button>
+                </Button>
 
-                <button
-                  onClick={() => setShowMemberPicker(true)}
+                <Button
+                  size="lg"
+                  onPress={() => setShowMemberPicker(true)}
                   className="w-full min-h-[56px] px-6 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-colors"
                   aria-label="Pick specific member to check in or out"
                 >
                   <User className="h-6 w-6" aria-hidden="true" />
                   Pick Specific Person
-                </button>
+                </Button>
 
                 <div className="text-center text-sm text-gray-500 mt-4">
                   {members.filter((m) => m.isPresent).length} present /{' '}
@@ -228,20 +236,22 @@ export default function DevPanel({ onSimulateScan }: DevPanelProps) {
               present members.
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmClear(false)}
+              <Button
+                size="lg"
+                onPress={() => setShowConfirmClear(false)}
                 className="flex-1 min-h-[56px] px-4 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 rounded-xl font-semibold transition-colors"
                 aria-label="Cancel clearing check-ins"
               >
                 Cancel
-              </button>
-              <button
-                onClick={handleClearAll}
+              </Button>
+              <Button
+                size="lg"
+                onPress={handleClearAll}
                 className="flex-1 min-h-[56px] px-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-xl font-semibold transition-colors"
                 aria-label="Confirm clear all check-ins"
               >
                 Clear All
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useKioskStore } from '../state/kiosk-state';
 import { getConfig } from '../lib/config';
 import DevPanel from '../components/DevPanel';
 import { Logo } from '@shared/ui';
+import { Button } from '@heroui/react';
 
 interface IdleScreenProps {
   onSimulateScan: (serialNumber: string) => void;
@@ -55,21 +56,23 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
       {/* Action buttons - gap-4 provides 16px spacing between 56px touch targets */}
       <div className="flex gap-4 mb-6">
         {config.visitorModeEnabled && (
-          <button
-            className="kiosk-button-secondary"
-            onClick={enterVisitorMode}
+          <Button
+            size="lg"
+            className="kiosk-button-secondary min-h-[56px]"
+            onPress={enterVisitorMode}
             aria-label="Sign in as visitor"
           >
             Visitor Sign-In
-          </button>
+          </Button>
         )}
-        <button
-          className="kiosk-button-secondary"
-          onClick={handleEventSelection}
+        <Button
+          size="lg"
+          className="kiosk-button-secondary min-h-[56px]"
+          onPress={handleEventSelection}
           aria-label="Check in to event"
         >
           Event Check-In
-        </button>
+        </Button>
       </div>
 
       {/* Time display */}

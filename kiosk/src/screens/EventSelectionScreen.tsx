@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useKioskStore } from '../state/kiosk-state';
 import { fetchActiveEvents } from '../services/event-service';
 import type { ActiveEvent } from '../services/event-service';
+import { Button } from '@heroui/react';
 
 export default function EventSelectionScreen() {
   const { reset, selectEvent, setError } = useKioskStore();
@@ -66,13 +67,14 @@ export default function EventSelectionScreen() {
             {error || 'There are no active events at this time.'}
           </div>
         </div>
-        <button
-          className="kiosk-button-secondary"
-          onClick={reset}
+        <Button
+          size="lg"
+          className="kiosk-button-secondary min-h-[56px]"
+          onPress={reset}
           aria-label="Return to home screen"
         >
           Back to Home
-        </button>
+        </Button>
       </div>
     );
   }
@@ -93,9 +95,10 @@ export default function EventSelectionScreen() {
       <div className="flex-1 overflow-y-auto min-h-0" role="region" aria-label="Available events">
         <div className="grid grid-cols-1 gap-3 max-w-4xl mx-auto pb-4">
           {events.map((event) => (
-            <button
+            <Button
               key={event.id}
-              onClick={() => handleEventSelect(event.id)}
+              size="lg"
+              onPress={() => handleEventSelect(event.id)}
               className="kiosk-button-primary text-left p-6 h-auto min-h-[56px]"
               aria-label={`Check in to ${event.name}, ${new Date(event.startTime).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })} to ${new Date(event.endTime).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}`}
             >
@@ -116,20 +119,21 @@ export default function EventSelectionScreen() {
                   minute: '2-digit',
                 })}
               </div>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       {/* Cancel Button */}
       <div className="mt-4 flex justify-center">
-        <button
-          className="kiosk-button-secondary"
-          onClick={reset}
+        <Button
+          size="lg"
+          className="kiosk-button-secondary min-h-[56px]"
+          onPress={reset}
           aria-label="Cancel event selection and return to home"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

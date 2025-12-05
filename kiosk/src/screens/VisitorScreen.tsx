@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useKioskStore } from '../state/kiosk-state';
 import { recordVisitor } from '../lib/api';
 import { getConfig } from '../lib/config';
+import { Button, Input, Select, SelectItem } from '@heroui/react';
 
 const VISIT_TYPES = [
   { value: 'contractor', label: 'Contractor/SSC' },
@@ -73,61 +74,76 @@ export default function VisitorScreen() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Name */}
           <div>
-            <label htmlFor="visitor-name" className="block text-xl font-semibold text-gray-700 mb-2">
-              Full Name *
-            </label>
-            <input
+            <Input
               id="visitor-name"
+              label="Full Name *"
+              labelPlacement="outside"
               type="text"
+              size="lg"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="kiosk-input text-xl"
+              onValueChange={(value) => setFormData({ ...formData, name: value })}
+              classNames={{
+                label: "text-xl font-semibold text-gray-700 mb-2",
+                input: "text-xl",
+                inputWrapper: "min-h-[56px]"
+              }}
               placeholder="John Doe"
-              disabled={isSubmitting}
-              required
+              isDisabled={isSubmitting}
+              isRequired
               aria-required="true"
             />
           </div>
 
           {/* Organization */}
           <div>
-            <label htmlFor="visitor-organization" className="block text-xl font-semibold text-gray-700 mb-2">
-              Organization *
-            </label>
-            <input
+            <Input
               id="visitor-organization"
+              label="Organization *"
+              labelPlacement="outside"
               type="text"
+              size="lg"
               value={formData.organization}
-              onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-              className="kiosk-input text-xl"
+              onValueChange={(value) => setFormData({ ...formData, organization: value })}
+              classNames={{
+                label: "text-xl font-semibold text-gray-700 mb-2",
+                input: "text-xl",
+                inputWrapper: "min-h-[56px]"
+              }}
               placeholder="Company or Unit"
-              disabled={isSubmitting}
-              required
+              isDisabled={isSubmitting}
+              isRequired
               aria-required="true"
             />
           </div>
 
           {/* Visit Type */}
           <div>
-            <label htmlFor="visitor-type" className="block text-xl font-semibold text-gray-700 mb-2">
-              Visit Type *
-            </label>
-            <select
+            <Select
               id="visitor-type"
-              value={formData.visitType}
-              onChange={(e) => setFormData({ ...formData, visitType: e.target.value })}
-              className="kiosk-input text-xl bg-white"
-              disabled={isSubmitting}
-              required
+              label="Visit Type *"
+              labelPlacement="outside"
+              size="lg"
+              placeholder="Select a type"
+              selectedKeys={formData.visitType ? [formData.visitType] : []}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string;
+                setFormData({ ...formData, visitType: selected || '' });
+              }}
+              classNames={{
+                label: "text-xl font-semibold text-gray-700 mb-2",
+                trigger: "min-h-[56px]",
+                value: "text-xl"
+              }}
+              isDisabled={isSubmitting}
+              isRequired
               aria-required="true"
             >
-              <option value="">Select a type</option>
               {VISIT_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
+                <SelectItem key={type.value} value={type.value}>
                   {type.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Purpose (optional) */}
@@ -150,23 +166,25 @@ export default function VisitorScreen() {
 
         {/* Action Buttons */}
         <div className="flex gap-4 mt-auto">
-          <button
+          <Button
             type="button"
-            onClick={reset}
-            className="kiosk-button-secondary flex-1"
-            disabled={isSubmitting}
+            size="lg"
+            onPress={reset}
+            className="kiosk-button-secondary flex-1 min-h-[56px]"
+            isDisabled={isSubmitting}
             aria-label="Cancel visitor check-in and return to home"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="kiosk-button-primary flex-1"
-            disabled={isSubmitting}
+            size="lg"
+            className="kiosk-button-primary flex-1 min-h-[56px]"
+            isDisabled={isSubmitting}
             aria-label={isSubmitting ? 'Submitting visitor information' : 'Submit visitor check-in'}
           >
             {isSubmitting ? 'Submitting...' : 'Check In'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
