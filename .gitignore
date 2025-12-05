@@ -90,6 +90,14 @@ frontend/agent-responses/
 kiosk/agent-responses/
 tv-display/agent-responses/
 
+# Temporary test files
+test_render.html
+kiosk/test_render.html
+**/test_render.html
+
+# Audit reports (temporary)
+*-AUDIT-REPORT.md
+
 # Root-level investigation/temp docs
 CODEBASE-EXPLORATION.md
 FINDINGS-SUMMARY.md
