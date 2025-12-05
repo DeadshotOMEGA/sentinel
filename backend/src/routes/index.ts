@@ -7,6 +7,7 @@ import { badgeRoutes } from './badges';
 import { authRoutes } from './auth';
 import { eventRoutes } from './events';
 import { devRoutes } from './dev';
+import { alertRoutes } from './alerts';
 import { checkDatabaseHealth } from '../db/prisma';
 import { redis } from '../db/redis';
 import { logger } from '../utils/logger';
@@ -94,6 +95,7 @@ router.use('/divisions', divisionRoutes);
 router.use('/badges', badgeRoutes);
 router.use('/auth', authRoutes);
 router.use('/events', eventRoutes);
+router.use('/alerts', alertRoutes);
 router.use('/dev', devRoutes);
 
 export { router as apiRoutes };
