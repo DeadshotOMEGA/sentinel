@@ -107,6 +107,8 @@ const config: Config = {
             content2: '#f8fafc',
             content3: '#f1f5f9',
             content4: '#e2e8f0',
+            background: '#ffffff',
+            foreground: '#11181c',
             focus: '#007fff',
             overlay: 'rgba(0, 0, 0, 0.5)',
             divider: '#e2e8f0',

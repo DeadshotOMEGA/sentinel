@@ -44,17 +44,17 @@ export default function AppSidebar() {
     <div
       className={cn(
         "relative flex h-full flex-col border-r border-divider bg-background transition-width duration-200",
-        isCompact ? "w-16" : "w-72"
+        isCompact ? "w-14" : "w-48"
       )}
     >
       {/* Header: Logo + Toggle */}
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="flex h-12 items-center justify-between px-2">
         <div className={cn("flex items-center gap-2", isCompact && "justify-center w-full")}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-            <SentinelIcon className="text-white" size={20} />
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary">
+            <SentinelIcon className="text-white" size={16} />
           </div>
           {!isCompact && (
-            <span className="text-small font-bold uppercase text-foreground">
+            <span className="text-xs font-bold uppercase text-foreground">
               Sentinel
             </span>
           )}
@@ -98,16 +98,15 @@ export default function AppSidebar() {
       {/* User Avatar Section */}
       {!isCompact && (
         <>
-          <Spacer y={2} />
-          <div className="flex items-center gap-3 px-4">
+          <Spacer y={1} />
+          <div className="flex items-center gap-2 px-2">
             <Avatar
-              isBordered
               size="sm"
               name={`${user?.firstName} ${user?.lastName}`}
-              className="bg-primary text-white"
+              className="bg-primary text-white h-6 w-6 text-tiny"
             />
             <div className="flex flex-col">
-              <p className="text-small font-medium text-foreground">
+              <p className="text-xs font-medium text-foreground truncate">
                 {user?.firstName} {user?.lastName}
               </p>
               <p className="text-tiny text-default-400 capitalize">{user?.role}</p>
@@ -128,7 +127,7 @@ export default function AppSidebar() {
       )}
 
       {/* Navigation */}
-      <ScrollShadow className="flex-1 px-2 py-4">
+      <ScrollShadow className="flex-1 px-1 py-2">
         <Sidebar
           defaultSelectedKey={currentKey}
           isCompact={isCompact}
@@ -138,7 +137,7 @@ export default function AppSidebar() {
       </ScrollShadow>
 
       {/* Footer Actions */}
-      <div className="mt-auto border-t border-divider p-2">
+      <div className="mt-auto border-t border-divider p-1">
         {isCompact ? (
           <div className="flex flex-col items-center gap-1">
             <Button

@@ -48,13 +48,14 @@ function DivisionsSettings() {
   const [editDivision, setEditDivision] = useState<Division | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: divisions, isLoading } = useQuery({
+  const { data: divisionsData, isLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
-      const response = await api.get<Division[]>('/divisions');
+      const response = await api.get<{ divisions: Division[] }>('/divisions');
       return response.data;
     },
   });
+  const divisions = divisionsData?.divisions;
 
   const handleAdd = () => {
     setEditDivision(null);
