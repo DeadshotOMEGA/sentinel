@@ -6,102 +6,24 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
-enum AdminRole {
-  admin
-  viewer
-
-  @@map("admin_role")
-}
-
-enum BadgeAssignmentType {
-  member
-  event
-  unassigned
-
-  @@map("badge_assignment_type")
-}
-
-enum BadgeStatus {
-  active
-  disabled
-  lost
-  returned
-
-  @@map("badge_status")
-}
-
-enum CheckinDirection {
-  in
-  out
-
-  @@map("checkin_direction")
-}
-
-enum MemberType {
-  class_a
-  class_b
-  class_c
-  reg_force
-
-  @@map("member_type")
-}
-
-enum MemberStatus {
-  active
-  inactive
-  pending_review
-
-  @@map("member_status")
-}
-
-enum EventStatus {
-  draft
-  active
-  completed
-  cancelled
-
-  @@map("event_status")
-}
-
-enum AttendeeStatus {
-  pending
-  active
-  checked_out
-  expired
-
-  @@map("attendee_status")
-}
-
-enum VisitType {
-  contractor
-  recruitment
-  event
-  official
-  museum
-  other
-
-  @@map("visit_type")
-}
-
-// ============================================================================
-// MODELS
-// ============================================================================
-
 model AdminUser {
-  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username     String     @unique @db.VarChar(100)
-  email        String?    @db.VarChar(255)
-  passwordHash String     @map("password_hash") @db.VarChar(255)
-  fullName     String     @map("full_name") @db.VarChar(200)
-  role         String     @db.VarChar(20)
-  lastLogin    DateTime?  @map("last_login") @db.Timestamp(6)
-  createdAt    DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  auditLogs    AuditLog[]
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username         String             @unique @db.VarChar(100)
+  email            String?            @unique @db.VarChar(255)
+  passwordHash     String             @map("password_hash") @db.VarChar(255)
+  fullName         String             @map("full_name") @db.VarChar(200)
+  role             String             @db.VarChar(20)
+  lastLogin        DateTime?          @map("last_login") @db.Timestamp(6)
+  createdAt        DateTime?          @default(now()) @map("created_at") @db.Timestamp(6)
+  first_name       String             @db.VarChar(100)
+  last_name        String             @db.VarChar(100)
+  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
+  auditLogs        AuditLog[]
+  checkins         Checkin[]
+  report_audit_log report_audit_log[]
+  visitors         Visitor[]
 
+  @@index([email], map: "idx_admin_users_email")
   @@map("admin_users")
 }
 
@@ -114,7 +36,7 @@ model AuditLog {
   details     Json?
   ipAddress   String?    @map("ip_address") @db.Inet
   createdAt   DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id], onUpdate: NoAction)
 
   @@index([adminUserId, createdAt(sort: Desc)], map: "idx_audit_log_admin_created")
   @@index([createdAt(sort: Desc)], map: "idx_audit_log_created")
@@ -123,42 +45,49 @@ model AuditLog {
 }
 
 model Badge {
-  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serialNumber   String              @unique @map("serial_number") @db.VarChar(100)
-  assignmentType String              @map("assignment_type") @db.VarChar(20)
-  assignedToId   String?             @map("assigned_to_id") @db.Uuid
-  status         String              @default("active") @db.VarChar(20)
-  lastUsed       DateTime?           @map("last_used") @db.Timestamp(6)
-  createdAt      DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt      DateTime?           @default(now()) @map("updated_at") @db.Timestamp(6)
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serialNumber   String          @unique @map("serial_number") @db.VarChar(100)
+  assignmentType String          @map("assignment_type") @db.VarChar(20)
+  assignedToId   String?         @map("assigned_to_id") @db.Uuid
+  status         String          @default("active") @db.VarChar(20)
+  lastUsed       DateTime?       @map("last_used") @db.Timestamp(6)
+  createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime?       @default(now()) @map("updated_at") @db.Timestamp(6)
   checkins       Checkin[]
   eventAttendees EventAttendee[]
   eventCheckins  EventCheckin[]
-  members        Member[]
   visitors       Visitor[]
 
   @@index([assignedToId], map: "idx_badges_assigned_to")
   @@index([serialNumber], map: "idx_badges_serial_number")
   @@index([status], map: "idx_badges_status")
+  @@index([assignmentType], map: "idx_badges_assignment_type")
   @@map("badges")
 }
 
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Checkin {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  memberId  String?   @map("member_id") @db.Uuid
-  badgeId   String?   @map("badge_id") @db.Uuid
-  direction String    @db.VarChar(10)
-  timestamp DateTime  @default(now()) @db.Timestamp(6)
-  kioskId   String    @map("kiosk_id") @db.VarChar(50)
-  synced    Boolean?  @default(true)
-  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  badge     Badge?    @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member    Member?   @relation(fields: [memberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId           String?    @map("member_id") @db.Uuid
+  badgeId            String?    @map("badge_id") @db.Uuid
+  direction          String     @db.VarChar(10)
+  timestamp          DateTime   @default(now()) @db.Timestamp(6)
+  kioskId            String     @map("kiosk_id") @db.VarChar(50)
+  synced             Boolean?   @default(true)
+  createdAt          DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  flagged_for_review Boolean?   @default(false)
+  flag_reason        String?    @db.VarChar(255)
+  method             String?    @default("badge") @db.VarChar(20)
+  created_by_admin   String?    @db.Uuid
+  badge              Badge?     @relation(fields: [badgeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  admin_users        AdminUser? @relation(fields: [created_by_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member             Member?    @relation(fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
   @@index([badgeId], map: "idx_checkins_badge")
   @@index([kioskId, timestamp(sort: Desc)], map: "idx_checkins_kiosk")
   @@index([memberId, timestamp(sort: Desc)], map: "idx_checkins_member_timestamp")
   @@index([timestamp(sort: Desc)], map: "idx_checkins_timestamp")
+  @@index([method], map: "idx_checkins_method")
   @@map("checkins")
 }
 
@@ -237,29 +166,32 @@ model Event {
 }
 
 model Member {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serviceNumber  String    @unique @map("service_number") @db.VarChar(20)
-  employeeNumber String?   @map("employee_number") @db.VarChar(20)
-  firstName      String    @map("first_name") @db.VarChar(100)
-  lastName       String    @map("last_name") @db.VarChar(100)
-  initials       String?   @db.VarChar(10)
-  rank           String    @db.VarChar(50)
-  divisionId     String?   @map("division_id") @db.Uuid
-  mess           String?   @db.VarChar(50)
-  moc            String?   @db.VarChar(100)
-  memberType     String    @map("member_type") @db.VarChar(20)
-  classDetails   String?   @map("class_details") @db.VarChar(100)
-  status         String    @default("active") @db.VarChar(20)
-  email          String?   @db.VarChar(255)
-  homePhone      String?   @map("home_phone") @db.VarChar(30)
-  mobilePhone    String?   @map("mobile_phone") @db.VarChar(50)
-  badgeId        String?   @map("badge_id") @db.Uuid
-  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt      DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
-  checkins       Checkin[]
-  badge          Badge?    @relation(fields: [badgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  division       Division? @relation(fields: [divisionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  visitors       Visitor[]
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber   String            @unique @map("service_number") @db.VarChar(20)
+  rank            String            @db.VarChar(50)
+  firstName       String            @map("first_name") @db.VarChar(100)
+  lastName        String            @map("last_name") @db.VarChar(100)
+  email           String?           @db.VarChar(255)
+  mobilePhone     String?           @map("mobile_phone") @db.VarChar(50)
+  divisionId      String?           @map("division_id") @db.Uuid
+  badgeId         String?           @map("badge_id") @db.Uuid
+  memberType      String            @map("member_type") @db.VarChar(20)
+  status          String            @default("active") @db.VarChar(20)
+  createdAt       DateTime?         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?         @default(now()) @map("updated_at") @db.Timestamp(6)
+  employeeNumber  String?           @map("employee_number") @db.VarChar(20)
+  initials        String?           @db.VarChar(10)
+  mess            String?           @db.VarChar(50)
+  moc             String?           @db.VarChar(100)
+  classDetails    String?           @map("class_details") @db.VarChar(100)
+  homePhone       String?           @map("home_phone") @db.VarChar(30)
+  notes           String?
+  contract_start  DateTime?         @db.Date
+  contract_end    DateTime?         @db.Date
+  bmq_enrollments bmq_enrollments[]
+  checkins        Checkin[]
+  division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitors        Visitor[]
 
   @@index([divisionId], map: "idx_members_division")
   @@index([employeeNumber], map: "idx_members_employee_number")
@@ -267,33 +199,119 @@ model Member {
   @@index([moc], map: "idx_members_moc")
   @@index([serviceNumber], map: "idx_members_service_number")
   @@index([status], map: "idx_members_status")
+  @@index([email], map: "idx_members_email")
   @@map("members")
 }
 
 model Visitor {
-  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String    @db.VarChar(200)
-  organization     String?   @db.VarChar(200)
-  visitType        String    @map("visit_type") @db.VarChar(50)
-  visitReason      String?   @map("visit_reason")
-  eventId          String?   @map("event_id") @db.Uuid
-  hostMemberId     String?   @map("host_member_id") @db.Uuid
-  checkInTime      DateTime  @default(now()) @map("check_in_time") @db.Timestamp(6)
-  checkOutTime     DateTime? @map("check_out_time") @db.Timestamp(6)
-  temporaryBadgeId String?   @map("temporary_badge_id") @db.Uuid
-  kioskId          String    @map("kiosk_id") @db.VarChar(50)
-  adminNotes       String?   @map("admin_notes")
-  checkInMethod    String?   @default("kiosk") @map("check_in_method") @db.VarChar(20)
-  createdByAdmin   String?   @map("created_by_admin") @db.Uuid
-  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  event            Event?    @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  hostMember       Member?   @relation(fields: [hostMemberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  badge            Badge?    @relation(fields: [temporaryBadgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String     @db.VarChar(200)
+  organization     String?    @db.VarChar(200)
+  visitType        String     @map("visit_type") @db.VarChar(50)
+  visitReason      String?    @map("visit_reason")
+  eventId          String?    @map("event_id") @db.Uuid
+  hostMemberId     String?    @map("host_member_id") @db.Uuid
+  checkInTime      DateTime   @default(now()) @map("check_in_time") @db.Timestamp(6)
+  checkOutTime     DateTime?  @map("check_out_time") @db.Timestamp(6)
+  temporaryBadgeId String?    @map("temporary_badge_id") @db.Uuid
+  kioskId          String     @map("kiosk_id") @db.VarChar(50)
+  createdAt        DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  adminNotes       String?    @map("admin_notes")
+  checkInMethod    String?    @default("kiosk") @map("check_in_method") @db.VarChar(20)
+  createdByAdmin   String?    @map("created_by_admin") @db.Uuid
+  admin_users      AdminUser? @relation(fields: [createdByAdmin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event            Event?     @relation(fields: [eventId], references: [id], onUpdate: NoAction)
+  hostMember       Member?    @relation(fields: [hostMemberId], references: [id], onUpdate: NoAction)
+  badge            Badge?     @relation(fields: [temporaryBadgeId], references: [id], onUpdate: NoAction)
 
   @@index([checkInTime(sort: Desc)], map: "idx_visitors_check_in_time")
   @@index([checkOutTime], map: "idx_visitors_check_out_time")
   @@index([eventId], map: "idx_visitors_event")
   @@index([hostMemberId], map: "idx_visitors_host")
   @@index([checkInMethod], map: "idx_visitors_check_in_method")
+  @@index([temporaryBadgeId], map: "idx_visitors_temporary_badge")
   @@map("visitors")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model bmq_courses {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String            @db.VarChar(100)
+  start_date          DateTime          @db.Date
+  end_date            DateTime          @db.Date
+  training_start_time DateTime          @db.Time(6)
+  training_end_time   DateTime          @db.Time(6)
+  is_active           Boolean?          @default(true)
+  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  training_days       String[]
+  bmq_enrollments     bmq_enrollments[]
+
+  @@index([start_date, end_date], map: "idx_bmq_courses_dates")
+  @@index([is_active], map: "idx_bmq_courses_is_active")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model bmq_enrollments {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  member_id     String      @db.Uuid
+  bmq_course_id String      @db.Uuid
+  enrolled_at   DateTime?   @default(now()) @db.Timestamptz(6)
+  completed_at  DateTime?   @db.Timestamptz(6)
+  status        String?     @default("enrolled") @db.VarChar(20)
+  bmq_courses   bmq_courses @relation(fields: [bmq_course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  members       Member      @relation(fields: [member_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([member_id, bmq_course_id])
+  @@index([bmq_course_id], map: "idx_bmq_enrollments_course")
+  @@index([member_id], map: "idx_bmq_enrollments_member")
+  @@index([status], map: "idx_bmq_enrollments_status")
+}
+
+model migrations {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique @db.VarChar(255)
+  applied_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model report_audit_log {
+  id                  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  report_type         String     @db.VarChar(50)
+  report_config       Json
+  generated_by        String?    @db.Uuid
+  is_scheduled        Boolean?   @default(false)
+  scheduled_report_id String?    @db.Uuid
+  generated_at        DateTime?  @default(now()) @db.Timestamptz(6)
+  file_size_bytes     Int?
+  generation_time_ms  Int?
+  admin_users         AdminUser? @relation(fields: [generated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([generated_at], map: "idx_report_audit_log_generated_at")
+  @@index([generated_by], map: "idx_report_audit_log_generated_by")
+  @@index([is_scheduled], map: "idx_report_audit_log_is_scheduled")
+  @@index([report_type], map: "idx_report_audit_log_type")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model report_settings {
+  key        String    @id @db.VarChar(100)
+  value      Json
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model training_years {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String    @db.VarChar(50)
+  start_date         DateTime  @db.Date
+  end_date           DateTime  @db.Date
+  holiday_exclusions Json?     @default("[]")
+  is_current         Boolean?  @default(false)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([is_current], map: "idx_training_years_is_current")
+  @@index([start_date], map: "idx_training_years_start_date")
 }

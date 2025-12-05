@@ -16,7 +16,14 @@ import type {
   CreateMemberInput,
   UpdateMemberInput,
   ImportPreviewMember,
+  ImportColumnMapping,
+  CsvHeadersResult,
+  ImportTemplateField,
+  DivisionDetectionResult,
+  DetectedDivision,
+  ImportDivisionMapping,
 } from '../../../shared/types';
+import { IMPORT_FIELD_META } from '../../../shared/types';
 
 interface CSVRow {
   SN: string;
@@ -41,10 +48,189 @@ interface CSVRow {
 export class ImportService {
 
   /**
+   * Parse date string from CSV and return ISO string or undefined
+   * Accepts common formats: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY
+   */
+  private parseDate(dateStr?: string): string | undefined {
+    if (!dateStr?.trim()) {
+      return undefined;
+    }
+
+    const cleaned = dateStr.trim();
+
+    // Try parsing as ISO date (YYYY-MM-DD)
+    const isoMatch = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) {
+      const date = new Date(cleaned);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+
+    // Try MM/DD/YYYY
+    const usMatch = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (usMatch) {
+      const [, month, day, year] = usMatch;
+      const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+
+    // Try DD/MM/YYYY
+    const euMatch = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (euMatch) {
+      const [, day, month, year] = euMatch;
+      const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+
+    // Invalid or unrecognized format
+    return undefined;
+  }
+
+  /**
+   * Parse CSV headers and return sample rows with suggested column mapping
+   */
+  parseHeaders(csvText: string): CsvHeadersResult {
+    const result = Papa.parse<Record<string, string>>(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
+      preview: 4, // Parse header + first 3 data rows
+    });
+
+    if (result.errors.length > 0) {
+      throw new ValidationError(
+        'CSV parsing failed',
+        result.errors.map((e) => `Row ${e.row}: ${e.message}`).join('; '),
+        'Please ensure the CSV file is properly formatted.'
+      );
+    }
+
+    const headers = result.meta.fields ?? [];
+    const sampleRows = result.data.slice(0, 3);
+
+    // Auto-match headers to template fields using aliases
+    const suggestedMapping: Partial<ImportColumnMapping> = {};
+    const matchedHeaders = new Set<string>();
+
+    // Normalize header names for matching
+    const normalizedHeaders = headers.map(h => h.trim().toUpperCase());
+
+    // Try to match each template field with CSV headers
+    for (const fieldMeta of IMPORT_FIELD_META) {
+      const field = fieldMeta.field;
+
+      // Check each alias to see if it matches a header
+      for (const alias of fieldMeta.aliases) {
+        const normalizedAlias = alias.toUpperCase();
+        const matchIndex = normalizedHeaders.indexOf(normalizedAlias);
+
+        if (matchIndex !== -1 && !matchedHeaders.has(headers[matchIndex])) {
+          suggestedMapping[field] = headers[matchIndex];
+          matchedHeaders.add(headers[matchIndex]);
+          break;
+        }
+      }
+    }
+
+    // Find unmapped headers
+    const unmappedHeaders = headers.filter(h => !matchedHeaders.has(h));
+
+    return {
+      headers,
+      sampleRows,
+      suggestedMapping,
+      unmappedHeaders,
+    };
+  }
+
+  /**
+   * Detect divisions from CSV and match against existing divisions
+   */
+  async detectDivisions(csvText: string, columnMapping: ImportColumnMapping): Promise<DivisionDetectionResult> {
+    const result = Papa.parse<Record<string, string>>(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim(),
+    });
+
+    if (result.errors.length > 0) {
+      throw new ValidationError(
+        'CSV parsing failed',
+        result.errors.map((e) => `Row ${e.row}: ${e.message}`).join('; '),
+        'Please ensure the CSV file is properly formatted.'
+      );
+    }
+
+    // Get the department column name from mapping
+    const departmentColumn = columnMapping.department;
+    if (!departmentColumn) {
+      throw new ValidationError(
+        'Department column not mapped',
+        'The department/division column must be mapped before detecting divisions.',
+        'Please map the department column in the column mapping step.'
+      );
+    }
+
+    // Count occurrences of each department value
+    const departmentCounts = new Map<string, number>();
+    for (const row of result.data) {
+      const dept = row[departmentColumn]?.trim();
+      if (dept) {
+        departmentCounts.set(dept, (departmentCounts.get(dept) || 0) + 1);
+      }
+    }
+
+    // Get all existing divisions
+    const existingDivisions = await divisionRepository.findAll();
+
+    // Create lookup maps for matching
+    const divisionByCode = new Map<string, typeof existingDivisions[0]>();
+    const divisionByName = new Map<string, typeof existingDivisions[0]>();
+    for (const div of existingDivisions) {
+      divisionByCode.set(div.code.toUpperCase(), div);
+      divisionByName.set(div.name.toUpperCase(), div);
+    }
+
+    // Match each detected department to existing divisions
+    const detected: DetectedDivision[] = [];
+    for (const [csvValue, count] of departmentCounts) {
+      const upperValue = csvValue.toUpperCase();
+      const matchedByCode = divisionByCode.get(upperValue);
+      const matchedByName = divisionByName.get(upperValue);
+      const matched = matchedByCode || matchedByName;
+
+      detected.push({
+        csvValue,
+        existingDivisionId: matched?.id,
+        existingDivisionName: matched?.name,
+        memberCount: count,
+      });
+    }
+
+    // Sort by member count descending, then by name
+    detected.sort((a, b) => {
+      if (b.memberCount !== a.memberCount) {
+        return b.memberCount - a.memberCount;
+      }
+      return a.csvValue.localeCompare(b.csvValue);
+    });
+
+    return {
+      detected,
+      existingDivisions,
+    };
+  }
+
+  /**
    * Parse CSV text and convert to NominalRollRow objects
    */
-  private parseCSV(csvText: string): { rows: NominalRollRow[]; errors: ImportError[] } {
-    const result = Papa.parse<CSVRow>(csvText, {
+  private parseCSV(csvText: string, columnMapping?: ImportColumnMapping): { rows: NominalRollRow[]; errors: ImportError[] } {
+    const result = Papa.parse<Record<string, string>>(csvText, {
       header: true,
       skipEmptyLines: true,
       transformHeader: (header) => header.trim(),
@@ -58,19 +244,29 @@ export class ImportService {
       );
     }
 
+    // Build mapping from template field to CSV column name
+    const fieldToColumn: Record<ImportTemplateField, string | null> = columnMapping ?? this.getDefaultColumnMapping();
+
     const rows: NominalRollRow[] = [];
     const errors: ImportError[] = [];
 
     result.data.forEach((csvRow, index) => {
       const rowNumber = index + 2; // +2 because header is row 1, and we're 0-indexed
 
+      // Helper to get value from CSV row using field mapping
+      const getValue = (field: ImportTemplateField): string | undefined => {
+        const columnName = fieldToColumn[field];
+        if (!columnName) return undefined;
+        return csvRow[columnName];
+      };
+
       // Skip completely empty rows (all required fields blank)
       const hasAnyRequiredField =
-        csvRow.SN?.trim() ||
-        csvRow['FIRST NAME']?.trim() ||
-        csvRow['LAST NAME']?.trim() ||
-        csvRow.RANK?.trim() ||
-        csvRow.DEPT?.trim();
+        getValue('serviceNumber')?.trim() ||
+        getValue('firstName')?.trim() ||
+        getValue('lastName')?.trim() ||
+        getValue('rank')?.trim() ||
+        getValue('department')?.trim();
 
       if (!hasAnyRequiredField) {
         // Silently skip empty rows (common in CSV exports)
@@ -78,46 +274,51 @@ export class ImportService {
       }
 
       // Validate required fields
-      if (!csvRow.SN?.trim()) {
+      const serviceNumber = getValue('serviceNumber')?.trim();
+      if (!serviceNumber) {
         errors.push({
           row: rowNumber,
-          field: 'SN',
+          field: 'serviceNumber',
           message: 'Service number is required',
         });
         return;
       }
 
-      if (!csvRow['FIRST NAME']?.trim()) {
+      const firstName = getValue('firstName')?.trim();
+      if (!firstName) {
         errors.push({
           row: rowNumber,
-          field: 'FIRST NAME',
+          field: 'firstName',
           message: 'First name is required',
         });
         return;
       }
 
-      if (!csvRow['LAST NAME']?.trim()) {
+      const lastName = getValue('lastName')?.trim();
+      if (!lastName) {
         errors.push({
           row: rowNumber,
-          field: 'LAST NAME',
+          field: 'lastName',
           message: 'Last name is required',
         });
         return;
       }
 
-      if (!csvRow.RANK?.trim()) {
+      const rank = getValue('rank')?.trim();
+      if (!rank) {
         errors.push({
           row: rowNumber,
-          field: 'RANK',
+          field: 'rank',
           message: 'Rank is required',
         });
         return;
       }
 
-      if (!csvRow.DEPT?.trim()) {
+      const department = getValue('department')?.trim();
+      if (!department) {
         errors.push({
           row: rowNumber,
-          field: 'DEPT',
+          field: 'department',
           message: 'Department is required',
         });
         return;
@@ -125,25 +326,52 @@ export class ImportService {
 
       // Map CSV row to NominalRollRow with name normalization and CSV injection sanitization
       const nominalRow: NominalRollRow = {
-        serviceNumber: sanitizeCsvValue(csvRow.SN.replace(/\s/g, '')), // Remove all spaces
-        employeeNumber: csvRow['EMPL #']?.trim() ? sanitizeCsvValue(csvRow['EMPL #'].trim()) : undefined,
-        rank: sanitizeCsvValue(csvRow.RANK.trim()),
-        lastName: normalizeName(sanitizeCsvValue(csvRow['LAST NAME'].trim())),
-        firstName: normalizeName(sanitizeCsvValue(csvRow['FIRST NAME'].trim())),
-        initials: csvRow.INITIALS?.trim() ? sanitizeCsvValue(csvRow.INITIALS.trim()) : undefined,
-        department: sanitizeCsvValue(csvRow.DEPT.trim()),
-        mess: csvRow.MESS?.trim() ? sanitizeCsvValue(csvRow.MESS.trim()) : undefined,
-        moc: csvRow.MOC?.trim() ? sanitizeCsvValue(csvRow.MOC.trim()) : undefined,
-        email: csvRow['EMAIL ADDRESS']?.trim() ? sanitizeCsvValue(csvRow['EMAIL ADDRESS'].trim().toLowerCase()) : undefined,
-        homePhone: csvRow['HOME PHONE']?.trim() ? sanitizeCsvValue(csvRow['HOME PHONE'].trim()) : undefined,
-        mobilePhone: csvRow['MOBILE PHONE']?.trim() ? sanitizeCsvValue(csvRow['MOBILE PHONE'].trim()) : undefined,
-        details: csvRow.DETAILS?.trim() ? sanitizeCsvValue(csvRow.DETAILS.trim()) : undefined,
+        serviceNumber: sanitizeCsvValue(serviceNumber.replace(/\s/g, '')), // Remove all spaces
+        employeeNumber: getValue('employeeNumber')?.trim() ? sanitizeCsvValue(getValue('employeeNumber')!.trim()) : undefined,
+        rank: sanitizeCsvValue(rank),
+        lastName: normalizeName(sanitizeCsvValue(lastName)),
+        firstName: normalizeName(sanitizeCsvValue(firstName)),
+        initials: getValue('initials')?.trim() ? sanitizeCsvValue(getValue('initials')!.trim()) : undefined,
+        department: sanitizeCsvValue(department),
+        mess: getValue('mess')?.trim() ? sanitizeCsvValue(getValue('mess')!.trim()) : undefined,
+        moc: getValue('moc')?.trim() ? sanitizeCsvValue(getValue('moc')!.trim()) : undefined,
+        email: getValue('email')?.trim() ? sanitizeCsvValue(getValue('email')!.trim().toLowerCase()) : undefined,
+        homePhone: getValue('homePhone')?.trim() ? sanitizeCsvValue(getValue('homePhone')!.trim()) : undefined,
+        mobilePhone: getValue('mobilePhone')?.trim() ? sanitizeCsvValue(getValue('mobilePhone')!.trim()) : undefined,
+        details: getValue('details')?.trim() ? sanitizeCsvValue(getValue('details')!.trim()) : undefined,
+        notes: getValue('notes')?.trim() ? sanitizeCsvValue(getValue('notes')!.trim()) : undefined,
+        contractStart: this.parseDate(getValue('contractStart')),
+        contractEnd: this.parseDate(getValue('contractEnd')),
       };
 
       rows.push(nominalRow);
     });
 
     return { rows, errors };
+  }
+
+  /**
+   * Get default column mapping for backward compatibility
+   */
+  private getDefaultColumnMapping(): Record<ImportTemplateField, string | null> {
+    return {
+      serviceNumber: 'SN',
+      employeeNumber: 'EMPL #',
+      rank: 'RANK',
+      lastName: 'LAST NAME',
+      firstName: 'FIRST NAME',
+      initials: 'INITIALS',
+      department: 'DEPT',
+      mess: 'MESS',
+      moc: 'MOC',
+      email: 'EMAIL ADDRESS',
+      homePhone: 'HOME PHONE',
+      mobilePhone: 'MOBILE PHONE',
+      details: 'DETAILS',
+      notes: 'NOTES',
+      contractStart: 'CONTRACT START',
+      contractEnd: 'CONTRACT END',
+    };
   }
 
   /**
@@ -175,6 +403,12 @@ export class ImportService {
    * Check if two members have different data that needs updating
    */
   private hasChanges(current: Member, incoming: NominalRollRow, divisionId: string): boolean {
+    // Helper to compare dates (Member has Date objects, incoming has ISO strings)
+    const dateChanged = (currentDate?: Date, incomingDateStr?: string): boolean => {
+      const currentIso = currentDate?.toISOString().split('T')[0];
+      return currentIso !== incomingDateStr;
+    };
+
     return (
       current.serviceNumber !== incoming.serviceNumber ||
       current.employeeNumber !== incoming.employeeNumber ||
@@ -189,7 +423,10 @@ export class ImportService {
       current.homePhone !== incoming.homePhone ||
       current.mobilePhone !== incoming.mobilePhone ||
       current.classDetails !== incoming.details ||
-      current.memberType !== this.deriveMemberType(incoming.details)
+      current.memberType !== this.deriveMemberType(incoming.details) ||
+      current.notes !== incoming.notes ||
+      dateChanged(current.contractStart, incoming.contractStart) ||
+      dateChanged(current.contractEnd, incoming.contractEnd)
     );
   }
 
@@ -198,6 +435,13 @@ export class ImportService {
    */
   private getChanges(current: Member, incoming: NominalRollRow, divisionId: string): string[] {
     const changes: string[] = [];
+
+    // Helper to format date for display
+    const formatDate = (date?: Date | string): string => {
+      if (!date) return 'none';
+      if (typeof date === 'string') return date;
+      return date.toISOString().split('T')[0];
+    };
 
     if (current.serviceNumber !== incoming.serviceNumber) {
       changes.push(`Service Number: ${current.serviceNumber} → ${incoming.serviceNumber}`);
@@ -251,6 +495,22 @@ export class ImportService {
         `Class Details: ${current.classDetails ?? 'none'} → ${incoming.details ?? 'none'}`
       );
     }
+    if (current.notes !== incoming.notes) {
+      changes.push(`Notes: ${current.notes ?? 'none'} → ${incoming.notes ?? 'none'}`);
+    }
+
+    // Check date changes
+    const currentContractStart = formatDate(current.contractStart);
+    const incomingContractStart = formatDate(incoming.contractStart);
+    if (currentContractStart !== incomingContractStart) {
+      changes.push(`Contract Start: ${currentContractStart} → ${incomingContractStart}`);
+    }
+
+    const currentContractEnd = formatDate(current.contractEnd);
+    const incomingContractEnd = formatDate(incoming.contractEnd);
+    if (currentContractEnd !== incomingContractEnd) {
+      changes.push(`Contract End: ${currentContractEnd} → ${incomingContractEnd}`);
+    }
 
     return changes;
   }
@@ -258,9 +518,13 @@ export class ImportService {
   /**
    * Generate import preview showing what will be added, updated, and needs review
    */
-  async generatePreview(csvText: string): Promise<ImportPreview> {
+  async generatePreview(
+    csvText: string,
+    columnMapping?: ImportColumnMapping,
+    userDivisionMapping?: ImportDivisionMapping
+  ): Promise<ImportPreview> {
     // Parse CSV
-    const { rows, errors } = this.parseCSV(csvText);
+    const { rows, errors } = this.parseCSV(csvText, columnMapping);
 
     if (errors.length > 0) {
       throw new ValidationError(
@@ -270,16 +534,28 @@ export class ImportService {
       );
     }
 
-    // Get all divisions for mapping
+    // Get all divisions for auto-mapping
     const divisions = await divisionRepository.findAll();
-    const divisionMap = new Map<string, string>();
+    const divisionByCode = new Map<string, string>();
+    const divisionByName = new Map<string, string>();
     divisions.forEach((div) => {
-      divisionMap.set(div.code.toUpperCase(), div.id);
-      divisionMap.set(div.name.toUpperCase(), div.id);
+      divisionByCode.set(div.code.toUpperCase(), div.id);
+      divisionByName.set(div.name.toUpperCase(), div.id);
     });
 
-    // Build division mapping for response
+    // Build division mapping for response - prefer user mapping, then auto-match
     const divisionMapping: Record<string, string> = {};
+
+    // Helper to resolve division ID for a department value
+    const resolveDivisionId = (dept: string): string | null => {
+      // First check user-provided mapping
+      if (userDivisionMapping?.[dept]) {
+        return userDivisionMapping[dept];
+      }
+      // Then try auto-matching by code or name
+      const deptUpper = dept.toUpperCase();
+      return divisionByCode.get(deptUpper) || divisionByName.get(deptUpper) || null;
+    };
 
     // Collect all service numbers from CSV
     const serviceNumbers = rows.map((r) => r.serviceNumber);
@@ -305,14 +581,13 @@ export class ImportService {
       const rowNumber = index + 2;
 
       // Check if department maps to a division
-      const deptUpper = row.department.toUpperCase();
-      const divisionId = divisionMap.get(deptUpper);
+      const divisionId = resolveDivisionId(row.department);
 
       if (!divisionId) {
         previewErrors.push({
           row: rowNumber,
           field: 'DEPT',
-          message: `Unknown department: ${row.department}. Please add this division first.`,
+          message: `Unknown department: ${row.department}. Please map this division first.`,
         });
         return;
       }
@@ -357,9 +632,14 @@ export class ImportService {
    * Execute the import: add new members, update existing, flag missing for review
    * Wrapped in advisory lock + transaction for atomicity and concurrency protection
    */
-  async executeImport(csvText: string, deactivateIds?: string[]): Promise<ImportResult> {
+  async executeImport(
+    csvText: string,
+    deactivateIds?: string[],
+    columnMapping?: ImportColumnMapping,
+    userDivisionMapping?: ImportDivisionMapping
+  ): Promise<ImportResult> {
     // Generate preview first to validate (read-only, outside transaction)
-    const preview = await this.generatePreview(csvText);
+    const preview = await this.generatePreview(csvText, columnMapping, userDivisionMapping);
 
     if (preview.errors.length > 0) {
       throw new ValidationError(
@@ -370,6 +650,7 @@ export class ImportService {
     }
 
     // Reuse division mapping from preview to avoid redundant query
+    // Note: divisionMapping now uses original dept values as keys, not uppercase
     const divisionMap = new Map<string, string>(
       Object.entries(preview.divisionMapping)
     );
@@ -387,7 +668,8 @@ export class ImportService {
 
       // Process additions - create members one by one
       for (const row of preview.toAdd) {
-        const divisionId = divisionMap.get(row.department.toUpperCase());
+        // Look up by original department value (not uppercase)
+        const divisionId = divisionMap.get(row.department);
         if (!divisionId) {
           continue; // Should not happen after preview validation
         }
@@ -405,6 +687,9 @@ export class ImportService {
             moc: row.moc,
             memberType: this.deriveMemberType(row.details),
             classDetails: row.details,
+            notes: row.notes,
+            contract_start: row.contractStart ? new Date(row.contractStart) : undefined,
+            contract_end: row.contractEnd ? new Date(row.contractEnd) : undefined,
             status: 'active',
             email: row.email,
             homePhone: row.homePhone,
@@ -416,7 +701,8 @@ export class ImportService {
 
       // Process updates - update members one by one
       for (const update of preview.toUpdate) {
-        const divisionId = divisionMap.get(update.incoming.department.toUpperCase());
+        // Look up by original department value (not uppercase)
+        const divisionId = divisionMap.get(update.incoming.department);
         if (!divisionId) {
           continue; // Should not happen after preview validation
         }
@@ -435,6 +721,9 @@ export class ImportService {
             moc: update.incoming.moc,
             memberType: this.deriveMemberType(update.incoming.details),
             classDetails: update.incoming.details,
+            notes: update.incoming.notes,
+            contract_start: update.incoming.contractStart ? new Date(update.incoming.contractStart) : null,
+            contract_end: update.incoming.contractEnd ? new Date(update.incoming.contractEnd) : null,
             email: update.incoming.email,
             homePhone: update.incoming.homePhone,
             mobilePhone: update.incoming.mobilePhone,

@@ -13,6 +13,8 @@ import type {
   CreateMemberInput,
   UpdateMemberInput,
   MemberWithDivision,
+  ImportColumnMapping,
+  ImportTemplateField,
 } from '../../../shared/types';
 import type { PaginatedResponse } from '../../../shared/types/api';
 import type {
@@ -324,9 +326,77 @@ router.get('/:id/history', requireAuth, async (req: Request, res: Response, next
   }
 });
 
+// POST /api/members/import/headers - Parse CSV headers and suggest column mapping
+const importHeadersSchema = z.object({
+  csv: z.string().min(1, 'CSV content is required'),
+});
+
+router.post(
+  '/import/headers',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const validationResult = importHeadersSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid CSV content.'
+        );
+      }
+
+      const { csv } = validationResult.data;
+
+      const result = importService.parseHeaders(csv);
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/members/import/divisions - Detect divisions from CSV
+const importDivisionsSchema = z.object({
+  csv: z.string().min(1, 'CSV content is required'),
+  columnMapping: z.record(z.string(), z.string().nullable()),
+});
+
+router.post(
+  '/import/divisions',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const validationResult = importDivisionsSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid CSV content and column mapping.'
+        );
+      }
+
+      const { csv, columnMapping } = validationResult.data;
+
+      const result = await importService.detectDivisions(
+        csv,
+        columnMapping as ImportColumnMapping
+      );
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // POST /api/members/import/preview - Preview import changes
 const importPreviewSchema = z.object({
   csv: z.string().min(1, 'CSV content is required'),
+  columnMapping: z.record(z.string(), z.string().nullable()).optional(),
+  divisionMapping: z.record(z.string(), z.string()).optional(),
 });
 
 router.post(
@@ -345,9 +415,13 @@ router.post(
         );
       }
 
-      const { csv } = validationResult.data;
+      const { csv, columnMapping, divisionMapping } = validationResult.data;
 
-      const preview = await importService.generatePreview(csv);
+      const preview = await importService.generatePreview(
+        csv,
+        columnMapping as ImportColumnMapping | undefined,
+        divisionMapping
+      );
 
       res.json(preview);
     } catch (err) {
@@ -360,6 +434,8 @@ router.post(
 const importExecuteSchema = z.object({
   csv: z.string().min(1, 'CSV content is required'),
   deactivateIds: z.array(z.string().uuid()).optional(),
+  columnMapping: z.record(z.string(), z.string().nullable()).optional(),
+  divisionMapping: z.record(z.string(), z.string()).optional(),
 });
 
 router.post(
@@ -378,9 +454,14 @@ router.post(
         );
       }
 
-      const { csv, deactivateIds } = validationResult.data;
+      const { csv, deactivateIds, columnMapping, divisionMapping } = validationResult.data;
 
-      const result = await importService.executeImport(csv, deactivateIds);
+      const result = await importService.executeImport(
+        csv,
+        deactivateIds,
+        columnMapping as ImportColumnMapping | undefined,
+        divisionMapping
+      );
 
       res.json(result);
     } catch (err) {

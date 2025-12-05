@@ -24,6 +24,10 @@ import {
   Listbox,
   ListboxItem,
   Progress,
+  Select,
+  SelectItem,
+  Tooltip,
+  Input,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { api } from '../lib/api';
@@ -34,7 +38,14 @@ import type {
   ImportPreviewMember,
   Member,
   ImportError,
+  ImportColumnMapping,
+  CsvHeadersResult,
+  ImportTemplateField,
+  DivisionDetectionResult,
+  ImportDivisionMapping,
+  Division,
 } from '@shared/types';
+import { IMPORT_FIELD_META, REQUIRED_IMPORT_FIELDS } from '@shared/types';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -42,7 +53,7 @@ interface ImportModalProps {
   onImportComplete: () => void;
 }
 
-type Step = 'upload' | 'preview' | 'result';
+type Step = 'upload' | 'mapping' | 'divisions' | 'preview' | 'result';
 
 const importSteps = [
   {
@@ -50,6 +61,18 @@ const importSteps = [
     icon: 'solar:upload-linear',
     title: 'Upload CSV File',
     description: 'Upload or paste your Nominal Roll CSV export from DWAN.',
+  },
+  {
+    key: 'mapping',
+    icon: 'solar:widget-2-linear',
+    title: 'Map Columns',
+    description: 'Match CSV columns to member fields.',
+  },
+  {
+    key: 'divisions',
+    icon: 'solar:buildings-2-linear',
+    title: 'Map Divisions',
+    description: 'Match or create divisions for department values.',
   },
   {
     key: 'preview',
@@ -72,6 +95,15 @@ export default function ImportModal({
 }: ImportModalProps) {
   const [step, setStep] = useState<Step>('upload');
   const [csvContent, setCsvContent] = useState('');
+  const [csvHeaders, setCsvHeaders] = useState<CsvHeadersResult | null>(null);
+  const [columnMapping, setColumnMapping] = useState<ImportColumnMapping>({} as ImportColumnMapping);
+  const [sampleIndex, setSampleIndex] = useState(0);
+  const [divisionDetection, setDivisionDetection] = useState<DivisionDetectionResult | null>(null);
+  const [divisionMapping, setDivisionMapping] = useState<ImportDivisionMapping>({});
+  const [creatingDivisionFor, setCreatingDivisionFor] = useState<string | null>(null);
+  const [newDivisionName, setNewDivisionName] = useState('');
+  const [newDivisionCode, setNewDivisionCode] = useState('');
+  const [isCreatingDivision, setIsCreatingDivision] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [selectedDeactivateIds, setSelectedDeactivateIds] = useState<Set<string>>(new Set());
@@ -82,6 +114,15 @@ export default function ImportModal({
   const resetState = () => {
     setStep('upload');
     setCsvContent('');
+    setCsvHeaders(null);
+    setColumnMapping({} as ImportColumnMapping);
+    setSampleIndex(0);
+    setDivisionDetection(null);
+    setDivisionMapping({});
+    setCreatingDivisionFor(null);
+    setNewDivisionName('');
+    setNewDivisionCode('');
+    setIsCreatingDivision(false);
     setPreview(null);
     setResult(null);
     setSelectedDeactivateIds(new Set());
@@ -104,7 +145,7 @@ export default function ImportModal({
     }
   };
 
-  const handlePreview = async () => {
+  const handleParseHeaders = async () => {
     if (!csvContent.trim()) {
       setError('Please provide CSV content to import.');
       return;
@@ -114,15 +155,141 @@ export default function ImportModal({
     setError('');
 
     try {
+      const response = await api.post<CsvHeadersResult>('/members/import/headers', {
+        csv: csvContent,
+      });
+      setCsvHeaders(response.data);
+      setColumnMapping(response.data.suggestedMapping as ImportColumnMapping);
+      setStep('mapping');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
+      const errorMessage = error.response?.data?.error?.message;
+      const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to parse CSV headers');
+      }
+      setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDetectDivisions = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post<DivisionDetectionResult>('/members/import/divisions', {
+        csv: csvContent,
+        columnMapping,
+      });
+      setDivisionDetection(response.data);
+
+      // Pre-populate divisionMapping with auto-matched divisions
+      const autoMapping: ImportDivisionMapping = {};
+      for (const detected of response.data.detected) {
+        if (detected.existingDivisionId) {
+          autoMapping[detected.csvValue] = detected.existingDivisionId;
+        }
+      }
+      setDivisionMapping(autoMapping);
+
+      setStep('divisions');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
+      const errorMessage = error.response?.data?.error?.message;
+      const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to detect divisions');
+      }
+      setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateDivision = async (csvValue: string) => {
+    if (!newDivisionName.trim() || !newDivisionCode.trim()) {
+      setError('Division name and code are required.');
+      return;
+    }
+
+    setIsCreatingDivision(true);
+    setError('');
+
+    try {
+      const response = await api.post<{ division: Division }>('/divisions', {
+        name: newDivisionName.trim(),
+        code: newDivisionCode.trim().toUpperCase(),
+      });
+
+      const newDivision = response.data.division;
+
+      // Add to existing divisions list
+      if (divisionDetection) {
+        setDivisionDetection({
+          ...divisionDetection,
+          existingDivisions: [...divisionDetection.existingDivisions, newDivision],
+        });
+      }
+
+      // Auto-select the new division for this CSV value
+      setDivisionMapping({
+        ...divisionMapping,
+        [csvValue]: newDivision.id,
+      });
+
+      // Reset form
+      setCreatingDivisionFor(null);
+      setNewDivisionName('');
+      setNewDivisionCode('');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
+      const errorMessage = error.response?.data?.error?.message;
+      const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to create division');
+      }
+      setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
+    } finally {
+      setIsCreatingDivision(false);
+    }
+  };
+
+  const startCreatingDivision = (csvValue: string) => {
+    setCreatingDivisionFor(csvValue);
+    // Pre-fill code with the CSV value (uppercase)
+    setNewDivisionCode(csvValue.toUpperCase());
+    // Suggest a name based on the code
+    setNewDivisionName(csvValue);
+    setError('');
+  };
+
+  const cancelCreatingDivision = () => {
+    setCreatingDivisionFor(null);
+    setNewDivisionName('');
+    setNewDivisionCode('');
+  };
+
+  const handlePreview = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
       const response = await api.post<ImportPreview>('/members/import/preview', {
         csv: csvContent,
+        columnMapping,
+        divisionMapping,
       });
       setPreview(response.data);
       setStep('preview');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
-      const errorMessage = error.response?.data?.error?.message ?? 'Failed to preview import';
+      const errorMessage = error.response?.data?.error?.message;
       const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to preview import');
+      }
       setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
     } finally {
       setIsLoading(false);
@@ -136,6 +303,8 @@ export default function ImportModal({
     try {
       const response = await api.post<ImportResult>('/members/import/execute', {
         csv: csvContent,
+        columnMapping,
+        divisionMapping,
         deactivateIds: Array.from(selectedDeactivateIds),
       });
       setResult(response.data);
@@ -143,8 +312,11 @@ export default function ImportModal({
       onImportComplete();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string; howToFix?: string } } } };
-      const errorMessage = error.response?.data?.error?.message ?? 'Failed to execute import';
+      const errorMessage = error.response?.data?.error?.message;
       const howToFix = error.response?.data?.error?.howToFix;
+      if (!errorMessage) {
+        throw new Error('Failed to execute import');
+      }
       setError(howToFix ? `${errorMessage} ${howToFix}` : errorMessage);
     } finally {
       setIsLoading(false);
@@ -218,6 +390,325 @@ export default function ImportModal({
     </div>
   );
 
+  const renderMappingContent = () => {
+    if (!csvHeaders) return null;
+
+    const unmappedRequired = REQUIRED_IMPORT_FIELDS.filter(
+      (field) => !columnMapping[field]
+    );
+    const hasValidationErrors = unmappedRequired.length > 0;
+    const sampleCount = csvHeaders.sampleRows.length;
+    const currentSample = csvHeaders.sampleRows[sampleIndex] ?? {};
+
+    const getSampleValue = (field: ImportTemplateField): string => {
+      const csvColumn = columnMapping[field];
+      if (!csvColumn || !sampleCount) return '—';
+      const sampleValue = currentSample[csvColumn];
+      if (!sampleValue) return '—';
+      return sampleValue;
+    };
+
+    const handlePrevSample = () => {
+      setSampleIndex((prev) => (prev === 0 ? sampleCount - 1 : prev - 1));
+    };
+
+    const handleNextSample = () => {
+      setSampleIndex((prev) => (prev === sampleCount - 1 ? 0 : prev + 1));
+    };
+
+    return (
+      <div className="w-full space-y-4">
+        {error && (
+          <div className="rounded-lg bg-danger-50 p-3 text-sm text-danger">
+            {error}
+          </div>
+        )}
+
+        {hasValidationErrors && (
+          <div className="rounded-lg bg-danger-50 p-3 text-sm text-danger">
+            Please map all required fields: {unmappedRequired.map(f => IMPORT_FIELD_META.find(m => m.field === f)?.label).join(', ')}
+          </div>
+        )}
+
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Map CSV Columns to Member Fields</h3>
+              <p className="text-sm text-default-500">
+                Match your CSV column headers to the corresponding member fields.
+              </p>
+            </div>
+          </CardHeader>
+          <CardBody className="p-0">
+            <div className="max-h-[400px] overflow-auto">
+              <Table aria-label="Column mapping" className="w-full">
+                <TableHeader>
+                  <TableColumn>MEMBER FIELD</TableColumn>
+                  <TableColumn>CSV COLUMN</TableColumn>
+                  <TableColumn>
+                    <div className="flex items-center gap-2">
+                      <span>SAMPLE DATA</span>
+                      {sampleCount > 1 && (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            onPress={handlePrevSample}
+                            aria-label="Previous sample"
+                            className="min-w-6 h-6 w-6"
+                          >
+                            <Icon icon="solar:alt-arrow-left-linear" width={14} />
+                          </Button>
+                          <span className="text-xs text-default-400 min-w-[40px] text-center">
+                            {sampleIndex + 1} / {sampleCount}
+                          </span>
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            onPress={handleNextSample}
+                            aria-label="Next sample"
+                            className="min-w-6 h-6 w-6"
+                          >
+                            <Icon icon="solar:alt-arrow-right-linear" width={14} />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {IMPORT_FIELD_META.map((fieldMeta) => (
+                    <TableRow key={fieldMeta.field}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>{fieldMeta.label}</span>
+                          {fieldMeta.required && (
+                            <Chip size="sm" color="danger" variant="flat">
+                              Required
+                            </Chip>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          aria-label={`Map ${fieldMeta.label}`}
+                          selectedKeys={columnMapping[fieldMeta.field] ? [columnMapping[fieldMeta.field] as string] : ['__NOT_MAPPED__']}
+                          onSelectionChange={(keys) => {
+                            const selectedKey = Array.from(keys)[0] as string;
+                            setColumnMapping({
+                              ...columnMapping,
+                              [fieldMeta.field]: selectedKey === '__NOT_MAPPED__' ? null : selectedKey,
+                            });
+                          }}
+                          className="min-w-[200px]"
+                        >
+                          {[
+                            <SelectItem key="__NOT_MAPPED__">Not mapped</SelectItem>,
+                            ...csvHeaders.headers.map((header) => (
+                              <SelectItem key={header}>{header}</SelectItem>
+                            )),
+                          ]}
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-default-500">
+                          {getSampleValue(fieldMeta.field)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderDivisionsContent = () => {
+    if (!divisionDetection) return null;
+
+    const { detected, existingDivisions } = divisionDetection;
+    const unmappedDivisions = detected.filter(d => !divisionMapping[d.csvValue]);
+    const hasUnmappedDivisions = unmappedDivisions.length > 0;
+
+    return (
+      <div className="space-y-4">
+        {error && (
+          <div className="rounded-lg bg-danger-50 p-3 text-sm text-danger">
+            {error}
+          </div>
+        )}
+
+        {hasUnmappedDivisions && (
+          <div className="rounded-lg bg-warning-50 p-3 text-sm text-warning-700">
+            <Icon icon="solar:danger-triangle-linear" className="inline mr-2" width={16} />
+            {unmappedDivisions.length} division(s) need to be mapped before proceeding.
+          </div>
+        )}
+
+        <Card>
+          <CardHeader>
+            <div>
+              <h3 className="text-lg font-semibold">Map Divisions</h3>
+              <p className="text-sm text-default-500">
+                Match each department value from the CSV to an existing division, or create new ones.
+              </p>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="max-h-72 overflow-auto">
+              <Table aria-label="Division mapping">
+                <TableHeader>
+                  <TableColumn>CSV VALUE</TableColumn>
+                  <TableColumn>MEMBERS</TableColumn>
+                  <TableColumn>MAP TO DIVISION</TableColumn>
+                  <TableColumn>STATUS</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {detected.map((div) => {
+                    const isMapped = !!divisionMapping[div.csvValue];
+
+                    return (
+                      <TableRow key={div.csvValue}>
+                        <TableCell>
+                          <span className="font-medium">{div.csvValue}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Chip size="sm" variant="flat">{div.memberCount}</Chip>
+                        </TableCell>
+                        <TableCell>
+                          {creatingDivisionFor === div.csvValue ? (
+                            <div className="flex items-center gap-2">
+                              <Tooltip content="Full division name (e.g., 'Operations')">
+                                <Input
+                                  size="sm"
+                                  placeholder="Name"
+                                  value={newDivisionName}
+                                  onValueChange={setNewDivisionName}
+                                  className="w-32"
+                                  isDisabled={isCreatingDivision}
+                                />
+                              </Tooltip>
+                              <Tooltip content="Short code (e.g., 'OPS')">
+                                <Input
+                                  size="sm"
+                                  placeholder="Code"
+                                  value={newDivisionCode}
+                                  onValueChange={(v) => setNewDivisionCode(v.toUpperCase())}
+                                  className="w-20"
+                                  isDisabled={isCreatingDivision}
+                                />
+                              </Tooltip>
+                              <Tooltip content="Save new division">
+                                <Button
+                                  size="sm"
+                                  color="success"
+                                  variant="flat"
+                                  isIconOnly
+                                  onPress={() => handleCreateDivision(div.csvValue)}
+                                  isLoading={isCreatingDivision}
+                                  aria-label="Save division"
+                                >
+                                  <Icon icon="solar:check-circle-bold" width={16} />
+                                </Button>
+                              </Tooltip>
+                              <Tooltip content="Cancel">
+                                <Button
+                                  size="sm"
+                                  color="danger"
+                                  variant="light"
+                                  isIconOnly
+                                  onPress={cancelCreatingDivision}
+                                  isDisabled={isCreatingDivision}
+                                  aria-label="Cancel"
+                                >
+                                  <Icon icon="solar:close-circle-bold" width={16} />
+                                </Button>
+                              </Tooltip>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Select
+                                aria-label={`Map ${div.csvValue}`}
+                                selectedKeys={divisionMapping[div.csvValue] ? new Set([divisionMapping[div.csvValue]]) : new Set()}
+                                onSelectionChange={(keys) => {
+                                  const selectedKey = Array.from(keys)[0] as string;
+                                  if (selectedKey) {
+                                    setDivisionMapping({
+                                      ...divisionMapping,
+                                      [div.csvValue]: selectedKey,
+                                    });
+                                  } else {
+                                    const newMapping = { ...divisionMapping };
+                                    delete newMapping[div.csvValue];
+                                    setDivisionMapping(newMapping);
+                                  }
+                                }}
+                                placeholder="Select division..."
+                                className="min-w-[180px]"
+                                size="sm"
+                              >
+                                {existingDivisions.map((division) => (
+                                  <SelectItem key={division.id} textValue={`${division.name} (${division.code})`}>
+                                    {division.name} ({division.code})
+                                  </SelectItem>
+                                ))}
+                              </Select>
+                              <Tooltip content="Create new division">
+                                <Button
+                                  size="sm"
+                                  variant="flat"
+                                  color="primary"
+                                  isIconOnly
+                                  onPress={() => startCreatingDivision(div.csvValue)}
+                                  aria-label="Create new division"
+                                >
+                                  <Icon icon="solar:add-circle-linear" width={16} />
+                                </Button>
+                              </Tooltip>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isMapped ? (
+                            <Chip size="sm" color="success" variant="flat" startContent={<Icon icon="solar:check-circle-linear" width={14} />}>
+                              {div.existingDivisionId === divisionMapping[div.csvValue] ? 'Auto-matched' : 'Mapped'}
+                            </Chip>
+                          ) : creatingDivisionFor === div.csvValue ? (
+                            <Chip size="sm" color="primary" variant="flat" startContent={<Icon icon="solar:pen-linear" width={14} />}>
+                              Creating...
+                            </Chip>
+                          ) : (
+                            <Chip size="sm" color="warning" variant="flat" startContent={<Icon icon="solar:danger-triangle-linear" width={14} />}>
+                              Unmapped
+                            </Chip>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            {existingDivisions.length === 0 && (
+              <div className="mt-4 rounded-lg bg-default-100 p-4 text-center">
+                <Icon icon="solar:buildings-2-linear" className="text-default-400 mb-2" width={32} />
+                <p className="text-sm text-default-600">
+                  No divisions exist yet. Create divisions in Settings before importing.
+                </p>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+    );
+  };
+
   const renderPreviewContent = () => {
     if (!preview) return null;
 
@@ -231,30 +722,38 @@ export default function ImportModal({
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-success">{preview.toAdd.length}</p>
-                  <p className="text-sm text-default-500">To Add</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-primary">{preview.toUpdate.length}</p>
-                  <p className="text-sm text-default-500">To Update</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-warning">{preview.toReview.length}</p>
-                  <p className="text-sm text-default-500">For Review</p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="text-center">
-                  <p className="text-2xl font-bold text-danger">{preview.errors.length}</p>
-                  <p className="text-sm text-default-500">Errors</p>
-                </CardBody>
-              </Card>
+              <Tooltip content="New members from CSV that will be added to the database">
+                <Card>
+                  <CardBody className="text-center">
+                    <p className="text-2xl font-bold text-success">{preview.toAdd.length}</p>
+                    <p className="text-sm text-default-500">To Add</p>
+                  </CardBody>
+                </Card>
+              </Tooltip>
+              <Tooltip content="Existing members with changed data that will be updated">
+                <Card>
+                  <CardBody className="text-center">
+                    <p className="text-2xl font-bold text-primary">{preview.toUpdate.length}</p>
+                    <p className="text-sm text-default-500">To Update</p>
+                  </CardBody>
+                </Card>
+              </Tooltip>
+              <Tooltip content="Members in database but not in CSV - may need deactivation">
+                <Card>
+                  <CardBody className="text-center">
+                    <p className="text-2xl font-bold text-warning">{preview.toReview.length}</p>
+                    <p className="text-sm text-default-500">For Review</p>
+                  </CardBody>
+                </Card>
+              </Tooltip>
+              <Tooltip content="Rows with validation errors that must be fixed before import">
+                <Card>
+                  <CardBody className="text-center">
+                    <p className="text-2xl font-bold text-danger">{preview.errors.length}</p>
+                    <p className="text-sm text-default-500">Errors</p>
+                  </CardBody>
+                </Card>
+              </Tooltip>
             </div>
 
             {/* Tabs for details */}
@@ -468,6 +967,7 @@ export default function ImportModal({
       </CardHeader>
       <CardBody className="px-2 pt-3 sm:px-3 md:px-4">
         <Listbox
+          key={step}
           hideSelectedIcon
           aria-label="Import steps"
           items={importSteps}
@@ -479,12 +979,31 @@ export default function ImportModal({
             const isCompleted = itemIndex < currentStepIndex || (step === 'result' && result);
             const isCurrent = item.key === step;
 
+            // Determine styling based on state
+            const getTitleClass = () => {
+              if (isCurrent) return 'text-primary';
+              if (isCompleted) return 'text-success';
+              return '';
+            };
+
+            const getIconBoxClass = () => {
+              if (isCurrent) return 'border-primary bg-primary-50';
+              if (isCompleted) return 'border-success bg-success-50';
+              return 'border-divider';
+            };
+
+            const getIconClass = () => {
+              if (isCurrent) return 'text-primary';
+              if (isCompleted) return 'text-success';
+              return 'text-secondary';
+            };
+
             return (
               <ListboxItem
                 key={item.key}
                 classNames={{
                   base: 'w-full px-2 md:px-4 min-h-[60px] gap-3',
-                  title: `text-medium font-medium ${isCurrent ? 'text-primary' : ''}`,
+                  title: `text-medium font-medium ${getTitleClass()}`,
                   description: 'text-small text-wrap',
                 }}
                 description={<p className="text-default-500">{item.description}</p>}
@@ -500,8 +1019,8 @@ export default function ImportModal({
                   </div>
                 }
                 startContent={
-                  <div className={`flex items-center justify-center rounded-medium border p-2 ${isCurrent ? 'border-primary bg-primary-50' : 'border-divider'}`}>
-                    <Icon className={isCurrent ? 'text-primary' : 'text-secondary'} icon={item.icon} width={20} />
+                  <div className={`flex items-center justify-center rounded-medium border p-2 ${getIconBoxClass()}`}>
+                    <Icon className={getIconClass()} icon={item.icon} width={20} />
                   </div>
                 }
                 title={item.title}
@@ -527,13 +1046,15 @@ export default function ImportModal({
 
             {/* Main Content */}
             <div className="flex-1">
-              {isLoading && step === 'upload' ? (
+              {isLoading && (step === 'upload' || step === 'mapping' || step === 'divisions') ? (
                 <div className="flex justify-center py-12">
                   <Spinner size="lg" />
                 </div>
               ) : (
                 <>
                   {step === 'upload' && renderUploadContent()}
+                  {step === 'mapping' && renderMappingContent()}
+                  {step === 'divisions' && renderDivisionsContent()}
                   {step === 'preview' && renderPreviewContent()}
                   {step === 'result' && renderResultContent()}
                 </>
@@ -547,32 +1068,80 @@ export default function ImportModal({
             <Button variant="light" onPress={handleClose}>
               Cancel
             </Button>
-            <Button
-              color="primary"
-              onPress={handlePreview}
-              isLoading={isLoading}
-              isDisabled={!csvContent.trim()}
-            >
-              Preview Changes
+            <Tooltip content="Parse CSV headers and proceed to column mapping">
+              <Button
+                color="primary"
+                onPress={handleParseHeaders}
+                isLoading={isLoading}
+                isDisabled={!csvContent.trim()}
+              >
+                Continue to Mapping
+              </Button>
+            </Tooltip>
+          </ModalFooter>
+        )}
+
+        {step === 'mapping' && csvHeaders && (
+          <ModalFooter>
+            <Button variant="light" onPress={() => setStep('upload')}>
+              Back
             </Button>
+            <Tooltip content="Detect and map divisions from CSV">
+              <Button
+                color="primary"
+                onPress={handleDetectDivisions}
+                isLoading={isLoading}
+                isDisabled={REQUIRED_IMPORT_FIELDS.some((field) => !columnMapping[field])}
+              >
+                Continue to Divisions
+              </Button>
+            </Tooltip>
+          </ModalFooter>
+        )}
+
+        {step === 'divisions' && divisionDetection && (
+          <ModalFooter>
+            <Button variant="light" onPress={() => setStep('mapping')}>
+              Back
+            </Button>
+            <Tooltip content={
+              divisionDetection.detected.some(d => !divisionMapping[d.csvValue])
+                ? 'Map all divisions before proceeding'
+                : 'Preview changes before importing'
+            }>
+              <Button
+                color="primary"
+                onPress={handlePreview}
+                isLoading={isLoading}
+                isDisabled={divisionDetection.detected.some(d => !divisionMapping[d.csvValue])}
+              >
+                Continue to Preview
+              </Button>
+            </Tooltip>
           </ModalFooter>
         )}
 
         {step === 'preview' && preview && (
           <ModalFooter>
-            <Button variant="light" onPress={() => setStep('upload')}>
+            <Button variant="light" onPress={() => setStep('divisions')}>
               Back
             </Button>
-            <Button
-              color="primary"
-              onPress={handleExecute}
-              isLoading={isLoading}
-              isDisabled={preview.errors.length > 0 || (preview.toAdd.length === 0 && preview.toUpdate.length === 0)}
-            >
-              {preview.errors.length > 0
-                ? 'Fix Errors to Continue'
-                : `Import ${preview.toAdd.length + preview.toUpdate.length} Members`}
-            </Button>
+            <Tooltip content={
+              preview.errors.length > 0
+                ? 'Fix validation errors in CSV before importing'
+                : `Add ${preview.toAdd.length} and update ${preview.toUpdate.length} members`
+            }>
+              <Button
+                color="primary"
+                onPress={handleExecute}
+                isLoading={isLoading}
+                isDisabled={preview.errors.length > 0 || (preview.toAdd.length === 0 && preview.toUpdate.length === 0)}
+              >
+                {preview.errors.length > 0
+                  ? 'Fix Errors to Continue'
+                  : `Import ${preview.toAdd.length + preview.toUpdate.length} Members`}
+              </Button>
+            </Tooltip>
           </ModalFooter>
         )}
 

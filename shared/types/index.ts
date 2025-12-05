@@ -15,6 +15,9 @@ export interface Member {
   moc?: string;
   memberType: MemberType;
   classDetails?: string;
+  notes?: string;
+  contractStart?: Date;
+  contractEnd?: Date;
   status: MemberStatus;
   email?: string;
   homePhone?: string;
@@ -40,6 +43,9 @@ export interface CreateMemberInput {
   moc?: string;
   memberType: MemberType;
   classDetails?: string;
+  notes?: string;
+  contractStart?: Date;
+  contractEnd?: Date;
   status?: MemberStatus;
   email?: string;
   homePhone?: string;
@@ -59,6 +65,9 @@ export interface UpdateMemberInput {
   moc?: string;
   memberType?: MemberType;
   classDetails?: string;
+  notes?: string;
+  contractStart?: Date;
+  contractEnd?: Date;
   status?: MemberStatus;
   email?: string;
   homePhone?: string;
@@ -67,6 +76,73 @@ export interface UpdateMemberInput {
 }
 
 // Nominal Roll Import Types
+
+// Template fields expected by the system
+export type ImportTemplateField =
+  | 'serviceNumber'
+  | 'employeeNumber'
+  | 'rank'
+  | 'lastName'
+  | 'firstName'
+  | 'initials'
+  | 'department'
+  | 'mess'
+  | 'moc'
+  | 'email'
+  | 'homePhone'
+  | 'mobilePhone'
+  | 'details'
+  | 'notes'
+  | 'contractStart'
+  | 'contractEnd';
+
+// Required fields that must be mapped
+export const REQUIRED_IMPORT_FIELDS: ImportTemplateField[] = [
+  'serviceNumber',
+  'rank',
+  'lastName',
+  'firstName',
+  'department',
+];
+
+// Field metadata for UI display
+export interface ImportFieldMeta {
+  field: ImportTemplateField;
+  label: string;
+  required: boolean;
+  aliases: string[]; // Common header names that auto-map to this field
+}
+
+export const IMPORT_FIELD_META: ImportFieldMeta[] = [
+  { field: 'serviceNumber', label: 'Service Number', required: true, aliases: ['SN', 'SERVICE NUMBER', 'SERVICE_NUMBER', 'INDEX', ''] },
+  { field: 'employeeNumber', label: 'Employee Number', required: false, aliases: ['EMPL #', 'EMPL', 'EMPLOYEE', 'EMPLOYEE NUMBER', 'EMP #'] },
+  { field: 'rank', label: 'Rank', required: true, aliases: ['RANK'] },
+  { field: 'lastName', label: 'Last Name', required: true, aliases: ['LAST NAME', 'LAST_NAME', 'SURNAME', 'FAMILY NAME'] },
+  { field: 'firstName', label: 'First Name', required: true, aliases: ['FIRST NAME', 'FIRST_NAME', 'GIVEN NAME', 'FORENAME'] },
+  { field: 'initials', label: 'Initials', required: false, aliases: ['INITIALS', 'INIT'] },
+  { field: 'department', label: 'Department', required: true, aliases: ['DEPT', 'DEPARTMENT', 'DIV', 'DIVISION'] },
+  { field: 'mess', label: 'Mess', required: false, aliases: ['MESS'] },
+  { field: 'moc', label: 'MOC', required: false, aliases: ['MOC', 'MOSID', 'TRADE'] },
+  { field: 'email', label: 'Email', required: false, aliases: ['EMAIL', 'EMAIL ADDRESS', 'E-MAIL'] },
+  { field: 'homePhone', label: 'Home Phone', required: false, aliases: ['HOME PHONE', 'HOME_PHONE', 'HOME TEL', 'HOME'] },
+  { field: 'mobilePhone', label: 'Mobile Phone', required: false, aliases: ['MOBILE PHONE', 'MOBILE_PHONE', 'CELL', 'CELL PHONE', 'MOBILE'] },
+  { field: 'details', label: 'Details', required: false, aliases: ['DETAILS', 'CLASS', 'CLASS DETAILS'] },
+  { field: 'notes', label: 'Notes', required: false, aliases: ['NOTES', 'REMARKS', 'COMMENTS', 'CONTRACT DETAILS'] },
+  { field: 'contractStart', label: 'Contract Start', required: false, aliases: ['CONTRACT START', 'START DATE', 'CONTRACT_START', 'START'] },
+  { field: 'contractEnd', label: 'Contract End', required: false, aliases: ['CONTRACT END', 'END DATE', 'CONTRACT_END', 'END', 'EXPIRY'] },
+];
+
+// Column mapping from template field to CSV column header
+export type ImportColumnMapping = Record<ImportTemplateField, string | null>;
+
+// Result of parsing CSV headers
+export interface CsvHeadersResult {
+  headers: string[];
+  sampleRows: Record<string, string>[]; // First 3 rows for preview
+  suggestedMapping: Partial<ImportColumnMapping>; // Auto-matched columns
+  unmappedHeaders: string[]; // Headers that couldn't be auto-matched
+}
+
 export interface NominalRollRow {
   serviceNumber: string;
   employeeNumber?: string;
@@ -81,6 +157,9 @@ export interface NominalRollRow {
   homePhone?: string;
   mobilePhone?: string;
   details?: string;
+  notes?: string;
+  contractStart?: string; // ISO date string from CSV
+  contractEnd?: string;   // ISO date string from CSV
 }
 
 export interface ImportPreviewMember {
@@ -109,6 +188,22 @@ export interface ImportResult {
   flaggedForReview: number;
   errors: ImportError[];
 }
+
+// Division detection result from CSV
+export interface DetectedDivision {
+  csvValue: string;           // Value found in CSV (e.g., "OPS", "LOG")
+  existingDivisionId?: string; // ID of matched division (if found)
+  existingDivisionName?: string; // Name of matched division (if found)
+  memberCount: number;        // Number of members with this division in CSV
+}
+
+export interface DivisionDetectionResult {
+  detected: DetectedDivision[];
+  existingDivisions: Division[];
+}
+
+// Division mapping from CSV value to division ID (new or existing)
+export type ImportDivisionMapping = Record<string, string>;
 
 // Division Types
 export interface Division {
