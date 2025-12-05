@@ -12,6 +12,7 @@ import {
   Radio,
   Button,
   Spinner,
+  Tooltip,
 } from '@heroui/react';
 import { api } from '../../lib/api';
 import type {
@@ -151,7 +152,7 @@ export default function ReportSettingsForm() {
         <CardHeader>
           <div>
             <h3 className="text-lg font-semibold">Attendance Thresholds</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-default-500">
               Configure warning and critical attendance percentage thresholds
             </p>
           </div>
@@ -167,6 +168,7 @@ export default function ReportSettingsForm() {
             <Input
               type="number"
               label="Warning Threshold %"
+              description="Attendance below this shows yellow warning"
               value={String(thresholds.warningThreshold)}
               onValueChange={(v) =>
                 setThresholds({ ...thresholds, warningThreshold: Number(v) })
@@ -178,6 +180,7 @@ export default function ReportSettingsForm() {
             <Input
               type="number"
               label="Critical Threshold %"
+              description="Attendance below this shows red critical alert"
               value={String(thresholds.criticalThreshold)}
               onValueChange={(v) =>
                 setThresholds({ ...thresholds, criticalThreshold: Number(v) })
@@ -188,29 +191,38 @@ export default function ReportSettingsForm() {
             />
           </div>
 
-          <Switch
-            isSelected={thresholds.showThresholdFlags}
-            onValueChange={(v) =>
-              setThresholds({ ...thresholds, showThresholdFlags: v })
-            }
-          >
-            Show Threshold Flags
-          </Switch>
+          <Tooltip content="Display colored flags next to members below threshold">
+            <div className="inline-block">
+              <Switch
+                isSelected={thresholds.showThresholdFlags}
+                onValueChange={(v) =>
+                  setThresholds({ ...thresholds, showThresholdFlags: v })
+                }
+              >
+                Show Threshold Flags
+              </Switch>
+            </div>
+          </Tooltip>
 
-          <Switch
-            isSelected={thresholds.bmqSeparateThresholds}
-            onValueChange={(v) =>
-              setThresholds({ ...thresholds, bmqSeparateThresholds: v })
-            }
-          >
-            BMQ Separate Thresholds
-          </Switch>
+          <Tooltip content="Use different thresholds for BMQ candidates (typically higher expectations)">
+            <div className="inline-block">
+              <Switch
+                isSelected={thresholds.bmqSeparateThresholds}
+                onValueChange={(v) =>
+                  setThresholds({ ...thresholds, bmqSeparateThresholds: v })
+                }
+              >
+                BMQ Separate Thresholds
+              </Switch>
+            </div>
+          </Tooltip>
 
           {thresholds.bmqSeparateThresholds && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pl-6 border-l-2 border-gray-200">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pl-6 border-l-2 border-default-200">
               <Input
                 type="number"
                 label="BMQ Warning Threshold %"
+                description="BMQ candidates below this show warning"
                 value={String(thresholds.bmqWarningThreshold)}
                 onValueChange={(v) =>
                   setThresholds({ ...thresholds, bmqWarningThreshold: Number(v) })
@@ -222,6 +234,7 @@ export default function ReportSettingsForm() {
               <Input
                 type="number"
                 label="BMQ Critical Threshold %"
+                description="BMQ candidates below this show critical alert"
                 value={String(thresholds.bmqCriticalThreshold)}
                 onValueChange={(v) =>
                   setThresholds({ ...thresholds, bmqCriticalThreshold: Number(v) })
@@ -240,7 +253,7 @@ export default function ReportSettingsForm() {
         <CardHeader>
           <div>
             <h3 className="text-lg font-semibold">Member Handling</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-default-500">
               Configure grace periods, minimum attendance, and badge display options
             </p>
           </div>
@@ -250,6 +263,7 @@ export default function ReportSettingsForm() {
             <Input
               type="number"
               label="New Member Grace Period (weeks)"
+              description="New members exempt from thresholds during this period"
               value={String(memberHandling.newMemberGracePeriod)}
               onValueChange={(v) =>
                 setMemberHandling({
@@ -264,6 +278,7 @@ export default function ReportSettingsForm() {
             <Input
               type="number"
               label="Minimum Training Nights"
+              description="Minimum nights required before calculating attendance %"
               value={String(memberHandling.minimumTrainingNights)}
               onValueChange={(v) =>
                 setMemberHandling({
@@ -277,32 +292,44 @@ export default function ReportSettingsForm() {
             />
           </div>
 
-          <Switch
-            isSelected={memberHandling.includeFTStaff}
-            onValueChange={(v) =>
-              setMemberHandling({ ...memberHandling, includeFTStaff: v })
-            }
-          >
-            Include Full-Time Staff
-          </Switch>
+          <Tooltip content="Include Class B/C and RegF staff in attendance reports">
+            <div className="inline-block">
+              <Switch
+                isSelected={memberHandling.includeFTStaff}
+                onValueChange={(v) =>
+                  setMemberHandling({ ...memberHandling, includeFTStaff: v })
+                }
+              >
+                Include Full-Time Staff
+              </Switch>
+            </div>
+          </Tooltip>
 
-          <Switch
-            isSelected={memberHandling.showBMQBadge}
-            onValueChange={(v) =>
-              setMemberHandling({ ...memberHandling, showBMQBadge: v })
-            }
-          >
-            Show BMQ Badge
-          </Switch>
+          <Tooltip content="Show BMQ indicator badge next to candidates on reports">
+            <div className="inline-block">
+              <Switch
+                isSelected={memberHandling.showBMQBadge}
+                onValueChange={(v) =>
+                  setMemberHandling({ ...memberHandling, showBMQBadge: v })
+                }
+              >
+                Show BMQ Badge
+              </Switch>
+            </div>
+          </Tooltip>
 
-          <Switch
-            isSelected={memberHandling.showTrendIndicators}
-            onValueChange={(v) =>
-              setMemberHandling({ ...memberHandling, showTrendIndicators: v })
-            }
-          >
-            Show Trend Indicators
-          </Switch>
+          <Tooltip content="Show attendance trend arrows (improving/declining) on reports">
+            <div className="inline-block">
+              <Switch
+                isSelected={memberHandling.showTrendIndicators}
+                onValueChange={(v) =>
+                  setMemberHandling({ ...memberHandling, showTrendIndicators: v })
+                }
+              >
+                Show Trend Indicators
+              </Switch>
+            </div>
+          </Tooltip>
         </CardBody>
       </Card>
 
@@ -311,7 +338,7 @@ export default function ReportSettingsForm() {
         <CardHeader>
           <div>
             <h3 className="text-lg font-semibold">Formatting</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-default-500">
               Configure default sort order, date format, and page size
             </p>
           </div>
@@ -319,74 +346,86 @@ export default function ReportSettingsForm() {
         <CardBody className="space-y-4">
           <Select
             label="Default Sort Order"
+            description="How members are ordered in reports by default"
             selectedKeys={[formatting.defaultSortOrder]}
             onSelectionChange={(keys) => {
               const key = Array.from(keys)[0] as SortOrder;
               setFormatting({ ...formatting, defaultSortOrder: key });
             }}
           >
-            <SelectItem key="division_rank">
+            <SelectItem key="division_rank" description="Group by division, then rank within each">
               By Division then Rank
             </SelectItem>
-            <SelectItem key="rank">
+            <SelectItem key="rank" description="Sort by rank across all divisions">
               By Rank
             </SelectItem>
-            <SelectItem key="alphabetical">
+            <SelectItem key="alphabetical" description="Sort by last name A-Z">
               Alphabetical
             </SelectItem>
           </Select>
 
-          <Switch
-            isSelected={formatting.showServiceNumber}
-            onValueChange={(v) =>
-              setFormatting({ ...formatting, showServiceNumber: v })
-            }
-          >
-            Show Service Number
-          </Switch>
+          <Tooltip content="Display service number column in printed reports">
+            <div className="inline-block">
+              <Switch
+                isSelected={formatting.showServiceNumber}
+                onValueChange={(v) =>
+                  setFormatting({ ...formatting, showServiceNumber: v })
+                }
+              >
+                Show Service Number
+              </Switch>
+            </div>
+          </Tooltip>
 
           <Select
             label="Date Format"
+            description="Format for dates shown in reports"
             selectedKeys={[formatting.dateFormat]}
             onSelectionChange={(keys) => {
               const key = Array.from(keys)[0] as DateFormat;
               setFormatting({ ...formatting, dateFormat: key });
             }}
           >
-            <SelectItem key="DD MMM YYYY">
+            <SelectItem key="DD MMM YYYY" description="Military format (e.g., 15 Jan 2024)">
               DD MMM YYYY
             </SelectItem>
-            <SelectItem key="YYYY-MM-DD">
+            <SelectItem key="YYYY-MM-DD" description="ISO format (e.g., 2024-01-15)">
               YYYY-MM-DD
             </SelectItem>
-            <SelectItem key="MM/DD/YYYY">
+            <SelectItem key="MM/DD/YYYY" description="US format (e.g., 01/15/2024)">
               MM/DD/YYYY
             </SelectItem>
           </Select>
 
-          <RadioGroup
-            label="Page Size"
-            value={formatting.pageSize}
-            onValueChange={(v) =>
-              setFormatting({ ...formatting, pageSize: v as PageSize })
-            }
-          >
-            <Radio value="letter">Letter</Radio>
-            <Radio value="a4">A4</Radio>
-          </RadioGroup>
+          <Tooltip content="Paper size for PDF report exports">
+            <div className="inline-block">
+              <RadioGroup
+                label="Page Size"
+                value={formatting.pageSize}
+                onValueChange={(v) =>
+                  setFormatting({ ...formatting, pageSize: v as PageSize })
+                }
+              >
+                <Radio value="letter" description="8.5 x 11 inches">Letter</Radio>
+                <Radio value="a4" description="210 x 297 mm">A4</Radio>
+              </RadioGroup>
+            </div>
+          </Tooltip>
         </CardBody>
       </Card>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button
-          color="primary"
-          size="lg"
-          onPress={handleSave}
-          isLoading={saveMutation.isPending}
-        >
-          Save Settings
-        </Button>
+        <Tooltip content="Save all report settings changes">
+          <Button
+            color="primary"
+            size="lg"
+            onPress={handleSave}
+            isLoading={saveMutation.isPending}
+          >
+            Save Settings
+          </Button>
+        </Tooltip>
       </div>
     </div>
   );

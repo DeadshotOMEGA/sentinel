@@ -76,7 +76,7 @@ export function StatsCard({
       <div
         role="region"
         aria-label={`Loading ${label}`}
-        className={`p-6 rounded-xl shadow-sm ${className}`}
+        className={`p-6 rounded-lg shadow-md ${className}`}
         style={{
           backgroundColor: colors.bg,
         }}
@@ -127,7 +127,7 @@ export function StatsCard({
     <div
       role="region"
       aria-label={`${label}: ${value}`}
-      className={`p-6 rounded-xl shadow-sm card-subtle ${className}`}
+      className={`p-6 rounded-lg shadow-md ${className}`}
       style={{
         backgroundColor: colors.bg,
         color: colors.text,

@@ -444,7 +444,7 @@ export default function Reports() {
 
   return (
     <PageWrapper title="Reports">
-      <div className="min-h-0 flex-1 space-y-6 overflow-auto px-1 pb-6 -mx-1">
+      <div className="-mx-1 -mt-1 min-h-0 flex-1 space-y-6 overflow-auto px-1 pt-1 pb-6">
         <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
           <Tab key="presence" title="Current Presence" />
           <Tab key="training-night" title="Training Night Attendance" />
@@ -460,13 +460,13 @@ export default function Reports() {
               <Card>
                 <CardBody className="text-center">
                   <p className="text-3xl font-bold text-success">{presentCount}</p>
-                  <p className="text-sm text-gray-600">Present</p>
+                  <p className="text-sm text-default-500">Present</p>
                 </CardBody>
               </Card>
               <Card>
                 <CardBody className="text-center">
-                  <p className="text-3xl font-bold text-gray-500">{absentCount}</p>
-                  <p className="text-sm text-gray-600">Absent</p>
+                  <p className="text-3xl font-bold text-default-400">{absentCount}</p>
+                  <p className="text-sm text-default-500">Absent</p>
                 </CardBody>
               </Card>
               <Card>
@@ -474,7 +474,7 @@ export default function Reports() {
                   <p className="text-3xl font-bold text-primary">
                     {presenceList?.length ? presenceList.length : 0}
                   </p>
-                  <p className="text-sm text-gray-600">Total Members</p>
+                  <p className="text-sm text-default-500">Total Members</p>
                 </CardBody>
               </Card>
             </div>
@@ -536,7 +536,7 @@ export default function Reports() {
                           className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
                             item.status === 'present'
                               ? 'bg-success-100 text-success-700'
-                              : 'bg-gray-100 text-gray-600'
+                              : 'bg-default-100 text-default-500'
                           }`}
                         >
                           {item.status === 'present' ? 'Present' : 'Absent'}
@@ -626,7 +626,7 @@ export default function Reports() {
             </div>
 
             <Card>
-              <CardBody className="py-8 text-center text-gray-600">
+              <CardBody className="py-8 text-center text-default-500">
                 Configure filters above and click Download PDF to generate the report.
               </CardBody>
             </Card>
@@ -678,7 +678,7 @@ export default function Reports() {
             </div>
 
             <Card>
-              <CardBody className="py-8 text-center text-gray-600">
+              <CardBody className="py-8 text-center text-default-500">
                 Select a BMQ course and click Download PDF to generate the report.
               </CardBody>
             </Card>
@@ -730,7 +730,7 @@ export default function Reports() {
             </div>
 
             <Card>
-              <CardBody className="py-8 text-center text-gray-600">
+              <CardBody className="py-8 text-center text-default-500">
                 Configure filters above and click Download PDF to generate the roster.
               </CardBody>
             </Card>
@@ -784,7 +784,7 @@ export default function Reports() {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-default-500">
                 {visitorHistory ? `${visitorHistory.total} total visitors` : ''}
               </div>
               <div className="flex gap-2">

@@ -216,7 +216,7 @@ export default function TrainingYearSettings() {
             <p>
               Are you sure you want to set <strong>{setCurrentConfirm?.name}</strong> as the current training year?
             </p>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-default-500">
               This will update all reports and attendance calculations to use this training year.
             </p>
           </ModalBody>
@@ -466,7 +466,7 @@ function TrainingYearModal({
               </div>
 
               {formData.holidayExclusions.length === 0 && (
-                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-sm text-gray-500">
+                <div className="rounded-lg border border-dashed border-default-300 p-4 text-center text-sm text-default-500">
                   No holiday exclusions added. Click "Add Exclusion" to add training nights that should be excluded from attendance calculations.
                 </div>
               )}
@@ -475,10 +475,10 @@ function TrainingYearModal({
                 {formData.holidayExclusions.map((exclusion, index) => (
                   <div
                     key={index}
-                    className="rounded-lg border border-gray-200 p-4"
+                    className="rounded-lg border border-default-200 p-4"
                   >
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-default-600">
                         Exclusion #{index + 1}
                       </span>
                       <Button

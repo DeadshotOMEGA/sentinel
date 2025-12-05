@@ -124,7 +124,7 @@ export default function CollapsibleActivityPanel({
 
   return (
     <div className="w-96 h-full transition-all duration-300">
-      <Card shadow="sm" className="h-full flex flex-col border border-default-200">
+      <Card className="h-full flex flex-col">
         <CardHeader className="flex flex-col gap-3 shrink-0">
           <div className="flex flex-row items-center justify-between w-full">
             <h3 className="font-semibold">Activity</h3>

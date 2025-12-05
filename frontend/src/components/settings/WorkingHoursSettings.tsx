@@ -301,7 +301,7 @@ export default function WorkingHoursSettings() {
             <h4 className="text-md font-medium">Regular Hours</h4>
 
             <div>
-              <p className="mb-2 text-sm text-gray-600">Weekdays</p>
+              <p className="mb-2 text-sm text-default-500">Weekdays</p>
               <div className="flex flex-wrap gap-4">
                 {WEEKDAYS.map((day) => (
                   <Checkbox

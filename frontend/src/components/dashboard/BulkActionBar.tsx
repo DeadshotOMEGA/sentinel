@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Chip, Divider } from '@heroui/react';
+import { Button, Chip, Divider, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import type { PresentPerson } from '../../../../shared/types';
 
@@ -72,57 +72,65 @@ export default function BulkActionBar({
       </div>
 
       {/* Selection Controls */}
-      <Button
-        size="sm"
-        variant="flat"
-        color="primary"
-        onClick={onSelectAll}
-        disabled={isLoading || allSelected}
-        startContent={<Icon icon="mdi:select-all" width={16} />}
-        aria-label={`Select all ${totalCount} people`}
-      >
-        All ({totalCount})
-      </Button>
-
-      {memberCount > 0 && (
+      <Tooltip content="Select all checked-in people">
         <Button
           size="sm"
           variant="flat"
-          color="success"
-          onClick={onSelectAllMembers}
-          disabled={isLoading}
-          startContent={<Icon icon="mdi:account-group" width={16} />}
-          aria-label={`Select all ${memberCount} members`}
+          color="primary"
+          onClick={onSelectAll}
+          disabled={isLoading || allSelected}
+          startContent={<Icon icon="mdi:select-all" width={16} />}
+          aria-label={`Select all ${totalCount} people`}
         >
-          Members ({memberCount})
+          All ({totalCount})
         </Button>
+      </Tooltip>
+
+      {memberCount > 0 && (
+        <Tooltip content="Select only members">
+          <Button
+            size="sm"
+            variant="flat"
+            color="success"
+            onClick={onSelectAllMembers}
+            disabled={isLoading}
+            startContent={<Icon icon="mdi:account-group" width={16} />}
+            aria-label={`Select all ${memberCount} members`}
+          >
+            Members ({memberCount})
+          </Button>
+        </Tooltip>
       )}
 
       {visitorCount > 0 && (
+        <Tooltip content="Select only visitors">
+          <Button
+            size="sm"
+            variant="flat"
+            color="secondary"
+            onClick={onSelectAllVisitors}
+            disabled={isLoading}
+            startContent={<Icon icon="mdi:account-clock" width={16} />}
+            aria-label={`Select all ${visitorCount} visitors`}
+          >
+            Visitors ({visitorCount})
+          </Button>
+        </Tooltip>
+      )}
+
+      <Tooltip content="Clear all selections">
         <Button
           size="sm"
           variant="flat"
-          color="secondary"
-          onClick={onSelectAllVisitors}
+          color="default"
+          onClick={onSelectNone}
           disabled={isLoading}
-          startContent={<Icon icon="mdi:account-clock" width={16} />}
-          aria-label={`Select all ${visitorCount} visitors`}
+          startContent={<Icon icon="mdi:selection-off" width={16} />}
+          aria-label="Clear selection"
         >
-          Visitors ({visitorCount})
+          None
         </Button>
-      )}
-
-      <Button
-        size="sm"
-        variant="flat"
-        color="default"
-        onClick={onSelectNone}
-        disabled={isLoading}
-        startContent={<Icon icon="mdi:selection-off" width={16} />}
-        aria-label="Clear selection"
-      >
-        None
-      </Button>
+      </Tooltip>
 
       <Divider orientation="vertical" className="h-6" />
 
@@ -134,50 +142,56 @@ export default function BulkActionBar({
           </span>
         )}
 
-        <Button
-          size="sm"
-          variant="flat"
-          color={showConfirm ? 'danger' : 'warning'}
-          onClick={handleBulkCheckout}
-          disabled={isLoading || isCheckingOut || selectedCount === 0}
-          isLoading={isCheckingOut}
-          startContent={!isCheckingOut && <Icon icon="mdi:logout" width={16} />}
-          aria-label={showConfirm ? 'Confirm bulk checkout' : 'Check out all selected people'}
-          onBlur={() => {
-            // Reset confirm state when focus leaves the button
-            if (showConfirm) {
-              setTimeout(() => setShowConfirm(false), 200);
-            }
-          }}
-        >
-          {showConfirm ? 'Confirm Check Out' : 'Check Out All'}
-        </Button>
-
-        {showConfirm && (
-          <Button
-            size="sm"
-            variant="light"
-            color="default"
-            onClick={() => setShowConfirm(false)}
-            disabled={isCheckingOut}
-            aria-label="Cancel bulk checkout"
-          >
-            Cancel
-          </Button>
-        )}
-
-        {!showConfirm && (
+        <Tooltip content={showConfirm ? 'Click to confirm checkout' : 'Check out all selected people at once'}>
           <Button
             size="sm"
             variant="flat"
-            color="success"
-            onClick={onExportCSV}
-            disabled={isLoading || selectedCount === 0}
-            startContent={<Icon icon="mdi:file-export" width={16} />}
-            aria-label="Export selected people to CSV"
+            color={showConfirm ? 'danger' : 'warning'}
+            onClick={handleBulkCheckout}
+            disabled={isLoading || isCheckingOut || selectedCount === 0}
+            isLoading={isCheckingOut}
+            startContent={!isCheckingOut && <Icon icon="mdi:logout" width={16} />}
+            aria-label={showConfirm ? 'Confirm bulk checkout' : 'Check out all selected people'}
+            onBlur={() => {
+              // Reset confirm state when focus leaves the button
+              if (showConfirm) {
+                setTimeout(() => setShowConfirm(false), 200);
+              }
+            }}
           >
-            Export CSV
+            {showConfirm ? 'Confirm Check Out' : 'Check Out All'}
           </Button>
+        </Tooltip>
+
+        {showConfirm && (
+          <Tooltip content="Cancel bulk checkout">
+            <Button
+              size="sm"
+              variant="light"
+              color="default"
+              onClick={() => setShowConfirm(false)}
+              disabled={isCheckingOut}
+              aria-label="Cancel bulk checkout"
+            >
+              Cancel
+            </Button>
+          </Tooltip>
+        )}
+
+        {!showConfirm && (
+          <Tooltip content="Export selected people to a CSV file">
+            <Button
+              size="sm"
+              variant="flat"
+              color="success"
+              onClick={onExportCSV}
+              disabled={isLoading || selectedCount === 0}
+              startContent={<Icon icon="mdi:file-export" width={16} />}
+              aria-label="Export selected people to CSV"
+            >
+              Export CSV
+            </Button>
+          </Tooltip>
         )}
       </div>
     </div>

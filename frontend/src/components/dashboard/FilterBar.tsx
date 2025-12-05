@@ -40,39 +40,69 @@ export default function FilterBar({
     <div className="flex items-center gap-4 pb-4 border-b border-divider">
       {/* Type Filter */}
       <div className="flex gap-2">
-        {(['all', 'members', 'visitors'] as const).map((type) => (
+        <Tooltip content="Show all checked-in people">
           <Chip
-            key={type}
-            variant={filters.typeFilter === type ? 'solid' : 'bordered'}
-            color={filters.typeFilter === type ? 'primary' : 'default'}
+            variant={filters.typeFilter === 'all' ? 'solid' : 'bordered'}
+            color={filters.typeFilter === 'all' ? 'primary' : 'default'}
             className="cursor-pointer"
-            onClick={() => handleTypeFilterChange(type)}
+            onClick={() => handleTypeFilterChange('all')}
             role="button"
-            aria-pressed={filters.typeFilter === type}
-            aria-label={`Filter by ${type}`}
+            aria-pressed={filters.typeFilter === 'all'}
+            aria-label="Filter by all"
           >
-            {type.charAt(0).toUpperCase() + type.slice(1)}
+            All
           </Chip>
-        ))}
+        </Tooltip>
+        <Tooltip content="Show only unit members">
+          <Chip
+            variant={filters.typeFilter === 'members' ? 'solid' : 'bordered'}
+            color={filters.typeFilter === 'members' ? 'primary' : 'default'}
+            className="cursor-pointer"
+            onClick={() => handleTypeFilterChange('members')}
+            role="button"
+            aria-pressed={filters.typeFilter === 'members'}
+            aria-label="Filter by members"
+          >
+            Members
+          </Chip>
+        </Tooltip>
+        <Tooltip content="Show only visitors">
+          <Chip
+            variant={filters.typeFilter === 'visitors' ? 'solid' : 'bordered'}
+            color={filters.typeFilter === 'visitors' ? 'primary' : 'default'}
+            className="cursor-pointer"
+            onClick={() => handleTypeFilterChange('visitors')}
+            role="button"
+            aria-pressed={filters.typeFilter === 'visitors'}
+            aria-label="Filter by visitors"
+          >
+            Visitors
+          </Chip>
+        </Tooltip>
       </div>
 
       <Divider orientation="vertical" className="h-6" />
 
       {/* Check-in Dropdown */}
       <Dropdown>
-        <DropdownTrigger>
-          <Button
-            color="primary"
-            variant="flat"
-            startContent={<Icon icon="solar:add-circle-linear" width={20} />}
-            aria-label="Check in person"
-          >
-            Check In
-          </Button>
-        </DropdownTrigger>
+        <Tooltip content="Manually check in a member or visitor">
+          <div className="inline-flex">
+            <DropdownTrigger>
+              <Button
+                color="primary"
+                variant="flat"
+                startContent={<Icon icon="solar:add-circle-linear" width={20} />}
+                aria-label="Check in person"
+              >
+                Check In
+              </Button>
+            </DropdownTrigger>
+          </div>
+        </Tooltip>
         <DropdownMenu aria-label="Check-in options">
           <DropdownItem
             key="member"
+            description="Search and check in a unit member"
             startContent={<Icon icon="solar:user-check-linear" width={20} />}
             onPress={onOpenMemberCheckin}
           >
@@ -80,6 +110,7 @@ export default function FilterBar({
           </DropdownItem>
           <DropdownItem
             key="visitor"
+            description="Register and check in a visitor"
             startContent={<Icon icon="solar:users-group-rounded-linear" width={20} />}
             onPress={onOpenVisitorCheckin}
           >

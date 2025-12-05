@@ -530,7 +530,7 @@ function DeleteConfirmModal({
               </p>
             </div>
           )}
-          <p className="mt-3 text-sm text-gray-600">This action cannot be undone.</p>
+          <p className="mt-3 text-sm text-default-500">This action cannot be undone.</p>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onPress={onClose}>

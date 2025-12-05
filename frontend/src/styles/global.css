@@ -126,6 +126,25 @@ body {
   animation: fade-in-up 0.3s ease-out forwards;
 }
 
+/* HeroUI Tabs styling - darker inactive text for readability */
+[data-slot="tabList"] {
+  background-color: hsl(var(--heroui-default-100)) !important;
+}
+
+[data-slot="tab"] {
+  color: hsl(var(--heroui-default-600)) !important;
+  font-weight: 500 !important;
+}
+
+[data-slot="tab"][data-selected="true"] {
+  color: hsl(var(--heroui-foreground)) !important;
+}
+
+[data-slot="cursor"] {
+  background-color: hsl(var(--heroui-background)) !important;
+  box-shadow: var(--sentinel-shadow-md) !important;
+}
+
 /* Reduced motion for Pi performance */
 @media (prefers-reduced-motion: reduce) {
   *,

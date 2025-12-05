@@ -369,7 +369,7 @@ function MembersList() {
           bottomContent={bottomContent}
           bottomContentPlacement="inside"
           classNames={{
-            base: 'flex-1 overflow-hidden',
+            base: '-mx-1 -my-1 flex-1 overflow-hidden px-1 py-1',
             wrapper: 'max-h-full overflow-auto',
             td: 'before:bg-transparent',
             tr: 'animate-fade-in-up',

@@ -315,9 +315,9 @@ export default function Dashboard() {
       )}
 
       {/* Main Content: Person Grid + Activity Panel */}
-      <div className="flex gap-4 mt-4 flex-1 overflow-hidden">
+      <div className="-mx-1 -my-1 flex gap-4 mt-4 flex-1 overflow-hidden px-1 py-1">
         {/* Person Card Grid - scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="-mx-1 -my-1 flex-1 overflow-y-auto px-1 py-1">
           <PersonCardGrid
             people={presentPeople}
             filters={filters}

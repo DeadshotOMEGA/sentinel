@@ -63,6 +63,26 @@ npx playwright test tests/e2e/
 - **Never use `any` type** - Look up actual types
 - **Throw errors early** - No silent fallbacks
 
+## HeroUI Agent Integration
+
+**MANDATORY**: When creating or editing React component files (`.tsx`/`.jsx`) in `frontend/`, `kiosk/`, or `tv-display/`:
+
+1. **Before implementing UI**, invoke the `heroui-guardian` agent to:
+   - Get recommended HeroUI components for the task
+   - Look up component props and variants from GitHub source
+   - Ensure proper import patterns and prop usage
+
+2. **Use the skill** `/heroui-lookup [component]` to fetch documentation for specific components
+
+3. **The compliance hook** will block saves that violate HeroUI standards:
+   - Native HTML where HeroUI equivalent exists
+   - Wrong props (`onClick` instead of `onPress`)
+   - Hardcoded colors instead of theme tokens
+
+**Agent Location:** `.claude/agents/heroui-guardian.md`
+**Skill Location:** `.claude/skills/heroui-lookup.md`
+**Hook Location:** `.claude/hooks/post-tool-use/heroui-compliance.py`
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -98,6 +118,30 @@ Font:    Inter
 .kiosk-mode  /* 56px touch targets, larger fonts */
 .tv-mode     /* Wall display, no hover states, cursor: default */
 ```
+
+## CSS Patterns
+
+### Shadow Breathing Room
+Scroll containers (`overflow-auto`, `overflow-hidden`) clip HeroUI card shadows. Use the padding + negative margin pattern to give shadows room on all sides:
+
+```tsx
+// On any element with overflow-auto or overflow-hidden
+className="-mx-1 -my-1 overflow-auto px-1 py-1"
+
+// For HeroUI Table, add to base class
+classNames={{
+  base: '-mx-1 -my-1 flex-1 overflow-hidden px-1 py-1',
+  wrapper: 'max-h-full overflow-auto',
+}}
+
+// When bottom padding is already set (e.g., pb-6), use top-only vertical:
+className="-mx-1 -mt-1 overflow-auto px-1 pt-1 pb-6"
+```
+
+### Layout Structure
+- `DashboardLayout` uses `overflow-auto` on `<main>` (not `overflow-hidden`)
+- `PageWrapper` provides `p-6` padding but no overflow clipping
+- Individual pages handle their own scroll containers with shadow breathing room
 
 ## Interface-Specific Rules
 

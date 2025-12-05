@@ -514,11 +514,11 @@ export const componentStyles = {
     },
   },
 
-  // Card - subtle shadow
+  // Card - medium shadow for visible rounded corners
   card: {
     defaultProps: {
       radius: "lg",
-      shadow: "sm",
+      shadow: "md",
     },
   },
 
@@ -526,6 +526,19 @@ export const componentStyles = {
   chip: {
     classNames: {
       base: "font-medium",
+    },
+  },
+
+  // Tabs - consistent with card styling
+  tabs: {
+    defaultProps: {
+      radius: "lg",
+      variant: "solid",
+    },
+    classNames: {
+      tabList: "bg-default-100",
+      tab: "text-default-500 data-[selected=true]:text-foreground font-medium",
+      cursor: "bg-background shadow-md",
     },
   },
 };

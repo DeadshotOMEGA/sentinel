@@ -1,7 +1,8 @@
-import { Card, CardBody, Checkbox, Chip } from '@heroui/react';
+import { Card, CardBody, Checkbox, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import type { PresentPerson, AlertSeverity } from '../../../../shared/types';
+import { TruncatedText, StatusTooltip } from '../tooltips';
 
 interface PersonCardProps {
   person: PresentPerson;
@@ -45,6 +46,17 @@ function getAlertColorClass(severity: AlertSeverity): string {
   }
 }
 
+function getTooltipSeverity(severity: AlertSeverity): 'danger' | 'warning' | 'default' {
+  switch (severity) {
+    case 'critical':
+      return 'danger';
+    case 'warning':
+      return 'warning';
+    case 'info':
+      return 'default';
+  }
+}
+
 export default function PersonCard({
   person,
   selectMode,
@@ -78,8 +90,7 @@ export default function PersonCard({
     <Card
       isPressable
       isHoverable
-      shadow="sm"
-      className={`${borderClassName} border border-default-200`}
+      className={borderClassName}
       onPress={() => onPress(person)}
       data-testid="person-card"
     >
@@ -88,11 +99,19 @@ export default function PersonCard({
           {/* Alert Indicator */}
           {highestSeverityAlert && (
             <div className="absolute top-0 right-0 flex items-center gap-1">
-              <Icon
-                icon={getAlertIcon(highestSeverityAlert.severity)}
-                className={getAlertColorClass(highestSeverityAlert.severity)}
-                width={18}
-              />
+              <StatusTooltip
+                severity={getTooltipSeverity(highestSeverityAlert.severity)}
+                title={activeAlerts.length > 1 ? `${activeAlerts.length} Active Alerts` : 'Alert'}
+                description={activeAlerts.map(a => a.message).join('; ')}
+              >
+                <span className="cursor-help">
+                  <Icon
+                    icon={getAlertIcon(highestSeverityAlert.severity)}
+                    className={getAlertColorClass(highestSeverityAlert.severity)}
+                    width={18}
+                  />
+                </span>
+              </StatusTooltip>
               {activeAlerts.length > 1 && (
                 <span className="text-xs font-medium text-default-600">
                   {activeAlerts.length}
@@ -116,52 +135,74 @@ export default function PersonCard({
               <div className="min-w-0" data-testid="person-name">
                 {isMember ? (
                   <>
-                    <p className="font-medium truncate">
-                      {person.rank && `${person.rank} `}{lastName}
-                    </p>
-                    <p className="text-sm text-default-500 truncate">{firstName}</p>
+                    <TruncatedText
+                      content={`${person.rank ? `${person.rank} ` : ''}${lastName}`}
+                      className="font-medium truncate block"
+                      as="p"
+                    />
+                    <TruncatedText
+                      content={firstName}
+                      className="text-sm text-default-500 truncate block"
+                      as="p"
+                    />
                   </>
                 ) : (
-                  <p className="font-medium truncate">{person.name}</p>
+                  <TruncatedText
+                    content={person.name}
+                    className="font-medium truncate block"
+                    as="p"
+                  />
                 )}
               </div>
-              <Chip size="sm" variant="flat" color={chipColor} className="shrink-0" data-testid="person-type-badge">
-                {chipLabel}
-              </Chip>
+              <Tooltip content={isMember ? 'Unit member' : 'Visitor to the unit'}>
+                <Chip size="sm" variant="flat" color={chipColor} className="shrink-0" data-testid="person-type-badge">
+                  {chipLabel}
+                </Chip>
+              </Tooltip>
             </div>
 
             {isMember ? (
               <>
                 {person.division && (
-                  <p className="text-xs text-default-400 truncate">
-                    {person.division}
-                  </p>
+                  <TruncatedText
+                    content={person.division}
+                    className="text-xs text-default-400 truncate block"
+                    as="p"
+                  />
                 )}
               </>
             ) : (
               <>
                 {person.organization && (
-                  <p className="text-sm text-default-500 truncate">
-                    {person.organization}
-                  </p>
+                  <TruncatedText
+                    content={person.organization}
+                    className="text-sm text-default-500 truncate block"
+                    as="p"
+                  />
                 )}
                 {person.visitReason && (
-                  <p className="text-xs text-default-400 truncate">
-                    {person.visitReason}
-                  </p>
+                  <TruncatedText
+                    content={person.visitReason}
+                    className="text-xs text-default-400 truncate block"
+                    as="p"
+                  />
                 )}
                 {person.hostName && (
-                  <p className="text-xs text-default-400 truncate">
-                    Host: {person.hostName}
-                  </p>
+                  <TruncatedText
+                    content={`Host: ${person.hostName}`}
+                    className="text-xs text-default-400 truncate block"
+                    as="p"
+                  />
                 )}
               </>
             )}
 
-            <p className="text-xs text-default-400 mt-1">
-              {formatDistanceToNow(person.checkInTime, { addSuffix: true })}
-              {person.kioskName && ` • ${person.kioskName}`}
-            </p>
+            <Tooltip content={format(person.checkInTime, 'PPpp')}>
+              <p className="text-xs text-default-400 mt-1 cursor-help inline-block">
+                {formatDistanceToNow(person.checkInTime, { addSuffix: true })}
+                {person.kioskName && ` • ${person.kioskName}`}
+              </p>
+            </Tooltip>
           </div>
         </div>
       </CardBody>
