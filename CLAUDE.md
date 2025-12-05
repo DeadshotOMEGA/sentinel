@@ -116,6 +116,7 @@ All API routes use:
 - `requireAuth` middleware for protected routes
 - `requireRole('admin')` for admin-only operations
 - toCamelCase/toSnakeCase for DB row conversion
+- **Response format**: Always wrap arrays in named objects - `{ badges: [...] }`, `{ members: [...] }`, never raw arrays. Frontend types must match: `api.get<{ badges: Badge[] }>('/badges')`
 
 ## WebSocket Events
 
