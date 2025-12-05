@@ -1,10 +1,14 @@
 import { checkinRepository } from '../db/repositories/checkin-repository';
+import { visitorRepository } from '../db/repositories/visitor-repository';
 import { redis } from '../db/redis';
 import { broadcastPresenceUpdate } from '../websocket/broadcast';
 import { logger } from '../utils/logger';
+import { getKioskName } from '../utils/kiosk-names';
+import { getAlertsForPerson } from '../routes/alerts';
 import type {
   PresenceStats,
   CheckinDirection,
+  PresentPerson,
 } from '../../../shared/types';
 
 interface PresentMember {
@@ -13,8 +17,11 @@ interface PresentMember {
   lastName: string;
   rank: string;
   division: string;
+  divisionId: string;
+  memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force';
   mess: string | null;
   checkedInAt: string;
+  kioskId?: string;
 }
 
 interface MemberPresenceItem {
@@ -126,6 +133,56 @@ export class PresenceService {
       throw new Error('Limit must be between 1 and 100');
     }
     return await checkinRepository.getRecentActivity(limit);
+  }
+
+  /**
+   * Get all present people (members + visitors) for dashboard
+   * Returns unified PresentPerson array with alerts
+   */
+  async getAllPresentPeople(): Promise<PresentPerson[]> {
+    const [members, visitors] = await Promise.all([
+      this.getPresentMembers(),
+      visitorRepository.findActiveWithRelations(),
+    ]);
+
+    const presentMembers: PresentPerson[] = members.map(m => {
+      const alerts = getAlertsForPerson('member', m.id);
+      return {
+        id: m.id,
+        type: 'member' as const,
+        name: `${m.firstName} ${m.lastName}`,
+        rank: m.rank,
+        division: m.division,
+        divisionId: m.divisionId,
+        memberType: m.memberType,
+        checkInTime: new Date(m.checkedInAt),
+        kioskId: m.kioskId,
+        kioskName: m.kioskId ? getKioskName(m.kioskId) : undefined,
+        alerts: alerts.length > 0 ? alerts : undefined,
+      };
+    });
+
+    const presentVisitors: PresentPerson[] = visitors.map(v => {
+      const alerts = getAlertsForPerson('visitor', v.id);
+      return {
+        id: v.id,
+        type: 'visitor' as const,
+        name: v.name,
+        organization: v.organization,
+        visitType: v.visitType,
+        visitReason: v.purpose,
+        hostMemberId: v.hostMemberId,
+        hostName: v.hostName,
+        eventId: v.eventId,
+        eventName: v.eventName,
+        checkInTime: v.checkInTime,
+        kioskId: undefined, // Not tracked for visitors
+        kioskName: undefined,
+        alerts: alerts.length > 0 ? alerts : undefined,
+      };
+    });
+
+    return [...presentMembers, ...presentVisitors];
   }
 
   /**

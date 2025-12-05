@@ -1,5 +1,6 @@
 import { checkinRepository } from '../db/repositories/checkin-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
+import { memberRepository } from '../db/repositories/member-repository';
 import { presenceService } from './presence-service';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { validateCheckinTimestamp } from '../utils/timestamp-validator';
@@ -174,6 +175,71 @@ export class CheckinService {
 
     const timeDiff = timestamp.getTime() - lastCheckin.timestamp.getTime();
     return Math.abs(timeDiff) < 5000;
+  }
+
+  /**
+   * Admin force checkout - Manually check out a member
+   * Used when members forget to badge out
+   */
+  async adminCheckout(memberId: string): Promise<CheckinResult> {
+    // Get member with division
+    const member = await memberRepository.findById(memberId);
+    if (!member) {
+      throw new NotFoundError(
+        'MEMBER_NOT_FOUND',
+        `Member ${memberId} not found`,
+        'The member you are trying to check out does not exist. Please verify the member ID.'
+      );
+    }
+
+    // Get member's badge
+    if (!member.badgeId) {
+      throw new ValidationError(
+        `Member ${memberId} does not have a badge assigned`,
+        'This member does not have a badge assigned. Cannot create checkout record without a badge.',
+        'Please assign a badge to this member before attempting to check them out.'
+      );
+    }
+
+    // Verify member is currently checked in
+    const lastDirection = await presenceService.getMemberDirection(memberId);
+    if (lastDirection !== 'in') {
+      const lastCheckin = await checkinRepository.findLatestByMember(memberId);
+      const actualDirection = lastCheckin?.direction ?? null;
+
+      if (actualDirection !== 'in') {
+        throw new ValidationError(
+          `Member ${memberId} is not currently checked in`,
+          'This member is not currently checked in. Cannot check out a member who is already checked out.',
+          'Please verify the member is currently present before attempting to force checkout.'
+        );
+      }
+    }
+
+    const checkoutTimestamp = new Date();
+
+    // Create checkout checkin record
+    const checkin = await checkinRepository.create({
+      memberId,
+      badgeId: member.badgeId,
+      direction: 'out',
+      timestamp: checkoutTimestamp,
+      kioskId: 'admin-forced-checkout',
+      synced: true,
+    });
+
+    // Update member direction cache
+    await presenceService.setMemberDirection(memberId, 'out');
+
+    // Broadcast presence stats update
+    const stats = await checkinRepository.getPresenceStats();
+    broadcastPresenceUpdate(stats);
+
+    return {
+      checkin,
+      member,
+      direction: 'out',
+    };
   }
 }
 

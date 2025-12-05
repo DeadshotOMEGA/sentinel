@@ -282,6 +282,9 @@ model Visitor {
   checkOutTime     DateTime? @map("check_out_time") @db.Timestamp(6)
   temporaryBadgeId String?   @map("temporary_badge_id") @db.Uuid
   kioskId          String    @map("kiosk_id") @db.VarChar(50)
+  adminNotes       String?   @map("admin_notes")
+  checkInMethod    String?   @default("kiosk") @map("check_in_method") @db.VarChar(20)
+  createdByAdmin   String?   @map("created_by_admin") @db.Uuid
   createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   event            Event?    @relation(fields: [eventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   hostMember       Member?   @relation(fields: [hostMemberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -291,5 +294,6 @@ model Visitor {
   @@index([checkOutTime], map: "idx_visitors_check_out_time")
   @@index([eventId], map: "idx_visitors_event")
   @@index([hostMemberId], map: "idx_visitors_host")
+  @@index([checkInMethod], map: "idx_visitors_check_in_method")
   @@map("visitors")
 }

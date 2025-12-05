@@ -34,8 +34,11 @@ interface PresentMember {
   lastName: string;
   rank: string;
   division: string;
+  divisionId: string;
+  memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force';
   mess: string | null;
   checkedInAt: string;
+  kioskId?: string;
 }
 
 export class CheckinRepository {
@@ -82,10 +85,16 @@ export class CheckinRepository {
     kioskId: string;
     synced: boolean | null;
     createdAt: Date | null;
+    method?: string | null;
+    createdByAdmin?: string | null;
   }): Checkin {
     if (!prismaCheckin.memberId || !prismaCheckin.badgeId) {
       throw new Error('Checkin missing required memberId or badgeId');
     }
+
+    const method = prismaCheckin.method === 'admin_manual' ? 'admin_manual' : 'badge';
+    const synced = prismaCheckin.synced === false ? false : true;
+    const createdAt = prismaCheckin.createdAt ? prismaCheckin.createdAt : prismaCheckin.timestamp;
 
     return {
       id: prismaCheckin.id,
@@ -94,8 +103,10 @@ export class CheckinRepository {
       direction: prismaCheckin.direction as 'in' | 'out',
       timestamp: prismaCheckin.timestamp,
       kioskId: prismaCheckin.kioskId,
-      synced: prismaCheckin.synced ?? true,
-      createdAt: prismaCheckin.createdAt ?? prismaCheckin.timestamp,
+      synced,
+      method,
+      createdByAdmin: prismaCheckin.createdByAdmin ? prismaCheckin.createdByAdmin : undefined,
+      createdAt,
     };
   }
 
@@ -210,6 +221,8 @@ export class CheckinRepository {
         kiosk_id: string;
         synced: boolean | null;
         created_at: Date | null;
+        method: string | null;
+        created_by_admin: string | null;
       }>
     >`
       SELECT DISTINCT ON (member_id) *
@@ -221,6 +234,10 @@ export class CheckinRepository {
     const resultMap = new Map<string, Checkin>();
 
     rows.forEach((row) => {
+      const method = row.method === 'admin_manual' ? 'admin_manual' : 'badge';
+      const synced = row.synced === false ? false : true;
+      const createdAt = row.created_at ? row.created_at : row.timestamp;
+
       resultMap.set(row.member_id, {
         id: row.id,
         memberId: row.member_id,
@@ -228,8 +245,10 @@ export class CheckinRepository {
         direction: row.direction as 'in' | 'out',
         timestamp: row.timestamp,
         kioskId: row.kiosk_id,
-        synced: row.synced ?? true,
-        createdAt: row.created_at ?? row.timestamp,
+        synced,
+        method,
+        createdByAdmin: row.created_by_admin ? row.created_by_admin : undefined,
+        createdAt,
       });
     });
 
@@ -359,15 +378,19 @@ export class CheckinRepository {
         last_name: string;
         rank: string;
         mess: string | null;
+        division_id: string;
         division_name: string;
+        member_type: string;
         checked_in_at: Date;
+        kiosk_id: string | null;
       }>
     >`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
           member_id,
           direction,
-          timestamp
+          timestamp,
+          kiosk_id
         FROM checkins
         ORDER BY member_id, timestamp DESC
       )
@@ -377,8 +400,11 @@ export class CheckinRepository {
         m.last_name,
         m.rank,
         m.mess,
+        m.division_id,
         d.name as division_name,
-        lc.timestamp as checked_in_at
+        m.member_type,
+        lc.timestamp as checked_in_at,
+        lc.kiosk_id
       FROM members m
       INNER JOIN divisions d ON m.division_id = d.id
       INNER JOIN latest_checkins lc ON m.id = lc.member_id
@@ -392,8 +418,11 @@ export class CheckinRepository {
       lastName: row.last_name,
       rank: row.rank,
       division: row.division_name,
+      divisionId: row.division_id,
+      memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
       mess: row.mess,
       checkedInAt: row.checked_in_at.toISOString(),
+      kioskId: row.kiosk_id ?? undefined,
     }));
   }
 
@@ -435,6 +464,8 @@ export class CheckinRepository {
         kiosk_id: string | null;
         synced: boolean | null;
         checkin_created_at: Date | null;
+        checkin_method: string | null;
+        checkin_created_by_admin: string | null;
       }>
     >`
       SELECT
@@ -445,7 +476,8 @@ export class CheckinRepository {
         d.description as division_description, d.created_at as division_created_at,
         d.updated_at as division_updated_at,
         c.id as checkin_id, c.member_id as checkin_member_id, c.badge_id as checkin_badge_id,
-        c.direction, c.timestamp, c.kiosk_id, c.synced, c.created_at as checkin_created_at
+        c.direction, c.timestamp, c.kiosk_id, c.synced, c.created_at as checkin_created_at,
+        c.method as checkin_method, c.created_by_admin as checkin_created_by_admin
       FROM members m
       INNER JOIN divisions d ON m.division_id = d.id
       LEFT JOIN LATERAL (
@@ -492,6 +524,10 @@ export class CheckinRepository {
 
       let lastCheckin: Checkin | undefined;
       if (row.checkin_id && row.checkin_member_id && row.checkin_badge_id && row.timestamp && row.kiosk_id !== null) {
+        const checkinMethod = row.checkin_method === 'admin_manual' ? 'admin_manual' : 'badge';
+        const checkinSynced = row.synced === false ? false : true;
+        const checkinCreatedAt = row.checkin_created_at ? row.checkin_created_at : row.timestamp;
+
         lastCheckin = {
           id: row.checkin_id,
           memberId: row.checkin_member_id,
@@ -499,8 +535,10 @@ export class CheckinRepository {
           direction: row.direction as 'in' | 'out',
           timestamp: row.timestamp,
           kioskId: row.kiosk_id,
-          synced: row.synced ?? true,
-          createdAt: row.checkin_created_at ?? row.timestamp,
+          synced: checkinSynced,
+          method: checkinMethod,
+          createdByAdmin: row.checkin_created_by_admin ? row.checkin_created_by_admin : undefined,
+          createdAt: checkinCreatedAt,
         };
       }
 

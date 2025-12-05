@@ -156,6 +156,7 @@ export interface CreateBadgeInput {
 
 // Check-in Types
 export type CheckinDirection = 'in' | 'out';
+export type CheckinMethod = 'badge' | 'admin_manual';
 
 export interface Checkin {
   id: string;
@@ -165,6 +166,8 @@ export interface Checkin {
   timestamp: Date;
   kioskId?: string;
   synced: boolean;
+  method: CheckinMethod;
+  createdByAdmin?: string;
   createdAt: Date;
 }
 
@@ -179,6 +182,13 @@ export interface CreateCheckinInput {
   timestamp: Date;
   kioskId?: string;
   synced?: boolean;
+  method?: CheckinMethod;
+  createdByAdmin?: string;
+}
+
+export interface ManualMemberCheckinInput {
+  memberId: string;
+  notes?: string;
 }
 
 export interface PresenceStats {
@@ -200,6 +210,8 @@ export type VisitType =
   | 'official'
   | 'other';
 
+export type VisitorCheckinMethod = 'kiosk' | 'admin_manual';
+
 export interface Visitor {
   id: string;
   name: string;
@@ -211,7 +223,16 @@ export interface Visitor {
   checkInTime: Date;
   checkOutTime?: Date;
   badgeId?: string;
+  adminNotes?: string;
+  checkInMethod: VisitorCheckinMethod;
+  createdByAdmin?: string;
   createdAt: Date;
+}
+
+export interface VisitorWithDetails extends Visitor {
+  hostName?: string;
+  eventName?: string;
+  duration?: number; // minutes
 }
 
 export interface CreateVisitorInput {
@@ -223,6 +244,23 @@ export interface CreateVisitorInput {
   purpose?: string;
   checkInTime?: Date;
   badgeId?: string;
+  adminNotes?: string;
+  checkInMethod?: VisitorCheckinMethod;
+  createdByAdmin?: string;
+}
+
+export interface UpdateVisitorInput {
+  eventId?: string | null;
+  hostMemberId?: string | null;
+  purpose?: string;
+}
+
+export interface VisitorHistoryFilters {
+  startDate?: Date;
+  endDate?: Date;
+  visitType?: VisitType;
+  organization?: string;
+  hostMemberId?: string;
 }
 
 // Admin User Types
@@ -363,4 +401,66 @@ export interface ActivityItem {
   // Event context
   eventId?: string;
   eventName?: string;
+}
+
+// Dashboard Present Person Types
+export type PresentPersonType = 'member' | 'visitor';
+
+export interface PresentPerson {
+  id: string;
+  type: PresentPersonType;
+  name: string;
+  checkInTime: Date;
+  kioskId?: string;
+  kioskName?: string;
+
+  // Member-specific fields
+  rank?: string;
+  division?: string;
+  divisionId?: string;
+  memberType?: MemberType;
+
+  // Visitor-specific fields
+  organization?: string;
+  visitType?: VisitType;
+  visitReason?: string;
+  hostMemberId?: string;
+  hostName?: string;
+  eventId?: string;
+  eventName?: string;
+
+  // Alerts
+  alerts?: Alert[];
+}
+
+export interface DashboardFilters {
+  typeFilter: 'all' | 'members' | 'visitors';
+  directionFilter: 'all' | 'in' | 'out';
+  searchQuery: string;
+}
+
+// Alert Types
+export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type AlertTargetType = 'member' | 'visitor';
+
+export interface Alert {
+  id: string;
+  targetType: AlertTargetType;
+  targetId: string;
+  severity: AlertSeverity;
+  message: string;
+  createdBy: string;
+  createdAt: Date;
+  expiresAt?: Date;
+  dismissed: boolean;
+  dismissedBy?: string;
+  dismissedAt?: Date;
+}
+
+export interface CreateAlertInput {
+  targetType: AlertTargetType;
+  targetId: string;
+  severity: AlertSeverity;
+  message: string;
+  expiresAt?: Date;
 }
