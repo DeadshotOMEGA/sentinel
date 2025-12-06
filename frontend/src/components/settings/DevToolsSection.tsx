@@ -209,8 +209,8 @@ export default function DevToolsSection() {
       const response = await api.post<SimulationPrecheck>('/dev-tools/simulate/precheck', request);
       setSimPrecheck(response.data);
     } catch (error) {
-      const err = error as { response?: { data?: { error?: string } } };
-      const errorMessage = err.response?.data?.error;
+      const err = error as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = err.response?.data?.error?.message;
       toast.error(errorMessage ?? 'Failed to precheck simulation');
     } finally {
       setSimIsLoading(false);
@@ -231,8 +231,8 @@ export default function DevToolsSection() {
         `${response.data.summary.generated.events} events`
       );
     } catch (error) {
-      const err = error as { response?: { data?: { error?: string } } };
-      const errorMessage = err.response?.data?.error;
+      const err = error as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = err.response?.data?.error?.message;
       toast.error(errorMessage ?? 'Simulation failed');
     } finally {
       setSimIsLoading(false);
@@ -257,8 +257,8 @@ export default function DevToolsSection() {
       const response = await api.post<{ cleared: string[] }>('/dev-tools/clear-all');
       toast.success(`Cleared ${response.data.cleared.length} tables: ${response.data.cleared.join(', ')}`);
     } catch (error) {
-      const err = error as { response?: { data?: { error?: string } } };
-      const errorMessage = err.response?.data?.error;
+      const err = error as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = err.response?.data?.error?.message;
       if (!errorMessage) {
         throw new Error('Failed to clear data - no error message received');
       }
@@ -277,8 +277,8 @@ export default function DevToolsSection() {
         });
         results.push(`${response.data.cleared}: ${response.data.count}`);
       } catch (error) {
-        const err = error as { response?: { data?: { error?: string } } };
-        const errorMessage = err.response?.data?.error;
+        const err = error as { response?: { data?: { error?: { message?: string } } } };
+        const errorMessage = err.response?.data?.error?.message;
         errors.push(`${table}: ${errorMessage ? errorMessage : 'Failed to clear table'}`);
       }
     }
@@ -301,8 +301,8 @@ export default function DevToolsSection() {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      const err = error as { response?: { data?: { error?: string } } };
-      const errorMessage = err.response?.data?.error;
+      const err = error as { response?: { data?: { error?: { message?: string } } } };
+      const errorMessage = err.response?.data?.error?.message;
       if (!errorMessage) {
         throw new Error('Failed to reset database - no error message received');
       }
