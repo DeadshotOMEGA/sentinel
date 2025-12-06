@@ -23,7 +23,8 @@ export type AuditAction =
   | 'dev_tools_access'
   | 'dev_tools_clear_all'
   | 'dev_tools_clear_table'
-  | 'dev_tools_reset';
+  | 'dev_tools_reset'
+  | 'dev_tools_simulate';
 
 interface AuditLogEntry {
   adminUserId: string | null;
