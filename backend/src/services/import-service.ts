@@ -49,7 +49,7 @@ export class ImportService {
 
   /**
    * Parse date string from CSV and return ISO string or undefined
-   * Accepts common formats: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY
+   * Accepts common formats: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY, DD-MMM-YY
    */
   private parseDate(dateStr?: string): string | undefined {
     if (!dateStr?.trim()) {
@@ -84,6 +84,25 @@ export class ImportService {
       const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0];
+      }
+    }
+
+    // Try DD-MMM-YY (e.g., 15-Jun-25)
+    const monthNames: Record<string, string> = {
+      jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+      jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    };
+    const abbrevMatch = cleaned.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2})$/);
+    if (abbrevMatch) {
+      const [, day, monthAbbrev, yearShort] = abbrevMatch;
+      const month = monthNames[monthAbbrev.toLowerCase()];
+      if (month) {
+        // Assume 20xx for two-digit years
+        const year = `20${yearShort}`;
+        const date = new Date(`${year}-${month}-${day.padStart(2, '0')}`);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().split('T')[0];
+        }
       }
     }
 

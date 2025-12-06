@@ -34,8 +34,15 @@ type ColumnKey =
   | 'rank'
   | 'division'
   | 'mess'
-  | 'memberType'
   | 'status'
+  | 'moc'
+  | 'classDetails'
+  | 'badgeId'
+  | 'contractStart'
+  | 'contractEnd'
+  | 'notes'
+  | 'createdAt'
+  | 'updatedAt'
   | 'actions';
 
 interface Column {
@@ -49,9 +56,16 @@ const columns: Column[] = [
   { uid: 'name', name: 'NAME', sortable: true },
   { uid: 'rank', name: 'RANK', sortable: true },
   { uid: 'division', name: 'DIVISION', sortable: true },
+  { uid: 'moc', name: 'MOC', sortable: true },
   { uid: 'mess', name: 'MESS', sortable: true },
-  { uid: 'memberType', name: 'TYPE', sortable: true },
   { uid: 'status', name: 'STATUS', sortable: true },
+  { uid: 'classDetails', name: 'CONTRACT', sortable: true },
+  { uid: 'badgeId', name: 'BADGE ID', sortable: true },
+  { uid: 'contractStart', name: 'CONTRACT START', sortable: true },
+  { uid: 'contractEnd', name: 'CONTRACT END', sortable: true },
+  { uid: 'notes', name: 'NOTES', sortable: false },
+  { uid: 'createdAt', name: 'CREATED', sortable: true },
+  { uid: 'updatedAt', name: 'UPDATED', sortable: true },
   { uid: 'actions', name: 'ACTIONS', sortable: false },
 ];
 
@@ -138,16 +152,40 @@ function MembersList() {
           second = b.division.name;
           break;
         case 'mess':
-          first = a.mess ? a.mess : '';
-          second = b.mess ? b.mess : '';
-          break;
-        case 'memberType':
-          first = a.memberType;
-          second = b.memberType;
+          first = a.mess ?? '';
+          second = b.mess ?? '';
           break;
         case 'status':
           first = a.status;
           second = b.status;
+          break;
+        case 'moc':
+          first = a.moc ?? '';
+          second = b.moc ?? '';
+          break;
+        case 'classDetails':
+          first = a.classDetails ?? '';
+          second = b.classDetails ?? '';
+          break;
+        case 'badgeId':
+          first = a.badgeId ?? '';
+          second = b.badgeId ?? '';
+          break;
+        case 'contractStart':
+          first = a.contractStart ? new Date(a.contractStart).getTime() : 0;
+          second = b.contractStart ? new Date(b.contractStart).getTime() : 0;
+          break;
+        case 'contractEnd':
+          first = a.contractEnd ? new Date(a.contractEnd).getTime() : 0;
+          second = b.contractEnd ? new Date(b.contractEnd).getTime() : 0;
+          break;
+        case 'createdAt':
+          first = new Date(a.createdAt).getTime();
+          second = new Date(b.createdAt).getTime();
+          break;
+        case 'updatedAt':
+          first = new Date(a.updatedAt).getTime();
+          second = new Date(b.updatedAt).getTime();
           break;
         default:
           first = '';
@@ -187,6 +225,12 @@ function MembersList() {
     return sortedItems.slice(0, visibleCount);
   }, [sortedItems, visibleCount]);
 
+  const formatDate = useCallback((date: Date | string | null | undefined) => {
+    if (!date) return '—';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-CA');
+  }, []);
+
   const renderCell = useCallback((member: MemberWithDivision, columnKey: React.Key) => {
     const key = columnKey as ColumnKey;
 
@@ -209,25 +253,7 @@ function MembersList() {
       case 'division':
         return <div className="text-small">{member.division.name}</div>;
       case 'mess':
-        return <div className="text-small text-default-500">{member.mess ? member.mess : '—'}</div>;
-      case 'memberType':
-        return (
-          <Chip
-            size="sm"
-            variant="flat"
-            color={
-              member.memberType === 'class_a' ? 'default' :
-              member.memberType === 'class_b' ? 'success' :
-              member.memberType === 'class_c' ? 'warning' :
-              'primary'
-            }
-          >
-            {member.memberType === 'class_a' ? 'Class A' :
-             member.memberType === 'class_b' ? 'Class B' :
-             member.memberType === 'class_c' ? 'Class C' :
-             'Reg Force'}
-          </Chip>
-        );
+        return <div className="text-small">{member.mess ?? '—'}</div>;
       case 'status':
         return (
           <Chip
@@ -237,6 +263,49 @@ function MembersList() {
             {member.status}
           </Chip>
         );
+      case 'moc':
+        return <div className="text-small">{member.moc ?? '—'}</div>;
+      case 'classDetails': {
+        const contract = member.classDetails || 'Class A';
+        const contractLower = contract.toLowerCase();
+        const notesLower = member.notes?.toLowerCase() ?? '';
+        const isFTS = (contractLower.includes('class b') || contractLower.includes('reg')) && notesLower.includes('chw');
+        const getContractColor = (): 'default' | 'success' | 'warning' | 'danger' | 'primary' => {
+          if (contractLower.includes('class b')) return 'success';
+          if (contractLower.includes('class c')) return 'warning';
+          if (contractLower.includes('ed&t')) return 'danger';
+          if (contractLower.includes('reg')) return 'primary';
+          return 'default';
+        };
+        return (
+          <div className="flex gap-1">
+            <Chip size="sm" variant="flat" color={getContractColor()}>
+              {contract}
+            </Chip>
+            {isFTS && (
+              <Chip size="sm" variant="flat" color="secondary">
+                FTS
+              </Chip>
+            )}
+          </div>
+        );
+      }
+      case 'badgeId':
+        return <div className="text-small">{member.badgeId ?? '—'}</div>;
+      case 'contractStart':
+        return <div className="text-small">{formatDate(member.contractStart)}</div>;
+      case 'contractEnd':
+        return <div className="text-small">{formatDate(member.contractEnd)}</div>;
+      case 'notes':
+        return (
+          <div className="max-w-xs truncate text-small" title={member.notes ?? undefined}>
+            {member.notes ?? '—'}
+          </div>
+        );
+      case 'createdAt':
+        return <div className="text-small">{formatDate(member.createdAt)}</div>;
+      case 'updatedAt':
+        return <div className="text-small">{formatDate(member.updatedAt)}</div>;
       case 'actions':
         return (
           <Button size="sm" variant="flat" onPress={() => handleEdit(member)}>
@@ -247,7 +316,7 @@ function MembersList() {
       default:
         return null;
     }
-  }, [navigate]);
+  }, [navigate, formatDate]);
 
   const handleEdit = useCallback((member: MemberWithDivision) => {
     setSelectedMember(member);
