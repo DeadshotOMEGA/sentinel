@@ -725,7 +725,7 @@ export class SimulationService {
 
     // Insert check-ins in batches
     if (checkinRecords.length > 0) {
-      await prisma.checkin.createMany({
+      const result = await prisma.checkin.createMany({
         data: checkinRecords.map((r) => ({
           memberId: r.memberId,
           badgeId: r.badgeId,
@@ -737,8 +737,9 @@ export class SimulationService {
           flag_reason: r.flagReason,
           synced: true,
         })),
+        skipDuplicates: true,
       });
-      checkins = checkinRecords.length;
+      checkins = result.count;
     }
 
     // Generate visitors
@@ -747,10 +748,11 @@ export class SimulationService {
       const visitorRecords = await this.generateVisitors(schedule, numVisitors, intensity.edgeCasePercentage);
 
       if (visitorRecords.length > 0) {
-        await prisma.visitor.createMany({
+        const result = await prisma.visitor.createMany({
           data: visitorRecords,
+          skipDuplicates: true,
         });
-        visitors = visitorRecords.length;
+        visitors = result.count;
         forgottenCheckouts += visitorRecords.filter((v) => v.checkOutTime === null).length;
       }
     }
@@ -889,7 +891,7 @@ export class SimulationService {
       endTime = schedule.workHours.end;
     }
 
-    const visitTypes = ['contractor', 'recruitment', 'official', 'other', 'general'] as const;
+    const visitTypes = ['contractor', 'recruitment', 'event', 'official', 'museum', 'other'] as const;
     const visitReasons = [
       'Scheduled meeting',
       'Facility tour',
@@ -1022,6 +1024,7 @@ export class SimulationService {
 
       await prisma.eventAttendee.createMany({
         data: attendeeRecords,
+        skipDuplicates: true,
       });
 
       totalAttendees += numAttendees;
@@ -1089,10 +1092,11 @@ export class SimulationService {
       }
 
       if (eventCheckins.length > 0) {
-        await prisma.eventCheckin.createMany({
+        const result = await prisma.eventCheckin.createMany({
           data: eventCheckins,
+          skipDuplicates: true,
         });
-        totalCheckins += eventCheckins.length;
+        totalCheckins += result.count;
       }
     }
 
