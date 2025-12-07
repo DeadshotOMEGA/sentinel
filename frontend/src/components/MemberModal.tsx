@@ -11,7 +11,7 @@ import {
   SelectItem,
 } from '@heroui/react';
 import { api } from '../lib/api';
-import type { MemberWithDivision, Division, CreateMemberInput } from '@shared/types';
+import type { MemberWithDivision, Division, CreateMemberInput, Tag } from '@shared/types';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ interface MemberModalProps {
   onSave: () => void;
   member: MemberWithDivision | null;
   divisions: Division[];
+  tags: Tag[];
 }
 
 export default function MemberModal({
@@ -27,8 +28,10 @@ export default function MemberModal({
   onSave,
   member,
   divisions,
+  tags,
 }: MemberModalProps) {
   const [formData, setFormData] = useState<Partial<CreateMemberInput>>({});
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -52,10 +55,12 @@ export default function MemberModal({
         homePhone: member.homePhone,
         mobilePhone: member.mobilePhone,
       });
+      setSelectedTagIds(new Set(member.tags?.map((tag) => tag.id) ?? []));
     } else {
       setFormData({
         memberType: 'class_a',
       });
+      setSelectedTagIds(new Set());
     }
     setError('');
   }, [member, isOpen]);
@@ -64,10 +69,16 @@ export default function MemberModal({
     setIsLoading(true);
     setError('');
     try {
+      // Prepare payload with tags
+      const payload = {
+        ...formData,
+        tagIds: Array.from(selectedTagIds),
+      };
+
       if (isEdit) {
-        await api.put(`/members/${member.id}`, formData);
+        await api.put(`/members/${member.id}`, payload);
       } else {
-        await api.post('/members', formData);
+        await api.post('/members', payload);
       }
       onSave();
     } catch (err: unknown) {
@@ -202,6 +213,22 @@ export default function MemberModal({
               onValueChange={(v) => setFormData({ ...formData, mobilePhone: v })}
             />
           </div>
+          <Select
+            label="Tags"
+            description="Operational tags for grouping and filtering"
+            selectionMode="multiple"
+            selectedKeys={selectedTagIds}
+            onSelectionChange={(keys) => {
+              setSelectedTagIds(new Set(Array.from(keys) as string[]));
+            }}
+            className="col-span-2"
+          >
+            {tags.map((tag) => (
+              <SelectItem key={tag.id} description={tag.description}>
+                {tag.name}
+              </SelectItem>
+            ))}
+          </Select>
         </ModalBody>
         <ModalFooter>
           <Button variant="light" onPress={onClose}>
