@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@heroui/react": "^2.2.0",
+    "@heroui/react": "^2.8.5",
     "@iconify/react": "^6.0.2",
     "@internationalized/date": "^3.10.0",
     "@react-pdf/renderer": "^4.3.1",
