@@ -13,10 +13,6 @@ import {
   Button,
   Chip,
   Spinner,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
   Link,
 } from '@heroui/react';
 import { SearchIcon } from '@heroui/shared-icons';
@@ -25,24 +21,22 @@ import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
 import ImportModal from '../components/ImportModal';
 import MemberDetail from './MemberDetail';
+import MembersFilterPopover from '../components/members/MembersFilterPopover';
+import TagChip from '../components/members/TagChip';
+import MemberQuickView from '../components/members/MemberQuickView';
+import { useMemberFilters } from '../hooks/useMemberFilters';
 import { api } from '../lib/api';
-import type { MemberWithDivision, Division } from '@shared/types';
+import type { MemberWithDivision, Division, Tag } from '@shared/types';
 
 type ColumnKey =
-  | 'serviceNumber'
   | 'name'
   | 'rank'
   | 'division'
+  | 'moc'
   | 'mess'
   | 'status'
-  | 'moc'
   | 'classDetails'
-  | 'badgeId'
-  | 'contractStart'
-  | 'contractEnd'
-  | 'notes'
-  | 'createdAt'
-  | 'updatedAt'
+  | 'tags'
   | 'actions';
 
 interface Column {
@@ -52,7 +46,6 @@ interface Column {
 }
 
 const columns: Column[] = [
-  { uid: 'serviceNumber', name: 'SERVICE #', sortable: true },
   { uid: 'name', name: 'NAME', sortable: true },
   { uid: 'rank', name: 'RANK', sortable: true },
   { uid: 'division', name: 'DIVISION', sortable: true },
@@ -60,24 +53,30 @@ const columns: Column[] = [
   { uid: 'mess', name: 'MESS', sortable: true },
   { uid: 'status', name: 'STATUS', sortable: true },
   { uid: 'classDetails', name: 'CONTRACT', sortable: true },
-  { uid: 'badgeId', name: 'BADGE ID', sortable: true },
-  { uid: 'contractStart', name: 'CONTRACT START', sortable: true },
-  { uid: 'contractEnd', name: 'CONTRACT END', sortable: true },
-  { uid: 'notes', name: 'NOTES', sortable: false },
-  { uid: 'createdAt', name: 'CREATED', sortable: true },
-  { uid: 'updatedAt', name: 'UPDATED', sortable: true },
+  { uid: 'tags', name: 'TAGS', sortable: false },
   { uid: 'actions', name: 'ACTIONS', sortable: false },
 ];
 
 const ITEMS_PER_BATCH = 20;
 
+function formatMemberType(memberType: string): string {
+  const typeMap: Record<string, string> = {
+    class_a: 'Class A',
+    class_b: 'Class B',
+    class_c: 'Class C',
+    reg_force: 'Reg Force',
+  };
+  return typeMap[memberType] || memberType;
+}
+
 function MembersList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberWithDivision | null>(null);
+  const [selectedQuickViewMember, setSelectedQuickViewMember] = useState<MemberWithDivision | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_BATCH);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -87,10 +86,23 @@ function MembersList() {
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
+  // Use member filters hook for URL-synced filter state
+  const {
+    filters,
+    setMessFilter,
+    setMocFilter,
+    setDivisionFilter,
+    setContractFilter,
+    setTagsFilter,
+    setExcludeTagsFilter,
+    clearFilters,
+    buildApiParams,
+  } = useMemberFilters();
+
   const { data: membersData, isLoading, refetch } = useQuery({
-    queryKey: ['members'],
+    queryKey: ['members', filters],
     queryFn: async () => {
-      const params = new URLSearchParams();
+      const params = buildApiParams();
       params.set('all', 'true');
       const response = await api.get<{ members: MemberWithDivision[] }>(`/members?${params}`);
       return response.data;
@@ -105,27 +117,32 @@ function MembersList() {
     },
   });
 
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      const response = await api.get<{ tags: Tag[] }>('/tags');
+      return response.data;
+    },
+  });
+
   const members = membersData?.members ?? [];
   const divisions = divisionsData?.divisions ?? [];
+  const tags = tagsData?.tags ?? [];
 
-  // Client-side filtering
+  // Client-side search filtering only (server-side handles other filters)
   const filteredItems = useMemo(() => {
     let filtered = [...members];
 
     if (search) {
       filtered = filtered.filter((member) =>
         `${member.firstName} ${member.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-        member.serviceNumber.toLowerCase().includes(search.toLowerCase()) ||
-        member.rank.toLowerCase().includes(search.toLowerCase())
+        member.rank.toLowerCase().includes(search.toLowerCase()) ||
+        member.division.name.toLowerCase().includes(search.toLowerCase())
       );
     }
 
-    if (statusFilter) {
-      filtered = filtered.filter((member) => member.status === statusFilter);
-    }
-
     return filtered;
-  }, [members, search, statusFilter]);
+  }, [members, search]);
 
   // Client-side sorting
   const sortedItems = useMemo(() => {
@@ -135,10 +152,6 @@ function MembersList() {
       let second: string | number = '';
 
       switch (column) {
-        case 'serviceNumber':
-          first = a.serviceNumber;
-          second = b.serviceNumber;
-          break;
         case 'name':
           first = `${a.firstName} ${a.lastName}`;
           second = `${b.firstName} ${b.lastName}`;
@@ -167,26 +180,6 @@ function MembersList() {
           first = a.classDetails ?? '';
           second = b.classDetails ?? '';
           break;
-        case 'badgeId':
-          first = a.badgeId ?? '';
-          second = b.badgeId ?? '';
-          break;
-        case 'contractStart':
-          first = a.contractStart ? new Date(a.contractStart).getTime() : 0;
-          second = b.contractStart ? new Date(b.contractStart).getTime() : 0;
-          break;
-        case 'contractEnd':
-          first = a.contractEnd ? new Date(a.contractEnd).getTime() : 0;
-          second = b.contractEnd ? new Date(b.contractEnd).getTime() : 0;
-          break;
-        case 'createdAt':
-          first = new Date(a.createdAt).getTime();
-          second = new Date(b.createdAt).getTime();
-          break;
-        case 'updatedAt':
-          first = new Date(a.updatedAt).getTime();
-          second = new Date(b.updatedAt).getTime();
-          break;
         default:
           first = '';
           second = '';
@@ -200,7 +193,7 @@ function MembersList() {
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(ITEMS_PER_BATCH);
-  }, [search, statusFilter, sortDescriptor]);
+  }, [search, filters, sortDescriptor]);
 
   // Infinite scroll with IntersectionObserver
   useEffect(() => {
@@ -225,25 +218,20 @@ function MembersList() {
     return sortedItems.slice(0, visibleCount);
   }, [sortedItems, visibleCount]);
 
-  const formatDate = useCallback((date: Date | string | null | undefined) => {
-    if (!date) return '—';
-    const d = new Date(date);
-    return d.toLocaleDateString('en-CA');
-  }, []);
-
   const renderCell = useCallback((member: MemberWithDivision, columnKey: React.Key) => {
     const key = columnKey as ColumnKey;
 
     switch (key) {
-      case 'serviceNumber':
-        return <div className="text-small">{member.serviceNumber}</div>;
       case 'name':
         return (
           <Link
             size="sm"
             color="primary"
             as="button"
-            onPress={() => navigate(`/members/${member.id}`)}
+            onPress={() => {
+              setSelectedQuickViewMember(member);
+              setIsQuickViewOpen(true);
+            }}
           >
             {member.firstName} {member.lastName}
           </Link>
@@ -265,47 +253,24 @@ function MembersList() {
         );
       case 'moc':
         return <div className="text-small">{member.moc ?? '—'}</div>;
-      case 'classDetails': {
-        const contract = member.classDetails || 'Class A';
-        const contractLower = contract.toLowerCase();
-        const notesLower = member.notes?.toLowerCase() ?? '';
-        const isFTS = (contractLower.includes('class b') || contractLower.includes('reg')) && notesLower.includes('chw');
-        const getContractColor = (): 'default' | 'success' | 'warning' | 'danger' | 'primary' => {
-          if (contractLower.includes('class b')) return 'success';
-          if (contractLower.includes('class c')) return 'warning';
-          if (contractLower.includes('ed&t')) return 'danger';
-          if (contractLower.includes('reg')) return 'primary';
-          return 'default';
-        };
+      case 'classDetails':
         return (
-          <div className="flex gap-1">
-            <Chip size="sm" variant="flat" color={getContractColor()}>
-              {contract}
-            </Chip>
-            {isFTS && (
-              <Chip size="sm" variant="flat" color="secondary">
-                FTS
-              </Chip>
+          <div className="text-small">
+            {member.classDetails || formatMemberType(member.memberType)}
+          </div>
+        );
+      case 'tags':
+        return (
+          <div className="flex flex-wrap gap-1">
+            {member.tags && member.tags.length > 0 ? (
+              member.tags.map((tag) => (
+                <TagChip key={tag.id} tagName={tag.name} />
+              ))
+            ) : (
+              <span className="text-small text-default-400">—</span>
             )}
           </div>
         );
-      }
-      case 'badgeId':
-        return <div className="text-small">{member.badgeId ?? '—'}</div>;
-      case 'contractStart':
-        return <div className="text-small">{formatDate(member.contractStart)}</div>;
-      case 'contractEnd':
-        return <div className="text-small">{formatDate(member.contractEnd)}</div>;
-      case 'notes':
-        return (
-          <div className="max-w-xs truncate text-small" title={member.notes ?? undefined}>
-            {member.notes ?? '—'}
-          </div>
-        );
-      case 'createdAt':
-        return <div className="text-small">{formatDate(member.createdAt)}</div>;
-      case 'updatedAt':
-        return <div className="text-small">{formatDate(member.updatedAt)}</div>;
       case 'actions':
         return (
           <Button size="sm" variant="flat" onPress={() => handleEdit(member)}>
@@ -316,7 +281,7 @@ function MembersList() {
       default:
         return null;
     }
-  }, [navigate, formatDate]);
+  }, [navigate]);
 
   const handleEdit = useCallback((member: MemberWithDivision) => {
     setSelectedMember(member);
@@ -358,32 +323,18 @@ function MembersList() {
             isClearable
             startContent={<SearchIcon className="text-default-400" width={16} />}
           />
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                className="bg-default-100 text-default-800"
-                size="sm"
-                startContent={
-                  <Icon className="text-default-400" icon="solar:filter-linear" width={16} />
-                }
-              >
-                Status: {statusFilter === 'active' ? 'Active' : statusFilter === 'inactive' ? 'Inactive' : 'All'}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="Status filter"
-              selectionMode="single"
-              selectedKeys={new Set([statusFilter])}
-              onSelectionChange={(keys) => {
-                const value = Array.from(keys)[0] as string;
-                setStatusFilter(value);
-              }}
-            >
-              <DropdownItem key="active">Active</DropdownItem>
-              <DropdownItem key="inactive">Inactive</DropdownItem>
-              <DropdownItem key="">All</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+          <MembersFilterPopover
+            filters={filters}
+            divisions={divisions}
+            tags={tags}
+            onMessChange={setMessFilter}
+            onMocChange={setMocFilter}
+            onDivisionChange={setDivisionFilter}
+            onContractChange={setContractFilter}
+            onTagsChange={setTagsFilter}
+            onExcludeTagsChange={setExcludeTagsFilter}
+            onClearFilters={clearFilters}
+          />
           <div className="flex-1" />
           <Button variant="bordered" onPress={() => setIsImportModalOpen(true)}>
             <Icon icon="solar:import-linear" width={18} />
@@ -406,7 +357,24 @@ function MembersList() {
         </div>
       </div>
     );
-  }, [search, statusFilter, filteredItems.length, visibleItems.length, selectedKeys, onSearchChange, handleAdd]);
+  }, [
+    search,
+    filters,
+    divisions,
+    tags,
+    filteredItems.length,
+    visibleItems.length,
+    selectedKeys,
+    onSearchChange,
+    setMessFilter,
+    setMocFilter,
+    setDivisionFilter,
+    setContractFilter,
+    setTagsFilter,
+    setExcludeTagsFilter,
+    clearFilters,
+    handleAdd,
+  ]);
 
   const bottomContent = useMemo(() => {
     if (visibleCount >= sortedItems.length) {
@@ -478,6 +446,7 @@ function MembersList() {
         onSave={handleSave}
         member={selectedMember}
         divisions={divisions}
+        tags={tags}
       />
 
       <ImportModal
@@ -485,6 +454,16 @@ function MembersList() {
         onClose={() => setIsImportModalOpen(false)}
         onImportComplete={() => refetch()}
       />
+
+      {selectedQuickViewMember && (
+        <MemberQuickView
+          isOpen={isQuickViewOpen}
+          onClose={() => setIsQuickViewOpen(false)}
+          initialMember={selectedQuickViewMember}
+          divisions={divisions}
+          tags={tags}
+        />
+      )}
     </PageWrapper>
   );
 }
