@@ -164,6 +164,16 @@ export default function Events() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      {event.status === 'active' && (
+                        <Button
+                          size="sm"
+                          color="success"
+                          variant="flat"
+                          onPress={() => navigate(`/events/${event.id}/monitor`)}
+                        >
+                          Monitor
+                        </Button>
+                      )}
                       <Button size="sm" variant="light" onPress={() => handleViewDetails(event.id)}>
                         View
                       </Button>

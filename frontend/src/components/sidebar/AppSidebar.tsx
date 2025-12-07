@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Avatar, Button, ScrollShadow, Spacer } from "@heroui/react";
+import { Avatar, Button, ScrollShadow, Spacer, Tooltip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { cn } from "@heroui/react";
 
@@ -15,7 +15,8 @@ export default function AppSidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const isAdmin = user?.role === "admin";
+  // In dev mode, grant admin access for testing; otherwise check user role
+  const isAdmin = import.meta.env.DEV || user?.role === "admin";
   const filteredItems = filterItemsByRole(sidebarItems, isAdmin);
   const currentKey = getKeyFromPathname(location.pathname);
 
@@ -101,12 +102,12 @@ export default function AppSidebar() {
           <Spacer y={1} />
           <div className="flex items-center gap-2 px-2">
             <Avatar
+              isBordered
               size="sm"
               name={`${user?.firstName} ${user?.lastName}`}
-              className="bg-primary text-white h-6 w-6 text-tiny"
             />
             <div className="flex flex-col">
-              <p className="text-xs font-medium text-foreground truncate">
+              <p className="text-xs font-medium text-default-600 truncate">
                 {user?.firstName} {user?.lastName}
               </p>
               <p className="text-tiny text-default-400 capitalize">{user?.role}</p>
@@ -117,12 +118,13 @@ export default function AppSidebar() {
 
       {isCompact && (
         <div className="flex justify-center py-2">
-          <Avatar
-            isBordered
-            size="sm"
-            name={`${user?.firstName} ${user?.lastName}`}
-            className="bg-primary text-white"
-          />
+          <Tooltip content={`${user?.firstName} ${user?.lastName}`} placement="right">
+            <Avatar
+              isBordered
+              size="sm"
+              name={`${user?.firstName} ${user?.lastName}`}
+            />
+          </Tooltip>
         </div>
       )}
 
@@ -140,19 +142,21 @@ export default function AppSidebar() {
       <div className="mt-auto border-t border-divider p-1">
         {isCompact ? (
           <div className="flex flex-col items-center gap-1">
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              onPress={handleLogout}
-              aria-label="Log out"
-            >
-              <Icon
-                className="text-default-500 rotate-180"
-                icon="solar:logout-2-outline"
-                width={20}
-              />
-            </Button>
+            <Tooltip content="Log Out" placement="right">
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                onPress={handleLogout}
+                aria-label="Log out"
+              >
+                <Icon
+                  className="text-default-500 rotate-180"
+                  icon="solar:minus-circle-line-duotone"
+                  width={20}
+                />
+              </Button>
+            </Tooltip>
           </div>
         ) : (
           <Button
@@ -161,7 +165,7 @@ export default function AppSidebar() {
             startContent={
               <Icon
                 className="text-default-500 rotate-180"
-                icon="solar:logout-2-outline"
+                icon="solar:minus-circle-line-duotone"
                 width={24}
               />
             }

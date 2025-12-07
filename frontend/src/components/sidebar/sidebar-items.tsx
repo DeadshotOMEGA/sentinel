@@ -1,4 +1,4 @@
-import { type SidebarItem, SidebarItemType } from "./Sidebar";
+import type { SidebarItem } from "./Sidebar";
 
 /**
  * Sentinel navigation items organized by sections
@@ -36,20 +36,12 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: "events",
     title: "Events",
-    icon: "solar:calendar-outline",
-    type: SidebarItemType.Nest,
     items: [
       {
-        key: "all-events",
+        key: "events",
         href: "/events",
-        icon: "solar:list-outline",
-        title: "All Events",
-      },
-      {
-        key: "live-monitor",
-        href: "/events/monitor",
-        icon: "solar:monitor-smartphone-outline",
-        title: "Live Monitor",
+        icon: "solar:calendar-outline",
+        title: "Events",
       },
     ],
   },
@@ -81,8 +73,7 @@ export function getKeyFromPathname(pathname: string): string {
   if (pathname === "/") return "dashboard";
   if (pathname.startsWith("/members")) return "members";
   if (pathname.startsWith("/visitors")) return "visitors";
-  if (pathname === "/events/monitor") return "live-monitor";
-  if (pathname.startsWith("/events")) return "all-events";
+  if (pathname.startsWith("/events")) return "events";
   if (pathname.startsWith("/reports")) return "reports";
   if (pathname.startsWith("/settings")) return "settings";
   return "dashboard";

@@ -27,6 +27,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  // DEV MODE: Authentication disabled
+  const isDev = import.meta.env.DEV;
+
   return (
     <>
       <ToastProvider placement="top-right" />
@@ -34,16 +37,18 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route
           element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
+            isDev ? <DashboardLayout /> : (
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            )
           }
         >
           <Route index element={<Dashboard />} />
           <Route path="members/*" element={<Members />} />
           <Route path="visitors" element={<Visitors />} />
           <Route path="events" element={<Events />} />
-          <Route path="events/monitor" element={<EventMonitor />} />
+          <Route path="events/:id/monitor" element={<EventMonitor />} />
           <Route path="events/:eventId" element={<EventDetail />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings/*" element={<Settings />} />
