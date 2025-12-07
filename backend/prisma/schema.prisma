@@ -192,6 +192,7 @@ model Member {
   checkins        Checkin[]
   division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   visitors        Visitor[]
+  memberTags      MemberTag[]
 
   @@index([divisionId], map: "idx_members_division")
   @@index([employeeNumber], map: "idx_members_employee_number")
@@ -201,6 +202,33 @@ model Member {
   @@index([status], map: "idx_members_status")
   @@index([email], map: "idx_members_email")
   @@map("members")
+}
+
+model Tag {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String      @unique @db.VarChar(100)
+  color       String      @db.VarChar(50)
+  description String?
+  createdAt   DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  memberTags  MemberTag[]
+
+  @@index([name], map: "idx_tags_name")
+  @@map("tags")
+}
+
+model MemberTag {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId  String    @map("member_id") @db.Uuid
+  tagId     String    @map("tag_id") @db.Uuid
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([memberId, tagId], map: "idx_member_tags_member_tag")
+  @@index([memberId], map: "idx_member_tags_member")
+  @@index([tagId], map: "idx_member_tags_tag")
+  @@map("member_tags")
 }
 
 model Visitor {

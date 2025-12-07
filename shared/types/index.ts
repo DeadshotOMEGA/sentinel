@@ -29,6 +29,7 @@ export interface Member {
 
 export interface MemberWithDivision extends Member {
   division: Division;
+  tags?: Tag[];
 }
 
 export interface CreateMemberInput {
@@ -73,6 +74,45 @@ export interface UpdateMemberInput {
   homePhone?: string;
   mobilePhone?: string;
   badgeId?: string;
+  tagIds?: string[];
+}
+
+// Tag Types
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MemberTag {
+  id: string;
+  memberId: string;
+  tagId: string;
+  createdAt: Date;
+}
+
+export interface CreateTagInput {
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface UpdateTagInput {
+  name?: string;
+  color?: string;
+  description?: string;
+}
+
+export interface MemberFilterParams {
+  mess?: string;
+  moc?: string;
+  division?: string;
+  contract?: 'active' | 'expiring_soon' | 'expired';
+  tags?: string[];
+  excludeTags?: string[];
 }
 
 // Nominal Roll Import Types
@@ -558,6 +598,26 @@ export interface CreateAlertInput {
   severity: AlertSeverity;
   message: string;
   expiresAt?: Date;
+}
+
+// Pagination Types
+export interface PaginationParams {
+  page: number;
+  limit: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 }
 
 // Report Types
