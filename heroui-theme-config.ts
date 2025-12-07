@@ -98,18 +98,19 @@ export const designTokens = {
       foreground: "#ffffff",
     },
 
-    // Neutral - Slate (from design spec)
+    // Neutral - Zinc scale (HeroUI default)
+    // 50-200: backgrounds/borders, 300-400: disabled, 500-600: secondary text, 700-900: primary text
     default: {
       50: "#fafafa",
-      100: "#f2f2f3",
-      200: "#ebebec",
-      300: "#e3e3e6",
-      400: "#dcdcdf",
-      500: "#d4d4d8",
-      600: "#afafb2",
-      700: "#8a8a8c",
-      800: "#656567",
-      900: "#404041",
+      100: "#f4f4f5",
+      200: "#e4e4e7",
+      300: "#d4d4d8",
+      400: "#a1a1aa",
+      500: "#71717a",  // Secondary text - readable on white
+      600: "#52525b",  // Primary muted text
+      700: "#3f3f46",
+      800: "#27272a",
+      900: "#18181b",
       DEFAULT: "#d4d4d8",
       foreground: "#000000",
     },
@@ -268,19 +269,19 @@ export const sentinelTheme = {
           foreground: "#ffffff",
         },
 
-        // Neutral (inverted scale)
+        // Neutral - Zinc scale (inverted for dark mode)
         default: {
-          50: "#404041",
-          100: "#656567",
-          200: "#8a8a8c",
-          300: "#afafb2",
-          400: "#d4d4d8",
-          500: "#dcdcdf",
-          600: "#e3e3e6",
-          700: "#ebebec",
-          800: "#f2f2f3",
+          50: "#18181b",
+          100: "#27272a",
+          200: "#3f3f46",
+          300: "#52525b",
+          400: "#71717a",
+          500: "#a1a1aa",  // Secondary text - readable on dark
+          600: "#d4d4d8",
+          700: "#e4e4e7",
+          800: "#f4f4f5",
           900: "#fafafa",
-          DEFAULT: "#d4d4d8",
+          DEFAULT: "#3f3f46",
           foreground: "#ffffff",
         },
 
