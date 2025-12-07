@@ -1,6 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { memberRepository } from '../db/repositories/member-repository';
+import { tagRepository } from '../db/repositories/tag-repository';
 import { checkinRepository } from '../db/repositories/checkin-repository';
 import { importService } from '../services/import-service';
 import { requireAuth, requireRole } from '../auth/middleware';
@@ -91,12 +92,28 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
     const memberType = req.query.memberType as MemberType | undefined;
     const status = req.query.status as MemberStatus | undefined;
     const search = req.query.search as string | undefined;
+    const mess = req.query.mess as string | undefined;
+    const moc = req.query.moc as string | undefined;
+    const division = req.query.division as string | undefined;
+    const contract = req.query.contract as 'active' | 'expiring_soon' | 'expired' | undefined;
+
+    // Parse comma-separated tag filters
+    const tagsParam = req.query.tags as string | undefined;
+    const excludeTagsParam = req.query.excludeTags as string | undefined;
+    const tags = tagsParam ? tagsParam.split(',').map((t) => t.trim()).filter(Boolean) : undefined;
+    const excludeTags = excludeTagsParam ? excludeTagsParam.split(',').map((t) => t.trim()).filter(Boolean) : undefined;
 
     const filters = {
       divisionId,
       memberType,
       status,
       search,
+      mess,
+      moc,
+      division,
+      contract,
+      tags,
+      excludeTags,
     };
 
     // Backward compatibility: if 'all=true' is specified, return all members without pagination
@@ -469,6 +486,72 @@ router.post(
     }
   }
 );
+
+// POST /api/members/:id/tags/:tagId - Add tag to member (admin only)
+router.post('/:id/tags/:tagId', requireAuth, requireRole('admin'), audit('member_tag_add', 'member'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, tagId } = req.params;
+
+    // Check if member exists
+    const member = await memberRepository.findById(id);
+    if (!member) {
+      throw new NotFoundError(
+        'Member not found',
+        `Member ${id} not found`,
+        'Please check the member ID and try again.'
+      );
+    }
+
+    // Check if tag exists
+    const tag = await tagRepository.findById(tagId);
+    if (!tag) {
+      throw new NotFoundError(
+        'Tag not found',
+        `Tag ${tagId} not found`,
+        'Please check the tag ID and try again.'
+      );
+    }
+
+    await memberRepository.addTag(id, tagId);
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/members/:id/tags/:tagId - Remove tag from member (admin only)
+router.delete('/:id/tags/:tagId', requireAuth, requireRole('admin'), audit('member_tag_remove', 'member'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, tagId } = req.params;
+
+    // Check if member exists
+    const member = await memberRepository.findById(id);
+    if (!member) {
+      throw new NotFoundError(
+        'Member not found',
+        `Member ${id} not found`,
+        'Please check the member ID and try again.'
+      );
+    }
+
+    // Check if tag exists
+    const tag = await tagRepository.findById(tagId);
+    if (!tag) {
+      throw new NotFoundError(
+        'Tag not found',
+        `Tag ${tagId} not found`,
+        'Please check the tag ID and try again.'
+      );
+    }
+
+    await memberRepository.removeTag(id, tagId);
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /api/members/:id/bmq-enrollments - Get member's BMQ enrollments
 router.get('/:id/bmq-enrollments', requireAuth, async (req: Request, res: Response, next: NextFunction) => {

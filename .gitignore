@@ -110,3 +110,6 @@ investigation-*.md
 /package.json
 /playwright.config.ts
 /docker-compose.test.yml
+
+# Planning documents
+docs/plans/

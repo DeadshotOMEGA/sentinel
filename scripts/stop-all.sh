@@ -26,6 +26,18 @@ fi
 # Kill any remaining bun dev processes for this project
 pkill -f "bun.*$PROJECT_ROOT" 2>/dev/null || true
 
+# Wait for graceful shutdown
+sleep 1
+
+# Force kill any remaining processes on known ports
+for port in 3000 5173 5174 5175; do
+  pid=$(lsof -ti :$port 2>/dev/null)
+  if [ -n "$pid" ]; then
+    echo "Force stopping process on port $port (PID: $pid)..."
+    kill -9 $pid 2>/dev/null || true
+  fi
+done
+
 # Optionally stop Docker services
 if [ "$1" = "--all" ]; then
   echo "Stopping Docker services..."

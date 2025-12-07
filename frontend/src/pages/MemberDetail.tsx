@@ -46,6 +46,7 @@ import type {
   CheckinWithMember,
   Division,
   MemberStatus,
+  Tag,
 } from '@shared/types';
 
 function MemberDetailPage() {
@@ -80,6 +81,15 @@ function MemberDetailPage() {
     queryKey: ['divisions'],
     queryFn: async () => {
       const response = await api.get<{ divisions: Division[] }>('/divisions');
+      return response.data;
+    },
+  });
+
+  // Fetch tags for edit modal
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      const response = await api.get<{ tags: Tag[] }>('/tags');
       return response.data;
     },
   });
@@ -203,6 +213,7 @@ function MemberDetailPage() {
   const enrollments = enrollmentsData?.enrollments ?? [];
   const courses = coursesData?.courses ?? [];
   const divisions = divisionsData?.divisions ?? [];
+  const tags = tagsData?.tags ?? [];
   const checkins = historyData?.checkins ?? [];
   const pagination = historyData?.pagination;
 
@@ -926,6 +937,7 @@ function MemberDetailPage() {
         }}
         member={member}
         divisions={divisions}
+        tags={tags}
       />
 
       {/* Archive Confirmation Modal */}

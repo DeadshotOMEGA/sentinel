@@ -6,12 +6,13 @@ import type {
   MemberType,
   MemberStatus,
   PaginationParams,
+  MemberFilterParams,
 } from '../../../../shared/types';
 import type { Member as PrismaMember } from '@prisma/client';
 import { prisma } from '../prisma';
 import { redis } from '../redis';
 
-interface MemberFilters {
+interface MemberFilters extends MemberFilterParams {
   divisionId?: string;
   memberType?: MemberType;
   status?: MemberStatus;
@@ -64,14 +65,24 @@ function toMemberWithDivision(
       description: string | null;
       createdAt: Date | null;
       updatedAt: Date | null;
-    } | null
+    } | null;
+    memberTags?: Array<{
+      tag: {
+        id: string;
+        name: string;
+        color: string;
+        description: string | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+      };
+    }>;
   }
 ): MemberWithDivision {
   if (!prismaMember.division) {
     throw new Error('Member must have a division loaded');
   }
 
-  return {
+  const base = {
     ...toMember(prismaMember),
     division: {
       id: prismaMember.division.id,
@@ -82,6 +93,23 @@ function toMemberWithDivision(
       updatedAt: prismaMember.division.updatedAt ?? new Date(),
     },
   };
+
+  // Add tags if included
+  if (prismaMember.memberTags) {
+    return {
+      ...base,
+      tags: prismaMember.memberTags.map((mt) => ({
+        id: mt.tag.id,
+        name: mt.tag.name,
+        color: mt.tag.color,
+        description: mt.tag.description ?? undefined,
+        createdAt: mt.tag.createdAt ?? new Date(),
+        updatedAt: mt.tag.updatedAt ?? new Date(),
+      })),
+    };
+  }
+
+  return base;
 }
 
 export class MemberRepository {
@@ -103,6 +131,67 @@ export class MemberRepository {
       where.status = filters.status;
     }
 
+    if (filters?.mess) {
+      where.mess = filters.mess;
+    }
+
+    if (filters?.moc) {
+      where.moc = filters.moc;
+    }
+
+    if (filters?.division) {
+      where.division = {
+        code: filters.division,
+      };
+    }
+
+    if (filters?.contract) {
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now);
+      thirtyDaysFromNow.setDate(now.getDate() + 30);
+
+      if (filters.contract === 'active') {
+        where.contract_end = {
+          gte: now,
+        };
+      } else if (filters.contract === 'expiring_soon') {
+        where.contract_end = {
+          gte: now,
+          lte: thirtyDaysFromNow,
+        };
+      } else if (filters.contract === 'expired') {
+        where.contract_end = {
+          lt: now,
+        };
+      }
+    }
+
+    if (filters?.tags && filters.tags.length > 0) {
+      where.memberTags = {
+        some: {
+          tag: {
+            name: {
+              in: filters.tags,
+            },
+          },
+        },
+      };
+    }
+
+    if (filters?.excludeTags && filters.excludeTags.length > 0) {
+      where.NOT = {
+        memberTags: {
+          some: {
+            tag: {
+              name: {
+                in: filters.excludeTags,
+              },
+            },
+          },
+        },
+      };
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -115,6 +204,11 @@ export class MemberRepository {
       where,
       include: {
         division: true,
+        memberTags: {
+          include: {
+            tag: true,
+          },
+        },
       },
       orderBy: [
         { lastName: 'asc' },
@@ -172,6 +266,67 @@ export class MemberRepository {
       where.status = filters.status;
     }
 
+    if (filters?.mess) {
+      where.mess = filters.mess;
+    }
+
+    if (filters?.moc) {
+      where.moc = filters.moc;
+    }
+
+    if (filters?.division) {
+      where.division = {
+        code: filters.division,
+      };
+    }
+
+    if (filters?.contract) {
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now);
+      thirtyDaysFromNow.setDate(now.getDate() + 30);
+
+      if (filters.contract === 'active') {
+        where.contract_end = {
+          gte: now,
+        };
+      } else if (filters.contract === 'expiring_soon') {
+        where.contract_end = {
+          gte: now,
+          lte: thirtyDaysFromNow,
+        };
+      } else if (filters.contract === 'expired') {
+        where.contract_end = {
+          lt: now,
+        };
+      }
+    }
+
+    if (filters?.tags && filters.tags.length > 0) {
+      where.memberTags = {
+        some: {
+          tag: {
+            name: {
+              in: filters.tags,
+            },
+          },
+        },
+      };
+    }
+
+    if (filters?.excludeTags && filters.excludeTags.length > 0) {
+      where.NOT = {
+        memberTags: {
+          some: {
+            tag: {
+              name: {
+                in: filters.excludeTags,
+              },
+            },
+          },
+        },
+      };
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -187,6 +342,11 @@ export class MemberRepository {
         where,
         include: {
           division: true,
+          memberTags: {
+            include: {
+              tag: true,
+            },
+          },
         },
         orderBy: [
           { [sortByColumn]: sortOrder },
@@ -211,6 +371,11 @@ export class MemberRepository {
       where: { id },
       include: {
         division: true,
+        memberTags: {
+          include: {
+            tag: true,
+          },
+        },
       },
     });
 
@@ -539,6 +704,30 @@ export class MemberRepository {
     });
 
     await this.invalidatePresenceCache();
+  }
+
+  /**
+   * Add a tag to a member
+   */
+  async addTag(memberId: string, tagId: string): Promise<void> {
+    await prisma.memberTag.create({
+      data: {
+        memberId,
+        tagId,
+      },
+    });
+  }
+
+  /**
+   * Remove a tag from a member
+   */
+  async removeTag(memberId: string, tagId: string): Promise<void> {
+    await prisma.memberTag.deleteMany({
+      where: {
+        memberId,
+        tagId,
+      },
+    });
   }
 
   /**
