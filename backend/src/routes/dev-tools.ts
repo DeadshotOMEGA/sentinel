@@ -4,6 +4,14 @@ import { prisma } from '../db/prisma';
 import { requireAuth, requireRole } from '../auth';
 import { auditRepository } from '../db/repositories/audit-repository';
 import { logger } from '../utils/logger';
+import {
+  getSimulationService,
+  resetSimulationService,
+  DEFAULT_ATTENDANCE_RATES,
+  DEFAULT_INTENSITY,
+} from '../services/simulation-service';
+import { resetScheduleResolver } from '../services/schedule-resolver';
+import type { SimulationRequest } from '@shared/types';
 
 const router = Router();
 
@@ -221,6 +229,156 @@ router.post('/reset', async (req: Request, res: Response, next: NextFunction) =>
     });
 
     res.json({ success: true });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const firstError = error.errors[0];
+      if (!firstError) {
+        throw new Error('Zod validation failed but no error details available');
+      }
+      res.status(400).json({ error: firstError.message });
+      return;
+    }
+    next(error);
+  }
+});
+
+// ============================================================================
+// DATA SIMULATION ENDPOINTS
+// ============================================================================
+
+// Validation schema for simulation request
+const SimulationTimeRangeSchema = z.object({
+  mode: z.enum(['last_days', 'custom']),
+  lastDays: z.number().min(1).max(365).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+}).refine(
+  (data) => {
+    if (data.mode === 'custom') {
+      return data.startDate && data.endDate;
+    }
+    return data.lastDays !== undefined;
+  },
+  { message: 'Custom mode requires startDate and endDate, last_days mode requires lastDays' }
+);
+
+const SimulationAttendanceRatesSchema = z.object({
+  ftsWorkDays: z.number().min(0).max(100),
+  ftsTrainingNight: z.number().min(0).max(100),
+  ftsAdminNight: z.number().min(0).max(100),
+  reserveTrainingNight: z.number().min(0).max(100),
+  reserveAdminNight: z.number().min(0).max(100),
+  bmqAttendance: z.number().min(0).max(100),
+  edtAppearance: z.number().min(0).max(100),
+});
+
+const SimulationIntensitySchema = z.object({
+  visitorsPerDay: z.object({
+    min: z.number().min(0).max(50),
+    max: z.number().min(0).max(50),
+  }),
+  eventsPerMonth: z.object({
+    min: z.number().min(0).max(10),
+    max: z.number().min(0).max(10),
+  }),
+  edgeCasePercentage: z.number().min(0).max(50),
+});
+
+const SimulationRequestSchema = z.object({
+  timeRange: SimulationTimeRangeSchema,
+  attendanceRates: SimulationAttendanceRatesSchema,
+  intensity: SimulationIntensitySchema,
+  warnOnOverlap: z.boolean(),
+});
+
+/**
+ * GET /api/dev-tools/simulate/defaults
+ * Get default simulation parameters
+ */
+router.get('/simulate/defaults', (_req: Request, res: Response) => {
+  res.json({
+    attendanceRates: DEFAULT_ATTENDANCE_RATES,
+    intensity: DEFAULT_INTENSITY,
+  });
+});
+
+/**
+ * POST /api/dev-tools/simulate/precheck
+ * Pre-check simulation parameters before running
+ */
+router.post('/simulate/precheck', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const request = SimulationRequestSchema.parse(req.body) as SimulationRequest;
+
+    // Reset services to get fresh data
+    resetScheduleResolver();
+    resetSimulationService();
+
+    const service = await getSimulationService();
+    const precheck = await service.precheck(request);
+
+    res.json(precheck);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const firstError = error.errors[0];
+      if (!firstError) {
+        throw new Error('Zod validation failed but no error details available');
+      }
+      res.status(400).json({ error: firstError.message });
+      return;
+    }
+    next(error);
+  }
+});
+
+/**
+ * POST /api/dev-tools/simulate
+ * Run the data simulation
+ */
+router.post('/simulate', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new Error('User not found in request');
+    }
+    if (!req.ip) {
+      throw new Error('IP address not found in request');
+    }
+
+    const request = SimulationRequestSchema.parse(req.body) as SimulationRequest;
+
+    logger.info('Dev tools: starting data simulation', {
+      adminUserId: req.user.id,
+      timeRange: request.timeRange,
+    });
+
+    // Reset services to get fresh data
+    resetScheduleResolver();
+    resetSimulationService();
+
+    const service = await getSimulationService();
+    const result = await service.simulate(request);
+
+    // Log the operation
+    await auditRepository.log({
+      adminUserId: req.user.id,
+      action: 'dev_tools_simulate',
+      entityType: 'dev_tools',
+      entityId: null,
+      details: {
+        timeRange: request.timeRange,
+        generated: result.summary.generated,
+        daysSimulated: result.summary.daysSimulated,
+      },
+      ipAddress: req.ip,
+    });
+
+    logger.info('Dev tools: data simulation complete', {
+      adminUserId: req.user.id,
+      generated: result.summary.generated,
+      daysSimulated: result.summary.daysSimulated,
+    });
+
+    res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];

@@ -1,27 +1,39 @@
 /**
- * Simple toast notification utility
- * Uses browser alert for now - can be enhanced with a proper toast library later
+ * Toast notification utility using HeroUI Toast system
  */
+import { addToast } from '@heroui/react';
 
 export const toast = {
   success: (message: string) => {
-    console.log('[SUCCESS]', message);
-    // TODO: Implement proper toast UI
-    alert(message);
+    addToast({
+      title: 'Success',
+      description: message,
+      color: 'success',
+      timeout: 5000,
+    });
   },
   error: (message: string) => {
-    console.error('[ERROR]', message);
-    // TODO: Implement proper toast UI
-    alert(`Error: ${message}`);
+    addToast({
+      title: 'Error',
+      description: message,
+      color: 'danger',
+      timeout: 8000,
+    });
   },
   info: (message: string) => {
-    console.info('[INFO]', message);
-    // TODO: Implement proper toast UI
-    alert(message);
+    addToast({
+      title: 'Info',
+      description: message,
+      color: 'primary',
+      timeout: 5000,
+    });
   },
   warning: (message: string) => {
-    console.warn('[WARNING]', message);
-    // TODO: Implement proper toast UI
-    alert(`Warning: ${message}`);
+    addToast({
+      title: 'Warning',
+      description: message,
+      color: 'warning',
+      timeout: 6000,
+    });
   },
 };

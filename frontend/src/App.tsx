@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastProvider } from '@heroui/react';
 import { useAuth } from './hooks/useAuth';
 import Login from './pages/Login';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -27,24 +28,27 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="members/*" element={<Members />} />
-        <Route path="visitors" element={<Visitors />} />
-        <Route path="events" element={<Events />} />
-        <Route path="events/monitor" element={<EventMonitor />} />
-        <Route path="events/:eventId" element={<EventDetail />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="settings/*" element={<Settings />} />
-      </Route>
-    </Routes>
+    <>
+      <ToastProvider placement="top-right" />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="members/*" element={<Members />} />
+          <Route path="visitors" element={<Visitors />} />
+          <Route path="events" element={<Events />} />
+          <Route path="events/monitor" element={<EventMonitor />} />
+          <Route path="events/:eventId" element={<EventDetail />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings/*" element={<Settings />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
