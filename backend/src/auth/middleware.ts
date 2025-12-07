@@ -38,6 +38,17 @@ function extractKioskApiKey(req: Request): string | null {
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    // DEV MODE: Auto-authenticate as dev admin
+    if (process.env.NODE_ENV !== 'production') {
+      req.user = {
+        id: 'dev-admin',
+        username: 'dev',
+        role: 'admin',
+      };
+      next();
+      return;
+    }
+
     // First, check for kiosk API key (for unattended kiosk devices)
     const kioskApiKey = extractKioskApiKey(req);
     if (kioskApiKey) {
@@ -119,6 +130,18 @@ export function requireRole(...roles: string[]): (req: Request, res: Response, n
  */
 export async function requireDisplayAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    // DEV MODE: Auto-authenticate as display device
+    if (process.env.NODE_ENV !== 'production') {
+      req.isDisplayAuth = true;
+      req.user = {
+        id: 'dev-display',
+        username: 'dev-display',
+        role: 'display',
+      };
+      next();
+      return;
+    }
+
     // 1. Check for admin JWT auth
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
