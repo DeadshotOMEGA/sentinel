@@ -44,8 +44,8 @@ export default function Visitors() {
   const { data: activeVisitors, isLoading: activeLoading } = useQuery({
     queryKey: ['visitors', 'active'],
     queryFn: async () => {
-      const response = await api.get<Visitor[]>('/visitors/active');
-      return response.data;
+      const response = await api.get<{ visitors: Visitor[] }>('/visitors/active');
+      return response.data.visitors;
     },
     enabled: tab === 'active',
   });
@@ -53,8 +53,8 @@ export default function Visitors() {
   const { data: allVisitors, isLoading: allLoading } = useQuery({
     queryKey: ['visitors', 'all'],
     queryFn: async () => {
-      const response = await api.get<Visitor[]>('/visitors');
-      return response.data;
+      const response = await api.get<{ visitors: Visitor[] }>('/visitors');
+      return response.data.visitors;
     },
     enabled: tab === 'history',
   });
