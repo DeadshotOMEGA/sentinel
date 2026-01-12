@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import type { ServerToClientEvents, ClientToServerEvents } from './events';
 import { getSession } from '../auth/session';
-import { logger } from '../utils/logger';
+import { logger, wsLogger } from '../utils/logger';
 import {
   isConnectionRateLimited,
   decrementConnectionCount,
@@ -10,6 +10,11 @@ import {
 } from './rate-limit';
 import { incrementWsConnections, decrementWsConnections } from '../utils/metrics';
 import { presenceService } from '../services/presence-service';
+import {
+  registerLogStreamHandlers,
+  cleanupLogStreamSubscription,
+} from './log-stream-handler';
+import { isLiveLogsEnabled } from '../utils/log-stream';
 
 // Session validation interval (5 minutes)
 const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
@@ -65,6 +70,17 @@ function getDisplayApiKey(): string | undefined {
  */
 async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
   const auth = socket.handshake.auth as Record<string, unknown>;
+
+  // DEV MODE: Auto-authenticate as dev admin (mirrors HTTP middleware)
+  if (process.env.NODE_ENV !== 'production') {
+    socket.auth = {
+      userId: 'dev-admin',
+      username: 'dev',
+      role: 'admin',
+      authType: 'dev',
+    };
+    return true;
+  }
 
   // 1. Try JWT token authentication
   if (auth.token && typeof auth.token === 'string') {
@@ -181,7 +197,17 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
     incrementWsConnections();
 
     const authInfo = socket.auth ? ` (${socket.auth.authType}: ${socket.auth.username})` : '';
-    logger.info(`Client connected: ${socket.id}${authInfo}`);
+    wsLogger.info(`Client connected: ${socket.id}${authInfo}`, {
+      event: 'ws.connect',
+      socketId: socket.id,
+      authType: socket.auth?.authType,
+      userId: socket.auth?.userId,
+    });
+
+    // Register log stream handlers (dev-only, for admin users)
+    if (isLiveLogsEnabled()) {
+      registerLogStreamHandlers(socket);
+    }
 
     // Session expiry monitoring for JWT-authenticated sockets
     if (socket.auth?.authType === 'jwt' && socket.sessionToken) {
@@ -277,7 +303,15 @@ export function initializeWebSocket(httpServer: HttpServer): TypedServer {
       // Track WebSocket disconnections for metrics
       decrementWsConnections();
 
-      logger.info(`Client disconnected: ${socket.id}`);
+      wsLogger.info(`Client disconnected: ${socket.id}`, {
+        event: 'ws.disconnect',
+        socketId: socket.id,
+        userId: socket.auth?.userId,
+      });
+
+      // Cleanup log stream subscription
+      cleanupLogStreamSubscription(socket.id);
+
       // Clear session check interval
       if (socket.sessionCheckInterval) {
         clearInterval(socket.sessionCheckInterval);

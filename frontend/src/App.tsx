@@ -10,6 +10,7 @@ import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import EventMonitor from './pages/EventMonitor';
 import Reports from './pages/Reports';
+import Logs from './pages/Logs';
 import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="events/:id/monitor" element={<EventMonitor />} />
           <Route path="events/:eventId" element={<EventDetail />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="logs" element={<Logs />} />
           <Route path="settings/*" element={<Settings />} />
         </Route>
       </Routes>

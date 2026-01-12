@@ -56,6 +56,13 @@ export const sidebarItems: SidebarItem[] = [
         title: "Reports",
       },
       {
+        key: "logs",
+        href: "/logs",
+        icon: "solar:document-text-outline",
+        title: "Logs",
+        adminOnly: true,
+      },
+      {
         key: "settings",
         href: "/settings",
         icon: "solar:settings-outline",
@@ -75,6 +82,7 @@ export function getKeyFromPathname(pathname: string): string {
   if (pathname.startsWith("/visitors")) return "visitors";
   if (pathname.startsWith("/events")) return "events";
   if (pathname.startsWith("/reports")) return "reports";
+  if (pathname.startsWith("/logs")) return "logs";
   if (pathname.startsWith("/settings")) return "settings";
   return "dashboard";
 }

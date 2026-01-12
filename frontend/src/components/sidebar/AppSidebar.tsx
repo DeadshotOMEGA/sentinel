@@ -8,12 +8,53 @@ import Sidebar from "./Sidebar";
 import { SentinelIcon } from "./SentinelIcon";
 import { sidebarItems, getKeyFromPathname, filterItemsByRole } from "./sidebar-items";
 import { useAuth } from "../../hooks/useAuth";
+import { useConnectionStatus, type ConnectionStatus } from "../../hooks/useConnectionStatus";
+
+function ConnectionStatusIndicator({ status, isCompact }: { status: ConnectionStatus; isCompact: boolean }) {
+  const statusConfig = {
+    connected: {
+      color: "bg-success",
+      label: "Backend Connected",
+      icon: "solar:check-circle-bold",
+    },
+    disconnected: {
+      color: "bg-danger",
+      label: "Backend Disconnected",
+      icon: "solar:close-circle-bold",
+    },
+    checking: {
+      color: "bg-warning animate-pulse",
+      label: "Checking Connection...",
+      icon: "solar:refresh-circle-bold",
+    },
+  };
+
+  const config = statusConfig[status];
+
+  if (isCompact) {
+    return (
+      <Tooltip content={config.label} placement="right">
+        <div className="flex justify-center py-2">
+          <div className={cn("h-2.5 w-2.5 rounded-full", config.color)} />
+        </div>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2">
+      <div className={cn("h-2 w-2 rounded-full", config.color)} />
+      <span className="text-tiny text-default-500">{config.label}</span>
+    </div>
+  );
+}
 
 export default function AppSidebar() {
   const [isCompact, setIsCompact] = React.useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const connectionStatus = useConnectionStatus();
 
   // In dev mode, grant admin access for testing; otherwise check user role
   const isAdmin = import.meta.env.DEV || user?.role === "admin";
@@ -138,8 +179,10 @@ export default function AppSidebar() {
         />
       </ScrollShadow>
 
-      {/* Footer Actions */}
-      <div className="mt-auto border-t border-divider p-1">
+      {/* Footer: Connection Status + Actions */}
+      <div className="mt-auto border-t border-divider">
+        <ConnectionStatusIndicator status={connectionStatus} isCompact={isCompact} />
+        <div className="p-1">
         {isCompact ? (
           <div className="flex flex-col items-center gap-1">
             <Tooltip content="Log Out" placement="right">
@@ -175,6 +218,7 @@ export default function AppSidebar() {
             Log Out
           </Button>
         )}
+        </div>
       </div>
     </div>
   );

@@ -438,6 +438,7 @@ export interface Event {
   endDate: Date;
   status: EventStatus;
   autoExpireBadges: boolean;
+  customRoles: string[] | null;
   createdBy: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -462,6 +463,7 @@ export interface UpdateEventInput {
   endDate?: Date;
   status?: EventStatus;
   autoExpireBadges?: boolean;
+  customRoles?: string[] | null;
 }
 
 export interface EventAttendee {
@@ -624,3 +626,9 @@ export interface PaginatedResponse<T> {
 export * from './reports';
 export * from './settings';
 export * from './simulation';
+
+// Logging Types
+export * from './logging';
+
+// Event Types
+export * from './event';
