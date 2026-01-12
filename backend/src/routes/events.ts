@@ -3,11 +3,13 @@ import { z } from 'zod';
 import { eventRepository } from '../db/repositories/event-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { eventService } from '../services/event-service';
+import { attendeeImportService } from '../services/attendee-import-service';
+import { prisma } from '../db/prisma';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { broadcastEventCheckin, broadcastEventPresenceUpdate } from '../websocket';
 import { audit } from '../middleware/audit';
-import type { EventStatus } from '../../../shared/types';
+import type { EventStatus, AttendeeImportColumnMapping, DuplicateResolution, AttendeeImportRow } from '../../../shared/types';
 
 const router = Router();
 
@@ -18,17 +20,17 @@ const router = Router();
 const createEventSchema = z.object({
   name: z.string().min(1).max(200),
   code: z.string().min(1).max(50),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
-  status: z.enum(['draft', 'active', 'completed', 'cancelled']).optional(),
-  autoExpireBadges: z.boolean().optional(),
+  status: z.enum(['draft', 'active', 'completed', 'cancelled']).default('draft'),
+  autoExpireBadges: z.boolean().default(true),
 });
 
 const updateEventSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   code: z.string().min(1).max(50).optional(),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   status: z.enum(['draft', 'active', 'completed', 'cancelled']).optional(),
@@ -104,7 +106,7 @@ router.get('/stats', requireAuth, async (req: Request, res: Response, next: Next
   }
 });
 
-// GET /api/events/:id - Get event details with attendee count
+// GET /api/events/:id - Get event details with attendees
 router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -122,7 +124,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response, next: NextFu
 
     res.json({
       event,
-      attendeeCount: attendees.length,
+      attendees,
     });
   } catch (err) {
     next(err);
@@ -139,9 +141,10 @@ router.post(
     try {
       const validationResult = createEventSchema.safeParse(req.body);
       if (!validationResult.success) {
+        const zodErrors = validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
         throw new ValidationError(
           'Invalid event data',
-          validationResult.error.message,
+          zodErrors,
           'Please check all required fields and try again.'
         );
       }
@@ -269,6 +272,48 @@ router.delete(
   }
 );
 
+// GET /api/events/:id/monitor - Monitor view with filtering
+router.get('/:id/monitor', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const search = req.query.search as string | undefined;
+    const role = req.query.role as string | undefined;
+
+    const event = await eventRepository.findById(id);
+    if (!event) {
+      throw new NotFoundError(
+        'Event not found',
+        `Event ${id} not found`,
+        'Please check the event ID and try again.'
+      );
+    }
+
+    let attendees = await eventRepository.findByEventId(id);
+
+    // Apply search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      attendees = attendees.filter((a) =>
+        a.name.toLowerCase().includes(searchLower) ||
+        a.organization.toLowerCase().includes(searchLower) ||
+        (a.rank && a.rank.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply role filter
+    if (role) {
+      attendees = attendees.filter((a) => a.role === role);
+    }
+
+    res.json({
+      event,
+      attendees,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ============================================================================
 // EVENT ATTENDEE ENDPOINTS
 // ============================================================================
@@ -326,7 +371,10 @@ router.post(
 
       const data = validationResult.data;
 
-      // If badgeId provided, verify badge exists and is available
+      // Track if badge is a member's permanent badge (don't reassign it)
+      let isMemberBadge = false;
+
+      // If badgeId provided, verify badge exists and check availability
       if (data.badgeId) {
         const badge = await badgeRepository.findById(data.badgeId);
         if (!badge) {
@@ -337,12 +385,19 @@ router.post(
           );
         }
 
-        if (badge.assignmentType !== 'unassigned') {
+        // Allow unassigned badges and member-assigned badges
+        // Reject badges already assigned to events (in use elsewhere)
+        if (badge.assignmentType === 'event') {
           throw new ConflictError(
-            'Badge already assigned',
-            `Badge ${data.badgeId} is already assigned`,
-            'This badge is already assigned. Please select a different badge.'
+            'Badge already assigned to an event',
+            `Badge ${data.badgeId} is already assigned to an event`,
+            'This badge is in use for another event. Please select a different badge.'
           );
+        }
+
+        // If badge belongs to a member, we'll link it but not reassign
+        if (badge.assignmentType === 'member') {
+          isMemberBadge = true;
         }
       }
 
@@ -356,11 +411,12 @@ router.post(
         badgeAssignedAt: data.badgeAssignedAt ? new Date(data.badgeAssignedAt) : undefined,
         accessStart: data.accessStart ? new Date(data.accessStart) : undefined,
         accessEnd: data.accessEnd ? new Date(data.accessEnd) : undefined,
-        status: data.status,
+        status: data.status ?? 'pending',
       });
 
-      // If badge assigned, update badge assignment
-      if (data.badgeId) {
+      // Only assign badge to event if it was unassigned (temporary badge)
+      // Member badges stay assigned to the member
+      if (data.badgeId && !isMemberBadge) {
         await badgeRepository.assign(data.badgeId, id, 'event');
       }
 
@@ -453,6 +509,64 @@ router.put(
   }
 );
 
+// DELETE /api/events/:id/attendees - Bulk remove attendees
+router.delete(
+  '/:id/attendees',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const bulkDeleteSchema = z.object({
+        attendeeIds: z.array(z.string().uuid()).min(1),
+      });
+
+      const validationResult = bulkDeleteSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid attendee IDs.'
+        );
+      }
+
+      const { attendeeIds } = validationResult.data;
+
+      // Verify event exists
+      const event = await eventRepository.findById(id);
+      if (!event) {
+        throw new NotFoundError(
+          'Event not found',
+          `Event ${id} not found`,
+          'Please check the event ID and try again.'
+        );
+      }
+
+      // Remove each attendee
+      for (const attendeeId of attendeeIds) {
+        const attendee = await eventRepository.findAttendeeById(attendeeId);
+        if (attendee && attendee.eventId === id) {
+          // Release badge if assigned, but only if it's not a member's permanent badge
+          if (attendee.badgeId) {
+            const badge = await badgeRepository.findById(attendee.badgeId);
+            // Only unassign if badge was assigned to the event (temporary badge)
+            // Don't unassign member badges - they belong to the member permanently
+            if (badge && badge.assignmentType === 'event') {
+              await badgeRepository.unassign(attendee.badgeId);
+            }
+          }
+          await eventRepository.removeAttendee(attendeeId);
+        }
+      }
+
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // DELETE /api/events/:id/attendees/:attendeeId - Remove attendee
 router.delete(
   '/:id/attendees/:attendeeId',
@@ -482,9 +596,14 @@ router.delete(
         );
       }
 
-      // Release badge if assigned
+      // Release badge if assigned, but only if it's not a member's permanent badge
       if (attendee.badgeId) {
-        await badgeRepository.unassign(attendee.badgeId);
+        const badge = await badgeRepository.findById(attendee.badgeId);
+        // Only unassign if badge was assigned to the event (temporary badge)
+        // Don't unassign member badges - they belong to the member permanently
+        if (badge && badge.assignmentType === 'event') {
+          await badgeRepository.unassign(attendee.badgeId);
+        }
       }
 
       await eventRepository.removeAttendee(attendeeId);
@@ -573,17 +692,318 @@ router.post(
   }
 );
 
-// GET /api/events/:id/presence - Real-time presence stats
+// GET /api/events/:id/presence-stats - Real-time presence stats
+router.get('/:id/presence-stats', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const stats = await eventService.getEventPresenceStats(id);
+
+    res.json(stats);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/events/:id/presence - Alias for presence-stats
 router.get('/:id/presence', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
     const stats = await eventService.getEventPresenceStats(id);
 
-    res.json({ stats });
+    res.json(stats);
   } catch (err) {
     next(err);
   }
 });
+
+// GET /api/events/:id/roles - Get event-specific roles or default roles
+router.get('/:id/roles', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const event = await eventRepository.findById(id);
+    if (!event) {
+      throw new NotFoundError(
+        'Event not found',
+        `Event ${id} not found`,
+        'Please check the event ID and try again.'
+      );
+    }
+
+    // If event has custom roles, return them
+    if (event.customRoles) {
+      return res.json({ roles: event.customRoles, isCustom: true });
+    }
+
+    // Otherwise, fetch default roles from settings
+    const setting = await prisma.report_settings.findUnique({
+      where: { key: 'event_roles' },
+    });
+
+    const roles = setting?.value as string[] || ['Participant', 'Instructor', 'Staff', 'Volunteer'];
+
+    res.json({ roles, isCustom: false });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/events/:id/roles - Update event-specific roles
+router.put('/:id/roles', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const rolesSchema = z.object({
+      roles: z.array(z.string().min(1).max(100)).min(1).max(20).nullable(),
+    });
+
+    const validationResult = rolesSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      const zodErrors = validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      throw new ValidationError(
+        'Invalid roles data',
+        zodErrors,
+        'Please check all required fields and try again.'
+      );
+    }
+
+    const { roles } = validationResult.data;
+
+    // null means reset to default roles
+    const event = await eventRepository.update(id, {
+      customRoles: roles as any,
+    });
+
+    res.json({ event });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ============================================================================
+// ATTENDEE IMPORT ENDPOINTS
+// ============================================================================
+
+// Validation schemas for import
+const importSheetsSchema = z.object({
+  fileBase64: z.string().min(1),
+});
+
+const importHeadersSchema = z.object({
+  csv: z.string().min(1),
+});
+
+const importRolesSchema = z.object({
+  csv: z.string().min(1),
+  columnMapping: z.record(z.string().nullable()),
+});
+
+const importPreviewSchema = z.object({
+  csv: z.string().min(1),
+  columnMapping: z.record(z.string().nullable()),
+  roleMapping: z.record(z.string()),
+});
+
+const importExecuteSchema = z.object({
+  csv: z.string().min(1),
+  columnMapping: z.record(z.string().nullable()),
+  roleMapping: z.record(z.string()),
+  duplicateResolutions: z.record(z.enum(['skip', 'add', 'update', 'edit'])),
+  editedValues: z.record(z.object({
+    name: z.string(),
+    rank: z.string().optional(),
+    organization: z.string(),
+    role: z.string(),
+    accessStart: z.string().optional(),
+    accessEnd: z.string().optional(),
+  })).optional(),
+});
+
+// POST /api/events/:id/attendees/import/sheets - Parse Excel file, return sheet list
+router.post(
+  '/:id/attendees/import/sheets',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      // Verify event exists
+      const event = await eventRepository.findById(id);
+      if (!event) {
+        throw new NotFoundError(
+          'Event not found',
+          `Event ${id} not found`,
+          'Please check the event ID and try again.'
+        );
+      }
+
+      const validationResult = importSheetsSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide a valid Excel file.'
+        );
+      }
+
+      const { fileBase64 } = validationResult.data;
+
+      // Decode base64 to buffer
+      const buffer = Buffer.from(fileBase64, 'base64');
+
+      const sheets = attendeeImportService.parseExcelSheets(buffer);
+
+      res.json({ sheets });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/events/:id/attendees/import/headers - Parse CSV headers, suggest mapping
+router.post(
+  '/:id/attendees/import/headers',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      // Verify event exists
+      const event = await eventRepository.findById(id);
+      if (!event) {
+        throw new NotFoundError(
+          'Event not found',
+          `Event ${id} not found`,
+          'Please check the event ID and try again.'
+        );
+      }
+
+      const validationResult = importHeadersSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid CSV data.'
+        );
+      }
+
+      const { csv } = validationResult.data;
+
+      const result = attendeeImportService.parseHeaders(csv);
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/events/:id/attendees/import/roles - Detect roles from CSV
+router.post(
+  '/:id/attendees/import/roles',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const validationResult = importRolesSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid CSV data and column mapping.'
+        );
+      }
+
+      const { csv, columnMapping } = validationResult.data;
+
+      const result = await attendeeImportService.detectRoles(
+        csv,
+        columnMapping as AttendeeImportColumnMapping,
+        id
+      );
+
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/events/:id/attendees/import/preview - Generate preview with duplicates
+router.post(
+  '/:id/attendees/import/preview',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const validationResult = importPreviewSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid CSV data, column mapping, and role mapping.'
+        );
+      }
+
+      const { csv, columnMapping, roleMapping } = validationResult.data;
+
+      const preview = await attendeeImportService.generatePreview(
+        csv,
+        columnMapping as AttendeeImportColumnMapping,
+        roleMapping,
+        id
+      );
+
+      res.json({ preview });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /api/events/:id/attendees/import/execute - Execute import with resolutions
+router.post(
+  '/:id/attendees/import/execute',
+  requireAuth,
+  requireRole('admin'),
+  audit('attendee_import', 'event'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const validationResult = importExecuteSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        throw new ValidationError(
+          'Invalid request data',
+          validationResult.error.message,
+          'Please provide valid import data.'
+        );
+      }
+
+      const { csv, columnMapping, roleMapping, duplicateResolutions, editedValues } = validationResult.data;
+
+      const result = await attendeeImportService.executeImport(
+        csv,
+        columnMapping as AttendeeImportColumnMapping,
+        roleMapping,
+        duplicateResolutions as Record<number, DuplicateResolution>,
+        (editedValues || {}) as Record<number, AttendeeImportRow>,
+        id
+      );
+
+      res.json({ result });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export { router as eventRoutes };

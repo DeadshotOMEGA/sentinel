@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -22,9 +22,11 @@ import {
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
 import AddAttendeeModal from '../components/AddAttendeeModal';
+import AddMemberAsAttendeeModal from '../components/AddMemberAsAttendeeModal';
 import BadgeAssignmentModal from '../components/BadgeAssignmentModal';
+import AttendeeImportModal from '../components/AttendeeImportModal';
 import { api } from '../lib/api';
-import type { Event, EventAttendee } from '@shared/types';
+import type { Event, EventAttendee, EventStatus } from '@shared/types';
 
 interface EventDetailResponse {
   event: Event;
@@ -50,15 +52,20 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 }
 
 export default function EventDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { eventId: id } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [selectedAttendees, setSelectedAttendees] = useState<Set<string>>(new Set());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState<EventAttendee | null>(null);
+  const [editRoles, setEditRoles] = useState(false);
+  const [customRoles, setCustomRoles] = useState<string[]>([]);
+  const [newRole, setNewRole] = useState('');
 
   if (!id) {
     throw new Error('Event ID is required');
@@ -84,12 +91,55 @@ export default function EventDetail() {
     refetchInterval: 30000,
   });
 
+  const { data: rolesData } = useQuery({
+    queryKey: ['event-roles', id],
+    queryFn: async () => {
+      const response = await api.get<{ roles: string[]; isCustom: boolean }>(`/events/${id}/roles`);
+      return response.data;
+    },
+  });
+
+  useEffect(() => {
+    if (rolesData) {
+      setCustomRoles(rolesData.roles);
+    }
+  }, [rolesData]);
+
+  const updateRolesMutation = useMutation({
+    mutationFn: (roles: string[] | null) => {
+      console.log('Mutation executing with roles:', roles);
+      return api.put(`/events/${id}/roles`, { roles });
+    },
+    onSuccess: (response) => {
+      console.log('Roles saved successfully:', response);
+      queryClient.invalidateQueries({ queryKey: ['event-roles', id] });
+      setEditRoles(false);
+    },
+    onError: (error) => {
+      console.error('Failed to save roles:', error);
+    },
+  });
+
   const removeAttendeeMutation = useMutation({
     mutationFn: (attendeeIds: string[]) =>
       api.delete(`/events/${id}/attendees`, { data: { attendeeIds } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-detail', id] });
       setSelectedAttendees(new Set());
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: EventStatus) => api.put(`/events/${id}`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-detail', id] });
+    },
+  });
+
+  const closeEventMutation = useMutation({
+    mutationFn: () => api.post(`/events/${id}/close`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-detail', id] });
     },
   });
 
@@ -142,6 +192,34 @@ export default function EventDetail() {
     }
   };
 
+  const handleAddCustomRole = () => {
+    if (newRole.trim() && !customRoles.includes(newRole.trim())) {
+      setCustomRoles([...customRoles, newRole.trim()]);
+      setNewRole('');
+    }
+  };
+
+  const handleRemoveCustomRole = (roleToRemove: string) => {
+    setCustomRoles(customRoles.filter((r) => r !== roleToRemove));
+  };
+
+  const handleSaveRoles = () => {
+    console.log('Saving roles:', customRoles);
+    updateRolesMutation.mutate(customRoles);
+  };
+
+  const handleResetToDefault = () => {
+    updateRolesMutation.mutate(null);
+  };
+
+  const handleCancelEditRoles = () => {
+    if (rolesData) {
+      setCustomRoles(rolesData.roles);
+    }
+    setEditRoles(false);
+    setNewRole('');
+  };
+
   const getStatusColor = (status: EventAttendee['status']): 'default' | 'success' | 'warning' | 'danger' => {
     switch (status) {
       case 'pending':
@@ -180,7 +258,15 @@ export default function EventDetail() {
               <h2 className="text-2xl font-bold">{event.name}</h2>
               <Chip
                 size="sm"
-                color={event.status === 'active' ? 'success' : 'default'}
+                color={
+                  event.status === 'active'
+                    ? 'success'
+                    : event.status === 'completed'
+                      ? 'primary'
+                      : event.status === 'cancelled'
+                        ? 'danger'
+                        : 'default'
+                }
               >
                 {event.status}
               </Chip>
@@ -196,15 +282,94 @@ export default function EventDetail() {
               <p className="text-sm text-gray-700 mt-2">{event.description}</p>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="light" onPress={handleBack}>
-              Back to Events
-            </Button>
-            {event.status === 'active' && (
-              <Button color="primary" onPress={handleMonitor}>
-                Monitor
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-2">
+              <Button variant="light" onPress={handleBack}>
+                Back to Events
               </Button>
-            )}
+              {event.status === 'active' && (
+                <Button color="primary" onPress={handleMonitor}>
+                  Monitor
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {event.status === 'draft' && (
+                <>
+                  <Button
+                    size="sm"
+                    color="success"
+                    variant="flat"
+                    onPress={() => updateStatusMutation.mutate('active')}
+                    isLoading={updateStatusMutation.isPending}
+                  >
+                    Activate Event
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="danger"
+                    variant="flat"
+                    onPress={() => updateStatusMutation.mutate('cancelled')}
+                    isLoading={updateStatusMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+              {event.status === 'active' && (
+                <>
+                  <Button
+                    size="sm"
+                    color="default"
+                    variant="flat"
+                    onPress={() => updateStatusMutation.mutate('draft')}
+                    isLoading={updateStatusMutation.isPending}
+                  >
+                    Revert to Draft
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="primary"
+                    variant="flat"
+                    onPress={() => closeEventMutation.mutate()}
+                    isLoading={closeEventMutation.isPending}
+                  >
+                    Close Event
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="danger"
+                    variant="flat"
+                    onPress={() => updateStatusMutation.mutate('cancelled')}
+                    isLoading={updateStatusMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+              {event.status === 'completed' && (
+                <Button
+                  size="sm"
+                  color="success"
+                  variant="flat"
+                  onPress={() => updateStatusMutation.mutate('active')}
+                  isLoading={updateStatusMutation.isPending}
+                >
+                  Reactivate
+                </Button>
+              )}
+              {event.status === 'cancelled' && (
+                <Button
+                  size="sm"
+                  color="default"
+                  variant="flat"
+                  onPress={() => updateStatusMutation.mutate('draft')}
+                  isLoading={updateStatusMutation.isPending}
+                >
+                  Restore as Draft
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -215,6 +380,94 @@ export default function EventDetail() {
             <StatCard label="Pending" value={stats.pending} color="text-gray-600" />
             <StatCard label="Total" value={stats.total} color="text-gray-900" />
           </div>
+        )}
+
+        {rolesData && (
+          <Card>
+            <CardHeader className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Event Roles</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {rolesData.isCustom
+                    ? 'Custom roles for this event'
+                    : 'Using default roles from settings'}
+                </p>
+              </div>
+              {!editRoles && (
+                <Button color="primary" variant="flat" onPress={() => setEditRoles(true)}>
+                  Customize Roles
+                </Button>
+              )}
+            </CardHeader>
+            <CardBody>
+              {editRoles ? (
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter new role name"
+                      value={newRole}
+                      onValueChange={setNewRole}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddCustomRole();
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button color="primary" onPress={handleAddCustomRole} isDisabled={!newRole.trim()}>
+                      Add Role
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {customRoles.map((role) => (
+                      <Chip
+                        key={role}
+                        onClose={() => handleRemoveCustomRole(role)}
+                        variant="flat"
+                        color="primary"
+                      >
+                        {role}
+                      </Chip>
+                    ))}
+                  </div>
+
+                  {customRoles.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No roles defined. Add at least one role.
+                    </p>
+                  )}
+
+                  <div className="flex justify-end gap-2 pt-4">
+                    {rolesData.isCustom && (
+                      <Button variant="light" color="warning" onPress={handleResetToDefault}>
+                        Reset to Default
+                      </Button>
+                    )}
+                    <Button variant="light" onPress={handleCancelEditRoles}>
+                      Cancel
+                    </Button>
+                    <Button
+                      color="primary"
+                      onPress={handleSaveRoles}
+                      isLoading={updateRolesMutation.isPending}
+                      isDisabled={customRoles.length === 0}
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {rolesData.roles.map((role) => (
+                    <Chip key={role} variant="flat" color="default">
+                      {role}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </CardBody>
+          </Card>
         )}
 
         <Card>
@@ -237,12 +490,26 @@ export default function EventDetail() {
                 className="max-w-[200px]"
               >
                 <SelectItem key="">All Roles</SelectItem>
-                <SelectItem key="participant">Participant</SelectItem>
-                <SelectItem key="instructor">Instructor</SelectItem>
-                <SelectItem key="staff">Staff</SelectItem>
-                <SelectItem key="volunteer">Volunteer</SelectItem>
+                {rolesData?.roles.map((role) => (
+                  <SelectItem key={role.toLowerCase()} value={role.toLowerCase()}>
+                    {role}
+                  </SelectItem>
+                ))}
               </Select>
               <div className="flex-1" />
+              <Button
+                variant="flat"
+                onPress={() => setIsImportModalOpen(true)}
+              >
+                Import
+              </Button>
+              <Button
+                variant="flat"
+                color="primary"
+                onPress={() => setIsAddMemberModalOpen(true)}
+              >
+                Add Member
+              </Button>
               <Button
                 color="primary"
                 onPress={() => setIsAddModalOpen(true)}
@@ -352,6 +619,19 @@ export default function EventDetail() {
         }}
         eventId={id}
         event={event}
+        availableRoles={rolesData?.roles}
+      />
+
+      <AddMemberAsAttendeeModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        onSuccess={() => {
+          setIsAddMemberModalOpen(false);
+          refetch();
+        }}
+        eventId={id}
+        event={event}
+        availableRoles={rolesData?.roles}
       />
 
       {selectedAttendee && (
@@ -370,6 +650,15 @@ export default function EventDetail() {
           eventId={id}
         />
       )}
+
+      <AttendeeImportModal
+        isOpen={isImportModalOpen}
+        eventId={id}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportComplete={() => {
+          refetch();
+        }}
+      />
     </PageWrapper>
   );
 }
