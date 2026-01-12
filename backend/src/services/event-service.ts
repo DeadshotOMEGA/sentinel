@@ -134,12 +134,17 @@ export class EventService {
       );
     }
 
-    // If badge was assigned, unassign it in badges table
+    // If badge was assigned, unassign it in badges table (only if it's an event badge)
     if (attendee.badgeId) {
-      await badgeRepository.unassign(attendee.badgeId);
+      const badge = await badgeRepository.findById(attendee.badgeId);
+      // Only unassign if badge was assigned to the event (temporary badge)
+      // Don't unassign member badges - they belong to the member permanently
+      if (badge && badge.assignmentType === 'event') {
+        await badgeRepository.unassign(attendee.badgeId);
+      }
     }
 
-    // Unassign badge from attendee
+    // Unassign badge from attendee record (clears the link, doesn't affect badge assignment)
     const updatedAttendee = await eventRepository.unassignBadge(attendeeId);
 
     return updatedAttendee;

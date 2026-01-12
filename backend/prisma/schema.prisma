@@ -154,6 +154,7 @@ model Event {
   endDate          DateTime        @map("end_date") @db.Date
   status           String          @default("draft") @db.VarChar(20)
   autoExpireBadges Boolean?        @default(true) @map("auto_expire_badges")
+  customRoles      Json?           @map("custom_roles")
   createdBy        String?         @map("created_by") @db.Uuid
   createdAt        DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt        DateTime?       @default(now()) @map("updated_at") @db.Timestamp(6)

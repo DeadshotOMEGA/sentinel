@@ -249,6 +249,7 @@ router.post('/manual', requireAuth, requireRole('admin'), async (req: Request, r
       timestamp: new Date(),
       synced: true,
       method: 'admin_manual',
+      kioskId: 'admin-dashboard',
       createdByAdmin: req.user.id,
     });
 

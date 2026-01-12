@@ -73,7 +73,7 @@ export default function EventMonitor() {
     },
   });
 
-  const { data: statsData } = useQuery({
+  const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['event-presence-stats', id],
     queryFn: async () => {
       const response = await api.get<PresenceStatsResponse>(`/events/${id}/presence-stats`);
@@ -155,7 +155,7 @@ export default function EventMonitor() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return (
       <PageWrapper title="Event Monitor">
         <div className="flex justify-center py-12">

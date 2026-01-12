@@ -38,6 +38,7 @@ function mapToEvent(event: PrismaEvent): Event {
     endDate: event.endDate,
     status: event.status as Event['status'],
     autoExpireBadges: event.autoExpireBadges ?? true,
+    customRoles: event.customRoles as string[] | null,
     createdBy: event.createdBy,
     createdAt: event.createdAt ?? new Date(),
     updatedAt: event.updatedAt ?? new Date(),
@@ -131,6 +132,9 @@ export class EventRepository {
       throw new Error('autoExpireBadges must be explicitly set');
     }
 
+    // Validate UUID format for createdBy
+    const isValidUUID = data.createdBy && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.createdBy);
+
     const event = await prisma.event.create({
       data: {
         name: data.name,
@@ -140,7 +144,7 @@ export class EventRepository {
         endDate: data.endDate,
         status: data.status,
         autoExpireBadges: data.autoExpireBadges,
-        createdBy: data.createdBy ?? null,
+        createdBy: isValidUUID ? data.createdBy : null,
       },
     });
 
@@ -174,6 +178,9 @@ export class EventRepository {
     }
     if (data.autoExpireBadges !== undefined) {
       updateData.autoExpireBadges = data.autoExpireBadges;
+    }
+    if ('customRoles' in data) {
+      updateData.customRoles = data.customRoles;
     }
 
     if (Object.keys(updateData).length === 0) {

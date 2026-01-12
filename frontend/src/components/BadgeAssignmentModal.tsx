@@ -54,7 +54,7 @@ export default function BadgeAssignmentModal({
 
   const assignMutation = useMutation({
     mutationFn: async (badgeId: string) => {
-      await api.post(`/events/${eventId}/attendees/${attendee.id}/assign-badge`, {
+      await api.put(`/events/${eventId}/attendees/${attendee.id}/assign-badge`, {
         badgeId,
       });
     },

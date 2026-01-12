@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true, // Fail if port is already in use (prevent multiple instances)
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

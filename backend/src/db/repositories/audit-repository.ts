@@ -25,6 +25,7 @@ export type AuditAction =
   | 'event_create'
   | 'event_update'
   | 'event_delete'
+  | 'attendee_import'
   | 'dev_tools_access'
   | 'dev_tools_clear_all'
   | 'dev_tools_clear_table'

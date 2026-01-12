@@ -1,4 +1,4 @@
-import type { PresenceStats } from '../../../shared/types';
+import type { PresenceStats, LogEvent, LogFilter } from '../../../shared/types';
 
 // RecentActivityItem type - matches shared/types ActivityItem
 export interface RecentActivityItem {
@@ -34,6 +34,9 @@ export interface ServerToClientEvents {
   event_presence_update: (data: EventPresenceUpdateEvent) => void;
   session_expired: () => void;
   activity_backfill: (data: ActivityBackfillEvent) => void;
+  // Log streaming events (dev-only)
+  log_event: (event: LogEvent) => void;
+  log_backfill: (events: LogEvent[]) => void;
 }
 
 // Client -> Server events
@@ -43,6 +46,10 @@ export interface ClientToServerEvents {
   subscribe_event: (data: { eventId: string }) => void;
   unsubscribe_event: (data: { eventId: string }) => void;
   kiosk_heartbeat: (data: KioskHeartbeatData) => void;
+  // Log streaming events (dev-only)
+  subscribe_logs: (filter: LogFilter) => void;
+  unsubscribe_logs: () => void;
+  update_log_filter: (filter: LogFilter) => void;
 }
 
 // Event payloads
