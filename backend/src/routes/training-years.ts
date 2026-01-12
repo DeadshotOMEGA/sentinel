@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { pool } from '../db/connection';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError } from '../utils/errors';
-import type { TrainingYear, HolidayExclusion } from '../../../shared/types';
+import type { TrainingYear, HolidayExclusion, DayException } from '../../../shared/types';
 
 const router = Router();
 
@@ -14,11 +14,17 @@ const holidayExclusionSchema = z.object({
   name: z.string().min(1).max(100)
 });
 
+const dayExceptionSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  type: z.enum(['day_off', 'cancelled_training', 'cancelled_admin'])
+});
+
 const trainingYearBaseSchema = z.object({
   name: z.string().min(1).max(50),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   holidayExclusions: z.array(holidayExclusionSchema).default([]),
+  dayExceptions: z.array(dayExceptionSchema).default([]),
   isCurrent: z.boolean().default(false)
 });
 
@@ -46,6 +52,7 @@ function toTrainingYear(row: Record<string, unknown>): TrainingYear {
     startDate: new Date(row.start_date as string),
     endDate: new Date(row.end_date as string),
     holidayExclusions: (row.holiday_exclusions as HolidayExclusion[]) || [],
+    dayExceptions: (row.day_exceptions as DayException[]) || [],
     isCurrent: row.is_current as boolean,
     createdAt: new Date(row.created_at as string),
     updatedAt: new Date(row.updated_at as string)
@@ -123,13 +130,13 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
       );
     }
 
-    const { name, startDate, endDate, holidayExclusions, isCurrent } = validation.data;
+    const { name, startDate, endDate, holidayExclusions, dayExceptions, isCurrent } = validation.data;
 
     const result = await pool.query(
-      `INSERT INTO training_years (name, start_date, end_date, holiday_exclusions, is_current)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO training_years (name, start_date, end_date, holiday_exclusions, day_exceptions, is_current)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [name, startDate, endDate, JSON.stringify(holidayExclusions), isCurrent]
+      [name, startDate, endDate, JSON.stringify(holidayExclusions), JSON.stringify(dayExceptions), isCurrent]
     );
 
     res.status(201).json({ trainingYear: toTrainingYear(result.rows[0]) });
@@ -186,6 +193,10 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: 
     if (updates.holidayExclusions !== undefined) {
       setClauses.push(`holiday_exclusions = $${paramIndex++}`);
       values.push(JSON.stringify(updates.holidayExclusions));
+    }
+    if (updates.dayExceptions !== undefined) {
+      setClauses.push(`day_exceptions = $${paramIndex++}`);
+      values.push(JSON.stringify(updates.dayExceptions));
     }
     if (updates.isCurrent !== undefined) {
       setClauses.push(`is_current = $${paramIndex++}`);

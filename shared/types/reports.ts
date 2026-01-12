@@ -5,6 +5,7 @@ export interface TrainingYear {
   startDate: Date;
   endDate: Date;
   holidayExclusions: HolidayExclusion[];
+  dayExceptions: DayException[];
   isCurrent: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -14,6 +15,13 @@ export interface HolidayExclusion {
   start: string;                       // ISO date string
   end: string;                         // ISO date string
   name: string;                        // e.g., "Christmas Break"
+}
+
+export type DayExceptionType = 'day_off' | 'cancelled_training' | 'cancelled_admin';
+
+export interface DayException {
+  date: string;                        // ISO date string (YYYY-MM-DD)
+  type: DayExceptionType;
 }
 
 // BMQ Course Types

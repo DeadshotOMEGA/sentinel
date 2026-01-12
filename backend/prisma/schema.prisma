@@ -337,6 +337,7 @@ model training_years {
   start_date         DateTime  @db.Date
   end_date           DateTime  @db.Date
   holiday_exclusions Json?     @default("[]")
+  day_exceptions     Json?     @default("[]")
   is_current         Boolean?  @default(false)
   created_at         DateTime? @default(now()) @db.Timestamptz(6)
   updated_at         DateTime? @default(now()) @db.Timestamptz(6)

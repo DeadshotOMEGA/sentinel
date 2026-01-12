@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Table,
@@ -24,6 +24,7 @@ import {
 import { Icon } from '@iconify/react';
 import { api } from '../../lib/api';
 import type { TrainingYear, HolidayExclusion } from '@shared/types/reports';
+import TrainingYearCalendarGrid from './TrainingYearCalendarGrid';
 
 interface TrainingYearFormData {
   name: string;
@@ -55,6 +56,7 @@ export default function TrainingYearSettings() {
   });
 
   const years = yearsData?.trainingYears;
+  const currentYear = useMemo(() => years?.find((y) => y.isCurrent), [years]);
 
   const handleAdd = () => {
     setEditYear(null);
@@ -196,6 +198,14 @@ export default function TrainingYearSettings() {
           ))}
         </TableBody>
       </Table>
+
+      {/* Calendar Grid for Current Training Year */}
+      {currentYear && (
+        <div className="mt-8">
+          <h3 className="mb-4 text-lg font-medium">Training Year Calendar</h3>
+          <TrainingYearCalendarGrid trainingYear={currentYear} />
+        </div>
+      )}
 
       <TrainingYearModal
         isOpen={isModalOpen}
