@@ -3,6 +3,8 @@ import { ZodError } from 'zod';
 import { randomUUID } from 'crypto';
 import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
+import { captureException } from '../utils/sentry.js';
+import { getRequestContext } from '../utils/request-context.js';
 
 interface ErrorResponse {
   error: {
@@ -102,6 +104,16 @@ export function errorHandler(
   }
 
   // Handle unknown errors as 500 - NEVER expose internal details
+  // Capture to Sentry for monitoring
+  const context = getRequestContext();
+  captureException(err, {
+    requestId,
+    correlationId: context?.correlationId,
+    userId: context?.userId,
+    route: req.url,
+    method: req.method,
+  });
+
   // Always use generic message for unknown errors to prevent information leakage
   const response: ErrorResponse = {
     error: {

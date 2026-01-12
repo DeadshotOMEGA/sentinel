@@ -15,6 +15,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.0.1",
+    "@sentry/node": "^10.33.0",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
@@ -32,6 +33,7 @@
     "socket.io": "^4.7.2",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {

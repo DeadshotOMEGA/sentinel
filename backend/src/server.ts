@@ -1,7 +1,39 @@
 import { validateEnv } from './config/env-validation.js';
+import net from 'net';
+import { initSentry, flushSentry } from './utils/sentry.js';
 
 // Validate environment variables FIRST, before any other imports
 const env = validateEnv();
+
+// Initialize Sentry early (before other imports) if DSN is configured
+initSentry();
+
+// Check if port is already in use (prevent multiple instances)
+async function checkPortAvailable(port: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        reject(new Error(
+          `\n❌ Port ${port} is already in use!\n` +
+          `   Another instance of the backend may be running.\n` +
+          `   Stop the other instance or use a different port.\n` +
+          `   To find the process: lsof -i :${port}\n`
+        ));
+      } else {
+        reject(err);
+      }
+    });
+    server.once('listening', () => {
+      server.close();
+      resolve();
+    });
+    server.listen(port);
+  });
+}
+
+// Check port before importing heavy modules
+await checkPortAvailable(env.PORT);
 
 import express from 'express';
 import helmet from 'helmet';
@@ -145,6 +177,9 @@ logger.info('WebSocket server initialized');
 // Graceful shutdown handling
 const shutdown = async (signal: string): Promise<void> => {
   logger.info(`${signal} received, starting graceful shutdown...`);
+
+  // Flush pending Sentry events
+  await flushSentry(2000);
 
   httpServer.close(() => {
     logger.info('HTTP server closed');
