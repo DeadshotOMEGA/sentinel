@@ -82,6 +82,14 @@ export default function EventMonitor() {
     refetchInterval: 10000,
   });
 
+  const { data: rolesData } = useQuery({
+    queryKey: ['event-roles', id],
+    queryFn: async () => {
+      const response = await api.get<{ roles: string[]; isCustom: boolean }>(`/events/${id}/roles`);
+      return response.data;
+    },
+  });
+
   useEffect(() => {
     const unsubPresence = onPresenceUpdate((data) => {
       queryClient.setQueryData(['event-presence-stats', id], (old: PresenceStatsResponse | undefined) => {
@@ -250,12 +258,9 @@ export default function EventMonitor() {
                   onSelectionChange={(keys) => setRoleFilter(Array.from(keys)[0] as string)}
                   className="max-w-[150px]"
                   size="sm"
+                  items={[{ key: '', label: 'All' }, ...(rolesData?.roles.map((role) => ({ key: role, label: role })) ?? [])]}
                 >
-                  <SelectItem key="">All</SelectItem>
-                  <SelectItem key="participant">Participant</SelectItem>
-                  <SelectItem key="instructor">Instructor</SelectItem>
-                  <SelectItem key="staff">Staff</SelectItem>
-                  <SelectItem key="volunteer">Volunteer</SelectItem>
+                  {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
                 </Select>
               </div>
 
