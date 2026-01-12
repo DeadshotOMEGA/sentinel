@@ -14,6 +14,7 @@ import { trainingYearRoutes } from './training-years';
 import { bmqCoursesRoutes } from './bmq-courses';
 import { reportRoutes } from './reports';
 import { tagRoutes } from './tags';
+import { settingsRoutes } from './settings';
 import { checkDatabaseHealth } from '../db/prisma';
 import { redis } from '../db/redis';
 import { logger } from '../utils/logger';
@@ -107,6 +108,7 @@ router.use('/training-years', trainingYearRoutes);
 router.use('/bmq-courses', bmqCoursesRoutes);
 router.use('/reports', reportRoutes);
 router.use('/tags', tagRoutes);
+router.use('/settings', settingsRoutes);
 router.use('/dev', devRoutes);
 router.use('/dev-tools', devToolsRoutes);
 

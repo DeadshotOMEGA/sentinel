@@ -19,6 +19,7 @@ interface AddAttendeeModalProps {
   onSuccess: () => void;
   eventId: string;
   event: Event;
+  availableRoles?: string[];
 }
 
 interface AttendeeFormData {
@@ -30,12 +31,7 @@ interface AttendeeFormData {
   accessEnd: string;
 }
 
-const roles = [
-  { key: 'participant', label: 'Participant' },
-  { key: 'instructor', label: 'Instructor' },
-  { key: 'staff', label: 'Staff' },
-  { key: 'volunteer', label: 'Volunteer' },
-];
+const defaultRoles = ['Participant', 'Instructor', 'Staff', 'Volunteer'];
 
 export default function AddAttendeeModal({
   isOpen,
@@ -43,12 +39,14 @@ export default function AddAttendeeModal({
   onSuccess,
   eventId,
   event,
+  availableRoles = defaultRoles,
 }: AddAttendeeModalProps) {
+  const roles = availableRoles;
   const [formData, setFormData] = useState<AttendeeFormData>({
     name: '',
     rank: '',
     organization: '',
-    role: 'participant',
+    role: roles[0] || '',
     accessStart: '',
     accessEnd: '',
   });
@@ -61,13 +59,13 @@ export default function AddAttendeeModal({
         name: '',
         rank: '',
         organization: '',
-        role: 'participant',
+        role: roles[0] || '',
         accessStart: new Date(event.startDate).toISOString().split('T')[0],
         accessEnd: new Date(event.endDate).toISOString().split('T')[0],
       });
       setError('');
     }
-  }, [isOpen, event]);
+  }, [isOpen, event, roles]);
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
@@ -100,16 +98,22 @@ export default function AddAttendeeModal({
     setError('');
 
     try {
-      const payload = {
+      const payload: Record<string, string | undefined> = {
         name: formData.name.trim(),
-        rank: formData.rank.trim() || null,
         organization: formData.organization.trim(),
         role: formData.role,
-        accessStart: formData.accessStart
-          ? new Date(formData.accessStart).toISOString()
-          : null,
-        accessEnd: formData.accessEnd ? new Date(formData.accessEnd).toISOString() : null,
       };
+
+      // Only include optional fields if they have values
+      if (formData.rank.trim()) {
+        payload.rank = formData.rank.trim();
+      }
+      if (formData.accessStart) {
+        payload.accessStart = formData.accessStart; // Already in YYYY-MM-DD format from input
+      }
+      if (formData.accessEnd) {
+        payload.accessEnd = formData.accessEnd; // Already in YYYY-MM-DD format from input
+      }
 
       await api.post(`/events/${eventId}/attendees`, payload);
       onSuccess();
@@ -166,7 +170,9 @@ export default function AddAttendeeModal({
               isRequired
             >
               {roles.map((role) => (
-                <SelectItem key={role.key}>{role.label}</SelectItem>
+                <SelectItem key={role} value={role}>
+                  {role}
+                </SelectItem>
               ))}
             </Select>
             <div className="grid grid-cols-2 gap-4">

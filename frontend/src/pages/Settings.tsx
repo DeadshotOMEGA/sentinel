@@ -31,6 +31,7 @@ import TrainingYearSettings from '../components/settings/TrainingYearSettings';
 import WorkingHoursSettings from '../components/settings/WorkingHoursSettings';
 import ReportSettingsForm from '../components/settings/ReportSettingsForm';
 import BMQCoursesSettings from '../components/settings/BMQCoursesSettings';
+import EventRolesSettings from '../components/settings/EventRolesSettings';
 import DevToolsSection from '../components/settings/DevToolsSection';
 
 export default function Settings() {
@@ -70,6 +71,11 @@ export default function Settings() {
               <span>BMQ Courses</span>
             </Tooltip>
           } />
+          <Tab key="event-roles" title={
+            <Tooltip content="Manage default roles for event attendees">
+              <span>Event Roles</span>
+            </Tooltip>
+          } />
           <Tab key="dev-tools" title={
             <Tooltip content="Developer tools and database utilities">
               <span>Dev Tools</span>
@@ -84,6 +90,7 @@ export default function Settings() {
           {tab === 'working-hours' && <WorkingHoursSettings />}
           {tab === 'report-settings' && <ReportSettingsForm />}
           {tab === 'bmq-courses' && <BMQCoursesSettings />}
+          {tab === 'event-roles' && <EventRolesSettings />}
           {tab === 'dev-tools' && <DevToolsSection />}
         </div>
       </div>
