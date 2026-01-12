@@ -109,7 +109,7 @@ export default function WorkingHoursSettings() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (settings: Record<string, unknown>) => {
-      return api.put('/report-settings/bulk', { settings });
+      return api.put('/report-settings', { settings });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-settings'] });

@@ -30,6 +30,11 @@ interface ReportSettingsData {
   formatting: FormattingSettings;
 }
 
+// API response shape from backend
+interface ReportSettingsApiResponse {
+  settings: Record<string, { value: unknown; updatedAt: string }>;
+}
+
 interface ValidationErrors {
   thresholds?: string;
 }
@@ -67,9 +72,16 @@ export default function ReportSettingsForm() {
   // Fetch settings
   const { data, isLoading } = useQuery({
     queryKey: ['report-settings'],
-    queryFn: async () => {
-      const response = await api.get<ReportSettingsData>('/report-settings');
-      return response.data;
+    queryFn: async (): Promise<ReportSettingsData> => {
+      const response = await api.get<ReportSettingsApiResponse>('/report-settings');
+      const { settings } = response.data;
+
+      // Extract values from the nested { value, updatedAt } structure
+      return {
+        thresholds: settings.thresholds?.value as ThresholdSettings,
+        member_handling: settings.member_handling?.value as MemberHandlingSettings,
+        formatting: settings.formatting?.value as FormattingSettings,
+      };
     },
   });
 
@@ -91,7 +103,7 @@ export default function ReportSettingsForm() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (settings: ReportSettingsData) => {
-      await api.put('/report-settings/bulk', settings);
+      await api.put('/report-settings', { settings });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['report-settings'] });
