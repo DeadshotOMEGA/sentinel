@@ -23,6 +23,8 @@ import ImportModal from '../components/ImportModal';
 import MemberDetail from './MemberDetail';
 import MembersFilterPopover from '../components/members/MembersFilterPopover';
 import TagChip from '../components/members/TagChip';
+import BadgeChip from '../components/members/BadgeChip';
+import BulkEditModal from '../components/members/BulkEditModal';
 import MemberQuickView from '../components/members/MemberQuickView';
 import { useMemberFilters } from '../hooks/useMemberFilters';
 import { api } from '../lib/api';
@@ -35,6 +37,7 @@ type ColumnKey =
   | 'moc'
   | 'mess'
   | 'status'
+  | 'badge'
   | 'classDetails'
   | 'tags'
   | 'actions';
@@ -52,6 +55,7 @@ const columns: Column[] = [
   { uid: 'moc', name: 'MOC', sortable: true },
   { uid: 'mess', name: 'MESS', sortable: true },
   { uid: 'status', name: 'STATUS', sortable: true },
+  { uid: 'badge', name: 'BADGE', sortable: false },
   { uid: 'classDetails', name: 'CONTRACT', sortable: true },
   { uid: 'tags', name: 'TAGS', sortable: false },
   { uid: 'actions', name: 'ACTIONS', sortable: false },
@@ -75,6 +79,7 @@ function MembersList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberWithDivision | null>(null);
   const [selectedQuickViewMember, setSelectedQuickViewMember] = useState<MemberWithDivision | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
@@ -253,6 +258,8 @@ function MembersList() {
         );
       case 'moc':
         return <div className="text-small">{member.moc ?? '—'}</div>;
+      case 'badge':
+        return <BadgeChip badge={member.badge} />;
       case 'classDetails':
         return (
           <div className="text-small">
@@ -349,11 +356,23 @@ function MembersList() {
           <span className="text-small text-default-400">
             Showing {visibleItems.length} of {filteredItems.length} members
           </span>
-          <span className="text-small text-default-400">
-            {selectedKeys === 'all'
-              ? 'All items selected'
-              : `${selectedKeys.size} of ${filteredItems.length} selected`}
-          </span>
+          <div className="flex items-center gap-3">
+            {selectedKeys !== 'all' && selectedKeys.size >= 2 && (
+              <Button
+                color="primary"
+                variant="flat"
+                onPress={() => setIsBulkEditModalOpen(true)}
+                startContent={<Icon icon="lucide:edit" />}
+              >
+                Edit Selected
+              </Button>
+            )}
+            <span className="text-small text-default-400">
+              {selectedKeys === 'all'
+                ? 'All items selected'
+                : `${selectedKeys.size} of ${filteredItems.length} selected`}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -453,6 +472,19 @@ function MembersList() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImportComplete={() => refetch()}
+      />
+
+      <BulkEditModal
+        isOpen={isBulkEditModalOpen}
+        onClose={() => setIsBulkEditModalOpen(false)}
+        onSave={() => {
+          setIsBulkEditModalOpen(false);
+          setSelectedKeys(new Set([]));
+          refetch();
+        }}
+        selectedMemberIds={selectedKeys === 'all' ? [] : Array.from(selectedKeys as Set<string>)}
+        divisions={divisions}
+        tags={tags}
       />
 
       {selectedQuickViewMember && (

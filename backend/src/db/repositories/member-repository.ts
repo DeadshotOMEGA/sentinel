@@ -66,6 +66,16 @@ function toMemberWithDivision(
       createdAt: Date | null;
       updatedAt: Date | null;
     } | null;
+    badge?: {
+      id: string;
+      serialNumber: string;
+      assignmentType: string;
+      assignedToId: string | null;
+      status: string;
+      lastUsed: Date | null;
+      createdAt: Date | null;
+      updatedAt: Date | null;
+    } | null;
     memberTags?: Array<{
       tag: {
         id: string;
@@ -93,6 +103,22 @@ function toMemberWithDivision(
       updatedAt: prismaMember.division.updatedAt ?? new Date(),
     },
   };
+
+  // Add badge if included and exists
+  if (prismaMember.badge) {
+    Object.assign(base, {
+      badge: {
+        id: prismaMember.badge.id,
+        serialNumber: prismaMember.badge.serialNumber,
+        assignmentType: prismaMember.badge.assignmentType,
+        assignedToId: prismaMember.badge.assignedToId ?? undefined,
+        status: prismaMember.badge.status,
+        lastUsed: prismaMember.badge.lastUsed ?? undefined,
+        createdAt: prismaMember.badge.createdAt ?? new Date(),
+        updatedAt: prismaMember.badge.updatedAt ?? new Date(),
+      },
+    });
+  }
 
   // Add tags if included
   if (prismaMember.memberTags) {
@@ -204,6 +230,7 @@ export class MemberRepository {
       where,
       include: {
         division: true,
+        badge: true,
         memberTags: {
           include: {
             tag: true,
@@ -342,6 +369,7 @@ export class MemberRepository {
         where,
         include: {
           division: true,
+          badge: true,
           memberTags: {
             include: {
               tag: true,
@@ -371,6 +399,7 @@ export class MemberRepository {
       where: { id },
       include: {
         division: true,
+        badge: true,
         memberTags: {
           include: {
             tag: true,
@@ -536,6 +565,12 @@ export class MemberRepository {
       },
       include: {
         division: true,
+        badge: true,
+        memberTags: {
+          include: {
+            tag: true,
+          },
+        },
       },
     });
 
@@ -727,6 +762,17 @@ export class MemberRepository {
         memberId,
         tagId,
       },
+    });
+  }
+
+  /**
+   * Clear badge reference from any member that has this badgeId
+   * Used to clean up orphaned references when badge is unassigned
+   */
+  async clearBadgeReference(badgeId: string): Promise<void> {
+    await prisma.member.updateMany({
+      where: { badgeId },
+      data: { badgeId: null },
     });
   }
 

@@ -438,7 +438,7 @@ export class MemberService {
     await badgeRepository.unassign(member.badgeId);
 
     // Update member record
-    await memberRepository.update(memberId, { badgeId: undefined });
+    await memberRepository.update(memberId, { badgeId: null });
   }
 }
 

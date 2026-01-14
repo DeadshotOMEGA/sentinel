@@ -36,6 +36,7 @@ import {
 import { Icon } from '@iconify/react';
 import PageWrapper from '../components/PageWrapper';
 import MemberModal from '../components/MemberModal';
+import MemberBadgeAssignmentModal from '../components/MemberBadgeAssignmentModal';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
 import type {
@@ -64,6 +65,7 @@ function MemberDetailPage() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState('');
   const [historyPage, setHistoryPage] = useState(1);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
   const historyLimit = 10;
 
   // Fetch member details
@@ -525,12 +527,33 @@ function MemberDetailPage() {
                           </div>
                         </div>
                       )}
-                      {member.badgeId && (
-                        <div>
-                          <p className="text-sm text-default-500">Badge ID</p>
-                          <p className="font-mono text-base">{member.badgeId}</p>
-                        </div>
-                      )}
+                      <div>
+                        <p className="text-sm text-default-500">Badge</p>
+                        {member.badgeId ? (
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-base">{member.badgeId}</p>
+                            <Button
+                              size="sm"
+                              variant="flat"
+                              onPress={() => setIsBadgeModalOpen(true)}
+                              aria-label="Manage badge assignment"
+                            >
+                              Manage
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            color="primary"
+                            startContent={<Icon icon="solar:card-linear" width={16} />}
+                            onPress={() => setIsBadgeModalOpen(true)}
+                            aria-label="Assign badge to member"
+                          >
+                            Assign Badge
+                          </Button>
+                        )}
+                      </div>
                       {member.employeeNumber && (
                         <div>
                           <p className="text-sm text-default-500">Employee Number</p>
@@ -991,6 +1014,16 @@ function MemberDetailPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Badge Assignment Modal */}
+      <MemberBadgeAssignmentModal
+        isOpen={isBadgeModalOpen}
+        onClose={() => setIsBadgeModalOpen(false)}
+        onSuccess={() => {
+          setIsBadgeModalOpen(false);
+        }}
+        member={member}
+      />
     </PageWrapper>
   );
 }

@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { memberRepository } from '../db/repositories/member-repository';
 import { tagRepository } from '../db/repositories/tag-repository';
+import { prisma } from '../db/prisma';
 import { checkinRepository } from '../db/repositories/checkin-repository';
 import { importService } from '../services/import-service';
 import { requireAuth, requireRole } from '../auth/middleware';
@@ -25,6 +26,23 @@ import type {
 
 const router = Router();
 
+// Bulk update validation schema
+const bulkUpdateSchema = z.object({
+  memberIds: z.array(z.string().uuid()).min(1),
+  updates: z.object({
+    rank: z.string().optional(),
+    divisionId: z.string().uuid().optional(),
+    memberType: z.enum(['class_a', 'class_b', 'class_c', 'reg_force']).optional(),
+    mess: z.string().optional(),
+    moc: z.string().optional(),
+    classDetails: z.string().optional(),
+    status: z.enum(['active', 'inactive', 'pending_review', 'terminated']).optional(),
+    tagIds: z.array(z.string().uuid()).optional(),
+  }).refine(data => Object.keys(data).length > 0, {
+    message: 'At least one update field is required',
+  }),
+});
+
 // Validation schemas
 const createMemberSchema = z.object({
   serviceNumber: z.string().min(1).max(20),
@@ -38,7 +56,7 @@ const createMemberSchema = z.object({
   moc: z.string().optional(),
   memberType: z.enum(['class_a', 'class_b', 'class_c', 'reg_force']),
   classDetails: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'pending_review']).optional(),
+  status: z.enum(['active', 'inactive', 'pending_review', 'terminated']).optional(),
   email: z.string().email().optional(),
   homePhone: z.string().optional(),
   mobilePhone: z.string().optional(),
@@ -57,7 +75,7 @@ const updateMemberSchema = z.object({
   moc: z.string().optional(),
   memberType: z.enum(['class_a', 'class_b', 'class_c', 'reg_force']).optional(),
   classDetails: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'pending_review']).optional(),
+  status: z.enum(['active', 'inactive', 'pending_review', 'terminated']).optional(),
   email: z.string().email().optional(),
   homePhone: z.string().optional(),
   mobilePhone: z.string().optional(),
@@ -143,6 +161,102 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
     };
 
     res.json(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/members/bulk - Bulk update members
+router.patch('/bulk', requireAuth, requireRole('admin'), audit('member_bulk_update', 'member'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validationResult = bulkUpdateSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        'Invalid bulk update data',
+        validationResult.error.message,
+        'Please check the member IDs and update fields.'
+      );
+    }
+
+    const { memberIds, updates } = validationResult.data;
+
+    // Check that all memberIds exist (fail fast)
+    const existingMembers = await memberRepository.findByIds(memberIds);
+    const existingIds = new Set(existingMembers.map(m => m.id));
+    const missingIds = memberIds.filter(id => !existingIds.has(id));
+
+    if (missingIds.length > 0) {
+      throw new ValidationError(
+        'Some member IDs not found',
+        `The following member IDs do not exist: ${missingIds.join(', ')}`,
+        'Please verify all member IDs exist before attempting bulk update.'
+      );
+    }
+
+    // Separate tagIds from other updates
+    const { tagIds, ...memberUpdates } = updates;
+
+    // Use transaction for atomic updates
+    const result = await prisma.$transaction(async (tx) => {
+      let updatedCount = 0;
+
+      // Update member fields if any provided
+      if (Object.keys(memberUpdates).length > 0) {
+        const updateResult = await tx.member.updateMany({
+          where: { id: { in: memberIds } },
+          data: memberUpdates,
+        });
+        updatedCount = updateResult.count;
+      } else {
+        // If only tagIds provided, count all members as updated
+        updatedCount = memberIds.length;
+      }
+
+      // Handle tagIds separately - replace all tags for each member
+      if (tagIds !== undefined) {
+        // Validate all tagIds exist
+        const existingTags = await tx.tag.findMany({
+          where: { id: { in: tagIds } },
+          select: { id: true },
+        });
+        const existingTagIds = new Set(existingTags.map(t => t.id));
+        const missingTagIds = tagIds.filter(id => !existingTagIds.has(id));
+
+        if (missingTagIds.length > 0) {
+          throw new ValidationError(
+            'Some tag IDs not found',
+            `The following tag IDs do not exist: ${missingTagIds.join(', ')}`,
+            'Please verify all tag IDs exist before attempting bulk update.'
+          );
+        }
+
+        // Delete existing tags for all members
+        await tx.memberTag.deleteMany({
+          where: { memberId: { in: memberIds } },
+        });
+
+        // Create new tag associations for all members
+        if (tagIds.length > 0) {
+          const tagAssociations = memberIds.flatMap(memberId =>
+            tagIds.map(tagId => ({
+              memberId,
+              tagId,
+            }))
+          );
+
+          await tx.memberTag.createMany({
+            data: tagAssociations,
+          });
+        }
+      }
+
+      return updatedCount;
+    });
+
+    res.json({
+      updated: result,
+      memberIds,
+    });
   } catch (err) {
     next(err);
   }

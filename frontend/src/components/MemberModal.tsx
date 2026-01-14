@@ -34,6 +34,7 @@ export default function MemberModal({
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [status, setStatus] = useState<string>('active');
 
   const isEdit = !!member;
 
@@ -54,12 +55,15 @@ export default function MemberModal({
         email: member.email,
         homePhone: member.homePhone,
         mobilePhone: member.mobilePhone,
+        status: member.status,
       });
+      setStatus(member.status);
       setSelectedTagIds(new Set(member.tags?.map((tag) => tag.id) ?? []));
     } else {
       setFormData({
         memberType: 'class_a',
       });
+      setStatus('active');
       setSelectedTagIds(new Set());
     }
     setError('');
@@ -69,9 +73,10 @@ export default function MemberModal({
     setIsLoading(true);
     setError('');
     try {
-      // Prepare payload with tags
+      // Prepare payload with tags and status
       const payload = {
         ...formData,
+        status,
         tagIds: Array.from(selectedTagIds),
       };
 
@@ -94,7 +99,7 @@ export default function MemberModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
       <ModalContent>
         <ModalHeader>{isEdit ? 'Edit Member' : 'Add Member'}</ModalHeader>
         <ModalBody>
@@ -171,6 +176,19 @@ export default function MemberModal({
               <SelectItem key="class_b" description="Full-time reservist">Class B</SelectItem>
               <SelectItem key="class_c" description="Deployed reservist">Class C</SelectItem>
               <SelectItem key="reg_force" description="Regular Force member">Reg Force</SelectItem>
+            </Select>
+            <Select
+              label="Status"
+              description="Member status in the system"
+              selectedKeys={[status]}
+              onSelectionChange={(keys) =>
+                setStatus(Array.from(keys)[0] as string)
+              }
+            >
+              <SelectItem key="active">Active</SelectItem>
+              <SelectItem key="inactive">Inactive</SelectItem>
+              <SelectItem key="pending_review">Pending Review</SelectItem>
+              <SelectItem key="terminated">Terminated</SelectItem>
             </Select>
             <Select
               label="Mess"
