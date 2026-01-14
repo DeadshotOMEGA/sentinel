@@ -1,6 +1,6 @@
 // Member Types
 export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force';
-export type MemberStatus = 'active' | 'inactive' | 'pending_review';
+export type MemberStatus = 'active' | 'inactive' | 'pending_review' | 'terminated';
 
 export interface Member {
   id: string;
@@ -30,6 +30,7 @@ export interface Member {
 export interface MemberWithDivision extends Member {
   division: Division;
   tags?: Tag[];
+  badge?: Badge;
 }
 
 export interface CreateMemberInput {
@@ -73,8 +74,22 @@ export interface UpdateMemberInput {
   email?: string;
   homePhone?: string;
   mobilePhone?: string;
-  badgeId?: string;
+  badgeId?: string | null;
   tagIds?: string[];
+}
+
+export interface BulkUpdateMemberInput {
+  memberIds: string[];
+  updates: {
+    rank?: string;
+    divisionId?: string;
+    memberType?: MemberType;
+    mess?: string;
+    moc?: string;
+    classDetails?: string;
+    status?: MemberStatus;
+    tagIds?: string[];
+  };
 }
 
 // Tag Types
@@ -269,7 +284,7 @@ export interface UpdateDivisionInput {
 
 // Badge Types
 export type BadgeAssignmentType = 'member' | 'event' | 'unassigned';
-export type BadgeStatus = 'active' | 'inactive' | 'lost' | 'damaged';
+export type BadgeStatus = 'active' | 'disabled' | 'lost' | 'returned';
 
 export interface Badge {
   id: string;
@@ -287,6 +302,20 @@ export interface CreateBadgeInput {
   assignmentType?: BadgeAssignmentType;
   assignedToId?: string;
   status?: BadgeStatus;
+}
+
+export interface BadgeWithDetails extends Badge {
+  assignedMember?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    serviceNumber: string;
+  };
+  lastScan?: {
+    kioskId: string;
+    timestamp: Date;
+    direction: string;
+  };
 }
 
 // Check-in Types
@@ -337,12 +366,11 @@ export interface PresenceStats {
 
 // Visitor Types
 export type VisitType =
-  | 'general'
   | 'contractor'
   | 'recruitment'
-  | 'course'
   | 'event'
   | 'official'
+  | 'museum'
   | 'other';
 
 export type VisitorCheckinMethod = 'kiosk' | 'admin_manual';
@@ -632,3 +660,6 @@ export * from './logging';
 
 // Event Types
 export * from './event';
+
+// Dev Mode Types
+export * from './dev-mode';

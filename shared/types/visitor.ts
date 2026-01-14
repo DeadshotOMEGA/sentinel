@@ -1,4 +1,4 @@
-export type VisitType = 'general' | 'contractor' | 'recruitment' | 'course' | 'event' | 'official' | 'other';
+export type VisitType = 'contractor' | 'recruitment' | 'event' | 'official' | 'museum' | 'other';
 
 export interface Visitor {
   id: string;
