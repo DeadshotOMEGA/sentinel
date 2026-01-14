@@ -12,6 +12,8 @@ import {
 } from '../services/simulation-service';
 import { resetScheduleResolver } from '../services/schedule-resolver';
 import type { SimulationRequest } from '@shared/types';
+import type { SeedScenario } from '@shared/types/dev-mode';
+import { getScenarioMetadata, runScenario } from '../../db/seed/scenarios';
 
 const router = Router();
 
@@ -78,7 +80,7 @@ router.post('/clear-all', async (req: Request, res: Response, next: NextFunction
 
     // Log the operation
     await auditRepository.log({
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       action: 'dev_tools_clear_all',
       entityType: 'dev_tools',
       entityId: null,
@@ -87,7 +89,7 @@ router.post('/clear-all', async (req: Request, res: Response, next: NextFunction
     });
 
     logger.warn('Dev tools: cleared all data', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       cleared,
     });
 
@@ -152,7 +154,7 @@ router.post('/clear-table', async (req: Request, res: Response, next: NextFuncti
 
     // Log the operation
     await auditRepository.log({
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       action: 'dev_tools_clear_table',
       entityType: 'dev_tools',
       entityId: null,
@@ -161,7 +163,7 @@ router.post('/clear-table', async (req: Request, res: Response, next: NextFuncti
     });
 
     logger.warn('Dev tools: cleared table', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       table,
       count,
     });
@@ -196,7 +198,7 @@ router.post('/reset', async (req: Request, res: Response, next: NextFunction) =>
 
     // Log the operation BEFORE clearing (so we don't lose the audit log)
     await auditRepository.log({
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       action: 'dev_tools_reset',
       entityType: 'dev_tools',
       entityId: null,
@@ -205,7 +207,7 @@ router.post('/reset', async (req: Request, res: Response, next: NextFunction) =>
     });
 
     logger.warn('Dev tools: complete reset initiated', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
     });
 
     // Clear all data including divisions
@@ -225,7 +227,7 @@ router.post('/reset', async (req: Request, res: Response, next: NextFunction) =>
     });
 
     logger.warn('Dev tools: complete reset finished', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
     });
 
     res.json({ success: true });
@@ -347,7 +349,7 @@ router.post('/simulate', async (req: Request, res: Response, next: NextFunction)
     const request = SimulationRequestSchema.parse(req.body) as SimulationRequest;
 
     logger.info('Dev tools: starting data simulation', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       timeRange: request.timeRange,
     });
 
@@ -360,7 +362,7 @@ router.post('/simulate', async (req: Request, res: Response, next: NextFunction)
 
     // Log the operation
     await auditRepository.log({
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       action: 'dev_tools_simulate',
       entityType: 'dev_tools',
       entityId: null,
@@ -373,9 +375,146 @@ router.post('/simulate', async (req: Request, res: Response, next: NextFunction)
     });
 
     logger.info('Dev tools: data simulation complete', {
-      adminUserId: req.user.id,
+      adminUserId: req.isDevAuth ? null : req.user.id,
       generated: result.summary.generated,
       daysSimulated: result.summary.daysSimulated,
+    });
+
+    res.json(result);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const firstError = error.errors[0];
+      if (!firstError) {
+        throw new Error('Zod validation failed but no error details available');
+      }
+      res.status(400).json({ error: firstError.message });
+      return;
+    }
+    next(error);
+  }
+});
+
+/**
+ * POST /api/dev-tools/backdate-members
+ * Backdate all members' created_at to a specific date
+ * Useful for fixing attendance calculations after data generation
+ */
+const BackdateMembersSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+});
+
+router.post('/backdate-members', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new Error('User not found in request');
+    }
+    if (!req.ip) {
+      throw new Error('IP address not found in request');
+    }
+
+    const { date } = BackdateMembersSchema.parse(req.body);
+    const backdateDate = new Date(date);
+
+    // Update all members' created_at
+    const result = await prisma.member.updateMany({
+      data: {
+        createdAt: backdateDate,
+      },
+    });
+
+    // Log the operation
+    await auditRepository.log({
+      adminUserId: req.isDevAuth ? null : req.user.id,
+      action: 'dev_tools_backdate_members',
+      entityType: 'dev_tools',
+      entityId: null,
+      details: { date, membersUpdated: result.count },
+      ipAddress: req.ip,
+    });
+
+    logger.info('Dev tools: backdated member enrollment dates', {
+      adminUserId: req.isDevAuth ? null : req.user.id,
+      date,
+      membersUpdated: result.count,
+    });
+
+    res.json({
+      success: true,
+      membersUpdated: result.count,
+      newEnrollmentDate: date,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const firstError = error.errors[0];
+      if (!firstError) {
+        throw new Error('Zod validation failed but no error details available');
+      }
+      res.status(400).json({ error: firstError.message });
+      return;
+    }
+    next(error);
+  }
+});
+
+// ============================================================================
+// SEED SCENARIO ENDPOINTS
+// ============================================================================
+
+/**
+ * GET /api/dev-tools/scenarios
+ * Get list of available seed scenarios with metadata
+ */
+router.get('/scenarios', (_req: Request, res: Response) => {
+  const scenarios = getScenarioMetadata();
+  res.json({ scenarios });
+});
+
+// Validation schema for seed scenario request
+const SeedScenarioRequestSchema = z.object({
+  scenario: z.enum(['empty', 'busy-day', 'edge-cases', 'realistic-week']),
+});
+
+/**
+ * POST /api/dev-tools/seed-scenario
+ * Execute a seed scenario
+ */
+router.post('/seed-scenario', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new Error('User not found in request');
+    }
+    if (!req.ip) {
+      throw new Error('IP address not found in request');
+    }
+
+    const { scenario } = SeedScenarioRequestSchema.parse(req.body);
+
+    logger.info('Dev tools: starting seed scenario', {
+      adminUserId: req.isDevAuth ? null : req.user.id,
+      scenario,
+    });
+
+    const result = await runScenario(scenario as SeedScenario);
+
+    // Log the operation
+    await auditRepository.log({
+      adminUserId: req.isDevAuth ? null : req.user.id,
+      action: 'dev_tools_seed_scenario',
+      entityType: 'dev_tools',
+      entityId: null,
+      details: {
+        scenario,
+        created: result.created,
+        duration: result.duration,
+      },
+      ipAddress: req.ip,
+    });
+
+    logger.info('Dev tools: seed scenario complete', {
+      adminUserId: req.isDevAuth ? null : req.user.id,
+      scenario,
+      created: result.created,
+      duration: result.duration,
     });
 
     res.json(result);

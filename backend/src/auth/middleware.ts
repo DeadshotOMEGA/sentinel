@@ -17,6 +17,7 @@ declare global {
       user?: { id: string; username: string; role: string };
       isKiosk?: boolean;
       isDisplayAuth?: boolean;
+      isDevAuth?: boolean;
     }
   }
 }
@@ -40,6 +41,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   try {
     // DEV MODE: Auto-authenticate as dev admin
     if (process.env.NODE_ENV !== 'production') {
+      req.isDevAuth = true;
       req.user = {
         id: 'dev-admin',
         username: 'dev',
@@ -132,6 +134,7 @@ export async function requireDisplayAuth(req: Request, res: Response, next: Next
   try {
     // DEV MODE: Auto-authenticate as display device
     if (process.env.NODE_ENV !== 'production') {
+      req.isDevAuth = true;
       req.isDisplayAuth = true;
       req.user = {
         id: 'dev-display',

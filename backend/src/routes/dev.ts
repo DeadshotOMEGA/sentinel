@@ -1,8 +1,12 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import { z } from 'zod';
 import { prisma } from '../db/prisma';
 import { requireAuth } from '../auth';
 import { broadcastPresenceUpdate } from '../websocket';
 import { checkinRepository } from '../db/repositories/checkin-repository';
+import { checkinService } from '../services/checkin-service';
+import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
+import type { MockScanResponse } from '../../../shared/types/dev-mode';
 
 const router = Router();
 
@@ -148,6 +152,70 @@ router.delete('/checkins/clear-all', requireAuth, async (req: Request, res: Resp
       clearedCount: presentRows.length,
     });
   } catch (err) {
+    next(err);
+  }
+});
+
+// Validation schema for mock scan
+const mockScanSchema = z.object({
+  serialNumber: z.string().min(1, 'Serial number is required'),
+  timestamp: z.string().datetime().optional(),
+  kioskId: z.string().optional().default('dev-mock-scanner'),
+});
+
+// POST /api/dev/mock-scan - Simulate RFID badge scan
+router.post('/mock-scan', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Extra production guard (middleware already blocks, but belt and suspenders)
+    if (process.env.NODE_ENV === 'production') {
+      res.status(403).json({ error: 'Dev routes disabled in production' });
+      return;
+    }
+
+    const validationResult = mockScanSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        'INVALID_MOCK_SCAN_DATA',
+        validationResult.error.message,
+        'Invalid mock scan data. Please check the badge serial number and try again.'
+      );
+    }
+
+    const { serialNumber, timestamp, kioskId } = validationResult.data;
+
+    // Delegate to checkinService - this ensures mock scans:
+    // - Create real checkin records in database
+    // - Trigger WebSocket broadcasts to all clients
+    // - Behave identically to hardware scans
+    const result = await checkinService.processCheckin(serialNumber, {
+      timestamp: timestamp ? new Date(timestamp) : undefined,
+      kioskId,
+    });
+
+    const response: MockScanResponse = {
+      success: true,
+      direction: result.direction,
+      member: {
+        id: result.member.id,
+        firstName: result.member.firstName,
+        lastName: result.member.lastName,
+        rank: result.member.rank,
+        division: result.member.division.name,
+      },
+    };
+
+    res.status(201).json(response);
+  } catch (err) {
+    // Handle known error types and format as MockScanResponse
+    if (err instanceof NotFoundError || err instanceof ValidationError || err instanceof ConflictError) {
+      const response: MockScanResponse = {
+        success: false,
+        direction: 'in', // Default direction for failed scans
+        error: err.howToFix ?? err.details ?? err.message,
+      };
+      res.status(err.statusCode).json(response);
+      return;
+    }
     next(err);
   }
 });
