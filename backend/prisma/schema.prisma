@@ -56,6 +56,7 @@ model Badge {
   checkins       Checkin[]
   eventAttendees EventAttendee[]
   eventCheckins  EventCheckin[]
+  members        Member[]
   visitors       Visitor[]
 
   @@index([assignedToId], map: "idx_badges_assigned_to")
@@ -189,12 +190,14 @@ model Member {
   notes           String?
   contract_start  DateTime?         @db.Date
   contract_end    DateTime?         @db.Date
+  badge           Badge?            @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   bmq_enrollments bmq_enrollments[]
   checkins        Checkin[]
   division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   visitors        Visitor[]
   memberTags      MemberTag[]
 
+  @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
   @@index([employeeNumber], map: "idx_members_employee_number")
   @@index([mess], map: "idx_members_mess")

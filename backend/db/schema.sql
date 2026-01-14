@@ -32,7 +32,7 @@ CREATE TABLE members (
   moc VARCHAR(100),
   member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('class_a', 'class_b', 'class_c', 'reg_force')),
   class_details VARCHAR(100),
-  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending_review')),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending_review', 'terminated')),
   email VARCHAR(255),
   home_phone VARCHAR(30),
   mobile_phone VARCHAR(30),
