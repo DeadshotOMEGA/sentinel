@@ -147,21 +147,21 @@ export class BadgeService {
       );
     }
 
-    // Check if badge is already unassigned
-    if (badge.assignmentType === 'unassigned') {
-      throw new ConflictError(
-        'Badge already unassigned',
-        `Badge ${badgeId} is already unassigned`,
-        'This badge is not currently assigned to anyone.'
-      );
-    }
-
-    // If badge was assigned to a member, clear the member's badgeId
-    if (badge.assignmentType === 'member' && badge.assignedToId) {
+    // Clean up any member that has this badge assigned (handles orphaned references)
+    // First try badge.assignedToId, then search by badgeId directly
+    if (badge.assignedToId) {
       const member = await memberRepository.findById(badge.assignedToId);
       if (member && member.badgeId === badgeId) {
-        await memberRepository.update(badge.assignedToId, { badgeId: undefined });
+        await memberRepository.update(badge.assignedToId, { badgeId: null });
       }
+    }
+
+    // Also clear any orphaned member references (badge unassigned but member still has badgeId)
+    await memberRepository.clearBadgeReference(badgeId);
+
+    // If badge is already unassigned, just return it (cleanup above still runs)
+    if (badge.assignmentType === 'unassigned') {
+      return badge;
     }
 
     // Unassign badge
@@ -172,6 +172,7 @@ export class BadgeService {
 
   /**
    * Update badge status
+   * Auto-unassigns badge when marked as 'lost'
    */
   async updateStatus(badgeId: string, status: BadgeStatus): Promise<Badge> {
     // Verify badge exists
@@ -182,6 +183,11 @@ export class BadgeService {
         `Badge ${badgeId} does not exist`,
         'Please check the badge ID and try again.'
       );
+    }
+
+    // Auto-unassign when marking as 'lost'
+    if (status === 'lost' && badge.assignmentType !== 'unassigned') {
+      await this.unassign(badgeId);
     }
 
     // Update status

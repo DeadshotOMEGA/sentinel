@@ -2,6 +2,7 @@ import { prisma } from '../prisma';
 import type { Badge as PrismaBadge } from '@prisma/client';
 import type {
   Badge,
+  BadgeWithDetails,
   CreateBadgeInput,
   BadgeAssignmentType,
   BadgeStatus,
@@ -55,6 +56,74 @@ export class BadgeRepository {
     });
 
     return badges.map(toBadge);
+  }
+
+  /**
+   * Find all badges with member details and last scan info
+   */
+  async findAllWithDetails(filters?: BadgeFilters): Promise<BadgeWithDetails[]> {
+    const where: {
+      status?: BadgeStatus;
+      assignmentType?: BadgeAssignmentType;
+    } = {};
+
+    if (filters?.status) {
+      where.status = filters.status;
+    }
+
+    if (filters?.assignmentType) {
+      where.assignmentType = filters.assignmentType;
+    }
+
+    const badges = await prisma.badge.findMany({
+      where,
+      orderBy: {
+        serialNumber: 'asc',
+      },
+      include: {
+        members: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            serviceNumber: true,
+          },
+          take: 1,
+        },
+        checkins: {
+          select: {
+            kioskId: true,
+            timestamp: true,
+            direction: true,
+          },
+          orderBy: {
+            timestamp: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    return badges.map((badge) => {
+      const { members, checkins, ...badgeData } = badge;
+      const baseBadge = toBadge(badgeData);
+
+      const result: BadgeWithDetails = { ...baseBadge };
+
+      if (members.length > 0 && badge.assignmentType === 'member') {
+        result.assignedMember = members[0];
+      }
+
+      if (checkins.length > 0) {
+        result.lastScan = {
+          kioskId: checkins[0].kioskId,
+          timestamp: checkins[0].timestamp,
+          direction: checkins[0].direction,
+        };
+      }
+
+      return result;
+    });
   }
 
   /**
@@ -210,6 +279,15 @@ export class BadgeRepository {
     });
 
     return toBadge(badge);
+  }
+
+  /**
+   * Delete a badge
+   */
+  async delete(badgeId: string): Promise<void> {
+    await prisma.badge.delete({
+      where: { id: badgeId },
+    });
   }
 }
 

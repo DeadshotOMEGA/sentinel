@@ -1,6 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { badgeRepository } from '../db/repositories/badge-repository';
+import { badgeService } from '../services/badge-service';
 import { requireAuth, requireRole } from '../auth';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { audit } from '../middleware/audit';
@@ -24,17 +25,40 @@ const updateStatusSchema = z.object({
 });
 
 // GET /api/badges - List badges with filters
+// Add ?details=true to include member names and last scan info
 router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as BadgeStatus | undefined;
     const assignmentType = req.query.assignmentType as BadgeAssignmentType | undefined;
+    const includeDetails = req.query.details === 'true';
 
-    const badges = await badgeRepository.findAll({
-      status,
-      assignmentType,
-    });
+    const filters = { status, assignmentType };
+
+    const badges = includeDetails
+      ? await badgeRepository.findAllWithDetails(filters)
+      : await badgeRepository.findAll(filters);
 
     res.json({ badges });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/badges/by-serial/:serialNumber - Get badge by serial number
+router.get('/by-serial/:serialNumber', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { serialNumber } = req.params;
+
+    const badge = await badgeRepository.findBySerialNumber(serialNumber);
+    if (!badge) {
+      throw new NotFoundError(
+        'Badge not found',
+        `Badge with serial number ${serialNumber} not found`,
+        'Please check the serial number and try again.'
+      );
+    }
+
+    res.json({ badge });
   } catch (err) {
     next(err);
   }
@@ -76,7 +100,7 @@ router.post('/', requireAuth, requireRole('admin'), audit('badge_create', 'badge
   }
 });
 
-// PUT /api/badges/:id/assign - Assign badge to member
+// PUT /api/badges/:id/assign - Assign badge to member or event
 router.put('/:id/assign', requireAuth, requireRole('admin'), audit('badge_assign', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -92,26 +116,11 @@ router.put('/:id/assign', requireAuth, requireRole('admin'), audit('badge_assign
 
     const { assignedToId, assignmentType } = validationResult.data;
 
-    // Check if badge exists
-    const existing = await badgeRepository.findById(id);
-    if (!existing) {
-      throw new NotFoundError(
-        'Badge not found',
-        `Badge ${id} not found`,
-        'Please check the badge ID and try again.'
-      );
-    }
-
-    // Check if badge is already assigned
-    if (existing.assignmentType !== 'unassigned' && existing.assignedToId) {
-      throw new ConflictError(
-        'Badge already assigned',
-        `Badge ${id} is already assigned to ${existing.assignedToId}`,
-        'This badge is already assigned. Please unassign it first before reassigning.'
-      );
-    }
-
-    const badge = await badgeRepository.assign(id, assignedToId, assignmentType);
+    // Use service for member assignments (handles both badge and member record updates)
+    // Use repository directly for event assignments
+    const badge = assignmentType === 'member'
+      ? await badgeService.assign(id, assignedToId)
+      : await badgeRepository.assign(id, assignedToId, assignmentType);
 
     res.json({ badge });
   } catch (err) {
@@ -124,26 +133,8 @@ router.put('/:id/unassign', requireAuth, requireRole('admin'), audit('badge_unas
   try {
     const { id } = req.params;
 
-    // Check if badge exists
-    const existing = await badgeRepository.findById(id);
-    if (!existing) {
-      throw new NotFoundError(
-        'Badge not found',
-        `Badge ${id} not found`,
-        'Please check the badge ID and try again.'
-      );
-    }
-
-    // Check if badge is already unassigned
-    if (existing.assignmentType === 'unassigned') {
-      throw new ConflictError(
-        'Badge already unassigned',
-        `Badge ${id} is already unassigned`,
-        'This badge is not currently assigned to anyone.'
-      );
-    }
-
-    const badge = await badgeRepository.unassign(id);
+    // Service handles validation and clears member.badgeId if assigned to member
+    const badge = await badgeService.unassign(id);
 
     res.json({ badge });
   } catch (err) {
@@ -152,6 +143,7 @@ router.put('/:id/unassign', requireAuth, requireRole('admin'), audit('badge_unas
 });
 
 // PUT /api/badges/:id/status - Update badge status
+// Auto-unassigns badge when marked as 'lost'
 router.put('/:id/status', requireAuth, requireRole('admin'), audit('badge_status_change', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -167,9 +159,23 @@ router.put('/:id/status', requireAuth, requireRole('admin'), audit('badge_status
 
     const { status } = validationResult.data;
 
+    // Service handles validation and auto-unassign on 'lost'
+    const badge = await badgeService.updateStatus(id, status);
+
+    res.json({ badge });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/badges/:id - Delete a badge
+router.delete('/:id', requireAuth, requireRole('admin'), audit('badge_delete', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
     // Check if badge exists
-    const existing = await badgeRepository.findById(id);
-    if (!existing) {
+    const badge = await badgeRepository.findById(id);
+    if (!badge) {
       throw new NotFoundError(
         'Badge not found',
         `Badge ${id} not found`,
@@ -177,9 +183,18 @@ router.put('/:id/status', requireAuth, requireRole('admin'), audit('badge_status
       );
     }
 
-    const badge = await badgeRepository.updateStatus(id, status);
+    // Prevent deleting assigned badges
+    if (badge.assignmentType !== 'unassigned') {
+      throw new ConflictError(
+        'Cannot delete assigned badge',
+        `Badge ${id} is currently assigned`,
+        'Please unassign this badge before deleting it.'
+      );
+    }
 
-    res.json({ badge });
+    await badgeRepository.delete(id);
+
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }
