@@ -49,12 +49,15 @@ export function useSocket() {
   const backfillCallbackRef = useRef<SocketCallback<ActivityBackfillEvent> | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !token) return;
+    const isDev = import.meta.env.DEV;
+
+    // In dev mode, allow connection without auth (backend auto-authenticates)
+    if (!isDev && (!isAuthenticated || !token)) return;
 
     socketRef.current = io({
       path: '/socket.io',
       transports: ['websocket', 'polling'],
-      auth: { token },
+      auth: isDev ? {} : { token },
     });
 
     // Capture backfill immediately - it arrives right after subscribe

@@ -8,12 +8,14 @@ export type AuditAction =
   | 'member_create'
   | 'member_update'
   | 'member_delete'
+  | 'member_bulk_update'
   | 'member_tag_add'
   | 'member_tag_remove'
   | 'badge_assign'
   | 'badge_unassign'
   | 'badge_status_change'
   | 'badge_create'
+  | 'badge_delete'
   | 'admin_create'
   | 'admin_update'
   | 'admin_delete'
@@ -30,7 +32,9 @@ export type AuditAction =
   | 'dev_tools_clear_all'
   | 'dev_tools_clear_table'
   | 'dev_tools_reset'
-  | 'dev_tools_simulate';
+  | 'dev_tools_simulate'
+  | 'dev_tools_backdate_members'
+  | 'dev_tools_seed_scenario';
 
 interface AuditLogEntry {
   adminUserId: string | null;

@@ -145,7 +145,8 @@ export class ScheduleResolver {
     if (!dateStr) {
       throw new Error('Invalid date');
     }
-    const dayOfWeek = DAYS_OF_WEEK[date.getDay()];
+    // Use getUTCDay() to match the UTC date from toISOString()
+    const dayOfWeek = DAYS_OF_WEEK[date.getUTCDay()];
     if (!dayOfWeek) {
       throw new Error('Invalid day of week');
     }
@@ -279,8 +280,9 @@ export class ScheduleResolver {
       return false;
     }
 
-    const dateMonth = date.getMonth() + 1; // JS months are 0-indexed
-    const dateDay = date.getDate();
+    // Use UTC methods to match ISO date string interpretation
+    const dateMonth = date.getUTCMonth() + 1; // JS months are 0-indexed
+    const dateDay = date.getUTCDate();
 
     // Create comparable date values (month * 100 + day)
     const dateValue = dateMonth * 100 + dateDay;

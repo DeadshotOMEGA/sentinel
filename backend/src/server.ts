@@ -44,6 +44,7 @@ import { createServer } from 'http';
 import { logger } from './utils/logger.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { errorInjectionMiddleware } from './middleware/error-injection.js';
 import { standardLimiter } from './middleware/rate-limit.js';
 import { apiRoutes } from './routes/index.js';
 import { initializeWebSocket } from './websocket/index.js';
@@ -156,6 +157,12 @@ app.use(cookieParser());
 
 // Request logging
 app.use(requestLogger);
+
+// Error injection middleware for development testing
+// Only active when NODE_ENV !== 'production'
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api', errorInjectionMiddleware);
+}
 
 // Global rate limiting for all API routes
 // DISABLED FOR DEV - re-enable in production

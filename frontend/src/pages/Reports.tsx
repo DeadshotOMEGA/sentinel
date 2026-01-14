@@ -64,6 +64,53 @@ interface VisitorHistoryResponse {
   totalPages: number;
 }
 
+// Training Night Attendance Report Types
+interface TrainingNightRecord {
+  member: {
+    serviceNumber: string;
+    firstName: string;
+    lastName: string;
+    rank: string;
+    division: { name: string };
+  };
+  attendance: { percentage?: number; display?: string };
+  trend: { trend: string; delta?: number };
+}
+
+interface TrainingNightReportData {
+  records: TrainingNightRecord[];
+}
+
+// BMQ Attendance Report Types
+interface BmqRecord {
+  member: {
+    serviceNumber: string;
+    firstName: string;
+    lastName: string;
+    rank: string;
+    division: { name: string };
+  };
+  attendance: { percentage?: number; display?: string };
+}
+
+interface BmqReportData {
+  records: BmqRecord[];
+}
+
+// Personnel Roster Report Types
+interface RosterMember {
+  serviceNumber: string;
+  firstName: string;
+  lastName: string;
+  rank: string;
+  division: { name: string };
+  classification: string;
+}
+
+interface RosterReportData {
+  members: RosterMember[];
+}
+
 export default function Reports() {
   const [tab, setTab] = useState('presence');
   const [divisionFilter, setDivisionFilter] = useState<string>('');
@@ -94,6 +141,16 @@ export default function Reports() {
   // Personnel Roster state
   const [rosterDivision, setRosterDivision] = useState<string>('');
   const [rosterSortOrder, setRosterSortOrder] = useState<string>('division_rank');
+
+  // Report data state
+  const [trainingNightData, setTrainingNightData] = useState<TrainingNightReportData | null>(null);
+  const [bmqData, setBmqData] = useState<BmqReportData | null>(null);
+  const [rosterData, setRosterData] = useState<RosterReportData | null>(null);
+
+  // Report loading states
+  const [isGeneratingTraining, setIsGeneratingTraining] = useState(false);
+  const [isGeneratingBmq, setIsGeneratingBmq] = useState(false);
+  const [isGeneratingRoster, setIsGeneratingRoster] = useState(false);
 
   const { data: divisionsData } = useQuery({
     queryKey: ['divisions'],
@@ -290,23 +347,91 @@ export default function Reports() {
     }
   };
 
+  // Helper to build training night config
+  const getTrainingNightConfig = () => ({
+    periodStart: trainingPeriod === 'custom'
+      ? trainingDateRange.start.toDate(getLocalTimeZone()).toISOString()
+      : undefined,
+    periodEnd: trainingPeriod === 'custom'
+      ? trainingDateRange.end.toDate(getLocalTimeZone()).toISOString()
+      : undefined,
+    period: trainingPeriod,
+    organizationOption,
+    divisionId: trainingDivision ? trainingDivision : undefined,
+  });
+
+  // Generate Report Handlers
+  const handleGenerateTrainingNightReport = async () => {
+    setIsGeneratingTraining(true);
+    try {
+      const response = await api.post<TrainingNightReportData>(
+        '/reports/training-night-attendance',
+        getTrainingNightConfig()
+      );
+      setTrainingNightData(response.data);
+      toast.success('Report generated successfully');
+    } catch (error) {
+      toast.error('Failed to generate report');
+      throw error;
+    } finally {
+      setIsGeneratingTraining(false);
+    }
+  };
+
+  const handleGenerateBmqReport = async () => {
+    if (!bmqCourseId) {
+      toast.error('Please select a BMQ course');
+      return;
+    }
+
+    setIsGeneratingBmq(true);
+    try {
+      const config = {
+        courseId: bmqCourseId,
+        divisionId: bmqDivision ? bmqDivision : undefined,
+      };
+      const response = await api.post<BmqReportData>('/reports/bmq-attendance', config);
+      setBmqData(response.data);
+      toast.success('Report generated successfully');
+    } catch (error) {
+      toast.error('Failed to generate report');
+      throw error;
+    } finally {
+      setIsGeneratingBmq(false);
+    }
+  };
+
+  const handleGenerateRosterReport = async () => {
+    setIsGeneratingRoster(true);
+    try {
+      const config = {
+        divisionId: rosterDivision ? rosterDivision : undefined,
+        sortOrder: rosterSortOrder,
+      };
+      const response = await api.post<RosterReportData>('/reports/personnel-roster', config);
+      setRosterData(response.data);
+      toast.success('Report generated successfully');
+    } catch (error) {
+      toast.error('Failed to generate report');
+      throw error;
+    } finally {
+      setIsGeneratingRoster(false);
+    }
+  };
+
   const handleTrainingNightPdfDownload = async () => {
     setGeneratingPdf(true);
     try {
-      const config = {
-        periodStart: trainingPeriod === 'custom'
-          ? trainingDateRange.start.toDate(getLocalTimeZone()).toISOString()
-          : undefined,
-        periodEnd: trainingPeriod === 'custom'
-          ? trainingDateRange.end.toDate(getLocalTimeZone()).toISOString()
-          : undefined,
-        period: trainingPeriod,
-        organizationOption,
-        divisionId: trainingDivision ? trainingDivision : undefined,
-      };
-
-      const response = await api.post('/reports/training-night-attendance', config);
-      const data = response.data;
+      // Use already-fetched data if available, otherwise fetch fresh
+      let data = trainingNightData;
+      if (!data) {
+        const response = await api.post<TrainingNightReportData>(
+          '/reports/training-night-attendance',
+          getTrainingNightConfig()
+        );
+        data = response.data;
+        setTrainingNightData(data);
+      }
 
       // Build PDF from returned data
       const pdfDoc = (
@@ -320,12 +445,12 @@ export default function Reports() {
               { key: 'attendance', header: 'Attendance', width: '15%', align: 'center' },
               { key: 'trend', header: 'Trend', width: '15%', align: 'center' },
             ]}
-            data={data.records.map((record: { member: { serviceNumber: string; firstName: string; lastName: string; rank: string; division: { name: string } }; attendance: { percentage?: number; display?: string }; trend: { trend: string; delta?: number } }) => ({
+            data={data.records.map((record) => ({
               serviceNumber: record.member.serviceNumber,
               name: `${record.member.firstName} ${record.member.lastName}`,
               rank: record.member.rank,
               division: record.member.division.name,
-              attendance: record.attendance.percentage
+              attendance: record.attendance.percentage !== undefined
                 ? `${record.attendance.percentage.toFixed(1)}%`
                 : record.attendance.display ? record.attendance.display : '-',
               trend: record.trend.trend === 'up'
@@ -357,13 +482,17 @@ export default function Reports() {
 
     setGeneratingPdf(true);
     try {
-      const config = {
-        courseId: bmqCourseId,
-        divisionId: bmqDivision ? bmqDivision : undefined,
-      };
-
-      const response = await api.post('/reports/bmq-attendance', config);
-      const data = response.data;
+      // Use already-fetched data if available, otherwise fetch fresh
+      let data = bmqData;
+      if (!data) {
+        const config = {
+          courseId: bmqCourseId,
+          divisionId: bmqDivision ? bmqDivision : undefined,
+        };
+        const response = await api.post<BmqReportData>('/reports/bmq-attendance', config);
+        data = response.data;
+        setBmqData(data);
+      }
 
       const pdfDoc = (
         <Letterhead reportTitle="BMQ Attendance Report">
@@ -375,12 +504,12 @@ export default function Reports() {
               { key: 'division', header: 'Division', width: '20%', align: 'left' },
               { key: 'attendance', header: 'Attendance', width: '20%', align: 'center' },
             ]}
-            data={data.records.map((record: { member: { serviceNumber: string; firstName: string; lastName: string; rank: string; division: { name: string } }; attendance: { percentage?: number; display?: string } }) => ({
+            data={data.records.map((record) => ({
               serviceNumber: record.member.serviceNumber,
               name: `${record.member.firstName} ${record.member.lastName}`,
               rank: record.member.rank,
               division: record.member.division.name,
-              attendance: record.attendance.percentage
+              attendance: record.attendance.percentage !== undefined
                 ? `${record.attendance.percentage.toFixed(1)}%`
                 : record.attendance.display ? record.attendance.display : '-',
             }))}
@@ -402,13 +531,17 @@ export default function Reports() {
   const handlePersonnelRosterPdfDownload = async () => {
     setGeneratingPdf(true);
     try {
-      const config = {
-        divisionId: rosterDivision ? rosterDivision : undefined,
-        sortOrder: rosterSortOrder,
-      };
-
-      const response = await api.post('/reports/personnel-roster', config);
-      const data = response.data;
+      // Use already-fetched data if available, otherwise fetch fresh
+      let data = rosterData;
+      if (!data) {
+        const config = {
+          divisionId: rosterDivision ? rosterDivision : undefined,
+          sortOrder: rosterSortOrder,
+        };
+        const response = await api.post<RosterReportData>('/reports/personnel-roster', config);
+        data = response.data;
+        setRosterData(data);
+      }
 
       const pdfDoc = (
         <Letterhead reportTitle="Personnel Roster">
@@ -420,7 +553,7 @@ export default function Reports() {
               { key: 'division', header: 'Division', width: '20%', align: 'left' },
               { key: 'classification', header: 'Classification', width: '20%', align: 'left' },
             ]}
-            data={data.members.map((member: { serviceNumber: string; firstName: string; lastName: string; rank: string; division: { name: string }; classification: string }) => ({
+            data={data.members.map((member) => ({
               serviceNumber: member.serviceNumber,
               name: `${member.firstName} ${member.lastName}`,
               rank: member.rank,
@@ -613,7 +746,14 @@ export default function Reports() {
                 <Radio value="separated_by_division">Separated by Division</Radio>
               </RadioGroup>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="flat"
+                  onPress={handleGenerateTrainingNightReport}
+                  isLoading={isGeneratingTraining}
+                >
+                  Generate Report
+                </Button>
                 <Button
                   variant="solid"
                   color="primary"
@@ -625,11 +765,60 @@ export default function Reports() {
               </div>
             </div>
 
-            <Card>
-              <CardBody className="py-8 text-center text-default-500">
-                Configure filters above and click Download PDF to generate the report.
-              </CardBody>
-            </Card>
+            {isGeneratingTraining ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : trainingNightData ? (
+              <Table aria-label="Training night attendance report">
+                <TableHeader>
+                  <TableColumn>SERVICE #</TableColumn>
+                  <TableColumn>NAME</TableColumn>
+                  <TableColumn>RANK</TableColumn>
+                  <TableColumn>DIVISION</TableColumn>
+                  <TableColumn>ATTENDANCE</TableColumn>
+                  <TableColumn>TREND</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent="No records found">
+                  {trainingNightData.records.map((record, idx) => (
+                    <TableRow key={`${record.member.serviceNumber}-${idx}`}>
+                      <TableCell>{record.member.serviceNumber}</TableCell>
+                      <TableCell>{record.member.firstName} {record.member.lastName}</TableCell>
+                      <TableCell>{record.member.rank}</TableCell>
+                      <TableCell>{record.member.division.name}</TableCell>
+                      <TableCell>
+                        {record.attendance.percentage !== undefined
+                          ? `${record.attendance.percentage.toFixed(1)}%`
+                          : record.attendance.display ? record.attendance.display : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={
+                            record.trend.trend === 'up'
+                              ? 'text-success'
+                              : record.trend.trend === 'down'
+                              ? 'text-danger'
+                              : 'text-default-400'
+                          }
+                        >
+                          {record.trend.trend === 'up'
+                            ? '↑'
+                            : record.trend.trend === 'down'
+                            ? '↓'
+                            : '→'}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardBody className="py-8 text-center text-default-500">
+                  Configure filters above and click Generate Report to preview the data.
+                </CardBody>
+              </Card>
+            )}
           </>
         )}
 
@@ -665,7 +854,15 @@ export default function Reports() {
               </Select>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="flat"
+                onPress={handleGenerateBmqReport}
+                isLoading={isGeneratingBmq}
+                isDisabled={!bmqCourseId}
+              >
+                Generate Report
+              </Button>
               <Button
                 variant="solid"
                 color="primary"
@@ -677,11 +874,42 @@ export default function Reports() {
               </Button>
             </div>
 
-            <Card>
-              <CardBody className="py-8 text-center text-default-500">
-                Select a BMQ course and click Download PDF to generate the report.
-              </CardBody>
-            </Card>
+            {isGeneratingBmq ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : bmqData ? (
+              <Table aria-label="BMQ attendance report">
+                <TableHeader>
+                  <TableColumn>SERVICE #</TableColumn>
+                  <TableColumn>NAME</TableColumn>
+                  <TableColumn>RANK</TableColumn>
+                  <TableColumn>DIVISION</TableColumn>
+                  <TableColumn>ATTENDANCE</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent="No records found">
+                  {bmqData.records.map((record, idx) => (
+                    <TableRow key={`${record.member.serviceNumber}-${idx}`}>
+                      <TableCell>{record.member.serviceNumber}</TableCell>
+                      <TableCell>{record.member.firstName} {record.member.lastName}</TableCell>
+                      <TableCell>{record.member.rank}</TableCell>
+                      <TableCell>{record.member.division.name}</TableCell>
+                      <TableCell>
+                        {record.attendance.percentage !== undefined
+                          ? `${record.attendance.percentage.toFixed(1)}%`
+                          : record.attendance.display ? record.attendance.display : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardBody className="py-8 text-center text-default-500">
+                  Select a BMQ course and click Generate Report to preview the data.
+                </CardBody>
+              </Card>
+            )}
           </>
         )}
 
@@ -718,7 +946,14 @@ export default function Reports() {
               </Select>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="flat"
+                onPress={handleGenerateRosterReport}
+                isLoading={isGeneratingRoster}
+              >
+                Generate Report
+              </Button>
               <Button
                 variant="solid"
                 color="primary"
@@ -729,11 +964,38 @@ export default function Reports() {
               </Button>
             </div>
 
-            <Card>
-              <CardBody className="py-8 text-center text-default-500">
-                Configure filters above and click Download PDF to generate the roster.
-              </CardBody>
-            </Card>
+            {isGeneratingRoster ? (
+              <div className="flex justify-center py-12">
+                <Spinner size="lg" />
+              </div>
+            ) : rosterData ? (
+              <Table aria-label="Personnel roster">
+                <TableHeader>
+                  <TableColumn>SERVICE #</TableColumn>
+                  <TableColumn>NAME</TableColumn>
+                  <TableColumn>RANK</TableColumn>
+                  <TableColumn>DIVISION</TableColumn>
+                  <TableColumn>CLASSIFICATION</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent="No members found">
+                  {rosterData.members.map((member, idx) => (
+                    <TableRow key={`${member.serviceNumber}-${idx}`}>
+                      <TableCell>{member.serviceNumber}</TableCell>
+                      <TableCell>{member.firstName} {member.lastName}</TableCell>
+                      <TableCell>{member.rank}</TableCell>
+                      <TableCell>{member.division.name}</TableCell>
+                      <TableCell>{member.classification}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardBody className="py-8 text-center text-default-500">
+                  Configure filters above and click Generate Report to preview the roster.
+                </CardBody>
+              </Card>
+            )}
           </>
         )}
 

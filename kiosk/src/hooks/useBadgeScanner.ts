@@ -18,6 +18,7 @@ export function useBadgeScanner() {
   const { currentScreen, setScreen, setCheckinResult, setError } = useKioskStore();
   const bufferRef = useRef<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
   const config = getConfig();
 
   const clearBuffer = useCallback(() => {
@@ -42,6 +43,18 @@ export function useBadgeScanner() {
       return;
     }
 
+    // Frontend debounce - prevent scanning during cooldown period
+    const now = Date.now();
+    const timeSinceLastScan = now - lastScanTimeRef.current;
+    if (timeSinceLastScan < config.scanCooldownMs) {
+      const remainingMs = config.scanCooldownMs - timeSinceLastScan;
+      setError({
+        message: 'Please wait',
+        howToFix: `You can scan again in ${Math.ceil(remainingMs / 1000)} second${remainingMs > 1000 ? 's' : ''}.`,
+      });
+      return;
+    }
+
     setScreen('scanning');
 
     try {
@@ -58,6 +71,7 @@ export function useBadgeScanner() {
       }
 
       // Success - show check-in/out result
+      lastScanTimeRef.current = Date.now();
       setCheckinResult(result);
     } catch (error) {
       if (error instanceof Error) {

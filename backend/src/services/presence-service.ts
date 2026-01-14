@@ -38,7 +38,7 @@ interface MemberPresenceItem {
     moc?: string;
     memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force';
     classDetails?: string;
-    status: 'active' | 'inactive' | 'pending_review';
+    status: 'active' | 'inactive' | 'pending_review' | 'terminated';
     email?: string;
     homePhone?: string;
     mobilePhone?: string;

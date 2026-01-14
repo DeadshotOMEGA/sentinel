@@ -16,7 +16,7 @@ const router = Router();
 const createVisitorSchema = z.object({
   name: z.string().min(1).max(255),
   organization: z.string().min(1).max(255),
-  visitType: z.enum(['general', 'contractor', 'recruitment', 'course', 'event', 'official', 'other']),
+  visitType: z.enum(['contractor', 'recruitment', 'event', 'official', 'museum', 'other']),
   hostMemberId: z.string().uuid().optional(),
   eventId: z.string().uuid().optional(),
   purpose: z.string().optional(),
@@ -34,7 +34,7 @@ const updateVisitorSchema = z.object({
 const manualVisitorCheckinSchema = z.object({
   name: z.string().min(1).max(255),
   organization: z.string().min(1).max(255),
-  visitType: z.enum(['general', 'contractor', 'recruitment', 'course', 'event', 'official', 'other']),
+  visitType: z.enum(['contractor', 'recruitment', 'event', 'official', 'museum', 'other']),
   hostMemberId: z.string().uuid().optional(),
   eventId: z.string().uuid().optional(),
   purpose: z.string().optional(),

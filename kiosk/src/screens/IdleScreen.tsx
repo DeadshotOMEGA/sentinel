@@ -92,7 +92,7 @@ function Clock() {
   }, []);
 
   return (
-    <div className="text-gray-500">
+    <div className="text-gray-600">
       <p className="text-3xl font-mono">
         {time.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
       </p>

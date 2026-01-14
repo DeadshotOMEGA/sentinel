@@ -68,9 +68,16 @@ const timeUtils = {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   },
 
-  /** Create Date from date string and HH:MM time */
+  /** Create Date from date string and HH:MM time
+   * Important: We use 'Z' suffix to create UTC time that matches the input values.
+   * This is because the timestamp column stores without timezone, and queries
+   * use AT TIME ZONE 'America/Winnipeg' which expects the stored value to
+   * represent local Winnipeg time.
+   */
   createDateTime(dateStr: string, time: string): Date {
-    return new Date(`${dateStr}T${time}:00`);
+    // Create as UTC to preserve the exact time values in the database
+    // (the timestamp column stores without timezone, treating values as local time)
+    return new Date(`${dateStr}T${time}:00Z`);
   },
 
   /** Add random variance to time (in minutes) */
@@ -253,6 +260,33 @@ export class SimulationService {
   }
 
   /**
+   * Backdate member enrollment dates to before simulation period
+   * This ensures members aren't flagged as "new" during attendance calculation
+   */
+  async backdateMemberEnrollment(
+    simulationStartDate: string
+  ): Promise<{ count: number; date: string }> {
+    // Set enrollment date to 60 days before simulation start
+    const enrollmentDate = new Date(simulationStartDate);
+    enrollmentDate.setDate(enrollmentDate.getDate() - 60);
+    const enrollmentDateStr = enrollmentDate.toISOString().split('T')[0] as string;
+
+    // Update all members whose created_at is after the simulation start
+    const result = await prisma.member.updateMany({
+      where: {
+        createdAt: {
+          gt: new Date(simulationStartDate),
+        },
+      },
+      data: {
+        createdAt: enrollmentDate,
+      },
+    });
+
+    return { count: result.count, date: enrollmentDateStr };
+  }
+
+  /**
    * Pre-check simulation parameters
    */
   async precheck(request: SimulationRequest): Promise<SimulationPrecheck> {
@@ -353,6 +387,15 @@ export class SimulationService {
             `${precheck.existingVisitors} visitors, ${precheck.existingEvents} events`
         );
       }
+    }
+
+    // Backdate member created_at to before simulation period
+    // This ensures members aren't considered "new" during attendance calculation
+    const backdateResult = await this.backdateMemberEnrollment(startDate);
+    if (backdateResult.count > 0) {
+      warnings.push(
+        `Backdated ${backdateResult.count} members' enrollment date to ${backdateResult.date}`
+      );
     }
 
     // Generate check-ins for each day
@@ -804,12 +847,12 @@ export class SimulationService {
     const isLate = isEdgeCase && random.chance(40);
     const forgotCheckout = isEdgeCase && !isLate && random.chance(30);
 
-    // Check-in time
+    // Check-in time - use positive variance only to stay within official window
     let checkInTime = hours.start;
     if (isLate) {
       checkInTime = timeUtils.addVariance(checkInTime, 10, 45);
     } else {
-      checkInTime = timeUtils.addVariance(checkInTime, -15, 10);
+      checkInTime = timeUtils.addVariance(checkInTime, 0, 15);
     }
 
     // Check-out time

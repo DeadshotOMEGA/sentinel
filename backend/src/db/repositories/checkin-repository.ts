@@ -88,8 +88,11 @@ export class CheckinRepository {
     method?: string | null;
     createdByAdmin?: string | null;
   }): Checkin {
-    if (!prismaCheckin.memberId || !prismaCheckin.badgeId) {
-      throw new Error('Checkin missing required memberId or badgeId');
+    if (!prismaCheckin.memberId) {
+      throw new Error(`Checkin ${prismaCheckin.id} missing required memberId`);
+    }
+    if (!prismaCheckin.badgeId) {
+      throw new Error(`Checkin ${prismaCheckin.id} for member ${prismaCheckin.memberId} missing badgeId - member may need badge assignment`);
     }
 
     const method = prismaCheckin.method === 'admin_manual' ? 'admin_manual' : 'badge';
@@ -505,7 +508,7 @@ export class CheckinRepository {
         moc: row.moc ?? undefined,
         memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
         classDetails: row.class_details ?? undefined,
-        status: row.status as 'active' | 'inactive' | 'pending_review',
+        status: row.status as 'active' | 'inactive' | 'pending_review' | 'terminated',
         email: row.email ?? undefined,
         homePhone: row.home_phone ?? undefined,
         mobilePhone: row.mobile_phone ?? undefined,

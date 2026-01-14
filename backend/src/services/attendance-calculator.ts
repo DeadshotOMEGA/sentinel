@@ -54,8 +54,9 @@ export function getTrainingNights(
   const current = new Date(startDate);
 
   // Find first occurrence of training day
-  while (current.getDay() !== targetDay && current <= endDate) {
-    current.setDate(current.getDate() + 1);
+  // Use getUTCDay() to avoid timezone shifts when dates are parsed as UTC
+  while (current.getUTCDay() !== targetDay && current <= endDate) {
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   // Iterate through all training days in range
@@ -71,7 +72,7 @@ export function getTrainingNights(
       nights.push(new Date(current));
     }
 
-    current.setDate(current.getDate() + 7);
+    current.setUTCDate(current.getUTCDate() + 7);
   }
 
   return nights;
@@ -89,18 +90,20 @@ export async function getTrainingNightCheckins(
   if (trainingNights.length === 0) return [];
 
   // Build query to find check-ins on training nights within training hours
+  // Note: timestamp column stores local Winnipeg time directly (without timezone),
+  // so we don't need AT TIME ZONE conversion
   const dateConditions = trainingNights.map((night, i) => {
     const dateStr = night.toISOString().split('T')[0];
-    return `(DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') = $${i + 4}::date)`;
+    return `(DATE(c.timestamp) = $${i + 4}::date)`;
   }).join(' OR ');
 
   const query = `
-    SELECT DISTINCT DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') as checkin_date
+    SELECT DISTINCT DATE(c.timestamp) as checkin_date
     FROM checkins c
     WHERE c.member_id = $1
       AND c.direction = 'in'
-      AND (c.timestamp AT TIME ZONE 'America/Winnipeg')::time >= $2::time
-      AND (c.timestamp AT TIME ZONE 'America/Winnipeg')::time <= $3::time
+      AND c.timestamp::time >= $2::time
+      AND c.timestamp::time <= $3::time
       AND (${dateConditions})
     ORDER BY checkin_date
   `;

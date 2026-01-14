@@ -26,12 +26,11 @@ interface ManualVisitorCheckinModalProps {
 }
 
 const visitTypeOptions: { value: VisitType; label: string }[] = [
-  { value: 'general', label: 'General' },
   { value: 'contractor', label: 'Contractor' },
   { value: 'recruitment', label: 'Recruitment' },
-  { value: 'course', label: 'Course' },
   { value: 'event', label: 'Event' },
   { value: 'official', label: 'Official' },
+  { value: 'museum', label: 'Museum' },
   { value: 'other', label: 'Other' },
 ];
 

@@ -32,7 +32,7 @@ const router = Router();
 async function logReportGeneration(
   reportType: string,
   reportConfig: Record<string, unknown>,
-  generatedBy: string,
+  generatedBy: string | null,
   startTime: number
 ): Promise<void> {
   const generationTimeMs = Date.now() - startTime;
@@ -100,13 +100,15 @@ const dailyCheckinSchema = z.object({
 });
 
 const trainingNightReportSchema = z.object({
-  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
-  periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  // Accept either period preset OR explicit date range
+  period: z.enum(['current_year', 'last_quarter', 'last_month', 'custom']).optional(),
+  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').optional(),
+  periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').optional(),
   organizationOption: z.enum(['full_unit', 'grouped_by_division', 'separated_by_division', 'specific_division', 'specific_member']),
   divisionId: z.string().uuid().optional(),
   memberId: z.string().uuid().optional(),
-  includeFTStaff: z.boolean(),
-  showBMQBadge: z.boolean(),
+  includeFTStaff: z.boolean().default(false),
+  showBMQBadge: z.boolean().default(true),
 });
 
 const bmqReportSchema = z.object({
@@ -163,7 +165,7 @@ router.post('/daily-checkin', requireAuth, async (req: Request, res: Response, n
           SELECT 1 FROM checkins c
           WHERE c.member_id = m.id
             AND c.direction = 'in'
-            AND DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') = CURRENT_DATE
+            AND DATE(c.timestamp) = CURRENT_DATE
         )
     `;
 
@@ -187,7 +189,7 @@ router.post('/daily-checkin', requireAuth, async (req: Request, res: Response, n
           SELECT 1 FROM checkins c
           WHERE c.member_id = m.id
             AND c.direction = 'in'
-            AND DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') = CURRENT_DATE
+            AND DATE(c.timestamp) = CURRENT_DATE
         )
     `;
 
@@ -212,7 +214,7 @@ router.post('/daily-checkin', requireAuth, async (req: Request, res: Response, n
           SELECT 1 FROM checkins c
           WHERE c.member_id = m.id
             AND c.direction = 'in'
-            AND DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') = CURRENT_DATE
+            AND DATE(c.timestamp) = CURRENT_DATE
         )
     `;
 
@@ -337,9 +339,7 @@ router.post('/daily-checkin', requireAuth, async (req: Request, res: Response, n
     };
 
     // Log report generation
-    if (req.user?.id) {
-      await logReportGeneration('daily_checkin', config, req.user.id, startTime);
-    }
+    await logReportGeneration('daily_checkin', config, req.isDevAuth ? null : req.user?.id ?? null, startTime);
 
     res.json(reportData);
   } catch (err) {
@@ -365,6 +365,45 @@ router.post('/training-night-attendance', requireAuth, async (req: Request, res:
     }
 
     const config = validation.data;
+
+    // Resolve period to actual dates if not explicitly provided
+    let periodStart: string;
+    let periodEnd: string;
+    const today = new Date();
+
+    if (config.periodStart && config.periodEnd) {
+      // Explicit dates provided
+      periodStart = config.periodStart;
+      periodEnd = config.periodEnd;
+    } else {
+      // Calculate from period preset
+      const period = config.period || 'current_year';
+      switch (period) {
+        case 'last_month': {
+          const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+          periodStart = lastMonth.toISOString().split('T')[0];
+          periodEnd = lastDayOfLastMonth.toISOString().split('T')[0];
+          break;
+        }
+        case 'last_quarter': {
+          const currentQuarter = Math.floor(today.getMonth() / 3);
+          const lastQuarterStart = new Date(today.getFullYear(), (currentQuarter - 1) * 3, 1);
+          const lastQuarterEnd = new Date(today.getFullYear(), currentQuarter * 3, 0);
+          periodStart = lastQuarterStart.toISOString().split('T')[0];
+          periodEnd = lastQuarterEnd.toISOString().split('T')[0];
+          break;
+        }
+        case 'current_year':
+        default: {
+          // Training year runs Sep 1 - Aug 31
+          const year = today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+          periodStart = `${year}-09-01`;
+          periodEnd = `${year + 1}-08-31`;
+          break;
+        }
+      }
+    }
 
     // Get settings
     const settings = await getReportSettings();
@@ -442,8 +481,8 @@ router.post('/training-night-attendance', requireAuth, async (req: Request, res:
 
       const attendance = await calculateTrainingNightAttendance({
         memberId: row.id,
-        periodStart: new Date(config.periodStart),
-        periodEnd: new Date(config.periodEnd),
+        periodStart: new Date(periodStart),
+        periodEnd: new Date(periodEnd),
         trainingDay: scheduleSettings.trainingNightDay,
         trainingStartTime: scheduleSettings.trainingNightStart,
         trainingEndTime: scheduleSettings.trainingNightEnd,
@@ -454,8 +493,8 @@ router.post('/training-night-attendance', requireAuth, async (req: Request, res:
 
       const trend = await calculateTrend(
         row.id,
-        new Date(config.periodStart),
-        new Date(config.periodEnd),
+        new Date(periodStart),
+        new Date(periodEnd),
         {
           trainingDay: scheduleSettings.trainingNightDay,
           trainingStartTime: scheduleSettings.trainingNightStart,
@@ -488,15 +527,13 @@ router.post('/training-night-attendance', requireAuth, async (req: Request, res:
     const reportData = {
       generatedAt: new Date().toISOString(),
       config,
-      periodStart: config.periodStart,
-      periodEnd: config.periodEnd,
-      data: attendanceData,
+      periodStart,
+      periodEnd,
+      records: attendanceData,
     };
 
     // Log report generation
-    if (req.user?.id) {
-      await logReportGeneration('training_night_attendance', config, req.user.id, startTime);
-    }
+    await logReportGeneration('training_night_attendance', config, req.isDevAuth ? null : req.user?.id ?? null, startTime);
 
     res.json(reportData);
   } catch (err) {
@@ -631,9 +668,7 @@ router.post('/bmq-attendance', requireAuth, async (req: Request, res: Response, 
     };
 
     // Log report generation
-    if (req.user?.id) {
-      await logReportGeneration('bmq_attendance', config, req.user.id, startTime);
-    }
+    await logReportGeneration('bmq_attendance', config, req.isDevAuth ? null : req.user?.id ?? null, startTime);
 
     res.json(reportData);
   } catch (err) {
@@ -716,9 +751,7 @@ router.post('/personnel-roster', requireAuth, async (req: Request, res: Response
     };
 
     // Log report generation
-    if (req.user?.id) {
-      await logReportGeneration('personnel_roster', config, req.user.id, startTime);
-    }
+    await logReportGeneration('personnel_roster', config, req.isDevAuth ? null : req.user?.id ?? null, startTime);
 
     res.json(reportData);
   } catch (err) {
@@ -831,9 +864,7 @@ router.post('/visitor-summary', requireAuth, async (req: Request, res: Response,
     };
 
     // Log report generation
-    if (req.user?.id) {
-      await logReportGeneration('visitor_summary', config, req.user.id, startTime);
-    }
+    await logReportGeneration('visitor_summary', config, req.isDevAuth ? null : req.user?.id ?? null, startTime);
 
     res.json(reportData);
   } catch (err) {

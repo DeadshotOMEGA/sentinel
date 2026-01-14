@@ -25,31 +25,58 @@ export default function SuccessScreen() {
 
   const isCheckingIn = checkinResult.direction === 'in';
 
+  // Distinct visual styling for check-in vs check-out
+  // Green (#91e5b5 -> #68dc9a) for check-in, amber (#fde68a -> #fcd34d) for check-out
+  const bgStyle = isCheckingIn
+    ? { background: 'linear-gradient(to bottom, #91e5b5, #68dc9a)' }
+    : { background: 'linear-gradient(to bottom, #fde68a, #fcd34d)' };
+  const iconBgColor = isCheckingIn ? '#17c964' : '#f59e0b';
+  const headingColor = isCheckingIn ? '#0f8341' : '#b45309';
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-b from-success-50 to-success-100 p-6 overflow-hidden" role="main" aria-live="polite">
-      {/* Success Icon - Reduced size */}
+    <div className="flex flex-col items-center justify-center h-screen p-6 overflow-hidden" style={bgStyle} role="main" aria-live="polite">
+      {/* Direction Icon */}
       <div className="mb-6">
-        <div className="w-28 h-28 bg-success rounded-full flex items-center justify-center" aria-hidden="true">
-          <svg
-            className="w-18 h-18 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+        <div className="w-28 h-28 rounded-full flex items-center justify-center" style={{ backgroundColor: iconBgColor }} aria-hidden="true">
+          {isCheckingIn ? (
+            // Arrow pointing right/in (login icon)
+            <svg
+              className="w-16 h-16 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+              />
+            </svg>
+          ) : (
+            // Arrow pointing left/out (logout icon)
+            <svg
+              className="w-16 h-16 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+          )}
         </div>
       </div>
 
       {/* Success Message */}
       <div className="text-center mb-8">
-        <h2 className="text-5xl font-bold text-success-700 mb-4">
+        <h2 className="text-5xl font-bold mb-4" style={{ color: headingColor }}>
           {isCheckingIn ? 'Signed In' : 'Signed Out'}
         </h2>
 

@@ -110,12 +110,12 @@ export class CheckinService {
 
     const direction: CheckinDirection = lastDirection === 'in' ? 'out' : 'in';
 
-    // Check for duplicate scans within 5 seconds (DB safety net)
+    // Check for duplicate scans within 2 seconds (DB safety net)
     if (await this.isDuplicateScan(memberId, scanTimestamp)) {
       throw new ConflictError(
         'DUPLICATE_SCAN',
-        'Duplicate scan within 5 seconds',
-        'Please wait a few seconds before scanning again.'
+        'Duplicate scan within 2 seconds',
+        'Please wait a moment before scanning again.'
       );
     }
 
@@ -164,7 +164,8 @@ export class CheckinService {
   }
 
   /**
-   * Check if a scan is a duplicate (within 5 seconds of last checkin)
+   * Check if a scan is a duplicate (within 2 seconds of last checkin)
+   * Must match kiosk successDisplayMs to prevent "ready but rejected" state
    */
   async isDuplicateScan(memberId: string, timestamp: Date): Promise<boolean> {
     const lastCheckin = await checkinRepository.findLatestByMember(memberId);
@@ -174,7 +175,7 @@ export class CheckinService {
     }
 
     const timeDiff = timestamp.getTime() - lastCheckin.timestamp.getTime();
-    return Math.abs(timeDiff) < 5000;
+    return Math.abs(timeDiff) < 2000;
   }
 
   /**
@@ -230,6 +231,18 @@ export class CheckinService {
 
     // Update member direction cache
     await presenceService.setMemberDirection(memberId, 'out');
+
+    // Broadcast checkin event to activity feed
+    broadcastCheckin({
+      memberId: member.id,
+      memberName: `${member.firstName} ${member.lastName}`,
+      rank: member.rank,
+      division: member.division?.name ?? '',
+      direction: 'out',
+      timestamp: checkoutTimestamp.toISOString(),
+      kioskId: 'admin-forced-checkout',
+      kioskName: 'Admin Dashboard',
+    });
 
     // Broadcast presence stats update
     const stats = await checkinRepository.getPresenceStats();

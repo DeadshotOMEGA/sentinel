@@ -12,7 +12,7 @@ export function audit(action: AuditAction, entityType: string) {
           }
 
           await auditRepository.log({
-            adminUserId: req.user?.id || null,
+            adminUserId: req.isDevAuth ? null : (req.user?.id || null),
             action,
             entityType,
             entityId: req.params.id || null,

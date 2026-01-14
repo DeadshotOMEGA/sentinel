@@ -55,11 +55,12 @@ export async function getBMQSessions(courseId: string): Promise<Date[]> {
   const endDate = new Date(end_date);
 
   // Iterate through all dates in range and collect matching training days
+  // Use getUTCDay()/setUTCDate() to avoid timezone shifts when dates are parsed as UTC
   while (current <= endDate) {
-    if (targetDays.includes(current.getDay())) {
+    if (targetDays.includes(current.getUTCDay())) {
       sessions.push(new Date(current));
     }
-    current.setDate(current.getDate() + 1);
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return sessions;
@@ -85,18 +86,19 @@ export async function getBMQCheckins(
 
   const { training_start_time, training_end_time } = courseResult.rows[0];
 
+  // Note: timestamp column stores local Winnipeg time directly (without timezone)
   const dateConditions = sessionDates.map((date, i) => {
     const dateStr = date.toISOString().split('T')[0];
-    return `(DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') = $${i + 4}::date)`;
+    return `(DATE(c.timestamp) = $${i + 4}::date)`;
   }).join(' OR ');
 
   const query = `
-    SELECT DISTINCT DATE(c.timestamp AT TIME ZONE 'America/Winnipeg') as checkin_date
+    SELECT DISTINCT DATE(c.timestamp) as checkin_date
     FROM checkins c
     WHERE c.member_id = $1
       AND c.direction = 'in'
-      AND (c.timestamp AT TIME ZONE 'America/Winnipeg')::time >= $2::time
-      AND (c.timestamp AT TIME ZONE 'America/Winnipeg')::time <= $3::time
+      AND c.timestamp::time >= $2::time
+      AND c.timestamp::time <= $3::time
       AND (${dateConditions})
     ORDER BY checkin_date
   `;

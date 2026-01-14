@@ -5,7 +5,7 @@ export class NfcReader {
   private callback: CardCallback | null = null;
   private lastCardUid: string | null = null;
   private lastCardTime = 0;
-  private debounceTime = 5000; // 5 seconds
+  private debounceTime = 2000; // 2 seconds - reduced for faster throughput with large groups
   private pollInterval = 100; // 100ms
   private pollTimer: ReturnType<typeof setInterval> | null = null;
 
