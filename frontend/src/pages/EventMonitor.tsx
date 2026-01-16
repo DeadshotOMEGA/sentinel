@@ -13,7 +13,7 @@ import {
   Button,
 } from '@heroui/react';
 import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import { api } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
 import type { Event, EventAttendee } from '@shared/types';
@@ -192,13 +192,13 @@ export default function EventMonitor() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <StatCard label="Present" value={stats.present} color="text-success" />
           <StatCard label="Away" value={stats.away} color="text-warning" />
           <StatCard label="Pending" value={stats.pending} color="text-gray-600" />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <h3 className="text-lg font-semibold">Live Activity</h3>

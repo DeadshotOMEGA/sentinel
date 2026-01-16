@@ -22,9 +22,9 @@ import {
   SelectItem,
 } from '@heroui/react';
 import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import { api } from '../lib/api';
-import { getVisitTypeChipVariant } from '../lib/chipVariants';
+import { getVisitTypeChipVariant } from '@sentinel/ui';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
 
 const visitTypes: { key: VisitType; label: string }[] = [

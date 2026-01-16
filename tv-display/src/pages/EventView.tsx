@@ -1,10 +1,8 @@
 import { useEventPresenceData } from '../hooks/useEventPresenceData';
 import { EventPresenceCards } from '../components/EventPresenceCards';
-import { Clock } from '../components/Clock';
 import { ActivityFeed } from '../components/ActivityFeed';
-import { ConnectionStatus } from '../components/ConnectionStatus';
 import type { TVConfig } from '../lib/config';
-import { Logo } from '@shared/ui';
+import { Logo, Clock, ConnectionStatus } from '@shared/ui';
 
 interface EventViewProps {
   config: TVConfig;

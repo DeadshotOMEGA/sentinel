@@ -27,28 +27,37 @@ import {
   Link,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { TruncatedText } from '../components/tooltips';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
-import type { Division, Badge, BadgeWithDetails, BadgeStatus, CreateDivisionInput } from '@shared/types';
+import type { Badge, BadgeWithDetails, BadgeStatus } from '@shared/types';
+import ListsSettings from '../components/settings/ListsSettings';
 import TrainingYearSettings from '../components/settings/TrainingYearSettings';
 import WorkingHoursSettings from '../components/settings/WorkingHoursSettings';
 import ReportSettingsForm from '../components/settings/ReportSettingsForm';
 import BMQCoursesSettings from '../components/settings/BMQCoursesSettings';
-import EventRolesSettings from '../components/settings/EventRolesSettings';
+import TagsSettings from '../components/settings/TagsSettings';
+import SecuritySettings from '../components/settings/SecuritySettings';
 import DevToolsSection from '../components/settings/DevToolsSection';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Settings() {
-  const [tab, setTab] = useState('divisions');
+  const [tab, setTab] = useState('lists');
+  const { user } = useAuth();
+  const userRole = user?.role;
 
   return (
     <PageWrapper title="Settings">
       <div className="-mx-1 -mt-1 min-h-0 flex-1 overflow-auto px-1 pt-1 pb-6">
         <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(k as string)}>
-          <Tab key="divisions" title={
-            <Tooltip content="Manage unit divisions and departments">
-              <span>Divisions</span>
+          <Tab key="lists" title={
+            <Tooltip content="Manage reference lists and lookup values">
+              <span>
+                <span className="flex items-center gap-2">
+                  <Icon icon="solar:list-bold" width={18} />
+                  Lists
+                </span>
+              </span>
             </Tooltip>
           } />
           <Tab key="badges" title={
@@ -76,200 +85,35 @@ export default function Settings() {
               <span>BMQ Courses</span>
             </Tooltip>
           } />
-          <Tab key="event-roles" title={
-            <Tooltip content="Manage default roles for event attendees">
-              <span>Event Roles</span>
-            </Tooltip>
-          } />
-          <Tab key="dev-tools" title={
-            <Tooltip content="Developer tools and database utilities">
-              <span>Dev Tools</span>
-            </Tooltip>
-          } />
+          {(userRole === 'admin' || userRole === 'developer') && (
+            <Tab key="security" title={
+              <Tooltip content="Manage user accounts and view audit logs">
+                <span>Security</span>
+              </Tooltip>
+            } />
+          )}
+          {userRole === 'developer' && (
+            <Tab key="dev-tools" title={
+              <Tooltip content="Developer tools and database utilities">
+                <span>Dev Tools</span>
+              </Tooltip>
+            } />
+          )}
         </Tabs>
 
         <div className="mt-6">
-          {tab === 'divisions' && <DivisionsSettings />}
+          {tab === 'lists' && <ListsSettings />}
           {tab === 'badges' && <BadgesSettings />}
           {tab === 'training-year' && <TrainingYearSettings />}
           {tab === 'working-hours' && <WorkingHoursSettings />}
           {tab === 'report-settings' && <ReportSettingsForm />}
           {tab === 'bmq-courses' && <BMQCoursesSettings />}
-          {tab === 'event-roles' && <EventRolesSettings />}
+          {tab === 'tags' && <TagsSettings />}
+          {tab === 'security' && <SecuritySettings />}
           {tab === 'dev-tools' && <DevToolsSection />}
         </div>
       </div>
     </PageWrapper>
-  );
-}
-
-function DivisionsSettings() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editDivision, setEditDivision] = useState<Division | null>(null);
-  const queryClient = useQueryClient();
-
-  const { data: divisionsData, isLoading } = useQuery({
-    queryKey: ['divisions'],
-    queryFn: async () => {
-      const response = await api.get<{ divisions: Division[] }>('/divisions');
-      return response.data;
-    },
-  });
-  const divisions = divisionsData?.divisions;
-
-  const handleAdd = () => {
-    setEditDivision(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (division: Division) => {
-    setEditDivision(division);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = () => {
-    queryClient.invalidateQueries({ queryKey: ['divisions'] });
-    setIsModalOpen(false);
-    setEditDivision(null);
-  };
-
-  if (isLoading) {
-    return <div className="flex justify-center py-12"><Spinner size="lg" /></div>;
-  }
-
-  return (
-    <>
-      <div className="mb-4 flex justify-end">
-        <Tooltip content="Create a new division for organizing members">
-          <Button color="primary" onPress={handleAdd} startContent={<Icon icon="solar:add-circle-linear" width={18} />}>
-            Add Division
-          </Button>
-        </Tooltip>
-      </div>
-
-      <Table aria-label="Divisions">
-        <TableHeader>
-          <TableColumn>CODE</TableColumn>
-          <TableColumn>NAME</TableColumn>
-          <TableColumn>DESCRIPTION</TableColumn>
-          <TableColumn>ACTIONS</TableColumn>
-        </TableHeader>
-        <TableBody emptyContent="No divisions">
-          {(divisions ? divisions : []).map((division) => (
-            <TableRow key={division.id}>
-              <TableCell>
-                <Tooltip content="Division code used in reports">
-                  <Chip size="sm">{division.code}</Chip>
-                </Tooltip>
-              </TableCell>
-              <TableCell>{division.name}</TableCell>
-              <TableCell>
-                {division.description ? (
-                  <TruncatedText content={division.description} className="truncate max-w-xs" />
-                ) : (
-                  <span className="text-default-400">-</span>
-                )}
-              </TableCell>
-              <TableCell>
-                <Tooltip content="Edit division details">
-                  <Button size="sm" variant="light" onPress={() => handleEdit(division)}>
-                    Edit
-                  </Button>
-                </Tooltip>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <DivisionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        division={editDivision}
-      />
-    </>
-  );
-}
-
-function DivisionModal({
-  isOpen,
-  onClose,
-  onSave,
-  division,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: () => void;
-  division: Division | null;
-}) {
-  const [formData, setFormData] = useState<Partial<CreateDivisionInput>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (division) {
-      setFormData({ name: division.name, code: division.code, description: division.description });
-    } else {
-      setFormData({});
-    }
-  }, [division]);
-
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      if (division) {
-        await api.put(`/divisions/${division.id}`, formData);
-      } else {
-        await api.post('/divisions', formData);
-      }
-      onSave();
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: { message?: string } } } };
-      const message = error.response?.data?.error?.message;
-      if (!message) {
-        throw new Error('Failed to save division - no error message received');
-      }
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent>
-        <ModalHeader>{division ? 'Edit Division' : 'Add Division'}</ModalHeader>
-        <ModalBody>
-          {error && <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger">{error}</div>}
-          <div className="space-y-4">
-            <Input
-              label="Code"
-              value={formData.code ? formData.code : ''}
-              onValueChange={(v) => setFormData({ ...formData, code: v })}
-              isRequired
-              maxLength={20}
-            />
-            <Input
-              label="Name"
-              value={formData.name ? formData.name : ''}
-              onValueChange={(v) => setFormData({ ...formData, name: v })}
-              isRequired
-            />
-            <Input
-              label="Description"
-              value={formData.description ? formData.description : ''}
-              onValueChange={(v) => setFormData({ ...formData, description: v })}
-            />
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="light" onPress={onClose}>Cancel</Button>
-          <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>Save</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
   );
 }
 
@@ -307,8 +151,11 @@ function BadgesSettings() {
       setIsAddModalOpen(false);
       setSerialNumber('');
     },
-    onError: (err: { response?: { data?: { error?: { message?: string } } } }) => {
-      const message = err.response?.data?.error?.message || 'Failed to add badge';
+    onError: (err: { response?: { data?: { error?: string | { message?: string } } } }) => {
+      const errorData = err.response?.data?.error;
+      const message = typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || 'Failed to add badge';
       toast.error(message);
     },
   });
@@ -323,8 +170,11 @@ function BadgesSettings() {
       setIsDeleteModalOpen(false);
       setBadgeToDelete(null);
     },
-    onError: (err: { response?: { data?: { error?: { message?: string } } } }) => {
-      const message = err.response?.data?.error?.message || 'Failed to delete badge';
+    onError: (err: { response?: { data?: { error?: string | { message?: string } } } }) => {
+      const errorData = err.response?.data?.error;
+      const message = typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || 'Failed to delete badge';
       toast.error(message);
     },
   });
@@ -336,14 +186,17 @@ function BadgesSettings() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['badges'] });
-      if (variables.status === 'lost') {
-        toast.success('Badge marked as lost and unassigned');
+      if (variables.status === 'returned') {
+        toast.success('Badge marked as returned and unassigned');
       } else {
         toast.success('Badge status updated');
       }
     },
-    onError: (err: { response?: { data?: { error?: { message?: string } } } }) => {
-      const message = err.response?.data?.error?.message || 'Failed to update status';
+    onError: (err: { response?: { data?: { error?: string | { message?: string } } } }) => {
+      const errorData = err.response?.data?.error;
+      const message = typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || 'Failed to update status';
       toast.error(message);
     },
   });
@@ -421,7 +274,7 @@ function BadgesSettings() {
     <>
       {/* Stats Cards */}
       <div className="mb-6 flex items-center justify-between">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 flex-1 mr-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 flex-1 mr-4">
           <Tooltip content="Total number of RFID badges in the system">
             <Card>
               <CardBody className="text-center">

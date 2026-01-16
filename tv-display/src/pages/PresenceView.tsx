@@ -1,22 +1,41 @@
 import { usePresenceData } from '../hooks/usePresenceData';
+import { useSecurityAlerts } from '../hooks/useSecurityAlerts';
 import { AdaptivePresenceView } from '../components/AdaptivePresenceView';
 import { ActivityFeed } from '../components/ActivityFeed';
-import { ConnectionStatus } from '../components/ConnectionStatus';
 import type { TVConfig } from '../lib/config';
-import { Logo } from '@shared/ui';
+import { Logo, ConnectionStatus } from '@shared/ui';
 
 interface PresenceViewProps {
   config: TVConfig;
 }
 
+/**
+ * Returns the appropriate border classes based on alert severity
+ */
+function getAlertBorderClass(severity: 'critical' | 'warning' | null): string {
+  if (!severity) return '';
+
+  switch (severity) {
+    case 'critical':
+      return 'border-[10px] border-red-600 animate-pulse-border-red';
+    case 'warning':
+      return 'border-[10px] border-amber-500 animate-pulse-border-yellow';
+    default:
+      return '';
+  }
+}
+
 export function PresenceView({ config }: PresenceViewProps) {
   const { data, isConnected } = usePresenceData({ config });
+  const { highestSeverity } = useSecurityAlerts({ config });
+
+  const alertBorderClass = getAlertBorderClass(highestSeverity);
 
   const connectionStatus = isConnected ? 'bg-emerald-500' : 'bg-red-500';
   const connectionText = isConnected ? 'Connected' : 'Disconnected';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 tv-mode">
+    <div className={`min-h-screen bg-gradient-to-br from-white to-gray-50 tv-mode ${alertBorderClass}`}>
       <div className="flex h-screen">
         {/* Main content - adaptive width based on activity feed */}
         <div className="flex-1 p-4 overflow-y-auto" role="main" aria-label="Presence display">

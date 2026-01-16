@@ -17,7 +17,7 @@ import {
   CardBody,
 } from '@heroui/react';
 import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import EventModal from '../components/EventModal';
 import { api } from '../lib/api';
 import type { Event, EventStatus } from '@shared/types';

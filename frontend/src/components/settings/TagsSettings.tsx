@@ -21,10 +21,9 @@ import {
   Alert,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { TruncatedText } from '../tooltips';
 import { api } from '../../lib/api';
 import { toast } from '../../lib/toast';
-import { getTagChipVariant } from '../../lib/chipVariants';
+import { getTagChipVariant, TruncatedText } from '@sentinel/ui';
 import type { Tag, CreateTagInput, UpdateTagInput } from '@shared/types';
 
 interface TagsResponse {

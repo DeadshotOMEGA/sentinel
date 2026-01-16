@@ -20,7 +20,7 @@ import {
   Checkbox,
 } from '@heroui/react';
 import { format } from 'date-fns';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import AddAttendeeModal from '../components/AddAttendeeModal';
 import AddMemberAsAttendeeModal from '../components/AddMemberAsAttendeeModal';
 import BadgeAssignmentModal from '../components/BadgeAssignmentModal';

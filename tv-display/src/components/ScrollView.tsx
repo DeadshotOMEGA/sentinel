@@ -1,40 +1,11 @@
 import { useMemo, useEffect, useState } from 'react';
+import { sortMembersByMess } from '@sentinel/ui';
 import type { PresentMember, ActiveVisitor } from '../hooks/usePresenceData';
 
 interface ScrollViewProps {
   present: number;
   presentMembers: PresentMember[];
   activeVisitors: ActiveVisitor[];
-}
-
-const MESS_PRIORITY: Record<string, number> = {
-  'Wardroom': 1,
-  'C&POs': 2,
-  'Junior Ranks': 3,
-};
-
-function getMessPriority(mess: string | null): number {
-  if (!mess) return 99;
-  return MESS_PRIORITY[mess] ?? 50;
-}
-
-function sortMembers(members: PresentMember[]): PresentMember[] {
-  return [...members].sort((a, b) => {
-    const aIsCommand = a.division === 'Command' ? 0 : 1;
-    const bIsCommand = b.division === 'Command' ? 0 : 1;
-    if (aIsCommand !== bIsCommand) return aIsCommand - bIsCommand;
-
-    const messDiff = getMessPriority(a.mess) - getMessPriority(b.mess);
-    if (messDiff !== 0) return messDiff;
-
-    const divisionDiff = a.division.localeCompare(b.division);
-    if (divisionDiff !== 0) return divisionDiff;
-
-    const lastNameDiff = a.lastName.localeCompare(b.lastName);
-    if (lastNameDiff !== 0) return lastNameDiff;
-
-    return a.firstName.localeCompare(b.firstName);
-  });
 }
 
 /**
@@ -51,7 +22,7 @@ export function ScrollView({
 }: ScrollViewProps) {
   const [isPaused, setIsPaused] = useState(false);
 
-  const sortedMembers = useMemo(() => sortMembers(presentMembers), [presentMembers]);
+  const sortedMembers = useMemo(() => sortMembersByMess(presentMembers), [presentMembers]);
 
   // Calculate scroll duration based on total count (more people = faster)
   // Base: 40s for 80 people, scales linearly

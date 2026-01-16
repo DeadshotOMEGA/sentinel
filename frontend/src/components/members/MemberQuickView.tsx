@@ -18,7 +18,6 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import MemberModal from '../MemberModal';
-import TagChip from './TagChip';
 import { api } from '../../lib/api';
 import { toast } from '../../lib/toast';
 import {
@@ -27,7 +26,8 @@ import {
   getDivisionChipVariant,
   getMessChipVariant,
   getMocChipVariant,
-} from '../../lib/chipVariants';
+  TagChip,
+} from '@sentinel/ui';
 import type { MemberWithDivision, Division, Tag, MemberStatus } from '@shared/types';
 
 interface MemberQuickViewProps {

@@ -19,10 +19,9 @@ import {
   Tooltip,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { TruncatedText } from '../tooltips';
 import { api } from '../../lib/api';
 import { toast } from '../../lib/toast';
-import { getDivisionChipVariant } from '../../lib/chipVariants';
+import { getDivisionChipVariant, TruncatedText } from '@sentinel/ui';
 import type { Division, CreateDivisionInput } from '@shared/types';
 
 export default function DivisionsSettings() {

@@ -27,7 +27,7 @@ import type { RangeValue } from '@heroui/react';
 import { format } from 'date-fns';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import { api } from '../lib/api';
 import type { MemberWithDivision, Division, VisitType } from '@shared/types';
 import { Letterhead } from '../components/reports/pdf/Letterhead';
@@ -589,7 +589,7 @@ export default function Reports() {
         {tab === 'presence' && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
               <Card>
                 <CardBody className="text-center">
                   <p className="text-3xl font-bold text-success">{presentCount}</p>

@@ -17,18 +17,16 @@ import {
 } from '@heroui/react';
 import { SearchIcon } from '@heroui/shared-icons';
 import { Icon } from '@iconify/react';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper, TagChip, BadgeChip } from '@sentinel/ui';
 import MemberModal from '../components/MemberModal';
 import ImportModal from '../components/ImportModal';
 import MemberDetail from './MemberDetail';
 import MembersFilterPopover from '../components/members/MembersFilterPopover';
-import TagChip from '../components/members/TagChip';
-import BadgeChip from '../components/members/BadgeChip';
 import BulkEditModal from '../components/members/BulkEditModal';
 import MemberQuickView from '../components/members/MemberQuickView';
 import { useMemberFilters } from '../hooks/useMemberFilters';
 import { api } from '../lib/api';
-import { getMemberStatusChipVariant } from '../lib/chipVariants';
+import { getMemberStatusChipVariant } from '@sentinel/ui';
 import type { MemberWithDivision, Division, Tag } from '@shared/types';
 
 type ColumnKey =

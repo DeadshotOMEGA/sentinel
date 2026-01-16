@@ -34,11 +34,18 @@ import {
   Pagination,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper } from '@sentinel/ui';
 import MemberModal from '../components/MemberModal';
 import MemberBadgeAssignmentModal from '../components/MemberBadgeAssignmentModal';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
+import {
+  getMemberStatusChipVariant,
+  getMemberTypeChipVariant,
+  getDivisionChipVariant,
+  getMessChipVariant,
+  getMocChipVariant,
+} from '@sentinel/ui';
 import type {
   MemberWithDivision,
   BMQEnrollmentWithCourse,
@@ -484,7 +491,7 @@ function MemberDetailPage() {
                       {member.moc && (
                         <div>
                           <p className="text-sm text-default-500">MOC</p>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant={getMocChipVariant().variant} radius={getMocChipVariant().radius}>
                             {member.moc}
                           </Chip>
                         </div>
@@ -493,7 +500,8 @@ function MemberDetailPage() {
                         <p className="text-sm text-default-500">Member Type</p>
                         <Chip
                           size="sm"
-                          variant="flat"
+                          variant={getMemberTypeChipVariant().variant}
+                          radius={getMemberTypeChipVariant().radius}
                           color={getMemberTypeColor(member.memberType)}
                         >
                           {getMemberTypeLabel(member.memberType)}
@@ -502,7 +510,7 @@ function MemberDetailPage() {
                       {member.mess && (
                         <div>
                           <p className="text-sm text-default-500">Mess</p>
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant={getMessChipVariant().variant} radius={getMessChipVariant().radius}>
                             {member.mess}
                           </Chip>
                         </div>
@@ -810,7 +818,7 @@ function MemberDetailPage() {
             <CardBody className="space-y-4">
               {/* Status Chip */}
               <div className="flex justify-center">
-                <Chip color={getMemberStatusColor(member.status)} variant="flat">
+                <Chip color={getMemberStatusColor(member.status)} variant={getMemberStatusChipVariant()}>
                   {member.status === 'active'
                     ? 'Active'
                     : member.status === 'inactive'
@@ -833,7 +841,7 @@ function MemberDetailPage() {
 
               {/* Division */}
               <div className="flex justify-center">
-                <Chip variant="flat">{member.division.name}</Chip>
+                <Chip variant={getDivisionChipVariant().variant} radius={getDivisionChipVariant().radius}>{member.division.name}</Chip>
               </div>
 
               {/* Contact Info */}

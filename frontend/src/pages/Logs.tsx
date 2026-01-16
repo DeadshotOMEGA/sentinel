@@ -6,9 +6,8 @@ import {
   Card,
   CardBody,
 } from '@heroui/react';
-import PageWrapper from '../components/PageWrapper';
+import { PageWrapper, LogViewer } from '@sentinel/ui';
 import { LogFilters } from '../components/logs/LogFilters';
-import { LogViewer } from '../components/logs/LogViewer';
 import { LogDetailDrawer } from '../components/logs/LogDetailDrawer';
 import { useLogStream } from '../hooks/useLogStream';
 import type { LogEvent, LogFilter } from '../../../shared/types';

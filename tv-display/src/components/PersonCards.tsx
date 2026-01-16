@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Textfit } from 'react-textfit';
+import { sortMembersByRank } from '@sentinel/ui';
 import type { PresentMember, ActiveVisitor } from '../hooks/usePresenceData';
 
 interface PersonCardsProps {
@@ -23,94 +24,13 @@ function getVisitTypeLabel(visitType: string): string {
   return 'Visitor';
 }
 
-// RCN Rank priority (lower = higher rank) - from Canada.ca official structure
-// Officers first, then NCMs
-const RANK_PRIORITY: Record<string, number> = {
-  // Flag Officers
-  'Adm': 1,
-  'VAdm': 2,
-  'RAdm': 3,
-  'Cmdre': 4,
-  // Senior Officers
-  'Capt(N)': 5,
-  'Cdr': 6,
-  'LCdr': 7,
-  // Junior Officers
-  'Lt(N)': 8,
-  'SLt': 9,
-  'A/SLt': 10,
-  // Subordinate Officer
-  'NCdt': 11,
-  'OCdt': 11, // Officer Cadet (Army/Air Force equivalent)
-  // Senior NCMs
-  'CPO1': 20,
-  'CPO2': 21,
-  'PO1': 22,
-  'PO2': 23,
-  // Junior NCMs
-  'MS': 30,
-  'LS': 31,
-  'AB': 32,
-  'OS': 33,
-  // Civilian/Other
-  'Civ': 99,
-};
-
-function getRankPriority(rank: string | null): number {
-  if (!rank) return 100;
-  // Normalize rank: trim whitespace, handle common variations
-  const normalized = rank.trim();
-  if (normalized in RANK_PRIORITY) {
-    return RANK_PRIORITY[normalized];
-  }
-  // Try case-insensitive match
-  const upperRank = normalized.toUpperCase();
-  for (const [key, value] of Object.entries(RANK_PRIORITY)) {
-    if (key.toUpperCase() === upperRank) {
-      return value;
-    }
-  }
-  return 50; // Unknown rank goes middle
-}
-
-function isOfficer(rank: string | null): boolean {
-  const priority = getRankPriority(rank);
-  return priority <= 11; // Officers are priority 1-11
-}
-
-// Sort members: Officers by rank, then NCMs by rank, then by name
-function sortMembers(members: PresentMember[]): PresentMember[] {
-  return [...members].sort((a, b) => {
-    // 1. Command division first
-    const aIsCommand = a.division === 'Command' ? 0 : 1;
-    const bIsCommand = b.division === 'Command' ? 0 : 1;
-    if (aIsCommand !== bIsCommand) return aIsCommand - bIsCommand;
-
-    // 2. Officers before NCMs
-    const aIsOfficer = isOfficer(a.rank) ? 0 : 1;
-    const bIsOfficer = isOfficer(b.rank) ? 0 : 1;
-    if (aIsOfficer !== bIsOfficer) return aIsOfficer - bIsOfficer;
-
-    // 3. Sort by rank (higher rank first)
-    const rankDiff = getRankPriority(a.rank) - getRankPriority(b.rank);
-    if (rankDiff !== 0) return rankDiff;
-
-    // 4. Last name (alphabetical)
-    const lastNameDiff = a.lastName.localeCompare(b.lastName);
-    if (lastNameDiff !== 0) return lastNameDiff;
-
-    // 5. First name (alphabetical)
-    return a.firstName.localeCompare(b.firstName);
-  });
-}
-
 export function PersonCards({ presentMembers, activeVisitors }: PersonCardsProps) {
   const hasMembers = presentMembers.length > 0;
   const hasVisitors = activeVisitors.length > 0;
 
   // Sort and split members with memoization
   const { commandMembers, regularMembers } = useMemo(() => {
-    const sorted = sortMembers(presentMembers);
+    const sorted = sortMembersByRank(presentMembers);
     return {
       commandMembers: sorted.filter(m => m.division === 'Command'),
       regularMembers: sorted.filter(m => m.division !== 'Command'),
