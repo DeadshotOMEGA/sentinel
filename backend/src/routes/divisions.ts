@@ -122,7 +122,12 @@ router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, re
       );
     }
 
-    // The repository will check if there are assigned members
+    // Check usage count before deletion
+    const usageCount = await divisionRepository.getUsageCount(id);
+    if (usageCount > 0) {
+      throw new ConflictError(`Cannot delete division. Used by ${usageCount} ${usageCount === 1 ? 'member' : 'members'}.`);
+    }
+
     await divisionRepository.delete(id);
 
     res.status(204).send();
