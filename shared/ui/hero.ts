@@ -5,6 +5,6 @@
  * @plugin '../shared/ui/hero.ts';
  */
 import { heroui } from "@heroui/react";
-import { sentinelTheme } from "./tokens";
+import { sentinelTheme } from "./theme";
 
 export default heroui(sentinelTheme);

@@ -8,7 +8,7 @@ import {
   Button,
 } from '@heroui/react';
 import { AlertTriangle, Info } from '../icons';
-import { colors } from '../tokens';
+import { designTokens } from '../theme';
 
 export type ConfirmDialogVariant = 'danger' | 'warning' | 'neutral';
 
@@ -37,19 +37,19 @@ function getVariantConfig(variant: ConfirmDialogVariant): {
       return {
         buttonColor: 'danger',
         icon: AlertTriangle,
-        iconColor: colors.danger.DEFAULT,
+        iconColor: designTokens.colors.danger.DEFAULT,
       };
     case 'warning':
       return {
         buttonColor: 'warning',
         icon: AlertTriangle,
-        iconColor: colors.warning.DEFAULT,
+        iconColor: designTokens.colors.warning.DEFAULT,
       };
     case 'neutral':
       return {
         buttonColor: 'primary',
         icon: Info,
-        iconColor: colors.primary.DEFAULT,
+        iconColor: designTokens.colors.primary.DEFAULT,
       };
   }
 }
@@ -159,7 +159,7 @@ export function ConfirmDialog({
               <p
                 id={descId.current}
                 className="text-sm leading-relaxed"
-                style={{ color: colors.default[600] }}
+                style={{ color: designTokens.colors.default[600] }}
               >
                 {message}
               </p>

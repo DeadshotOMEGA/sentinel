@@ -106,11 +106,18 @@ Three distinct types - never mix in queries:
 ## Design Tokens
 
 ```
-Primary: #007fff (Azure Blue)
-Accent:  #ff8000 (Orange)
-Success: #10b981 (Green)
-Font:    Inter
+Primary:   #205bcf (Blue)
+Secondary: #9a18b3 (Purple - canonical)
+Success:   #037a36 (Green)
+Warning:   #a16603 (Orange)
+Danger:    #be041e (Red)
+Info:      #01f378 (Bright Teal)
+Accent:    #97436e (Magenta)
+Gray:      #656565 (Neutral)
+Font:      Inter
 ```
+
+Theme source: `shared/ui/theme/index.ts` - all 8 colors have full 50-950 scales with DEFAULT at 600 for WCAG AA.
 
 ## UI Mode Classes
 

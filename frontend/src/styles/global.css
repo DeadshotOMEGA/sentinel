@@ -17,21 +17,26 @@ body {
   @apply text-gray-600; /* 4.5:1 on white */
 }
 
-/* Custom properties from theme */
+/* Custom properties from theme - synced with shared/ui/theme */
 :root {
-  /* Primary - Azure Blue */
-  --sentinel-primary: #007fff;
-  --sentinel-primary-hover: #0066cc;
-  --sentinel-primary-light: #b3daff;
+  /* Primary - Blue */
+  --sentinel-primary: #205bcf;
+  --sentinel-primary-hover: #1a4aa8;
+  --sentinel-primary-light: #c7dcf8;
 
-  /* Accent - Orange */
-  --sentinel-accent: #ff8000;
-  --sentinel-accent-hover: #cc6600;
+  /* Secondary - Purple (canonical) */
+  --sentinel-secondary: #9a18b3;
+  --sentinel-secondary-hover: #7c1391;
+
+  /* Accent - Magenta */
+  --sentinel-accent: #97436e;
+  --sentinel-accent-hover: #793658;
 
   /* Semantic */
-  --sentinel-success: #00b847;
-  --sentinel-warning: #ffc107;
-  --sentinel-danger: #dc2626;
+  --sentinel-success: #037a36;
+  --sentinel-warning: #a16603;
+  --sentinel-danger: #be041e;
+  --sentinel-info: #01f378;
 
   /* Neutral */
   --sentinel-neutral-50: #f8fafc;

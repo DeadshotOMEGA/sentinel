@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import { heroui } from '@heroui/react';
+import { sentinelTheme, tailwindExtend } from '../shared/ui/theme';
 
 const config: Config = {
   content: [
@@ -9,65 +10,42 @@ const config: Config = {
     '../shared/ui/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
-  },
-  darkMode: 'class',
-  plugins: [
-    heroui({
-      defaultTheme: 'light',
-      defaultExtendTheme: 'light',
-      themes: {
-        light: {
-          colors: {
-            primary: {
-              50: '#e6f3ff',
-              100: '#b3daff',
-              200: '#80c1ff',
-              300: '#4da8ff',
-              400: '#1a8fff',
-              500: '#007fff',
-              600: '#0066cc',
-              700: '#004d99',
-              800: '#003366',
-              900: '#001a33',
-              DEFAULT: '#007fff',
-              foreground: '#ffffff',
-            },
-            danger: {
-              50: '#ffe6e6',
-              100: '#ffb3b3',
-              200: '#ff8080',
-              300: '#ff4d4d',
-              400: '#ff1a1a',
-              500: '#dc2626',
-              600: '#b31e1e',
-              700: '#8a1717',
-              800: '#610f0f',
-              900: '#380808',
-              DEFAULT: '#dc2626',
-              foreground: '#ffffff',
-            },
-            success: {
-              50: '#e2f8ec',
-              100: '#b9efd1',
-              200: '#91e5b5',
-              300: '#68dc9a',
-              400: '#40d27f',
-              500: '#17c964',
-              600: '#13a653',
-              700: '#0f8341',
-              800: '#0b5f30',
-              900: '#073c1e',
-              DEFAULT: '#17c964',
-              foreground: '#000000',
-            },
+    extend: {
+      ...tailwindExtend,
+      // TV-specific pulse animations for border alerts
+      keyframes: {
+        ...tailwindExtend.keyframes,
+        'pulse-border-red': {
+          '0%, 100%': {
+            borderColor: '#dc2626',
+            boxShadow: '0 0 0 0 rgba(220, 38, 38, 0.7)',
           },
-          layout: {
-            disabledOpacity: '0.2',
+          '50%': {
+            borderColor: '#f87171',
+            boxShadow: '0 0 20px 8px rgba(220, 38, 38, 0.4)',
+          },
+        },
+        'pulse-border-yellow': {
+          '0%, 100%': {
+            borderColor: '#f59e0b',
+            boxShadow: '0 0 0 0 rgba(245, 158, 11, 0.7)',
+          },
+          '50%': {
+            borderColor: '#fcd34d',
+            boxShadow: '0 0 20px 8px rgba(245, 158, 11, 0.4)',
           },
         },
       },
-    }),
+      animation: {
+        ...tailwindExtend.animation,
+        'pulse-border-red': 'pulse-border-red 1.5s ease-in-out infinite',
+        'pulse-border-yellow': 'pulse-border-yellow 1.5s ease-in-out infinite',
+      },
+    },
+  },
+  darkMode: 'class',
+  plugins: [
+    heroui(sentinelTheme),
   ],
 };
 

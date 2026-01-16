@@ -1,11 +1,13 @@
-// PDF Color Theme Utilities
+// PDF Color Theme Utilities - synced with shared/ui/theme
 
 export const PDF_COLORS = {
-  primary: '#007fff',
-  accent: '#ff8000',
-  success: '#10b981',
-  warning: '#f59e0b',
-  danger: '#ef4444',
+  primary: '#205bcf',
+  secondary: '#9a18b3',
+  accent: '#97436e',
+  success: '#037a36',
+  warning: '#a16603',
+  danger: '#be041e',
+  info: '#01f378',
   text: '#333333',
   textMuted: '#666666',
   border: '#dddddd',

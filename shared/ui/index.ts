@@ -4,15 +4,32 @@
  * Re-exports HeroUI components with Sentinel theming.
  */
 
-// Design tokens
+// Theme configuration (canonical - purple secondary)
 export {
-  colors,
-  layout,
-  fonts,
+  designTokens,
   sentinelTheme,
+  tailwindExtend,
+  cssVariables,
+  componentStyles,
   statusColors,
   getStatusColor,
+  type StatusColorKey,
+  type StatusColorValue,
+} from "./theme";
+
+// Utility design tokens
+export {
+  layout,
+  fonts,
+  typography,
+  textColors,
+  statusColors as utilStatusColors, // Avoid conflict with theme statusColors
+  badgeColors,
+  touchTargets,
+  focus,
   transitions,
+  legacyStatusColors,
+  getStatusColor as getLegacyStatusColor, // Avoid conflict
   type LegacyStatusColor,
 } from "./tokens";
 
@@ -88,6 +105,20 @@ export * as icons from "./icons";
 
 // Components
 export { Badge, type BadgeVariant, type BadgeSize } from "./components/Badge";
+
+// Tooltips
+export { IconTooltip } from "./components/tooltips/IconTooltip";
+export { StatusTooltip } from "./components/tooltips/StatusTooltip";
+export { TruncatedText } from "./components/tooltips/TruncatedText";
+
+// Layout
+export { PageWrapper } from "./components/PageWrapper";
+
+// Display components
+export { Clock } from "./components/Clock";
+export { ConnectionStatus } from "./components/ConnectionStatus";
+export { PresenceCards } from "./components/PresenceCards";
+export { DivisionStats } from "./components/DivisionStats";
 export { StatsCard, type StatsCardVariant } from "./components/StatsCard";
 export { EmptyState, type EmptyStateVariant } from "./components/EmptyState";
 export { DataTable, type Column, type SortDirection, type DataTableProps } from "./components/DataTable";
@@ -107,4 +138,102 @@ export { ErrorFallback, type ErrorFallbackVariant } from "./components/ErrorFall
 
 // Hooks
 export { useDebounce } from "./hooks/useDebounce";
+export { useIsOverflowing } from "./hooks/useIsOverflowing";
 export { ConfirmDialog, type ConfirmDialogVariant } from "./components/ConfirmDialog";
+
+// Utilities - rank sorting
+export {
+  MESS_PRIORITY,
+  RANK_PRIORITY,
+  getMessPriority,
+  getRankPriority,
+  isOfficer,
+  sortMembersByMess,
+  sortMembersByRank,
+  sortMembers,
+  type SortableMember,
+} from "../utils/rank-sorting";
+
+// Utilities - chip variants
+export {
+  getMemberStatusChipVariant,
+  getBadgeStatusChipVariant,
+  getTagChipVariant,
+  getMemberTypeChipVariant,
+  getDivisionChipVariant,
+  getMessChipVariant,
+  getMocChipVariant,
+  getVisitTypeChipVariant,
+  type ChipVariant,
+  type ChipRadius,
+} from "../utils/chip-variants";
+
+// Utilities - tag colors
+export {
+  getTagColor,
+  type HeroUIColor,
+} from "../utils/tag-colors";
+
+// Utilities - activity feed
+export {
+  filterActivityItems,
+  getActivityBorderColor,
+  getActivityBadgeColor,
+  getActivityBadgeLabel,
+  getActivitySecondaryInfo,
+  getVisitorDetails,
+  VISIT_TYPE_LABELS,
+  type ActivityDirection,
+  type ActivityTypeFilter,
+  type ActivityDirectionFilter,
+} from "../utils/activity-feed";
+
+// Utilities - log formatting
+export {
+  getLogLevelColor,
+  formatLogTime,
+  truncateId,
+  truncateMessage,
+  getLogLevelLabel,
+  type LogLevelColor,
+} from "../utils/log-formatting";
+
+// Activity components
+export {
+  ActivityPanel,
+  type ActivityPanelProps,
+  type ActivityPanelStats,
+} from "./components/ActivityPanel";
+
+// Log components
+export {
+  LogViewer,
+  type LogViewerProps,
+} from "./components/LogViewer";
+
+// Badge and Tag chips
+export {
+  BadgeChip,
+  StatusChip,
+  type BadgeChipProps,
+  type BadgeChipBadge,
+  type BadgeStatusType,
+} from "./components/BadgeChip";
+
+export {
+  TagChip,
+  type TagChipProps,
+} from "./components/TagChip";
+
+// Network status components
+export {
+  NetworkIndicator,
+  type NetworkIndicatorProps,
+  type NetworkStatus,
+} from "./components/NetworkIndicator";
+
+export {
+  SyncStatus,
+  type SyncStatusProps,
+  type SyncProgress,
+} from "./components/SyncStatus";
