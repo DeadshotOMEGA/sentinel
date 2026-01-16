@@ -21,6 +21,13 @@ import MemberModal from '../MemberModal';
 import TagChip from './TagChip';
 import { api } from '../../lib/api';
 import { toast } from '../../lib/toast';
+import {
+  getMemberStatusChipVariant,
+  getMemberTypeChipVariant,
+  getDivisionChipVariant,
+  getMessChipVariant,
+  getMocChipVariant,
+} from '../../lib/chipVariants';
 import type { MemberWithDivision, Division, Tag, MemberStatus } from '@shared/types';
 
 interface MemberQuickViewProps {
@@ -204,7 +211,7 @@ export default function MemberQuickView({
           <DrawerHeader className="flex flex-col gap-1 border-b border-divider">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Chip color={getMemberStatusColor(member.status)} variant="flat" size="sm">
+                <Chip color={getMemberStatusColor(member.status)} variant={getMemberStatusChipVariant()} size="sm">
                   {member.status === 'active'
                     ? 'Active'
                     : member.status === 'inactive'
@@ -239,28 +246,28 @@ export default function MemberQuickView({
                   </div>
                   <div>
                     <p className="text-sm text-default-500">Division</p>
-                    <Chip size="sm" variant="flat">
+                    <Chip size="sm" variant={getDivisionChipVariant().variant} radius={getDivisionChipVariant().radius}>
                       {member.division.name}
                     </Chip>
                   </div>
                   {member.moc && (
                     <div>
                       <p className="text-sm text-default-500">MOC</p>
-                      <Chip size="sm" variant="flat">
+                      <Chip size="sm" variant={getMocChipVariant().variant} radius={getMocChipVariant().radius}>
                         {member.moc}
                       </Chip>
                     </div>
                   )}
                   <div>
                     <p className="text-sm text-default-500">Member Type</p>
-                    <Chip size="sm" variant="flat" color={getMemberTypeColor(member.memberType)}>
+                    <Chip size="sm" variant={getMemberTypeChipVariant().variant} radius={getMemberTypeChipVariant().radius} color={getMemberTypeColor(member.memberType)}>
                       {getMemberTypeLabel(member.memberType)}
                     </Chip>
                   </div>
                   {member.mess && (
                     <div>
                       <p className="text-sm text-default-500">Mess</p>
-                      <Chip size="sm" variant="flat">
+                      <Chip size="sm" variant={getMessChipVariant().variant} radius={getMessChipVariant().radius}>
                         {member.mess}
                       </Chip>
                     </div>

@@ -28,14 +28,13 @@ import BulkEditModal from '../components/members/BulkEditModal';
 import MemberQuickView from '../components/members/MemberQuickView';
 import { useMemberFilters } from '../hooks/useMemberFilters';
 import { api } from '../lib/api';
+import { getMemberStatusChipVariant } from '../lib/chipVariants';
 import type { MemberWithDivision, Division, Tag } from '@shared/types';
 
 type ColumnKey =
   | 'name'
   | 'rank'
   | 'division'
-  | 'moc'
-  | 'mess'
   | 'status'
   | 'badge'
   | 'classDetails'
@@ -52,8 +51,6 @@ const columns: Column[] = [
   { uid: 'name', name: 'NAME', sortable: true },
   { uid: 'rank', name: 'RANK', sortable: true },
   { uid: 'division', name: 'DIVISION', sortable: true },
-  { uid: 'moc', name: 'MOC', sortable: true },
-  { uid: 'mess', name: 'MESS', sortable: true },
   { uid: 'status', name: 'STATUS', sortable: true },
   { uid: 'badge', name: 'BADGE', sortable: false },
   { uid: 'classDetails', name: 'CONTRACT', sortable: true },
@@ -169,17 +166,9 @@ function MembersList() {
           first = a.division.name;
           second = b.division.name;
           break;
-        case 'mess':
-          first = a.mess ?? '';
-          second = b.mess ?? '';
-          break;
         case 'status':
           first = a.status;
           second = b.status;
-          break;
-        case 'moc':
-          first = a.moc ?? '';
-          second = b.moc ?? '';
           break;
         case 'classDetails':
           first = a.classDetails ?? '';
@@ -245,19 +234,22 @@ function MembersList() {
         return <div className="text-small">{member.rank}</div>;
       case 'division':
         return <div className="text-small">{member.division.name}</div>;
-      case 'mess':
-        return <div className="text-small">{member.mess ?? '—'}</div>;
       case 'status':
+        const statusColorMap: Record<string, 'success' | 'default' | 'warning' | 'danger'> = {
+          active: 'success',
+          inactive: 'default',
+          pending_review: 'warning',
+          terminated: 'danger',
+        };
         return (
           <Chip
             size="sm"
-            color={member.status === 'active' ? 'success' : 'default'}
+            variant={getMemberStatusChipVariant()}
+            color={statusColorMap[member.status] ?? 'default'}
           >
-            {member.status}
+            {member.status.replace('_', ' ')}
           </Chip>
         );
-      case 'moc':
-        return <div className="text-small">{member.moc ?? '—'}</div>;
       case 'badge':
         return <BadgeChip badge={member.badge} />;
       case 'classDetails':
@@ -444,6 +436,7 @@ function MembersList() {
                 key={column.uid}
                 align={column.uid === 'actions' ? 'end' : 'start'}
                 allowsSorting={column.sortable}
+                className={column.uid === 'tags' ? 'min-w-[240px]' : undefined}
               >
                 {column.name}
               </TableColumn>

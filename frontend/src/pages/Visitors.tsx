@@ -24,6 +24,7 @@ import {
 import { format } from 'date-fns';
 import PageWrapper from '../components/PageWrapper';
 import { api } from '../lib/api';
+import { getVisitTypeChipVariant } from '../lib/chipVariants';
 import type { Visitor, CreateVisitorInput, VisitType } from '@shared/types';
 
 const visitTypes: { key: VisitType; label: string }[] = [
@@ -101,7 +102,7 @@ export default function Visitors() {
                   <TableCell>{visitor.name}</TableCell>
                   <TableCell>{visitor.organization}</TableCell>
                   <TableCell>
-                    <Chip size="sm" variant="flat">{visitor.visitType}</Chip>
+                    <Chip size="sm" variant={getVisitTypeChipVariant()}>{visitor.visitType}</Chip>
                   </TableCell>
                   <TableCell>{format(new Date(visitor.checkInTime), 'MMM d, HH:mm')}</TableCell>
                   <TableCell>
