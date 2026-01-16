@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@heroui/react';
-import DashboardHeader from '../components/dashboard/DashboardHeader';
 import FilterBar from '../components/dashboard/FilterBar';
 import PersonCardGrid from '../components/dashboard/PersonCardGrid';
 import CollapsibleActivityPanel from '../components/dashboard/CollapsibleActivityPanel';
@@ -9,13 +8,18 @@ import PersonDetailModal from '../components/dashboard/PersonDetailModal';
 import BulkActionBar from '../components/dashboard/BulkActionBar';
 import ManualMemberCheckinModal from '../components/dashboard/ManualMemberCheckinModal';
 import ManualVisitorCheckinModal from '../components/dashboard/ManualVisitorCheckinModal';
+import AlertBanner from '../components/dashboard/AlertBanner';
+import DdsPanel from '../components/dashboard/DdsPanel';
+import StaleCheckinsWidget from '../components/dashboard/StaleCheckinsWidget';
 import { api } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
+import { useSecurityAlerts } from '../hooks/useSecurityAlerts';
 import type { ActivityItem, PresentPerson, DashboardFilters, CreateAlertInput } from '../../../shared/types';
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const { onPresenceUpdate, onCheckin, onActivityBackfill, onVisitorSignin } = useSocket();
+  const { alerts: securityAlerts, acknowledgeAlert } = useSecurityAlerts();
   const [activity, setActivity] = useState<ActivityItem[]>([]);
 
   // State management
@@ -279,12 +283,18 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen p-6">
-      {/* Dashboard Header */}
-      <DashboardHeader
-        title="Dashboard"
-        memberCount={memberCount}
-        visitorCount={visitorCount}
-      />
+      {/* Security Alert Banner - always at the top */}
+      {securityAlerts.length > 0 && (
+        <div className="mb-4">
+          <AlertBanner alerts={securityAlerts} onAcknowledge={acknowledgeAlert} />
+        </div>
+      )}
+
+      {/* DDS Panel - prominent position below security alerts */}
+      <DdsPanel presentPeople={presentPeople} />
+
+      {/* Stale Check-ins Widget - shows members checked in too long */}
+      <StaleCheckinsWidget />
 
       {/* Filter Bar */}
       <FilterBar
@@ -293,6 +303,8 @@ export default function Dashboard() {
         selectMode={selectMode}
         onSelectModeChange={setSelectMode}
         selectedCount={selectedIds.size}
+        memberCount={memberCount}
+        visitorCount={visitorCount}
         onOpenMemberCheckin={() => setMemberCheckinModalOpen(true)}
         onOpenVisitorCheckin={() => setVisitorCheckinModalOpen(true)}
       />
@@ -317,7 +329,7 @@ export default function Dashboard() {
       {/* Main Content: Person Grid + Activity Panel */}
       <div className="-mx-1 -my-1 flex gap-4 mt-4 flex-1 overflow-hidden px-1 py-1">
         {/* Person Card Grid - scrollable */}
-        <div className="-mx-1 -my-1 flex-1 overflow-y-auto px-1 py-1">
+        <div className="-mx-1 -my-1 flex-1 overflow-y-auto px-8 py-8">
           <PersonCardGrid
             people={presentPeople}
             filters={filters}

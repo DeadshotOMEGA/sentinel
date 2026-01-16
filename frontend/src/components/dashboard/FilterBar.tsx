@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Chip, Input, Switch, Divider, Tooltip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import type { DashboardFilters } from '../../../../shared/types';
 
@@ -11,6 +12,8 @@ interface FilterBarProps {
   selectedCount: number;
   onOpenMemberCheckin: () => void;
   onOpenVisitorCheckin: () => void;
+  memberCount: number;
+  visitorCount: number;
 }
 
 export default function FilterBar({
@@ -19,11 +22,13 @@ export default function FilterBar({
   selectMode,
   onSelectModeChange,
   selectedCount,
+  memberCount, 
+  visitorCount,
   onOpenMemberCheckin,
   onOpenVisitorCheckin,
 }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.searchQuery);
-
+  const navigate = useNavigate();
   // Debounce search input (300ms)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -90,7 +95,8 @@ export default function FilterBar({
             <DropdownTrigger>
               <Button
                 color="primary"
-                variant="flat"
+                size="sm"
+                variant="shadow"
                 startContent={<Icon icon="solar:add-circle-linear" width={20} />}
                 aria-label="Check in person"
               >
@@ -150,6 +156,34 @@ export default function FilterBar({
           </span>
         </div>
       </Tooltip>
+
+      <Divider orientation="vertical" className="h-6" />
+
+
+        <Tooltip content="Click to view all members">
+          <Chip
+            variant="bordered"
+            className="bg-content1 cursor-pointer"
+            onClick={() => navigate('/members')}
+            startContent={<Icon icon="solar:users-group-rounded-bold" className="text-success-600" width={16} />}
+            role="button"
+            aria-label={`View ${memberCount} members`}
+          >
+            {memberCount} Members
+          </Chip>
+        </Tooltip>
+        <Tooltip content="Click to view all visitors">
+          <Chip
+            variant="bordered"
+            className="bg-content1 cursor-pointer"
+            onClick={() => navigate('/visitors')}
+            startContent={<Icon icon="solar:user-check-bold" className="text-primary-600" width={16} />}
+            role="button"
+            aria-label={`View ${visitorCount} visitors`}
+          >
+            {visitorCount} Visitors
+          </Chip>
+        </Tooltip>
     </div>
   );
 }
