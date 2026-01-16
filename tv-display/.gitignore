@@ -12,3 +12,7 @@ dist-ssr/
 *.swo
 *~
 .bun
+
+# TypeScript compilation artifacts
+src/**/*.js
+src/**/*.js.map
