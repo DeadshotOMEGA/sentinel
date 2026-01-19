@@ -48,9 +48,9 @@ export function useLogStream(options: UseLogStreamOptions = {}): UseLogStreamRet
   // Enable in development mode (auth check relaxed for dev bypass)
   useEffect(() => {
     const isDev = import.meta.env.DEV;
-    // In dev mode: enable if admin OR if auth is bypassed (allow any authenticated state)
-    const isAdmin = user?.role === 'admin';
-    setIsEnabled(isDev && (isAdmin || isAuthenticated || isDev));
+    // In dev mode: enable if admin or developer OR if auth is bypassed (allow any authenticated state)
+    const isAdminOrDev = user?.role === 'admin' || user?.role === 'developer';
+    setIsEnabled(isDev && (isAdminOrDev || isAuthenticated || isDev));
   }, [user?.role, isAuthenticated]);
 
   useEffect(() => {

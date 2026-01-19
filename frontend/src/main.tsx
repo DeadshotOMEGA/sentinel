@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <HeroUIProvider>
-          <main className="min-h-screen bg-background text-foreground font-sans antialiased">
+          <main className="light min-h-screen bg-background text-foreground font-sans antialiased">
             <App />
           </main>
         </HeroUIProvider>

@@ -1,16 +1,31 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
-import { useAuth } from '../hooks/useAuth';
+import type { DdsAssignment } from '../hooks/useDds';
+
+// Helper to get token from localStorage (avoids circular dependency with useAuth)
+function getStoredToken(): string | null {
+  try {
+    const stored = localStorage.getItem('sentinel-auth');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed.state?.token ?? null;
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
 
 export const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Send cookies with requests
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use((config) => {
-  const token = useAuth.getState().token;
+  const token = getStoredToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,9 +35,16 @@ api.interceptors.request.use((config) => {
 // Response interceptor for auth errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      useAuth.getState().logout();
+  async (error) => {
+    // Only trigger logout on 401 if not on auth endpoints (prevents loops)
+    const url = error.config?.url ?? '';
+    if (error.response?.status === 401 && !url.includes('/auth/')) {
+      // Clear auth state directly to avoid circular dependency
+      localStorage.removeItem('sentinel-auth');
+      // Redirect to login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -125,6 +147,89 @@ function buildErrorInjectionHeader(config: {
 
   return parts.join(',');
 }
+
+// ============================================================================
+// Stale Checkins API Functions
+// ============================================================================
+
+import type { StaleCheckin } from '../../../shared/types';
+
+export async function getStaleCheckins(hoursThreshold?: number): Promise<StaleCheckin[]> {
+  const params = hoursThreshold ? `?hours=${hoursThreshold}` : '';
+  const response = await api.get<{ staleCheckins: StaleCheckin[] }>(`/checkins/stale${params}`);
+  return response.data.staleCheckins;
+}
+
+export async function resolveStaleCheckins(
+  memberIds: string[],
+  note: string
+): Promise<{ resolved: number; errors?: Array<{ memberId: string; error: string }> }> {
+  const response = await api.post<{ resolved: number; errors?: Array<{ memberId: string; error: string }> }>(
+    '/checkins/stale/resolve',
+    { memberIds, note }
+  );
+  return response.data;
+}
+
+// ============================================================================
+// DDS API Functions
+// ============================================================================
+
+export async function getCurrentDds(): Promise<{ dds: DdsAssignment | null }> {
+  const response = await api.get<{ dds: DdsAssignment | null }>('/dds/current');
+  return response.data;
+}
+
+export async function assignDds(
+  memberId: string,
+  notes?: string
+): Promise<{ dds: DdsAssignment }> {
+  const response = await api.post<{ dds: DdsAssignment }>('/dds/assign', {
+    memberId,
+    notes,
+  });
+  return response.data;
+}
+
+export async function transferDds(
+  toMemberId: string,
+  notes?: string
+): Promise<{ dds: DdsAssignment }> {
+  const response = await api.post<{ dds: DdsAssignment }>('/dds/transfer', {
+    toMemberId,
+    notes,
+  });
+  return response.data;
+}
+
+export async function releaseDds(notes?: string): Promise<{ success: boolean }> {
+  const response = await api.post<{ success: boolean }>('/dds/release', { notes });
+  return response.data;
+}
+
+export async function transferLockup(
+  toMemberId: string,
+  notes?: string
+): Promise<{ success: boolean }> {
+  const response = await api.post<{ success: boolean }>('/tags/transfer-lockup', {
+    toMemberId,
+    notes,
+  });
+  return response.data;
+}
+
+export async function getLockupHolder(): Promise<{
+  holder: { id: string; rank: string; firstName: string; lastName: string } | null;
+}> {
+  const response = await api.get<{
+    holder: { id: string; rank: string; firstName: string; lastName: string } | null;
+  }>('/tags/lockup-holder');
+  return response.data;
+}
+
+// ============================================================================
+// Dev Mode Network Logging - Interceptors
+// ============================================================================
 
 // Only add dev interceptors when in dev mode
 if (typeof __DEV_MODE__ !== 'undefined' && __DEV_MODE__) {

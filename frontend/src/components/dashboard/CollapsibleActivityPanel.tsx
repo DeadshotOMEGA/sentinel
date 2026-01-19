@@ -12,6 +12,18 @@ interface CollapsibleActivityPanelProps {
   onDirectionFilterChange: (direction: 'all' | 'in' | 'out') => void;
 }
 
+// Format member name as "LastName F." for activity feed
+function formatMemberName(name: string): string {
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) {
+    return parts[0];
+  }
+  const firstName = parts[0];
+  const lastName = parts.slice(1).join(' ');
+  const firstInitial = firstName.charAt(0).toUpperCase();
+  return `${lastName} ${firstInitial}`;
+}
+
 export default function CollapsibleActivityPanel({
   activity,
   filters,
@@ -124,7 +136,7 @@ export default function CollapsibleActivityPanel({
 
   return (
     <div className="w-96 h-full transition-all duration-300">
-      <Card className="h-full flex flex-col">
+      <Card shadow="lg" className="h-full flex flex-col border border-default-100">
         <CardHeader className="flex flex-col gap-3 shrink-0">
           <div className="flex flex-row items-center justify-between w-full">
             <h3 className="font-semibold">Activity</h3>
@@ -172,8 +184,14 @@ export default function CollapsibleActivityPanel({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">
-                            {item.rank && `${item.rank} `}
-                            {item.name}
+                            {item.type === 'checkin' ? (
+                              <>
+                                {item.rank && `${item.rank} `}
+                                {formatMemberName(item.name)}
+                              </>
+                            ) : (
+                              item.name
+                            )}
                           </p>
                           {item.type === 'visitor' && (
                             <Chip size="sm" variant="flat" color="primary" className="shrink-0">

@@ -282,7 +282,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col h-screen p-6">
+    <div className="flex flex-col h-screen p-4">
       {/* Security Alert Banner - always at the top */}
       {securityAlerts.length > 0 && (
         <div className="mb-4">
@@ -327,9 +327,9 @@ export default function Dashboard() {
       )}
 
       {/* Main Content: Person Grid + Activity Panel */}
-      <div className="-mx-1 -my-1 flex gap-4 mt-4 flex-1 overflow-hidden px-1 py-1">
+      <div className="flex mt-4 flex-1 overflow-hidden">
         {/* Person Card Grid - scrollable */}
-        <div className="-mx-1 -my-1 flex-1 overflow-y-auto px-8 py-8">
+        <div className="flex-1 overflow-y-auto p-2">
           <PersonCardGrid
             people={presentPeople}
             filters={filters}

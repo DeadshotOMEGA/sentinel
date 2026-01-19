@@ -14,16 +14,16 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Chip,
   Spinner,
   Tooltip,
   Textarea,
   Alert,
+  Chip,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { api } from '../../lib/api';
 import { toast } from '../../lib/toast';
-import { getTagChipVariant, TruncatedText } from '@sentinel/ui';
+import { TruncatedText, TagChip } from '@sentinel/ui';
 import type { Tag, CreateTagInput, UpdateTagInput } from '@shared/types';
 
 interface TagsResponse {
@@ -38,27 +38,17 @@ interface TagWithUsage extends Tag {
   usageCount?: number;
 }
 
-// Available colors in the 500 range to align with app's design system
+// Available colors from Sentinel theme (8 semantic colors)
 const AVAILABLE_COLORS = [
-  { value: 'blue', label: 'Blue', hex: '#3b82f6' },
-  { value: 'purple', label: 'Purple', hex: '#a855f7' },
-  { value: 'pink', label: 'Pink', hex: '#ec4899' },
-  { value: 'red', label: 'Red', hex: '#ef4444' },
-  { value: 'orange', label: 'Orange', hex: '#f97316' },
-  { value: 'yellow', label: 'Yellow', hex: '#eab308' },
-  { value: 'green', label: 'Green', hex: '#22c55e' },
-  { value: 'teal', label: 'Teal', hex: '#14b8a6' },
-  { value: 'cyan', label: 'Cyan', hex: '#06b6d4' },
-  { value: 'indigo', label: 'Indigo', hex: '#6366f1' },
-  { value: 'violet', label: 'Violet', hex: '#8b5cf6' },
-  { value: 'fuchsia', label: 'Fuchsia', hex: '#d946ef' },
-  { value: 'rose', label: 'Rose', hex: '#f43f5e' },
-  { value: 'amber', label: 'Amber', hex: '#f59e0b' },
-  { value: 'lime', label: 'Lime', hex: '#84cc16' },
-  { value: 'emerald', label: 'Emerald', hex: '#10b981' },
-  { value: 'sky', label: 'Sky', hex: '#0ea5e9' },
-  { value: 'slate', label: 'Slate', hex: '#64748b' },
-];
+  { value: 'primary', label: 'Primary (Blue)' },
+  { value: 'secondary', label: 'Secondary (Purple)' },
+  { value: 'success', label: 'Success (Green)' },
+  { value: 'warning', label: 'Warning (Orange)' },
+  { value: 'danger', label: 'Danger (Red)' },
+  { value: 'gray', label: 'Gray (Neutral)' },
+  { value: 'info', label: 'Info (Teal)' },
+  { value: 'accent', label: 'Accent (Magenta)' },
+] as const;
 
 export default function TagsSettings() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -287,16 +277,10 @@ export default function TagsSettings() {
               </TableCell>
               <TableCell>{tag.name}</TableCell>
               <TableCell>
-                <Chip
-                  size="sm"
-                  variant={getTagChipVariant()}
-                  style={{
-                    backgroundColor: AVAILABLE_COLORS.find(c => c.value === tag.color)?.hex || tag.color,
-                    color: '#ffffff'
-                  }}
-                >
-                  {tag.name}
-                </Chip>
+                <TagChip
+                  tagName={tag.name}
+                  tagColor={tag.color as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' | 'gray' | 'info' | 'accent'}
+                />
               </TableCell>
               <TableCell>
                 {tag.description ? (
@@ -419,7 +403,7 @@ function TagModal({
         description: tag.description,
       });
     } else {
-      setFormData({ color: 'blue' }); // Default blue color
+      setFormData({ color: 'primary' }); // Default primary color
     }
     setError('');
   }, [tag, isOpen]);
@@ -484,41 +468,42 @@ function TagModal({
               <label className="mb-1.5 block text-sm font-medium">
                 Color <span className="text-danger">*</span>
               </label>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {AVAILABLE_COLORS.map((colorOption) => (
                   <button
                     key={colorOption.value}
                     type="button"
                     onClick={() => setFormData({ ...formData, color: colorOption.value })}
                     className={`
-                      h-12 rounded-lg border-2 transition-all
+                      p-2 rounded-lg border-2 transition-all
                       ${formData.color === colorOption.value
                         ? 'border-primary scale-105 shadow-md'
                         : 'border-transparent hover:border-default-300'
                       }
                     `}
-                    style={{ backgroundColor: colorOption.hex }}
                     title={colorOption.label}
+                    aria-label={colorOption.label}
                   >
-                    {formData.color === colorOption.value && (
-                      <Icon icon="solar:check-circle-bold" className="mx-auto text-white" width={20} />
-                    )}
+                    {/* DEBUG: Using HeroUI Chip directly to test color rendering */}
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      radius="sm"
+                      color={colorOption.value as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default'}
+                      className="w-full"
+                    >
+                      {colorOption.value}
+                    </Chip>
                   </button>
                 ))}
               </div>
               {formData.color && formData.name && (
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-sm text-default-500">Preview:</span>
-                  <Chip
-                    size="sm"
-                    variant={getTagChipVariant()}
-                    style={{
-                      backgroundColor: AVAILABLE_COLORS.find(c => c.value === formData.color)?.hex,
-                      color: '#ffffff',
-                    }}
-                  >
-                    {formData.name}
-                  </Chip>
+                  <TagChip
+                    tagName={formData.name}
+                    tagColor={formData.color as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' | 'gray' | 'info' | 'accent'}
+                  />
                 </div>
               )}
             </div>

@@ -7,7 +7,7 @@ interface User {
   username: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
+  role: 'quartermaster' | 'admin' | 'developer';
   email: string;
 }
 

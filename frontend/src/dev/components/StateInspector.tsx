@@ -190,7 +190,7 @@ function AuthStateSection() {
           <div className="flex justify-between">
             <span className="text-default-400">User</span>
             <span className="text-default-200 font-mono">
-              {user ? `${user.firstName} ${user.lastName}` : '-'}
+              {user ? user.displayName : '-'}
             </span>
           </div>
           <div className="flex justify-between">
@@ -412,9 +412,10 @@ function ExpandableStateSection() {
           ? {
               id: user.id,
               username: user.username,
+              displayName: user.displayName,
+              role: user.role,
               firstName: user.firstName,
               lastName: user.lastName,
-              role: user.role,
               email: user.email,
             }
           : null,

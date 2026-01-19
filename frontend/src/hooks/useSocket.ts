@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './useAuth';
 import type { ActivityItem } from '../../../shared/types';
@@ -44,6 +44,9 @@ type SocketCallback<T> = (data: T) => void;
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
   const { isAuthenticated, token } = useAuth();
+  // Track socket ready state - changes trigger callback recreation, which triggers
+  // consumer useEffects to re-run and register listeners when socket is ready
+  const [isSocketReady, setIsSocketReady] = useState(false);
   // Buffer for events that arrive before listeners are registered
   const pendingBackfillRef = useRef<ActivityBackfillEvent | null>(null);
   const backfillCallbackRef = useRef<SocketCallback<ActivityBackfillEvent> | null>(null);
@@ -54,14 +57,26 @@ export function useSocket() {
     // In dev mode, allow connection without auth (backend auto-authenticates)
     if (!isDev && (!isAuthenticated || !token)) return;
 
-    socketRef.current = io({
+    const socket = io({
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       auth: isDev ? {} : { token },
     });
 
+    socketRef.current = socket;
+
+    // Track connection state - this triggers re-render which causes consumers
+    // to re-register their listeners via the callback dependency change
+    socket.on('connect', () => {
+      setIsSocketReady(true);
+    });
+
+    socket.on('disconnect', () => {
+      setIsSocketReady(false);
+    });
+
     // Capture backfill immediately - it arrives right after subscribe
-    socketRef.current.on('activity_backfill', (data: ActivityBackfillEvent) => {
+    socket.on('activity_backfill', (data: ActivityBackfillEvent) => {
       if (backfillCallbackRef.current) {
         backfillCallbackRef.current(data);
       } else {
@@ -69,22 +84,42 @@ export function useSocket() {
       }
     });
 
-    socketRef.current.emit('subscribe_presence');
+    socket.emit('subscribe_presence');
 
     return () => {
-      socketRef.current?.disconnect();
+      setIsSocketReady(false);
+      socket.disconnect();
+      socketRef.current = null;
     };
   }, [isAuthenticated, token]);
 
+  // These callbacks include isSocketReady in deps, so when socket connects:
+  // 1. isSocketReady changes to true
+  // 2. Callbacks are recreated
+  // 3. Consumer useEffects see callback change in deps and re-run
+  // 4. Listeners are registered now that socket is ready
   const onPresenceUpdate = useCallback((callback: SocketCallback<{ stats: PresenceStats }>) => {
-    socketRef.current?.on('presence_update', callback);
-    return () => socketRef.current?.off('presence_update', callback);
-  }, []);
+    const socket = socketRef.current;
+    if (socket && isSocketReady) {
+      socket.on('presence_update', callback);
+      return () => {
+        socket.off('presence_update', callback);
+      };
+    }
+    // Socket not ready - return no-op cleanup
+    return () => {};
+  }, [isSocketReady]);
 
   const onCheckin = useCallback((callback: SocketCallback<CheckinEvent>) => {
-    socketRef.current?.on('checkin', callback);
-    return () => socketRef.current?.off('checkin', callback);
-  }, []);
+    const socket = socketRef.current;
+    if (socket && isSocketReady) {
+      socket.on('checkin', callback);
+      return () => {
+        socket.off('checkin', callback);
+      };
+    }
+    return () => {};
+  }, [isSocketReady]);
 
   const onActivityBackfill = useCallback((callback: SocketCallback<ActivityBackfillEvent>) => {
     backfillCallbackRef.current = callback;
@@ -99,9 +134,15 @@ export function useSocket() {
   }, []);
 
   const onVisitorSignin = useCallback((callback: SocketCallback<VisitorSigninEvent>) => {
-    socketRef.current?.on('visitor_signin', callback);
-    return () => socketRef.current?.off('visitor_signin', callback);
-  }, []);
+    const socket = socketRef.current;
+    if (socket && isSocketReady) {
+      socket.on('visitor_signin', callback);
+      return () => {
+        socket.off('visitor_signin', callback);
+      };
+    }
+    return () => {};
+  }, [isSocketReady]);
 
   return { onPresenceUpdate, onCheckin, onActivityBackfill, onVisitorSignin };
 }

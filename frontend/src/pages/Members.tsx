@@ -261,7 +261,11 @@ function MembersList() {
           <div className="flex flex-wrap gap-1">
             {member.tags && member.tags.length > 0 ? (
               member.tags.map((tag) => (
-                <TagChip key={tag.id} tagName={tag.name} />
+                <TagChip
+                  key={tag.id}
+                  tagName={tag.name}
+                  tagColor={tag.color as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' | 'gray' | 'info' | 'accent'}
+                />
               ))
             ) : (
               <span className="text-small text-default-400">—</span>

@@ -309,7 +309,11 @@ export default function MemberQuickView({
                       <p className="mb-2 text-sm text-default-500">Tags</p>
                       <div className="flex flex-wrap gap-1">
                         {member.tags.map((tag) => (
-                          <TagChip key={tag.id} tagName={tag.name} />
+                          <TagChip
+                            key={tag.id}
+                            tagName={tag.name}
+                            tagColor={tag.color as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' | 'gray' | 'info' | 'accent'}
+                          />
                         ))}
                       </div>
                     </div>

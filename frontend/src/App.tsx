@@ -28,8 +28,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  // DEV MODE: Authentication disabled
-  const isDev = import.meta.env.DEV;
+  // DEV MODE: Authentication disabled (unless VITE_REQUIRE_AUTH=true)
+  const requireAuth = import.meta.env.VITE_REQUIRE_AUTH === 'true';
+  const skipAuth = import.meta.env.DEV && !requireAuth;
 
   return (
     <>
@@ -38,7 +39,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route
           element={
-            isDev ? <DashboardLayout /> : (
+            skipAuth ? <DashboardLayout /> : (
               <ProtectedRoute>
                 <DashboardLayout />
               </ProtectedRoute>

@@ -1,8 +1,8 @@
-import { Card, CardBody, Checkbox, Chip, Tooltip } from '@heroui/react';
+import { Card, CardHeader, CardBody, CardFooter, Checkbox, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { formatDistanceToNow, format } from 'date-fns';
 import type { PresentPerson, AlertSeverity } from '../../../../shared/types';
-import { TruncatedText, StatusTooltip } from '../tooltips';
+import { TruncatedText, StatusTooltip, TagChip } from '@sentinel/ui';
 
 interface PersonCardProps {
   person: PresentPerson;
@@ -27,11 +27,11 @@ function parseName(name: string): { firstName: string; lastName: string } {
 function getAlertIcon(severity: AlertSeverity): string {
   switch (severity) {
     case 'critical':
-      return 'mdi:alert-circle';
+      return 'mdi:flag';
     case 'warning':
-      return 'mdi:alert';
+      return 'mdi:flag';
     case 'info':
-      return 'mdi:information';
+      return 'mdi:flag';
   }
 }
 
@@ -63,17 +63,10 @@ export default function PersonCard({
   isSelected,
   onSelect,
   onPress,
-  isHighlighted = false,
 }: PersonCardProps) {
   const isMember = person.type === 'member';
   const chipColor = isMember ? 'success' : 'primary';
   const chipLabel = isMember ? 'Member' : 'Visitor';
-
-  const borderClassName = isSelected
-    ? 'border-2 border-primary'
-    : isHighlighted
-    ? 'ring-2 ring-warning'
-    : '';
 
   const activeAlerts = person.alerts?.filter(
     (alert) => !alert.dismissedAt && (!alert.expiresAt || new Date(alert.expiresAt) > new Date())
@@ -90,122 +83,135 @@ export default function PersonCard({
     <Card
       isPressable
       isHoverable
-      className={borderClassName}
+      shadow="lg"
       onPress={() => onPress(person)}
       data-testid="person-card"
+      className="border border-default-100"
     >
-      <CardBody className="py-2 px-3">
-        <div className="flex items-start gap-2 relative">
-          {/* Alert Indicator */}
-          {highestSeverityAlert && (
-            <div className="absolute top-0 right-0 flex items-center gap-1">
-              <StatusTooltip
-                severity={getTooltipSeverity(highestSeverityAlert.severity)}
-                title={activeAlerts.length > 1 ? `${activeAlerts.length} Active Alerts` : 'Alert'}
-                description={activeAlerts.map(a => a.message).join('; ')}
-              >
-                <span className="cursor-help">
-                  <Icon
-                    icon={getAlertIcon(highestSeverityAlert.severity)}
-                    className={getAlertColorClass(highestSeverityAlert.severity)}
-                    width={18}
-                  />
-                </span>
-              </StatusTooltip>
-              {activeAlerts.length > 1 && (
-                <span className="text-xs font-medium text-default-600">
-                  {activeAlerts.length}
-                </span>
-              )}
-            </div>
+      {/* Alert Flag Indicator */}
+      {highestSeverityAlert && (
+        <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+          <StatusTooltip
+            severity={getTooltipSeverity(highestSeverityAlert.severity)}
+            title={activeAlerts.length > 1 ? `${activeAlerts.length} Active Alerts` : 'Alert'}
+            description={activeAlerts.map(a => a.message).join('; ')}
+          >
+            <span className="cursor-help">
+              <Icon
+                icon={getAlertIcon(highestSeverityAlert.severity)}
+                className={getAlertColorClass(highestSeverityAlert.severity)}
+                width={18}
+              />
+            </span>
+          </StatusTooltip>
+          {activeAlerts.length > 1 && (
+            <span className="text-xs font-medium text-default-600">
+              {activeAlerts.length}
+            </span>
           )}
-
-          {selectMode && (
-            <Checkbox
-              isSelected={isSelected}
-              onValueChange={() => onSelect(person.id)}
-              onClick={(e) => e.stopPropagation()}
-              size="sm"
-            />
-          )}
-
-          <div className="flex-1 min-w-0">
-            {/* Name display - different for members vs visitors */}
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div className="min-w-0" data-testid="person-name">
-                {isMember ? (
-                  <>
-                    <TruncatedText
-                      content={`${person.rank ? `${person.rank} ` : ''}${lastName}`}
-                      className="font-medium truncate block"
-                      as="p"
-                    />
-                    <TruncatedText
-                      content={firstName}
-                      className="text-sm text-default-500 truncate block"
-                      as="p"
-                    />
-                  </>
-                ) : (
-                  <TruncatedText
-                    content={person.name}
-                    className="font-medium truncate block"
-                    as="p"
-                  />
-                )}
-              </div>
-              <Tooltip content={isMember ? 'Unit member' : 'Visitor to the unit'}>
-                <Chip size="sm" variant="flat" color={chipColor} className="shrink-0" data-testid="person-type-badge">
-                  {chipLabel}
-                </Chip>
-              </Tooltip>
-            </div>
-
-            {isMember ? (
-              <>
-                {person.division && (
-                  <TruncatedText
-                    content={person.division}
-                    className="text-xs text-default-400 truncate block"
-                    as="p"
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                {person.organization && (
-                  <TruncatedText
-                    content={person.organization}
-                    className="text-sm text-default-500 truncate block"
-                    as="p"
-                  />
-                )}
-                {person.visitReason && (
-                  <TruncatedText
-                    content={person.visitReason}
-                    className="text-xs text-default-400 truncate block"
-                    as="p"
-                  />
-                )}
-                {person.hostName && (
-                  <TruncatedText
-                    content={`Host: ${person.hostName}`}
-                    className="text-xs text-default-400 truncate block"
-                    as="p"
-                  />
-                )}
-              </>
-            )}
-
-            <Tooltip content={format(person.checkInTime, 'PPpp')}>
-              <p className="text-xs text-default-400 mt-1 cursor-help inline-block">
-                {formatDistanceToNow(person.checkInTime, { addSuffix: true })}
-                {person.kioskName && ` • ${person.kioskName}`}
-              </p>
-            </Tooltip>
-          </div>
         </div>
+      )}
+
+      <CardHeader className="px-3 py-2 flex items-start gap-2">
+        {selectMode && (
+          <Checkbox
+            isSelected={isSelected}
+            onValueChange={() => onSelect(person.id)}
+            onClick={(e) => e.stopPropagation()}
+            size="sm"
+          />
+        )}
+
+        <div className="flex-1 min-w-0" data-testid="person-name">
+          {isMember ? (
+            <>
+              <TruncatedText
+                content={`${person.rank ? `${person.rank} ` : ''}${lastName}`}
+                className="font-semibold text-base truncate block"
+                as="p"
+              />
+              <TruncatedText
+                content={firstName}
+                className="text-sm text-default-600 truncate block"
+                as="p"
+              />
+            </>
+          ) : (
+            <>
+              <TruncatedText
+                content={person.name}
+                className="font-semibold text-base truncate block"
+                as="p"
+              />
+              {person.organization && (
+                <TruncatedText
+                  content={person.organization}
+                  className="text-sm text-default-600 truncate block"
+                  as="p"
+                />
+              )}
+            </>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardBody className="px-3 py-1 flex flex-col gap-0.5">
+        {isMember ? (
+          <>
+            {person.tags && person.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {person.tags.map((tag) => (
+                  <TagChip
+                    key={tag.id}
+                    tagName={tag.name}
+                    tagColor={tag.color as 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default' | 'gray' | 'info' | 'accent'}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {person.eventName && (
+              <TruncatedText
+                content={person.eventName}
+                className="text-sm text-default-600 truncate block"
+                as="p"
+              />
+            )}
+            {person.hostName && (
+              <TruncatedText
+                content={`Host: ${person.hostName}`}
+                className="text-sm text-default-500 truncate block"
+                as="p"
+              />
+            )}
+          </>
+        )}
       </CardBody>
+
+      <CardFooter className="px-3 py-1.5 bg-default-100 flex items-center justify-between">
+        <Tooltip
+          content={
+            <div className="px-1 py-2">
+              {person.kioskName && (
+                <div className="text-small font-bold">{person.kioskName}</div>
+              )}
+              <div className="text-tiny">{format(person.checkInTime, 'PPpp')}</div>
+            </div>
+          }
+        >
+          <p className="text-xs text-default-500 cursor-help inline-block">
+            {formatDistanceToNow(person.checkInTime, { addSuffix: true })}
+          </p>
+        </Tooltip>
+
+        <Tooltip content={isMember ? 'Unit member' : 'Visitor to the unit'}>
+          <Chip size="sm" variant="bordered" color={chipColor} className="shrink-0 h-5 text-tiny" data-testid="person-type-badge">
+            {chipLabel}
+          </Chip>
+        </Tooltip>
+      </CardFooter>
     </Card>
   );
 }
