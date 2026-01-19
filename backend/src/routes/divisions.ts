@@ -107,6 +107,29 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: 
   }
 });
 
+// GET /api/divisions/:id/usage - Get division usage count
+router.get('/:id/usage', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    // Check if division exists
+    const existing = await divisionRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError(
+        'Division not found',
+        `Division ${id} not found`,
+        'Please check the division ID and try again.'
+      );
+    }
+
+    const count = await divisionRepository.getUsageCount(id);
+
+    res.json({ count });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // DELETE /api/divisions/:id - Delete division
 router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
   try {

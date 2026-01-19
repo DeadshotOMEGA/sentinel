@@ -172,7 +172,8 @@ export class BadgeService {
 
   /**
    * Update badge status
-   * Auto-unassigns badge when marked as 'lost'
+   * Auto-unassigns badge when marked as 'returned'
+   * Lost and disabled badges remain assigned to track who had them
    */
   async updateStatus(badgeId: string, status: BadgeStatus): Promise<Badge> {
     // Verify badge exists
@@ -185,8 +186,8 @@ export class BadgeService {
       );
     }
 
-    // Auto-unassign when marking as 'lost'
-    if (status === 'lost' && badge.assignmentType !== 'unassigned') {
+    // Auto-unassign when marking as 'returned'
+    if (status === 'returned' && badge.assignmentType !== 'unassigned') {
       await this.unassign(badgeId);
     }
 

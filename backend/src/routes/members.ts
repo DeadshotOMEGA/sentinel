@@ -80,6 +80,7 @@ const updateMemberSchema = z.object({
   homePhone: z.string().optional(),
   mobilePhone: z.string().optional(),
   badgeId: z.string().uuid().optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
 const paginationSchema = z.object({

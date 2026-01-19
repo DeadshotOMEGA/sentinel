@@ -1,5 +1,8 @@
 import { validateEnv } from './config/env-validation.js';
 import net from 'net';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { initSentry, flushSentry } from './utils/sentry.js';
 
 // Validate environment variables FIRST, before any other imports
@@ -7,6 +10,10 @@ const env = validateEnv();
 
 // Initialize Sentry early (before other imports) if DSN is configured
 initSentry();
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Check if port is already in use (prevent multiple instances)
 async function checkPortAvailable(port: number): Promise<void> {
@@ -185,6 +192,17 @@ logger.info('WebSocket server initialized');
 const shutdown = async (signal: string): Promise<void> => {
   logger.info(`${signal} received, starting graceful shutdown...`);
 
+  // Delete PID file
+  const pidFile = path.join(__dirname, '../.backend.pid');
+  try {
+    if (fs.existsSync(pidFile)) {
+      fs.unlinkSync(pidFile);
+      logger.info('PID file removed');
+    }
+  } catch (err) {
+    logger.warn('Failed to remove PID file:', err);
+  }
+
   // Flush pending Sentry events
   await flushSentry(2000);
 
@@ -208,4 +226,13 @@ httpServer.listen(PORT, () => {
   logger.info(`Server listening on port ${PORT}`);
   logger.info(`Environment: ${env.NODE_ENV}`);
   logger.info(`API available at http://localhost:${PORT}/api`);
+
+  // Write PID file for process management (prevents duplicate instances)
+  const pidFile = path.join(__dirname, '../.backend.pid');
+  try {
+    fs.writeFileSync(pidFile, process.pid.toString());
+    logger.info(`PID ${process.pid} written to ${pidFile}`);
+  } catch (err) {
+    logger.warn('Failed to write PID file:', err);
+  }
 });

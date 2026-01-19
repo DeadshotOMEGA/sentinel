@@ -22,6 +22,7 @@ interface PresentMember {
   mess: string | null;
   checkedInAt: string;
   kioskId?: string;
+  tags: Array<{ id: string; name: string; color: string }>;
 }
 
 interface MemberPresenceItem {
@@ -155,6 +156,7 @@ export class PresenceService {
         division: m.division,
         divisionId: m.divisionId,
         memberType: m.memberType,
+        tags: m.tags,
         checkInTime: new Date(m.checkedInAt),
         kioskId: m.kioskId,
         kioskName: m.kioskId ? getKioskName(m.kioskId) : undefined,

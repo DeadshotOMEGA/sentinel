@@ -116,6 +116,16 @@ export class DivisionRepository {
       throw new Error(`Division not found: ${id}`);
     }
   }
+
+  /**
+   * Get the count of members assigned to a division
+   */
+  async getUsageCount(id: string): Promise<number> {
+    const count = await prisma.member.count({
+      where: { divisionId: id },
+    });
+    return count;
+  }
 }
 
 export const divisionRepository = new DivisionRepository();

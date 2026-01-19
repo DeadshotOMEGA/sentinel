@@ -12,24 +12,41 @@ export class AppError extends Error {
   }
 }
 
+// Helper to detect if first param is an error code (UPPER_CASE_SNAKE) vs message
+function isErrorCode(str: string): boolean {
+  return /^[A-Z][A-Z0-9_]+$/.test(str);
+}
+
 export class NotFoundError extends AppError {
   constructor(
-    message: string = 'Resource not found',
-    details?: string,
+    codeOrMessage: string,
+    messageOrDetails?: string,
     howToFix?: string
   ) {
-    super(404, 'NOT_FOUND', message, details, howToFix);
+    if (isErrorCode(codeOrMessage) && messageOrDetails) {
+      // New format: (code, message, howToFix)
+      super(404, codeOrMessage, messageOrDetails, undefined, howToFix);
+    } else {
+      // Old format: (message, details?, howToFix?)
+      super(404, 'NOT_FOUND', codeOrMessage, messageOrDetails, howToFix);
+    }
     this.name = 'NotFoundError';
   }
 }
 
 export class ValidationError extends AppError {
   constructor(
-    message: string = 'Validation failed',
-    details?: string,
+    codeOrMessage: string,
+    messageOrDetails?: string,
     howToFix?: string
   ) {
-    super(400, 'VALIDATION_ERROR', message, details, howToFix);
+    if (isErrorCode(codeOrMessage) && messageOrDetails) {
+      // New format: (code, message, howToFix)
+      super(400, codeOrMessage, messageOrDetails, undefined, howToFix);
+    } else {
+      // Old format: (message, details?, howToFix?)
+      super(400, 'VALIDATION_ERROR', codeOrMessage, messageOrDetails, howToFix);
+    }
     this.name = 'ValidationError';
   }
 }
@@ -58,11 +75,17 @@ export class ForbiddenError extends AppError {
 
 export class ConflictError extends AppError {
   constructor(
-    message: string = 'Resource conflict',
-    details?: string,
+    codeOrMessage: string,
+    messageOrDetails?: string,
     howToFix?: string
   ) {
-    super(409, 'CONFLICT', message, details, howToFix);
+    if (isErrorCode(codeOrMessage) && messageOrDetails) {
+      // New format: (code, message, howToFix)
+      super(409, codeOrMessage, messageOrDetails, undefined, howToFix);
+    } else {
+      // Old format: (message, details?, howToFix?)
+      super(409, 'CONFLICT', codeOrMessage, messageOrDetails, howToFix);
+    }
     this.name = 'ConflictError';
   }
 }

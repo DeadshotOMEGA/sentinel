@@ -143,7 +143,7 @@ router.put('/:id/unassign', requireAuth, requireRole('admin'), audit('badge_unas
 });
 
 // PUT /api/badges/:id/status - Update badge status
-// Auto-unassigns badge when marked as 'lost'
+// Auto-unassigns badge when marked as 'returned'
 router.put('/:id/status', requireAuth, requireRole('admin'), audit('badge_status_change', 'badge'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;

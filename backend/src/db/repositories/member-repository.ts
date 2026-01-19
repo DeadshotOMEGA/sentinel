@@ -82,6 +82,7 @@ function toMemberWithDivision(
         name: string;
         color: string;
         description: string | null;
+        displayOrder: number;
         createdAt: Date | null;
         updatedAt: Date | null;
       };
@@ -129,6 +130,7 @@ function toMemberWithDivision(
         name: mt.tag.name,
         color: mt.tag.color,
         description: mt.tag.description ?? undefined,
+        displayOrder: mt.tag.displayOrder,
         createdAt: mt.tag.createdAt ?? new Date(),
         updatedAt: mt.tag.updatedAt ?? new Date(),
       })),
@@ -506,14 +508,46 @@ export class MemberRepository {
       updateData.badgeId = data.badgeId;
     }
 
-    if (Object.keys(updateData).length === 0) {
+    // Handle tags separately - only process if tagIds array is provided
+    const hasTagUpdate = data.tagIds !== undefined;
+    const hasFieldUpdate = Object.keys(updateData).length > 0;
+
+    if (!hasFieldUpdate && !hasTagUpdate) {
       throw new Error('No fields to update');
     }
 
-    // updatedAt is automatically set by Prisma
-    const member = await prisma.member.update({
-      where: { id },
-      data: updateData,
+    // Use a transaction to update member and tags atomically
+    const member = await prisma.$transaction(async (tx) => {
+      // Update member fields if any
+      let updatedMember;
+      if (hasFieldUpdate) {
+        updatedMember = await tx.member.update({
+          where: { id },
+          data: updateData,
+        });
+      } else {
+        updatedMember = await tx.member.findUniqueOrThrow({ where: { id } });
+      }
+
+      // Handle tagIds - replace all tags for this member
+      if (hasTagUpdate && data.tagIds) {
+        // Delete existing tags
+        await tx.memberTag.deleteMany({
+          where: { memberId: id },
+        });
+
+        // Create new tag associations
+        if (data.tagIds.length > 0) {
+          await tx.memberTag.createMany({
+            data: data.tagIds.map((tagId) => ({
+              memberId: id,
+              tagId,
+            })),
+          });
+        }
+      }
+
+      return updatedMember;
     });
 
     await this.invalidatePresenceCache();

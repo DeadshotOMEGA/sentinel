@@ -1,11 +1,13 @@
 import * as Papa from 'papaparse';
 import { memberRepository } from '../db/repositories/member-repository';
 import { divisionRepository } from '../db/repositories/division-repository';
+import { listItemRepository } from '../db/repositories/list-item-repository';
 import { ValidationError } from '../utils/errors';
 import { normalizeName } from '../utils/name-normalizer';
 import { sanitizeCsvValue } from '../utils/csv-sanitizer';
 import { prisma } from '../db/prisma';
 import { LOCK_KEYS } from '../utils/advisory-lock';
+import type { ListType } from '../../../shared/types';
 import type {
   NominalRollRow,
   ImportPreview,
@@ -419,6 +421,30 @@ export class ImportService {
   }
 
   /**
+   * Ensure a list item exists for a given type and name.
+   * Creates it with is_system=false if it doesn't exist.
+   * Silently handles duplicates and errors to prevent import failures.
+   */
+  private async ensureListItemExists(listType: ListType, name: string): Promise<void> {
+    if (!name?.trim()) {
+      return;
+    }
+
+    // Generate code from name: lowercase, replace spaces/hyphens with underscores
+    const code = name.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_').replace(/'/g, '');
+
+    try {
+      const existing = await listItemRepository.findByTypeAndCode(listType, code);
+      if (!existing) {
+        await listItemRepository.create(listType, { code, name, isSystem: false });
+      }
+    } catch {
+      // Silently ignore errors - list item creation should not fail imports
+      // This handles race conditions where item might be created between check and insert
+    }
+  }
+
+  /**
    * Check if two members have different data that needs updating
    */
   private hasChanges(current: Member, incoming: NominalRollRow, divisionId: string): boolean {
@@ -673,6 +699,33 @@ export class ImportService {
     const divisionMap = new Map<string, string>(
       Object.entries(preview.divisionMapping)
     );
+
+    // Auto-populate list_items for rank, mess, and moc values
+    // This builds suggestion lists from real import data
+    // Done before transaction to avoid conflicts with advisory lock
+    const allRows = [...preview.toAdd, ...preview.toUpdate.map(u => u.incoming)];
+    const uniqueRanks = new Set<string>();
+    const uniqueMesses = new Set<string>();
+    const uniqueMocs = new Set<string>();
+
+    for (const row of allRows) {
+      if (row.rank) uniqueRanks.add(row.rank);
+      if (row.mess) uniqueMesses.add(row.mess);
+      if (row.moc) uniqueMocs.add(row.moc);
+    }
+
+    // Create list items in parallel - errors are silently ignored to prevent import failures
+    const listItemPromises: Promise<void>[] = [];
+    for (const rank of uniqueRanks) {
+      listItemPromises.push(this.ensureListItemExists('rank', rank));
+    }
+    for (const mess of uniqueMesses) {
+      listItemPromises.push(this.ensureListItemExists('mess', mess));
+    }
+    for (const moc of uniqueMocs) {
+      listItemPromises.push(this.ensureListItemExists('moc', moc));
+    }
+    await Promise.all(listItemPromises);
 
     // Use advisory lock + transaction to prevent concurrent imports
     // withAdvisoryLock already wraps in a transaction, so we use that transaction
