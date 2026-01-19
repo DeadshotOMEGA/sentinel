@@ -22,6 +22,10 @@ const updateTagSchema = z.object({
   description: z.string().optional(),
 });
 
+const reorderTagsSchema = z.object({
+  tagIds: z.array(z.string().uuid()),
+});
+
 const transferLockupSchema = z.object({
   toMemberId: z.string().uuid(),
   notes: z.string().optional(),
@@ -32,6 +36,28 @@ router.get('/', requireAuth, async (req: Request, res: Response, next: NextFunct
   try {
     const tags = await tagRepository.findAll();
     res.json({ tags });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/tags/reorder - Reorder tags (admin only)
+// NOTE: This MUST come before /:id route to avoid matching "reorder" as an ID
+router.put('/reorder', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validationResult = reorderTagsSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        'Invalid reorder data',
+        validationResult.error.message,
+        'Please provide an array of tag IDs in the desired order.'
+      );
+    }
+
+    const { tagIds } = validationResult.data;
+    await tagRepository.reorder(tagIds);
+
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
