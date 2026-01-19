@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useKioskStore } from '../state/kiosk-state';
+import { useKioskStore, type KioskErrorCode } from '../state/kiosk-state';
 import { scanBadge, type QueuedCheckinResult } from '../lib/api';
 import { getConfig } from '../lib/config';
 
@@ -15,7 +15,7 @@ const MAX_SERIAL_LENGTH = 32;
  * followed by Enter. This hook captures that input and triggers check-in.
  */
 export function useBadgeScanner() {
-  const { currentScreen, setScreen, setCheckinResult, setError } = useKioskStore();
+  const { currentScreen, setScreen, setCheckinResult, setWarningResult, setError } = useKioskStore();
   const bufferRef = useRef<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastScanTimeRef = useRef<number>(0);
@@ -49,6 +49,7 @@ export function useBadgeScanner() {
     if (timeSinceLastScan < config.scanCooldownMs) {
       const remainingMs = config.scanCooldownMs - timeSinceLastScan;
       setError({
+        code: 'DUPLICATE_SCAN',
         message: 'Please wait',
         howToFix: `You can scan again in ${Math.ceil(remainingMs / 1000)} second${remainingMs > 1000 ? 's' : ''}.`,
       });
@@ -64,49 +65,66 @@ export function useBadgeScanner() {
       if ('queued' in result) {
         const queuedResult = result as QueuedCheckinResult;
         setError({
+          code: 'NETWORK_ERROR',
           message: queuedResult.message,
           howToFix: 'Your scan has been recorded and will sync when connection is restored.',
         });
         return;
       }
 
-      // Success - show check-in/out result
+      // Success - check for warning flag (inactive member)
       lastScanTimeRef.current = Date.now();
-      setCheckinResult(result);
+
+      if ('warning' in result && result.warning) {
+        setWarningResult({
+          ...result,
+          warning: result.warning,
+        });
+      } else {
+        setCheckinResult(result);
+      }
     } catch (error) {
       if (error instanceof Error) {
         // Parse API error response
         const apiError = error as { response?: { data?: { error?: { userMessage?: string; code?: string } } } };
-        const userMessage = apiError.response?.data?.error?.userMessage || error.message;
-        const errorCode = apiError.response?.data?.error?.code;
+        const errorCode = (apiError.response?.data?.error?.code || 'UNKNOWN') as KioskErrorCode;
 
-        let howToFix: string | undefined;
+        // User-friendly messages without status codes
+        let message: string;
+        let howToFix: string;
+
         switch (errorCode) {
           case 'BADGE_NOT_FOUND':
-            howToFix = 'This badge is not registered. Please see an administrator.';
+            message = 'Badge Not Recognized';
+            howToFix = 'This badge is not registered in the system. Please visit Ship\'s Office to register.';
             break;
           case 'BADGE_NOT_ASSIGNED':
-            howToFix = 'This badge is not assigned to anyone. Please see an administrator.';
+            message = 'Badge Not Assigned';
+            howToFix = 'This badge is not assigned to anyone. Please visit Ship\'s Office for assistance.';
             break;
           case 'BADGE_INACTIVE':
-            howToFix = 'This badge has been deactivated. Please see an administrator.';
+            message = 'Badge Disabled';
+            howToFix = 'This badge has been disabled. Please visit Ship\'s Office for assistance.';
             break;
           case 'DUPLICATE_SCAN':
+            message = 'Please Wait';
             howToFix = 'Please wait a few seconds before scanning again.';
             break;
           default:
-            howToFix = 'Please try again or contact an administrator if the problem persists.';
+            message = 'Unable to Process';
+            howToFix = 'Please try again or visit Ship\'s Office if the problem persists.';
         }
 
-        setError({ message: userMessage, howToFix });
+        setError({ code: errorCode, message, howToFix });
       } else {
         setError({
+          code: 'UNKNOWN',
           message: 'An unexpected error occurred',
-          howToFix: 'Please try again or contact an administrator.',
+          howToFix: 'Please try again or visit Ship\'s Office for assistance.',
         });
       }
     }
-  }, [currentScreen, setScreen, setCheckinResult, setError, clearBuffer, config.kioskId]);
+  }, [currentScreen, setScreen, setCheckinResult, setWarningResult, setError, clearBuffer, config.kioskId]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

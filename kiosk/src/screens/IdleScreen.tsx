@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Anchor } from 'lucide-react';
 import { useKioskStore } from '../state/kiosk-state';
 import { getConfig } from '../lib/config';
 import DevPanel from '../components/DevPanel';
-import { Logo } from '@shared/ui';
 import { Button } from '@heroui/react';
 
 interface IdleScreenProps {
@@ -24,10 +24,10 @@ export default function IdleScreen({ onSimulateScan }: IdleScreenProps) {
 
       {/* Logo/Header - Reduced spacing */}
       <div className="mb-6 text-center">
-        <div className="flex justify-center mb-3">
-          <Logo size="xl" />
+        <div className="flex items-center justify-center gap-4 mb-3">
+          <Anchor className="h-12 w-12 text-primary" strokeWidth={2.5} aria-hidden="true" />
+          <h1 className="text-5xl font-bold tracking-wide text-primary">HMCS Chippawa</h1>
         </div>
-        <h1 className="text-3xl font-semibold text-gray-800">HMCS Chippawa</h1>
         <p className="mt-1 text-xl text-gray-600">Attendance System</p>
       </div>
 

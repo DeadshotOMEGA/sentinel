@@ -49,25 +49,16 @@ export default function ErrorScreen() {
       {/* Error Message */}
       <div className="text-center mb-6 max-w-3xl">
         <h2 className="text-4xl font-bold text-danger-700 mb-4">
-          Unable to Process
+          {error.message}
         </h2>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-5">
-          <p className="text-2xl text-gray-800 mb-4">
-            {error.message}
-          </p>
-
-          {error.howToFix && (
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-xl font-semibold text-gray-700 mb-2">
-                What to do:
-              </p>
-              <p className="text-xl text-gray-600">
-                {error.howToFix}
-              </p>
-            </div>
-          )}
-        </div>
+        {error.howToFix && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-5">
+            <p className="text-2xl text-gray-800">
+              {error.howToFix}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}

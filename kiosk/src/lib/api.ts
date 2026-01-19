@@ -21,6 +21,11 @@ export const api = axios.create({
   },
 });
 
+interface CheckinWarning {
+  type: 'inactive_member';
+  message: string;
+}
+
 interface CheckinApiResponse {
   checkin: {
     id: string;
@@ -42,6 +47,7 @@ interface CheckinApiResponse {
     };
   };
   direction: 'in' | 'out';
+  warning?: CheckinWarning;
 }
 
 export interface QueuedCheckinResult {
@@ -73,13 +79,19 @@ export async function scanBadge(
       timestamp: new Date().toISOString(),
     });
 
-    return {
+    const result: CheckinResult & { warning?: CheckinWarning } = {
+      memberId: response.data.member.id,
       memberName: `${response.data.member.firstName} ${response.data.member.lastName}`,
       rank: response.data.member.rank,
       division: response.data.member.division.name,
       direction: response.data.direction,
       timestamp: response.data.checkin.timestamp,
     };
+
+    if (response.data.warning) {
+      return { ...result, warning: response.data.warning };
+    }
+    return result;
   } catch (error) {
     // Network error - queue for later sync
     if (error instanceof AxiosError && !error.response) {
@@ -165,5 +177,92 @@ interface ClearAllResponse {
 
 export async function clearAllCheckins(): Promise<ClearAllResponse> {
   const response = await api.delete<ClearAllResponse>('/dev/checkins/clear-all');
+  return response.data;
+}
+
+// ============================================
+// DDS (Duty Day Staff) API Functions
+// ============================================
+
+export interface DdsAssignment {
+  id: string;
+  memberId: string;
+  memberName: string;
+  date: string;
+  assignedAt: string;
+}
+
+interface DdsStatusResponse {
+  hasDds: boolean;
+}
+
+interface DdsAcceptResponse {
+  dds: DdsAssignment;
+}
+
+export async function checkDdsStatus(): Promise<DdsStatusResponse> {
+  const response = await api.get<DdsStatusResponse>('/dds/status');
+  return response.data;
+}
+
+export async function acceptDds(memberId: string): Promise<DdsAssignment> {
+  const response = await api.post<DdsAcceptResponse>('/dds/accept', { memberId });
+  return response.data.dds;
+}
+
+// ============================================
+// Lockup API Functions
+// ============================================
+
+export interface LockupMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  rank: string;
+  division: string;
+  checkInTime: string;
+}
+
+export interface LockupVisitor {
+  id: string;
+  name: string;
+  organization: string;
+  checkInTime: string;
+}
+
+interface LockupTagCheckResponse {
+  hasLockupTag: boolean;
+}
+
+interface PresentForLockupResponse {
+  members: LockupMember[];
+  visitors: LockupVisitor[];
+}
+
+interface ExecuteLockupResponse {
+  checkedOut: {
+    members: string[];
+    visitors: string[];
+  };
+}
+
+export async function checkMemberHasLockupTag(memberId: string): Promise<boolean> {
+  const response = await api.get<LockupTagCheckResponse>(`/lockup/check/${memberId}`);
+  return response.data.hasLockupTag;
+}
+
+export async function getPresentForLockup(): Promise<{ members: LockupMember[]; visitors: LockupVisitor[] }> {
+  const response = await api.get<PresentForLockupResponse>('/lockup/present');
+  return response.data;
+}
+
+export async function executeLockup(
+  memberId: string,
+  note?: string
+): Promise<{ checkedOut: { members: string[]; visitors: string[] } }> {
+  const response = await api.post<ExecuteLockupResponse>('/lockup/execute', {
+    memberId,
+    note,
+  });
   return response.data;
 }
