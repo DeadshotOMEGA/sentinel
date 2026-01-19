@@ -629,7 +629,10 @@ export const componentStyles = {
   card: {
     defaultProps: {
       radius: "lg",
-      shadow: "md",
+      shadow: "lg",
+    },
+    classNames: {
+      base: "border border-default-100",
     },
   },
 

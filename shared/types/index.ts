@@ -1,3 +1,37 @@
+// List Item Types
+export type ListType = 'event_role' | 'rank' | 'mess' | 'moc';
+
+export interface ListItem {
+  id: string;
+  listType: ListType;
+  code: string;
+  name: string;
+  displayOrder: number;
+  description?: string;
+  isSystem: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateListItemInput {
+  code: string;
+  name: string;
+  displayOrder?: number;
+  description?: string;
+  isSystem?: boolean;
+}
+
+export interface UpdateListItemInput {
+  code?: string;
+  name?: string;
+  displayOrder?: number;
+  description?: string;
+}
+
+export interface ListItemWithUsage extends ListItem {
+  usageCount: number;
+}
+
 // Member Types
 export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force';
 export type MemberStatus = 'active' | 'inactive' | 'pending_review' | 'terminated';
@@ -98,6 +132,7 @@ export interface Tag {
   name: string;
   color: string;
   description?: string;
+  displayOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,12 +148,18 @@ export interface CreateTagInput {
   name: string;
   color: string;
   description?: string;
+  displayOrder?: number;
 }
 
 export interface UpdateTagInput {
   name?: string;
   color?: string;
   description?: string;
+  displayOrder?: number;
+}
+
+export interface TagWithUsage extends Tag {
+  usageCount: number;
 }
 
 export interface MemberFilterParams {
@@ -282,6 +323,10 @@ export interface UpdateDivisionInput {
   description?: string;
 }
 
+export interface DivisionWithUsage extends Division {
+  usageCount: number;
+}
+
 // Badge Types
 export type BadgeAssignmentType = 'member' | 'event' | 'unassigned';
 export type BadgeStatus = 'active' | 'disabled' | 'lost' | 'returned';
@@ -348,6 +393,19 @@ export interface CreateCheckinInput {
   synced?: boolean;
   method?: CheckinMethod;
   createdByAdmin?: string;
+}
+
+// Stale Checkin Types
+export interface StaleCheckin {
+  memberId: string;
+  memberName: string;
+  rank: string;
+  division: string;
+  divisionId: string;
+  checkinTime: Date;
+  durationMinutes: number;
+  kioskId?: string;
+  kioskName?: string;
 }
 
 export interface ManualMemberCheckinInput {
@@ -427,16 +485,23 @@ export interface VisitorHistoryFilters {
 }
 
 // Admin User Types
+export type AdminRole = 'quartermaster' | 'admin' | 'developer';
+
 export interface AdminUser {
   id: string;
   username: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
-  email: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  role: AdminRole;
+  email?: string;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
+  disabled: boolean;
+  disabledAt?: Date;
+  disabledBy?: string;
+  updatedBy?: string;
 }
 
 export interface AdminUserWithPassword extends AdminUser {
@@ -445,11 +510,50 @@ export interface AdminUserWithPassword extends AdminUser {
 
 export interface CreateAdminInput {
   username: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
-  email: string;
+  displayName: string;
+  role: AdminRole;
   password: string;
+}
+
+export interface CreateAdminUserInput {
+  username: string;
+  displayName: string;
+  password: string;
+  role: AdminRole;
+}
+
+export interface UpdateAdminUserInput {
+  username?: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: AdminRole;
+}
+
+export interface ResetPasswordInput {
+  newPassword: string;
+}
+
+export type UserAuditAction =
+  | 'user_created'
+  | 'user_updated'
+  | 'user_deleted'
+  | 'user_disabled'
+  | 'user_enabled'
+  | 'password_reset'
+  | 'role_changed';
+
+export interface UserAuditLog {
+  id: string;
+  actorId: string;
+  actorUsername: string;
+  action: UserAuditAction;
+  targetUserId: string;
+  targetUsername: string;
+  changes: Record<string, unknown>;
+  timestamp: Date;
+  ipAddress: string;
 }
 
 // Event Types
@@ -584,6 +688,7 @@ export interface PresentPerson {
   division?: string;
   divisionId?: string;
   memberType?: MemberType;
+  tags?: Array<{ id: string; name: string; color: string }>;
 
   // Visitor-specific fields
   organization?: string;
@@ -648,6 +753,119 @@ export interface PaginatedResponse<T> {
     hasNextPage: boolean;
     hasPrevPage: boolean;
   };
+}
+
+// Enum Types - Visit Type
+export interface VisitTypeEnum {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateVisitTypeInput {
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateVisitTypeInput {
+  code?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+}
+
+export interface VisitTypeWithUsage extends VisitTypeEnum {
+  usageCount: number;
+}
+
+// Enum Types - Member Status
+export interface MemberStatusEnum {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateMemberStatusInput {
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateMemberStatusInput {
+  code?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+}
+
+export interface MemberStatusWithUsage extends MemberStatusEnum {
+  usageCount: number;
+}
+
+// Enum Types - Member Type
+export interface MemberTypeEnum {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateMemberTypeInput {
+  code: string;
+  name: string;
+  description?: string;
+}
+
+export interface UpdateMemberTypeInput {
+  code?: string;
+  name?: string;
+  description?: string;
+}
+
+export interface MemberTypeWithUsage extends MemberTypeEnum {
+  usageCount: number;
+}
+
+// Enum Types - Badge Status
+export interface BadgeStatusEnum {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateBadgeStatusInput {
+  code: string;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateBadgeStatusInput {
+  code?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+}
+
+export interface BadgeStatusWithUsage extends BadgeStatusEnum {
+  usageCount: number;
 }
 
 // Report Types
