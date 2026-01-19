@@ -25,7 +25,7 @@ An RFID-based attendance tracking system for HMCS Chippawa naval reserve unit.
 - **Testing**: Vitest + Testcontainers + Supertest
 
 #### Frontend Stack (TBD)
-- To be determined (avoiding HeroUI due to Bun issues)
+- To be determined (avoiding HeroUI)
 
 ### Key Features
 
@@ -35,7 +35,7 @@ An RFID-based attendance tracking system for HMCS Chippawa naval reserve unit.
 4. **Admin Dashboard** - Attendance management, reporting, CSV imports
 5. **Multi-client Architecture**:
    - Web admin panel
-   - Kiosk displays
+   - Kiosk display
    - RFID reader clients
 
 ## Research Documentation
@@ -181,10 +181,50 @@ See [.claude/rules/](.claude/rules/) for:
 - 100% type-safe API contracts with ts-rest
 
 ### Git Workflow
-- Feature branches from `main`
-- Conventional commits (feat:, fix:, chore:, etc.)
-- PR required for merges
-- CI runs tests, type-check, lint
+
+**Repository**: https://github.com/DeadshotOMEGA/sentinel
+
+**Branch Structure**:
+- `main` - Production branch
+- `develop` - Integration branch 🔒 **PROTECTED** (PR required, 1 approval)
+- `rebuild` - Current rebuild working branch (you are here)
+
+**CRITICAL - Branch Protection Rules**:
+
+⚠️ **NEVER push directly to `develop` branch** ⚠️
+
+The `develop` branch is protected with:
+- ✅ Requires pull request reviews (1 approval minimum)
+- ✅ Blocks force pushes (`git push --force` disabled)
+- ✅ Prevents branch deletion
+- ✅ Enforced for administrators (no bypass)
+
+**Workflow**:
+1. Work on `rebuild` branch (current)
+2. Commit changes with conventional commits (feat:, fix:, chore:, etc.)
+3. Push to `origin/rebuild`
+4. When ready: Create PR from `rebuild` → `develop`
+5. Get 1 approval
+6. Merge to `develop`
+7. Eventually: Merge `develop` → `main` for production
+
+**Git Commands**:
+```bash
+# Commit changes
+git add .
+git commit -m "feat: add personnel repository with Prisma"
+
+# Push to rebuild branch
+git push origin rebuild
+
+# Create pull request (when ready)
+gh pr create --base develop --head rebuild --title "Backend Rebuild" --body "..."
+
+# Check branch protection status
+gh api repos/DeadshotOMEGA/sentinel/branches/develop/protection
+```
+
+**CI/CD**: Tests, type-check, and lint run automatically on PR creation
 
 ## Architecture Decisions
 
