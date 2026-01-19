@@ -1,0 +1,108 @@
+-- =====================================================
+-- MIGRATION 025: CLEANUP OLD ENUM COLUMNS
+-- =====================================================
+--
+-- WARNING: DO NOT RUN THIS MIGRATION UNTIL:
+-- 1. The frontend is fully deployed to production
+-- 2. All API consumers are using the new /api/enums endpoints
+-- 3. No code is referencing the old VARCHAR enum columns
+--
+-- This migration is destructive and will:
+-- - Drop old enum VARCHAR columns (visitors.visit_type, members.status, etc.)
+-- - Rename new ID columns to final names
+-- - Add NOT NULL constraints
+--
+-- There is NO rollback for this migration.
+-- =====================================================
+
+-- Migration: 025_cleanup_old_enum_columns
+-- Description: Finalize enum migration by dropping old VARCHAR columns and renaming ID columns
+-- Created: 2026-01-15
+--
+-- This migration completes the dual-column migration strategy started in migrations 023 and 024.
+-- After this migration, the enum lookup tables are the single source of truth.
+
+-- ============================================================================
+-- DROP CHECK CONSTRAINTS
+-- ============================================================================
+
+-- Drop CHECK constraints on old VARCHAR columns
+ALTER TABLE visitors DROP CONSTRAINT IF EXISTS visitors_visit_type_check;
+ALTER TABLE members DROP CONSTRAINT IF EXISTS members_status_check;
+ALTER TABLE members DROP CONSTRAINT IF EXISTS members_member_type_check;
+ALTER TABLE badges DROP CONSTRAINT IF EXISTS badges_status_check;
+
+-- ============================================================================
+-- DROP OLD VARCHAR COLUMNS
+-- ============================================================================
+
+-- Drop the old VARCHAR enum columns
+ALTER TABLE visitors DROP COLUMN IF EXISTS visit_type;
+ALTER TABLE members DROP COLUMN IF EXISTS status;
+ALTER TABLE members DROP COLUMN IF EXISTS member_type;
+ALTER TABLE badges DROP COLUMN IF EXISTS status;
+
+-- ============================================================================
+-- RENAME NEW ID COLUMNS TO FINAL NAMES
+-- ============================================================================
+
+-- Rename foreign key columns to their final names (removing _id suffix)
+ALTER TABLE visitors RENAME COLUMN visit_type_id TO visit_type;
+ALTER TABLE members RENAME COLUMN member_status_id TO status;
+ALTER TABLE members RENAME COLUMN member_type_id TO member_type;
+ALTER TABLE badges RENAME COLUMN badge_status_id TO status;
+
+-- ============================================================================
+-- ADD NOT NULL CONSTRAINTS
+-- ============================================================================
+
+-- Ensure all enum columns are required (no null values allowed)
+ALTER TABLE visitors ALTER COLUMN visit_type SET NOT NULL;
+ALTER TABLE members ALTER COLUMN status SET NOT NULL;
+ALTER TABLE members ALTER COLUMN member_type SET NOT NULL;
+ALTER TABLE badges ALTER COLUMN status SET NOT NULL;
+
+-- ============================================================================
+-- UPDATE COLUMN COMMENTS
+-- ============================================================================
+
+-- Update comments to reflect final column purpose
+COMMENT ON COLUMN visitors.visit_type IS 'Foreign key to visit_types enum table';
+COMMENT ON COLUMN members.status IS 'Foreign key to member_statuses enum table';
+COMMENT ON COLUMN members.member_type IS 'Foreign key to member_types enum table';
+COMMENT ON COLUMN badges.status IS 'Foreign key to badge_statuses enum table';
+
+-- ============================================================================
+-- VERIFY INDEXES
+-- ============================================================================
+
+-- Note: PostgreSQL automatically updates index names when columns are renamed.
+-- The indexes created in migration 024 (idx_visitors_visit_type_id, etc.) will
+-- continue to work but may have outdated names. Re-creating them is optional
+-- but recommended for clarity.
+
+-- Drop old indexes (if they exist with old names)
+DROP INDEX IF EXISTS idx_visitors_visit_type_id;
+DROP INDEX IF EXISTS idx_members_member_status_id;
+DROP INDEX IF EXISTS idx_members_member_type_id;
+DROP INDEX IF EXISTS idx_badges_badge_status_id;
+
+-- Create indexes with final names
+CREATE INDEX IF NOT EXISTS idx_visitors_visit_type ON visitors(visit_type);
+CREATE INDEX IF NOT EXISTS idx_members_status ON members(status);
+CREATE INDEX IF NOT EXISTS idx_members_member_type ON members(member_type);
+CREATE INDEX IF NOT EXISTS idx_badges_status ON badges(status);
+
+-- ============================================================================
+-- SUMMARY
+-- ============================================================================
+-- This migration:
+-- 1. Drops CHECK constraints on old VARCHAR columns
+-- 2. Drops old VARCHAR enum columns
+-- 3. Renames new UUID columns to final names (removing _id suffix)
+-- 4. Adds NOT NULL constraints to all enum columns
+-- 5. Recreates indexes with proper names
+--
+-- After this migration, the schema uses UUID foreign keys to enum lookup tables
+-- instead of VARCHAR columns with CHECK constraints.
+-- ============================================================================
