@@ -9,6 +9,8 @@ import { requireAuth, requireDisplayAuth, requireRole } from '../auth';
 import { ValidationError, NotFoundError, ConflictError } from '../utils/errors';
 import { kioskLimiter, bulkLimiter } from '../middleware/rate-limit';
 import { broadcastVisitorSignout, broadcastPresenceUpdate } from '../websocket';
+import { getKioskName } from '../utils/kiosk-names';
+import type { StaleCheckin } from '../../../shared/types';
 
 const router = Router();
 
@@ -32,6 +34,11 @@ const bulkCheckinSchema = z.object({
 const bulkCheckoutSchema = z.object({
   memberIds: z.array(z.string().uuid()).default([]),
   visitorIds: z.array(z.string().uuid()).default([]),
+});
+
+const resolveStaleCheckinsSchema = z.object({
+  memberIds: z.array(z.string().uuid()).min(1, 'At least one member ID is required'),
+  note: z.string().min(1, 'A note is required for the audit trail'),
 });
 
 const manualMemberCheckinSchema = z.object({
@@ -69,6 +76,7 @@ router.post('/', kioskLimiter, requireAuth, async (req: Request, res: Response, 
         division: result.member.division,
       },
       direction: result.direction,
+      warning: result.warning,
     });
   } catch (err) {
     next(err);
@@ -364,6 +372,97 @@ router.post('/bulk-checkout', requireAuth, requireRole('admin'), async (req: Req
       failed: failedCount,
       results,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/checkins/stale - Get members with stale check-ins (checked in > N hours ago)
+router.get('/stale', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const hoursThreshold = Math.max(1, Math.min(72, parseInt(req.query.hours as string) || 12));
+
+    // Get currently present members
+    const presentMembers = await presenceService.getPresentMembers();
+
+    // Filter to those whose checkin time is older than the threshold
+    const now = new Date();
+    const thresholdMs = hoursThreshold * 60 * 60 * 1000;
+
+    const staleCheckins: StaleCheckin[] = presentMembers
+      .filter((member) => {
+        const checkinTime = new Date(member.checkedInAt);
+        const durationMs = now.getTime() - checkinTime.getTime();
+        return durationMs > thresholdMs;
+      })
+      .map((member) => {
+        const checkinTime = new Date(member.checkedInAt);
+        const durationMinutes = Math.floor((now.getTime() - checkinTime.getTime()) / (60 * 1000));
+
+        return {
+          memberId: member.id,
+          memberName: `${member.firstName} ${member.lastName}`,
+          rank: member.rank,
+          division: member.division,
+          divisionId: member.divisionId,
+          checkinTime,
+          durationMinutes,
+          kioskId: member.kioskId,
+          kioskName: member.kioskId ? getKioskName(member.kioskId) : undefined,
+        };
+      })
+      .sort((a, b) => b.durationMinutes - a.durationMinutes); // Longest first
+
+    res.json({ staleCheckins });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/checkins/stale/resolve - Resolve (check out) stale checkins with audit note
+router.post('/stale/resolve', requireAuth, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validationResult = resolveStaleCheckinsSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      throw new ValidationError(
+        'INVALID_RESOLVE_DATA',
+        validationResult.error.message,
+        'Invalid resolve request. Please provide member IDs and a note.'
+      );
+    }
+
+    const { memberIds, note } = validationResult.data;
+    let resolved = 0;
+    const errors: Array<{ memberId: string; error: string }> = [];
+
+    // Process each member checkout
+    for (const memberId of memberIds) {
+      try {
+        // Use the existing adminCheckout service which handles the checkout logic
+        await checkinService.adminCheckout(memberId);
+        resolved++;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        errors.push({ memberId, error: errorMessage });
+      }
+    }
+
+    // Broadcast single presence update at the end
+    const stats = await checkinRepository.getPresenceStats();
+    broadcastPresenceUpdate(stats);
+
+    // Log the audit trail
+    const { logger } = await import('../utils/logger');
+    logger.info('Stale checkins resolved', {
+      resolvedBy: req.user?.id,
+      resolvedByUsername: req.user?.username,
+      memberIds,
+      resolved,
+      errors: errors.length,
+      note,
+    });
+
+    res.json({ resolved, errors: errors.length > 0 ? errors : undefined });
   } catch (err) {
     next(err);
   }

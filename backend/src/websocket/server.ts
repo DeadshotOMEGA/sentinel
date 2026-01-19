@@ -15,6 +15,7 @@ import {
   cleanupLogStreamSubscription,
 } from './log-stream-handler';
 import { isLiveLogsEnabled } from '../utils/log-stream';
+import type { AdminRole } from '../../../shared/types';
 
 // Session validation interval (5 minutes)
 const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
@@ -25,7 +26,7 @@ type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 interface SocketAuth {
   userId: string;
   username: string;
-  role: 'admin' | 'coxswain' | 'readonly' | 'kiosk' | 'display';
+  role: AdminRole | 'kiosk' | 'display';
   authType: 'jwt' | 'kiosk_key' | 'display_key';
 }
 
@@ -71,13 +72,13 @@ function getDisplayApiKey(): string | undefined {
 async function authenticateSocket(socket: TypedSocket): Promise<boolean> {
   const auth = socket.handshake.auth as Record<string, unknown>;
 
-  // DEV MODE: Auto-authenticate as dev admin (mirrors HTTP middleware)
+  // DEV MODE: Auto-authenticate as developer (mirrors HTTP middleware)
   if (process.env.NODE_ENV !== 'production') {
     socket.auth = {
       userId: 'dev-admin',
       username: 'dev',
-      role: 'admin',
-      authType: 'dev',
+      role: 'developer',
+      authType: 'jwt',
     };
     return true;
   }

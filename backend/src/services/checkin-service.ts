@@ -2,6 +2,7 @@ import { checkinRepository } from '../db/repositories/checkin-repository';
 import { badgeRepository } from '../db/repositories/badge-repository';
 import { memberRepository } from '../db/repositories/member-repository';
 import { presenceService } from './presence-service';
+import { securityAlertService } from './security-alert-service';
 import { NotFoundError, ValidationError, ConflictError } from '../utils/errors';
 import { validateCheckinTimestamp } from '../utils/timestamp-validator';
 import { getKioskName } from '../utils/kiosk-names';
@@ -17,10 +18,16 @@ interface CheckinOptions {
   kioskId?: string;
 }
 
+interface CheckinWarning {
+  type: 'inactive_member';
+  message: string;
+}
+
 interface CheckinResult {
   checkin: Checkin;
   member: MemberWithDivision;
   direction: CheckinDirection;
+  warning?: CheckinWarning;
 }
 
 export class CheckinService {
@@ -53,6 +60,20 @@ export class CheckinService {
     // Look up badge by serial number with joined member data (single query)
     const badgeWithMember = await badgeRepository.findBySerialNumberWithMember(serialNumber);
     if (!badgeWithMember) {
+      // Create security alert for unknown badge
+      if (options.kioskId) {
+        await securityAlertService.createAlert({
+          alertType: 'badge_unknown',
+          severity: 'warning',
+          badgeSerial: serialNumber,
+          kioskId: options.kioskId,
+          message: `Unknown badge scanned: ${serialNumber}`,
+          details: {
+            serialNumber,
+            timestamp: scanTimestamp.toISOString(),
+          },
+        });
+      }
       throw new NotFoundError(
         'BADGE_NOT_FOUND',
         `Badge with serial number ${serialNumber} not found`,
@@ -73,6 +94,24 @@ export class CheckinService {
 
     // Check badge status
     if (badge.status !== 'active') {
+      // Create security alert for disabled/inactive badge
+      if (options.kioskId) {
+        await securityAlertService.createAlert({
+          alertType: 'badge_disabled',
+          severity: 'critical',
+          badgeSerial: serialNumber,
+          memberId: member?.id,
+          kioskId: options.kioskId,
+          message: `Disabled badge scanned: ${serialNumber} (status: ${badge.status})`,
+          details: {
+            serialNumber,
+            badgeStatus: badge.status,
+            memberId: member?.id,
+            memberName: member ? `${member.firstName} ${member.lastName}` : null,
+            timestamp: scanTimestamp.toISOString(),
+          },
+        });
+      }
       throw new ValidationError(
         'BADGE_INACTIVE',
         `Badge ${serialNumber} is ${badge.status}`,
@@ -98,6 +137,33 @@ export class CheckinService {
         `Member ${memberId} not found`,
         'The member assigned to this badge does not exist. Please contact an administrator.'
       );
+    }
+
+    // Check member status - allow check-in but flag warning for inactive members
+    let memberWarning: CheckinWarning | undefined;
+    if (member.status === 'inactive') {
+      // Create security alert for inactive member
+      if (options.kioskId) {
+        await securityAlertService.createAlert({
+          alertType: 'inactive_member',
+          severity: 'warning',
+          badgeSerial: serialNumber,
+          memberId: member.id,
+          kioskId: options.kioskId,
+          message: `Inactive member checked in: ${member.rank} ${member.firstName} ${member.lastName}`,
+          details: {
+            serialNumber,
+            memberId: member.id,
+            memberName: `${member.firstName} ${member.lastName}`,
+            memberStatus: member.status,
+            timestamp: scanTimestamp.toISOString(),
+          },
+        });
+      }
+      memberWarning = {
+        type: 'inactive_member',
+        message: 'This member is marked as inactive in the system.',
+      };
     }
 
     // Get direction from Redis cache first, fall back to DB if cache miss
@@ -160,6 +226,7 @@ export class CheckinService {
       checkin,
       member,
       direction,
+      warning: memberWarning,
     };
   }
 

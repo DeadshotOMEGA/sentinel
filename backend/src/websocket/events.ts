@@ -1,5 +1,36 @@
 import type { PresenceStats, LogEvent, LogFilter } from '../../../shared/types';
 
+// Security alert event type
+export interface SecurityAlertEvent {
+  id: string;
+  alertType: 'badge_disabled' | 'badge_unknown' | 'inactive_member';
+  severity: 'critical' | 'warning' | 'info';
+  badgeSerial: string | null;
+  kioskId: string;
+  kioskName: string;
+  message: string;
+  createdAt: string;
+}
+
+// DDS (Duty Day Staff) event types
+export type DdsStatus = 'pending' | 'active' | 'released' | 'transferred';
+
+export interface DdsMemberInfo {
+  id: string;
+  name: string;
+  rank: string;
+  division: string | null;
+}
+
+export interface DdsUpdateEvent {
+  assignmentId: string;
+  member: DdsMemberInfo;
+  status: DdsStatus;
+  assignedDate: string;
+  acceptedAt: string | null;
+  assignedBy: string | null;  // Admin name if assigned by admin
+}
+
 // RecentActivityItem type - matches shared/types ActivityItem
 export interface RecentActivityItem {
   type: 'checkin' | 'visitor';
@@ -34,6 +65,10 @@ export interface ServerToClientEvents {
   event_presence_update: (data: EventPresenceUpdateEvent) => void;
   session_expired: () => void;
   activity_backfill: (data: ActivityBackfillEvent) => void;
+  // Security alert events
+  security_alert: (data: SecurityAlertEvent) => void;
+  // DDS events
+  dds_update: (data: DdsUpdateEvent) => void;
   // Log streaming events (dev-only)
   log_event: (event: LogEvent) => void;
   log_backfill: (events: LogEvent[]) => void;

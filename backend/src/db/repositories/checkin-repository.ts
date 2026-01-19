@@ -386,6 +386,7 @@ export class CheckinRepository {
         member_type: string;
         checked_in_at: Date;
         kiosk_id: string | null;
+        tags: string | null;
       }>
     >`
       WITH latest_checkins AS (
@@ -396,6 +397,20 @@ export class CheckinRepository {
           kiosk_id
         FROM checkins
         ORDER BY member_id, timestamp DESC
+      ),
+      member_tags_agg AS (
+        SELECT
+          mt.member_id,
+          json_agg(
+            json_build_object(
+              'id', t.id,
+              'name', t.name,
+              'color', t.color
+            ) ORDER BY t.name
+          ) as tags
+        FROM member_tags mt
+        INNER JOIN tags t ON mt.tag_id = t.id
+        GROUP BY mt.member_id
       )
       SELECT
         m.id,
@@ -407,10 +422,12 @@ export class CheckinRepository {
         d.name as division_name,
         m.member_type,
         lc.timestamp as checked_in_at,
-        lc.kiosk_id
+        lc.kiosk_id,
+        mta.tags::text as tags
       FROM members m
       INNER JOIN divisions d ON m.division_id = d.id
       INNER JOIN latest_checkins lc ON m.id = lc.member_id
+      LEFT JOIN member_tags_agg mta ON m.id = mta.member_id
       WHERE m.status = 'active' AND lc.direction = 'in'
       ORDER BY lc.timestamp DESC
     `;
@@ -426,6 +443,7 @@ export class CheckinRepository {
       mess: row.mess,
       checkedInAt: row.checked_in_at.toISOString(),
       kioskId: row.kiosk_id ?? undefined,
+      tags: row.tags ? JSON.parse(row.tags) : [],
     }));
   }
 

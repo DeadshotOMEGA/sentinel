@@ -38,9 +38,9 @@ function canSubscribeToLogs(socket: TypedSocket): boolean {
     return false;
   }
 
-  // Must be admin role
-  if (socket.auth.role !== 'admin') {
-    wsLogger.warn('Non-admin log subscription attempt', {
+  // Must be admin or developer role
+  if (socket.auth.role !== 'admin' && socket.auth.role !== 'developer') {
+    wsLogger.warn('Unauthorized log subscription attempt', {
       event: 'ws.logs.forbidden',
       socketId: socket.id,
       role: socket.auth.role,

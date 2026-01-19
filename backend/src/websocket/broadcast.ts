@@ -6,6 +6,8 @@ import type {
   VisitorSignoutEvent,
   EventCheckinEvent,
   EventPresenceUpdateEvent,
+  SecurityAlertEvent,
+  DdsUpdateEvent,
 } from './events';
 
 export function broadcastCheckin(event: CheckinEvent): void {
@@ -33,4 +35,12 @@ export function broadcastEventPresenceUpdate(
   stats: EventPresenceUpdateEvent['stats']
 ): void {
   getIO().to(`event:${eventId}`).emit('event_presence_update', { eventId, stats });
+}
+
+export function broadcastSecurityAlert(event: SecurityAlertEvent): void {
+  getIO().to('presence').emit('security_alert', event);
+}
+
+export function broadcastDdsUpdate(event: DdsUpdateEvent): void {
+  getIO().to('presence').emit('dds_update', event);
 }
