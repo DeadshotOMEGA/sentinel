@@ -34,7 +34,14 @@ export type AuditAction =
   | 'dev_tools_reset'
   | 'dev_tools_simulate'
   | 'dev_tools_backdate_members'
-  | 'dev_tools_seed_scenario';
+  | 'dev_tools_seed_scenario'
+  | 'user_created'
+  | 'user_updated'
+  | 'user_deleted'
+  | 'user_disabled'
+  | 'user_enabled'
+  | 'password_reset'
+  | 'role_changed';
 
 interface AuditLogEntry {
   adminUserId: string | null;
@@ -43,6 +50,14 @@ interface AuditLogEntry {
   entityId: string | null;
   details: Record<string, unknown>;
   ipAddress: string;
+}
+
+interface AuditLogFilters {
+  action?: AuditAction | AuditAction[];
+  actorId?: string;
+  entityId?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 export class AuditRepository {
@@ -57,6 +72,84 @@ export class AuditRepository {
         ipAddress: entry.ipAddress,
       },
     });
+  }
+
+  /**
+   * Find audit logs for user management actions with pagination and filtering
+   */
+  async findUserAuditLogs(
+    filters: AuditLogFilters,
+    pagination: { page: number; limit: number }
+  ): Promise<PrismaAuditLog[]> {
+    const where: Prisma.AuditLogWhereInput = {};
+
+    if (filters.action) {
+      where.action = Array.isArray(filters.action)
+        ? { in: filters.action }
+        : filters.action;
+    }
+
+    if (filters.actorId) {
+      where.adminUserId = filters.actorId;
+    }
+
+    if (filters.entityId) {
+      where.entityId = filters.entityId;
+    }
+
+    if (filters.startDate || filters.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) {
+        where.createdAt.gte = filters.startDate;
+      }
+      if (filters.endDate) {
+        where.createdAt.lte = filters.endDate;
+      }
+    }
+
+    const logs = await prisma.auditLog.findMany({
+      where,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (pagination.page - 1) * pagination.limit,
+      take: pagination.limit,
+    });
+
+    return logs;
+  }
+
+  /**
+   * Count audit logs matching filters
+   */
+  async countUserAuditLogs(filters: AuditLogFilters): Promise<number> {
+    const where: Prisma.AuditLogWhereInput = {};
+
+    if (filters.action) {
+      where.action = Array.isArray(filters.action)
+        ? { in: filters.action }
+        : filters.action;
+    }
+
+    if (filters.actorId) {
+      where.adminUserId = filters.actorId;
+    }
+
+    if (filters.entityId) {
+      where.entityId = filters.entityId;
+    }
+
+    if (filters.startDate || filters.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) {
+        where.createdAt.gte = filters.startDate;
+      }
+      if (filters.endDate) {
+        where.createdAt.lte = filters.endDate;
+      }
+    }
+
+    return await prisma.auditLog.count({ where });
   }
 }
 

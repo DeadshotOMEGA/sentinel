@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { redis } from '../db/redis';
 import type { AdminUser, AdminRole } from '../../../shared/types/index';
+import { adminUserRepository } from '../db/repositories/admin-user-repository';
 
 export interface Session {
   userId: string;
@@ -17,6 +18,11 @@ function getSessionKey(token: string): string {
 }
 
 export async function createSession(user: AdminUser): Promise<string> {
+  // Check if user account is disabled
+  if (user.disabled) {
+    throw new Error('Cannot create session for disabled account');
+  }
+
   const token = randomUUID();
   const now = Date.now();
 
@@ -51,6 +57,14 @@ export async function getSession(token: string): Promise<Session | null> {
 
     // Check if session has expired
     if (session.expiresAt < Date.now()) {
+      await redis.del(key);
+      return null;
+    }
+
+    // Verify user account is not disabled
+    const user = await adminUserRepository.findById(session.userId);
+    if (!user || user.disabled) {
+      // User is disabled - destroy session
       await redis.del(key);
       return null;
     }

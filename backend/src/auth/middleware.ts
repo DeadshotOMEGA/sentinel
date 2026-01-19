@@ -39,13 +39,15 @@ function extractKioskApiKey(req: Request): string | null {
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // DEV MODE: Auto-authenticate as dev admin
-    if (process.env.NODE_ENV !== 'production') {
+    // DEV MODE: Auto-authenticate as developer (unless REQUIRE_AUTH=true)
+    // Uses the actual admin user ID for foreign key compatibility
+    const requireRealAuth = process.env.REQUIRE_AUTH === 'true';
+    if (process.env.NODE_ENV !== 'production' && !requireRealAuth) {
       req.isDevAuth = true;
       req.user = {
-        id: 'dev-admin',
-        username: 'dev',
-        role: 'admin',
+        id: 'd52a5a61-4c03-46f6-bef8-32c9446fc471', // Actual admin user
+        username: 'admin',
+        role: 'developer', // Full access including Dev Tools
       };
       next();
       return;
@@ -97,6 +99,14 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 }
 
+/**
+ * Role-based access control middleware
+ *
+ * Role hierarchy (from least to most privileged):
+ * - quartermaster: Standard users, no Settings or Logs access
+ * - admin: Settings access except Dev Tools, can manage quartermaster/admin accounts
+ * - developer: Full access including Dev Tools, can manage all accounts
+ */
 export function requireRole(...roles: string[]): (req: Request, res: Response, next: NextFunction) => Promise<void> {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -108,7 +118,18 @@ export function requireRole(...roles: string[]): (req: Request, res: Response, n
 
       const userRole = req.user.role;
 
-      if (!roles.includes(userRole)) {
+      // Role hierarchy levels (higher number = more privileged)
+      const roleHierarchy: Record<string, number> = {
+        quartermaster: 1,
+        admin: 2,
+        developer: 3,
+      };
+
+      const userLevel = roleHierarchy[userRole] || 0;
+      const requiredLevel = Math.min(...roles.map(role => roleHierarchy[role] || 999));
+
+      // Allow if user's role level meets or exceeds the minimum required level
+      if (userLevel < requiredLevel) {
         res.status(403).json({
           error: `Access denied. This action requires one of the following roles: ${roles.join(', ')}. Your role: ${userRole}`
         });
@@ -132,8 +153,9 @@ export function requireRole(...roles: string[]): (req: Request, res: Response, n
  */
 export async function requireDisplayAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // DEV MODE: Auto-authenticate as display device
-    if (process.env.NODE_ENV !== 'production') {
+    // DEV MODE: Auto-authenticate as display device (unless REQUIRE_AUTH=true)
+    const requireRealAuth = process.env.REQUIRE_AUTH === 'true';
+    if (process.env.NODE_ENV !== 'production' && !requireRealAuth) {
       req.isDevAuth = true;
       req.isDisplayAuth = true;
       req.user = {

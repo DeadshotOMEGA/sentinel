@@ -3,24 +3,31 @@ import type { AdminUser as PrismaAdminUser } from '@prisma/client';
 import type {
   AdminUser,
   AdminUserWithPassword,
+  AdminRole,
 } from '../../../../shared/types';
 
 interface CreateAdminUserData {
   username: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'coxswain' | 'readonly';
-  email: string;
+  displayName: string;
+  role: AdminRole;
   passwordHash: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
 }
 
 interface UpdateAdminUserData {
   username?: string;
+  displayName?: string;
   firstName?: string;
   lastName?: string;
-  role?: 'admin' | 'coxswain' | 'readonly';
+  role?: AdminRole;
   email?: string;
   passwordHash?: string;
+  disabled?: boolean;
+  disabledAt?: Date | null;
+  disabledBy?: string | null;
+  updatedBy?: string;
 }
 
 function buildFullName(firstName: string, lastName: string): string {
@@ -37,61 +44,98 @@ function parseFullName(fullName: string): { firstName: string; lastName: string 
   return { firstName, lastName };
 }
 
-function mapToAdminUser(dbUser: Pick<PrismaAdminUser, 'id' | 'username' | 'email' | 'fullName' | 'role' | 'lastLogin' | 'createdAt'>): AdminUser {
-  if (!dbUser.email) {
-    throw new Error(`Admin user ${dbUser.id} has no email address`);
-  }
-
+function mapToAdminUser(dbUser: Pick<PrismaAdminUser, 'id' | 'username' | 'email' | 'displayName' | 'first_name' | 'last_name' | 'role' | 'lastLogin' | 'createdAt' | 'disabled' | 'disabledAt' | 'disabledBy' | 'updatedBy'>): AdminUser {
   const timestamp = dbUser.createdAt ?? new Date();
-  const { firstName, lastName } = parseFullName(dbUser.fullName);
   return {
     id: dbUser.id,
     username: dbUser.username,
-    firstName,
-    lastName,
-    role: dbUser.role as 'admin' | 'coxswain' | 'readonly',
-    email: dbUser.email,
+    displayName: dbUser.displayName,
+    firstName: dbUser.first_name ?? undefined,
+    lastName: dbUser.last_name ?? undefined,
+    role: dbUser.role as AdminRole,
+    email: dbUser.email ?? undefined,
     lastLogin: dbUser.lastLogin ?? undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
+    disabled: dbUser.disabled,
+    disabledAt: dbUser.disabledAt ?? undefined,
+    disabledBy: dbUser.disabledBy ?? undefined,
+    updatedBy: dbUser.updatedBy ?? undefined,
   };
 }
 
-function mapToAdminUserWithPassword(dbUser: Pick<PrismaAdminUser, 'id' | 'username' | 'email' | 'fullName' | 'role' | 'passwordHash' | 'lastLogin' | 'createdAt'>): AdminUserWithPassword {
-  if (!dbUser.email) {
-    throw new Error(`Admin user ${dbUser.id} has no email address`);
-  }
-
+function mapToAdminUserWithPassword(dbUser: Pick<PrismaAdminUser, 'id' | 'username' | 'email' | 'displayName' | 'first_name' | 'last_name' | 'role' | 'passwordHash' | 'lastLogin' | 'createdAt' | 'disabled' | 'disabledAt' | 'disabledBy' | 'updatedBy'>): AdminUserWithPassword {
   const timestamp = dbUser.createdAt ?? new Date();
-  const { firstName, lastName } = parseFullName(dbUser.fullName);
   return {
     id: dbUser.id,
     username: dbUser.username,
-    firstName,
-    lastName,
-    role: dbUser.role as 'admin' | 'coxswain' | 'readonly',
-    email: dbUser.email,
+    displayName: dbUser.displayName,
+    firstName: dbUser.first_name ?? undefined,
+    lastName: dbUser.last_name ?? undefined,
+    role: dbUser.role as AdminRole,
+    email: dbUser.email ?? undefined,
     passwordHash: dbUser.passwordHash,
     lastLogin: dbUser.lastLogin ?? undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
+    disabled: dbUser.disabled,
+    disabledAt: dbUser.disabledAt ?? undefined,
+    disabledBy: dbUser.disabledBy ?? undefined,
+    updatedBy: dbUser.updatedBy ?? undefined,
   };
 }
 
 export class AdminUserRepository {
   /**
-   * Find all admin users
+   * Find all active admin users (excludes disabled accounts)
    */
   async findAll(): Promise<AdminUser[]> {
+    const users = await prisma.adminUser.findMany({
+      where: {
+        disabled: false,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
+        role: true,
+        lastLogin: true,
+        createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
+      },
+      orderBy: {
+        username: 'asc',
+      },
+    });
+
+    return users.map(mapToAdminUser);
+  }
+
+  /**
+   * Find all admin users including disabled accounts
+   */
+  async findAllIncludingDisabled(): Promise<AdminUser[]> {
     const users = await prisma.adminUser.findMany({
       select: {
         id: true,
         username: true,
         email: true,
-        fullName: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
         role: true,
         lastLogin: true,
         createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
       },
       orderBy: {
         username: 'asc',
@@ -111,10 +155,16 @@ export class AdminUserRepository {
         id: true,
         username: true,
         email: true,
-        fullName: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
         role: true,
         lastLogin: true,
         createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
       },
     });
 
@@ -135,11 +185,17 @@ export class AdminUserRepository {
         id: true,
         username: true,
         email: true,
-        fullName: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
         role: true,
         passwordHash: true,
         lastLogin: true,
         createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
       },
     });
 
@@ -154,12 +210,13 @@ export class AdminUserRepository {
    * Create a new admin user
    */
   async create(data: CreateAdminUserData): Promise<AdminUser> {
-    const fullName = buildFullName(data.firstName, data.lastName);
-
     const user = await prisma.adminUser.create({
       data: {
         username: data.username,
-        fullName,
+        displayName: data.displayName,
+        fullName: data.firstName && data.lastName ? buildFullName(data.firstName, data.lastName) : data.displayName,
+        first_name: data.firstName,
+        last_name: data.lastName,
         role: data.role,
         email: data.email,
         passwordHash: data.passwordHash,
@@ -168,10 +225,16 @@ export class AdminUserRepository {
         id: true,
         username: true,
         email: true,
-        fullName: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
         role: true,
         lastLogin: true,
         createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
       },
     });
 
@@ -197,18 +260,29 @@ export class AdminUserRepository {
   /**
    * Update an admin user
    */
-  async update(id: string, data: UpdateAdminUserData): Promise<AdminUser> {
+  async update(id: string, data: UpdateAdminUserData, updatedBy?: string): Promise<AdminUser> {
     // Build the update data object
     const updateData: {
       username?: string;
+      displayName?: string;
       fullName?: string;
+      first_name?: string;
+      last_name?: string;
       role?: string;
       email?: string;
       passwordHash?: string;
+      disabled?: boolean;
+      disabledAt?: Date | null;
+      disabledBy?: string | null;
+      updatedBy?: string;
     } = {};
 
     if (data.username !== undefined) {
       updateData.username = data.username;
+    }
+
+    if (data.displayName !== undefined) {
+      updateData.displayName = data.displayName;
     }
 
     if (data.firstName !== undefined || data.lastName !== undefined) {
@@ -217,9 +291,13 @@ export class AdminUserRepository {
       if (!current) {
         throw new Error(`Admin user not found: ${id}`);
       }
-      const firstName = data.firstName ?? current.firstName;
-      const lastName = data.lastName ?? current.lastName;
-      updateData.fullName = buildFullName(firstName, lastName);
+      const firstName = data.firstName ?? current.firstName ?? '';
+      const lastName = data.lastName ?? current.lastName ?? '';
+      if (firstName && lastName) {
+        updateData.fullName = buildFullName(firstName, lastName);
+      }
+      updateData.first_name = firstName || null;
+      updateData.last_name = lastName || null;
     }
 
     if (data.role !== undefined) {
@@ -234,6 +312,22 @@ export class AdminUserRepository {
       updateData.passwordHash = data.passwordHash;
     }
 
+    if (data.disabled !== undefined) {
+      updateData.disabled = data.disabled;
+    }
+
+    if (data.disabledAt !== undefined) {
+      updateData.disabledAt = data.disabledAt;
+    }
+
+    if (data.disabledBy !== undefined) {
+      updateData.disabledBy = data.disabledBy;
+    }
+
+    if (updatedBy !== undefined) {
+      updateData.updatedBy = updatedBy;
+    }
+
     if (Object.keys(updateData).length === 0) {
       throw new Error('No fields to update');
     }
@@ -245,10 +339,16 @@ export class AdminUserRepository {
         id: true,
         username: true,
         email: true,
-        fullName: true,
+        displayName: true,
+        first_name: true,
+        last_name: true,
         role: true,
         lastLogin: true,
         createdAt: true,
+        disabled: true,
+        disabledAt: true,
+        disabledBy: true,
+        updatedBy: true,
       },
     });
 
@@ -261,6 +361,59 @@ export class AdminUserRepository {
   async delete(id: string): Promise<void> {
     const result = await prisma.adminUser.deleteMany({
       where: { id },
+    });
+
+    if (result.count === 0) {
+      throw new Error(`Admin user not found: ${id}`);
+    }
+  }
+
+  /**
+   * Disable an admin user account (soft delete)
+   */
+  async disable(id: string, disabledBy: string): Promise<void> {
+    const result = await prisma.adminUser.updateMany({
+      where: { id },
+      data: {
+        disabled: true,
+        disabledAt: new Date(),
+        disabledBy,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new Error(`Admin user not found: ${id}`);
+    }
+  }
+
+  /**
+   * Re-enable a disabled admin user account
+   */
+  async enable(id: string): Promise<void> {
+    const result = await prisma.adminUser.updateMany({
+      where: { id },
+      data: {
+        disabled: false,
+        disabledAt: null,
+        disabledBy: null,
+      },
+    });
+
+    if (result.count === 0) {
+      throw new Error(`Admin user not found: ${id}`);
+    }
+  }
+
+  /**
+   * Reset an admin user's password (admin-initiated)
+   */
+  async resetPassword(id: string, passwordHash: string, updatedBy: string): Promise<void> {
+    const result = await prisma.adminUser.updateMany({
+      where: { id },
+      data: {
+        passwordHash,
+        updatedBy,
+      },
     });
 
     if (result.count === 0) {
