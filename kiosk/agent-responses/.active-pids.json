@@ -42,5 +42,27 @@
     "missingMcpServers": [],
     "spawnedBySessionId": "384cf4db-b132-4692-9097-8e35b66f9bb7",
     "status": "in-progress"
+  },
+  "agent_955986": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "programmer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "d6e8e14c-fa23-4181-a0bb-6a1bc6082a35",
+    "status": "in-progress"
+  },
+  "agent_260677": {
+    "pid": null,
+    "depth": 0,
+    "parentId": null,
+    "agentType": "programmer",
+    "allowedAgents": null,
+    "allowedMcpServers": null,
+    "missingMcpServers": [],
+    "spawnedBySessionId": "d6e8e14c-fa23-4181-a0bb-6a1bc6082a35",
+    "status": "in-progress"
   }
 }

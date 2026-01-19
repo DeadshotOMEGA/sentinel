@@ -13,11 +13,35 @@ PID_FILE="$PROJECT_ROOT/.service-pids"
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
 mkdir -p "$LOG_DIR"
 
 echo -e "${YELLOW}Starting Sentinel services...${NC}"
+
+# 0. Clean up any existing processes
+echo -e "${BLUE}[0/5]${NC} Checking for duplicate processes..."
+cleanup_needed=false
+
+for port in 3000 5173 5174 5175; do
+  if lsof -ti :$port >/dev/null 2>&1; then
+    if [ "$cleanup_needed" = false ]; then
+      echo -e "${YELLOW}⚠️  Found existing processes, cleaning up...${NC}"
+      cleanup_needed=true
+    fi
+    echo -n "  Killing process on port $port..."
+    lsof -ti :$port | xargs kill -9 2>/dev/null || true
+    echo -e " ${GREEN}✓${NC}"
+  fi
+done
+
+if [ "$cleanup_needed" = false ]; then
+  echo -e "  ${GREEN}✓ All ports are free${NC}"
+else
+  echo -e "${GREEN}✓ Cleanup complete${NC}"
+  sleep 1
+fi
 
 # 1. Start Docker services (postgres, redis)
 echo -e "${GREEN}[1/5]${NC} Starting Docker services..."
@@ -43,7 +67,7 @@ echo -e " ${GREEN}ready${NC}"
 > "$PID_FILE"
 
 # 2. Start Backend
-echo -e "${GREEN}[2/5]${NC} Starting Backend (port 3001)..."
+echo -e "${GREEN}[2/5]${NC} Starting Backend (port 3000)..."
 cd "$PROJECT_ROOT/backend"
 bun run dev > "$LOG_DIR/backend.log" 2>&1 &
 echo "backend:$!" >> "$PID_FILE"
@@ -99,7 +123,7 @@ done
 echo ""
 
 if $all_ready; then
-  echo -e "${GREEN}All services started successfully!${NC}"
+  echo -e "${GREEN}✓ All services started successfully!${NC}"
   echo ""
   echo "Services running:"
   echo "  Backend API:    http://localhost:3000"
@@ -110,6 +134,6 @@ if $all_ready; then
   echo "Logs: $LOG_DIR/"
   echo "Stop: ./scripts/stop-all.sh"
 else
-  echo -e "${RED}Some services failed to start. Check logs in $LOG_DIR/${NC}"
+  echo -e "${RED}⚠️  Some services failed to start. Check logs in $LOG_DIR/${NC}"
   exit 1
 fi

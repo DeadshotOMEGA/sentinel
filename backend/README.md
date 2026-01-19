@@ -155,9 +155,29 @@ bun run db/migrate.ts
 # Development server with hot reload
 bun run dev
 
+# Development server with automatic cleanup (kills duplicate processes)
+bun run dev:clean
+
 # Type checking
 bun run tsc --noEmit
 
 # Create admin user
 bun run scripts/create-admin.ts
+```
+
+## Process Management
+
+The backend includes automatic duplicate process prevention:
+
+- **PID File**: Creates `.backend.pid` on startup to track the running process
+- **Auto-cleanup**: `bun run dev:clean` automatically kills any existing process on port 3000
+- **Graceful Shutdown**: Properly cleans up PID file on SIGTERM/SIGINT
+
+**Troubleshooting:**
+```bash
+# If port 3000 is stuck, kill the process manually:
+lsof -ti :3000 | xargs kill -9
+
+# Or use the clean dev script:
+bun run dev:clean
 ```

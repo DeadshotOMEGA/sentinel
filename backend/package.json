@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/server.ts",
+    "dev:clean": "bash scripts/start-clean.sh",
     "start": "bun src/server.ts",
     "migrate": "bun run db/migrate.ts",
     "seed": "bun run db/seed.ts",
