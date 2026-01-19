@@ -11,19 +11,31 @@ model AdminUser {
   username         String             @unique @db.VarChar(100)
   email            String?            @unique @db.VarChar(255)
   passwordHash     String             @map("password_hash") @db.VarChar(255)
-  fullName         String             @map("full_name") @db.VarChar(200)
+  displayName      String             @map("display_name") @db.VarChar(200)
+  fullName         String?            @map("full_name") @db.VarChar(200)
   role             String             @db.VarChar(20)
   lastLogin        DateTime?          @map("last_login") @db.Timestamp(6)
   createdAt        DateTime?          @default(now()) @map("created_at") @db.Timestamp(6)
-  first_name       String             @db.VarChar(100)
-  last_name        String             @db.VarChar(100)
+  first_name       String?            @db.VarChar(100)
+  last_name        String?            @db.VarChar(100)
   updated_at       DateTime?          @default(now()) @db.Timestamp(6)
+  disabled         Boolean            @default(false)
+  disabledAt       DateTime?          @map("disabled_at") @db.Timestamp(6)
+  disabledBy       String?            @map("disabled_by") @db.Uuid
+  updatedBy        String?            @map("updated_by") @db.Uuid
   auditLogs        AuditLog[]
   checkins         Checkin[]
   report_audit_log report_audit_log[]
+  securityAlerts   SecurityAlert[]
   visitors         Visitor[]
+  ddsAssignments   DdsAssignment[]
+  disabledByAdmin  AdminUser?         @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByAdmin   AdminUser?         @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  disabledUsers    AdminUser[]        @relation("DisabledBy")
+  updatedUsers     AdminUser[]        @relation("UpdatedBy")
 
   @@index([email], map: "idx_admin_users_email")
+  @@index([disabled], map: "idx_admin_users_disabled")
   @@map("admin_users")
 }
 
@@ -196,6 +208,8 @@ model Member {
   division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   visitors        Visitor[]
   memberTags      MemberTag[]
+  ddsAssignments  DdsAssignment[]   @relation("DdsMember")
+  ddsTransfers    DdsAssignment[]   @relation("DdsTransferredTo")
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -209,15 +223,17 @@ model Member {
 }
 
 model Tag {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String      @unique @db.VarChar(100)
-  color       String      @db.VarChar(50)
-  description String?
-  createdAt   DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
-  memberTags  MemberTag[]
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String      @unique @db.VarChar(100)
+  color        String      @db.VarChar(50)
+  description  String?
+  displayOrder Int         @default(0) @map("display_order")
+  createdAt    DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  memberTags   MemberTag[]
 
   @@index([name], map: "idx_tags_name")
+  @@index([displayOrder], map: "idx_tags_display_order")
   @@map("tags")
 }
 
@@ -233,6 +249,30 @@ model MemberTag {
   @@index([memberId], map: "idx_member_tags_member")
   @@index([tagId], map: "idx_member_tags_tag")
   @@map("member_tags")
+}
+
+model SecurityAlert {
+  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertType        String     @map("alert_type") @db.VarChar(50)  // badge_disabled, badge_unknown, inactive_member
+  severity         String     @db.VarChar(20)                      // critical, warning, info
+  badgeSerial      String?    @map("badge_serial") @db.VarChar(100)
+  memberId         String?    @map("member_id") @db.Uuid
+  kioskId          String     @map("kiosk_id") @db.VarChar(50)
+  message          String
+  details          Json?                                           // Additional context (badge status, member info, etc.)
+  status           String     @default("active") @db.VarChar(20)   // active, acknowledged, dismissed
+  acknowledgedBy   String?    @map("acknowledged_by") @db.Uuid
+  acknowledgedAt   DateTime?  @map("acknowledged_at") @db.Timestamp(6)
+  acknowledgeNote  String?    @map("acknowledge_note")
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+
+  acknowledgedByAdmin AdminUser? @relation(fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
+
+  @@index([status], map: "idx_security_alerts_status")
+  @@index([alertType], map: "idx_security_alerts_type")
+  @@index([severity], map: "idx_security_alerts_severity")
+  @@index([createdAt(sort: Desc)], map: "idx_security_alerts_created")
+  @@map("security_alerts")
 }
 
 model Visitor {
@@ -347,4 +387,45 @@ model training_years {
 
   @@index([is_current], map: "idx_training_years_is_current")
   @@index([start_date], map: "idx_training_years_start_date")
+}
+
+model DdsAssignment {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId      String    @map("member_id") @db.Uuid
+  assignedDate  DateTime  @map("assigned_date") @db.Date
+  acceptedAt    DateTime? @map("accepted_at") @db.Timestamp(6)
+  releasedAt    DateTime? @map("released_at") @db.Timestamp(6)
+  transferredTo String?   @map("transferred_to") @db.Uuid
+  assignedBy    String?   @map("assigned_by") @db.Uuid
+  status        String    @default("pending") @db.VarChar(20) // pending, active, released, transferred
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  member               Member     @relation("DdsMember", fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  transferredToMember  Member?    @relation("DdsTransferredTo", fields: [transferredTo], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  assignedByAdmin      AdminUser? @relation(fields: [assignedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([memberId], map: "idx_dds_assignments_member")
+  @@index([assignedDate], map: "idx_dds_assignments_date")
+  @@index([status], map: "idx_dds_assignments_status")
+  @@map("dds_assignments")
+}
+
+model ResponsibilityAuditLog {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId        String   @map("member_id") @db.Uuid
+  tagName         String   @map("tag_name") @db.VarChar(50)  // 'DDS' or 'Lockup'
+  action          String   @db.VarChar(50)                   // assigned, transferred, released, self_accepted
+  fromMemberId    String?  @map("from_member_id") @db.Uuid
+  toMemberId      String?  @map("to_member_id") @db.Uuid
+  performedBy     String?  @map("performed_by") @db.Uuid
+  performedByType String   @map("performed_by_type") @db.VarChar(20) // 'admin' or 'member'
+  timestamp       DateTime @default(now()) @db.Timestamp(6)
+  notes           String?
+
+  @@index([memberId], map: "idx_responsibility_audit_member")
+  @@index([tagName], map: "idx_responsibility_audit_tag")
+  @@index([timestamp(sort: Desc)], map: "idx_responsibility_audit_timestamp")
+  @@map("responsibility_audit_log")
 }
