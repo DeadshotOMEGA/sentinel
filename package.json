@@ -1,0 +1,37 @@
+{
+  "name": "sentinel-monorepo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "RFID Attendance Tracking System for HMCS Chippawa",
+  "scripts": {
+    "dev": "pnpm --filter @sentinel/backend dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "prisma:generate": "pnpm --filter @sentinel/database prisma:generate",
+    "prisma:migrate": "pnpm --filter @sentinel/database prisma:migrate",
+    "prisma:studio": "pnpm --filter @sentinel/database prisma:studio"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.0.0"
+}
