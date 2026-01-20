@@ -38,24 +38,23 @@ An RFID-based attendance tracking system for HMCS Chippawa naval reserve unit.
    - Kiosk display
    - RFID reader clients
 
-## Research Documentation
+## Documentation
 
-**CRITICAL**: Before making architectural decisions, consult the research docs in `docs/`:
+**Comprehensive documentation** is available in `docs/` - organized by domain, type, and purpose.
 
-- [docs/00-EXECUTIVE-SUMMARY.md](../docs/00-EXECUTIVE-SUMMARY.md) — Tech stack recommendations & priorities
-- [docs/01-current-backend-analysis.md](../docs/01-current-backend-analysis.md) — Original backend analysis
-- [docs/02-framework-comparison.md](../docs/02-framework-comparison.md) — Framework benchmarks & selection
-- [docs/03-orm-database-comparison.md](../docs/03-orm-database-comparison.md) — ORM performance data & hybrid approach
-- [docs/04-authentication-solutions.md](../docs/04-authentication-solutions.md) — better-auth rationale & migration plan
-- [docs/05-realtime-communication.md](../docs/05-realtime-communication.md) — Socket.IO patterns & room architecture
-- [docs/06-validation-type-safety.md](../docs/06-validation-type-safety.md) — ts-rest + Valibot migration strategy
-- [docs/07-testing-strategy.md](../docs/07-testing-strategy.md) — Integration-first testing approach
+**Quick Access**:
+- **Plans**: Active roadmaps in `docs/plans/active/` (backend rebuild, documentation system)
+- **Research**: Technology evaluations in `docs/research/` (10 completed studies)
+- **Concepts**: Atomic definitions in `docs/concepts/` (integration testing, repository pattern, testcontainers, etc.)
+- **Guides**: Tutorials, how-tos, references in `docs/guides/` organized by Diátaxis framework
 
-**Implementation Priorities** (from Executive Summary):
-1. **Phase 1**: Testing Foundation (Weeks 1-2) - Testcontainers + Supertest
-2. **Phase 2**: Authentication Hardening (Week 3) - better-auth migration
-3. **Phase 3**: Validation & Type Safety (Weeks 4-6) - ts-rest + Valibot
-4. **Phase 4**: ORM Optimization (Weeks 7-8) - Prisma+Kysely hybrid if needed
+For documentation navigation and organization, see @docs/CLAUDE.md
+
+**Current Implementation Focus** (from backend rebuild plan):
+1. **Phase 1**: Testing Foundation - Testcontainers + Supertest (IN PROGRESS)
+2. **Phase 2**: Core Infrastructure - better-auth + API layer
+3. **Phase 3**: Service Layer & Business Logic
+4. **Phase 4**: Routes & Integration
 
 ## Common Commands
 
