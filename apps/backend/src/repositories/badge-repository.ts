@@ -144,6 +144,60 @@ export class BadgeRepository {
   }
 
   /**
+   * Find badge by ID with member details
+   */
+  async findByIdWithDetails(id: string): Promise<BadgeWithDetails | null> {
+    const badge = await this.prisma.badge.findUnique({
+      where: { id },
+      include: {
+        members: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            serviceNumber: true,
+          },
+          take: 1,
+        },
+        checkins: {
+          select: {
+            kioskId: true,
+            timestamp: true,
+            direction: true,
+          },
+          orderBy: {
+            timestamp: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!badge) {
+      return null;
+    }
+
+    const { members, checkins, ...badgeData } = badge;
+    const baseBadge = toBadge(badgeData);
+
+    const result: BadgeWithDetails = { ...baseBadge };
+
+    if (members.length > 0 && badge.assignmentType === 'member') {
+      result.assignedMember = members[0];
+    }
+
+    if (checkins.length > 0) {
+      result.lastScan = {
+        kioskId: checkins[0].kioskId,
+        timestamp: checkins[0].timestamp,
+        direction: checkins[0].direction,
+      };
+    }
+
+    return result;
+  }
+
+  /**
    * Find badge by serial number (NFC UID)
    */
   async findBySerialNumber(serialNumber: string): Promise<Badge | null> {

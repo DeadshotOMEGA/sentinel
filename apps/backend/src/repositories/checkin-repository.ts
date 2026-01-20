@@ -303,6 +303,225 @@ export class CheckinRepository {
   }
 
   /**
+   * Bulk create checkins (for offline sync)
+   */
+  async bulkCreate(checkins: CreateCheckinInput[]): Promise<{ success: number; failed: number; errors: Array<{ index: number; error: string }> }> {
+    if (checkins.length === 0) {
+      return { success: 0, failed: 0, errors: [] };
+    }
+
+    if (checkins.length > 100) {
+      throw new Error('Cannot create more than 100 checkins at once');
+    }
+
+    await this.invalidatePresenceCache();
+
+    const errors: Array<{ index: number; error: string }> = [];
+    let successCount = 0;
+
+    // Process each checkin individually to handle partial failures
+    for (let i = 0; i < checkins.length; i++) {
+      try {
+        await this.create(checkins[i]);
+        successCount++;
+      } catch (error) {
+        errors.push({
+          index: i,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    return {
+      success: successCount,
+      failed: errors.length,
+      errors,
+    };
+  }
+
+  /**
+   * Update checkin (e.g., flag for review, change direction)
+   */
+  async update(id: string, data: Partial<CreateCheckinInput>): Promise<Checkin> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      throw new Error(`Checkin with ID '${id}' not found`);
+    }
+
+    await this.invalidatePresenceCache();
+
+    const updated = await this.prisma.checkin.update({
+      where: { id },
+      data: {
+        direction: data.direction,
+        // Note: flaggedForReview and flagReason are not in the current schema
+        // If they need to be added, update the Prisma schema first
+      },
+    });
+
+    return this.toCheckin(updated);
+  }
+
+  /**
+   * Delete checkin
+   */
+  async delete(id: string): Promise<void> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      throw new Error(`Checkin with ID '${id}' not found`);
+    }
+
+    await this.invalidatePresenceCache();
+
+    await this.prisma.checkin.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Find checkin by ID with member details
+   */
+  async findByIdWithMember(id: string): Promise<CheckinWithMember | null> {
+    const checkin = await this.prisma.checkin.findUnique({
+      where: { id },
+      include: {
+        member: {
+          include: {
+            division: true,
+          },
+        },
+      },
+    });
+
+    if (!checkin || !checkin.member || !checkin.member.division) {
+      return null;
+    }
+
+    return {
+      ...this.toCheckin(checkin),
+      member: {
+        id: checkin.member.id,
+        serviceNumber: checkin.member.serviceNumber,
+        employeeNumber: checkin.member.employeeNumber ?? undefined,
+        firstName: checkin.member.firstName,
+        lastName: checkin.member.lastName,
+        initials: checkin.member.initials ?? undefined,
+        rank: checkin.member.rank,
+        divisionId: checkin.member.divisionId,
+        mess: checkin.member.mess ?? undefined,
+        moc: checkin.member.moc ?? undefined,
+        memberType: checkin.member.memberType as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+        classDetails: checkin.member.classDetails ?? undefined,
+        status: checkin.member.status as 'active' | 'inactive' | 'pending_review' | 'terminated',
+        email: checkin.member.email ?? undefined,
+        homePhone: checkin.member.homePhone ?? undefined,
+        mobilePhone: checkin.member.mobilePhone ?? undefined,
+        badgeId: checkin.member.badgeId ?? undefined,
+        createdAt: checkin.member.createdAt,
+        updatedAt: checkin.member.updatedAt,
+        division: {
+          id: checkin.member.division.id,
+          name: checkin.member.division.name,
+          code: checkin.member.division.code,
+          description: checkin.member.division.description ?? undefined,
+          createdAt: checkin.member.division.createdAt,
+          updatedAt: checkin.member.division.updatedAt,
+        },
+      },
+    };
+  }
+
+  /**
+   * Find paginated checkins with member details
+   */
+  async findPaginatedWithMembers(
+    params: PaginationParams,
+    filters?: CheckinFilters
+  ): Promise<{ checkins: CheckinWithMember[]; total: number }> {
+    if (!params.page || params.page < 1) {
+      throw new Error('Invalid page number: must be >= 1');
+    }
+    if (!params.limit || params.limit < 1 || params.limit > 100) {
+      throw new Error('Invalid limit: must be between 1 and 100');
+    }
+
+    const page = params.page;
+    const limit = params.limit;
+    const sortOrder = params.sortOrder ?? 'desc';
+
+    // Validate sortBy column
+    const allowedSortColumns: Record<string, keyof Prisma.CheckinOrderByWithRelationInput> = {
+      timestamp: 'timestamp',
+      direction: 'direction',
+    };
+    const sortByColumn = params.sortBy && allowedSortColumns[params.sortBy]
+      ? allowedSortColumns[params.sortBy]
+      : 'timestamp';
+
+    const skip = (page - 1) * limit;
+    const where = this.buildWhereClause(filters);
+
+    const [total, checkins] = await Promise.all([
+      this.prisma.checkin.count({ where }),
+      this.prisma.checkin.findMany({
+        where,
+        orderBy: { [sortByColumn]: sortOrder },
+        skip,
+        take: limit,
+        include: {
+          member: {
+            include: {
+              division: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      checkins: checkins.map((c) => {
+        if (!c.member || !c.member.division) {
+          throw new Error(`Checkin ${c.id} missing member or division data`);
+        }
+
+        return {
+          ...this.toCheckin(c),
+          member: {
+            id: c.member.id,
+            serviceNumber: c.member.serviceNumber,
+            employeeNumber: c.member.employeeNumber ?? undefined,
+            firstName: c.member.firstName,
+            lastName: c.member.lastName,
+            initials: c.member.initials ?? undefined,
+            rank: c.member.rank,
+            divisionId: c.member.divisionId,
+            mess: c.member.mess ?? undefined,
+            moc: c.member.moc ?? undefined,
+            memberType: c.member.memberType as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+            classDetails: c.member.classDetails ?? undefined,
+            status: c.member.status as 'active' | 'inactive' | 'pending_review' | 'terminated',
+            email: c.member.email ?? undefined,
+            homePhone: c.member.homePhone ?? undefined,
+            mobilePhone: c.member.mobilePhone ?? undefined,
+            badgeId: c.member.badgeId ?? undefined,
+            createdAt: c.member.createdAt,
+            updatedAt: c.member.updatedAt,
+            division: {
+              id: c.member.division.id,
+              name: c.member.division.name,
+              code: c.member.division.code,
+              description: c.member.division.description ?? undefined,
+              createdAt: c.member.division.createdAt,
+              updatedAt: c.member.division.updatedAt,
+            },
+          },
+        };
+      }),
+      total,
+    };
+  }
+
+  /**
    * Get presence statistics
    */
   async getPresenceStats(): Promise<PresenceStats> {
