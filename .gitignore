@@ -78,8 +78,8 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/           # Python build artifacts (root only, not src/lib/)
+/lib64/         # Python build artifacts (root only)
 parts/
 sdist/
 var/
