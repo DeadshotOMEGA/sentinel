@@ -343,6 +343,195 @@ model Member {
 
 See schema file for full model definitions and relations.
 
+### Authentication Models (better-auth)
+
+**Added in Phase 2** - Authentication system using better-auth library.
+
+These tables are managed by better-auth and should not be modified manually:
+
+#### **User**
+Authenticated users (admins, operators).
+
+```prisma
+model User {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
+  name          String?
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  sessions      Session[]
+  accounts      Account[]
+
+  @@index([email], map: "idx_users_email")
+  @@map("users")
+}
+```
+
+**Key Fields**:
+- `email` - Unique email address for login
+- `emailVerified` - Email verification status (false for admin-created users)
+- `name` - Display name for UI
+- Relations to sessions and accounts
+
+#### **Session**
+Active user sessions (7-day expiration).
+
+```prisma
+model Session {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  expiresAt DateTime  @map("expires_at") @db.Timestamp(6)
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  userAgent String?   @map("user_agent")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_sessions_user_id")
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@map("sessions")
+}
+```
+
+**Key Fields**:
+- `userId` - Foreign key to User (cascade delete)
+- `expiresAt` - Session expiration timestamp (indexed for cleanup queries)
+- `ipAddress` - Client IP for security auditing
+- `userAgent` - Browser/client information
+
+**Session Management**:
+- Sessions expire after 7 days (configured in `apps/backend/src/lib/auth.ts`)
+- Refreshed every 24 hours if active
+- Automatic cleanup of expired sessions via index on `expiresAt`
+
+#### **Account**
+Authentication provider accounts (email/password, OAuth).
+
+```prisma
+model Account {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  accountId    String    @map("account_id") @db.VarChar(255)
+  providerId   String    @map("provider_id") @db.VarChar(255)
+  accessToken  String?   @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  idToken      String?   @map("id_token")
+  expiresAt    DateTime? @map("expires_at") @db.Timestamp(6)
+  password     String?
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_accounts_user_id")
+  @@index([providerId], map: "idx_accounts_provider_id")
+  @@map("accounts")
+}
+```
+
+**Key Fields**:
+- `userId` - Foreign key to User (one user can have multiple accounts)
+- `providerId` - Authentication provider (e.g., "email", "google", "github")
+- `password` - Bcrypt hash for email/password auth (null for OAuth)
+- `accessToken`, `refreshToken`, `idToken` - OAuth tokens (null for email/password)
+
+**Current Configuration**:
+- Only email/password authentication enabled (Phase 2)
+- OAuth providers can be added later (Google, GitHub, etc.)
+- Passwords hashed with bcrypt (12 rounds minimum)
+
+#### **Verification**
+Email verification and password reset tokens.
+
+```prisma
+model Verification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String    @db.VarChar(255)
+  value      String
+  expiresAt  DateTime  @map("expires_at") @db.Timestamp(6)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@index([identifier], map: "idx_verifications_identifier")
+  @@index([expiresAt], map: "idx_verifications_expires_at")
+  @@map("verifications")
+}
+```
+
+**Key Fields**:
+- `identifier` - Email or user ID being verified
+- `value` - Verification token (hashed)
+- `expiresAt` - Token expiration (indexed for cleanup)
+
+**Use Cases**:
+- Email verification (currently disabled in Phase 2)
+- Password reset tokens
+- Magic link authentication (if enabled)
+
+#### **ApiKey**
+API keys for kiosk authentication (alternative to user sessions).
+
+```prisma
+model ApiKey {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key       String    @unique
+  name      String?   @db.VarChar(100)
+  expiresAt DateTime? @map("expires_at") @db.Timestamp(6)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@index([key], map: "idx_api_keys_key")
+  @@map("api_keys")
+}
+```
+
+**Key Fields**:
+- `key` - API key value (unique, indexed)
+- `name` - Friendly name (e.g., "Kiosk 1", "Mobile App")
+- `expiresAt` - Optional expiration (null = never expires)
+
+**Usage**:
+- Kiosk devices use API keys instead of user sessions
+- Keys sent via `X-API-Key` header or `Bearer` token with `sk_` prefix
+- Custom validation in `apps/backend/src/middleware/auth.ts` (Phase 2.2)
+
+**Note**: better-auth API key plugin was not available in v1.0.0, so custom validation is implemented in middleware.
+
+### Authentication Schema Relations
+
+```
+User (1)━━━━━┳━━━━━(N) Session
+             ┃
+             ┗━━━━━(N) Account
+```
+
+**One-to-Many**:
+- User → Sessions (one user, many active sessions)
+- User → Accounts (one user, multiple auth providers)
+
+**Cascade Delete**:
+- Deleting a User deletes all Sessions and Accounts
+- Prevents orphaned authentication records
+
+**No Relations**:
+- Verification table is standalone (temporary tokens)
+- ApiKey table is standalone (not tied to users)
+
+### Authentication vs Authorization
+
+**Authentication Tables** (better-auth):
+- User, Session, Account, Verification, ApiKey
+- Managed by better-auth library
+- Handle login, session management, token validation
+
+**Authorization** (application-level):
+- Roles/permissions stored in `User.role` (future enhancement)
+- Middleware checks permissions after authentication
+- Currently: All authenticated users are admins (Phase 2)
+
 ## Dependencies
 
 **Runtime**:

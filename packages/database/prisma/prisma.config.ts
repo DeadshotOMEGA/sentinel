@@ -1,3 +1,4 @@
+import { defineConfig } from 'prisma'
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 
@@ -6,3 +7,7 @@ const pool = new Pool({
 })
 
 export const adapter = new PrismaPg(pool)
+
+export default defineConfig({
+  datasourceUrl: process.env.DATABASE_URL,
+})
