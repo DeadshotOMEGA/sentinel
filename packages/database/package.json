@@ -1,0 +1,25 @@
+{
+  "name": "@sentinel/database",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Database schema and client for Sentinel",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:reset": "prisma migrate reset",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "@prisma/client": "^7.2.0",
+    "prisma": "^7.2.0",
+    "typescript": "^5.3.0"
+  }
+}
