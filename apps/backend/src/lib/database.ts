@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import { dbLogger } from './logger.js'
 
@@ -17,14 +17,14 @@ import { dbLogger } from './logger.js'
  */
 
 // Mutable reference (can be swapped in tests)
-let client: PrismaClient = defaultPrisma
+let client: PrismaClientInstance = defaultPrisma
 
 /**
  * Get current Prisma client
  *
  * @returns Active PrismaClient instance
  */
-export function getPrismaClient(): PrismaClient {
+export function getPrismaClient(): PrismaClientInstance {
   if (!client) {
     dbLogger.error('Prisma client not initialized')
     throw new Error('Database client not available')
@@ -37,7 +37,7 @@ export function getPrismaClient(): PrismaClient {
  *
  * @param testClient - Test PrismaClient instance
  */
-export function setPrismaClient(testClient: PrismaClient): void {
+export function setPrismaClient(testClient: PrismaClientInstance): void {
   dbLogger.debug('Replacing Prisma client (test mode)')
   client = testClient
 }
@@ -57,7 +57,7 @@ export const db = {
   get client() {
     return getPrismaClient()
   },
-  set client(c: PrismaClient) {
+  set client(c: PrismaClientInstance) {
     setPrismaClient(c)
   },
 }

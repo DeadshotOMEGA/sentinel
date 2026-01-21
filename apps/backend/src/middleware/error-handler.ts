@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express'
-import { logger, getCorrelationId } from '../lib/logger.js'
+import type { Request, Response, NextFunction } from 'express'
 import { Prisma } from '@sentinel/database'
+import { logger, getCorrelationId } from '../lib/logger.js'
 
 /**
  * Application error class for custom errors
@@ -53,7 +53,9 @@ export class ConflictError extends AppError {
 /**
  * Handle Prisma errors and convert to appropriate HTTP responses
  */
-function handlePrismaError(error: Error): AppError {
+function handlePrismaError(
+  error: Prisma.PrismaClientKnownRequestError | Prisma.PrismaClientValidationError | Error
+): AppError {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {

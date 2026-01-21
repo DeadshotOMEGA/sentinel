@@ -99,7 +99,7 @@ export function requireMinimumRole(minimumRole: Role) {
 
     const userRole = req.user.role || Role.QUARTERMASTER
     const userLevel = ROLE_LEVELS[userRole] || 0
-    const minimumLevel = ROLE_LEVELS[minimumRole]
+    const minimumLevel = ROLE_LEVELS[minimumRole] || 0
 
     if (userLevel < minimumLevel) {
       authLogger.warn('Minimum role check failed: Insufficient role level', {
@@ -133,6 +133,6 @@ export function hasRole(userRole: string | undefined | null, targetRole: Role): 
  */
 export function hasMinimumRole(userRole: string | undefined | null, minimumRole: Role): boolean {
   const userLevel = ROLE_LEVELS[userRole || Role.QUARTERMASTER] || 0
-  const minimumLevel = ROLE_LEVELS[minimumRole]
+  const minimumLevel = ROLE_LEVELS[minimumRole] || 0
   return userLevel >= minimumLevel
 }

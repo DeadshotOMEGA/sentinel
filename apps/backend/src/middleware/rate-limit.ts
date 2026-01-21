@@ -22,7 +22,7 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
-  skip: (req) => {
+  skip: (_req) => {
     // Skip rate limiting if feature is disabled
     return process.env.ENABLE_RATE_LIMITING === 'false'
   },
@@ -55,7 +55,7 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
+  skip: (_req) => {
     return process.env.ENABLE_RATE_LIMITING === 'false'
   },
   handler: (req, res) => {
@@ -87,7 +87,7 @@ export const publicLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
+  skip: (_req) => {
     return process.env.ENABLE_RATE_LIMITING === 'false'
   },
 })
