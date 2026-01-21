@@ -2,6 +2,10 @@ import 'dotenv/config'
 import { createServer } from 'http'
 import { createApp } from './app.js'
 import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger.js'
+import {
+  initializeWebSocketServer,
+  shutdownWebSocketServer,
+} from './websocket/server.js'
 
 /**
  * Validate required environment variables
@@ -43,6 +47,9 @@ async function main() {
     // Create HTTP server
     const httpServer = createServer(app)
 
+    // Initialize WebSocket server
+    const io = initializeWebSocketServer(httpServer)
+
     // Get port from environment
     const port = parseInt(process.env.PORT || '3000', 10)
     const host = process.env.HOST || '0.0.0.0'
@@ -60,6 +67,9 @@ async function main() {
     // Graceful shutdown handlers
     const shutdown = async (signal: string) => {
       logShutdown(signal)
+
+      // Shutdown WebSocket server first
+      await shutdownWebSocketServer(io)
 
       httpServer.close(() => {
         logger.info('HTTP server closed')

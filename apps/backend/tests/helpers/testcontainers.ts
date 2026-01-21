@@ -135,6 +135,55 @@ export class TestDatabase {
       throw new Error('Prisma client not initialized. Call start() first.')
     }
 
+    // Create enum tables (in dependency order)
+    await this.prisma.badgeStatus.createMany({
+      data: [
+        { code: 'active', name: 'Active', description: 'Badge is active and in use' },
+        { code: 'inactive', name: 'Inactive', description: 'Badge is inactive' },
+        { code: 'lost', name: 'Lost', description: 'Badge has been reported lost' },
+        { code: 'damaged', name: 'Damaged', description: 'Badge is damaged' },
+      ],
+      skipDuplicates: true,
+    })
+
+    await this.prisma.memberStatus.createMany({
+      data: [
+        { code: 'active', name: 'Active', description: 'Member is active' },
+        { code: 'inactive', name: 'Inactive', description: 'Member is inactive' },
+        { code: 'transferred', name: 'Transferred', description: 'Member has transferred' },
+        { code: 'retired', name: 'Retired', description: 'Member has retired' },
+        { code: 'pending_review', name: 'Pending Review', description: 'Member pending review' },
+      ],
+      skipDuplicates: true,
+    })
+
+    await this.prisma.memberType.createMany({
+      data: [
+        { code: 'reserve', name: 'Reserve', description: 'Reserve member' },
+        { code: 'regular', name: 'Regular', description: 'Regular force member' },
+        { code: 'civilian', name: 'Civilian', description: 'Civilian member' },
+        { code: 'cadet', name: 'Cadet', description: 'Cadet member' },
+      ],
+      skipDuplicates: true,
+    })
+
+    await this.prisma.visitType.createMany({
+      data: [
+        { code: 'regular', name: 'Regular', description: 'Regular visit' },
+        { code: 'training', name: 'Training', description: 'Training event' },
+        { code: 'meeting', name: 'Meeting', description: 'Meeting attendance' },
+        { code: 'exercise', name: 'Exercise', description: 'Military exercise' },
+      ],
+      skipDuplicates: true,
+    })
+
+    await this.prisma.listItem.createMany({
+      data: [
+        { code: 'general', name: 'General', description: 'General list item' },
+      ],
+      skipDuplicates: true,
+    })
+
     // Create default divisions
     await this.prisma.division.createMany({
       data: [

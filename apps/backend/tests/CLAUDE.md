@@ -14,6 +14,7 @@ Applies when creating or modifying tests in: `apps/backend/tests/`
 - MUST use Testcontainers with real PostgreSQL (NOT mocks)
 - MUST achieve minimum coverage: Repositories 90%+, Routes 80%+, Services 85%+
 - MUST NOT mock database operations
+- MUST set `fileParallelism: false` in vitest.config.ts (prevents Testcontainers race conditions)
 
 **Dependency Injection** (CRITICAL):
 - MUST inject PrismaClient via repository constructor:
@@ -165,6 +166,22 @@ sed -i 's/ prisma\./ this.prisma./g' xxx-repository.ts
 ```
 
 **Prevention**: Run `pnpm check:prisma` before committing (automated via pretest script)
+
+#### P2002 Unique constraint failed (Testcontainers)
+
+**Cause**: Multiple test files running in parallel, all trying to apply schema to same reused container simultaneously.
+
+**Fix**: Set `fileParallelism: false` in vitest.config.ts:
+```typescript
+export default defineConfig({
+  test: {
+    fileParallelism: false, // Run test files sequentially
+    // ... rest of config
+  }
+})
+```
+
+**Why**: Testcontainers with container reuse requires sequential file execution to prevent race conditions during schema application.
 
 ### Running Tests
 

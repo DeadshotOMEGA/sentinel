@@ -4,7 +4,18 @@ import cors from 'cors'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import { createExpressEndpoints } from '@ts-rest/express'
-import { memberContract, checkinContract, divisionContract, badgeContract } from '@sentinel/contracts'
+import {
+  memberContract,
+  checkinContract,
+  divisionContract,
+  badgeContract,
+  eventContract,
+  visitorContract,
+  tagContract,
+  securityAlertContract,
+  ddsContract,
+  lockupContract,
+} from '@sentinel/contracts'
 import { requestLogger } from './middleware/request-logger.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
 import { apiLimiter } from './middleware/rate-limit.js'
@@ -13,6 +24,12 @@ import { membersRouter } from './routes/members.js'
 import { checkinsRouter } from './routes/checkins.js'
 import { divisionsRouter } from './routes/divisions.js'
 import { badgesRouter } from './routes/badges.js'
+import { eventsRouter } from './routes/events.js'
+import { visitorsRouter } from './routes/visitors.js'
+import { tagsRouter } from './routes/tags.js'
+import { securityAlertsRouter } from './routes/security-alerts.js'
+import { ddsRouter } from './routes/dds.js'
+import { lockupRouter } from './routes/lockup.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
 import { auth } from './lib/auth.js'
@@ -96,7 +113,7 @@ export function createApp() {
   // Application routes
   // Mount ts-rest routers with validation enabled
   createExpressEndpoints(memberContract, membersRouter, app, {
-    requestValidationErrorHandler: (err, req, res) => {
+    requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'Request validation failed',
@@ -105,7 +122,7 @@ export function createApp() {
     },
   })
   createExpressEndpoints(checkinContract, checkinsRouter, app, {
-    requestValidationErrorHandler: (err, req, res) => {
+    requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'Request validation failed',
@@ -114,7 +131,7 @@ export function createApp() {
     },
   })
   createExpressEndpoints(divisionContract, divisionsRouter, app, {
-    requestValidationErrorHandler: (err, req, res) => {
+    requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'Request validation failed',
@@ -123,7 +140,61 @@ export function createApp() {
     },
   })
   createExpressEndpoints(badgeContract, badgesRouter, app, {
-    requestValidationErrorHandler: (err, req, res) => {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(eventContract, eventsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(visitorContract, visitorsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(tagContract, tagsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(securityAlertContract, securityAlertsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(ddsContract, ddsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(lockupContract, lockupRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'Request validation failed',

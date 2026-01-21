@@ -6,6 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
+    fileParallelism: false, // Run test files sequentially to avoid Testcontainers conflicts
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
