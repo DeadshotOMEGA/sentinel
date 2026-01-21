@@ -1,67 +1,48 @@
-# Decisions Documentation (AI-First Guide)
+# CLAUDE Rules: Decisions Documentation
 
-**Purpose:** Architecture decisions and proposals organization
+## Scope
+Applies when creating documentation in: `docs/decisions/`
 
-**AI Context Priority:** high
+## Non-Negotiables (MUST / MUST NOT)
 
-**When to Load:** User making decisions, reviewing history, proposing changes
+**ADRs** (Architecture Decision Records):
+- MUST use sequential numbering: `0001-title.md`, `0002-title.md`
+- MUST include Status field (Proposed, Accepted, Deprecated, Superseded)
+- MUST be immutable once accepted (create new ADR if decision changes)
+- MUST follow structure: Context → Decision → Consequences
 
----
+**RFCs** (Request for Comments):
+- MUST use date prefix: `YYYY-MM-DD-title.md`
+- MUST include Status field (Draft, Discussion, Accepted, Rejected)
+- MUST follow structure: Problem → Proposal → Alternatives → Discussion
+- MUST link to resulting ADR when accepted
 
-## Quick Reference
+## Defaults (SHOULD)
 
-### What's Here
+**When to Document**:
+- SHOULD create ADR for technology choices, architectural patterns, significant trade-offs
+- SHOULD create RFC for major changes needing consensus
+- SHOULD NOT document implementation details, obvious choices, personal preferences
 
-Decision documentation and proposals:
-- **[ADRs](adr/)** - Architecture Decision Records (immutable)
-- **[RFCs](rfc/)** - Request for Comments (proposals)
+**Organization**:
+- SHOULD maintain index.md in adr/ and rfc/ subdirectories
+- SHOULD cross-reference RFC → ADR when proposal is accepted
+- SHOULD update old ADR status when superseded
 
-### Purpose
+## Workflow
 
-**ADRs:** Record significant architecture decisions with context and consequences
+**When making significant decision**:
+1. Determine if consensus needed (RFC) or decision made (ADR)
+2. Use appropriate template from `@docs/templates/`
+3. Add to subdirectory (adr/ or rfc/)
+4. Update index.md
+5. Link from this file if major decision
 
-**RFCs:** Propose major changes and gather consensus before implementation
-
----
-
-## ADRs vs. RFCs
-
-### Architecture Decision Records (ADRs)
-
-**When:** Decision has been made
-
-**Purpose:** Document what was decided, why, and consequences
-
-**Format:** Structured (Context → Decision → Consequences)
-
-**Status:** Immutable once accepted
-
-**Naming:** `0001-short-title.md` (sequential numbering)
-
-**See:** [ADR CLAUDE.md](adr/CLAUDE.md)
-
-### Request for Comments (RFCs)
-
-**When:** Proposing major change needing consensus
-
-**Purpose:** Gather feedback before deciding
-
-**Format:** Problem → Proposal → Alternatives → Discussion
-
-**Status:** Draft → Discussion → Accepted/Rejected
-
-**Naming:** `YYYY-MM-DD-descriptive-title.md` (date prefix)
-
-**See:** [RFC CLAUDE.md](rfc/CLAUDE.md)
-
----
-
-## Decision Workflow
-
+**Decision workflow**:
 ```
 Problem Identified
        ↓
-Create RFC (if major change)
+Create RFC (if major)
        ↓
 Team Discussion
        ↓
@@ -72,124 +53,25 @@ Create ADR (record decision)
 Implementation
 ```
 
-**For minor decisions:** Skip RFC, go straight to ADR
+**For minor decisions**: Skip RFC, go straight to ADR
 
-**For major decisions:** RFC first, then ADR
+## Quick Reference
 
----
+**ADRs** (Immutable Records):
+- Technology choices (better-auth, ts-rest, Prisma)
+- Architectural patterns (monorepo, integration-first testing)
+- Significant design decisions
+- Format: `0001-short-title.md`
+- See: [ADR CLAUDE.md](adr/CLAUDE.md)
 
-## What Requires Documentation
+**RFCs** (Proposals):
+- Major system changes
+- Breaking changes
+- Multiple viable approaches
+- Format: `YYYY-MM-DD-descriptive-title.md`
+- See: [RFC CLAUDE.md](rfc/CLAUDE.md)
 
-### Architecture Decisions (ADR)
-
-**Document when:**
-- Technology choice (better-auth, ts-rest, Prisma)
-- Architectural pattern (monorepo, integration-first testing)
-- Significant design decision (API structure, data model)
-- Trade-off made (performance vs simplicity)
-
-**Don't document:**
-- Implementation details (code-level decisions)
-- Obvious choices (using TypeScript in TS project)
-- Temporary workarounds
-- Personal preferences without impact
-
-### Proposals (RFC)
-
-**Create RFC when:**
-- Major system change proposed
-- Breaking changes planned
-- New architecture pattern
-- Multiple viable approaches exist
-- Team consensus needed
-
-**Don't create RFC for:**
-- Bug fixes
-- Minor improvements
-- Internal refactoring
-- Emergency fixes
-
----
-
-## Directory Structure
-
-```
-decisions/
-├── CLAUDE.md           # This file
-├── adr/
-│   ├── CLAUDE.md
-│   ├── index.md
-│   ├── 0001-integration-first-testing.md
-│   └── 0002-better-auth-adoption.md
-└── rfc/
-    ├── CLAUDE.md
-    ├── index.md
-    └── 2026-01-15-backend-rebuild-proposal.md
-```
-
----
-
-## Linking Decisions
-
-### RFC → ADR
-
-When RFC is accepted, create ADR:
-
-```markdown
-<!-- decisions/adr/0002-better-auth-adoption.md -->
-# ADR-0002: Adopt Better-Auth
-
-**RFC:** [2026-01-15 Backend Rebuild Proposal](../rfc/2026-01-15-backend-rebuild-proposal.md)
-
-**Status:** Accepted
-
-## Context
-[From RFC, summarized]
-
-## Decision
-We will adopt better-auth for authentication.
-
-## Consequences
-[What this means]
-```
-
-### ADR → ADR
-
-When decision supersedes another:
-
-```markdown
-<!-- decisions/adr/0005-new-approach.md -->
-# ADR-0005: New Auth Approach
-
-**Supersedes:** [ADR-0002](0002-better-auth-adoption.md)
-
-**Status:** Accepted
-```
-
-**And update old ADR:**
-```markdown
-<!-- decisions/adr/0002-better-auth-adoption.md -->
-**Status:** Superseded by [ADR-0005](0005-new-approach.md)
-```
-
----
-
-## Related Documentation
-
-**Subdirectories:**
-- [ADR CLAUDE.md](adr/CLAUDE.md) - ADR format and guidelines
-- [RFC CLAUDE.md](rfc/CLAUDE.md) - RFC format and process
-
-**Explanation docs:**
+**Related**:
 - [Explanation Guides](../guides/explanation/CLAUDE.md) - Conceptual understanding
-
-**Plans:**
 - [Plans](../plans/CLAUDE.md) - Implementation plans
-
-**Templates:**
-- [ADR Template](../templates/adr.md)
-- [RFC Template](../templates/rfc.md)
-
----
-
-**Last Updated:** 2026-01-19
+- [Templates](../templates/CLAUDE.md) - ADR and RFC templates

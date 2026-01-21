@@ -1,213 +1,68 @@
-# Guides Documentation (AI-First Guide)
+# CLAUDE Rules: Guides Documentation
 
-**Purpose:** Diátaxis-organized documentation guide
+## Scope
+Applies when creating documentation in: `docs/guides/`
 
-**AI Context Priority:** high
+## Non-Negotiables (MUST / MUST NOT)
 
-**When to Load:** User creating documentation, learning system, solving tasks
+**Organization**:
+- MUST organize by Diátaxis type (tutorial, howto, reference, explanation)
+- MUST put document type before business domain
+- MUST use correct subdirectory for document type
+- MUST NOT mix types in single document
 
----
+**File Naming**:
+- MUST use kebab-case
+- MUST NOT use type prefix in filename (implied by directory)
+- In `tutorials/`: `getting-started.md` (NOT `tutorial-getting-started.md`)
 
-## Quick Reference
+## Defaults (SHOULD)
 
-### What's Here
+**When to Use Guides**:
+- SHOULD use when document type is more important than domain
+- SHOULD use for cross-domain tutorials, references, explanations
+- SHOULD cross-reference to domain docs when relevant
 
-Diátaxis-organized documentation:
-- **[Tutorials](tutorials/)** - Learning-oriented, step-by-step
-- **[How-to Guides](howto/)** - Task-oriented solutions
-- **[Reference](reference/)** - Information-oriented specs
-- **[Explanation](explanation/)** - Understanding-oriented concepts
+## Workflow
 
-### The Diátaxis Framework
+**When creating guide**:
+1. Determine document type (tutorial, howto, reference, explanation)
+2. Choose appropriate subdirectory
+3. Use template from `@docs/templates/`
+4. Add frontmatter with AI triggers
+5. Link from subdirectory CLAUDE.md
 
-Four distinct documentation types, each serving different user needs:
-
-| Type | Purpose | User Need |
-|------|---------|-----------|
-| **Tutorial** | Learning | "I want to learn" |
-| **How-to** | Solving | "I need to accomplish X" |
-| **Reference** | Lookup | "I need to look up X" |
-| **Explanation** | Understanding | "I want to understand why" |
-
----
-
-## When to Use Guides vs. Domains
-
-### Use Guides When
-
-**Document type is most important:**
-- Creating learning materials → tutorials/
-- Writing task solutions → howto/
-- Documenting specifications → reference/
-- Explaining concepts → explanation/
-
-**Examples:**
-- "Tutorial: Getting Started with Sentinel"
-- "How to Deploy to Production"
-- "API Endpoints Reference"
-- "Testing Philosophy Explained"
-
-### Use Domains When
-
-**Business domain is most important:**
-- Authentication-specific docs → domains/authentication/
-- Member management docs → domains/personnel/
-- Check-in docs → domains/checkin/
-
-**Note:** Domain directories can contain all document types (explanation, reference, how-to) for that specific domain.
-
----
-
-## Directory Structure
-
-### Guides Organization
-
-```
-guides/
-├── tutorials/              # Learning-oriented
-│   ├── CLAUDE.md
-│   └── getting-started.md
-├── howto/                  # Task-oriented
-│   ├── CLAUDE.md
-│   └── add-repository.md
-├── reference/              # Information-oriented
-│   ├── CLAUDE.md
-│   └── api-endpoints.md
-└── explanation/            # Understanding-oriented
-    ├── CLAUDE.md
-    └── testing-philosophy.md
-```
-
-### File Naming in Guides
-
-**Type prefix optional** (implied by directory):
-- In `tutorials/`: `getting-started.md` (not `tutorial-getting-started.md`)
-- In `howto/`: `add-repository.md` (not `howto-add-repository.md`)
-- In `reference/`: `api-endpoints.md` (not `reference-api-endpoints.md`)
-
-**Why:** Directory already indicates type
-
----
-
-## The Four Types Explained
-
-### Tutorials (Learning)
-
-**Purpose:** Teach through practice
-**Audience:** Beginners to the system
-**Tone:** Patient, explanatory, encouraging
-
-**Characteristics:**
-- Step-by-step instructions
-- Safe practice environment
-- Explains concepts along the way
-- Builds confidence
-
-**Example:** "Tutorial: Writing Your First Integration Test"
-
-**See:** [Tutorials CLAUDE.md](tutorials/CLAUDE.md)
-
-### How-to Guides (Tasks)
-
-**Purpose:** Solve specific problems
-**Audience:** Practitioners with familiarity
-**Tone:** Direct, concise, practical
-
-**Characteristics:**
-- Goal-oriented
-- Minimal explanation
-- Assumes working system
-- Focused on result
-
-**Example:** "How to Add a New Repository"
-
-**See:** [How-to CLAUDE.md](howto/CLAUDE.md)
-
-### Reference (Specifications)
-
-**Purpose:** Provide complete information
-**Audience:** Anyone needing facts
-**Tone:** Precise, complete, factual
-
-**Characteristics:**
-- Comprehensive
-- Organized by structure
-- Tables, parameters, types
-- No narrative
-
-**Example:** "API Endpoints Reference"
-
-**See:** [Reference CLAUDE.md](reference/CLAUDE.md)
-
-### Explanation (Understanding)
-
-**Purpose:** Illuminate concepts
-**Audience:** Decision-makers, learners
-**Tone:** Thoughtful, analytical, balanced
-
-**Characteristics:**
-- Conceptual understanding
-- Why, not how
-- Alternatives discussed
-- Trade-offs explained
-
-**Example:** "Why Integration-First Testing"
-
-**See:** [Explanation CLAUDE.md](explanation/CLAUDE.md)
-
----
-
-## Classification Decision Tree
-
+**Classification decision**:
 ```
 What does the user need?
 
-"I want to learn" → Tutorial
-  └─ Teaching new concepts through practice
-
-"I need to do X" → How-to
-  └─ Solving specific practical problem
-
-"What is X?" → Reference
-  └─ Looking up specifications
-
-"Why X?" → Explanation
-  └─ Understanding concepts and rationale
+"I want to learn" → tutorials/
+"I need to do X" → howto/
+"What is X?" → reference/
+"Why X?" → explanation/
 ```
 
----
+**Guides vs Domains**:
+- Document type most important → Use `docs/guides/`
+- Business domain most important → Use `docs/domains/`
 
-## Never Mix Types
+## Quick Reference
 
-**❌ Bad:** Mixing tutorial + reference in one document
+**Diátaxis Types**:
 
-**✅ Good:** Separate documents, cross-referenced
+| Type | Purpose | User Need | Directory |
+|------|---------|-----------|-----------|
+| Tutorial | Learning | "I want to learn" | tutorials/ |
+| How-to | Solving | "I need to accomplish X" | howto/ |
+| Reference | Lookup | "I need to look up X" | reference/ |
+| Explanation | Understanding | "I want to understand why" | explanation/ |
 
-**Example:**
-```markdown
-<!-- tutorials/getting-started.md -->
-# Getting Started Tutorial
+**Subdirectories**:
+- [Tutorials](tutorials/CLAUDE.md) - Learning-oriented guides
+- [How-to](howto/CLAUDE.md) - Task-oriented solutions
+- [Reference](reference/CLAUDE.md) - Information-oriented specs
+- [Explanation](explanation/CLAUDE.md) - Understanding-oriented concepts
 
-[Tutorial content...]
-
-## Next Steps
-- [Member API Reference](../reference/member-api.md)
-- [How to Add Members](../howto/add-member.md)
-```
-
----
-
-## Related Documentation
-
-**Domain docs:**
-- [Domains](../domains/CLAUDE.md) - When to use domain directories
-
-**Templates:**
+**Related**:
+- [Domains](../domains/CLAUDE.md) - Business domain organization
 - [Templates](../templates/CLAUDE.md) - Document templates
-
-**Meta:**
-- [Diátaxis Guide](../meta/diataxis-guide.md) - Complete classification guide (coming soon)
-
----
-
-**Last Updated:** 2026-01-19

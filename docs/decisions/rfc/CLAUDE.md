@@ -1,346 +1,68 @@
-# Request for Comments (AI-First Guide)
+# CLAUDE Rules: Request for Comments
 
-**Purpose:** RFC format and process guide
+## Scope
+Applies when creating documentation in: `docs/decisions/rfc/`
 
-**AI Context Priority:** high
+## Non-Negotiables (MUST / MUST NOT)
 
-**When to Load:** User proposing changes, seeking consensus, major decisions
+**File Naming**:
+- MUST use date prefix: `YYYY-MM-DD-descriptive-title.md`
+- MUST use creation date (today)
+- MUST use kebab-case
 
-**Triggers:** rfc, proposal, request for comments, propose
+**Examples**:
+- `2026-01-15-backend-rebuild-proposal.md`
+- `2026-02-01-real-time-notifications.md`
 
----
+**Structure**:
+- MUST include: Problem, Goals, Non-Goals, Proposal, Alternatives, Risks, Rollout
+- MUST include Status field (Draft, Discussion, Accepted, Rejected)
+- MUST document alternatives considered with pros/cons
+- MUST identify risks honestly
+
+**When Accepted**:
+- MUST create corresponding ADR
+- MUST link RFC to resulting ADR
+- MUST update RFC status to "Accepted"
+
+## Defaults (SHOULD)
+
+**When to Create**:
+- SHOULD create for major system changes
+- SHOULD create when multiple viable approaches exist
+- SHOULD create when team consensus needed
+- SHOULD NOT create for bug fixes or obvious solutions
+
+**Process**:
+- SHOULD allow 1-2 weeks for discussion
+- SHOULD document discussion and decisions
+- SHOULD update index.md when created
+
+## Workflow
+
+**When proposing major change**:
+1. Create RFC with today's date
+2. Use RFC template from `@docs/templates/rfc.md`
+3. Set status to "Draft"
+4. Include all required sections (Problem, Proposal, Alternatives, Risks)
+5. Update status to "Discussion" when ready for review
+6. When accepted: Create ADR, link between RFC and ADR
+7. Add to index.md
 
 ## Quick Reference
 
-### What Are RFCs?
+**Status Values**:
+- **Draft** - Author still writing
+- **Discussion** - Ready for team review
+- **Accepted** - Team consensus, create ADR next
+- **Rejected** - Not proceeding, document why
 
-Proposals for major changes that need team discussion and consensus before implementation.
-
-### File Naming
-
-**Pattern:** `YYYY-MM-DD-descriptive-title.md`
-
-**Examples:**
-- `2026-01-15-backend-rebuild-proposal.md`
-- `2026-02-01-real-time-notifications.md`
-- `2026-02-15-multi-tenant-architecture.md`
-
-**Date:** Creation date (today)
-
----
-
-## When to Create RFCs
-
-**Create RFC when:**
-- Proposing major system change
-- Multiple viable approaches exist
-- Breaking changes planned
-- Significant resource investment
-- Team consensus needed
-- Impact spans multiple domains
-
-**Examples:**
-- "RFC: Migrate to Microservices"
-- "RFC: Add Real-Time Collaboration"
-- "RFC: Implement Multi-Tenancy"
-
-**Don't create RFC for:**
-- Bug fixes (just fix)
-- Minor improvements (just implement)
-- Internal refactoring (low impact)
-- Emergency fixes (act first, document later)
-- Obvious solutions (no alternatives)
-
----
-
-## RFC Structure
-
-### Required Sections
-
-```markdown
-# RFC: Title
-
-**Status:** Draft | Discussion | Accepted | Rejected
-
-**Date:** YYYY-MM-DD
-
-**Author:** Name
-
-## Problem
-
-What problem are we solving?
-
-## Goals
-
-What are we trying to achieve?
-
-## Non-Goals
-
-What are we explicitly NOT trying to solve?
-
-## Proposal
-
-Detailed description of proposed solution.
-
-## Alternatives Considered
-
-### Alternative 1
-[Description, pros, cons]
-
-### Alternative 2
-[Description, pros, cons]
-
-## Risks & Mitigations
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| Risk 1 | High | Medium | How to prevent |
-
-## Rollout Plan
-
-How will we implement this?
-
-## Open Questions
-
-- Question 1?
-- Question 2?
-
-## Discussion
-
-[Link to discussion thread, comments, decisions]
+**RFC → ADR Flow**:
+```
+RFC (Draft) → Discussion → Accepted → Create ADR → Link both
 ```
 
----
-
-## RFC Process
-
-### 1. Draft
-
-**Author creates RFC:**
-- Identifies problem
-- Proposes solution
-- Lists alternatives
-- Identifies risks
-
-**Status:** Draft
-
-### 2. Review & Discussion
-
-**Team reviews:**
-- Comments on RFC document
-- Discussion in meetings/threads
-- Questions answered
-- Proposal refined
-
-**Status:** Discussion
-
-**Duration:** 1-2 weeks typically
-
-### 3. Decision
-
-**Outcomes:**
-- **Accepted:** Move to implementation, create ADR
-- **Rejected:** Document why, archive RFC
-- **Needs Revision:** Back to draft
-
-**Status:** Accepted or Rejected
-
-### 4. Implementation
-
-**If accepted:**
-1. Create ADR documenting decision
-2. Create implementation plan
-3. Begin work
-
----
-
-## Writing Good RFCs
-
-### Do
-
-✅ **Define problem clearly**
-```markdown
-## Problem
-
-Sentinel currently has no real-time updates. Users must manually
-refresh to see new check-ins. This causes:
-- Delayed incident response
-- Poor user experience
-- Missed critical events
-
-We need real-time updates without sacrificing performance or
-reliability.
-```
-
-✅ **Explore alternatives**
-```markdown
-## Alternatives Considered
-
-### 1. Polling (Current)
-- Pro: Simple, no new infrastructure
-- Con: Inefficient, delayed updates
-
-### 2. WebSocket (Socket.IO)
-- Pro: True real-time, widely used
-- Con: Stateful connections, scaling concerns
-
-### 3. Server-Sent Events (SSE)
-- Pro: Simpler than WebSocket, unidirectional
-- Con: Browser limits, no binary data
-
-### 4. Firebase/Pusher (External)
-- Pro: Managed service
-- Con: Cost, vendor lock-in
-
-**Recommendation:** WebSocket with Socket.IO (option 2)
-```
-
-✅ **Identify risks honestly**
-```markdown
-## Risks & Mitigations
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| WebSocket connections fail | High | Medium | Implement automatic reconnection |
-| Scaling issues with connections | High | Low | Redis adapter for multi-server |
-| Increased infrastructure cost | Medium | High | Monitor usage, optimize broadcast |
-```
-
-### Don't
-
-❌ **Be vague**
-```markdown
-## Problem
-
-Things are slow.
-
-## Proposal
-
-Make them faster.
-
-[No specifics, no details]
-```
-
-❌ **Only present one option**
-```markdown
-## Proposal
-
-We should use technology X.
-
-[No alternatives considered, no justification]
-```
-
-❌ **Hide risks**
-```markdown
-## Risks
-
-None. This is perfect.
-
-[Unrealistic]
-```
-
----
-
-## RFC Status
-
-### Draft
-- Author still writing
-- Not ready for review
-- May change significantly
-
-### Discussion
-- Ready for team review
-- Accepting feedback
-- Being refined
-
-### Accepted
-- Team consensus reached
-- Implementation approved
-- Create ADR next
-
-### Rejected
-- Team decided not to proceed
-- Document why in RFC
-- Keep for historical record
-
----
-
-## Linking RFCs to ADRs
-
-**When RFC accepted, create ADR:**
-
-```markdown
-<!-- decisions/adr/0004-websocket-real-time.md -->
-# ADR-0004: Implement WebSocket Real-Time Updates
-
-**RFC:** [2026-02-01 Real-Time Notifications](../rfc/2026-02-01-real-time-notifications.md)
-
-**Status:** Accepted
-
-## Context
-
-[Summarize from RFC]
-
-## Decision
-
-We will implement WebSocket-based real-time updates using Socket.IO.
-
-## Consequences
-
-[From RFC]
-```
-
-**And update RFC:**
-```markdown
-<!-- decisions/rfc/2026-02-01-real-time-notifications.md -->
-**Status:** Accepted
-
-**ADR:** [ADR-0004](../adr/0004-websocket-real-time.md)
-
-[Rest of RFC]
-```
-
----
-
-## Index Management
-
-### rfc/index.md
-
-```markdown
-# Request for Comments
-
-## Active Discussion
-
-| RFC | Status | Date | Author |
-|-----|--------|------|--------|
-| [2026-02-15 Multi-Tenant](2026-02-15-multi-tenant.md) | Discussion | 2026-02-15 | Alice |
-
-## Accepted
-
-| RFC | Accepted | ADR | Date |
-|-----|----------|-----|------|
-| [2026-02-01 Real-Time](2026-02-01-real-time-notifications.md) | Yes | [0004](../adr/0004-websocket-real-time.md) | 2026-02-01 |
-
-## Rejected
-
-| RFC | Rejected | Reason | Date |
-|-----|----------|--------|------|
-| [2026-01-20 GraphQL API](2026-01-20-graphql-api.md) | Yes | Complexity not justified | 2026-01-25 |
-```
-
----
-
-## Related Documentation
-
-**ADRs:**
+**Related**:
 - [ADR CLAUDE.md](../adr/CLAUDE.md) - Recording decisions
-
-**Templates:**
 - [RFC Template](../../templates/rfc.md)
-
-**Decisions parent:**
-- [Decisions CLAUDE.md](../CLAUDE.md)
-
----
-
-**Last Updated:** 2026-01-19
+- [Decisions Overview](../CLAUDE.md)

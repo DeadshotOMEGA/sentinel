@@ -1,387 +1,184 @@
-# Backend Testing Infrastructure
+# CLAUDE Rules: Backend Testing
 
-## Overview
-Integration tests use Testcontainers for real PostgreSQL databases. Each test file manages its own database instance with automatic schema application and reset capabilities.
+Integration-first testing with Testcontainers, Vitest, and Supertest.
 
-## Key Components
+---
 
-### TestDatabase Class (`tests/helpers/testcontainers.ts`)
-Manages PostgreSQL container lifecycle:
-- Starts PostgreSQL 15 in Docker container (port auto-assigned)
-- Applies schema via `prisma db push --url`
-- Provides isolated Prisma client with adapter for tests
-- Handles cleanup and reset between tests
+## Scope
+Applies when creating or modifying tests in: `apps/backend/tests/`
 
-**Container Reuse**: Uses `.withReuse()` flag for speed (~5s vs ~30s startup). Can occasionally cause "container removal already in progress" errors - these usually resolve on retry.
+## Non-Negotiables (MUST / MUST NOT)
 
-**Schema Application**: Uses `db push` instead of migrations for flexibility during development. Schema is applied fresh to each test container.
+**Testing Strategy**:
+- MUST follow Trophy Model: 70% integration, 15% unit, 15% E2E
+- MUST use Testcontainers with real PostgreSQL (NOT mocks)
+- MUST achieve minimum coverage: Repositories 90%+, Routes 80%+, Services 85%+
+- MUST NOT mock database operations
 
-### Factory Functions (`tests/helpers/factories.ts`)
-Test data creation helpers with sensible defaults:
-- `createMember(prisma, overrides?)` - Create test members
-- `createBadge(prisma, overrides?)` - Create test badges
-- `createDivision(prisma, overrides?)` - Create divisions
-- `createTag(prisma, overrides?)` - Create tags
-- `createCheckin(prisma, overrides?)` - Create check-ins
+**Dependency Injection** (CRITICAL):
+- MUST inject PrismaClient via repository constructor:
+  ```typescript
+  export class MyRepository {
+    private prisma: PrismaClient
+    constructor(prismaClient?: PrismaClient) {
+      this.prisma = prismaClient || defaultPrisma
+    }
+  }
+  ```
+- MUST use `this.prisma` in ALL repository methods (NEVER global `prisma`)
+- MUST NOT use `await prisma.` or ` prisma.` (causes auth errors in tests)
 
-All factories accept optional partial objects and return the created entity.
+**Repository Test Coverage**:
+- MUST test CRUD operations (create, read, update, delete)
+- MUST test unique constraints & FK violations
+- MUST test query filters & pagination
+- MUST test error handling (not found, duplicates)
+- MUST test transactions (commit on success, rollback on error)
+- MUST test relations (includes, nested)
 
-## Standard Repository Test Pattern
+**Route Test Coverage**:
+- MUST test all status codes: 200, 201, 400, 401, 403, 404, 500
+- MUST use Supertest with full Express app
+- MUST NOT mock middleware or routes
+
+## Defaults (SHOULD)
+
+**Test Structure**:
+- SHOULD use `setupRepositoryTest` helper to reduce boilerplate
+- SHOULD use factory functions for test data (NOT fixtures)
+- SHOULD reset database between tests via `beforeEach`
+
+**Performance**:
+- SHOULD complete integration tests in < 2 minutes total
+- SHOULD use Testcontainers `.withReuse()` for faster startup (5s vs 30s)
+
+## Workflow
+
+**When writing repository tests**:
+1. Use `setupRepositoryTest` helper or standard pattern with `beforeAll`/`afterAll`
+2. Inject test Prisma client: `new Repository(testDb.prisma!)`
+3. Reset database in `beforeEach`: `await testDb.reset()`
+4. Test happy path + error cases for each method
+5. Verify coverage: `pnpm test --coverage`
+
+**When writing route tests**:
+1. Use Supertest with `import { app } from '@/app.js'`
+2. Test all status codes (success + error cases)
+3. Verify authentication and authorization
+4. Check response body structure
+
+## Quick Reference
+
+### Standard Repository Test Pattern
 
 ```typescript
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { TestDatabase } from '../../helpers/testcontainers'
-import { XxxRepository } from '../../../src/repositories/xxx-repository'
-import { createXxx, createDivision } from '../../helpers/factories'
-import type { CreateXxxInput } from '@sentinel/types'
+import { MyRepository } from '../../../src/repositories/my-repository'
 
-describe('XxxRepository Integration Tests', () => {
+describe('MyRepository Integration Tests', () => {
   const testDb = new TestDatabase()
-  let repo: XxxRepository
+  let repo: MyRepository
 
   beforeAll(async () => {
     await testDb.start()
-    repo = new XxxRepository(testDb.prisma!)  // Inject test DB client
-  }, 60000)  // 60s timeout for container startup
+    repo = new MyRepository(testDb.prisma!)  // Inject test client
+  }, 60000)
 
-  afterAll(async () => {
-    await testDb.stop()
+  afterAll(async () => await testDb.stop())
+  beforeEach(async () => await testDb.reset())
+
+  it('should create entity', async () => {
+    const result = await repo.create({ name: 'Test' })
+    expect(result.id).toBeDefined()
   })
-
-  beforeEach(async () => {
-    await testDb.reset()  // Clear all data
-    await testDb.seed()   // Add base divisions (OPS, LOG, ADMIN)
-  })
-
-  describe('create', () => {
-    it('should create entity with valid data', async () => {
-      const input: CreateXxxInput = { /* ... */ }
-      const entity = await repo.create(input)
-
-      expect(entity.id).toBeDefined()
-      expect(entity).toMatchObject(input)
-    })
-
-    it('should throw error on duplicate key', async () => {
-      await createXxx(testDb.prisma!, { uniqueField: 'VALUE' })
-
-      const input: CreateXxxInput = { uniqueField: 'VALUE', /* ... */ }
-      await expect(repo.create(input)).rejects.toThrow()
-    })
-  })
-
-  // More test groups...
 })
 ```
 
-## Simplified Test Pattern with Helper
-
-**NEW**: Use `setupRepositoryTest` helper to reduce boilerplate (recommended for all new tests):
+### Simplified Pattern with Helper
 
 ```typescript
-import { describe, it, expect } from 'vitest'
 import { setupRepositoryTest, createTestData } from '../../helpers/repository-test-setup'
-import { MemberRepository } from '../../../src/repositories/member-repository'
+import { MyRepository } from '../../../src/repositories/my-repository'
 
-describe('MemberRepository Integration Tests', () => {
+describe('MyRepository', () => {
   const { getRepo, getPrisma } = setupRepositoryTest({
-    createRepository: (prisma) => new MemberRepository(prisma),
+    createRepository: (prisma) => new MyRepository(prisma),
   })
 
-  describe('create', () => {
-    it('should create member with valid data', async () => {
-      const repo = getRepo()
-      const prisma = getPrisma()
-
-      const division = await createTestData.division(prisma)
-      const member = await repo.create({
-        serviceNumber: 'SN12345',
-        rank: 'AB',
-        firstName: 'John',
-        lastName: 'Doe',
-        divisionId: division.id,
-      })
-
-      expect(member.id).toBeDefined()
-      expect(member.serviceNumber).toBe('SN12345')
-    })
+  it('should create entity', async () => {
+    const repo = getRepo()
+    const result = await repo.create({ name: 'Test' })
+    expect(result.id).toBeDefined()
   })
 })
 ```
 
-**Benefits**:
-- ✅ No need to write beforeAll/afterAll/beforeEach hooks
-- ✅ Automatic database lifecycle management
-- ✅ Built-in error handling if hooks aren't run
-- ✅ Cleaner, more focused test code
-- ✅ Easy to customize seeding per test suite
-
-**Advanced Usage**:
+### Route Test Pattern
 
 ```typescript
-// Custom seed function
-const { getRepo, getPrisma } = setupRepositoryTest({
-  createRepository: (prisma) => new BadgeRepository(prisma),
-  customSeed: async (prisma) => {
-    // Create custom baseline data
-    await createTestData.division(prisma, { code: 'OPS' })
-    await createTestData.member(prisma, { rank: 'CPO1' })
-  },
-})
+import request from 'supertest'
+import { app } from '@/app.js'
 
-// Skip seeding entirely
-const { getRepo } = setupRepositoryTest({
-  createRepository: (prisma) => new MyRepository(prisma),
-  skipSeed: true,
-})
-
-// Custom timeout
-const { getRepo } = setupRepositoryTest({
-  createRepository: (prisma) => new MyRepository(prisma),
-  beforeAllTimeout: 90000,  // 90s instead of default 60s
-})
-```
-
-**When to use standard pattern vs helper**:
-- **Use helper**: New tests, straightforward repositories (recommended)
-- **Use standard**: Complex setup, multiple repositories in one test, advanced scenarios
-
-## Critical Points
-
-### 1. Dependency Injection is Required ⚠️
-Repositories MUST accept PrismaClient in constructor:
-```typescript
-// In repository
-constructor(prismaClient?: PrismaClient) {
-  this.prisma = prismaClient || defaultPrisma
-}
-```
-
-Tests inject testcontainers client:
-```typescript
-repo = new XxxRepository(testDb.prisma!)
-```
-
-**Why**: The global prisma singleton from `@sentinel/database` connects to production/dev DB. Tests need isolated test containers.
-
-### 2. Always Use `this.prisma` in Repositories
-```typescript
-// ❌ Wrong - uses global singleton
-async findById(id: string) {
-  return await prisma.user.findUnique({ where: { id } })
-}
-
-// ✅ Correct - uses injected instance
-async findById(id: string) {
-  return await this.prisma.user.findUnique({ where: { id } })
-}
-```
-
-**Error symptom**: `password authentication failed for user "placeholder"` means a method is using global `prisma` instead of `this.prisma`.
-
-### 3. Database Reset Pattern
-TestDatabase.reset() uses PostgreSQL-specific pattern to disable FK checks during TRUNCATE:
-```typescript
-await prisma.$executeRawUnsafe('SET session_replication_role = replica;')
-// Truncate all tables except 'migrations'
-await prisma.$executeRawUnsafe('SET session_replication_role = DEFAULT;')
-```
-
-This is **PostgreSQL-specific** and won't work with other databases.
-
-## Common Test Patterns
-
-### CRUD Operations
-```typescript
-describe('create', () => {
-  it('creates with valid data')
-  it('throws on duplicate unique key')
-  it('throws on FK violation')
-  it('validates required fields')
-})
-
-describe('findById', () => {
-  it('finds existing entity')
-  it('returns null when not found')
-})
-
-describe('update', () => {
-  it('updates existing entity')
-  it('throws when entity not found')
-  it('throws on duplicate key constraint')
-})
-
-describe('delete', () => {
-  it('deletes existing entity')
-  it('throws when entity not found')
-})
-```
-
-### Filters and Queries
-```typescript
-describe('findAll', () => {
-  it('returns all without filters')
-  it('filters by single field')
-  it('combines multiple filters')
-  it('returns empty array when no matches')
-  it('applies sorting correctly')
-})
-
-describe('pagination', () => {
-  it('returns first page with default size')
-  it('returns specific page')
-  it('handles last page correctly')
-  it('returns empty for out-of-bounds page')
-})
-```
-
-### Transactions
-```typescript
-describe('bulkCreate', () => {
-  it('creates multiple entities', async () => {
-    const count = await repo.bulkCreate([input1, input2])
-    expect(count).toBe(2)
-
-    // Verify via direct query
-    const all = await testDb.prisma!.entity.findMany()
-    expect(all.length).toBe(2)
+describe('GET /api/members/:id', () => {
+  it('should return 200 with member data', async () => {
+    await request(app)
+      .get('/api/members/123')
+      .expect(200)
   })
 
-  it('rolls back entire transaction on error', async () => {
-    await createEntity(testDb.prisma!, { uniqueField: 'EXISTING' })
-
-    const inputs = [
-      { uniqueField: 'NEW' },
-      { uniqueField: 'EXISTING' }  // Will violate unique constraint
-    ]
-
-    await expect(repo.bulkCreate(inputs)).rejects.toThrow()
-
-    // Verify nothing was created (rollback worked)
-    const all = await testDb.prisma!.entity.findMany()
-    expect(all.length).toBe(1)  // Only the pre-existing one
+  it('should return 404 when not found', async () => {
+    await request(app)
+      .get('/api/members/invalid-id')
+      .expect(404)
   })
 })
 ```
 
-### Using Factories
-```typescript
-it('should find entity with relations', async () => {
-  const division = await testDb.prisma!.division.findFirst()
-  const member = await createMember(testDb.prisma!, {
-    divisionId: division!.id,
-    firstName: 'John',
-    lastName: 'Doe'
-  })
-  const badge = await createBadge(testDb.prisma!, {
-    assignedToId: member.id,
-    assignmentType: 'member'
-  })
+### Troubleshooting
 
-  const found = await repo.findById(member.id)
+#### password authentication failed for user "placeholder"
 
-  expect(found!.division.id).toBe(division!.id)
-  expect(found!.badge!.id).toBe(badge.id)
-})
-```
+**Cause**: Route or repository using global `prisma` instead of injected client.
 
-## Troubleshooting
-
-### "password authentication failed for user 'placeholder'"
-**Cause**: Repository method using global `prisma` instead of `this.prisma`.
-
-**Fix**: Search repository file for `await prisma.` or ` prisma.` and replace with `await this.prisma.` or ` this.prisma.`.
-
+**Fix for Repositories**: Search and replace in repository file:
 ```bash
 # Find offending lines
 grep -n "prisma\." src/repositories/xxx-repository.ts | grep -v "this.prisma"
 
-# Auto-fix (carefully review after)
+# Replace (verify before committing)
 sed -i 's/await prisma\./await this.prisma./g' xxx-repository.ts
 sed -i 's/ prisma\./ this.prisma./g' xxx-repository.ts
 ```
 
-### "container removal already in progress"
-**Cause**: Docker container timing issue with `.withReuse()` flag.
-
-**Fix**: Usually resolves on test retry. If persistent:
+**Fix for Routes**: Use database service instead of global prisma:
 ```bash
-# List all test containers
-docker ps -a | grep postgres
+# Check for issues
+./scripts/check-prisma-imports.sh
 
-# Force remove stuck container
-docker rm -f <container-id>
+# Manual fix
+# Replace: import { prisma } from '@sentinel/database'
+# With: import { getPrismaClient } from '../lib/database.js'
+
+# Replace: await prisma.
+# With: await getPrismaClient().
 ```
 
-### "the database system is shutting down"
-**Cause**: Tests trying to access container that's stopping.
+**Prevention**: Run `pnpm check:prisma` before committing (automated via pretest script)
 
-**Fix**: Usually intermittent. Check that `afterAll` isn't called too early or that tests aren't running in wrong order.
-
-### Schema Changes Not Reflected
-**Cause**: Prisma client needs regeneration after schema changes.
-
-**Fix**:
-```bash
-cd packages/database
-pnpm prisma generate
-# Tests will auto-apply new schema via db push
-```
-
-### UUID Validation Errors
-**Cause**: Test using invalid UUID strings like `"non-existent-id"`.
-
-**Fix**: Use valid UUIDs in tests:
-```typescript
-// ❌ Bad
-const found = await repo.findById('non-existent-id')
-
-// ✅ Good
-const found = await repo.findById('a0ebe404-c5d1-41c6-b2da-0f647e49057f')
-```
-
-## Coverage Targets
-
-| Metric | Minimum | Good | Excellent |
-|--------|---------|------|-----------|
-| Lines | 70% | 80% | 90%+ |
-| Functions | 70% | 80% | 90%+ |
-| Branches | 65% | 75% | 85%+ |
-
-Run coverage:
-```bash
-pnpm test --coverage
-pnpm test xxx-repository.test.ts --coverage  # Single file
-```
-
-Coverage thresholds are enforced in `vitest.config.ts` and will fail CI if not met.
-
-## Performance Notes
-
-- **Container startup**: ~5s with reuse, ~30s fresh
-- **Schema application**: ~2-3s via `db push`
-- **Test isolation**: ~100-200ms per `reset()` call
-- **Typical test file**: 30-60s for 30-50 tests
-
-## Running Tests
+### Running Tests
 
 ```bash
-# All tests
-pnpm test
-
-# Single file
-pnpm test member-repository.test.ts
-
-# Watch mode
-pnpm test --watch
-
-# With coverage
-pnpm test --coverage
-
-# Run without watch (CI mode)
-pnpm test --run
+pnpm test                    # All tests
+pnpm test member-repository  # Specific file
+pnpm test --watch            # Watch mode
+pnpm test --coverage         # With coverage
 ```
 
-## Example: Complete Repository Test
+---
 
-See [member-repository.test.ts](integration/repositories/member-repository.test.ts) (45 tests, 79% coverage) or [badge-repository.test.ts](integration/repositories/badge-repository.test.ts) (29 tests, 97% coverage) for comprehensive examples.
+**Testing Infrastructure**: TestDatabase class manages PostgreSQL containers, factory functions generate test data. See helpers/ for implementation details.
+
+**Coverage Enforcement**: Thresholds configured in vitest.config.ts, fail CI if not met.
+
+**Related**: @apps/backend/src/repositories/CLAUDE.md (repository patterns), @packages/database/CLAUDE.md (database setup)

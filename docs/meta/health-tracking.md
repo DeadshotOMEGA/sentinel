@@ -813,7 +813,7 @@ function HealthDashboard() {
 - [Diátaxis Guide](diataxis-guide.md) - Document classification
 
 **Implementation:**
-- [Documentation Plan](../plans/active/ai-first-documentation-system.md)
+- [Documentation Plan](../plans/active/2026-01-19-ai-first-documentation-system.md)
 
 ---
 

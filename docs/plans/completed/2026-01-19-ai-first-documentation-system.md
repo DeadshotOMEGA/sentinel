@@ -776,7 +776,7 @@ meta/
 **Tasks:**
 1. **Move Plans:**
    - `docs/plans/backend-rebuild-plan.md` → `docs/plans/active/backend-rebuild-plan.md`
-   - This file → `docs/plans/active/ai-first-documentation-system.md`
+   - This file → `docs/plans/active/2026-01-19-ai-first-documentation-system.md`
    - Add lifecycle metadata to both
    - Create `docs/plans/index.md`
 

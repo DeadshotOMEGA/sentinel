@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/client"
 }
 
 datasource db {
@@ -533,13 +534,16 @@ model User {
   emailVerified Boolean   @default(false) @map("email_verified")
   name          String?   @db.VarChar(200)
   image         String?   @db.VarChar(500)
+  role          String    @default("quartermaster") @db.VarChar(50)
+  badgeId       String?   @unique @map("badge_id") @db.VarChar(100)
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
   sessions      Session[]
   accounts      Account[]
-  apiKeys       ApiKey[]
+  // apiKeys relation removed - better-auth API Key plugin manages its own table
 
   @@index([email], map: "idx_users_email")
+  @@index([badgeId], map: "idx_users_badge_id")
   @@map("user")
 }
 
@@ -591,19 +595,5 @@ model Verification {
   @@map("verification")
 }
 
-model ApiKey {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  key       String   @unique @db.VarChar(255)
-  name      String   @db.VarChar(200)
-  scopes    String[] @default([])
-  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
-  lastUsed  DateTime? @map("last_used") @db.Timestamp(6)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId], map: "idx_api_keys_user_id")
-  @@index([expiresAt], map: "idx_api_keys_expires_at")
-  @@map("api_key")
-}
+// ApiKey model removed - now using better-auth API Key plugin
+// The plugin will create its own api_key table with proper schema

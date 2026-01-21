@@ -231,4 +231,4 @@ ls docs/decisions/rfc/2026-01-*.md
 ## Quick Links
 
 - [Backend Rebuild Plan](../../plans/active/backend-rebuild-plan.md) - Current project
-- [Documentation System Plan](../../plans/active/ai-first-documentation-system.md) - Doc structure
+- [Documentation System Plan](../../plans/active/2026-01-19-ai-first-documentation-system.md) - Doc structure

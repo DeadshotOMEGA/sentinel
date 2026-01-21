@@ -1,136 +1,52 @@
-# Domain Documentation (AI-First Guide)
+# CLAUDE Rules: Domain Documentation
 
-**Purpose:** Business domain organization guide
+## Scope
+Applies when creating documentation in: `docs/domains/`
 
-**AI Context Priority:** medium
+## Non-Negotiables (MUST / MUST NOT)
 
-**When to Load:** User choosing where to document domain-specific features
+**Content Type**:
+- MUST document business domain-specific features
+- MUST be specific to one business area (NOT system-wide)
+- MUST follow Diátaxis classification within domain directories
+- MUST use type prefixes in filenames (`explanation-`, `reference-`, `howto-`)
 
----
+**File Naming**:
+- MUST use type prefix: `explanation-auth-architecture.md`, `reference-member-api.md`
+- MUST use kebab-case
+- MUST NOT use generic names (`architecture.md` → `explanation-auth-architecture.md`)
+
+## Defaults (SHOULD)
+
+**Organization**:
+- SHOULD include domain CLAUDE.md for navigation
+- SHOULD mix all Diátaxis types within domain directory
+- SHOULD cross-reference related cross-cutting documentation
+
+## Workflow
+
+**When documenting domain feature**:
+1. Verify it's specific to ONE business area (authentication, personnel, checkin, events)
+2. Choose appropriate domain subdirectory
+3. Use type-prefixed filename
+4. Follow Diátaxis classification (tutorial, howto, reference, explanation)
+5. Link from domain CLAUDE.md
+
+**When unsure if domain or cross-cutting**:
+- Specific to single business area → Use `docs/domains/`
+- Affects multiple domains → Use `docs/cross-cutting/`
+- Business logic → Use `docs/domains/`
+- Infrastructure pattern → Use `docs/cross-cutting/`
 
 ## Quick Reference
 
-### What's Here
+**Domains**:
+- [Authentication](authentication/CLAUDE.md) - Auth, sessions, API keys
+- [Personnel](personnel/CLAUDE.md) - Members, divisions, ranks
+- [Check-in](checkin/CLAUDE.md) - Badge scanning, presence
+- [Events](events/CLAUDE.md) - Visitors, temporary access
 
-Domain-driven documentation organized by business capability:
-- **[Authentication](authentication/)** - Auth, sessions, API keys
-- **[Personnel](personnel/)** - Members, divisions, ranks
-- **[Check-in](checkin/)** - Badge scanning, presence
-- **[Events](events/)** - Visitors, temporary access
-
-### When to Use Domains
-
-**Use domain directories when:**
-- Documentation is specific to one business area
-- Multiple document types needed for same domain
-- Feature spans multiple technical layers
-- Business logic concentrated in one area
-
-**Use cross-cutting when:**
-- Feature affects multiple domains
-- System-wide concerns (testing, deployment)
-- Infrastructure patterns
-
----
-
-## Domain Organization
-
-### Structure
-
-Each domain directory contains:
-```
-domains/[domain-name]/
-├── CLAUDE.md                        # Domain guide
-├── explanation-[topic].md           # Why/how domain works
-├── reference-[subject].md           # API specs, data models
-└── howto-[task].md                  # Practical tasks
-```
-
-### File Naming
-
-**Use type prefix** in domain directories:
-- `explanation-auth-architecture.md` (not just `architecture.md`)
-- `reference-member-api.md` (not just `api.md`)
-- `howto-assign-badge.md` (clear task name)
-
-**Why:** Multiple doc types coexist in same directory
-
----
-
-## Domain Guides
-
-### Authentication Domain
-**What:** User auth, sessions, API keys
-**Code:** `apps/backend/src/lib/auth.ts`, middleware, routes
-**Key Features:** better-auth, JWT, API keys for kiosks
-**See:** [Authentication CLAUDE.md](authentication/CLAUDE.md)
-
-### Personnel Domain
-**What:** Members, divisions, ranks, badges
-**Code:** Member/division/badge repositories, services, routes
-**Key Features:** Bulk import, badge assignment, hierarchy
-**See:** [Personnel CLAUDE.md](personnel/CLAUDE.md)
-
-### Check-in Domain
-**What:** Badge scanning, presence tracking, real-time updates
-**Code:** Checkin repository, direction detection, WebSocket
-**Key Features:** IN/OUT detection, WebSocket broadcasts, activity history
-**See:** [Check-in CLAUDE.md](checkin/CLAUDE.md)
-
-### Events Domain
-**What:** Visitors, event access, temporary permissions
-**Code:** Visitor/event repositories, attendee management
-**Key Features:** Sign-in/out, event registration, attendance tracking
-**See:** [Events CLAUDE.md](events/CLAUDE.md)
-
----
-
-## Adding New Domains
-
-### When to Create New Domain
-
-**Create new domain when:**
-- Distinct business capability emerges
-- Feature set grows beyond single domain
-- Clear bounded context identified
-- Domain experts can own the docs
-
-**Example:** If you added inventory management, create `domains/inventory/`
-
-### Setup Steps
-
-1. Create directory: `docs/domains/[new-domain]/`
-2. Copy CLAUDE.md from similar domain
-3. Customize sections
-4. Add to this index
-5. Update root README.md
-
----
-
-## Domain vs. Cross-Cutting
-
-### Domain Documentation
-
-**Characteristics:**
-- Business-focused
-- Single-domain concern
-- Domain-specific APIs
-- Business rules
-
-**Example:** "How member badge assignment works" → Personnel domain
-
-### Cross-Cutting Documentation
-
-**Characteristics:**
-- Technical-focused
-- Multi-domain concern
-- Infrastructure patterns
-- System-wide practices
-
-**Example:** "How integration testing works" → Cross-cutting/Testing
-
-### Decision Guide
-
+**Decision Guide**:
 ```
 Is this specific to one business area?
 ├─ Yes → Domain directory
@@ -140,27 +56,11 @@ Does this affect multiple domains?
 ├─ Yes → Cross-cutting directory
 └─ No → Domain directory
 
-Is this about business logic or infrastructure?
+Is this business logic or infrastructure?
 ├─ Business logic → Domain
 └─ Infrastructure → Cross-cutting
 ```
 
----
-
-## Related Documentation
-
-**Cross-cutting concerns:**
-- [Testing](../cross-cutting/testing/CLAUDE.md)
-- [Deployment](../cross-cutting/deployment/CLAUDE.md)
-- [Monitoring](../cross-cutting/monitoring/CLAUDE.md)
-
-**Guides:**
-- [How-to Guides](../guides/howto/CLAUDE.md)
-- [Reference Docs](../guides/reference/CLAUDE.md)
-
-**Root:**
-- [Documentation System](../CLAUDE.md)
-
----
-
-**Last Updated:** 2026-01-19
+**Related**:
+- [Cross-Cutting](../cross-cutting/CLAUDE.md) - System-wide concerns
+- [Guides](../guides/CLAUDE.md) - Diátaxis organization

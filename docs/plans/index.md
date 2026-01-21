@@ -12,10 +12,11 @@ Currently executing plans tracked here:
 
 | Plan | Started | Status | Current Phase | Progress |
 |------|---------|--------|---------------|----------|
-| [Backend Rebuild](active/backend-rebuild-plan.md) | 2026-01-15 | 🔄 Active | Phase 1 | Testing Foundation |
-| [AI-First Documentation System](active/ai-first-documentation-system.md) | 2026-01-19 | 🔄 Active | Phase 1 | CLAUDE.md files ✅ |
+| [Backend Rebuild](active/backend-rebuild-plan.md) | 2026-01-15 | 🔄 Active | Phase 2 | Core Infrastructure ✅ |
+| [AI-First Documentation System](active/2026-01-19-ai-first-documentation-system.md) | 2026-01-19 | 🔄 Active | Phase 1 | CLAUDE.md files |
+| [Better-Auth Plugin Integration](active/2026-01-19-better-auth-plugin-integration.md) | 2026-01-19 | 🔄 Active | Phase 2.2 | Ready to implement |
 
-**Total Active:** 2
+**Total Active:** 3
 
 ---
 

@@ -1,286 +1,178 @@
-# Routes Documentation
+# CLAUDE Rules: Routes
 
-Guide to implementing ts-rest routes in the Sentinel backend.
+ts-rest route implementation patterns with Express.
 
 ---
 
-## ts-rest Pattern (Correct Pattern)
+## Scope
+Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 
-Routes use **direct async functions**, NOT middleware arrays or handler objects.
+## Non-Negotiables (MUST / MUST NOT)
 
-### ✅ Correct Pattern
+**ts-rest Pattern** (CRITICAL):
+- MUST use direct async functions (NOT middleware arrays or handler objects):
+  ```typescript
+  // ✅ Correct
+  export const router = s.router(contract, {
+    getMembers: async ({ query }) => {
+      return { status: 200 as const, body: { ... } }
+    },
+  })
+
+  // ❌ Wrong - middleware array
+  getMembers: {
+    middleware: [requireAuth()],
+    handler: async ({ query }) => { ... }
+  }
+
+  // ❌ Wrong - handler wrapper
+  getMembers: {
+    handler: async ({ query }) => { ... }
+  }
+  ```
+
+**Database Access** (CRITICAL):
+- MUST use `getPrismaClient()` from `../lib/database.js` for all database queries
+- MUST NOT import `prisma` from `@sentinel/database` in routes
+- MUST use repositories when possible (NOT direct Prisma queries)
+- MUST NOT use global prisma singleton
+
+**Why**: Routes must support test injection. The global prisma singleton can't be replaced during tests, causing `password authentication failed for user 'placeholder'` errors.
+
+**Response Structure**:
+- MUST return `{ status: <number> as const, body: <response> }` from all handlers
+- MUST include `as const` on status codes for type inference
+- MUST NOT return status without `as const` (type error)
+
+**Type Mapping**:
+- MUST convert repository types to API response types (use mapping functions)
+- MUST convert Date objects to ISO strings
+- MUST use null for optional fields (NOT undefined)
+- MUST NOT return repository types directly
+
+**Error Handling**:
+- MUST handle all error cases: 400, 401, 404, 409, 500
+- MUST wrap repository calls in try/catch
+- MUST return appropriate status codes based on error type
+
+**Status Codes**:
+- MUST use 200 for successful GET/PATCH/DELETE
+- MUST use 201 for successful POST
+- MUST use 400 for validation failures
+- MUST use 404 for missing resources
+- MUST use 409 for duplicate/constraint violations
+- MUST use 500 for unexpected errors
+
+## Defaults (SHOULD)
+
+**Repository Integration**:
+- SHOULD inject PrismaClient via repository constructor
+- SHOULD use dependency injection pattern for testability
+
+**Type Conversion**:
+- SHOULD create `toApiFormat()` functions for each resource
+- SHOULD handle optional fields with null fallbacks
+
+**Pagination**:
+- SHOULD use standard pagination params: page, limit
+- SHOULD return total, page, limit, totalPages in response
+
+## Workflow
+
+**When implementing new route**:
+1. Create Valibot schema in @sentinel/contracts/src/schemas/
+2. Create ts-rest contract in @sentinel/contracts/src/contracts/
+3. Export from @sentinel/contracts/src/index.ts
+4. Implement route with direct async function
+5. Mount route in app.ts using createExpressEndpoints()
+6. Write integration tests with Supertest
+
+**When handling errors**:
+1. Wrap repository call in try/catch
+2. Check for null (return 404)
+3. Check for Prisma unique constraint (return 409)
+4. Return 500 for unexpected errors
+
+## Quick Reference
+
+### Database Access Patterns
+
+**Correct Database Usage**:
+```typescript
+// ✅ Good - Use database service
+import { getPrismaClient } from '../lib/database.js'
+
+// For repositories
+const memberRepo = new MemberRepository(getPrismaClient())
+
+// For raw queries (when necessary)
+const result = await getPrismaClient().$queryRaw`SELECT 1`
+```
+
+**Incorrect Usage**:
+```typescript
+// ❌ Bad - Global prisma (breaks tests)
+import { prisma } from '@sentinel/database'
+
+const memberRepo = new MemberRepository(prisma)
+const result = await prisma.$queryRaw`SELECT 1`
+```
+
+**Best Practice - Use Repositories**:
+```typescript
+// ✅ Best - Repository handles database access
+import { getPrismaClient } from '../lib/database.js'
+import { MemberRepository } from '../repositories/member-repository.js'
+
+const memberRepo = new MemberRepository(getPrismaClient())
+const member = await memberRepo.findById(id)
+```
+
+### Route Handler Pattern
 
 ```typescript
 import { initServer } from '@ts-rest/express'
 import { memberContract } from '@sentinel/contracts'
+import { MemberRepository } from '../repositories/member-repository.js'
+import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
+const memberRepo = new MemberRepository(getPrismaClient())
 
 export const membersRouter = s.router(memberContract, {
-  // Direct async function
-  getMembers: async ({ query }) => {
-    // Implementation here
-    return {
-      status: 200 as const,  // 'as const' required for type inference
-      body: { members, total, page, limit }
-    }
-  },
-})
-```
+  getMemberById: async ({ params }) => {
+    try {
+      const member = await memberRepo.findById(params.id)
 
-### ❌ Incorrect Patterns
-
-```typescript
-// DON'T: Middleware array pattern
-export const membersRouter = s.router(memberContract, {
-  getMembers: {
-    middleware: [requireAuth()],
-    handler: async ({ query }) => { /* ... */ }
-  }
-})
-
-// DON'T: Handler wrapper object
-export const membersRouter = s.router(memberContract, {
-  getMembers: {
-    handler: async ({ query }) => { /* ... */ }
-  }
-})
-
-// DON'T: Missing 'as const'
-return {
-  status: 200,  // Type error - should be 'as const'
-  body: { ... }
-}
-```
-
----
-
-## Response Structure
-
-All route handlers must return an object with `status` and `body`:
-
-```typescript
-{
-  status: <number> as const,
-  body: <response type>
-}
-```
-
-### Success Responses
-
-```typescript
-// 200 OK - Successful GET/PATCH
-return {
-  status: 200 as const,
-  body: { id, name, email, ... }
-}
-
-// 201 Created - Successful POST
-return {
-  status: 201 as const,
-  body: { id, name, email, ... }
-}
-```
-
-### Error Responses
-
-```typescript
-// 400 Bad Request - Validation failure
-return {
-  status: 400 as const,
-  body: {
-    error: 'VALIDATION_ERROR',
-    message: 'Invalid email format'
-  }
-}
-
-// 401 Unauthorized - Missing/invalid auth
-return {
-  status: 401 as const,
-  body: {
-    error: 'UNAUTHORIZED',
-    message: 'Authentication required'
-  }
-}
-
-// 404 Not Found - Resource doesn't exist
-return {
-  status: 404 as const,
-  body: {
-    error: 'NOT_FOUND',
-    message: `Member with ID '${params.id}' not found`
-  }
-}
-
-// 409 Conflict - Duplicate/constraint violation
-return {
-  status: 409 as const,
-  body: {
-    error: 'CONFLICT',
-    message: `Member with service number '${body.serviceNumber}' already exists`
-  }
-}
-
-// 500 Internal Server Error - Unexpected errors
-return {
-  status: 500 as const,
-  body: {
-    error: 'INTERNAL_ERROR',
-    message: error instanceof Error ? error.message : 'Failed to process request'
-  }
-}
-```
-
----
-
-## Standard HTTP Status Codes
-
-### Success (2xx)
-
-| Code | Usage | Example |
-|------|-------|---------|
-| 200 OK | Successful GET, PATCH, DELETE | Get member by ID |
-| 201 Created | Successful POST | Create new member |
-
-### Client Errors (4xx)
-
-| Code | Usage | Example |
-|------|-------|---------|
-| 400 Bad Request | Validation failure, invalid input | Invalid email format |
-| 401 Unauthorized | Missing/invalid authentication | No Bearer token |
-| 404 Not Found | Resource doesn't exist | Member ID not found |
-| 409 Conflict | Duplicate, constraint violation | Service number already exists |
-
-### Server Errors (5xx)
-
-| Code | Usage | Example |
-|------|-------|---------|
-| 500 Internal Server Error | Unexpected errors | Database connection failed |
-
----
-
-## Repository Integration
-
-### Dependency Injection
-
-Inject PrismaClient via constructor for testability:
-
-```typescript
-import { PrismaClient } from '@sentinel/database'
-import { MemberRepository } from '../repositories/member-repository.js'
-
-const prisma = new PrismaClient()
-const memberRepo = new MemberRepository(prisma)
-
-export const membersRouter = s.router(memberContract, {
-  getMembers: async ({ query }) => {
-    const result = await memberRepo.findPaginated({ page, limit }, filters)
-    return { status: 200 as const, body: { ... } }
-  },
-})
-```
-
-**Benefits**:
-- Testable (inject mock Prisma in tests)
-- Consistent with repository pattern from Phase 1
-- Supports transactions and connection pooling
-
----
-
-### Error Handling
-
-Handle repository errors and convert to HTTP status codes:
-
-```typescript
-getMemberById: async ({ params }) => {
-  try {
-    const member = await memberRepo.findById(params.id)
-
-    if (!member) {
-      return {
-        status: 404 as const,
-        body: {
-          error: 'NOT_FOUND',
-          message: `Member with ID '${params.id}' not found`
+      if (!member) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Member with ID '${params.id}' not found`,
+          },
         }
       }
-    }
 
-    return {
-      status: 200 as const,
-      body: toApiFormat(member)
-    }
-  } catch (error) {
-    return {
-      status: 500 as const,
-      body: {
-        error: 'INTERNAL_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to fetch member'
+      return {
+        status: 200 as const,
+        body: toApiFormat(member),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch member',
+        },
       }
     }
-  }
-}
+  },
+})
 ```
 
-**Common Patterns**:
-```typescript
-// Repository returns null → 404
-if (!resource) {
-  return { status: 404 as const, body: { error: 'NOT_FOUND', ... } }
-}
+### Type Mapping Function
 
-// Prisma unique constraint error → 409
-if (error instanceof Error && error.message.includes('Unique constraint')) {
-  return { status: 409 as const, body: { error: 'CONFLICT', ... } }
-}
-
-// Generic error → 500
-return { status: 500 as const, body: { error: 'INTERNAL_ERROR', ... } }
-```
-
----
-
-## Type Mapping
-
-### Repository Types → API Response Types
-
-Repository types (from `@sentinel/types`) often differ from API response types (from `@sentinel/contracts`). Convert between them in routes.
-
-**Example**:
-```typescript
-// Repository type (internal)
-interface Member {
-  id: string
-  serviceNumber: string
-  rank: string
-  firstName: string
-  lastName: string
-  initials?: string        // Optional
-  email?: string           // Optional
-  divisionId: string
-  badgeId?: string         // Optional
-  createdAt: Date          // Date object
-  updatedAt: Date          // Date object
-}
-
-// API response type (external)
-interface MemberResponse {
-  id: string
-  serviceNumber: string
-  rank: string
-  firstName: string
-  lastName: string
-  middleInitial: string | null   // Renamed + nullable
-  email: string | null           // Nullable
-  phoneNumber: string | null     // Combined from multiple fields
-  divisionId: string
-  badgeId: string | null         // Nullable
-  createdAt: string              // ISO string
-  updatedAt: string | null       // ISO string + nullable
-}
-```
-
-**Conversion Function**:
 ```typescript
 function toApiFormat(member: Member): MemberResponse {
   return {
@@ -289,20 +181,57 @@ function toApiFormat(member: Member): MemberResponse {
     rank: member.rank,
     firstName: member.firstName,
     lastName: member.lastName,
-    middleInitial: member.initials || null,
-    email: member.email || null,
-    phoneNumber: member.mobilePhone || member.homePhone || null,  // Fallback chain
+    middleInitial: member.initials || null,  // Renamed + nullable
+    email: member.email || null,             // Nullable
+    phoneNumber: member.mobilePhone || member.homePhone || null,  // Combined
     divisionId: member.divisionId,
     badgeId: member.badgeId || null,
-    createdAt: member.createdAt.toISOString(),
+    createdAt: member.createdAt.toISOString(),  // Date → ISO string
     updatedAt: member.updatedAt?.toISOString() || null,
   }
 }
 ```
 
----
+### POST (Create) Pattern
 
-## Route Examples
+```typescript
+createMember: async ({ body }) => {
+  try {
+    const member = await memberRepo.create({
+      serviceNumber: body.serviceNumber,
+      rank: body.rank,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      divisionId: body.divisionId,
+      // ... map other fields
+    })
+
+    return {
+      status: 201 as const,
+      body: toApiFormat(member),
+    }
+  } catch (error) {
+    // Handle Prisma unique constraint
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return {
+        status: 409 as const,
+        body: {
+          error: 'CONFLICT',
+          message: `Member with service number '${body.serviceNumber}' already exists`,
+        },
+      }
+    }
+
+    return {
+      status: 500 as const,
+      body: {
+        error: 'INTERNAL_ERROR',
+        message: error instanceof Error ? error.message : 'Failed to create member',
+      },
+    }
+  }
+}
+```
 
 ### GET with Pagination
 
@@ -312,17 +241,11 @@ getMembers: async ({ query }) => {
     const page = query.page || 1
     const limit = query.limit || 50
 
-    // Build filters from query parameters
     const filters: any = {}
     if (query.divisionId) filters.divisionId = query.divisionId
     if (query.search) filters.search = query.search
-    if (query.status) filters.status = query.status
 
-    const result = await memberRepo.findPaginated(
-      { page, limit },
-      filters
-    )
-
+    const result = await memberRepo.findPaginated({ page, limit }, filters)
     const totalPages = Math.ceil(result.total / limit)
 
     return {
@@ -347,90 +270,7 @@ getMembers: async ({ query }) => {
 }
 ```
 
----
-
-### GET by ID
-
-```typescript
-getMemberById: async ({ params }) => {
-  try {
-    const member = await memberRepo.findById(params.id)
-
-    if (!member) {
-      return {
-        status: 404 as const,
-        body: {
-          error: 'NOT_FOUND',
-          message: `Member with ID '${params.id}' not found`,
-        },
-      }
-    }
-
-    return {
-      status: 200 as const,
-      body: toApiFormat(member),
-    }
-  } catch (error) {
-    return {
-      status: 500 as const,
-      body: {
-        error: 'INTERNAL_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to fetch member',
-      },
-    }
-  }
-}
-```
-
----
-
-### POST (Create)
-
-```typescript
-createMember: async ({ body }) => {
-  try {
-    const member = await memberRepo.create({
-      serviceNumber: body.serviceNumber,
-      rank: body.rank,
-      firstName: body.firstName,
-      lastName: body.lastName,
-      initials: body.middleInitial,
-      divisionId: body.divisionId,
-      email: body.email,
-      mobilePhone: body.phoneNumber,
-      badgeId: body.badgeId,
-    })
-
-    return {
-      status: 201 as const,
-      body: toApiFormat(member),
-    }
-  } catch (error) {
-    // Handle Prisma unique constraint violations
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return {
-        status: 409 as const,
-        body: {
-          error: 'CONFLICT',
-          message: `Member with service number '${body.serviceNumber}' already exists`,
-        },
-      }
-    }
-
-    return {
-      status: 500 as const,
-      body: {
-        error: 'INTERNAL_ERROR',
-        message: error instanceof Error ? error.message : 'Failed to create member',
-      },
-    }
-  }
-}
-```
-
----
-
-### PATCH (Update)
+### PATCH (Update) Pattern
 
 ```typescript
 updateMember: async ({ params, body }) => {
@@ -438,13 +278,7 @@ updateMember: async ({ params, body }) => {
     const member = await memberRepo.update(params.id, {
       serviceNumber: body.serviceNumber,
       rank: body.rank,
-      firstName: body.firstName,
-      lastName: body.lastName,
-      initials: body.middleInitial,
-      divisionId: body.divisionId,
-      email: body.email,
-      mobilePhone: body.phoneNumber,
-      badgeId: body.badgeId,
+      // ... other fields
     })
 
     return {
@@ -473,9 +307,7 @@ updateMember: async ({ params, body }) => {
 }
 ```
 
----
-
-### DELETE
+### DELETE Pattern
 
 ```typescript
 deleteMember: async ({ params }) => {
@@ -511,171 +343,21 @@ deleteMember: async ({ params }) => {
 }
 ```
 
----
-
-## Mounting Routes
-
-Routes are mounted in [../app.ts](../app.ts) using `createExpressEndpoints`:
+### Mounting Routes in app.ts
 
 ```typescript
 import { createExpressEndpoints } from '@ts-rest/express'
-import { memberContract, checkinContract } from '@sentinel/contracts'
+import { memberContract } from '@sentinel/contracts'
 import { membersRouter } from './routes/members.js'
-import { checkinsRouter } from './routes/checkins.js'
 
-// Mount ts-rest routers
+// Mount ts-rest routes
 createExpressEndpoints(memberContract, membersRouter, app)
-createExpressEndpoints(checkinContract, checkinsRouter, app)
-```
-
-**Note**: Middleware (authentication, rate limiting, etc.) is applied globally in app.ts. Individual routes do NOT include middleware configuration.
-
----
-
-## Adding New Routes
-
-1. **Create Valibot Schema** (in `@sentinel/contracts/src/schemas/`)
-   ```typescript
-   // resource.schema.ts
-   export const CreateResourceSchema = v.object({
-     name: v.pipe(v.string(), v.minLength(1)),
-     description: v.optional(v.string())
-   })
-   ```
-
-2. **Create ts-rest Contract** (in `@sentinel/contracts/src/contracts/`)
-   ```typescript
-   // resource.contract.ts
-   export const resourceContract = c.router({
-     getResource: {
-       method: 'GET',
-       path: '/api/resources/:id',
-       pathParams: IdParamSchema,
-       responses: {
-         200: ResourceResponseSchema,
-         404: ErrorResponseSchema,
-       },
-     },
-   })
-   ```
-
-3. **Export from Contracts Package**
-   ```typescript
-   // @sentinel/contracts/src/index.ts
-   export * from './schemas/resource.schema.js'
-   export * from './contracts/resource.contract.js'
-   ```
-
-4. **Implement Route** (in `apps/backend/src/routes/`)
-   ```typescript
-   // resources.ts
-   export const resourcesRouter = s.router(resourceContract, {
-     getResource: async ({ params }) => {
-       // Implementation
-     },
-   })
-   ```
-
-5. **Mount Route** (in `apps/backend/src/app.ts`)
-   ```typescript
-   import { resourceContract } from '@sentinel/contracts'
-   import { resourcesRouter } from './routes/resources.js'
-
-   createExpressEndpoints(resourceContract, resourcesRouter, app)
-   ```
-
----
-
-## Testing Routes
-
-### Integration Tests with Supertest
-
-```typescript
-import request from 'supertest'
-import { app } from '@/app.js'
-import { TestDatabase } from '@/tests/helpers/testcontainers.js'
-
-describe('GET /api/members/:id', () => {
-  const testDb = new TestDatabase()
-
-  beforeAll(async () => {
-    await testDb.start()
-  }, 60000)
-
-  afterAll(async () => {
-    await testDb.stop()
-  })
-
-  beforeEach(async () => {
-    await testDb.reset()
-    await testDb.seed()
-  })
-
-  it('should return 200 with member data', async () => {
-    const member = await testDb.prisma!.member.create({
-      data: { /* ... */ }
-    })
-
-    const response = await request(app)
-      .get(`/api/members/${member.id}`)
-      .expect(200)
-
-    expect(response.body).toMatchObject({
-      id: member.id,
-      firstName: member.firstName,
-      lastName: member.lastName,
-    })
-  })
-
-  it('should return 404 when member not found', async () => {
-    await request(app)
-      .get('/api/members/non-existent-id')
-      .expect(404)
-      .expect((res) => {
-        expect(res.body.error).toBe('NOT_FOUND')
-      })
-  })
-
-  it('should return 401 without authentication', async () => {
-    await request(app)
-      .get('/api/members/123')
-      .expect(401)
-  })
-})
 ```
 
 ---
 
-## Best Practices
+**Authentication**: Applied globally via middleware in app.ts, NOT in individual route handlers.
 
-### DO
+**Validation**: Handled by Valibot schemas in @sentinel/contracts, NOT in routes.
 
-✅ Use direct async functions (not middleware/handler objects)
-✅ Include `as const` on status codes
-✅ Map repository types to API types
-✅ Handle all error cases (404, 409, 500)
-✅ Convert dates to ISO strings
-✅ Use nullable types for optional fields
-✅ Include correlation IDs in logs
-✅ Validate input via Valibot schemas in contracts
-
-### DON'T
-
-❌ Use middleware arrays in route handlers
-❌ Forget `as const` on status codes
-❌ Return repository types directly (always convert)
-❌ Expose internal error details
-❌ Skip error handling
-❌ Use undefined for optional fields (use null)
-❌ Return Date objects (convert to ISO strings)
-❌ Validate input in routes (use contract schemas)
-
----
-
-## Related Documentation
-
-- [Backend Architecture](../CLAUDE.md) - Complete backend overview
-- [Contracts Package](../../../packages/contracts/CLAUDE.md) - Valibot schemas and ts-rest contracts
-- [Middleware Documentation](../middleware/CLAUDE.md) - Authentication and error handling
-- [Repository Pattern](../repositories/CLAUDE.md) - Data access layer
-- [Testing Strategy](../../../.claude/rules/testing-strategy.md) - Integration testing approach
+**Related**: @sentinel/contracts (schemas & contracts), @apps/backend/src/middleware/CLAUDE.md (middleware), @apps/backend/src/repositories/CLAUDE.md (repositories)
