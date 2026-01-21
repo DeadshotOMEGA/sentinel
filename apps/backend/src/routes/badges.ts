@@ -2,12 +2,12 @@ import { initServer } from '@ts-rest/express'
 import { badgeContract } from '@sentinel/contracts'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
-import { PrismaClient } from '@sentinel/database'
+import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
-const prisma = new PrismaClient()
-const badgeRepo = new BadgeRepository(prisma)
-const memberRepo = new MemberRepository(prisma)
+
+const badgeRepo = new BadgeRepository(getPrismaClient())
+const memberRepo = new MemberRepository(getPrismaClient())
 
 /**
  * Badges route implementation using ts-rest

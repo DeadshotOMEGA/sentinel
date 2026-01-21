@@ -1,11 +1,11 @@
 import { initServer } from '@ts-rest/express'
 import { checkinContract } from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
-import { PrismaClient } from '@sentinel/database'
+import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
-const prisma = new PrismaClient()
-const checkinRepo = new CheckinRepository(prisma)
+
+const checkinRepo = new CheckinRepository(getPrismaClient())
 
 /**
  * Checkins route implementation using ts-rest
@@ -16,8 +16,8 @@ export const checkinsRouter = s.router(checkinContract, {
    */
   getCheckins: async ({ query }) => {
     try {
-      const page = query.page || 1
-      const limit = query.limit || 50
+      const page = query.page ? Number(query.page) : 1
+      const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
       const filters: any = {}
@@ -183,6 +183,17 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
+      // Handle Prisma FK constraint violations (P2003)
+      if (error instanceof Error && error.message.includes('Foreign key constraint')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: 'Member not found',
+          },
+        }
+      }
+
       return {
         status: 500 as const,
         body: {
@@ -334,7 +345,7 @@ export const checkinsRouter = s.router(checkinContract, {
       const stats = await checkinRepo.getPresenceStats()
 
       // Get division breakdown from database
-      const divisions = await prisma.$queryRaw<
+      const divisions = await getPrismaClient().$queryRaw<
         Array<{
           division_id: string
           division_name: string
@@ -391,8 +402,8 @@ export const checkinsRouter = s.router(checkinContract, {
    */
   getMemberCheckins: async ({ params, query }) => {
     try {
-      const page = query.page || 1
-      const limit = query.limit || 50
+      const page = query.page ? Number(query.page) : 1
+      const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
       const filters: any = {
