@@ -1,5 +1,8 @@
 // Member-related types
 
+import type { Badge } from './badge.types'
+import type { Tag } from './tag.types'
+
 export type MemberStatus = 'active' | 'inactive' | 'transferred' | 'retired' | 'pending_review'
 export type MemberType = 'reserve' | 'regular' | 'civilian' | 'cadet'
 
@@ -33,27 +36,7 @@ export interface Division {
   name: string
   code: string
   description?: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Badge {
-  id: string
-  serialNumber: string
-  assignmentType: string
-  assignedToId?: string
-  status: string
-  lastUsed?: Date
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface Tag {
-  id: string
-  name: string
-  color: string
-  description?: string
-  displayOrder: number
+  color?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -99,7 +82,7 @@ export interface UpdateMemberInput {
   email?: string
   homePhone?: string
   mobilePhone?: string
-  badgeId?: string
+  badgeId?: string | null
   tagIds?: string[]
 }
 
