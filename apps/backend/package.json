@@ -15,7 +15,8 @@
     "test:watch": "vitest watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "openapi": "tsx src/generate-openapi.ts"
   },
   "dependencies": {
     "@sentinel/contracts": "workspace:*",
@@ -23,6 +24,7 @@
     "@sentinel/types": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/express": "3.53.0-rc.1",
+    "@ts-rest/open-api": "3.53.0-rc.1",
     "better-auth": "^1.4.17",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
