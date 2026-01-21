@@ -40,7 +40,25 @@ export const checkinContract = c.router({
   },
 
   /**
+   * Get current presence status
+   * NOTE: Must be before getCheckinById to avoid :id matching 'presence'
+   */
+  getPresenceStatus: {
+    method: 'GET',
+    path: '/api/checkins/presence',
+    body: c.type<undefined>(),
+    responses: {
+      200: PresenceStatusResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get presence status',
+    description: 'Get current presence statistics (total present, by division)',
+  },
+
+  /**
    * Get single checkin by ID
+   * NOTE: Must be after specific paths like /presence
    */
   getCheckinById: {
     method: 'GET',
@@ -128,21 +146,6 @@ export const checkinContract = c.router({
     },
     summary: 'Delete checkin',
     description: 'Delete a checkin by its unique ID',
-  },
-
-  /**
-   * Get current presence status
-   */
-  getPresenceStatus: {
-    method: 'GET',
-    path: '/api/checkins/presence',
-    responses: {
-      200: PresenceStatusResponseSchema,
-      401: ErrorResponseSchema,
-      500: ErrorResponseSchema,
-    },
-    summary: 'Get presence status',
-    description: 'Get current presence statistics (total present, by division)',
   },
 
   /**

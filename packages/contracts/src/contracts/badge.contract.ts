@@ -39,25 +39,25 @@ export const badgeContract = c.router({
   },
 
   /**
-   * Get single badge by ID
+   * Get badge statistics
+   * NOTE: Must be before getBadgeById to avoid :id matching 'stats'
    */
-  getBadgeById: {
+  getBadgeStats: {
     method: 'GET',
-    path: '/api/badges/:id',
-    pathParams: IdParamSchema,
+    path: '/api/badges/stats',
+    body: c.type<undefined>(),
     responses: {
-      200: BadgeWithAssignmentResponseSchema,
-      400: ErrorResponseSchema,
+      200: BadgeStatsResponseSchema,
       401: ErrorResponseSchema,
-      404: ErrorResponseSchema,
       500: ErrorResponseSchema,
     },
-    summary: 'Get badge by ID',
-    description: 'Retrieve a single badge by its unique ID',
+    summary: 'Get badge statistics',
+    description: 'Get badge statistics (total, assigned, unassigned, by status)',
   },
 
   /**
    * Get badge by serial number
+   * NOTE: Must be before getBadgeById to avoid :id matching 'serial'
    */
   getBadgeBySerialNumber: {
     method: 'GET',
@@ -72,6 +72,25 @@ export const badgeContract = c.router({
     },
     summary: 'Get badge by serial number',
     description: 'Find a badge by its serial number',
+  },
+
+  /**
+   * Get single badge by ID
+   * NOTE: Must be after specific paths like /stats and /serial/:serialNumber
+   */
+  getBadgeById: {
+    method: 'GET',
+    path: '/api/badges/:id',
+    pathParams: IdParamSchema,
+    responses: {
+      200: BadgeWithAssignmentResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get badge by ID',
+    description: 'Retrieve a single badge by its unique ID',
   },
 
   /**
@@ -168,20 +187,5 @@ export const badgeContract = c.router({
     },
     summary: 'Delete badge',
     description: 'Delete a badge by its unique ID',
-  },
-
-  /**
-   * Get badge statistics
-   */
-  getBadgeStats: {
-    method: 'GET',
-    path: '/api/badges/stats',
-    responses: {
-      200: BadgeStatsResponseSchema,
-      401: ErrorResponseSchema,
-      500: ErrorResponseSchema,
-    },
-    summary: 'Get badge statistics',
-    description: 'Get badge statistics (total, assigned, unassigned, by status)',
   },
 })

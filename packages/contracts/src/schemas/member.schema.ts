@@ -5,6 +5,7 @@ import * as v from 'valibot'
  */
 export const RankEnum = v.picklist([
   'AB',
+  'LS',
   'OS',
   'S3',
   'S2',

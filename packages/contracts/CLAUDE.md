@@ -25,6 +25,8 @@ Applies when creating or modifying: `packages/contracts/src/schemas/`, `packages
 - MUST include all relevant status codes in `responses` (200, 201, 400, 401, 404, 409, 500)
 - MUST provide `summary` and `description` for OpenAPI documentation
 - MUST use Valibot schemas for pathParams, query, body validation
+- MUST define specific paths BEFORE parameterized paths (e.g., `/stats` before `/:id`)
+- MUST add `body: c.type<undefined>()` for GET/DELETE endpoints with no body
 
 **Naming Conventions**:
 - MUST use descriptive schema names: `CreateXSchema`, `UpdateXSchema`, `XResponseSchema`
@@ -144,6 +146,50 @@ export const memberContract = c.router({
   },
 })
 ```
+
+### Route Ordering (CRITICAL)
+
+```typescript
+// ✅ Correct - Specific paths before parameterized paths
+export const badgeContract = c.router({
+  getBadges: {
+    method: 'GET',
+    path: '/api/badges',  // Collection endpoint
+  },
+
+  getBadgeStats: {
+    method: 'GET',
+    path: '/api/badges/stats',  // Specific path - BEFORE :id
+    body: c.type<undefined>(),
+  },
+
+  getBadgeBySerial: {
+    method: 'GET',
+    path: '/api/badges/serial/:serialNumber',  // Specific path - BEFORE :id
+  },
+
+  getBadgeById: {
+    method: 'GET',
+    path: '/api/badges/:id',  // Parameterized - AFTER specific paths
+    pathParams: IdParamSchema,
+  },
+})
+
+// ❌ Wrong - Parameterized path will match specific paths
+export const badgeContract = c.router({
+  getBadgeById: {
+    method: 'GET',
+    path: '/api/badges/:id',  // Will match '/badges/stats' as id='stats'
+  },
+
+  getBadgeStats: {
+    method: 'GET',
+    path: '/api/badges/stats',  // Unreachable - :id already matched
+  },
+})
+```
+
+**Why**: Express/ts-rest match routes in definition order. `/api/badges/:id` will match `/api/badges/stats` with `id='stats'` if defined first.
 
 ### Type Inference
 
