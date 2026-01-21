@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { z } from 'zod'
 import { getPrismaClient } from '../lib/database.js'
-import { auth } from '../lib/auth.js'
 import { authLogger } from '../lib/logger.js'
 
 const router = Router()
@@ -40,7 +39,7 @@ router.post('/rfid-login', async (req: Request, res: Response) => {
     if (!result.success) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: result.error.errors[0].message,
+        message: result.error.issues[0]?.message || 'Validation failed',
       })
     }
 
@@ -50,7 +49,7 @@ router.post('/rfid-login', async (req: Request, res: Response) => {
     const badge = await getPrismaClient().badge.findUnique({
       where: { serialNumber: badgeNumber },
       include: {
-        member: true, // Include associated member
+        members: true, // Include associated members
       },
     })
 
@@ -62,7 +61,10 @@ router.post('/rfid-login', async (req: Request, res: Response) => {
       })
     }
 
-    if (!badge.member) {
+    // Get the assigned member (should be first in array for member-assigned badges)
+    const assignedMember = badge.members[0]
+
+    if (!assignedMember) {
       authLogger.warn('RFID login failed: Badge not assigned to member', {
         badgeNumber,
         badgeId: badge.id,
@@ -82,8 +84,8 @@ router.post('/rfid-login', async (req: Request, res: Response) => {
     if (!user) {
       authLogger.warn('RFID login failed: No user linked to badge', {
         badgeNumber,
-        memberId: badge.member.id,
-        memberName: `${badge.member.firstName} ${badge.member.lastName}`,
+        memberId: assignedMember.id,
+        memberName: `${assignedMember.firstName} ${assignedMember.lastName}`,
       })
       return res.status(403).json({
         error: 'User Not Linked',
@@ -132,10 +134,10 @@ router.post('/rfid-login', async (req: Request, res: Response) => {
         role: user.role,
       },
       member: {
-        id: badge.member.id,
-        firstName: badge.member.firstName,
-        lastName: badge.member.lastName,
-        rank: badge.member.rank,
+        id: assignedMember.id,
+        firstName: assignedMember.firstName,
+        lastName: assignedMember.lastName,
+        rank: assignedMember.rank,
       },
     })
   } catch (error) {

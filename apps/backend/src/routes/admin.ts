@@ -98,7 +98,7 @@ router.post('/users', requireRole([Role.ADMIN, Role.DEVELOPER]), async (req: Req
     if (!result.success) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: result.error.errors[0].message,
+        message: result.error.issues[0]?.message || 'Validation failed',
       })
     }
 
@@ -140,7 +140,7 @@ router.patch('/users/:id', requireRole([Role.ADMIN, Role.DEVELOPER, Role.DUTY_WA
     if (!result.success) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: result.error.errors[0].message,
+        message: result.error.issues[0]?.message || 'Validation failed',
       })
     }
 

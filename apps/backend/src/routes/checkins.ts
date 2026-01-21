@@ -42,15 +42,15 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           checkins: result.checkins.map((checkin) => ({
             id: checkin.id,
-            memberId: checkin.memberId,
-            badgeId: checkin.badgeId,
+            memberId: checkin.memberId ?? null,
+            badgeId: checkin.badgeId ?? null,
             direction: checkin.direction,
             timestamp: checkin.timestamp.toISOString(),
             kioskId: checkin.kioskId,
-            synced: checkin.synced,
-            flaggedForReview: null, // Not in current schema
-            flagReason: null, // Not in current schema
-            method: checkin.method,
+            synced: checkin.synced ?? null,
+            flaggedForReview: null,
+            flagReason: null,
+            method: checkin.method ?? null,
             member: checkin.member ? {
               id: checkin.member.id,
               serviceNumber: checkin.member.serviceNumber,
@@ -78,6 +78,66 @@ export const checkinsRouter = s.router(checkinContract, {
   },
 
   /**
+   * Get current presence status
+   */
+  getPresenceStatus: async () => {
+    try {
+      const stats = await checkinRepo.getPresenceStats()
+
+      // Get division breakdown from database
+      const divisions = await getPrismaClient().$queryRaw<
+        Array<{
+          division_id: string
+          division_name: string
+          present: bigint
+          total: bigint
+        }>
+      >`
+        WITH latest_checkins AS (
+          SELECT DISTINCT ON (member_id)
+            member_id,
+            direction
+          FROM checkins
+          ORDER BY member_id, timestamp DESC
+        )
+        SELECT
+          d.id as division_id,
+          d.name as division_name,
+          COUNT(*) FILTER (WHERE m.status = 'active' AND lc.direction = 'in') as present,
+          COUNT(*) FILTER (WHERE m.status = 'active') as total
+        FROM divisions d
+        LEFT JOIN members m ON m.division_id = d.id
+        LEFT JOIN latest_checkins lc ON m.id = lc.member_id
+        GROUP BY d.id, d.name
+        ORDER BY d.name
+      `
+
+      return {
+        status: 200 as const,
+        body: {
+          totalPresent: stats.present,
+          totalMembers: stats.totalMembers,
+          byDivision: divisions.map((d) => ({
+            divisionId: d.division_id,
+            divisionName: d.division_name,
+            present: Number(d.present),
+            total: Number(d.total),
+          })),
+          lastUpdated: new Date().toISOString(),
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch presence status',
+        },
+      }
+    }
+  },
+
+  /**
    * Get single checkin by ID
    */
   getCheckinById: async ({ params }) => {
@@ -98,15 +158,15 @@ export const checkinsRouter = s.router(checkinContract, {
         status: 200 as const,
         body: {
           id: checkin.id,
-          memberId: checkin.memberId,
-          badgeId: checkin.badgeId,
+          memberId: checkin.memberId ?? null,
+          badgeId: checkin.badgeId ?? null,
           direction: checkin.direction,
           timestamp: checkin.timestamp.toISOString(),
           kioskId: checkin.kioskId,
-          synced: checkin.synced,
+          synced: checkin.synced ?? null,
           flaggedForReview: null,
           flagReason: null,
-          method: checkin.method,
+          method: checkin.method ?? null,
           member: checkin.member ? {
             id: checkin.member.id,
             serviceNumber: checkin.member.serviceNumber,
@@ -153,15 +213,15 @@ export const checkinsRouter = s.router(checkinContract, {
         status: 201 as const,
         body: {
           id: checkinWithMember.id,
-          memberId: checkinWithMember.memberId,
-          badgeId: checkinWithMember.badgeId,
+          memberId: checkinWithMember.memberId ?? null,
+          badgeId: checkinWithMember.badgeId ?? null,
           direction: checkinWithMember.direction,
           timestamp: checkinWithMember.timestamp.toISOString(),
           kioskId: checkinWithMember.kioskId,
-          synced: checkinWithMember.synced,
+          synced: checkinWithMember.synced ?? null,
           flaggedForReview: null,
           flagReason: null,
-          method: checkinWithMember.method,
+          method: checkinWithMember.method ?? null,
           member: checkinWithMember.member ? {
             id: checkinWithMember.member.id,
             serviceNumber: checkinWithMember.member.serviceNumber,
@@ -332,66 +392,6 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to delete checkin',
-        },
-      }
-    }
-  },
-
-  /**
-   * Get current presence status
-   */
-  getPresenceStatus: async () => {
-    try {
-      const stats = await checkinRepo.getPresenceStats()
-
-      // Get division breakdown from database
-      const divisions = await getPrismaClient().$queryRaw<
-        Array<{
-          division_id: string
-          division_name: string
-          present: bigint
-          total: bigint
-        }>
-      >`
-        WITH latest_checkins AS (
-          SELECT DISTINCT ON (member_id)
-            member_id,
-            direction
-          FROM checkins
-          ORDER BY member_id, timestamp DESC
-        )
-        SELECT
-          d.id as division_id,
-          d.name as division_name,
-          COUNT(*) FILTER (WHERE m.status = 'active' AND lc.direction = 'in') as present,
-          COUNT(*) FILTER (WHERE m.status = 'active') as total
-        FROM divisions d
-        LEFT JOIN members m ON m.division_id = d.id
-        LEFT JOIN latest_checkins lc ON m.id = lc.member_id
-        GROUP BY d.id, d.name
-        ORDER BY d.name
-      `
-
-      return {
-        status: 200 as const,
-        body: {
-          totalPresent: stats.present,
-          totalMembers: stats.totalMembers,
-          byDivision: divisions.map((d) => ({
-            divisionId: d.division_id,
-            divisionName: d.division_name,
-            present: Number(d.present),
-            total: Number(d.total),
-          })),
-          lastUpdated: new Date().toISOString(),
-        },
-      }
-    } catch (error) {
-      return {
-        status: 500 as const,
-        body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to fetch presence status',
         },
       }
     }

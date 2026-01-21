@@ -104,6 +104,52 @@ export const badgesRouter = s.router(badgeContract, {
   },
 
   /**
+   * Get badge statistics
+   */
+  getBadgeStats: async () => {
+    try {
+      // Get all badges
+      const badges = await badgeRepo.findAll()
+
+      // Calculate statistics
+      const total = badges.length
+      const assigned = badges.filter((b) => b.assignmentType !== 'unassigned').length
+      const unassigned = badges.filter((b) => b.assignmentType === 'unassigned').length
+
+      // Group by status
+      const byStatus: Record<string, number> = {}
+      badges.forEach((badge) => {
+        byStatus[badge.status] = (byStatus[badge.status] || 0) + 1
+      })
+
+      // Group by assignment type
+      const byAssignmentType: Record<string, number> = {}
+      badges.forEach((badge) => {
+        byAssignmentType[badge.assignmentType] = (byAssignmentType[badge.assignmentType] || 0) + 1
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          total,
+          assigned,
+          unassigned,
+          byStatus,
+          byAssignmentType,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch badge statistics',
+        },
+      }
+    }
+  },
+
+  /**
    * Get single badge by ID
    */
   getBadgeById: async ({ params }) => {
@@ -355,6 +401,20 @@ export const badgesRouter = s.router(badgeContract, {
    */
   assignBadge: async ({ params, body }) => {
     try {
+      // Validate that the assigned entity exists
+      if (body.assignmentType === 'member') {
+        const member = await memberRepo.findById(body.assignedToId)
+        if (!member) {
+          return {
+            status: 404 as const,
+            body: {
+              error: 'NOT_FOUND',
+              message: `Member with ID '${body.assignedToId}' not found`,
+            },
+          }
+        }
+      }
+
       const badge = await badgeRepo.assign(
         params.id,
         body.assignedToId,
@@ -492,52 +552,6 @@ export const badgesRouter = s.router(badgeContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to delete badge',
-        },
-      }
-    }
-  },
-
-  /**
-   * Get badge statistics
-   */
-  getBadgeStats: async () => {
-    try {
-      // Get all badges
-      const badges = await badgeRepo.findAll()
-
-      // Calculate statistics
-      const total = badges.length
-      const assigned = badges.filter((b) => b.assignmentType !== 'unassigned').length
-      const unassigned = badges.filter((b) => b.assignmentType === 'unassigned').length
-
-      // Group by status
-      const byStatus: Record<string, number> = {}
-      badges.forEach((badge) => {
-        byStatus[badge.status] = (byStatus[badge.status] || 0) + 1
-      })
-
-      // Group by assignment type
-      const byAssignmentType: Record<string, number> = {}
-      badges.forEach((badge) => {
-        byAssignmentType[badge.assignmentType] = (byAssignmentType[badge.assignmentType] || 0) + 1
-      })
-
-      return {
-        status: 200 as const,
-        body: {
-          total,
-          assigned,
-          unassigned,
-          byStatus,
-          byAssignmentType,
-        },
-      }
-    } catch (error) {
-      return {
-        status: 500 as const,
-        body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to fetch badge statistics',
         },
       }
     }

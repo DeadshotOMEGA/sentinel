@@ -1,7 +1,6 @@
 import { initServer } from '@ts-rest/express'
 import { memberContract } from '@sentinel/contracts'
 import { MemberRepository } from '../repositories/member-repository.js'
-import { requireAuth } from '../middleware/auth.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()

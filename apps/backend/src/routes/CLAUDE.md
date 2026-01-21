@@ -31,6 +31,33 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
   }
   ```
 
+**Route Ordering** (CRITICAL):
+- MUST define specific paths BEFORE parameterized paths in both contract and router
+- MUST match contract order in router implementation
+  ```typescript
+  // ✅ Correct order in contract
+  export const contract = c.router({
+    getStats: { path: '/api/badges/stats' },        // Specific first
+    getBySerial: { path: '/api/badges/serial/:id' }, // Specific first
+    getById: { path: '/api/badges/:id' },            // Parameterized last
+  })
+
+  // ✅ Correct order in router (matches contract)
+  export const router = s.router(contract, {
+    getStats: async () => { ... },
+    getBySerial: async ({ params }) => { ... },
+    getById: async ({ params }) => { ... },
+  })
+
+  // ❌ Wrong - :id will match 'stats' and 'serial'
+  export const contract = c.router({
+    getById: { path: '/api/badges/:id' },            // Parameterized first
+    getStats: { path: '/api/badges/stats' },         // Won't be reached
+  })
+  ```
+
+**Why**: Express matches routes in definition order. Parameterized routes like `/:id` will match specific paths like `/stats` if defined first.
+
 **Database Access** (CRITICAL):
 - MUST use `getPrismaClient()` from `../lib/database.js` for all database queries
 - MUST NOT import `prisma` from `@sentinel/database` in routes
