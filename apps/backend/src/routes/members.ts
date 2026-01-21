@@ -2,11 +2,11 @@ import { initServer } from '@ts-rest/express'
 import { memberContract } from '@sentinel/contracts'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { requireAuth } from '../middleware/auth.js'
-import { PrismaClient } from '@sentinel/database'
+import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
-const prisma = new PrismaClient()
-const memberRepo = new MemberRepository(prisma)
+
+const memberRepo = new MemberRepository(getPrismaClient())
 
 /**
  * Members route implementation using ts-rest
@@ -17,8 +17,8 @@ export const membersRouter = s.router(memberContract, {
    */
   getMembers: async ({ query }) => {
     try {
-      const page = query.page || 1
-      const limit = query.limit || 50
+      const page = query.page ? Number(query.page) : 1
+      const limit = query.limit ? Number(query.limit) : 50
 
       const result = await memberRepo.findPaginated(
         { page, limit },

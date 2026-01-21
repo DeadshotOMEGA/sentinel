@@ -13,6 +13,8 @@ import { membersRouter } from './routes/members.js'
 import { checkinsRouter } from './routes/checkins.js'
 import { divisionsRouter } from './routes/divisions.js'
 import { badgesRouter } from './routes/badges.js'
+import authRfidRouter from './routes/auth-rfid.js'
+import adminRouter from './routes/admin.js'
 import { auth } from './lib/auth.js'
 import { logger } from './lib/logger.js'
 
@@ -92,11 +94,47 @@ export function createApp() {
   })
 
   // Application routes
-  // Mount ts-rest routers
-  createExpressEndpoints(memberContract, membersRouter, app)
-  createExpressEndpoints(checkinContract, checkinsRouter, app)
-  createExpressEndpoints(divisionContract, divisionsRouter, app)
-  createExpressEndpoints(badgeContract, badgesRouter, app)
+  // Mount ts-rest routers with validation enabled
+  createExpressEndpoints(memberContract, membersRouter, app, {
+    requestValidationErrorHandler: (err, req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(checkinContract, checkinsRouter, app, {
+    requestValidationErrorHandler: (err, req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(divisionContract, divisionsRouter, app, {
+    requestValidationErrorHandler: (err, req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(badgeContract, badgesRouter, app, {
+    requestValidationErrorHandler: (err, req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+
+  // Custom auth routes
+  app.use('/api/auth', authRfidRouter)
+  app.use('/api/admin', adminRouter)
 
   // 404 handler (must be after all routes)
   app.use(notFoundHandler)

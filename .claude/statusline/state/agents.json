@@ -1,1 +1,5 @@
-{"active_agents": [], "last_updated": null}
+{
+  "running": [],
+  "last_updated": "2026-01-20T22:08:26.447864",
+  "cleared_by": "cleanup-state"
+}

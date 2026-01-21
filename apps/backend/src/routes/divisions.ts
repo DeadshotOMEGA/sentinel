@@ -1,11 +1,11 @@
 import { initServer } from '@ts-rest/express'
 import { divisionContract } from '@sentinel/contracts'
 import { DivisionRepository } from '../repositories/division-repository.js'
-import { PrismaClient } from '@sentinel/database'
+import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
-const prisma = new PrismaClient()
-const divisionRepo = new DivisionRepository(prisma)
+
+const divisionRepo = new DivisionRepository(getPrismaClient())
 
 /**
  * Divisions route implementation using ts-rest

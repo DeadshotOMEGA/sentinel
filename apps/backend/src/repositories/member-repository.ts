@@ -444,7 +444,7 @@ export class MemberRepository {
         divisionId: data.divisionId,
         mess: data.mess !== undefined ? data.mess : null,
         moc: data.moc !== undefined ? data.moc : null,
-        memberType: data.memberType,
+        memberType: data.memberType !== undefined ? data.memberType : 'regular',
         classDetails: data.classDetails !== undefined ? data.classDetails : null,
         status: data.status !== undefined ? data.status : 'active',
         email: data.email !== undefined ? data.email : null,

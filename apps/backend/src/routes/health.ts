@@ -1,11 +1,8 @@
 import { Router } from 'express'
-import { PrismaClient } from '@sentinel/database'
+import { getPrismaClient } from '../lib/database.js'
 import { logger } from '../lib/logger.js'
 
 export const healthRouter = Router()
-
-// Create Prisma client for health checks
-const prisma = new PrismaClient()
 
 /**
  * Overall health check
@@ -25,7 +22,7 @@ healthRouter.get('/health', async (req, res) => {
 
   try {
     // Check database connectivity
-    await prisma.$queryRaw`SELECT 1`
+    await getPrismaClient().$queryRaw`SELECT 1`
     checks.database = true
   } catch (error) {
     logger.error('Database health check failed', {
@@ -56,7 +53,7 @@ healthRouter.get('/health', async (req, res) => {
 healthRouter.get('/ready', async (req, res) => {
   try {
     // Check if database is accessible
-    await prisma.$queryRaw`SELECT 1`
+    await getPrismaClient().$queryRaw`SELECT 1`
 
     res.status(200).json({
       status: 'ready',
