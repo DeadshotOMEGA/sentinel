@@ -4,6 +4,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { execSync } from 'child_process'
 import path from 'path'
+import { setPrismaClient, resetPrismaClient } from '../../src/lib/database.js'
 
 /**
  * TestDatabase - Manages PostgreSQL container for integration tests
@@ -49,6 +50,10 @@ export class TestDatabase {
       log: ['error'], // Only log errors in tests
     })
 
+    // Inject test client into database service for routes
+    setPrismaClient(this.prisma)
+    console.log('✅ Injected test Prisma client into database service')
+
     // Apply schema to test database using db push with --url flag
     console.log('Applying database schema...')
     const schemaPath = path.resolve(__dirname, '../../../../packages/database/prisma/schema.prisma')
@@ -82,6 +87,10 @@ export class TestDatabase {
       await this.container.stop()
       this.container = null
     }
+
+    // Reset database service to default client
+    resetPrismaClient()
+    console.log('✅ Reset database service to default client')
 
     // Restore original DATABASE_URL
     if (this.originalDatabaseUrl) {

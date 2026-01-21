@@ -1,18 +1,19 @@
-import { beforeAll, afterAll } from 'vitest'
+// apps/backend/tests/setup.ts
 
-// Set DATABASE_URL before any imports to prevent Prisma initialization errors
-// This is a placeholder - actual tests will override with testcontainers URL
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
+// Set env immediately at module load time (before test files import app code)
+process.env.NODE_ENV = 'test'
+process.env.LOG_LEVEL = 'error'
+
+// Guard against bad values like '/'
+if (!process.env.BASE_URL || process.env.BASE_URL === '/') {
+  process.env.BASE_URL = 'http://localhost:3000'
 }
 
-// Global test setup
-beforeAll(async () => {
-  // Set test environment variables
-  process.env.NODE_ENV = 'test'
-  process.env.LOG_LEVEL = 'error'
-})
+process.env.BETTER_AUTH_SECRET = 'test-secret-key-min-32-chars-long'
 
-afterAll(async () => {
+// Optional hooks if you need them later
+import { afterAll } from 'vitest'
+
+afterAll(() => {
   // Global cleanup if needed
 })
