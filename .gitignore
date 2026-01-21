@@ -121,6 +121,7 @@ htmlcov/
 .claude/logs/
 .claude/downloads/
 .claude/ide/
+.claude/statusline/
 
 # History (may contain sensitive data)
 .claude/history.jsonl
@@ -219,6 +220,16 @@ packages/*/build/
 apps/*/dist/
 apps/*/build/
 apps/*/.next/
+
+# Compiled test output
+*.test.d.ts
+*.test.d.ts.map
+*.test.js
+*.test.js.map
+apps/*/tests/**/*.d.ts
+apps/*/tests/**/*.d.ts.map
+apps/*/tests/**/*.js
+apps/*/tests/**/*.js.map
 
 # ===================================
 # Project Specific
