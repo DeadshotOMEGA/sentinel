@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   VisitTypeEnum,
@@ -32,9 +32,9 @@ function toVisitType(row: VisitTypeRow): VisitTypeEnum {
 }
 
 export class VisitTypeRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -61,7 +61,7 @@ export class VisitTypeRepository {
       WHERE id = ${id}::uuid
     `
 
-    return rows.length > 0 ? toVisitType(rows[0]) : null
+    return rows.length > 0 ? toVisitType(rows[0]!) : null
   }
 
   /**
@@ -74,7 +74,7 @@ export class VisitTypeRepository {
       WHERE code = ${code}
     `
 
-    return rows.length > 0 ? toVisitType(rows[0]) : null
+    return rows.length > 0 ? toVisitType(rows[0]!) : null
   }
 
   /**
@@ -91,7 +91,7 @@ export class VisitTypeRepository {
       throw new Error('Failed to create visit type')
     }
 
-    return toVisitType(rows[0])
+    return toVisitType(rows[0]!)
   }
 
   /**
@@ -136,7 +136,7 @@ export class VisitTypeRepository {
       throw new Error(`Visit type not found: ${id}`)
     }
 
-    return toVisitType(rows[0])
+    return toVisitType(rows[0]!)
   }
 
   /**

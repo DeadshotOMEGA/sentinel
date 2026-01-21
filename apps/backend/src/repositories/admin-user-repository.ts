@@ -1,6 +1,5 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance, AdminUser as PrismaAdminUser } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import type { AdminUser as PrismaAdminUser } from '@prisma/client'
 import type {
   AdminUser,
   AdminUserWithPassword,
@@ -33,16 +32,6 @@ interface UpdateAdminUserData {
 
 function buildFullName(firstName: string, lastName: string): string {
   return `${firstName} ${lastName}`;
-}
-
-function parseFullName(fullName: string): { firstName: string; lastName: string } {
-  const parts = fullName.trim().split(' ');
-  if (parts.length === 1) {
-    return { firstName: parts[0], lastName: '' };
-  }
-  const lastName = parts.pop() as string;
-  const firstName = parts.join(' ');
-  return { firstName, lastName };
 }
 
 function mapToAdminUser(dbUser: Pick<PrismaAdminUser, 'id' | 'username' | 'email' | 'displayName' | 'first_name' | 'last_name' | 'role' | 'lastLogin' | 'createdAt' | 'disabled' | 'disabledAt' | 'disabledBy' | 'updatedBy'>): AdminUser {
@@ -87,12 +76,12 @@ function mapToAdminUserWithPassword(dbUser: Pick<PrismaAdminUser, 'id' | 'userna
 }
 
 export class AdminUserRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
   /**
    * @param prismaClient - Optional Prisma client (injected in tests)
    */
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -306,8 +295,12 @@ export class AdminUserRepository {
       if (firstName && lastName) {
         updateData.fullName = buildFullName(firstName, lastName);
       }
-      updateData.first_name = firstName || null;
-      updateData.last_name = lastName || null;
+      if (firstName) {
+        updateData.first_name = firstName;
+      }
+      if (lastName) {
+        updateData.last_name = lastName;
+      }
     }
 
     if (data.role !== undefined) {

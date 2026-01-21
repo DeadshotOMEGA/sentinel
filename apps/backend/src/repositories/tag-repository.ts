@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type { Tag as PrismaTag } from '@sentinel/database'
 import type { Tag, CreateTagInput, UpdateTagInput } from '@sentinel/types'
@@ -26,9 +26,9 @@ function toTag(t: PrismaTagWithDisplayOrder): Tag {
 }
 
 export class TagRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -59,7 +59,7 @@ export class TagRepository {
       return null
     }
 
-    return toTag(rows[0])
+    return toTag(rows[0]!)
   }
 
   /**
@@ -76,7 +76,7 @@ export class TagRepository {
       return null
     }
 
-    return toTag(rows[0])
+    return toTag(rows[0]!)
   }
 
   /**
@@ -102,7 +102,7 @@ export class TagRepository {
       throw new Error('Failed to create tag')
     }
 
-    return toTag(rows[0])
+    return toTag(rows[0]!)
   }
 
   /**
@@ -138,7 +138,7 @@ export class TagRepository {
       throw new Error(`Tag not found: ${id}`)
     }
 
-    return toTag(rows[0])
+    return toTag(rows[0]!)
   }
 
   /**

@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   ListType,
@@ -40,9 +40,9 @@ function toListItem(row: ListItemRow): ListItem {
 }
 
 export class ListItemRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -74,7 +74,7 @@ export class ListItemRepository {
       return null
     }
 
-    return toListItem(rows[0])
+    return toListItem(rows[0]!)
   }
 
   /**
@@ -91,7 +91,7 @@ export class ListItemRepository {
       return null
     }
 
-    return toListItem(rows[0])
+    return toListItem(rows[0]!)
   }
 
   /**
@@ -121,7 +121,7 @@ export class ListItemRepository {
       throw new Error('Failed to create list item')
     }
 
-    return toListItem(rows[0])
+    return toListItem(rows[0]!)
   }
 
   /**
@@ -166,7 +166,7 @@ export class ListItemRepository {
       throw new Error(`List item not found: ${id}`)
     }
 
-    return toListItem(rows[0])
+    return toListItem(rows[0]!)
   }
 
   /**

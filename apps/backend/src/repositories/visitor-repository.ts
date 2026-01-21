@@ -1,6 +1,5 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance, Visitor as PrismaVisitor } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import type { Visitor as PrismaVisitor } from '@prisma/client'
 import type {
   Visitor,
   CreateVisitorInput,
@@ -17,12 +16,12 @@ interface VisitorFilters {
 }
 
 export class VisitorRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
   /**
    * @param prismaClient - Optional Prisma client (injected in tests)
    */
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
   /**
@@ -136,12 +135,17 @@ export class VisitorRepository {
         name: data.name,
         organization: data.organization,
         visitType: data.visitType,
+        visitTypeId: data.visitTypeId ?? null,
         hostMemberId: data.hostMemberId ?? null,
         eventId: data.eventId ?? null,
-        visitReason: data.purpose ?? null,
+        visitReason: data.visitReason ?? null,
         checkInTime: data.checkInTime ?? new Date(),
-        temporaryBadgeId: data.badgeId ?? null,
-        kioskId: 'admin',
+        checkOutTime: data.checkOutTime ?? null,
+        temporaryBadgeId: data.temporaryBadgeId ?? null,
+        kioskId: data.kioskId,
+        adminNotes: data.adminNotes ?? null,
+        checkInMethod: data.checkInMethod ?? null,
+        createdByAdmin: data.createdByAdmin ?? null,
       },
       include: {
         event: true,
@@ -160,9 +164,19 @@ export class VisitorRepository {
     const visitor = await this.prisma.visitor.update({
       where: { id },
       data: {
+        name: data.name !== undefined ? data.name : undefined,
+        organization: data.organization !== undefined ? data.organization : undefined,
+        visitType: data.visitType !== undefined ? data.visitType : undefined,
+        visitTypeId: data.visitTypeId !== undefined ? data.visitTypeId : undefined,
         eventId: data.eventId !== undefined ? data.eventId : undefined,
         hostMemberId: data.hostMemberId !== undefined ? data.hostMemberId : undefined,
-        visitReason: data.purpose !== undefined ? data.purpose : undefined,
+        visitReason: data.visitReason !== undefined ? data.visitReason : undefined,
+        checkInTime: data.checkInTime !== undefined ? data.checkInTime : undefined,
+        checkOutTime: data.checkOutTime !== undefined ? data.checkOutTime : undefined,
+        temporaryBadgeId: data.temporaryBadgeId !== undefined ? data.temporaryBadgeId : undefined,
+        kioskId: data.kioskId !== undefined ? data.kioskId : undefined,
+        adminNotes: data.adminNotes !== undefined ? data.adminNotes : undefined,
+        checkInMethod: data.checkInMethod !== undefined ? data.checkInMethod : undefined,
       },
       include: {
         event: true,
@@ -290,10 +304,6 @@ export class VisitorRepository {
 
     return {
       visitors: visitors.map((v) => {
-        if (!v.organization) {
-          throw new Error(`Visitor ${v.id} missing required organization field`);
-        }
-
         const duration =
           v.checkOutTime
             ? Math.round((v.checkOutTime.getTime() - v.checkInTime.getTime()) / (1000 * 60))
@@ -302,7 +312,7 @@ export class VisitorRepository {
         return {
           id: v.id,
           name: v.name,
-          organization: v.organization,
+          organization: v.organization || '',
           visitType: v.visitType,
           purpose: v.visitReason ? v.visitReason : undefined,
           hostName: v.hostMember
@@ -325,10 +335,6 @@ export class VisitorRepository {
    * Convert Prisma visitor to shared Visitor type
    */
   private toVisitorType(visitor: PrismaVisitor): Visitor {
-    if (!visitor.organization) {
-      throw new Error(`Visitor ${visitor.id} has no organization`);
-    }
-
     const checkInMethod = visitor.checkInMethod
       ? (visitor.checkInMethod as 'kiosk' | 'admin_manual')
       : 'kiosk';
@@ -336,14 +342,15 @@ export class VisitorRepository {
     return {
       id: visitor.id,
       name: visitor.name,
-      organization: visitor.organization,
+      organization: visitor.organization || undefined,
       visitType: visitor.visitType as Visitor['visitType'],
       hostMemberId: visitor.hostMemberId ? visitor.hostMemberId : undefined,
       eventId: visitor.eventId ? visitor.eventId : undefined,
-      purpose: visitor.visitReason ? visitor.visitReason : undefined,
+      visitReason: visitor.visitReason ? visitor.visitReason : undefined,
       checkInTime: visitor.checkInTime,
       checkOutTime: visitor.checkOutTime ? visitor.checkOutTime : undefined,
-      badgeId: visitor.temporaryBadgeId ? visitor.temporaryBadgeId : undefined,
+      temporaryBadgeId: visitor.temporaryBadgeId ? visitor.temporaryBadgeId : undefined,
+      kioskId: visitor.kioskId,
       adminNotes: visitor.adminNotes ? visitor.adminNotes : undefined,
       checkInMethod,
       createdByAdmin: visitor.createdByAdmin ? visitor.createdByAdmin : undefined,

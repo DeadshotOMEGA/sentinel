@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type { Division as PrismaDivision } from '@sentinel/database'
 import type {
@@ -22,9 +22,9 @@ function toDivision(d: PrismaDivision): Division {
 }
 
 export class DivisionRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -98,6 +98,21 @@ export class DivisionRepository {
 
       return toDivision(division)
     } catch (error) {
+      // Check if it's a Prisma known error
+      if (error && typeof error === 'object' && 'code' in error) {
+        const prismaError = error as { code: string; meta?: unknown }
+
+        // P2025 = Record not found
+        if (prismaError.code === 'P2025') {
+          throw new Error(`Division not found: ${id}`)
+        }
+
+        // P2002 = Unique constraint violation - let it propagate
+        // This will be caught by the route handler and converted to 409
+        throw error
+      }
+
+      // Unknown error - assume not found
       throw new Error(`Division not found: ${id}`)
     }
   }

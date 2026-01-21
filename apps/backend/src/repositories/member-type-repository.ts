@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   MemberTypeEnum,
@@ -27,9 +27,9 @@ function toMemberType(row: MemberTypeRow): MemberTypeEnum {
 }
 
 export class MemberTypeRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -48,7 +48,7 @@ export class MemberTypeRepository {
       FROM member_types
       WHERE id = ${id}::uuid
     `
-    return rows.length > 0 ? toMemberType(rows[0]) : null
+    return rows.length > 0 ? toMemberType(rows[0]!) : null
   }
 
   async findByCode(code: string): Promise<MemberTypeEnum | null> {
@@ -57,7 +57,7 @@ export class MemberTypeRepository {
       FROM member_types
       WHERE code = ${code}
     `
-    return rows.length > 0 ? toMemberType(rows[0]) : null
+    return rows.length > 0 ? toMemberType(rows[0]!) : null
   }
 
   async create(data: CreateMemberTypeInput): Promise<MemberTypeEnum> {
@@ -69,7 +69,7 @@ export class MemberTypeRepository {
     if (rows.length === 0) {
       throw new Error('Failed to create member type')
     }
-    return toMemberType(rows[0])
+    return toMemberType(rows[0]!)
   }
 
   async update(id: string, data: UpdateMemberTypeInput): Promise<MemberTypeEnum> {
@@ -105,7 +105,7 @@ export class MemberTypeRepository {
       throw new Error(`Member type not found: ${id}`)
     }
 
-    return toMemberType(rows[0])
+    return toMemberType(rows[0]!)
   }
 
   async delete(id: string): Promise<void> {

@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   Event as PrismaEvent,
@@ -9,13 +9,11 @@ import type {
   Event,
   EventAttendee,
   EventCheckin,
-  EventStatus,
-  AttendeeStatus,
   CreateEventInput,
   UpdateEventInput,
   CreateAttendeeInput,
   UpdateAttendeeInput,
-  EventCheckinDirection,
+  CheckinDirection,
 } from '@sentinel/types'
 
 interface EventPresenceStats {
@@ -34,13 +32,13 @@ function mapToEvent(event: PrismaEvent): Event {
     id: event.id,
     name: event.name,
     code: event.code,
-    description: event.description,
+    description: event.description ?? undefined,
     startDate: event.startDate,
     endDate: event.endDate,
     status: event.status as Event['status'],
     autoExpireBadges: event.autoExpireBadges ?? true,
-    customRoles: event.customRoles as string[] | null,
-    createdBy: event.createdBy,
+    customRoles: event.customRoles ? event.customRoles as Record<string, unknown> : undefined,
+    createdBy: event.createdBy ?? undefined,
     createdAt: event.createdAt ?? new Date(),
     updatedAt: event.updatedAt ?? new Date(),
   }
@@ -54,13 +52,13 @@ function mapToEventAttendee(attendee: PrismaEventAttendee): EventAttendee {
     id: attendee.id,
     eventId: attendee.eventId,
     name: attendee.name,
-    rank: attendee.rank,
+    rank: attendee.rank ?? undefined,
     organization: attendee.organization,
-    role: attendee.role,
-    badgeId: attendee.badgeId,
-    badgeAssignedAt: attendee.badgeAssignedAt,
-    accessStart: attendee.accessStart,
-    accessEnd: attendee.accessEnd,
+    role: attendee.role ?? undefined,
+    badgeId: attendee.badgeId ?? undefined,
+    badgeAssignedAt: attendee.badgeAssignedAt ?? undefined,
+    accessStart: attendee.accessStart ?? undefined,
+    accessEnd: attendee.accessEnd ?? undefined,
     status: attendee.status as EventAttendee['status'],
     createdAt: attendee.createdAt ?? new Date(),
     updatedAt: attendee.updatedAt ?? new Date(),
@@ -83,9 +81,9 @@ function mapToEventCheckin(checkin: PrismaEventCheckin): EventCheckin {
 }
 
 export class EventRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -460,7 +458,7 @@ export class EventRepository {
   async recordCheckin(
     eventAttendeeId: string,
     badgeId: string,
-    direction: EventCheckinDirection,
+    direction: CheckinDirection,
     kioskId: string,
     timestamp: Date = new Date()
   ): Promise<EventCheckin> {
@@ -494,7 +492,7 @@ export class EventRepository {
   /**
    * Get last check-in direction for an attendee (to determine current status)
    */
-  async getLastCheckinDirection(eventAttendeeId: string): Promise<EventCheckinDirection | null> {
+  async getLastCheckinDirection(eventAttendeeId: string): Promise<CheckinDirection | null> {
     const checkin = await this.prisma.eventCheckin.findFirst({
       where: { eventAttendeeId },
       orderBy: {
@@ -505,7 +503,7 @@ export class EventRepository {
       },
     })
 
-    return (checkin?.direction as EventCheckinDirection) || null
+    return (checkin?.direction as CheckinDirection) || null
   }
 }
 

@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   BadgeStatusEnum,
@@ -25,16 +25,15 @@ function toBadgeStatus(row: BadgeStatusRow): BadgeStatusEnum {
     code: row.code,
     name: row.name,
     description: row.description ?? undefined,
-    color: row.color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
 }
 
 export class BadgeStatusRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -61,7 +60,7 @@ export class BadgeStatusRepository {
       WHERE id = ${id}::uuid
     `
 
-    return rows.length > 0 ? toBadgeStatus(rows[0]) : null
+    return rows.length > 0 ? toBadgeStatus(rows[0]!) : null
   }
 
   /**
@@ -74,7 +73,7 @@ export class BadgeStatusRepository {
       WHERE code = ${code}
     `
 
-    return rows.length > 0 ? toBadgeStatus(rows[0]) : null
+    return rows.length > 0 ? toBadgeStatus(rows[0]!) : null
   }
 
   /**
@@ -91,7 +90,7 @@ export class BadgeStatusRepository {
       throw new Error('Failed to create badge status')
     }
 
-    return toBadgeStatus(rows[0])
+    return toBadgeStatus(rows[0]!)
   }
 
   /**
@@ -136,7 +135,7 @@ export class BadgeStatusRepository {
       throw new Error(`Badge status not found: ${id}`)
     }
 
-    return toBadgeStatus(rows[0])
+    return toBadgeStatus(rows[0]!)
   }
 
   /**

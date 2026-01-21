@@ -1,6 +1,6 @@
-import type { PrismaClient, Prisma } from '@sentinel/database'
-import { prisma as defaultPrisma } from '@sentinel/database'
-import type { AuditLog as PrismaAuditLog } from '@prisma/client'
+import type { PrismaClientInstance } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
+import type { AuditLog as PrismaAuditLog } from '@sentinel/database'
 
 export type AuditAction =
   | 'login'
@@ -62,12 +62,12 @@ interface AuditLogFilters {
 }
 
 export class AuditRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
   /**
    * @param prismaClient - Optional Prisma client (injected in tests)
    */
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 

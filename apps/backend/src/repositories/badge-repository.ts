@@ -1,5 +1,6 @@
-import type { Badge as PrismaBadge, PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
+import type { Badge as PrismaBadge } from '@sentinel/database'
 import type {
   Badge,
   BadgeWithDetails,
@@ -15,25 +16,26 @@ interface BadgeFilters {
 }
 
 /**
- * Convert Prisma Badge (with null) to shared Badge type (with undefined)
+ * Convert Prisma Badge to shared Badge type
+ * Preserves null values to match API contract expectations
  */
 function toBadge(prismaBadge: PrismaBadge): Badge {
   return {
     id: prismaBadge.id,
     serialNumber: prismaBadge.serialNumber,
     assignmentType: prismaBadge.assignmentType as BadgeAssignmentType,
-    assignedToId: prismaBadge.assignedToId ?? undefined,
+    assignedToId: prismaBadge.assignedToId as any,
     status: prismaBadge.status as BadgeStatus,
-    lastUsed: prismaBadge.lastUsed ?? undefined,
+    lastUsed: prismaBadge.lastUsed as any,
     createdAt: prismaBadge.createdAt ?? new Date(),
     updatedAt: prismaBadge.updatedAt ?? new Date(),
   };
 }
 
 export class BadgeRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -120,12 +122,15 @@ export class BadgeRepository {
         result.assignedMember = members[0];
       }
 
-      if (checkins.length > 0) {
-        result.lastScan = {
-          kioskId: checkins[0].kioskId,
-          timestamp: checkins[0].timestamp,
-          direction: checkins[0].direction,
-        };
+      if (checkins.length > 0 && checkins[0]) {
+        const checkin = checkins[0];
+        if (checkin.timestamp && checkin.kioskId && checkin.direction) {
+          result.lastScan = {
+            kioskId: checkin.kioskId,
+            timestamp: checkin.timestamp,
+            direction: checkin.direction,
+          };
+        }
       }
 
       return result;
@@ -186,12 +191,15 @@ export class BadgeRepository {
       result.assignedMember = members[0];
     }
 
-    if (checkins.length > 0) {
-      result.lastScan = {
-        kioskId: checkins[0].kioskId,
-        timestamp: checkins[0].timestamp,
-        direction: checkins[0].direction,
-      };
+    if (checkins.length > 0 && checkins[0]) {
+      const checkin = checkins[0];
+      if (checkin.timestamp && checkin.kioskId && checkin.direction) {
+        result.lastScan = {
+          kioskId: checkin.kioskId,
+          timestamp: checkin.timestamp,
+          direction: checkin.direction,
+        };
+      }
     }
 
     return result;

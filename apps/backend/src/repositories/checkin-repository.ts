@@ -4,12 +4,12 @@ import type {
   CreateCheckinInput,
   PresenceStats,
   MemberWithDivision,
-  Member,
-  Division,
   PaginationParams,
+  MemberType,
+  MemberStatus,
 } from '@sentinel/types'
-import type { PrismaClient, Prisma } from '@sentinel/database'
-import { prisma as defaultPrisma } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 // TODO: Implement Redis caching when infrastructure is ready
 // import { redis } from '../redis';
@@ -47,14 +47,12 @@ interface PresentMember {
 }
 
 export class CheckinRepository {
-  private prisma: PrismaClient
-  private readonly PRESENCE_CACHE_KEY = 'presence:stats'
-  private readonly PRESENCE_CACHE_TTL = 60 // 60 seconds
+  private prisma: PrismaClientInstance
 
   /**
    * @param prismaClient - Optional Prisma client (injected in tests)
    */
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -174,7 +172,7 @@ export class CheckinRepository {
       this.prisma.checkin.count({ where }),
       this.prisma.checkin.findMany({
         where,
-        orderBy: { [sortByColumn]: sortOrder },
+        orderBy: { [sortByColumn as string]: sortOrder },
         skip,
         take: limit,
       }),
@@ -322,7 +320,9 @@ export class CheckinRepository {
     // Process each checkin individually to handle partial failures
     for (let i = 0; i < checkins.length; i++) {
       try {
-        await this.create(checkins[i]);
+        const checkin = checkins[i];
+        if (!checkin) throw new Error('Checkin data missing');
+        await this.create(checkin);
         successCount++;
       } catch (error) {
         errors.push({
@@ -410,22 +410,22 @@ export class CheckinRepository {
         divisionId: checkin.member.divisionId,
         mess: checkin.member.mess ?? undefined,
         moc: checkin.member.moc ?? undefined,
-        memberType: checkin.member.memberType as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+        memberType: checkin.member.memberType as unknown as MemberType,
         classDetails: checkin.member.classDetails ?? undefined,
-        status: checkin.member.status as 'active' | 'inactive' | 'pending_review' | 'terminated',
+        status: checkin.member.status as unknown as MemberStatus,
         email: checkin.member.email ?? undefined,
         homePhone: checkin.member.homePhone ?? undefined,
         mobilePhone: checkin.member.mobilePhone ?? undefined,
         badgeId: checkin.member.badgeId ?? undefined,
-        createdAt: checkin.member.createdAt,
-        updatedAt: checkin.member.updatedAt,
+        createdAt: checkin.member.createdAt ?? new Date(),
+        updatedAt: checkin.member.updatedAt ?? new Date(),
         division: {
           id: checkin.member.division.id,
           name: checkin.member.division.name,
           code: checkin.member.division.code,
           description: checkin.member.division.description ?? undefined,
-          createdAt: checkin.member.division.createdAt,
-          updatedAt: checkin.member.division.updatedAt,
+          createdAt: checkin.member.division.createdAt ?? new Date(),
+          updatedAt: checkin.member.division.updatedAt ?? new Date(),
         },
       },
     };
@@ -465,7 +465,7 @@ export class CheckinRepository {
       this.prisma.checkin.count({ where }),
       this.prisma.checkin.findMany({
         where,
-        orderBy: { [sortByColumn]: sortOrder },
+        orderBy: { [sortByColumn as string]: sortOrder },
         skip,
         take: limit,
         include: {
@@ -587,14 +587,19 @@ export class CheckinRepository {
       throw new Error('Failed to get presence stats');
     }
 
-    const row = rows[0];
+    const row = rows[0]!;
+    const totalMembers = Number(row.total_members);
+    const present = Number(row.present);
+    const absent = Number(row.absent);
+
     const stats: PresenceStats = {
-      totalMembers: Number(row.total_members),
-      present: Number(row.present),
-      absent: Number(row.absent),
-      onLeave: Number(row.on_leave),
-      lateArrivals: Number(row.late_arrivals),
-      visitors: Number(row.visitors),
+      total: totalMembers,
+      totalMembers,
+      present,
+      absent,
+      onLeave: Number(row.on_leave) || 0,
+      percentagePresent: totalMembers > 0 ? (present / totalMembers) * 100 : 0,
+      byDivision: [],
     };
 
     // TODO: Implement Redis caching when infrastructure is ready
@@ -758,9 +763,9 @@ export class CheckinRepository {
         divisionId: row.division_id,
         mess: row.mess ?? undefined,
         moc: row.moc ?? undefined,
-        memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+        memberType: row.member_type as unknown as MemberType,
         classDetails: row.class_details ?? undefined,
-        status: row.status as 'active' | 'inactive' | 'pending_review' | 'terminated',
+        status: row.status as unknown as MemberStatus,
         email: row.email ?? undefined,
         homePhone: row.home_phone ?? undefined,
         mobilePhone: row.mobile_phone ?? undefined,

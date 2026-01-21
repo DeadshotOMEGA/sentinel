@@ -8,7 +8,7 @@ import type {
   PaginationParams,
   MemberFilterParams,
 } from '@sentinel/types'
-import type { Member as PrismaMember, PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance, Member as PrismaMember } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
 interface MemberFilters extends MemberFilterParams {
@@ -140,9 +140,9 @@ function toMemberWithDivision(
 }
 
 export class MemberRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -384,7 +384,7 @@ export class MemberRepository {
           },
         },
         orderBy: [
-          { [sortByColumn]: sortOrder },
+          { [sortByColumn as string]: sortOrder },
           { firstName: sortOrder },
         ],
         skip,
@@ -563,10 +563,20 @@ export class MemberRepository {
    * Delete (soft delete) a member
    */
   async delete(id: string): Promise<void> {
+    // Get inactive status ID
+    const inactiveStatus = await this.prisma.memberStatus.findFirst({
+      where: { code: 'inactive' },
+    })
+
+    if (!inactiveStatus) {
+      throw new Error('Inactive status not found in database')
+    }
+
     const result = await this.prisma.member.updateMany({
       where: { id },
       data: {
         status: 'inactive',
+        memberStatusId: inactiveStatus.id,
       },
     })
 

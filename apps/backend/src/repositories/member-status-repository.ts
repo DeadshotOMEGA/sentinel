@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@sentinel/database'
+import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type {
   MemberStatusEnum,
@@ -32,9 +32,9 @@ function toMemberStatus(row: MemberStatusRow): MemberStatusEnum {
 }
 
 export class MemberStatusRepository {
-  private prisma: PrismaClient
+  private prisma: PrismaClientInstance
 
-  constructor(prismaClient?: PrismaClient) {
+  constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
   }
 
@@ -61,7 +61,7 @@ export class MemberStatusRepository {
       WHERE id = ${id}::uuid
     `
 
-    return rows.length > 0 ? toMemberStatus(rows[0]) : null
+    return rows.length > 0 ? toMemberStatus(rows[0]!) : null
   }
 
   /**
@@ -74,7 +74,7 @@ export class MemberStatusRepository {
       WHERE code = ${code}
     `
 
-    return rows.length > 0 ? toMemberStatus(rows[0]) : null
+    return rows.length > 0 ? toMemberStatus(rows[0]!) : null
   }
 
   /**
@@ -91,7 +91,7 @@ export class MemberStatusRepository {
       throw new Error('Failed to create member status')
     }
 
-    return toMemberStatus(rows[0])
+    return toMemberStatus(rows[0]!)
   }
 
   /**
@@ -136,7 +136,7 @@ export class MemberStatusRepository {
       throw new Error(`Member status not found: ${id}`)
     }
 
-    return toMemberStatus(rows[0])
+    return toMemberStatus(rows[0]!)
   }
 
   /**
