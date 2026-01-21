@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
-import { PrismaClient } from '@sentinel/database'
+import { prisma } from '@sentinel/database'
+import { admin, apiKey } from 'better-auth/plugins'
 
 /**
  * Better-auth configuration for Sentinel backend
@@ -9,16 +10,13 @@ import { PrismaClient } from '@sentinel/database'
  * - Email/password authentication for admin users
  * - Session-based authentication with 7-day expiry
  * - Prisma adapter for database integration
- *
- * Note: API key authentication for kiosks is handled separately
- * via custom middleware (see middleware/auth.ts)
+ * - Admin plugin for user management, session control, impersonation
+ * - API Key plugin for kiosk/reader authentication with scopes
+ * - Role-based access control (5 roles: Developer, Admin, Executive, Duty Watch, Quartermaster)
+ * - RFID badge linkage for badge-based login
  *
  * @see https://better-auth.com/docs
  */
-
-// Create Prisma client for better-auth
-// Note: This is separate from the main app Prisma client to avoid connection pool issues
-const prisma = new PrismaClient()
 
 export const auth = betterAuth({
   // Database adapter
@@ -34,6 +32,26 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
   },
 
+  // User model with additional fields
+  user: {
+    additionalFields: {
+      // Role-based access control (5-level hierarchy)
+      role: {
+        type: 'string',
+        required: true,
+        defaultValue: 'quartermaster', // Lowest privilege by default
+        input: true, // Allow setting on user creation
+      },
+      // RFID badge linkage for badge-based login
+      badgeId: {
+        type: 'string',
+        required: false,
+        unique: true, // One badge per user
+        input: true, // Allow setting via admin panel
+      },
+    },
+  },
+
   // Session configuration
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -43,6 +61,16 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
+
+  // Plugins
+  plugins: [
+    // Admin plugin: User management, session control, impersonation
+    admin({
+      impersonationSessionDuration: 60 * 60, // 1 hour impersonation sessions
+    }),
+    // API Key plugin: Kiosk/reader authentication with scopes
+    apiKey(),
+  ],
 
   // Security options
   advanced: {
