@@ -58,15 +58,15 @@ pnpm add valibot
 import * as v from 'valibot'
 
 export const PersonnelSchema = v.object({
-  id: v.string([v.uuid()]),
-  firstName: v.string([v.minLength(1), v.maxLength(50)]),
-  lastName: v.string([v.minLength(1), v.maxLength(50)]),
+  id: v.pipe(v.string(), v.uuid()),
+  firstName: v.pipe(v.string(), v.minLength(1), v.maxLength(50)),
+  lastName: v.pipe(v.string(), v.minLength(1), v.maxLength(50)),
   rank: v.picklist(['AB', 'LS', 'PO2', 'PO1', 'CPO2', 'CPO1']),
   division: v.optional(v.picklist(['DECK', 'ENG', 'SUPPORT', 'ADMIN'])),
   email: v.optional(v.pipe(v.string(), v.email())),
   rfidCard: v.optional(
     v.object({
-      cardNumber: v.string([v.length(10), v.regex(/^\d{10}$/)]),
+      cardNumber: v.pipe(v.string(), v.length(10), v.regex(/^\d{10}$/)),
       assignedAt: v.pipe(v.string(), v.isoTimestamp()),
     })
   ),
@@ -75,19 +75,19 @@ export const PersonnelSchema = v.object({
 })
 
 export const CreatePersonnelSchema = v.object({
-  firstName: v.string([v.minLength(1), v.maxLength(50)]),
-  lastName: v.string([v.minLength(1), v.maxLength(50)]),
+  firstName: v.pipe(v.string(), v.minLength(1), v.maxLength(50)),
+  lastName: v.pipe(v.string(), v.minLength(1), v.maxLength(50)),
   rank: v.picklist(['AB', 'LS', 'PO2', 'PO1', 'CPO2', 'CPO1']),
   division: v.optional(v.picklist(['DECK', 'ENG', 'SUPPORT', 'ADMIN'])),
   email: v.optional(v.pipe(v.string(), v.email())),
-  rfidCardNumber: v.optional(v.string([v.length(10), v.regex(/^\d{10}$/)])),
+  rfidCardNumber: v.optional(v.pipe(v.string(), v.length(10), v.regex(/^\d{10}$/))),
 })
 
 export const UpdatePersonnelSchema = v.partial(CreatePersonnelSchema)
 
-export type Personnel = v.Output<typeof PersonnelSchema>
-export type CreatePersonnel = v.Output<typeof CreatePersonnelSchema>
-export type UpdatePersonnel = v.Output<typeof UpdatePersonnelSchema>
+export type Personnel = v.InferOutput<typeof PersonnelSchema>
+export type CreatePersonnel = v.InferOutput<typeof CreatePersonnelSchema>
+export type UpdatePersonnel = v.InferOutput<typeof UpdatePersonnelSchema>
 ```
 
 ### Define API Contract with ts-rest

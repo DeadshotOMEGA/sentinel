@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "ToolCall": [
+      {
+        "name": "claudemd-linter",
+        "description": "Validate CLAUDE.md files for structure and style compliance",
+        "command": "node .claude/hooks/claudemd-linter.js {file_path}",
+        "filter": {
+          "tools": ["Write", "Edit"],
+          "filePattern": "**/CLAUDE.md"
+        }
+      }
+    ]
+  }
+}
