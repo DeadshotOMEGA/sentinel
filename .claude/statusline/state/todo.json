@@ -1,6 +1,7 @@
 {
-  "completed": 4,
-  "total": 5,
+  "completed": 0,
+  "total": 0,
   "in_progress": null,
-  "last_updated": "2026-01-20T21:46:04.344766"
+  "last_updated": "2026-01-21T13:03:19.851796",
+  "cleared_by": "cleanup-state"
 }
