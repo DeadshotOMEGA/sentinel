@@ -128,16 +128,6 @@ export const MemberListResponseSchema = v.object({
 })
 
 /**
- * Error response schema
- */
-export const ErrorResponseSchema = v.object({
-  error: v.string(),
-  message: v.string(),
-  details: v.optional(v.record(v.string(), v.unknown())),
-  correlationId: v.optional(v.string()),
-})
-
-/**
  * Type exports
  */
 export type CreateMemberInput = v.InferOutput<typeof CreateMemberSchema>
@@ -145,4 +135,3 @@ export type UpdateMemberInput = v.InferOutput<typeof UpdateMemberSchema>
 export type MemberResponse = v.InferOutput<typeof MemberResponseSchema>
 export type MemberListQuery = v.InferOutput<typeof MemberListQuerySchema>
 export type MemberListResponse = v.InferOutput<typeof MemberListResponseSchema>
-export type ErrorResponse = v.InferOutput<typeof ErrorResponseSchema>
