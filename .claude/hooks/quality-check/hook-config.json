@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "projectType": "node-typescript-monorepo",
+  "description": "Quality checks for Sentinel RFID Attendance System",
+  "checks": {
+    "typescript": {
+      "enabled": true,
+      "showDependencyErrors": false,
+      "tsconfigPaths": [
+        "apps/backend/tsconfig.json",
+        "packages/database/tsconfig.json",
+        "packages/contracts/tsconfig.json",
+        "packages/types/tsconfig.json"
+      ]
+    },
+    "eslint": {
+      "enabled": true,
+      "autoFix": true,
+      "configPath": "eslint.config.js"
+    },
+    "prettier": {
+      "enabled": true,
+      "autoFix": true,
+      "configPath": ".prettierrc"
+    }
+  },
+  "rules": {
+    "console": {
+      "severity": "error",
+      "allowIn": [
+        "apps/backend/src/routes/dev.ts",
+        "apps/backend/src/routes/dev-tools.ts",
+        "scripts/**/*.ts",
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        ".claude/hooks/**/*.js"
+      ],
+      "message": "Use proper logging (logger.info/error) instead of console statements"
+    },
+    "typeAssertions": {
+      "severity": "warning",
+      "blockPatterns": ["as any"],
+      "message": "Avoid 'as any' - use proper types or 'unknown' with type narrowing"
+    },
+    "debugger": {
+      "severity": "error",
+      "message": "Remove debugger statement before committing"
+    },
+    "comments": {
+      "severity": "info",
+      "patterns": ["TODO", "FIXME", "HACK"],
+      "message": "Comment flag found - track in issue tracker if needed"
+    }
+  },
+  "excludedPaths": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    ".next/**",
+    "generated/**",
+    "**/*.d.ts",
+    "**/*.js.map",
+    "**/*.d.ts.map",
+    ".git/**"
+  ],
+  "performance": {
+    "cache": {
+      "enabled": true,
+      "ttl": 3600
+    },
+    "parallel": true,
+    "maxFileSize": 10485760
+  },
+  "output": {
+    "silentAutofix": false,
+    "showWarnings": true,
+    "debug": false
+  },
+  "environment": {
+    "CLAUDE_HOOKS_DEBUG": "Enable debug logging",
+    "CLAUDE_HOOKS_TYPESCRIPT": "Enable/disable TypeScript checks (default: true)",
+    "CLAUDE_HOOKS_ESLINT": "Enable/disable ESLint checks (default: true)",
+    "CLAUDE_HOOKS_PRETTIER": "Enable/disable Prettier checks (default: true)",
+    "CLAUDE_HOOKS_ESLINT_AUTOFIX": "Enable/disable ESLint auto-fix (default: true)",
+    "CLAUDE_HOOKS_PRETTIER_AUTOFIX": "Enable/disable Prettier auto-fix (default: true)"
+  }
+}
