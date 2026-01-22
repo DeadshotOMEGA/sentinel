@@ -31,6 +31,7 @@ import {
   devContract,
 } from '@sentinel/contracts'
 import { requestLogger } from './middleware/request-logger.js'
+import { metricsMiddleware } from './middleware/metrics.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
 import { apiLimiter } from './middleware/rate-limit.js'
 import { healthRouter } from './routes/health.js'
@@ -119,6 +120,9 @@ export function createApp() {
   // Request logging with correlation IDs
   app.use(requestLogger)
 
+  // Prometheus metrics tracking
+  app.use(metricsMiddleware)
+
   // Rate limiting for API routes
   app.use('/api', apiLimiter)
 
@@ -137,6 +141,8 @@ export function createApp() {
   // This mounts the auth endpoints at /api/auth
   app.all('/api/auth/*', (req, res) => {
     try {
+      // better-auth handler expects its own request type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return auth.handler(req as any)
     } catch (error) {
       logger.error('Auth handler error', {

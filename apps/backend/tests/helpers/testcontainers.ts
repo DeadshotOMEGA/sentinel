@@ -27,12 +27,17 @@ export class TestDatabase {
     // Save original DATABASE_URL
     this.originalDatabaseUrl = process.env.DATABASE_URL
 
-    // Start PostgreSQL container
+    // Start PostgreSQL container with proper labeling for isolation
     console.log('Starting PostgreSQL test container...')
     this.container = await new PostgreSqlContainer('postgres:15-alpine')
       .withDatabase('sentineltest')
       .withUsername('testuser')
       .withPassword('testpass')
+      .withLabels({
+        'sentinel.test': 'true', // Mark as test container
+        'sentinel.project': 'backend-tests', // Identify project
+        'sentinel.purpose': 'integration-testing', // Purpose
+      })
       .withReuse() // Reuse container across test runs for speed
       .start()
 

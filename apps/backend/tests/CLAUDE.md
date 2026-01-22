@@ -192,6 +192,53 @@ pnpm test --watch            # Watch mode
 pnpm test --coverage         # With coverage
 ```
 
+### Docker Container Management
+
+**Test Container Isolation**:
+
+Test containers are labeled with `sentinel.test=true` to ensure they NEVER interfere with:
+- Development containers (Grafana, Loki, Prometheus)
+- Production containers
+- Other project containers
+
+**Labels Applied**:
+```typescript
+{
+  'sentinel.test': 'true',           // Marks as test container
+  'sentinel.project': 'backend-tests', // Identifies project
+  'sentinel.purpose': 'integration-testing' // Purpose
+}
+```
+
+**Safe Cleanup Commands**:
+
+```bash
+# Interactive cleanup (asks for confirmation)
+pnpm test:clean
+
+# Force cleanup (no confirmation)
+pnpm test:clean:force
+
+# Manual verification (show only test containers)
+docker ps -a --filter "label=sentinel.test=true"
+```
+
+**What Gets Cleaned**:
+- ✅ Test PostgreSQL containers (labeled `sentinel.test=true`)
+
+**What's PROTECTED**:
+- ✅ Grafana (no `sentinel.test` label)
+- ✅ Loki (no `sentinel.test` label)
+- ✅ Prometheus (no `sentinel.test` label)
+- ✅ Development database (different label or no label)
+- ✅ Any other project containers
+
+**When to Clean**:
+- Test failures with "constraint already exists" errors
+- "Container removal already in progress" errors
+- After switching branches with schema changes
+- To force fresh test container creation
+
 ---
 
 **Testing Infrastructure**: TestDatabase class manages PostgreSQL containers, factory functions generate test data. See helpers/ for implementation details.

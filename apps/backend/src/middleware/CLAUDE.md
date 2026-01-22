@@ -1,6 +1,6 @@
 # CLAUDE Rules: Middleware
 
-Authentication, error handling, rate limiting, and request logging middleware.
+Authentication, error handling, rate limiting, request logging, and metrics middleware.
 
 ---
 
@@ -19,12 +19,13 @@ Applies when creating or modifying: `apps/backend/src/middleware/*.ts`
   app.use(express.urlencoded())        // 5. URL-encoded body parsing
   app.use(cookieParser())              // 6. Cookie parsing
   app.use(requestLogger)               // 7. Correlation ID + logging
-  app.use('/api', apiLimiter)          // 8. Rate limiting (API routes only)
-  app.use(healthRouter)                // 9. Health checks (no auth)
-  app.all('/api/auth/*', authHandler)  // 10. better-auth routes
-  createExpressEndpoints(...)          // 11. Application routes (ts-rest)
-  app.use(notFoundHandler)             // 12. 404 handler
-  app.use(errorHandler)                // 13. Error handler (MUST BE LAST)
+  app.use(metricsMiddleware)           // 8. Prometheus metrics tracking
+  app.use('/api', apiLimiter)          // 9. Rate limiting (API routes only)
+  app.use(healthRouter)                // 10. Health checks (no auth)
+  app.all('/api/auth/*', authHandler)  // 11. better-auth routes
+  createExpressEndpoints(...)          // 12. Application routes (ts-rest)
+  app.use(notFoundHandler)             // 13. 404 handler
+  app.use(errorHandler)                // 14. Error handler (MUST BE LAST)
   ```
 
 **Authentication Middleware**:
@@ -51,6 +52,12 @@ Applies when creating or modifying: `apps/backend/src/middleware/*.ts`
 - MUST generate or extract correlation ID from X-Correlation-ID header
 - MUST store correlation ID in AsyncLocalStorage via requestContext.run()
 - MUST include X-Correlation-ID in response headers
+
+**Metrics Tracking**:
+- MUST track all HTTP requests (method, path, status, duration)
+- MUST normalize paths to prevent metric explosion (UUIDs → :id)
+- MUST track active connections with proper cleanup
+- MUST log slow requests (> 1 second)
 
 ## Defaults (SHOULD)
 
@@ -159,6 +166,41 @@ const correlationId = store?.correlationId
 const userId = store?.userId
 
 logger.info('Processing', { correlationId, userId })
+```
+
+### Metrics Middleware
+
+```typescript
+import { metricsMiddleware } from './middleware/metrics.js'
+
+// Automatically tracks all HTTP requests
+app.use(metricsMiddleware)
+
+// Path normalization examples:
+// /api/members/123e4567-... → /api/members/:id
+// /api/badges/serial/ABC123 → /api/badges/serial/:serialNumber
+// /api/members/45 → /api/members/:id
+```
+
+**Recording Custom Metrics**:
+
+```typescript
+import {
+  recordCheckin,
+  recordBadgeOperation,
+  recordVisitorOperation,
+  recordEvent,
+  recordDdsAssignment,
+  recordSecurityAlert,
+} from '../lib/metrics.js'
+
+// In route handlers
+recordCheckin('in', 'normal')
+recordBadgeOperation('assigned')
+recordVisitorOperation('signin')
+recordEvent('training')
+recordDdsAssignment('assigned')
+recordSecurityAlert('high', 'unauthorized_access')
 ```
 
 ### Error Handler Integration

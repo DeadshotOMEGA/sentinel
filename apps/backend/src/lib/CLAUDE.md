@@ -1,11 +1,11 @@
 # CLAUDE Rules: Shared Libraries
 
-better-auth configuration, API key management, and Winston logging with correlation tracking.
+better-auth configuration, API key management, Winston logging with correlation tracking, and Prometheus metrics.
 
 ---
 
 ## Scope
-Applies when modifying: `apps/backend/src/lib/auth.ts`, `apps/backend/src/lib/logger.ts`
+Applies when modifying: `apps/backend/src/lib/auth.ts`, `apps/backend/src/lib/logger.ts`, `apps/backend/src/lib/metrics.ts`
 
 ## Non-Negotiables (MUST / MUST NOT)
 
@@ -31,6 +31,13 @@ Applies when modifying: `apps/backend/src/lib/auth.ts`, `apps/backend/src/lib/lo
 - MUST include correlation ID in all log entries
 - MUST use module-specific loggers (apiLogger, dbLogger, authLogger, wsLogger, serviceLogger)
 - MUST NOT log passwords, secrets, or API keys
+
+**Metrics (Prometheus)**:
+- MUST use prom-client for Prometheus metrics
+- MUST register all metrics with global registry
+- MUST include default Node.js metrics (CPU, memory, event loop)
+- MUST NOT create high-cardinality metrics (use path normalization)
+- MUST provide helper functions for recording business metrics
 
 **Rate Limiting**:
 - MUST apply stricter limits to login endpoints (5 attempts per 15 min)
@@ -193,6 +200,52 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
 }))
 ```
+
+### Prometheus Metrics
+
+```typescript
+import {
+  register,
+  recordHttpRequest,
+  recordDatabaseQuery,
+  recordAuthAttempt,
+  recordCheckin,
+  recordBadgeOperation,
+  recordVisitorOperation,
+  recordEvent,
+  recordDdsAssignment,
+  recordSecurityAlert,
+} from '../lib/metrics.js'
+
+// Serve metrics endpoint (in health.ts)
+healthRouter.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', register.contentType)
+  res.end(await register.metrics())
+})
+
+// Record business metrics
+recordCheckin('in', 'normal')  // Check-in with direction and type
+recordBadgeOperation('assigned')  // Badge operation
+recordVisitorOperation('signin')  // Visitor sign-in
+recordEvent('training')  // Event creation
+recordDdsAssignment('assigned')  // DDS assignment
+recordSecurityAlert('high', 'unauthorized_access')  // Security alert
+
+// Record auth attempt
+recordAuthAttempt('success', 'session')  // or 'failure', 'apikey'
+
+// Record database query
+const start = Date.now()
+const result = await prisma.member.findMany()
+recordDatabaseQuery('findMany', (Date.now() - start) / 1000, true)
+```
+
+**Available Metrics**:
+- HTTP: `http_requests_total`, `http_request_duration_seconds`, `http_active_connections`
+- Database: `database_query_duration_seconds`, `database_queries_total`, `database_pool_size`
+- Auth: `auth_attempts_total`, `auth_active_sessions`
+- Business: `checkins_total`, `badge_operations_total`, `visitor_operations_total`, `events_total`, `dds_assignments_total`, `security_alerts_total`
+- Node.js defaults: CPU, memory, event loop, GC stats (auto-collected)
 
 ### Environment Variables Required
 
