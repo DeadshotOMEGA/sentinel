@@ -1,15 +1,16 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: sentinel-postgres
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_DB: sentinel
       POSTGRES_USER: sentinel
       POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: sentinel
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,7 +18,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - sentinel-network
 
+  # Redis for rate limiting and caching
   redis:
     image: redis:7-alpine
     container_name: sentinel-redis
@@ -30,12 +34,71 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - sentinel-network
+
+  # Backend API (optional - for containerized development)
+  # To use: docker-compose --profile backend up -d
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: sentinel-backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://sentinel:sentinel@postgres:5432/sentinel?schema=public
+      REDIS_URL: redis://redis:6379
+      PORT: 3000
+      LOG_LEVEL: debug
+      # Generate these secrets: openssl rand -base64 32
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
+      API_KEY_SECRET: ${API_KEY_SECRET:-dev-api-key-secret-change-in-production}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-in-production}
+      SOCKET_IO_SECRET: ${SOCKET_IO_SECRET:-dev-socketio-secret-change-in-production}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+    profiles:
+      - backend
+
+  # pgAdmin (optional - database GUI)
+  # To use: docker-compose --profile tools up -d pgadmin
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sentinel-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sentinel.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - sentinel-network
+    profiles:
+      - tools
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
 
-# Note: You mentioned you already have these containers running via Docker Desktop.
-# This docker-compose.yml is for documentation/consistency.
-# If your existing containers match these settings, you can continue using them.
-# Otherwise, run: docker-compose up -d
+networks:
+  sentinel-network:
+    driver: bridge
+
+# Usage:
+# - Start core services (postgres, redis): docker-compose up -d
+# - Start with backend: docker-compose --profile backend up -d
+# - Start with tools: docker-compose --profile tools up -d
+# - Start everything: docker-compose --profile backend --profile tools up -d

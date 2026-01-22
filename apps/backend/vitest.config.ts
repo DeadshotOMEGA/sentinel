@@ -10,6 +10,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      clean: false, // Don't clean coverage folder before new run
       include: ['src/**/*.ts'],
       exclude: [
         'src/**/*.test.ts',
@@ -27,18 +29,7 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: false,
-      },
-    },
-  },
-  server: {
-    deps: {
-      // Externalize native modules to prevent Vite from trying to bundle them
-      inline: [/@sentinel\/.*/],
-      external: ['pg', '@prisma/adapter-pg', '@prisma/client', 'prisma', '.prisma/client'],
-    },
+    // Vitest 4: poolOptions removed - using fileParallelism for sequential execution
   },
   resolve: {
     alias: {
@@ -47,8 +38,5 @@ export default defineConfig({
       '@sentinel/database': path.resolve(__dirname, '../../packages/database/src'),
       '@sentinel/types': path.resolve(__dirname, '../../packages/types/src'),
     },
-  },
-  optimizeDeps: {
-    exclude: ['@prisma/client', '@prisma/adapter-pg', 'prisma', '.prisma/client'],
   },
 })

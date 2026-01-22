@@ -209,7 +209,7 @@ model Member {
   contract_start  DateTime?         @db.Date
   contract_end    DateTime?         @db.Date
   badge           Badge?            @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  bmq_enrollments bmq_enrollments[]
+  bmqEnrollments  BmqEnrollment[]
   checkins        Checkin[]
   division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   visitors        Visitor[]
@@ -319,39 +319,41 @@ model Visitor {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model bmq_courses {
-  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String            @db.VarChar(100)
-  start_date          DateTime          @db.Date
-  end_date            DateTime          @db.Date
-  training_start_time DateTime          @db.Time(6)
-  training_end_time   DateTime          @db.Time(6)
-  is_active           Boolean?          @default(true)
-  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime?         @default(now()) @db.Timestamptz(6)
-  training_days       String[]
-  bmq_enrollments     bmq_enrollments[]
+model BmqCourse {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String          @db.VarChar(100)
+  startDate         DateTime        @map("start_date") @db.Date
+  endDate           DateTime        @map("end_date") @db.Date
+  trainingStartTime DateTime        @map("training_start_time") @db.Time(6)
+  trainingEndTime   DateTime        @map("training_end_time") @db.Time(6)
+  isActive          Boolean         @default(true) @map("is_active")
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
+  trainingDays      String[]        @map("training_days")
+  bmqEnrollments    BmqEnrollment[]
 
-  @@index([start_date, end_date], map: "idx_bmq_courses_dates")
-  @@index([is_active], map: "idx_bmq_courses_is_active")
+  @@index([startDate, endDate], map: "idx_bmq_courses_dates")
+  @@index([isActive], map: "idx_bmq_courses_is_active")
+  @@map("bmq_courses")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model bmq_enrollments {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  member_id     String      @db.Uuid
-  bmq_course_id String      @db.Uuid
-  enrolled_at   DateTime?   @default(now()) @db.Timestamptz(6)
-  completed_at  DateTime?   @db.Timestamptz(6)
-  status        String?     @default("enrolled") @db.VarChar(20)
-  bmq_courses   bmq_courses @relation(fields: [bmq_course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  members       Member      @relation(fields: [member_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model BmqEnrollment {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId    String     @map("member_id") @db.Uuid
+  bmqCourseId String     @map("bmq_course_id") @db.Uuid
+  enrolledAt  DateTime   @default(now()) @map("enrolled_at") @db.Timestamptz(6)
+  completedAt DateTime?  @map("completed_at") @db.Timestamptz(6)
+  status      String     @default("enrolled") @db.VarChar(20)
+  bmqCourse   BmqCourse  @relation(fields: [bmqCourseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  member      Member     @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([member_id, bmq_course_id])
-  @@index([bmq_course_id], map: "idx_bmq_enrollments_course")
-  @@index([member_id], map: "idx_bmq_enrollments_member")
+  @@unique([memberId, bmqCourseId], map: "bmq_enrollments_member_id_bmq_course_id_key")
+  @@index([bmqCourseId], map: "idx_bmq_enrollments_course")
+  @@index([memberId], map: "idx_bmq_enrollments_member")
   @@index([status], map: "idx_bmq_enrollments_status")
+  @@map("bmq_enrollments")
 }
 
 model migrations {
@@ -380,26 +382,29 @@ model report_audit_log {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model report_settings {
-  key        String    @id @db.VarChar(100)
-  value      Json
-  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+model ReportSetting {
+  key       String   @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("report_settings")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model training_years {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name               String    @db.VarChar(50)
-  start_date         DateTime  @db.Date
-  end_date           DateTime  @db.Date
-  holiday_exclusions Json?     @default("[]")
-  day_exceptions     Json?     @default("[]")
-  is_current         Boolean?  @default(false)
-  created_at         DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+model TrainingYear {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String    @db.VarChar(50)
+  startDate         DateTime  @map("start_date") @db.Date
+  endDate           DateTime  @map("end_date") @db.Date
+  holidayExclusions Json      @default("[]") @map("holiday_exclusions")
+  dayExceptions     Json      @default("[]") @map("day_exceptions")
+  isCurrent         Boolean   @default(false) @map("is_current")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
 
-  @@index([is_current], map: "idx_training_years_is_current")
-  @@index([start_date], map: "idx_training_years_start_date")
+  @@index([isCurrent], map: "idx_training_years_is_current")
+  @@index([startDate], map: "idx_training_years_start_date")
+  @@map("training_years")
 }
 
 model DdsAssignment {
@@ -597,3 +602,30 @@ model Verification {
 
 // ApiKey model removed - now using better-auth API Key plugin
 // The plugin will create its own api_key table with proper schema
+
+// ============================================================================
+// Settings Table - Application configuration management
+// ============================================================================
+
+model Setting {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String   @unique @db.VarChar(100)
+  value       Json
+  category    String   @default("system") @db.VarChar(50)
+  description String?  @db.VarChar(500)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([key], map: "idx_settings_key")
+  @@index([category], map: "idx_settings_category")
+  @@map("settings")
+}
+
+model AlertConfig {
+  key       String   @id @db.VarChar(100)
+  config    Json
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@index([key], map: "idx_alert_configs_key")
+  @@map("alert_configs")
+}
