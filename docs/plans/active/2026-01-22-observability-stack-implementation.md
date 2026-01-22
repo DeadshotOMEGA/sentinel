@@ -206,11 +206,29 @@ Implement a complete observability stack including API documentation, error trac
 - All 23 resource contracts documented
 - Skip in test environment
 
+**Prometheus Metrics (Phase 2)** - Completed 2026-01-22:
+
+- prom-client 15.1.3 installed
+- `/metrics` endpoint returns Prometheus text format
+- HTTP metrics: requests_total, request_duration_seconds, active_connections
+- Database metrics: query_duration_seconds, pool_size, queries_total
+- Authentication metrics: attempts_total, active_sessions
+- Business metrics: check-ins, badges, visitors, events, DDS, security alerts
+- Metrics middleware with path normalization and slow request warnings
+
+**Grafana + Loki + Prometheus (Phase 3)** - Completed 2026-01-22:
+
+- Loki log aggregation (30-day retention)
+- Promtail log shipping from Docker containers
+- Prometheus metrics collection (15-day retention)
+- Grafana visualization with auto-provisioned datasources
+- 4 pre-built dashboards: Operations, Authentication, Database, Tracing
+- Docker Compose monitoring profile
+- All services with health checks
+
 ### What Needs Implementation ❌
 
-1. **Prometheus** - No metrics collection (basic `/metrics` endpoint exists but not Prometheus format)
-2. **Grafana + Loki** - No log aggregation or visualization
-3. **Sentry integration** - No `@sentry/node`, no error capturing (deferred)
+1. **Sentry integration** - No `@sentry/node`, no error capturing (Phase 4 - DEFERRED)
 
 ---
 
@@ -528,6 +546,7 @@ curl http://localhost:3000/metrics
 **Next Steps**:
 
 To test the metrics:
+
 1. Start the backend: `pnpm dev`
 2. Make some API requests
 3. View metrics: `curl http://localhost:3000/metrics`
@@ -535,7 +554,10 @@ To test the metrics:
 
 ---
 
-## Phase 3: Grafana + Loki + Prometheus Stack
+## Phase 3: Grafana + Loki + Prometheus Stack ✅ COMPLETE
+
+**Status**: Completed 2026-01-22
+**Commit**: `0f9a2f1` - feat(observability): implement Grafana + Loki + Prometheus stack (Phase 3)
 
 ### Objective
 
@@ -1552,18 +1574,27 @@ docker-compose up -d
    - ✅ Created metrics middleware for request tracking
    - ✅ Updated health.ts to serve Prometheus format
    - ✅ Mounted middleware in app.ts
+5. ✅ Committed Phase 2 (commit `2d32f99`)
+6. ✅ Implemented Phase 3 (Grafana + Loki + Prometheus) - 2026-01-22
+   - ✅ Created monitoring directory structure
+   - ✅ Created Loki configuration (30-day retention)
+   - ✅ Created Promtail configuration (Docker log shipping)
+   - ✅ Created Prometheus configuration (15-day retention)
+   - ✅ Created Grafana datasource provisioning
+   - ✅ Created 4 pre-built dashboards (Operations, Auth, Database, Tracing)
+   - ✅ Updated docker-compose.yml with monitoring services
+   - ✅ Updated .env.example with monitoring variables
+7. ✅ Committed Phase 3 (commit `0f9a2f1`)
 
 ### Next Steps 🔄
 
-5. Commit and test Phase 2 - **NEXT**
-6. Implement Phase 3 (Grafana + Loki)
-7. Commit and test Phase 3
-8. Skip Phase 4 (Sentry) - deferred
-9. End-to-end integration testing
-10. Update documentation
-11. Create PR to `rebuild` branch
-12. Code review
-13. Merge and deploy
+8. End-to-end integration testing - **NEXT**
+9. Update documentation (if needed)
+10. Create PR to `rebuild` branch
+11. Code review
+12. Merge and deploy
+
+**Phase 4 (Sentry)** - DEFERRED (can be added later following Phase 4 instructions)
 
 ---
 
