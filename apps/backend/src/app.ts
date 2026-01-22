@@ -34,6 +34,8 @@ import { requestLogger } from './middleware/request-logger.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
 import { apiLimiter } from './middleware/rate-limit.js'
 import { healthRouter } from './routes/health.js'
+import { swaggerRouter, redocRouter, openapiRouter } from './routes/swagger.js'
+import { swaggerAuth } from './middleware/swagger-auth.js'
 import { membersRouter } from './routes/members.js'
 import { checkinsRouter } from './routes/checkins.js'
 import { divisionsRouter } from './routes/divisions.js'
@@ -122,6 +124,14 @@ export function createApp() {
 
   // Health check routes (no auth required)
   app.use(healthRouter)
+
+  // API Documentation routes (conditional auth)
+  // Skip in test environment to avoid port conflicts
+  if (process.env.NODE_ENV !== 'test') {
+    app.use('/docs', swaggerAuth, swaggerRouter)
+    app.use('/redoc', swaggerAuth, redocRouter)
+    app.use('/openapi.json', openapiRouter)
+  }
 
   // Better-auth routes
   // This mounts the auth endpoints at /api/auth

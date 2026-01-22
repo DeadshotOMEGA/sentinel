@@ -95,7 +95,10 @@ export const listContract = c.router({
   getListItemUsage: {
     method: 'GET',
     path: '/api/lists/:listType/:id/usage',
-    pathParams: v.merge([ListTypeParamSchema, IdParamSchema]),
+    pathParams: v.object({
+      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
+    }),
     responses: {
       200: UsageCountResponseSchema,
       400: ErrorResponseSchema,
@@ -114,7 +117,10 @@ export const listContract = c.router({
   updateListItem: {
     method: 'PUT',
     path: '/api/lists/:listType/:id',
-    pathParams: v.merge([ListTypeParamSchema, IdParamSchema]),
+    pathParams: v.object({
+      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
+    }),
     body: UpdateListItemSchema,
     responses: {
       200: v.object({ item: ListItemResponseSchema }),
@@ -135,7 +141,10 @@ export const listContract = c.router({
   deleteListItem: {
     method: 'DELETE',
     path: '/api/lists/:listType/:id',
-    pathParams: v.merge([ListTypeParamSchema, IdParamSchema]),
+    pathParams: v.object({
+      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
+    }),
     body: c.type<undefined>(),
     responses: {
       204: c.type<void>(),

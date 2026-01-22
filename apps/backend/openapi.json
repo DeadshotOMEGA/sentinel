@@ -9,7 +9,6 @@
           "members"
         ],
         "parameters": [],
-        "operationId": "getMembers",
         "responses": {
           "200": {
             "description": "200"
@@ -32,7 +31,6 @@
           "members"
         ],
         "parameters": [],
-        "operationId": "createMember",
         "responses": {
           "201": {
             "description": "201"
@@ -69,7 +67,6 @@
             }
           }
         ],
-        "operationId": "getMemberById",
         "responses": {
           "200": {
             "description": "200"
@@ -104,7 +101,6 @@
             }
           }
         ],
-        "operationId": "updateMember",
         "responses": {
           "200": {
             "description": "200"
@@ -142,7 +138,6 @@
             }
           }
         ],
-        "operationId": "deleteMember",
         "responses": {
           "200": {
             "description": "200"
@@ -179,7 +174,6 @@
             }
           }
         ],
-        "operationId": "searchByServiceNumber",
         "responses": {
           "200": {
             "description": "200"
@@ -207,7 +201,6 @@
           "checkins"
         ],
         "parameters": [],
-        "operationId": "getCheckins",
         "responses": {
           "200": {
             "description": "200"
@@ -230,7 +223,6 @@
           "checkins"
         ],
         "parameters": [],
-        "operationId": "createCheckin",
         "responses": {
           "201": {
             "description": "201"
@@ -258,7 +250,6 @@
           "checkins"
         ],
         "parameters": [],
-        "operationId": "getPresenceStatus",
         "responses": {
           "200": {
             "description": "200"
@@ -289,7 +280,6 @@
             }
           }
         ],
-        "operationId": "getCheckinById",
         "responses": {
           "200": {
             "description": "200"
@@ -324,7 +314,6 @@
             }
           }
         ],
-        "operationId": "updateCheckin",
         "responses": {
           "200": {
             "description": "200"
@@ -359,7 +348,6 @@
             }
           }
         ],
-        "operationId": "deleteCheckin",
         "responses": {
           "200": {
             "description": "200"
@@ -387,7 +375,6 @@
           "checkins"
         ],
         "parameters": [],
-        "operationId": "bulkCreateCheckins",
         "responses": {
           "201": {
             "description": "201"
@@ -421,7 +408,6 @@
             }
           }
         ],
-        "operationId": "getMemberCheckins",
         "responses": {
           "200": {
             "description": "200"
@@ -449,7 +435,6 @@
           "divisions"
         ],
         "parameters": [],
-        "operationId": "getDivisions",
         "responses": {
           "200": {
             "description": "200"
@@ -472,7 +457,6 @@
           "divisions"
         ],
         "parameters": [],
-        "operationId": "createDivision",
         "responses": {
           "201": {
             "description": "201"
@@ -509,7 +493,6 @@
             }
           }
         ],
-        "operationId": "getDivisionById",
         "responses": {
           "200": {
             "description": "200"
@@ -544,7 +527,6 @@
             }
           }
         ],
-        "operationId": "updateDivision",
         "responses": {
           "200": {
             "description": "200"
@@ -582,7 +564,6 @@
             }
           }
         ],
-        "operationId": "deleteDivision",
         "responses": {
           "200": {
             "description": "200"
@@ -613,7 +594,6 @@
           "badges"
         ],
         "parameters": [],
-        "operationId": "getBadges",
         "responses": {
           "200": {
             "description": "200"
@@ -636,7 +616,6 @@
           "badges"
         ],
         "parameters": [],
-        "operationId": "createBadge",
         "responses": {
           "201": {
             "description": "201"
@@ -664,7 +643,6 @@
           "badges"
         ],
         "parameters": [],
-        "operationId": "getBadgeStats",
         "responses": {
           "200": {
             "description": "200"
@@ -695,7 +673,6 @@
             }
           }
         ],
-        "operationId": "getBadgeBySerialNumber",
         "responses": {
           "200": {
             "description": "200"
@@ -732,7 +709,6 @@
             }
           }
         ],
-        "operationId": "getBadgeById",
         "responses": {
           "200": {
             "description": "200"
@@ -767,7 +743,6 @@
             }
           }
         ],
-        "operationId": "updateBadge",
         "responses": {
           "200": {
             "description": "200"
@@ -805,7 +780,6 @@
             }
           }
         ],
-        "operationId": "deleteBadge",
         "responses": {
           "200": {
             "description": "200"
@@ -842,7 +816,6 @@
             }
           }
         ],
-        "operationId": "assignBadge",
         "responses": {
           "200": {
             "description": "200"
@@ -882,7 +855,6 @@
             }
           }
         ],
-        "operationId": "unassignBadge",
         "responses": {
           "200": {
             "description": "200"
@@ -910,7 +882,6 @@
           "events"
         ],
         "parameters": [],
-        "operationId": "getAvailableBadges",
         "responses": {
           "200": {
             "description": "200"
@@ -932,7 +903,6 @@
           "events"
         ],
         "parameters": [],
-        "operationId": "getEvents",
         "responses": {
           "200": {
             "description": "200"
@@ -952,7 +922,6 @@
           "events"
         ],
         "parameters": [],
-        "operationId": "createEvent",
         "responses": {
           "201": {
             "description": "201"
@@ -989,7 +958,6 @@
             }
           }
         ],
-        "operationId": "closeEvent",
         "responses": {
           "200": {
             "description": "200"
@@ -1023,7 +991,6 @@
             }
           }
         ],
-        "operationId": "getEventStats",
         "responses": {
           "200": {
             "description": "200"
@@ -1057,7 +1024,6 @@
             }
           }
         ],
-        "operationId": "getEventAttendees",
         "responses": {
           "200": {
             "description": "200"
@@ -1089,7 +1055,6 @@
             }
           }
         ],
-        "operationId": "addAttendee",
         "responses": {
           "201": {
             "description": "201"
@@ -1134,7 +1099,6 @@
             }
           }
         ],
-        "operationId": "assignBadgeToAttendee",
         "responses": {
           "200": {
             "description": "200"
@@ -1182,7 +1146,6 @@
             }
           }
         ],
-        "operationId": "unassignBadgeFromAttendee",
         "responses": {
           "200": {
             "description": "200"
@@ -1224,7 +1187,6 @@
             }
           }
         ],
-        "operationId": "updateAttendee",
         "responses": {
           "200": {
             "description": "200"
@@ -1267,7 +1229,6 @@
             }
           }
         ],
-        "operationId": "removeAttendee",
         "responses": {
           "200": {
             "description": "200"
@@ -1301,7 +1262,6 @@
             }
           }
         ],
-        "operationId": "getEventById",
         "responses": {
           "200": {
             "description": "200"
@@ -1333,7 +1293,6 @@
             }
           }
         ],
-        "operationId": "updateEvent",
         "responses": {
           "200": {
             "description": "200"
@@ -1368,7 +1327,6 @@
             }
           }
         ],
-        "operationId": "deleteEvent",
         "responses": {
           "200": {
             "description": "200"
@@ -1393,7 +1351,6 @@
           "visitors"
         ],
         "parameters": [],
-        "operationId": "getActiveVisitors",
         "responses": {
           "200": {
             "description": "200"
@@ -1415,7 +1372,6 @@
           "visitors"
         ],
         "parameters": [],
-        "operationId": "getVisitors",
         "responses": {
           "200": {
             "description": "200"
@@ -1438,7 +1394,6 @@
           "visitors"
         ],
         "parameters": [],
-        "operationId": "createVisitor",
         "responses": {
           "201": {
             "description": "201"
@@ -1472,7 +1427,6 @@
             }
           }
         ],
-        "operationId": "checkoutVisitor",
         "responses": {
           "200": {
             "description": "200"
@@ -1506,7 +1460,6 @@
             }
           }
         ],
-        "operationId": "getVisitorById",
         "responses": {
           "200": {
             "description": "200"
@@ -1538,7 +1491,6 @@
             }
           }
         ],
-        "operationId": "updateVisitor",
         "responses": {
           "200": {
             "description": "200"
@@ -1566,7 +1518,6 @@
           "tags"
         ],
         "parameters": [],
-        "operationId": "getLockupHolder",
         "responses": {
           "200": {
             "description": "200"
@@ -1588,7 +1539,6 @@
           "tags"
         ],
         "parameters": [],
-        "operationId": "transferLockupTag",
         "responses": {
           "200": {
             "description": "200"
@@ -1616,7 +1566,6 @@
           "security-alerts"
         ],
         "parameters": [],
-        "operationId": "getActiveAlerts",
         "responses": {
           "200": {
             "description": "200"
@@ -1638,7 +1587,6 @@
           "security-alerts"
         ],
         "parameters": [],
-        "operationId": "createAlert",
         "responses": {
           "201": {
             "description": "201"
@@ -1672,7 +1620,6 @@
             }
           }
         ],
-        "operationId": "acknowledgeAlert",
         "responses": {
           "200": {
             "description": "200"
@@ -1709,7 +1656,6 @@
             }
           }
         ],
-        "operationId": "getAlertById",
         "responses": {
           "200": {
             "description": "200"
@@ -1734,7 +1680,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "getCurrentDds",
         "responses": {
           "200": {
             "description": "200"
@@ -1756,7 +1701,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "checkDdsExists",
         "responses": {
           "200": {
             "description": "200"
@@ -1778,7 +1722,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "getAuditLog",
         "responses": {
           "200": {
             "description": "200"
@@ -1809,7 +1752,6 @@
             }
           }
         ],
-        "operationId": "acceptDds",
         "responses": {
           "200": {
             "description": "200"
@@ -1840,7 +1782,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "assignDds",
         "responses": {
           "200": {
             "description": "200"
@@ -1871,7 +1812,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "transferDds",
         "responses": {
           "200": {
             "description": "200"
@@ -1902,7 +1842,6 @@
           "dds"
         ],
         "parameters": [],
-        "operationId": "releaseDds",
         "responses": {
           "200": {
             "description": "200"
@@ -1930,7 +1869,6 @@
           "lockup"
         ],
         "parameters": [],
-        "operationId": "getPresentForLockup",
         "responses": {
           "200": {
             "description": "200"
@@ -1961,7 +1899,6 @@
             }
           }
         ],
-        "operationId": "checkLockupAuth",
         "responses": {
           "200": {
             "description": "200"
@@ -1995,7 +1932,6 @@
             }
           }
         ],
-        "operationId": "executeLockup",
         "responses": {
           "200": {
             "description": "200"
@@ -2014,12 +1950,2368 @@
           }
         }
       }
+    },
+    "/api/enums/visit-types": {
+      "get": {
+        "description": "Returns all visit types with usage counts",
+        "summary": "List all visit types",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new visit type (admin only)",
+        "summary": "Create visit type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/visit-types/{id}": {
+      "put": {
+        "description": "Update an existing visit type (admin only)",
+        "summary": "Update visit type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a visit type if not in use (admin only)",
+        "summary": "Delete visit type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/member-statuses": {
+      "get": {
+        "description": "Returns all member statuses with usage counts",
+        "summary": "List all member statuses",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new member status (admin only)",
+        "summary": "Create member status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/member-statuses/{id}": {
+      "put": {
+        "description": "Update an existing member status (admin only)",
+        "summary": "Update member status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a member status if not in use (admin only)",
+        "summary": "Delete member status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/member-types": {
+      "get": {
+        "description": "Returns all member types with usage counts",
+        "summary": "List all member types",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new member type (admin only)",
+        "summary": "Create member type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/member-types/{id}": {
+      "put": {
+        "description": "Update an existing member type (admin only)",
+        "summary": "Update member type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a member type if not in use (admin only)",
+        "summary": "Delete member type",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/badge-statuses": {
+      "get": {
+        "description": "Returns all badge statuses with usage counts",
+        "summary": "List all badge statuses",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new badge status (admin only)",
+        "summary": "Create badge status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/enums/badge-statuses/{id}": {
+      "put": {
+        "description": "Update an existing badge status (admin only)",
+        "summary": "Update badge status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a badge status if not in use (admin only)",
+        "summary": "Delete badge status",
+        "tags": [
+          "enums"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "description": "Get list of all application settings with optional category filtering",
+        "summary": "List all settings",
+        "tags": [
+          "settings"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new application setting (admin only)",
+        "summary": "Create new setting",
+        "tags": [
+          "settings"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/settings/{key}": {
+      "get": {
+        "description": "Retrieve a single setting by its unique key",
+        "summary": "Get setting by key",
+        "tags": [
+          "settings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update an existing setting value (admin only)",
+        "summary": "Update setting",
+        "tags": [
+          "settings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a setting by its unique key (admin only)",
+        "summary": "Delete setting",
+        "tags": [
+          "settings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-users": {
+      "get": {
+        "description": "Get list of all admin users including disabled accounts. Requires admin or developer role.",
+        "summary": "List all admin users",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new admin user with role-based access control. Admins cannot create developer accounts (privilege escalation protection).",
+        "summary": "Create new admin user",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-users/{id}": {
+      "get": {
+        "description": "Retrieve admin user details by ID. Requires admin or developer role.",
+        "summary": "Get admin user by ID",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update admin user details. Cannot modify users with higher privileges than actor. Role changes tracked in audit log.",
+        "summary": "Update admin user",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Permanently delete admin user (developer only). Cannot delete yourself or the last active developer account.",
+        "summary": "Delete admin user",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-users/{id}/reset-password": {
+      "post": {
+        "description": "Reset password for admin user (admin-initiated). Cannot reset passwords for higher-privilege users.",
+        "summary": "Reset admin user password",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-users/{id}/disable": {
+      "post": {
+        "description": "Soft delete admin user account by disabling. Cannot disable yourself or the last active developer account.",
+        "summary": "Disable admin user",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-users/{id}/enable": {
+      "post": {
+        "description": "Re-enable a disabled admin user account. Cannot enable users with higher privileges than actor.",
+        "summary": "Enable admin user",
+        "tags": [
+          "admin-users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lists/{listType}": {
+      "get": {
+        "description": "Get all items for a given list type (event_role, rank, mess, moc) with usage counts. Items are ordered by displayOrder and name.",
+        "summary": "List all items for a list type",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new list item with a unique code. Code is automatically normalized to lowercase with underscores. If displayOrder is not provided, item is appended to the end.",
+        "summary": "Create a new list item",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lists/{listType}/reorder": {
+      "put": {
+        "description": "Update the display order of list items. Provide an array of item IDs in the desired order. displayOrder will be set sequentially (1, 2, 3, ...).",
+        "summary": "Reorder list items",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lists/{listType}/{id}/usage": {
+      "get": {
+        "description": "Get the number of records currently using this list item. Used to prevent deletion of items in use.",
+        "summary": "Get usage count for a list item",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lists/{listType}/{id}": {
+      "put": {
+        "description": "Update an existing list item. All fields are optional. If updating code, uniqueness is checked within the list type.",
+        "summary": "Update a list item",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a list item. System items cannot be deleted. Items currently in use cannot be deleted - reassign or delete the records using this item first.",
+        "summary": "Delete a list item",
+        "tags": [
+          "lists"
+        ],
+        "parameters": [
+          {
+            "name": "listType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/training-years": {
+      "get": {
+        "description": "Get all training years ordered by start date (newest first)",
+        "summary": "List all training years",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new training year with holiday exclusions and day exceptions. Admin role required.",
+        "summary": "Create training year",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/training-years/current": {
+      "get": {
+        "description": "Get the training year marked as current",
+        "summary": "Get current training year",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/training-years/{id}": {
+      "get": {
+        "description": "Get a specific training year by its unique identifier",
+        "summary": "Get training year by ID",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update an existing training year. Admin role required.",
+        "summary": "Update training year",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a training year. Cannot delete the current training year. Admin role required.",
+        "summary": "Delete training year",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/training-years/{id}/set-current": {
+      "put": {
+        "description": "Mark a training year as current. Automatically unsets other current years via database trigger. Admin role required.",
+        "summary": "Set current training year",
+        "tags": [
+          "training-years"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/bmq-courses": {
+      "get": {
+        "description": "Get all BMQ courses with optional active filter. Includes enrollment count for each course.",
+        "summary": "List all BMQ courses",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new BMQ course with training schedule. Admin role required.",
+        "summary": "Create BMQ course",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/bmq-courses/members/{memberId}/enrollments": {
+      "get": {
+        "description": "Get all BMQ course enrollments for a specific member with course details",
+        "summary": "Get member BMQ enrollments",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/bmq-courses/{id}": {
+      "get": {
+        "description": "Get a specific BMQ course by its unique identifier with enrollment count",
+        "summary": "Get BMQ course by ID",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update an existing BMQ course. Admin role required.",
+        "summary": "Update BMQ course",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a BMQ course and all associated enrollments. Admin role required.",
+        "summary": "Delete BMQ course",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/bmq-courses/{courseId}/enrollments": {
+      "get": {
+        "description": "Get all enrollments for a BMQ course with member details",
+        "summary": "Get course enrollments",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Enroll a member in a BMQ course. Prevents duplicate enrollments. Admin role required.",
+        "summary": "Enroll member in course",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/bmq-courses/enrollments/{id}": {
+      "put": {
+        "description": "Update enrollment status (enrolled, completed, withdrawn). Requires completion date when marking completed. Admin role required.",
+        "summary": "Update enrollment status",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Remove a member enrollment from a BMQ course. Admin role required.",
+        "summary": "Delete enrollment",
+        "tags": [
+          "bmq-courses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/report-settings": {
+      "get": {
+        "description": "Get all report configuration settings with their values and timestamps",
+        "summary": "Get all report settings",
+        "tags": [
+          "report-settings"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update multiple report settings in a single transaction. Admin role required.",
+        "summary": "Bulk update report settings",
+        "tags": [
+          "report-settings"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/report-settings/{key}": {
+      "get": {
+        "description": "Get a specific report setting by its key (schedule, working_hours, thresholds, member_handling, formatting)",
+        "summary": "Get setting by key",
+        "tags": [
+          "report-settings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a specific report setting. Creates the setting if it does not exist. Admin role required.",
+        "summary": "Update setting by key",
+        "tags": [
+          "report-settings"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/alert-configs": {
+      "get": {
+        "description": "Get all security alert rule configurations",
+        "summary": "Get all alert configurations",
+        "tags": [
+          "alert-configs"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update multiple alert configurations in a single transaction. Admin role required.",
+        "summary": "Bulk update alert configurations",
+        "tags": [
+          "alert-configs"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/alert-configs/{key}": {
+      "get": {
+        "description": "Get a specific alert configuration by its key (badge_disabled, badge_unknown, inactive_member, etc.)",
+        "summary": "Get configuration by key",
+        "tags": [
+          "alert-configs"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "put": {
+        "description": "Update a specific alert configuration. Creates the configuration if it does not exist. Admin role required.",
+        "summary": "Update configuration by key",
+        "tags": [
+          "alert-configs"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/daily-checkin": {
+      "post": {
+        "description": "Generate a summary of current day check-ins including present FT staff, absent FT staff, and present reserve members, with optional filtering by division and member type",
+        "summary": "Generate daily check-in report",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/training-night-attendance": {
+      "post": {
+        "description": "Generate attendance report for training nights over a specified period, with attendance percentages, trends, threshold flags, and BMQ badges",
+        "summary": "Generate training night attendance report",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/bmq-attendance": {
+      "post": {
+        "description": "Generate attendance report for a specific BMQ course, showing enrollment status and attendance percentages for all enrolled members",
+        "summary": "Generate BMQ attendance report",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/personnel-roster": {
+      "post": {
+        "description": "Generate complete personnel roster with member details, optionally filtered by division and sorted by division/rank or alphabetically",
+        "summary": "Generate personnel roster",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/visitor-summary": {
+      "post": {
+        "description": "Generate summary of all visitors over a date range, with optional filtering by visit type and organization, including visit duration statistics",
+        "summary": "Generate visitor summary",
+        "tags": [
+          "reports"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/clear-all": {
+      "post": {
+        "description": "Clear all data from members, checkins, visitors, badges, events, event_attendees, and event_checkins tables. Requires admin role.",
+        "summary": "Clear all data",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/clear-table": {
+      "post": {
+        "description": "Clear all data from a specific table. Requires admin role.",
+        "summary": "Clear specific table",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/reset": {
+      "post": {
+        "description": "Clear all data and reset cached services to initial state. Requires admin role.",
+        "summary": "Reset database and services",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/simulate/defaults": {
+      "get": {
+        "description": "Get default parameters for attendance simulation. Requires admin role.",
+        "summary": "Get simulation defaults",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/simulate/precheck": {
+      "post": {
+        "description": "Validate simulation parameters and estimate impact. Requires admin role.",
+        "summary": "Precheck simulation",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/simulate": {
+      "post": {
+        "description": "Generate realistic check-in data over a date range. Requires admin role.",
+        "summary": "Run attendance simulation",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/backdate-members": {
+      "post": {
+        "description": "Set all member creation dates to a target date for testing. Requires admin role.",
+        "summary": "Backdate member creation",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/scenarios": {
+      "get": {
+        "description": "Get list of available database seeding scenarios. Requires admin role.",
+        "summary": "List seeding scenarios",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          }
+        }
+      }
+    },
+    "/api/dev-tools/seed-scenario": {
+      "post": {
+        "description": "Populate database with a predefined scenario (empty, minimal, standard, realistic, stress_test). Requires admin role.",
+        "summary": "Seed database scenario",
+        "tags": [
+          "dev-tools"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev/members": {
+      "get": {
+        "description": "Get all active members with badge serial numbers and current presence status. Disabled in production.",
+        "summary": "Get all members with presence",
+        "tags": [
+          "dev"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev/checkins/clear-all": {
+      "delete": {
+        "description": "Create check-out records for all currently present members. Broadcasts presence update via WebSocket. Disabled in production.",
+        "summary": "Clear all current check-ins",
+        "tags": [
+          "dev"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dev/mock-scan": {
+      "post": {
+        "description": "Simulate an RFID badge scan with the same behavior as real hardware scans (creates checkin records, broadcasts WebSocket updates). Disabled in production.",
+        "summary": "Mock RFID badge scan",
+        "tags": [
+          "dev"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
     }
   },
   "info": {
     "title": "Sentinel API",
-    "version": "1.0.0",
-    "description": "RFID-based attendance tracking system for HMCS Chippawa naval reserve unit"
+    "version": "2.0.0",
+    "description": "RFID-based attendance tracking system for HMCS Chippawa naval reserve unit. Provides comprehensive APIs for member management, badge assignment, attendance tracking, visitor management, security alerts, reporting, and administrative operations."
   },
   "servers": [
     {
@@ -2071,6 +4363,62 @@
     {
       "name": "lockup",
       "description": "Building lockup operations"
+    },
+    {
+      "name": "visit-types",
+      "description": "Visit type enumeration and lookup"
+    },
+    {
+      "name": "member-statuses",
+      "description": "Member status enumeration (Active, Inactive, etc.)"
+    },
+    {
+      "name": "member-types",
+      "description": "Member type enumeration (NCM, Officer, etc.)"
+    },
+    {
+      "name": "badge-statuses",
+      "description": "Badge status enumeration (Assigned, Disabled, etc.)"
+    },
+    {
+      "name": "settings",
+      "description": "System configuration and settings management"
+    },
+    {
+      "name": "admin-users",
+      "description": "Administrative user and role management"
+    },
+    {
+      "name": "lists",
+      "description": "Consolidated list endpoints for dropdowns and references"
+    },
+    {
+      "name": "training-years",
+      "description": "Training year configuration and periods"
+    },
+    {
+      "name": "bmq-courses",
+      "description": "Basic Military Qualification course management"
+    },
+    {
+      "name": "report-settings",
+      "description": "Report configuration and parameters"
+    },
+    {
+      "name": "alert-configs",
+      "description": "Security alert rule configuration"
+    },
+    {
+      "name": "reports",
+      "description": "Report generation and data export"
+    },
+    {
+      "name": "dev-tools",
+      "description": "Development utilities (database reset, simulation, scenarios)"
+    },
+    {
+      "name": "dev",
+      "description": "Development endpoints for testing and debugging"
     }
   ],
   "components": {
