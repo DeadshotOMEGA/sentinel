@@ -2,21 +2,18 @@
 // This service generates realistic test data for development and testing
 // Requires faker library
 
-import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 
 export class SimulationService {
-  private prisma: PrismaClient
-
-  constructor(prismaClient?: PrismaClient) {
-    this.prisma = prismaClient || getPrismaClient()
+  constructor() {
+    getPrismaClient()
   }
 
   /**
    * Generate test members
    * TODO Phase 3: Implement with faker library
    */
-  async generateMembers(count: number, divisionId: string): Promise<any[]> {
+  async generateMembers(_count: number, _divisionId: string): Promise<any[]> {
     throw new Error('Member generation not yet implemented (Phase 3)')
   }
 
@@ -25,10 +22,10 @@ export class SimulationService {
    * TODO Phase 3: Implement realistic checkin patterns
    */
   async generateCheckins(
-    memberIds: string[],
-    startDate: Date,
-    endDate: Date,
-    pattern?: string
+    _memberIds: string[],
+    _startDate: Date,
+    _endDate: Date,
+    _pattern?: string
   ): Promise<any> {
     throw new Error('Checkin generation not yet implemented (Phase 3)')
   }
@@ -37,7 +34,7 @@ export class SimulationService {
    * Generate test badges
    * TODO Phase 3: Implement badge generation
    */
-  async generateBadges(count: number): Promise<any[]> {
+  async generateBadges(_count: number): Promise<any[]> {
     throw new Error('Badge generation not yet implemented (Phase 3)')
   }
 
@@ -45,7 +42,7 @@ export class SimulationService {
    * Generate test events
    * TODO Phase 3: Implement event generation
    */
-  async generateEvents(count: number): Promise<any[]> {
+  async generateEvents(_count: number): Promise<any[]> {
     throw new Error('Event generation not yet implemented (Phase 3)')
   }
 
@@ -61,7 +58,7 @@ export class SimulationService {
    * Run full simulation
    * TODO Phase 3: Implement complete simulation workflow
    */
-  async runSimulation(config: any): Promise<any> {
+  async runSimulation(_config: any): Promise<any> {
     throw new Error('Simulation not yet implemented (Phase 3)')
   }
 }

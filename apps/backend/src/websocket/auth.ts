@@ -1,5 +1,4 @@
 import { Socket } from 'socket.io'
-import { auth } from '../lib/auth.js'
 import { logger } from '../lib/logger.js'
 
 /**

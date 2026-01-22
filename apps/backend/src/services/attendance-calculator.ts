@@ -17,9 +17,6 @@ interface TrendIndicator {
   delta?: number
 }
 
-interface ThresholdFlag {
-  type: 'none' | 'warning' | 'critical'
-}
 
 interface HolidayExclusion {
   start: Date
@@ -111,7 +108,7 @@ export function getTrainingNights(
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
 export async function calculateTrainingNightAttendance(
-  params: AttendanceParams
+  _params: AttendanceParams
 ): Promise<AttendanceCalculation> {
   throw new Error('Training night attendance calculation not yet implemented (Phase 3)')
 }
@@ -121,10 +118,10 @@ export async function calculateTrainingNightAttendance(
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
 export async function calculateTrend(
-  memberId: string,
-  currentPeriodStart: Date,
-  currentPeriodEnd: Date,
-  params: Omit<AttendanceParams, 'memberId' | 'periodStart' | 'periodEnd'>
+  _memberId: string,
+  _currentPeriodStart: Date,
+  _currentPeriodEnd: Date,
+  _params: Omit<AttendanceParams, 'memberId' | 'periodStart' | 'periodEnd'>
 ): Promise<TrendIndicator> {
   throw new Error('Attendance trend calculation not yet implemented (Phase 3)')
 }
@@ -134,10 +131,10 @@ export async function calculateTrend(
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
 export async function getTrainingNightCheckins(
-  memberId: string,
-  trainingNights: Date[],
-  trainingStartTime: string,
-  trainingEndTime: string
+  _memberId: string,
+  _trainingNights: Date[],
+  _trainingStartTime: string,
+  _trainingEndTime: string
 ): Promise<Date[]> {
   throw new Error('Training night checkins query not yet implemented (Phase 3)')
 }

@@ -16,7 +16,7 @@ import type { Checkin, CheckinDirection, MemberWithDivision } from '@sentinel/ty
 // TODO Phase 3: Implement kiosk name lookup
 // import { getKioskName } from '../utils/kiosk-names.js'
 
-import { broadcastCheckin, broadcastPresenceUpdate } from '../websocket/broadcast.js'
+import { broadcastCheckin } from '../websocket/broadcast.js'
 
 interface CheckinOptions {
   timestamp?: Date

@@ -129,10 +129,6 @@ export class PresenceService {
   private checkinRepo: CheckinRepository
   private visitorRepo: VisitorRepository
 
-  // TODO Phase 3: Redis caching
-  private readonly MEMBER_DIRECTION_KEY_PREFIX = 'member:direction:'
-  private readonly DIRECTION_CACHE_TTL = 86400 // 24 hours
-
   constructor(prismaClient?: PrismaClient) {
     const prisma = prismaClient || getPrismaClient()
     this.checkinRepo = new CheckinRepository(prisma)
@@ -253,12 +249,12 @@ export class PresenceService {
    * Get member's last known direction from Redis cache
    * Prepares for ARCH-01 N+1 optimization in Phase 3
    *
-   * @param memberId - The member's UUID
+   * @param _memberId - The member's UUID
    * @returns The last known direction ('in' or 'out'), or null if not cached
    */
-  async getMemberDirection(memberId: string): Promise<CheckinDirection | null> {
+  async getMemberDirection(_memberId: string): Promise<CheckinDirection | null> {
     // TODO Phase 3: Implement Redis caching
-    // const key = `${this.MEMBER_DIRECTION_KEY_PREFIX}${memberId}`
+    // const key = `${this._MEMBER_DIRECTION_KEY_PREFIX}${_memberId}`
     // const direction = await redis.get(key)
     // return direction as CheckinDirection | null
     return null
@@ -268,27 +264,30 @@ export class PresenceService {
    * Set member's direction in Redis cache
    * Prepares for ARCH-01 N+1 optimization in Phase 3
    *
-   * @param memberId - The member's UUID
-   * @param direction - The direction to cache ('in' or 'out')
+   * @param _memberId - The member's UUID
+   * @param _direction - The direction to cache ('in' or 'out')
    */
-  async setMemberDirection(memberId: string, direction: CheckinDirection): Promise<void> {
+  async setMemberDirection(_memberId: string, _direction: CheckinDirection): Promise<void> {
     // TODO Phase 3: Implement Redis caching
-    // const key = `${this.MEMBER_DIRECTION_KEY_PREFIX}${memberId}`
-    // await redis.setex(key, this.DIRECTION_CACHE_TTL, direction)
-    // logger.debug('Member direction cached', { memberId, direction })
+    // const MEMBER_DIRECTION_KEY_PREFIX = 'member:direction:'
+    // const DIRECTION_CACHE_TTL = 86400 // 24 hours
+    // const key = `${MEMBER_DIRECTION_KEY_PREFIX}${_memberId}`
+    // await redis.setex(key, DIRECTION_CACHE_TTL, _direction)
+    // logger.debug('Member direction cached', { memberId: _memberId, direction: _direction })
   }
 
   /**
    * Clear member's direction from cache
    * Used when direction becomes stale or during cache invalidation
    *
-   * @param memberId - The member's UUID
+   * @param _memberId - The member's UUID
    */
-  async clearMemberDirection(memberId: string): Promise<void> {
+  async clearMemberDirection(_memberId: string): Promise<void> {
     // TODO Phase 3: Implement Redis caching
-    // const key = `${this.MEMBER_DIRECTION_KEY_PREFIX}${memberId}`
+    // const MEMBER_DIRECTION_KEY_PREFIX = 'member:direction:'
+    // const key = `${MEMBER_DIRECTION_KEY_PREFIX}${_memberId}`
     // await redis.del(key)
-    // logger.debug('Member direction cache cleared', { memberId })
+    // logger.debug('Member direction cache cleared', { memberId: _memberId })
   }
 }
 

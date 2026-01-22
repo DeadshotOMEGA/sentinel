@@ -154,12 +154,9 @@ export class LockupService {
     // Process visitor checkouts
     for (const visitor of visitors) {
       try {
-        const checkedOutVisitor = await this.visitorRepo.checkout(visitor.id)
+        await this.visitorRepo.checkout(visitor.id)
 
         // TODO Phase 3: Broadcast visitor signout
-        // if (checkedOutVisitor.checkOutTime) {
-        //   broadcastVisitorSignout({ ... })
-        // }
 
         checkedOutVisitors.push(visitor.id)
       } catch (error) {

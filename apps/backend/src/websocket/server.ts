@@ -1,6 +1,5 @@
 import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
-import rateLimit from 'express-rate-limit'
 import { logger } from '../lib/logger.js'
 import { authenticateSocket } from './auth.js'
 import { registerSocketHandlers } from './handlers.js'
@@ -31,14 +30,14 @@ export function initializeWebSocketServer(httpServer: HTTPServer): SocketIOServe
   // Register Socket.IO instance for broadcasting
   setSocketIOServer(io)
 
-  // Rate limiting for connections (per IP)
-  const connectionLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // 10 connections per minute per IP
-    message: 'Too many WebSocket connections from this IP',
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
+  // TODO Phase 3: Apply rate limiting for connections (per IP)
+  // const connectionLimiter = rateLimit({
+  //   windowMs: 60 * 1000, // 1 minute
+  //   max: 10, // 10 connections per minute per IP
+  //   message: 'Too many WebSocket connections from this IP',
+  //   standardHeaders: true,
+  //   legacyHeaders: false,
+  // })
 
   // Authentication middleware
   io.use(authenticateSocket)
