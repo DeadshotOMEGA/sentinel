@@ -198,7 +198,7 @@ export const devRouter = s.router(devContract, {
       const badge = await prisma.badge.findUnique({
         where: { serialNumber: config.serialNumber },
         include: {
-          assignedMember: {
+          members: {
             include: {
               division: {
                 select: {
@@ -212,6 +212,7 @@ export const devRouter = s.router(devContract, {
                 take: 1,
               },
             },
+            take: 1,
           },
         },
       })
@@ -236,7 +237,7 @@ export const devRouter = s.router(devContract, {
         }
       }
 
-      if (!badge.assignedMember) {
+      if (!badge.members || badge.members.length === 0) {
         return {
           status: 400 as const,
           body: {
@@ -246,7 +247,7 @@ export const devRouter = s.router(devContract, {
         }
       }
 
-      const member = badge.assignedMember
+      const member = badge.members[0]
 
       // Determine direction (toggle between in/out)
       const lastCheckin = member.checkins[0]

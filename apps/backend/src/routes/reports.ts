@@ -349,13 +349,13 @@ export const reportsRouter = s.router(reportContract, {
               name: true,
             },
           },
-          bmq_enrollments: {
+          bmqEnrollments: {
             where: {
               status: 'enrolled',
             },
             take: 1,
             orderBy: {
-              enrolled_at: 'desc',
+              enrolledAt: 'desc',
             },
           },
           checkins: {
@@ -401,10 +401,10 @@ export const reportsRouter = s.router(reportContract, {
             trend: 'stable' as const,
             delta: 0,
           },
-          isBMQEnrolled: member.bmq_enrollments.length > 0 && config.showBMQBadge,
+          isBMQEnrolled: member.bmqEnrollments.length > 0 && config.showBMQBadge,
           enrollmentDate:
-            member.bmq_enrollments.length > 0 && member.bmq_enrollments[0]
-              ? member.bmq_enrollments[0].enrolled_at.toISOString()
+            member.bmqEnrollments.length > 0 && member.bmqEnrollments[0]
+              ? member.bmqEnrollments[0].enrolledAt.toISOString()
               : new Date().toISOString(),
         }
       })
@@ -441,7 +441,7 @@ export const reportsRouter = s.router(reportContract, {
       const config: BMQReportConfig = body
 
       // Get BMQ course
-      const course = await prisma.bmq_courses.findUnique({
+      const course = await prisma.bmqCourse.findUnique({
         where: { id: config.courseId },
       })
 
@@ -461,7 +461,7 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Get enrollments with member data
-      const enrollments = await prisma.bmq_enrollments.findMany({
+      const enrollments = await prisma.bmqEnrollment.findMany({
         where: enrollmentWhere,
         include: {
           members: {
@@ -475,8 +475,8 @@ export const reportsRouter = s.router(reportContract, {
               checkins: {
                 where: {
                   timestamp: {
-                    gte: course.start_date,
-                    lte: course.end_date,
+                    gte: course.startDate,
+                    lte: course.endDate,
                   },
                 },
               },
@@ -495,7 +495,7 @@ export const reportsRouter = s.router(reportContract, {
         id: string
         member_id: string
         bmq_course_id: string
-        enrolled_at: Date
+        enrolledAt: Date
         completed_at: Date | null
         status: string
         members: {
@@ -539,7 +539,7 @@ export const reportsRouter = s.router(reportContract, {
           attendance,
           enrollment: {
             id: enrollment.id,
-            enrolledAt: enrollment.enrolled_at.toISOString(),
+            enrolledAt: enrollment.enrolledAt.toISOString(),
             completedAt: enrollment.completed_at?.toISOString() || null,
             status: enrollment.status,
           },

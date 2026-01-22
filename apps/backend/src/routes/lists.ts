@@ -1,30 +1,32 @@
-import { initServer } from '@ts-rest/express'
-import { listContract } from '@sentinel/contracts'
-import type { ListType, ListItem } from '@sentinel/types'
-import { ListItemRepository } from '../repositories/list-item-repository.js'
-import { getPrismaClient } from '../lib/database.js'
-import type { ListItemResponse } from '@sentinel/contracts'
+import { initServer } from "@ts-rest/express";
+import { listContract } from "@sentinel/contracts";
+import type { ListItem } from "@sentinel/types";
+import { ListItemRepository } from "../repositories/list-item-repository.js";
+import { getPrismaClient } from "../lib/database.js";
+import type { ListItemResponse } from "@sentinel/contracts";
 
-const s = initServer()
+const s = initServer();
 
 /**
  * Valid list types (from API schema)
  */
-const VALID_LIST_TYPES = ['event_role', 'rank', 'mess', 'moc'] as const
+const VALID_LIST_TYPES = ["event_role", "rank", "mess", "moc"] as const;
 
 /**
  * Convert repository ListItem to API response format
  */
 function toApiFormat(item: ListItem, usageCount: number): ListItemResponse {
   // Ensure listType is one of the valid API list types
-  const listType = item.listType
-  if (!VALID_LIST_TYPES.includes(listType as typeof VALID_LIST_TYPES[number])) {
-    throw new Error(`Invalid list type: ${listType}`)
+  const listType = item.listType;
+  if (
+    !VALID_LIST_TYPES.includes(listType as (typeof VALID_LIST_TYPES)[number])
+  ) {
+    throw new Error(`Invalid list type: ${listType}`);
   }
 
   return {
     id: item.id,
-    listType: listType as typeof VALID_LIST_TYPES[number],
+    listType: listType as (typeof VALID_LIST_TYPES)[number],
     code: item.code,
     name: item.name,
     displayOrder: item.displayOrder,
@@ -33,7 +35,7 @@ function toApiFormat(item: ListItem, usageCount: number): ListItemResponse {
     usageCount,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
-  }
+  };
 }
 
 /**
@@ -48,31 +50,34 @@ export const listsRouter = s.router(listContract, {
    */
   getListItems: async ({ params }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
-      const items = await listItemRepo.findByType(params.listType)
+      const listItemRepo = new ListItemRepository(getPrismaClient());
+      const items = await listItemRepo.findByType(params.listType);
 
       // Add usage count to each item
       const itemsWithUsage = await Promise.all(
         items.map(async (item) => {
-          const usageCount = await listItemRepo.getUsageCount(item.id)
-          return toApiFormat(item, usageCount)
-        })
-      )
+          const usageCount = await listItemRepo.getUsageCount(item.id);
+          return toApiFormat(item, usageCount);
+        }),
+      );
 
       return {
         status: 200 as const,
         body: {
           items: itemsWithUsage,
         },
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to fetch list items',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch list items",
         },
-      }
+      };
     }
   },
 
@@ -82,18 +87,21 @@ export const listsRouter = s.router(listContract, {
    */
   createListItem: async ({ params, body }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
+      const listItemRepo = new ListItemRepository(getPrismaClient());
 
       // Check for duplicate code (unique within list type)
-      const existing = await listItemRepo.findByTypeAndCode(params.listType, body.code)
+      const existing = await listItemRepo.findByTypeAndCode(
+        params.listType,
+        body.code,
+      );
       if (existing) {
         return {
           status: 409 as const,
           body: {
-            error: 'CONFLICT',
+            error: "CONFLICT",
             message: `A list item with code "${body.code}" already exists in ${params.listType}`,
           },
-        }
+        };
       }
 
       // Create the item
@@ -105,25 +113,28 @@ export const listsRouter = s.router(listContract, {
         displayOrder: body.displayOrder,
         description: body.description,
         isSystem: body.isSystem,
-      })
+      });
 
       // Get usage count (will be 0 for new item)
-      const usageCount = 0
+      const usageCount = 0;
 
       return {
         status: 201 as const,
         body: {
           item: toApiFormat(item, usageCount),
         },
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to create list item',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to create list item",
         },
-      }
+      };
     }
   },
 
@@ -133,26 +144,29 @@ export const listsRouter = s.router(listContract, {
    */
   reorderListItems: async ({ params, body }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
+      const listItemRepo = new ListItemRepository(getPrismaClient());
 
       // Reorder the items
-      await listItemRepo.reorder(params.listType, body.itemIds)
+      await listItemRepo.reorder(params.listType, body.itemIds);
 
       return {
         status: 200 as const,
         body: {
           success: true,
-          message: 'List items reordered successfully',
+          message: "List items reordered successfully",
         },
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to reorder list items',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to reorder list items",
         },
-      }
+      };
     }
   },
 
@@ -162,37 +176,40 @@ export const listsRouter = s.router(listContract, {
    */
   getListItemUsage: async ({ params }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
+      const listItemRepo = new ListItemRepository(getPrismaClient());
 
       // Check if item exists
-      const item = await listItemRepo.findById(params.id)
+      const item = await listItemRepo.findById(params.id);
       if (!item) {
         return {
           status: 404 as const,
           body: {
-            error: 'NOT_FOUND',
+            error: "NOT_FOUND",
             message: `List item with ID '${params.id}' not found`,
           },
-        }
+        };
       }
 
       // Get usage count
-      const usageCount = await listItemRepo.getUsageCount(params.id)
+      const usageCount = await listItemRepo.getUsageCount(params.id);
 
       return {
         status: 200 as const,
         body: {
           usageCount,
         },
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to get usage count',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to get usage count",
         },
-      }
+      };
     }
   },
 
@@ -202,31 +219,34 @@ export const listsRouter = s.router(listContract, {
    */
   updateListItem: async ({ params, body }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
+      const listItemRepo = new ListItemRepository(getPrismaClient());
 
       // Check if item exists
-      const existing = await listItemRepo.findById(params.id)
+      const existing = await listItemRepo.findById(params.id);
       if (!existing) {
         return {
           status: 404 as const,
           body: {
-            error: 'NOT_FOUND',
+            error: "NOT_FOUND",
             message: `List item with ID '${params.id}' not found`,
           },
-        }
+        };
       }
 
       // If updating code, check for duplicates
       if (body.code && body.code !== existing.code) {
-        const conflict = await listItemRepo.findByTypeAndCode(params.listType, body.code)
+        const conflict = await listItemRepo.findByTypeAndCode(
+          params.listType,
+          body.code,
+        );
         if (conflict) {
           return {
             status: 409 as const,
             body: {
-              error: 'CONFLICT',
+              error: "CONFLICT",
               message: `A list item with code "${body.code}" already exists in ${params.listType}`,
             },
-          }
+          };
         }
       }
 
@@ -236,25 +256,28 @@ export const listsRouter = s.router(listContract, {
         name: body.name,
         displayOrder: body.displayOrder,
         description: body.description,
-      })
+      });
 
       // Get usage count
-      const usageCount = await listItemRepo.getUsageCount(params.id)
+      const usageCount = await listItemRepo.getUsageCount(params.id);
 
       return {
         status: 200 as const,
         body: {
           item: toApiFormat(updated, usageCount),
         },
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to update list item',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to update list item",
         },
-      }
+      };
     }
   },
 
@@ -264,18 +287,18 @@ export const listsRouter = s.router(listContract, {
    */
   deleteListItem: async ({ params }) => {
     try {
-      const listItemRepo = new ListItemRepository(getPrismaClient())
+      const listItemRepo = new ListItemRepository(getPrismaClient());
 
       // Check if item exists
-      const existing = await listItemRepo.findById(params.id)
+      const existing = await listItemRepo.findById(params.id);
       if (!existing) {
         return {
           status: 404 as const,
           body: {
-            error: 'NOT_FOUND',
+            error: "NOT_FOUND",
             message: `List item with ID '${params.id}' not found`,
           },
-        }
+        };
       }
 
       // Cannot delete system items
@@ -283,39 +306,43 @@ export const listsRouter = s.router(listContract, {
         return {
           status: 400 as const,
           body: {
-            error: 'VALIDATION_ERROR',
-            message: 'Cannot delete system items. System items are protected and cannot be deleted.',
+            error: "VALIDATION_ERROR",
+            message:
+              "Cannot delete system items. System items are protected and cannot be deleted.",
           },
-        }
+        };
       }
 
       // Check usage count
-      const usageCount = await listItemRepo.getUsageCount(params.id)
+      const usageCount = await listItemRepo.getUsageCount(params.id);
       if (usageCount > 0) {
         return {
           status: 409 as const,
           body: {
-            error: 'CONFLICT',
+            error: "CONFLICT",
             message: `Cannot delete this item. It is currently in use by ${usageCount} records. You must first reassign or delete the records using this item.`,
           },
-        }
+        };
       }
 
       // Delete the item
-      await listItemRepo.delete(params.id)
+      await listItemRepo.delete(params.id);
 
       return {
         status: 204 as const,
         body: undefined,
-      }
+      };
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to delete list item',
+          error: "INTERNAL_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to delete list item",
         },
-      }
+      };
     }
   },
-})
+});

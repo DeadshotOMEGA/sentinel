@@ -1,45 +1,46 @@
-import type { PrismaClientInstance, Setting as PrismaSetting } from '@sentinel/database'
-import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
-
-type JsonValue = Prisma.JsonValue
+import type {
+  PrismaClientInstance,
+  Setting as PrismaSetting,
+} from "@sentinel/database";
+import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
 
 /**
  * Setting entity (Prisma to shared type conversion)
  */
 export interface Setting {
-  id: string
-  key: string
-  value: unknown // JSON value
-  category: string
-  description?: string
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  key: string;
+  value: unknown; // JSON value
+  category: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * Create setting input
  */
 export interface CreateSettingInput {
-  key: string
-  value: unknown
-  category?: string
-  description?: string
+  key: string;
+  value: unknown;
+  category?: string;
+  description?: string;
 }
 
 /**
  * Update setting input
  */
 export interface UpdateSettingInput {
-  value?: unknown
-  description?: string
+  value?: unknown;
+  description?: string;
 }
 
 /**
  * Setting filter parameters
  */
 export interface SettingFilters {
-  category?: string
-  search?: string
+  category?: string;
+  search?: string;
 }
 
 /**
@@ -54,7 +55,7 @@ function toSetting(prismaSetting: PrismaSetting): Setting {
     description: prismaSetting.description ?? undefined,
     createdAt: prismaSetting.createdAt,
     updatedAt: prismaSetting.updatedAt,
-  }
+  };
 }
 
 /**
@@ -63,35 +64,35 @@ function toSetting(prismaSetting: PrismaSetting): Setting {
  * Manages application configuration settings stored as key-value pairs
  */
 export class SettingRepository {
-  private prisma: PrismaClientInstance
+  private prisma: PrismaClientInstance;
 
   constructor(prismaClient?: PrismaClientInstance) {
-    this.prisma = prismaClient || defaultPrisma
+    this.prisma = prismaClient || defaultPrisma;
   }
 
   /**
    * Find all settings with optional filters
    */
   async findAll(filters?: SettingFilters): Promise<Setting[]> {
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = {};
 
     if (filters?.category) {
-      where.category = filters.category
+      where.category = filters.category;
     }
 
     if (filters?.search) {
       where.OR = [
-        { key: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
-      ]
+        { key: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+      ];
     }
 
     const settings = await this.prisma.setting.findMany({
       where,
-      orderBy: [{ category: 'asc' }, { key: 'asc' }],
-    })
+      orderBy: [{ category: "asc" }, { key: "asc" }],
+    });
 
-    return settings.map(toSetting)
+    return settings.map(toSetting);
   }
 
   /**
@@ -100,9 +101,9 @@ export class SettingRepository {
   async findByKey(key: string): Promise<Setting | null> {
     const setting = await this.prisma.setting.findUnique({
       where: { key },
-    })
+    });
 
-    return setting ? toSetting(setting) : null
+    return setting ? toSetting(setting) : null;
   }
 
   /**
@@ -111,9 +112,9 @@ export class SettingRepository {
   async findById(id: string): Promise<Setting | null> {
     const setting = await this.prisma.setting.findUnique({
       where: { id },
-    })
+    });
 
-    return setting ? toSetting(setting) : null
+    return setting ? toSetting(setting) : null;
   }
 
   /**
@@ -121,16 +122,16 @@ export class SettingRepository {
    */
   async findByKeys(keys: string[]): Promise<Setting[]> {
     if (keys.length === 0) {
-      return []
+      return [];
     }
 
     const settings = await this.prisma.setting.findMany({
       where: {
         key: { in: keys },
       },
-    })
+    });
 
-    return settings.map(toSetting)
+    return settings.map(toSetting);
   }
 
   /**
@@ -140,39 +141,39 @@ export class SettingRepository {
     const setting = await this.prisma.setting.create({
       data: {
         key: data.key,
-        value: data.value as JsonValue,
-        category: data.category ?? 'system',
+        value: data.value as Prisma.InputJsonValue,
+        category: data.category ?? "system",
         description: data.description ?? null,
       },
-    })
+    });
 
-    return toSetting(setting)
+    return toSetting(setting);
   }
 
   /**
    * Update a setting by key
    */
   async updateByKey(key: string, data: UpdateSettingInput): Promise<Setting> {
-    const updateData: Record<string, unknown> = {}
+    const updateData: Record<string, unknown> = {};
 
     if (data.value !== undefined) {
-      updateData.value = data.value as JsonValue
+      updateData.value = data.value as Prisma.InputJsonValue;
     }
 
     if (data.description !== undefined) {
-      updateData.description = data.description
+      updateData.description = data.description;
     }
 
     if (Object.keys(updateData).length === 0) {
-      throw new Error('No fields to update')
+      throw new Error("No fields to update");
     }
 
     const setting = await this.prisma.setting.update({
       where: { key },
       data: updateData,
-    })
+    });
 
-    return toSetting(setting)
+    return toSetting(setting);
   }
 
   /**
@@ -181,7 +182,7 @@ export class SettingRepository {
   async deleteByKey(key: string): Promise<void> {
     await this.prisma.setting.delete({
       where: { key },
-    })
+    });
   }
 
   /**
@@ -190,9 +191,9 @@ export class SettingRepository {
   async existsByKey(key: string): Promise<boolean> {
     const count = await this.prisma.setting.count({
       where: { key },
-    })
+    });
 
-    return count > 0
+    return count > 0;
   }
 
   /**
@@ -201,10 +202,10 @@ export class SettingRepository {
   async findByCategory(category: string): Promise<Setting[]> {
     const settings = await this.prisma.setting.findMany({
       where: { category },
-      orderBy: { key: 'asc' },
-    })
+      orderBy: { key: "asc" },
+    });
 
-    return settings.map(toSetting)
+    return settings.map(toSetting);
   }
 
   /**
@@ -213,10 +214,10 @@ export class SettingRepository {
    */
   async bulkUpsert(settings: CreateSettingInput[]): Promise<number> {
     if (settings.length === 0) {
-      return 0
+      return 0;
     }
 
-    let upsertedCount = 0
+    let upsertedCount = 0;
 
     await this.prisma.$transaction(async (tx) => {
       for (const settingData of settings) {
@@ -224,20 +225,20 @@ export class SettingRepository {
           where: { key: settingData.key },
           create: {
             key: settingData.key,
-            value: settingData.value as JsonValue,
-            category: settingData.category ?? 'system',
+            value: settingData.value as Prisma.InputJsonValue,
+            category: settingData.category ?? "system",
             description: settingData.description ?? null,
           },
           update: {
-            value: settingData.value as JsonValue,
+            value: settingData.value as Prisma.InputJsonValue,
             description: settingData.description ?? null,
           },
-        })
-        upsertedCount++
+        });
+        upsertedCount++;
       }
-    })
+    });
 
-    return upsertedCount
+    return upsertedCount;
   }
 
   /**
@@ -246,16 +247,16 @@ export class SettingRepository {
   async countByCategory(): Promise<Record<string, number>> {
     const settings = await this.prisma.setting.findMany({
       select: { category: true },
-    })
+    });
 
-    const counts: Record<string, number> = {}
+    const counts: Record<string, number> = {};
 
     for (const setting of settings) {
-      counts[setting.category] = (counts[setting.category] || 0) + 1
+      counts[setting.category] = (counts[setting.category] || 0) + 1;
     }
 
-    return counts
+    return counts;
   }
 }
 
-export const settingRepository = new SettingRepository()
+export const settingRepository = new SettingRepository();

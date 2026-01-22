@@ -5,6 +5,7 @@ import type {
   UpdateTrainingYear,
   TrainingYearIdParam,
 } from '@sentinel/contracts'
+import type { TrainingYear } from '@sentinel/database'
 import { TrainingYearRepository } from '../repositories/training-year-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -309,20 +310,44 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
 /**
  * Convert TrainingYear database model to API response format
  */
-function toApiFormat(trainingYear: Record<string, unknown>) {
+function toApiFormat(trainingYear: TrainingYear) {
+  const startDateStr = trainingYear.startDate instanceof Date
+    ? trainingYear.startDate.toISOString().split('T')[0]
+    : typeof trainingYear.startDate === 'string'
+    ? trainingYear.startDate.split('T')[0]
+    : new Date(trainingYear.startDate).toISOString().split('T')[0]
+
+  const endDateStr = trainingYear.endDate instanceof Date
+    ? trainingYear.endDate.toISOString().split('T')[0]
+    : typeof trainingYear.endDate === 'string'
+    ? trainingYear.endDate.split('T')[0]
+    : new Date(trainingYear.endDate).toISOString().split('T')[0]
+
+  const createdAtStr = trainingYear.createdAt instanceof Date
+    ? trainingYear.createdAt.toISOString()
+    : typeof trainingYear.createdAt === 'string'
+    ? trainingYear.createdAt
+    : new Date(trainingYear.createdAt).toISOString()
+
+  const updatedAtStr = trainingYear.updatedAt instanceof Date
+    ? trainingYear.updatedAt.toISOString()
+    : typeof trainingYear.updatedAt === 'string'
+    ? trainingYear.updatedAt
+    : new Date(trainingYear.updatedAt).toISOString()
+
   return {
     id: trainingYear.id,
     name: trainingYear.name,
-    startDate: trainingYear.startDate.toISOString().split('T')[0], // Date only
-    endDate: trainingYear.endDate.toISOString().split('T')[0], // Date only
+    startDate: startDateStr,
+    endDate: endDateStr,
     holidayExclusions: Array.isArray(trainingYear.holidayExclusions)
       ? trainingYear.holidayExclusions
-      : JSON.parse(trainingYear.holidayExclusions || '[]'),
+      : JSON.parse(String(trainingYear.holidayExclusions) || '[]'),
     dayExceptions: Array.isArray(trainingYear.dayExceptions)
       ? trainingYear.dayExceptions
-      : JSON.parse(trainingYear.dayExceptions || '[]'),
+      : JSON.parse(String(trainingYear.dayExceptions) || '[]'),
     isCurrent: trainingYear.isCurrent,
-    createdAt: trainingYear.createdAt.toISOString(),
-    updatedAt: trainingYear.updatedAt.toISOString(),
+    createdAt: createdAtStr,
+    updatedAt: updatedAtStr,
   }
 }

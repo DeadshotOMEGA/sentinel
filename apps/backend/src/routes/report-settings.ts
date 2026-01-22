@@ -33,7 +33,7 @@ export const reportSettingsRouter = s.router(reportSettingContract, {
       for (const setting of allSettings) {
         settings[setting.key] = {
           value: setting.value,
-          updatedAt: setting.updated_at?.toISOString() || new Date().toISOString(),
+          updatedAt: setting.updatedAt.toISOString(),
         }
       }
 

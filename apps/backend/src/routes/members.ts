@@ -6,6 +6,7 @@ import type {
   UpdateMemberInput,
   IdParam,
 } from '@sentinel/contracts'
+import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -25,13 +26,17 @@ export const membersRouter = s.router(memberContract, {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
+      const filters: { divisionId?: string; search?: string; status?: MemberStatus } = {
+        divisionId: query.divisionId,
+        search: query.search,
+      }
+      if (query.status) {
+        filters.status = query.status as MemberStatus
+      }
+
       const result = await memberRepo.findPaginated(
         { page, limit },
-        {
-          divisionId: query.divisionId,
-          search: query.search,
-          status: query.status,
-        }
+        filters
       )
 
       const totalPages = Math.ceil(result.total / limit)
@@ -133,6 +138,8 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
+        memberTypeId: body.memberTypeId,
+        memberStatusId: body.memberStatusId,
         badgeId: body.badgeId,
       })
 
