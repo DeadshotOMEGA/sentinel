@@ -15,6 +15,20 @@ import {
   securityAlertContract,
   ddsContract,
   lockupContract,
+  visitTypesContract,
+  memberStatusesContract,
+  memberTypesContract,
+  badgeStatusesContract,
+  settingContract,
+  adminUserContract,
+  listContract,
+  trainingYearContract,
+  bmqCourseContract,
+  reportSettingContract,
+  alertConfigContract,
+  reportContract,
+  devToolsContract,
+  devContract,
 } from '@sentinel/contracts'
 import { requestLogger } from './middleware/request-logger.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
@@ -30,6 +44,22 @@ import { tagsRouter } from './routes/tags.js'
 import { securityAlertsRouter } from './routes/security-alerts.js'
 import { ddsRouter } from './routes/dds.js'
 import { lockupRouter } from './routes/lockup.js'
+import {
+  visitTypesRouter,
+  memberStatusesRouter,
+  memberTypesRouter,
+  badgeStatusesRouter,
+} from './routes/enums.js'
+import { settingsRouter } from './routes/settings.js'
+import { adminUsersRouter } from './routes/admin-users.js'
+import { listsRouter } from './routes/lists.js'
+import { trainingYearsRouter } from './routes/training-years.js'
+import { bmqCoursesRouter } from './routes/bmq-courses.js'
+import { reportSettingsRouter } from './routes/report-settings.js'
+import { alertConfigsRouter } from './routes/alert-configs.js'
+import { reportsRouter } from './routes/reports.js'
+import { devToolsRouter } from './routes/dev-tools.js'
+import { devRouter } from './routes/dev.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
 import { auth } from './lib/auth.js'
@@ -194,6 +224,132 @@ export function createApp() {
     },
   })
   createExpressEndpoints(lockupContract, lockupRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(visitTypesContract, visitTypesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(memberStatusesContract, memberStatusesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(memberTypesContract, memberTypesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(badgeStatusesContract, badgeStatusesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(settingContract, settingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(adminUserContract, adminUsersRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(listContract, listsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(trainingYearContract, trainingYearsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(bmqCourseContract, bmqCoursesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(reportSettingContract, reportSettingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(alertConfigContract, alertConfigsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(reportContract, reportsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(devToolsContract, devToolsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(devContract, devRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

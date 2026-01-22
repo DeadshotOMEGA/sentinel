@@ -108,6 +108,7 @@ export async function createCheckin(
     badgeId: string
     direction: string
     timestamp: Date
+    scannedAt: Date
     kioskId: string
     method: string
   }> = {}
@@ -126,16 +127,30 @@ export async function createCheckin(
     badgeId = badge.id
   }
 
-  return prisma.checkin.create({
-    data: {
-      memberId,
-      badgeId,
-      direction: 'in',
-      kioskId: 'KIOSK001',
-      method: 'badge',
-      ...overrides,
-    },
-  })
+  // Build data object with Prisma relation syntax
+  const data: any = {
+    direction: overrides.direction || 'IN',
+    kioskId: overrides.kioskId || 'KIOSK001',
+    method: overrides.method || 'badge',
+  }
+
+  // Add optional timestamp (support both timestamp and scannedAt as aliases)
+  if (overrides.timestamp) {
+    data.timestamp = overrides.timestamp
+  } else if (overrides.scannedAt) {
+    data.timestamp = overrides.scannedAt
+  }
+
+  // Use Prisma relation connect syntax for foreign keys
+  if (memberId) {
+    data.member = { connect: { id: memberId } }
+  }
+
+  if (badgeId) {
+    data.badge = { connect: { id: badgeId } }
+  }
+
+  return prisma.checkin.create({ data })
 }
 
 /**
