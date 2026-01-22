@@ -4,6 +4,8 @@ import type {
   CreateTrainingYear,
   UpdateTrainingYear,
   TrainingYearIdParam,
+  HolidayExclusion,
+  DayException,
 } from '@sentinel/contracts'
 import type { TrainingYear } from '@sentinel/database'
 import { TrainingYearRepository } from '../repositories/training-year-repository.js'
@@ -310,42 +312,46 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
 /**
  * Convert TrainingYear database model to API response format
  */
-function toApiFormat(trainingYear: TrainingYear) {
-  const startDateStr = trainingYear.startDate instanceof Date
-    ? trainingYear.startDate.toISOString().split('T')[0]
-    : typeof trainingYear.startDate === 'string'
-    ? trainingYear.startDate.split('T')[0]
-    : new Date(trainingYear.startDate).toISOString().split('T')[0]
+function toApiFormat(trainingYear: TrainingYear): {
+  id: string
+  name: string
+  startDate: string
+  endDate: string
+  holidayExclusions: HolidayExclusion[]
+  dayExceptions: DayException[]
+  isCurrent: boolean
+  createdAt: string
+  updatedAt: string
+} {
+  const getDateString = (date: Date | null): string => {
+    if (!date) return new Date().toISOString().split('T')[0]
+    if (date instanceof Date) return date.toISOString().split('T')[0]
+    const dateStr = String(date)
+    return dateStr.includes('T') ? dateStr.split('T')[0] : dateStr
+  }
 
-  const endDateStr = trainingYear.endDate instanceof Date
-    ? trainingYear.endDate.toISOString().split('T')[0]
-    : typeof trainingYear.endDate === 'string'
-    ? trainingYear.endDate.split('T')[0]
-    : new Date(trainingYear.endDate).toISOString().split('T')[0]
+  const getFullDateString = (date: Date | null): string => {
+    if (!date) return new Date().toISOString()
+    if (date instanceof Date) return date.toISOString()
+    return String(date)
+  }
 
-  const createdAtStr = trainingYear.createdAt instanceof Date
-    ? trainingYear.createdAt.toISOString()
-    : typeof trainingYear.createdAt === 'string'
-    ? trainingYear.createdAt
-    : new Date(trainingYear.createdAt).toISOString()
-
-  const updatedAtStr = trainingYear.updatedAt instanceof Date
-    ? trainingYear.updatedAt.toISOString()
-    : typeof trainingYear.updatedAt === 'string'
-    ? trainingYear.updatedAt
-    : new Date(trainingYear.updatedAt).toISOString()
+  const startDateStr = getDateString(trainingYear.startDate)
+  const endDateStr = getDateString(trainingYear.endDate)
+  const createdAtStr = getFullDateString(trainingYear.createdAt)
+  const updatedAtStr = getFullDateString(trainingYear.updatedAt)
 
   return {
     id: trainingYear.id,
     name: trainingYear.name,
     startDate: startDateStr,
     endDate: endDateStr,
-    holidayExclusions: Array.isArray(trainingYear.holidayExclusions)
+    holidayExclusions: (Array.isArray(trainingYear.holidayExclusions)
       ? trainingYear.holidayExclusions
-      : JSON.parse(String(trainingYear.holidayExclusions) || '[]'),
-    dayExceptions: Array.isArray(trainingYear.dayExceptions)
+      : JSON.parse(String(trainingYear.holidayExclusions) || '[]')) as HolidayExclusion[],
+    dayExceptions: (Array.isArray(trainingYear.dayExceptions)
       ? trainingYear.dayExceptions
-      : JSON.parse(String(trainingYear.dayExceptions) || '[]'),
+      : JSON.parse(String(trainingYear.dayExceptions) || '[]')) as DayException[],
     isCurrent: trainingYear.isCurrent,
     createdAt: createdAtStr,
     updatedAt: updatedAtStr,
