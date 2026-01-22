@@ -1,12 +1,5 @@
 import * as v from 'valibot'
-
-/**
- * Day of week enum
- */
-export const DayOfWeekEnum = v.picklist(
-  ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-  'Invalid day of week'
-)
+import { DayOfWeekEnum } from './bmq-course.schema.js'
 
 /**
  * Date format enum

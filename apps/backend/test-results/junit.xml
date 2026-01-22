@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="65" failures="2" errors="0" time="166.141050513">
+    <testsuite name="tests/integration/repositories/member-repository.test.ts" timestamp="2026-01-22T03:21:46.576Z" hostname="CHWSTDLN" tests="65" failures="2" errors="0" skipped="0" time="166.141050513">
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; create &gt; should create a member with all required fields" time="2.223221028">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; create &gt; should create a member with all optional fields" time="2.326611641">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; create &gt; should throw error on duplicate service number" time="3.339920762">
+            <system-out>
+prisma:error 
+Invalid `this.prisma.member.create()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:458:45
+
+  455  * Create a new member
+  456  */
+  457 async create(data: CreateMemberInput): Promise&lt;Member&gt; {
+→ 458   const member = await this.prisma.member.create(
+Unique constraint failed on the fields: (`service_number`)
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; create &gt; should throw error when division does not exist" time="3.357104231">
+            <system-out>
+prisma:error 
+Invalid `this.prisma.member.create()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:458:45
+
+  455  * Create a new member
+  456  */
+  457 async create(data: CreateMemberInput): Promise&lt;Member&gt; {
+→ 458   const member = await this.prisma.member.create(
+Foreign key constraint violated on the constraint: `members_division_id_fkey`
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findById &gt; should find member by ID with division and badge" time="3.481214757">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findById &gt; should return null when member does not exist" time="3.529347793">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByServiceNumber &gt; should find member by service number" time="2.982443902">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByServiceNumber &gt; should return null when service number does not exist" time="3.16261731">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; update &gt; should update member basic fields" time="3.155961469">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; update &gt; should update member status" time="2.989528613">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; update &gt; should update member division" time="2.464558567">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; update &gt; should throw error when member does not exist" time="2.39197978">
+            <system-out>
+prisma:error 
+Invalid `tx.member.update()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:551:41
+
+  548 // Update member fields if any
+  549 let updatedMember
+  550 if (hasFieldUpdate) {
+→ 551   updatedMember = await tx.member.update(
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; update &gt; should throw error when updating to duplicate service number" time="2.398861724">
+            <system-out>
+prisma:error 
+Invalid `tx.member.update()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:551:41
+
+  548 // Update member fields if any
+  549 let updatedMember
+  550 if (hasFieldUpdate) {
+→ 551   updatedMember = await tx.member.update(
+Unique constraint failed on the fields: (`service_number`)
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; delete &gt; should soft delete a member" time="2.375986046">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; delete &gt; should throw error when member does not exist" time="2.338631795">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should find all members without filters" time="2.480018595">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should filter by division" time="2.54960164">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should filter by member type" time="2.467300322">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should filter by status" time="2.523270493">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should search by name" time="2.557666764">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should search by service number" time="2.497565544">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findAll with filters &gt; should combine multiple filters" time="2.523560989">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findPaginated &gt; should paginate results with default page size" time="2.650964309">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findPaginated &gt; should return second page of results" time="2.657978535">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findPaginated &gt; should sort by field ascending" time="2.605586059">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findPaginated &gt; should sort by field descending" time="2.485959939">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findPaginated &gt; should combine pagination with filters" time="2.596250036">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByIds &gt; should find multiple members by IDs" time="2.577001528">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByIds &gt; should return empty array when no IDs provided" time="2.489688641">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByIds &gt; should skip non-existent IDs" time="2.479277608">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByServiceNumbers &gt; should find multiple members by service numbers" time="2.521081182">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; findByServiceNumbers &gt; should return empty array when no service numbers provided" time="2.313636071">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; bulkCreate &gt; should create multiple members in one transaction" time="1.941782097">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; bulkCreate &gt; should rollback entire transaction on error" time="2.008228584">
+            <system-out>
+prisma:error 
+Invalid `tx.member.create()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:714:25
+
+  711 let insertedCount = 0
+  712 
+  713 for (const memberData of members) {
+→ 714   await tx.member.create(
+Unique constraint failed on the fields: (`service_number`)
+
+            </system-out>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; bulkUpdate &gt; should update multiple members in one transaction" time="2.011641379">
+            <failure message="expected +0 to be 2 // Object.is equality" type="AssertionError">
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/integration/repositories/member-repository.test.ts:547:21
+            </failure>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; bulkUpdate &gt; should rollback on error" time="2.236532093">
+            <failure message="promise resolved &quot;+0&quot; instead of rejecting" type="AssertionError">
+AssertionError: promise resolved &quot;+0&quot; instead of rejecting
+
+- Expected: 
+Error {
+  &quot;message&quot;: &quot;rejected promise&quot;,
+}
+
++ Received: 
+0
+
+ ❯ tests/integration/repositories/member-repository.test.ts:569:44
+            </failure>
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should add tag to member" time="2.126879535">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should add multiple tags to member" time="1.912904347">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should not duplicate tags" time="1.870885186">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should remove tag from member" time="1.953148366">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should filter members by tags" time="2.008378719">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; tag management &gt; should exclude members by tags" time="1.90723904">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; flagForReview &gt; should flag member for review" time="2.023283654">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; clearBadgeReference &gt; should clear badge reference from member" time="2.024856752">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; getPresenceStatus &gt; should return absent when no checkins exist" time="1.904679221">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; getPresenceStatus &gt; should return present when last checkin is IN" time="2.209560439">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; getPresenceStatus &gt; should return absent when last checkin is OUT" time="2.438154793">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; getPresenceStatus &gt; should return absent for member with no badge" time="2.456616053">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; tag management edge cases &gt; should handle removing non-existent tag gracefully" time="2.562750526">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; tag management edge cases &gt; should handle adding tag to multiple members" time="2.599093408">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; filter edge cases &gt; should handle empty search string" time="2.492365986">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; filter edge cases &gt; should return empty array when no members match combined filters" time="2.435554265">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; filter edge cases &gt; should handle null badge in filters" time="2.413014485">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; pagination edge cases &gt; should return empty array for page beyond total pages" time="2.512961995">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; pagination edge cases &gt; should handle limit of 1" time="2.483412047">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; pagination edge cases &gt; should reject very large limit" time="2.431809929">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; batch operation edge cases &gt; should handle empty array in bulkCreate" time="2.496028903">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; batch operation edge cases &gt; should handle single item in bulkUpdate" time="2.522468228">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; batch operation edge cases &gt; should handle bulkUpdate with no updates needed" time="2.499208133">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; findByServiceNumbers edge cases &gt; should handle duplicate service numbers in input" time="2.598293401">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; findByServiceNumbers edge cases &gt; should handle mix of existing and non-existing service numbers" time="2.503364527">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; flagForReview edge cases &gt; should handle flagging multiple members" time="2.534227549">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; flagForReview edge cases &gt; should handle empty array in flagForReview" time="2.532965518">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; clearBadgeReference edge cases &gt; should handle clearing badge for multiple members" time="2.468176673">
+        </testcase>
+        <testcase classname="tests/integration/repositories/member-repository.test.ts" name="MemberRepository Integration Tests &gt; Additional edge cases for coverage &gt; clearBadgeReference edge cases &gt; should handle clearing badge that has no members" time="2.274430757">
+        </testcase>
+    </testsuite>
+</testsuites>

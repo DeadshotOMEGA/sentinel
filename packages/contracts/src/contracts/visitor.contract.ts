@@ -25,7 +25,6 @@ export const visitorContract = c.router({
   getActiveVisitors: {
     method: 'GET',
     path: '/api/visitors/active',
-    body: c.type<undefined>(),
     responses: {
       200: ActiveVisitorsResponseSchema,
       401: ErrorResponseSchema,
@@ -94,7 +93,6 @@ export const visitorContract = c.router({
     method: 'GET',
     path: '/api/visitors/:id',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: VisitorResponseSchema,
       401: ErrorResponseSchema,

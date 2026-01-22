@@ -3,7 +3,6 @@ import {
   AssignDdsSchema,
   TransferDdsSchema,
   ReleaseDdsSchema,
-  DdsAssignmentResponseSchema,
   GetCurrentDdsResponseSchema,
   DdsOperationResponseSchema,
   CheckDdsExistsResponseSchema,
@@ -27,7 +26,6 @@ export const ddsContract = c.router({
   getCurrentDds: {
     method: 'GET',
     path: '/api/dds/current',
-    body: c.type<undefined>(),
     responses: {
       200: GetCurrentDdsResponseSchema,
       401: ErrorResponseSchema,
@@ -43,7 +41,6 @@ export const ddsContract = c.router({
   checkDdsExists: {
     method: 'GET',
     path: '/api/dds/exists',
-    body: c.type<undefined>(),
     responses: {
       200: CheckDdsExistsResponseSchema,
       401: ErrorResponseSchema,

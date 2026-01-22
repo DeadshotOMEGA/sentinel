@@ -1,4 +1,4 @@
-import type { PrismaClient, AlertConfig } from '@sentinel/database'
+import type { PrismaClient, alert_configs } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
 /**
@@ -16,15 +16,15 @@ export class AlertConfigRepository {
   /**
    * Find all alert configurations
    */
-  async findAll(): Promise<AlertConfig[]> {
-    return await this.prisma.alertConfig.findMany()
+  async findAll(): Promise<alert_configs[]> {
+    return await this.prisma.alert_configs.findMany()
   }
 
   /**
    * Find alert configuration by key
    */
-  async findByKey(key: string): Promise<AlertConfig | null> {
-    return await this.prisma.alertConfig.findUnique({
+  async findByKey(key: string): Promise<alert_configs | null> {
+    return await this.prisma.alert_configs.findUnique({
       where: { key },
     })
   }
@@ -32,8 +32,8 @@ export class AlertConfigRepository {
   /**
    * Upsert alert configuration (update or create)
    */
-  async upsert(key: string, config: any): Promise<AlertConfig> {
-    return await this.prisma.alertConfig.upsert({
+  async upsert(key: string, config: unknown): Promise<alert_configs> {
+    return await this.prisma.alert_configs.upsert({
       where: { key },
       update: {
         config,
@@ -49,12 +49,12 @@ export class AlertConfigRepository {
   /**
    * Bulk upsert multiple configurations in a transaction
    */
-  async bulkUpsert(configs: Record<string, any>): Promise<string[]> {
+  async bulkUpsert(configs: Record<string, unknown>): Promise<string[]> {
     const updated: string[] = []
 
     await this.prisma.$transaction(async (tx) => {
       for (const [key, config] of Object.entries(configs)) {
-        await tx.alertConfig.upsert({
+        await tx.alert_configs.upsert({
           where: { key },
           update: {
             config,

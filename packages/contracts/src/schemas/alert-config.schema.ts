@@ -36,12 +36,10 @@ export const AlertRuleConfigSchema = v.object({
   notificationChannels: v.array(NotificationChannelEnum),
   autoAcknowledge: v.optional(v.boolean(), false),
   threshold: v.optional(
-    v.pipe(v.number(), v.minValue(1), v.maxValue(100)),
-    null
+    v.pipe(v.number(), v.minValue(1), v.maxValue(100))
   ), // Number of occurrences before alert
   timeWindowMinutes: v.optional(
-    v.pipe(v.number(), v.minValue(1), v.maxValue(1440)),
-    null
+    v.pipe(v.number(), v.minValue(1), v.maxValue(1440))
   ), // Time window for threshold
 })
 export type AlertRuleConfig = v.InferOutput<typeof AlertRuleConfigSchema>

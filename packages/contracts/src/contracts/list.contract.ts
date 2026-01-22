@@ -9,7 +9,6 @@ import {
   ListTypeParamSchema,
   ErrorResponseSchema,
   SuccessResponseSchema,
-  IdParamSchema,
 } from '../schemas/index.js'
 import * as v from 'valibot'
 

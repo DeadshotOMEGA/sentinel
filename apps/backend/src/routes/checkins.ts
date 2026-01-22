@@ -294,7 +294,7 @@ export const checkinsRouter = s.router(checkinContract, {
           failed: result.failed,
           errors: result.errors.map((e) => ({
             index: e.index,
-            message: e.error,
+            error: e.error,
           })),
         },
       }
@@ -329,15 +329,15 @@ export const checkinsRouter = s.router(checkinContract, {
         status: 200 as const,
         body: {
           id: checkinWithMember.id,
-          memberId: checkinWithMember.memberId,
-          badgeId: checkinWithMember.badgeId,
+          memberId: checkinWithMember.memberId ?? null,
+          badgeId: checkinWithMember.badgeId ?? null,
           direction: checkinWithMember.direction,
           timestamp: checkinWithMember.timestamp.toISOString(),
           kioskId: checkinWithMember.kioskId,
-          synced: checkinWithMember.synced,
+          synced: checkinWithMember.synced ?? null,
           flaggedForReview: null,
           flagReason: null,
-          method: checkinWithMember.method,
+          method: checkinWithMember.method ?? null,
           member: checkinWithMember.member ? {
             id: checkinWithMember.member.id,
             serviceNumber: checkinWithMember.member.serviceNumber,
@@ -436,15 +436,15 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           checkins: result.checkins.map((checkin) => ({
             id: checkin.id,
-            memberId: checkin.memberId,
-            badgeId: checkin.badgeId,
+            memberId: checkin.memberId ?? null,
+            badgeId: checkin.badgeId ?? null,
             direction: checkin.direction,
             timestamp: checkin.timestamp.toISOString(),
             kioskId: checkin.kioskId,
-            synced: checkin.synced,
+            synced: checkin.synced ?? null,
             flaggedForReview: null,
             flagReason: null,
-            method: checkin.method,
+            method: checkin.method ?? null,
             member: checkin.member ? {
               id: checkin.member.id,
               serviceNumber: checkin.member.serviceNumber,

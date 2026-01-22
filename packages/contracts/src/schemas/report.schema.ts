@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { SortOrderEnum } from './report-setting.schema.js'
 
 /**
  * Report Schemas
@@ -19,8 +20,6 @@ export const OrganizationOptionEnum = v.picklist([
 ])
 
 export const MemberTypeFilterEnum = v.picklist(['all', 'ft_staff', 'reserve'])
-
-export const SortOrderEnum = v.picklist(['division_rank', 'rank', 'alphabetical'])
 
 export const AttendanceStatusEnum = v.picklist(['new', 'insufficient_data', 'calculated'])
 

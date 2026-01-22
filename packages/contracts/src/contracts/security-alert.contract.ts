@@ -23,7 +23,6 @@ export const securityAlertContract = c.router({
   getActiveAlerts: {
     method: 'GET',
     path: '/api/security-alerts/active',
-    body: c.type<undefined>(),
     responses: {
       200: ActiveAlertsResponseSchema,
       401: ErrorResponseSchema,
@@ -76,7 +75,6 @@ export const securityAlertContract = c.router({
     method: 'GET',
     path: '/api/security-alerts/:id',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: SecurityAlertResponseSchema,
       401: ErrorResponseSchema,

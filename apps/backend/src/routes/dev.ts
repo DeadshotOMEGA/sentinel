@@ -61,12 +61,12 @@ export const devRouter = s.router(devContract, {
         firstName: member.firstName,
         lastName: member.lastName,
         rank: member.rank,
-        division: member.division.name,
-        divisionId: member.division.id,
+        division: member.division?.name ?? 'Unknown',
+        divisionId: member.division?.id ?? 'Unknown',
         mess: member.mess || null,
         badgeSerialNumber: member.badge?.serialNumber || null,
         isPresent:
-          member.checkins.length > 0 && member.checkins[0].direction === 'in',
+          member.checkins.length > 0 && member.checkins[0]?.direction === 'in',
       }))
 
       return {
@@ -125,7 +125,7 @@ export const devRouter = s.router(devContract, {
       // Filter to only those whose latest checkin is 'in'
       const actuallyPresent = presentMembers.filter(
         (member) =>
-          member.checkins.length > 0 && member.checkins[0].direction === 'in'
+          member.checkins.length > 0 && member.checkins[0]?.direction === 'in'
       )
 
       if (actuallyPresent.length === 0) {
@@ -143,7 +143,7 @@ export const devRouter = s.router(devContract, {
       await prisma.checkin.createMany({
         data: actuallyPresent.map((member) => ({
           memberId: member.id,
-          badgeId: member.checkins[0].badgeId,
+          badgeId: member.checkins[0]?.badgeId ?? null,
           direction: 'out' as const,
           timestamp: now,
           kioskId: 'dev-clear-all',
