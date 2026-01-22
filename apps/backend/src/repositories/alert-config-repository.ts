@@ -33,17 +33,15 @@ export class AlertConfigRepository {
    * Upsert alert configuration (update or create)
    */
   async upsert(key: string, config: Record<string, unknown>) {
-    // Convert unknown to JSON-serializable value using Prisma.JsonValue
-    const jsonConfig: Prisma.InputJsonValue = JSON.parse(JSON.stringify(config));
     return await this.prisma.alertConfig.upsert({
       where: { key },
       update: {
-        config: jsonConfig,
+        config: config as Prisma.InputJsonValue,
         updatedAt: new Date(),
       },
       create: {
         key,
-        config: jsonConfig,
+        config: config as Prisma.InputJsonValue,
       },
     });
   }
@@ -56,17 +54,15 @@ export class AlertConfigRepository {
 
     await this.prisma.$transaction(async (tx) => {
       for (const [key, config] of Object.entries(configs)) {
-        // Convert unknown to JSON-serializable value using Prisma.JsonValue
-        const jsonConfig: Prisma.InputJsonValue = JSON.parse(JSON.stringify(config));
         await tx.alertConfig.upsert({
           where: { key },
           update: {
-            config: jsonConfig,
+            config: config as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
           create: {
             key,
-            config: jsonConfig,
+            config: config as Prisma.InputJsonValue,
           },
         });
         updated.push(key);
