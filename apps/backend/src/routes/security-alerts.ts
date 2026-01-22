@@ -66,7 +66,7 @@ export const securityAlertsRouter = s.router(securityAlertContract, {
         status: 201 as const,
         body: {
           id: alert.id,
-          alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member',
+          alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access',
           severity: alert.severity as 'critical' | 'warning' | 'info',
           badgeSerial: alert.badgeSerial,
           memberId: alert.memberId,
@@ -102,7 +102,7 @@ export const securityAlertsRouter = s.router(securityAlertContract, {
           message: 'Security alert acknowledged successfully',
           alert: {
             id: alert.id,
-            alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member',
+            alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access',
             severity: alert.severity as 'critical' | 'warning' | 'info',
             badgeSerial: alert.badgeSerial,
             memberId: alert.memberId,
@@ -167,7 +167,7 @@ export const securityAlertsRouter = s.router(securityAlertContract, {
         status: 200 as const,
         body: {
           id: alert.id,
-          alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member',
+          alertType: alert.alertType as 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access',
           severity: alert.severity as 'critical' | 'warning' | 'info',
           badgeSerial: alert.badgeSerial,
           memberId: alert.memberId,
