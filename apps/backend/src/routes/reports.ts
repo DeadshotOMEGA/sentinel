@@ -458,13 +458,30 @@ export const reportsRouter = s.router(reportContract, {
       })
 
       // Filter by division if specified
+      interface EnrollmentRecord {
+        id: string
+        memberId: string
+        bmqCourseId: string
+        enrollmentDate: Date
+        completionDate: Date | null
+        member: {
+          id: string
+          serviceNumber: string
+          firstName: string
+          lastName: string
+          rank: string
+          divisionId: string | null
+          division: { id: string; name: string } | null
+          checkins: { id: string; timestamp: Date; direction: string }[]
+        }
+      }
       const filteredEnrollments =
         config.organizationOption === 'specific_division' && config.divisionId
-          ? enrollments.filter((e) => e.member.divisionId === config.divisionId)
+          ? enrollments.filter((e: EnrollmentRecord) => e.member.divisionId === config.divisionId)
           : enrollments
 
       // Calculate attendance for each enrollment
-      const records = filteredEnrollments.map((enrollment) => {
+      const records = filteredEnrollments.map((enrollment: EnrollmentRecord) => {
         const totalCheckins = enrollment.member.checkins.length
         const attendance = {
           status: totalCheckins === 0 ? ('new' as const) : ('calculated' as const),
