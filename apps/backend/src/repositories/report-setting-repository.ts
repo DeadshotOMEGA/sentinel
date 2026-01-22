@@ -1,5 +1,8 @@
 import type { PrismaClient, report_settings } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
+import type { Prisma } from '@prisma/client'
+
+type JsonValue = Prisma.JsonValue
 
 /**
  * Repository for ReportSetting operations
@@ -36,12 +39,12 @@ export class ReportSettingRepository {
     return await this.prisma.report_settings.upsert({
       where: { key },
       update: {
-        value,
+        value: value as JsonValue,
         updatedAt: new Date(),
       },
       create: {
         key,
-        value,
+        value: value as JsonValue,
       },
     })
   }
@@ -57,12 +60,12 @@ export class ReportSettingRepository {
         await tx.report_settings.upsert({
           where: { key },
           update: {
-            value,
+            value: value as JsonValue,
             updatedAt: new Date(),
           },
           create: {
             key,
-            value,
+            value: value as JsonValue,
           },
         })
         updated.push(key)

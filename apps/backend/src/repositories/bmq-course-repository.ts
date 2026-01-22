@@ -1,4 +1,4 @@
-import type { PrismaClient, bmq_courses, bmq_enrollments } from '@sentinel/database'
+import type { PrismaClient } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type { Prisma } from '@prisma/client'
 
@@ -17,19 +17,19 @@ export class BmqCourseRepository {
   /**
    * Find all BMQ courses with optional active filter
    */
-  async findAll(activeFilter?: boolean): Promise<bmq_courses[]> {
+  async findAll(activeFilter?: boolean) {
     const where: Prisma.bmq_coursesWhereInput = {}
 
     if (activeFilter !== undefined) {
-      where.isActive = activeFilter
+      where.is_active = activeFilter
     }
 
     return await this.prisma.bmq_courses.findMany({
       where,
-      orderBy: { startDate: 'desc' },
+      orderBy: { start_date: 'desc' },
       include: {
         _count: {
-          select: { bmqEnrollments: true },
+          select: { bmq_enrollments: true },
         },
       },
     })
@@ -38,12 +38,12 @@ export class BmqCourseRepository {
   /**
    * Find BMQ course by ID
    */
-  async findById(id: string): Promise<bmq_courses | null> {
+  async findById(id: string) {
     return await this.prisma.bmq_courses.findUnique({
       where: { id },
       include: {
         _count: {
-          select: { bmqEnrollments: true },
+          select: { bmq_enrollments: true },
         },
       },
     })
@@ -52,7 +52,7 @@ export class BmqCourseRepository {
   /**
    * Create new BMQ course
    */
-  async create(data: Prisma.bmq_coursesCreateInput): Promise<bmq_courses> {
+  async create(data: Prisma.bmq_coursesCreateInput) {
     return await this.prisma.bmq_courses.create({
       data,
     })
@@ -61,7 +61,7 @@ export class BmqCourseRepository {
   /**
    * Update BMQ course
    */
-  async update(id: string, data: Prisma.bmq_coursesUpdateInput): Promise<bmq_courses> {
+  async update(id: string, data: Prisma.bmq_coursesUpdateInput) {
     return await this.prisma.bmq_courses.update({
       where: { id },
       data,
@@ -77,12 +77,12 @@ export class BmqCourseRepository {
       where: { id },
       include: {
         _count: {
-          select: { bmqEnrollments: true },
+          select: { bmq_enrollments: true },
         },
       },
     })
 
-    const enrollmentCount = course?._count.bmqEnrollments || 0
+    const enrollmentCount = course?._count.bmq_enrollments || 0
 
     await this.prisma.bmq_courses.delete({
       where: { id },
@@ -96,9 +96,9 @@ export class BmqCourseRepository {
    */
   async findCourseEnrollments(courseId: string) {
     return await this.prisma.bmq_enrollments.findMany({
-      where: { bmqCourseId: courseId },
+      where: { bmq_course_id: courseId },
       include: {
-        member: {
+        members: {
           select: {
             id: true,
             serviceNumber: true,
@@ -109,7 +109,7 @@ export class BmqCourseRepository {
           },
         },
       },
-      orderBy: [{ member: { lastName: 'asc' } }, { member: { firstName: 'asc' } }],
+      orderBy: [{ members: { lastName: 'asc' } }, { members: { firstName: 'asc' } }],
     })
   }
 
@@ -118,22 +118,22 @@ export class BmqCourseRepository {
    */
   async findMemberEnrollments(memberId: string) {
     return await this.prisma.bmq_enrollments.findMany({
-      where: { memberId },
+      where: { member_id: memberId },
       include: {
-        bmqCourse: true,
+        bmq_courses: true,
       },
-      orderBy: { bmqCourse: { startDate: 'desc' } },
+      orderBy: { bmq_courses: { start_date: 'desc' } },
     })
   }
 
   /**
    * Create enrollment for a member in a course
    */
-  async createEnrollment(courseId: string, memberId: string): Promise<bmq_enrollments> {
+  async createEnrollment(courseId: string, memberId: string) {
     return await this.prisma.bmq_enrollments.create({
       data: {
-        bmqCourseId: courseId,
-        memberId,
+        bmq_course_id: courseId,
+        member_id: memberId,
         status: 'enrolled',
       },
     })
@@ -146,12 +146,12 @@ export class BmqCourseRepository {
     id: string,
     status: string,
     completedAt?: string | null
-  ): Promise<bmq_enrollments> {
+  ) {
     return await this.prisma.bmq_enrollments.update({
       where: { id },
       data: {
         status,
-        completedAt: completedAt ? new Date(completedAt) : null,
+        completed_at: completedAt ? new Date(completedAt) : null,
       },
     })
   }
@@ -168,7 +168,7 @@ export class BmqCourseRepository {
   /**
    * Find enrollment by ID
    */
-  async findEnrollmentById(id: string): Promise<bmq_enrollments | null> {
+  async findEnrollmentById(id: string) {
     return await this.prisma.bmq_enrollments.findUnique({
       where: { id },
     })
@@ -180,12 +180,12 @@ export class BmqCourseRepository {
   async findExistingEnrollment(
     courseId: string,
     memberId: string
-  ): Promise<bmq_enrollments | null> {
+  ) {
     return await this.prisma.bmq_enrollments.findUnique({
       where: {
-        memberId_bmqCourseId: {
-          memberId,
-          bmqCourseId: courseId,
+        member_id_bmq_course_id: {
+          member_id: memberId,
+          bmq_course_id: courseId,
         },
       },
     })

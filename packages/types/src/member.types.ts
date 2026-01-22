@@ -35,10 +35,10 @@ export interface Division {
   id: string
   name: string
   code: string
-  description?: string
-  color?: string
-  createdAt: Date
-  updatedAt: Date
+  description?: string | null
+  color?: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export interface MemberWithDivision extends Member {

@@ -33,7 +33,7 @@ export const reportSettingsRouter = s.router(reportSettingContract, {
       for (const setting of allSettings) {
         settings[setting.key] = {
           value: setting.value,
-          updatedAt: setting.updatedAt.toISOString(),
+          updatedAt: setting.updated_at?.toISOString() || new Date().toISOString(),
         }
       }
 
@@ -208,10 +208,10 @@ function validateSettingValue(key: string, value: unknown): string | null {
 /**
  * Convert ReportSetting to API response format
  */
-function toApiFormat(setting: any) {
+function toApiFormat(setting: { key: string; value: unknown; updated_at?: Date | null }) {
   return {
     key: setting.key,
     value: setting.value,
-    updatedAt: setting.updatedAt.toISOString(),
+    updatedAt: setting.updated_at?.toISOString() || new Date().toISOString(),
   }
 }

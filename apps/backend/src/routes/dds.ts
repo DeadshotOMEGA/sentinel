@@ -14,24 +14,40 @@ const s = initServer()
 
 const ddsService = new DdsService(getPrismaClient())
 
+interface DdsAssignmentData {
+  id: unknown
+  memberId: unknown
+  assignedDate: unknown
+  acceptedAt: unknown
+  releasedAt: unknown
+  transferredTo: unknown
+  assignedBy: unknown
+  status: unknown
+  notes: unknown
+  createdAt: unknown
+  updatedAt: unknown
+  member: unknown
+  assignedByAdminName: unknown
+}
+
 /**
  * Helper to transform DDS assignment to API format
  */
-function toApiFormat(assignment: Record<string, unknown>) {
+function toApiFormat(assignment: DdsAssignmentData) {
   return {
-    id: assignment.id,
-    memberId: assignment.memberId,
-    assignedDate: assignment.assignedDate.toISOString(),
-    acceptedAt: assignment.acceptedAt?.toISOString() ?? null,
-    releasedAt: assignment.releasedAt?.toISOString() ?? null,
-    transferredTo: assignment.transferredTo,
-    assignedBy: assignment.assignedBy,
-    status: assignment.status as 'pending' | 'active' | 'transferred' | 'released',
-    notes: assignment.notes,
-    createdAt: assignment.createdAt.toISOString(),
-    updatedAt: assignment.updatedAt.toISOString(),
+    id: String(assignment.id),
+    memberId: String(assignment.memberId),
+    assignedDate: assignment.assignedDate instanceof Date ? assignment.assignedDate.toISOString() : String(assignment.assignedDate),
+    acceptedAt: assignment.acceptedAt instanceof Date ? assignment.acceptedAt.toISOString() : (assignment.acceptedAt ? String(assignment.acceptedAt) : null),
+    releasedAt: assignment.releasedAt instanceof Date ? assignment.releasedAt.toISOString() : (assignment.releasedAt ? String(assignment.releasedAt) : null),
+    transferredTo: assignment.transferredTo ? String(assignment.transferredTo) : null,
+    assignedBy: assignment.assignedBy ? String(assignment.assignedBy) : null,
+    status: String(assignment.status) as 'pending' | 'active' | 'transferred' | 'released',
+    notes: assignment.notes ? String(assignment.notes) : null,
+    createdAt: assignment.createdAt instanceof Date ? assignment.createdAt.toISOString() : String(assignment.createdAt),
+    updatedAt: assignment.updatedAt instanceof Date ? assignment.updatedAt.toISOString() : String(assignment.updatedAt),
     member: assignment.member,
-    assignedByAdminName: assignment.assignedByAdminName,
+    assignedByAdminName: assignment.assignedByAdminName ? String(assignment.assignedByAdminName) : null,
   }
 }
 

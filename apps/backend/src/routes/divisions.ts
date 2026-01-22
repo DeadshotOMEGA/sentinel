@@ -19,31 +19,34 @@ export const divisionsRouter = s.router(divisionContract, {
   /**
    * Get all divisions
    */
-  getDivisions: async () => {
+  getDivisions: async ({ query }) => {
     try {
+      const page = query.page || 1
+      const limit = query.limit || 50
       const divisions = await divisionRepo.findAll()
 
-      // Get member counts for each division
-      const divisionsWithCounts = await Promise.all(
-        divisions.map(async (division) => {
-          const memberCount = await divisionRepo.getUsageCount(division.id)
-          return {
-            id: division.id,
-            name: division.name,
-            code: division.code,
-            description: division.description || null,
-            memberCount,
-            createdAt: division.createdAt.toISOString(),
-            updatedAt: division.updatedAt.toISOString(),
-          }
-        })
-      )
+      // Get divisions with proper formatting
+      const divisionsWithCounts = divisions.map((division) => ({
+        id: division.id,
+        code: division.code,
+        name: division.name,
+        description: division.description || null,
+        color: null,
+        createdAt: division.createdAt?.toISOString() || null,
+        updatedAt: division.updatedAt?.toISOString() || null,
+      }))
+
+      const total = divisionsWithCounts.length
+      const totalPages = Math.ceil(total / limit)
 
       return {
         status: 200 as const,
         body: {
           divisions: divisionsWithCounts,
-          total: divisionsWithCounts.length,
+          total,
+          page,
+          limit,
+          totalPages,
         },
       }
     } catch (error) {
@@ -74,18 +77,16 @@ export const divisionsRouter = s.router(divisionContract, {
         }
       }
 
-      const memberCount = await divisionRepo.getUsageCount(division.id)
-
       return {
         status: 200 as const,
         body: {
           id: division.id,
-          name: division.name,
           code: division.code,
+          name: division.name,
           description: division.description || null,
-          memberCount,
-          createdAt: division.createdAt.toISOString(),
-          updatedAt: division.updatedAt.toISOString(),
+          color: null,
+          createdAt: division.createdAt?.toISOString() || null,
+          updatedAt: division.updatedAt?.toISOString() || null,
         },
       }
     } catch (error) {
@@ -114,12 +115,12 @@ export const divisionsRouter = s.router(divisionContract, {
         status: 201 as const,
         body: {
           id: division.id,
-          name: division.name,
           code: division.code,
+          name: division.name,
           description: division.description || null,
-          memberCount: 0,
-          createdAt: division.createdAt.toISOString(),
-          updatedAt: division.updatedAt.toISOString(),
+          color: null,
+          createdAt: division.createdAt?.toISOString() || null,
+          updatedAt: division.updatedAt?.toISOString() || null,
         },
       }
     } catch (error) {
@@ -155,18 +156,16 @@ export const divisionsRouter = s.router(divisionContract, {
         description: body.description,
       })
 
-      const memberCount = await divisionRepo.getUsageCount(division.id)
-
       return {
         status: 200 as const,
         body: {
           id: division.id,
-          name: division.name,
           code: division.code,
+          name: division.name,
           description: division.description || null,
-          memberCount,
-          createdAt: division.createdAt.toISOString(),
-          updatedAt: division.updatedAt.toISOString(),
+          color: null,
+          createdAt: division.createdAt?.toISOString() || null,
+          updatedAt: division.updatedAt?.toISOString() || null,
         },
       }
     } catch (error) {

@@ -39,7 +39,7 @@ interface PresentMember {
   lastName: string;
   rank: string;
   division: string;
-  divisionId: string;
+  divisionId: string | null;
   memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force';
   mess: string | null;
   checkedInAt: string;

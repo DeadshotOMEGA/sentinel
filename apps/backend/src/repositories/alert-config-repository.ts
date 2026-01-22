@@ -1,4 +1,4 @@
-import type { PrismaClient, alert_configs } from '@sentinel/database'
+import type { PrismaClient } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
 /**
@@ -16,14 +16,14 @@ export class AlertConfigRepository {
   /**
    * Find all alert configurations
    */
-  async findAll(): Promise<alert_configs[]> {
+  async findAll() {
     return await this.prisma.alert_configs.findMany()
   }
 
   /**
    * Find alert configuration by key
    */
-  async findByKey(key: string): Promise<alert_configs | null> {
+  async findByKey(key: string) {
     return await this.prisma.alert_configs.findUnique({
       where: { key },
     })
@@ -32,7 +32,7 @@ export class AlertConfigRepository {
   /**
    * Upsert alert configuration (update or create)
    */
-  async upsert(key: string, config: unknown): Promise<alert_configs> {
+  async upsert(key: string, config: unknown) {
     return await this.prisma.alert_configs.upsert({
       where: { key },
       update: {

@@ -59,19 +59,20 @@ router.get('/users', requireRole([Role.ADMIN, Role.DEVELOPER]), async (req: Requ
       },
     })
 
+    const userCount = users.users?.length || 0
     authLogger.info('Listed users', {
-      count: users.length,
+      count: userCount,
       limit,
       offset,
       requestedBy: req.user?.id,
     })
 
     return res.status(200).json({
-      users,
+      users: users.users || [],
       pagination: {
         limit,
         offset,
-        total: users.length,
+        total: ('total' in users ? (users as { total?: number }).total : null) || userCount,
       },
     })
   } catch (error) {

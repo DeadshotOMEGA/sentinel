@@ -1,5 +1,8 @@
 import type { PrismaClientInstance, Setting as PrismaSetting } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
+import type { Prisma } from '@prisma/client'
+
+type JsonValue = Prisma.JsonValue
 
 /**
  * Setting entity (Prisma to shared type conversion)
@@ -138,7 +141,7 @@ export class SettingRepository {
     const setting = await this.prisma.setting.create({
       data: {
         key: data.key,
-        value: data.value,
+        value: data.value as JsonValue,
         category: data.category ?? 'system',
         description: data.description ?? null,
       },
@@ -154,7 +157,7 @@ export class SettingRepository {
     const updateData: Record<string, unknown> = {}
 
     if (data.value !== undefined) {
-      updateData.value = data.value
+      updateData.value = data.value as JsonValue
     }
 
     if (data.description !== undefined) {
@@ -222,12 +225,12 @@ export class SettingRepository {
           where: { key: settingData.key },
           create: {
             key: settingData.key,
-            value: settingData.value,
+            value: settingData.value as JsonValue,
             category: settingData.category ?? 'system',
             description: settingData.description ?? null,
           },
           update: {
-            value: settingData.value,
+            value: settingData.value as JsonValue,
             description: settingData.description ?? null,
           },
         })
