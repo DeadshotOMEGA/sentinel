@@ -16,6 +16,7 @@ interface MemberFilters extends MemberFilterParams {
   memberType?: MemberType
   status?: MemberStatus
   search?: string
+  hasBadge?: boolean
 }
 
 /**
@@ -225,6 +226,14 @@ export class MemberRepository {
       }
     }
 
+    if (filters?.hasBadge !== undefined) {
+      if (filters.hasBadge) {
+        where.badgeId = { not: null }
+      } else {
+        where.badgeId = null
+      }
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -259,7 +268,7 @@ export class MemberRepository {
   async findPaginated(
     params: PaginationParams,
     filters?: MemberFilters
-  ): Promise<{ members: MemberWithDivision[]; total: number }> {
+  ): Promise<{ members: MemberWithDivision[]; total: number; page: number; limit: number; totalPages: number }> {
     if (!params.page || params.page < 1) {
       throw new Error('Invalid page number: must be >= 1')
     }
@@ -361,6 +370,14 @@ export class MemberRepository {
       }
     }
 
+    if (filters?.hasBadge !== undefined) {
+      if (filters.hasBadge) {
+        where.badgeId = { not: null }
+      } else {
+        where.badgeId = null
+      }
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -392,9 +409,14 @@ export class MemberRepository {
       }),
     ])
 
+    const totalPages = Math.ceil(total / limit)
+
     return {
       members: members.map(toMemberWithDivision),
       total,
+      page,
+      limit,
+      totalPages,
     }
   }
 
@@ -563,21 +585,9 @@ export class MemberRepository {
    * Delete (soft delete) a member
    */
   async delete(id: string): Promise<void> {
-    // Get inactive status ID
-    const inactiveStatus = await this.prisma.memberStatus.findFirst({
-      where: { code: 'inactive' },
-    })
-
-    if (!inactiveStatus) {
-      throw new Error('Inactive status not found in database')
-    }
-
     const result = await this.prisma.member.updateMany({
       where: { id },
-      data: {
-        status: 'inactive',
-        memberStatusId: inactiveStatus.id,
-      },
+      data: { status: 'inactive' },
     })
 
     if (result.count === 0) {
@@ -591,13 +601,25 @@ export class MemberRepository {
    * Get presence status for a member (present/absent)
    */
   async getPresenceStatus(memberId: string): Promise<'present' | 'absent'> {
+    // First get the member's badge ID
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { badgeId: true },
+    })
+
+    if (!member?.badgeId) {
+      return 'absent'
+    }
+
+    // Query checkin by badgeId (most recent)
     const checkin = await this.prisma.checkin.findFirst({
-      where: { memberId },
+      where: { badgeId: member.badgeId },
       orderBy: { timestamp: 'desc' },
       select: { direction: true },
     })
 
-    return checkin?.direction === 'in' ? 'present' : 'absent'
+    // Case-insensitive comparison
+    return checkin?.direction.toLowerCase() === 'in' ? 'present' : 'absent'
   }
 
   /**
@@ -641,6 +663,40 @@ export class MemberRepository {
     })
 
     return members.map(toMember)
+  }
+
+  /**
+   * Find members by tag IDs
+   */
+  async findByTags(tagIds: string[]): Promise<MemberWithDivision[]> {
+    if (tagIds.length === 0) {
+      return []
+    }
+
+    const members = await this.prisma.member.findMany({
+      where: {
+        memberTags: {
+          some: {
+            tagId: { in: tagIds },
+          },
+        },
+      },
+      include: {
+        division: true,
+        badge: true,
+        memberTags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+      orderBy: [
+        { lastName: 'asc' },
+        { firstName: 'asc' },
+      ],
+    })
+
+    return members.map(toMemberWithDivision)
   }
 
   /**
@@ -689,7 +745,7 @@ export class MemberRepository {
   /**
    * Bulk update members (for import operations)
    */
-  async bulkUpdate(updates: Array<{ id: string; data: UpdateMemberInput }>): Promise<number> {
+  async bulkUpdate(updates: Array<{ id: string } & UpdateMemberInput>): Promise<number> {
     if (updates.length === 0) {
       return 0
     }
@@ -697,7 +753,8 @@ export class MemberRepository {
     const result = await this.prisma.$transaction(async (tx) => {
       let updatedCount = 0
 
-      for (const { id, data } of updates) {
+      for (const update of updates) {
+        const { id, ...data } = update
         const updateData: Record<string, unknown> = {}
 
         if (data.serviceNumber !== undefined) {

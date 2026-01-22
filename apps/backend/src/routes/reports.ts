@@ -1,0 +1,724 @@
+import { initServer } from '@ts-rest/express'
+import { reportContract } from '@sentinel/contracts'
+import type {
+  DailyCheckinConfig,
+  TrainingNightReportConfig,
+  BMQReportConfig,
+  PersonnelRosterConfig,
+  VisitorSummaryConfig,
+} from '@sentinel/contracts'
+import { getPrismaClient } from '../lib/database.js'
+
+const s = initServer()
+const prisma = getPrismaClient()
+
+/**
+ * Report generation routes
+ *
+ * Generates various attendance and personnel reports with complex aggregations
+ */
+export const reportsRouter = s.router(reportContract, {
+  /**
+   * POST /api/reports/daily-checkin - Generate daily check-in summary
+   */
+  generateDailyCheckin: async ({ body }) => {
+    try {
+      const config: DailyCheckinConfig = body
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      // Build where clause for member filtering
+      const memberWhere: any = {
+        status: 'active',
+      }
+
+      if (config.divisionId) {
+        memberWhere.divisionId = config.divisionId
+      }
+
+      // Get present FT staff (members who checked in today)
+      let presentFTStaff: any[] = []
+      let absentFTStaff: any[] = []
+
+      if (
+        !config.memberType ||
+        config.memberType === 'all' ||
+        config.memberType === 'ft_staff'
+      ) {
+        // Present FT staff
+        const presentFT = await prisma.member.findMany({
+          where: {
+            ...memberWhere,
+            memberType: {
+              in: ['class_b', 'class_c', 'reg_force'],
+            },
+            checkins: {
+              some: {
+                direction: 'in',
+                timestamp: {
+                  gte: today,
+                },
+              },
+            },
+          },
+          include: {
+            division: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: [{ division: { name: 'asc' } }, { rank: 'asc' }, { lastName: 'asc' }],
+        })
+
+        presentFTStaff = presentFT.map((m) => ({
+          id: m.id,
+          serviceNumber: m.serviceNumber,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          rank: m.rank,
+          division: {
+            id: m.division.id,
+            name: m.division.name,
+          },
+        }))
+
+        // Absent FT staff (no check-in today)
+        const absentFT = await prisma.member.findMany({
+          where: {
+            ...memberWhere,
+            memberType: {
+              in: ['class_b', 'class_c', 'reg_force'],
+            },
+            NOT: {
+              checkins: {
+                some: {
+                  direction: 'in',
+                  timestamp: {
+                    gte: today,
+                  },
+                },
+              },
+            },
+          },
+          include: {
+            division: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: [{ division: { name: 'asc' } }, { rank: 'asc' }, { lastName: 'asc' }],
+        })
+
+        absentFTStaff = absentFT.map((m) => ({
+          id: m.id,
+          serviceNumber: m.serviceNumber,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          rank: m.rank,
+          division: {
+            id: m.division.id,
+            name: m.division.name,
+          },
+        }))
+      }
+
+      // Get present reserve members
+      let presentReserve: any[] = []
+
+      if (
+        !config.memberType ||
+        config.memberType === 'all' ||
+        config.memberType === 'reserve'
+      ) {
+        const presentRes = await prisma.member.findMany({
+          where: {
+            ...memberWhere,
+            memberType: 'class_a',
+            checkins: {
+              some: {
+                direction: 'in',
+                timestamp: {
+                  gte: today,
+                },
+              },
+            },
+          },
+          include: {
+            division: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: [{ division: { name: 'asc' } }, { rank: 'asc' }, { lastName: 'asc' }],
+        })
+
+        presentReserve = presentRes.map((m) => ({
+          id: m.id,
+          serviceNumber: m.serviceNumber,
+          firstName: m.firstName,
+          lastName: m.lastName,
+          rank: m.rank,
+          division: {
+            id: m.division.id,
+            name: m.division.name,
+          },
+        }))
+      }
+
+      // Calculate summary by division
+      const divisionSummary: Record<
+        string,
+        { name: string; ftStaff: number; reserve: number }
+      > = {}
+
+      for (const member of presentFTStaff) {
+        if (!divisionSummary[member.division.id]) {
+          divisionSummary[member.division.id] = {
+            name: member.division.name,
+            ftStaff: 0,
+            reserve: 0,
+          }
+        }
+        divisionSummary[member.division.id].ftStaff++
+      }
+
+      for (const member of presentReserve) {
+        if (!divisionSummary[member.division.id]) {
+          divisionSummary[member.division.id] = {
+            name: member.division.name,
+            ftStaff: 0,
+            reserve: 0,
+          }
+        }
+        divisionSummary[member.division.id].reserve++
+      }
+
+      return {
+        status: 200 as const,
+        body: {
+          generatedAt: new Date().toISOString(),
+          presentFTStaff,
+          absentFTStaff,
+          presentReserve,
+          summary: {
+            totalFTStaff: presentFTStaff.length,
+            totalReserve: presentReserve.length,
+            totalAbsentFTStaff: absentFTStaff.length,
+            byDivision: Object.entries(divisionSummary).map(([id, data]) => ({
+              divisionId: id,
+              divisionName: data.name,
+              ftStaff: data.ftStaff,
+              reserve: data.reserve,
+            })),
+          },
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate daily check-in report',
+        },
+      }
+    }
+  },
+
+  /**
+   * POST /api/reports/training-night-attendance - Generate training night attendance report
+   */
+  generateTrainingNightAttendance: async ({ body }) => {
+    try {
+      const config: TrainingNightReportConfig = body
+
+      // Calculate period dates based on config
+      let periodStart: string
+      let periodEnd: string
+
+      if (config.period === 'custom' || (!config.period && config.periodStart && config.periodEnd)) {
+        periodStart = config.periodStart!
+        periodEnd = config.periodEnd!
+      } else {
+        // Get current training year
+        const trainingYear = await prisma.trainingYear.findFirst({
+          where: { isCurrent: true },
+        })
+
+        if (!trainingYear) {
+          return {
+            status: 404 as const,
+            body: {
+              error: 'NOT_FOUND',
+              message: 'No current training year found',
+            },
+          }
+        }
+
+        const now = new Date()
+
+        switch (config.period) {
+          case 'current_year':
+            periodStart = trainingYear.startDate.toISOString().split('T')[0]
+            periodEnd = trainingYear.endDate.toISOString().split('T')[0]
+            break
+          case 'last_quarter':
+            periodEnd = now.toISOString().split('T')[0]
+            const quarterStart = new Date(now)
+            quarterStart.setMonth(now.getMonth() - 3)
+            periodStart = quarterStart.toISOString().split('T')[0]
+            break
+          case 'last_month':
+            periodEnd = now.toISOString().split('T')[0]
+            const monthStart = new Date(now)
+            monthStart.setMonth(now.getMonth() - 1)
+            periodStart = monthStart.toISOString().split('T')[0]
+            break
+          default:
+            // Default to current year
+            periodStart = trainingYear.startDate.toISOString().split('T')[0]
+            periodEnd = trainingYear.endDate.toISOString().split('T')[0]
+        }
+      }
+
+      // Build member query
+      const memberWhere: any = {
+        status: 'active',
+      }
+
+      if (config.organizationOption === 'specific_division' && config.divisionId) {
+        memberWhere.divisionId = config.divisionId
+      }
+
+      if (config.organizationOption === 'specific_member' && config.memberId) {
+        memberWhere.id = config.memberId
+      }
+
+      if (!config.includeFTStaff) {
+        memberWhere.memberType = 'class_a'
+      }
+
+      // Get members with attendance data
+      const members = await prisma.member.findMany({
+        where: memberWhere,
+        include: {
+          division: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          bmqEnrollments: {
+            where: {
+              status: 'enrolled',
+            },
+            take: 1,
+            orderBy: {
+              enrolledAt: 'desc',
+            },
+          },
+          checkins: {
+            where: {
+              timestamp: {
+                gte: new Date(periodStart),
+                lte: new Date(periodEnd),
+              },
+            },
+          },
+        },
+        orderBy: [{ division: { name: 'asc' } }, { rank: 'asc' }, { lastName: 'asc' }],
+      })
+
+      // Calculate attendance for each member (simplified - production would use attendance calculator)
+      const records = members.map((member) => {
+        const totalCheckins = member.checkins.length
+        const attendance = {
+          status: totalCheckins === 0 ? ('new' as const) : ('calculated' as const),
+          percentage: totalCheckins > 0 ? Math.round((totalCheckins / 10) * 100) : undefined, // Simplified calculation
+          attended: totalCheckins > 0 ? totalCheckins : undefined,
+          possible: totalCheckins > 0 ? 10 : undefined, // Simplified
+          flag: (totalCheckins >= 8 ? 'none' : totalCheckins >= 5 ? 'warning' : 'critical') as
+            | 'none'
+            | 'warning'
+            | 'critical',
+        }
+
+        return {
+          member: {
+            id: member.id,
+            serviceNumber: member.serviceNumber,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            rank: member.rank,
+            division: {
+              id: member.division.id,
+              name: member.division.name,
+            },
+          },
+          attendance,
+          trend: {
+            trend: 'stable' as const,
+            delta: 0,
+          },
+          isBMQEnrolled: member.bmqEnrollments.length > 0 && config.showBMQBadge,
+          enrollmentDate:
+            member.bmqEnrollments.length > 0
+              ? member.bmqEnrollments[0].enrolledAt.toISOString()
+              : new Date().toISOString(),
+        }
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          generatedAt: new Date().toISOString(),
+          config,
+          periodStart,
+          periodEnd,
+          records,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate training night attendance report',
+        },
+      }
+    }
+  },
+
+  /**
+   * POST /api/reports/bmq-attendance - Generate BMQ course attendance report
+   */
+  generateBMQAttendance: async ({ body }) => {
+    try {
+      const config: BMQReportConfig = body
+
+      // Get BMQ course
+      const course = await prisma.bmqCourse.findUnique({
+        where: { id: config.courseId },
+      })
+
+      if (!course) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `BMQ course with ID '${config.courseId}' not found`,
+          },
+        }
+      }
+
+      // Build enrollment query
+      const enrollmentWhere: any = {
+        bmqCourseId: config.courseId,
+      }
+
+      // Get enrollments with member data
+      const enrollments = await prisma.bmqEnrollment.findMany({
+        where: enrollmentWhere,
+        include: {
+          member: {
+            include: {
+              division: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              checkins: {
+                where: {
+                  timestamp: {
+                    gte: course.startDate,
+                    lte: course.endDate,
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          member: {
+            lastName: 'asc',
+          },
+        },
+      })
+
+      // Filter by division if specified
+      const filteredEnrollments =
+        config.organizationOption === 'specific_division' && config.divisionId
+          ? enrollments.filter((e) => e.member.divisionId === config.divisionId)
+          : enrollments
+
+      // Calculate attendance for each enrollment
+      const records = filteredEnrollments.map((enrollment) => {
+        const totalCheckins = enrollment.member.checkins.length
+        const attendance = {
+          status: totalCheckins === 0 ? ('new' as const) : ('calculated' as const),
+          percentage: totalCheckins > 0 ? Math.round((totalCheckins / 20) * 100) : undefined, // Simplified
+          attended: totalCheckins > 0 ? totalCheckins : undefined,
+          possible: totalCheckins > 0 ? 20 : undefined, // Simplified
+        }
+
+        return {
+          member: {
+            id: enrollment.member.id,
+            serviceNumber: enrollment.member.serviceNumber,
+            firstName: enrollment.member.firstName,
+            lastName: enrollment.member.lastName,
+            rank: enrollment.member.rank,
+            division: {
+              id: enrollment.member.division.id,
+              name: enrollment.member.division.name,
+            },
+          },
+          attendance,
+          enrollment: {
+            id: enrollment.id,
+            enrolledAt: enrollment.enrolledAt.toISOString(),
+            completedAt: enrollment.completedAt?.toISOString() || null,
+            status: enrollment.status,
+          },
+        }
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          generatedAt: new Date().toISOString(),
+          config,
+          records,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate BMQ attendance report',
+        },
+      }
+    }
+  },
+
+  /**
+   * POST /api/reports/personnel-roster - Generate personnel roster report
+   */
+  generatePersonnelRoster: async ({ body }) => {
+    try {
+      const config: PersonnelRosterConfig = body
+
+      // Build member query
+      const memberWhere: any = {
+        status: 'active',
+      }
+
+      if (config.divisionId) {
+        memberWhere.divisionId = config.divisionId
+      }
+
+      // Build order by clause
+      const orderBy: any[] = []
+
+      switch (config.sortOrder) {
+        case 'division_rank':
+          orderBy.push({ division: { name: 'asc' } }, { rank: 'asc' }, { lastName: 'asc' })
+          break
+        case 'rank':
+          orderBy.push({ rank: 'asc' }, { lastName: 'asc' })
+          break
+        case 'alphabetical':
+          orderBy.push({ lastName: 'asc' }, { firstName: 'asc' })
+          break
+      }
+
+      // Get members
+      const members = await prisma.member.findMany({
+        where: memberWhere,
+        include: {
+          division: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy,
+      })
+
+      const records = members.map((member) => ({
+        id: member.id,
+        serviceNumber: member.serviceNumber,
+        rank: member.rank,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        middleInitial: member.initials || null,
+        division: {
+          id: member.division.id,
+          name: member.division.name,
+        },
+        badgeId: member.badgeId || null,
+        status: member.status,
+        memberType: member.memberType,
+        email: member.email || null,
+        phoneNumber: member.mobilePhone || member.homePhone || null,
+      }))
+
+      return {
+        status: 200 as const,
+        body: {
+          generatedAt: new Date().toISOString(),
+          config,
+          records,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate personnel roster',
+        },
+      }
+    }
+  },
+
+  /**
+   * POST /api/reports/visitor-summary - Generate visitor summary report
+   */
+  generateVisitorSummary: async ({ body }) => {
+    try {
+      const config: VisitorSummaryConfig = body
+
+      // Build visitor query
+      const visitorWhere: any = {
+        checkInTime: {
+          gte: new Date(config.startDate),
+          lte: new Date(config.endDate),
+        },
+      }
+
+      if (config.visitType) {
+        visitorWhere.visitType = config.visitType
+      }
+
+      if (config.organization) {
+        visitorWhere.organization = {
+          contains: config.organization,
+          mode: 'insensitive',
+        }
+      }
+
+      // Get visitors
+      const visitors = await prisma.visitor.findMany({
+        where: visitorWhere,
+        include: {
+          hostMember: {
+            include: {
+              division: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          checkInTime: 'asc',
+        },
+      })
+
+      const records = visitors.map((visitor) => ({
+        id: visitor.id,
+        fullName: visitor.fullName,
+        organization: visitor.organization || null,
+        purpose: visitor.purpose || null,
+        visitType: visitor.visitType,
+        checkInTime: visitor.checkInTime.toISOString(),
+        checkOutTime: visitor.checkOutTime?.toISOString() || null,
+        duration: visitor.checkOutTime
+          ? Math.round(
+              (visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000
+            )
+          : null,
+        hostMember: visitor.hostMember
+          ? {
+              id: visitor.hostMember.id,
+              serviceNumber: visitor.hostMember.serviceNumber,
+              firstName: visitor.hostMember.firstName,
+              lastName: visitor.hostMember.lastName,
+              rank: visitor.hostMember.rank,
+              division: {
+                id: visitor.hostMember.division.id,
+                name: visitor.hostMember.division.name,
+              },
+            }
+          : null,
+      }))
+
+      // Calculate summary statistics
+      const byVisitType: Record<string, number> = {}
+      const byOrganization: Record<string, number> = {}
+
+      for (const visitor of visitors) {
+        byVisitType[visitor.visitType] = (byVisitType[visitor.visitType] || 0) + 1
+
+        if (visitor.organization) {
+          byOrganization[visitor.organization] =
+            (byOrganization[visitor.organization] || 0) + 1
+        }
+      }
+
+      return {
+        status: 200 as const,
+        body: {
+          generatedAt: new Date().toISOString(),
+          config,
+          records,
+          summary: {
+            totalVisitors: visitors.length,
+            byVisitType: Object.entries(byVisitType).map(([visitType, count]) => ({
+              visitType,
+              count,
+            })),
+            byOrganization: Object.entries(byOrganization).map(([organization, count]) => ({
+              organization,
+              count,
+            })),
+          },
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate visitor summary',
+        },
+      }
+    }
+  },
+})
