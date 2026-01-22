@@ -79,16 +79,16 @@ export type SecurityAlert = $Result.DefaultSelection<Prisma.$SecurityAlertPayloa
  */
 export type Visitor = $Result.DefaultSelection<Prisma.$VisitorPayload>
 /**
- * Model bmq_courses
+ * Model BmqCourse
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
-export type bmq_courses = $Result.DefaultSelection<Prisma.$bmq_coursesPayload>
+export type BmqCourse = $Result.DefaultSelection<Prisma.$BmqCoursePayload>
 /**
- * Model bmq_enrollments
+ * Model BmqEnrollment
  * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
-export type bmq_enrollments = $Result.DefaultSelection<Prisma.$bmq_enrollmentsPayload>
+export type BmqEnrollment = $Result.DefaultSelection<Prisma.$BmqEnrollmentPayload>
 /**
  * Model migrations
  * 
@@ -100,10 +100,10 @@ export type migrations = $Result.DefaultSelection<Prisma.$migrationsPayload>
  */
 export type report_audit_log = $Result.DefaultSelection<Prisma.$report_audit_logPayload>
 /**
- * Model report_settings
+ * Model ReportSetting
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
-export type report_settings = $Result.DefaultSelection<Prisma.$report_settingsPayload>
+export type ReportSetting = $Result.DefaultSelection<Prisma.$ReportSettingPayload>
 /**
  * Model TrainingYear
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -169,6 +169,11 @@ export type Verification = $Result.DefaultSelection<Prisma.$VerificationPayload>
  * 
  */
 export type Setting = $Result.DefaultSelection<Prisma.$SettingPayload>
+/**
+ * Model AlertConfig
+ * 
+ */
+export type AlertConfig = $Result.DefaultSelection<Prisma.$AlertConfigPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -418,24 +423,24 @@ export class PrismaClient<
   get visitor(): Prisma.VisitorDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.bmq_courses`: Exposes CRUD operations for the **bmq_courses** model.
+   * `prisma.bmqCourse`: Exposes CRUD operations for the **BmqCourse** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Bmq_courses
-    * const bmq_courses = await prisma.bmq_courses.findMany()
+    * // Fetch zero or more BmqCourses
+    * const bmqCourses = await prisma.bmqCourse.findMany()
     * ```
     */
-  get bmq_courses(): Prisma.bmq_coursesDelegate<ExtArgs, ClientOptions>;
+  get bmqCourse(): Prisma.BmqCourseDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.bmq_enrollments`: Exposes CRUD operations for the **bmq_enrollments** model.
+   * `prisma.bmqEnrollment`: Exposes CRUD operations for the **BmqEnrollment** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Bmq_enrollments
-    * const bmq_enrollments = await prisma.bmq_enrollments.findMany()
+    * // Fetch zero or more BmqEnrollments
+    * const bmqEnrollments = await prisma.bmqEnrollment.findMany()
     * ```
     */
-  get bmq_enrollments(): Prisma.bmq_enrollmentsDelegate<ExtArgs, ClientOptions>;
+  get bmqEnrollment(): Prisma.BmqEnrollmentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.migrations`: Exposes CRUD operations for the **migrations** model.
@@ -458,14 +463,14 @@ export class PrismaClient<
   get report_audit_log(): Prisma.report_audit_logDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.report_settings`: Exposes CRUD operations for the **report_settings** model.
+   * `prisma.reportSetting`: Exposes CRUD operations for the **ReportSetting** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Report_settings
-    * const report_settings = await prisma.report_settings.findMany()
+    * // Fetch zero or more ReportSettings
+    * const reportSettings = await prisma.reportSetting.findMany()
     * ```
     */
-  get report_settings(): Prisma.report_settingsDelegate<ExtArgs, ClientOptions>;
+  get reportSetting(): Prisma.ReportSettingDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.trainingYear`: Exposes CRUD operations for the **TrainingYear** model.
@@ -596,6 +601,16 @@ export class PrismaClient<
     * ```
     */
   get setting(): Prisma.SettingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.alertConfig`: Exposes CRUD operations for the **AlertConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AlertConfigs
+    * const alertConfigs = await prisma.alertConfig.findMany()
+    * ```
+    */
+  get alertConfig(): Prisma.AlertConfigDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1043,11 +1058,11 @@ export namespace Prisma {
     MemberTag: 'MemberTag',
     SecurityAlert: 'SecurityAlert',
     Visitor: 'Visitor',
-    bmq_courses: 'bmq_courses',
-    bmq_enrollments: 'bmq_enrollments',
+    BmqCourse: 'BmqCourse',
+    BmqEnrollment: 'BmqEnrollment',
     migrations: 'migrations',
     report_audit_log: 'report_audit_log',
-    report_settings: 'report_settings',
+    ReportSetting: 'ReportSetting',
     TrainingYear: 'TrainingYear',
     DdsAssignment: 'DdsAssignment',
     ResponsibilityAuditLog: 'ResponsibilityAuditLog',
@@ -1060,7 +1075,8 @@ export namespace Prisma {
     Session: 'Session',
     Account: 'Account',
     Verification: 'Verification',
-    Setting: 'Setting'
+    Setting: 'Setting',
+    AlertConfig: 'AlertConfig'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1076,7 +1092,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmq_courses" | "bmq_enrollments" | "migrations" | "report_audit_log" | "report_settings" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "user" | "session" | "account" | "verification" | "setting"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2042,151 +2058,151 @@ export namespace Prisma {
           }
         }
       }
-      bmq_courses: {
-        payload: Prisma.$bmq_coursesPayload<ExtArgs>
-        fields: Prisma.bmq_coursesFieldRefs
+      BmqCourse: {
+        payload: Prisma.$BmqCoursePayload<ExtArgs>
+        fields: Prisma.BmqCourseFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.bmq_coursesFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload> | null
+            args: Prisma.BmqCourseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.bmq_coursesFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           findFirst: {
-            args: Prisma.bmq_coursesFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload> | null
+            args: Prisma.BmqCourseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.bmq_coursesFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           findMany: {
-            args: Prisma.bmq_coursesFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>[]
+            args: Prisma.BmqCourseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>[]
           }
           create: {
-            args: Prisma.bmq_coursesCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           createMany: {
-            args: Prisma.bmq_coursesCreateManyArgs<ExtArgs>
+            args: Prisma.BmqCourseCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.bmq_coursesCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>[]
+            args: Prisma.BmqCourseCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>[]
           }
           delete: {
-            args: Prisma.bmq_coursesDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           update: {
-            args: Prisma.bmq_coursesUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           deleteMany: {
-            args: Prisma.bmq_coursesDeleteManyArgs<ExtArgs>
+            args: Prisma.BmqCourseDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.bmq_coursesUpdateManyArgs<ExtArgs>
+            args: Prisma.BmqCourseUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.bmq_coursesUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>[]
+            args: Prisma.BmqCourseUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>[]
           }
           upsert: {
-            args: Prisma.bmq_coursesUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_coursesPayload>
+            args: Prisma.BmqCourseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqCoursePayload>
           }
           aggregate: {
-            args: Prisma.Bmq_coursesAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateBmq_courses>
+            args: Prisma.BmqCourseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBmqCourse>
           }
           groupBy: {
-            args: Prisma.bmq_coursesGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Bmq_coursesGroupByOutputType>[]
+            args: Prisma.BmqCourseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BmqCourseGroupByOutputType>[]
           }
           count: {
-            args: Prisma.bmq_coursesCountArgs<ExtArgs>
-            result: $Utils.Optional<Bmq_coursesCountAggregateOutputType> | number
+            args: Prisma.BmqCourseCountArgs<ExtArgs>
+            result: $Utils.Optional<BmqCourseCountAggregateOutputType> | number
           }
         }
       }
-      bmq_enrollments: {
-        payload: Prisma.$bmq_enrollmentsPayload<ExtArgs>
-        fields: Prisma.bmq_enrollmentsFieldRefs
+      BmqEnrollment: {
+        payload: Prisma.$BmqEnrollmentPayload<ExtArgs>
+        fields: Prisma.BmqEnrollmentFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.bmq_enrollmentsFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload> | null
+            args: Prisma.BmqEnrollmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.bmq_enrollmentsFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           findFirst: {
-            args: Prisma.bmq_enrollmentsFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload> | null
+            args: Prisma.BmqEnrollmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.bmq_enrollmentsFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           findMany: {
-            args: Prisma.bmq_enrollmentsFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>[]
+            args: Prisma.BmqEnrollmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>[]
           }
           create: {
-            args: Prisma.bmq_enrollmentsCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           createMany: {
-            args: Prisma.bmq_enrollmentsCreateManyArgs<ExtArgs>
+            args: Prisma.BmqEnrollmentCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.bmq_enrollmentsCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>[]
+            args: Prisma.BmqEnrollmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>[]
           }
           delete: {
-            args: Prisma.bmq_enrollmentsDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           update: {
-            args: Prisma.bmq_enrollmentsUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           deleteMany: {
-            args: Prisma.bmq_enrollmentsDeleteManyArgs<ExtArgs>
+            args: Prisma.BmqEnrollmentDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.bmq_enrollmentsUpdateManyArgs<ExtArgs>
+            args: Prisma.BmqEnrollmentUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.bmq_enrollmentsUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>[]
+            args: Prisma.BmqEnrollmentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>[]
           }
           upsert: {
-            args: Prisma.bmq_enrollmentsUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$bmq_enrollmentsPayload>
+            args: Prisma.BmqEnrollmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BmqEnrollmentPayload>
           }
           aggregate: {
-            args: Prisma.Bmq_enrollmentsAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateBmq_enrollments>
+            args: Prisma.BmqEnrollmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBmqEnrollment>
           }
           groupBy: {
-            args: Prisma.bmq_enrollmentsGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Bmq_enrollmentsGroupByOutputType>[]
+            args: Prisma.BmqEnrollmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BmqEnrollmentGroupByOutputType>[]
           }
           count: {
-            args: Prisma.bmq_enrollmentsCountArgs<ExtArgs>
-            result: $Utils.Optional<Bmq_enrollmentsCountAggregateOutputType> | number
+            args: Prisma.BmqEnrollmentCountArgs<ExtArgs>
+            result: $Utils.Optional<BmqEnrollmentCountAggregateOutputType> | number
           }
         }
       }
@@ -2338,77 +2354,77 @@ export namespace Prisma {
           }
         }
       }
-      report_settings: {
-        payload: Prisma.$report_settingsPayload<ExtArgs>
-        fields: Prisma.report_settingsFieldRefs
+      ReportSetting: {
+        payload: Prisma.$ReportSettingPayload<ExtArgs>
+        fields: Prisma.ReportSettingFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.report_settingsFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload> | null
+            args: Prisma.ReportSettingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.report_settingsFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           findFirst: {
-            args: Prisma.report_settingsFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload> | null
+            args: Prisma.ReportSettingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.report_settingsFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           findMany: {
-            args: Prisma.report_settingsFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>[]
+            args: Prisma.ReportSettingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>[]
           }
           create: {
-            args: Prisma.report_settingsCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           createMany: {
-            args: Prisma.report_settingsCreateManyArgs<ExtArgs>
+            args: Prisma.ReportSettingCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.report_settingsCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>[]
+            args: Prisma.ReportSettingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>[]
           }
           delete: {
-            args: Prisma.report_settingsDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           update: {
-            args: Prisma.report_settingsUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           deleteMany: {
-            args: Prisma.report_settingsDeleteManyArgs<ExtArgs>
+            args: Prisma.ReportSettingDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.report_settingsUpdateManyArgs<ExtArgs>
+            args: Prisma.ReportSettingUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.report_settingsUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>[]
+            args: Prisma.ReportSettingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>[]
           }
           upsert: {
-            args: Prisma.report_settingsUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$report_settingsPayload>
+            args: Prisma.ReportSettingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReportSettingPayload>
           }
           aggregate: {
-            args: Prisma.Report_settingsAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateReport_settings>
+            args: Prisma.ReportSettingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReportSetting>
           }
           groupBy: {
-            args: Prisma.report_settingsGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Report_settingsGroupByOutputType>[]
+            args: Prisma.ReportSettingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReportSettingGroupByOutputType>[]
           }
           count: {
-            args: Prisma.report_settingsCountArgs<ExtArgs>
-            result: $Utils.Optional<Report_settingsCountAggregateOutputType> | number
+            args: Prisma.ReportSettingCountArgs<ExtArgs>
+            result: $Utils.Optional<ReportSettingCountAggregateOutputType> | number
           }
         }
       }
@@ -3374,6 +3390,80 @@ export namespace Prisma {
           }
         }
       }
+      AlertConfig: {
+        payload: Prisma.$AlertConfigPayload<ExtArgs>
+        fields: Prisma.AlertConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AlertConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AlertConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.AlertConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AlertConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          findMany: {
+            args: Prisma.AlertConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>[]
+          }
+          create: {
+            args: Prisma.AlertConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          createMany: {
+            args: Prisma.AlertConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AlertConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.AlertConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          update: {
+            args: Prisma.AlertConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.AlertConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AlertConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AlertConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.AlertConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.AlertConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAlertConfig>
+          }
+          groupBy: {
+            args: Prisma.AlertConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AlertConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AlertConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<AlertConfigCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3495,11 +3585,11 @@ export namespace Prisma {
     memberTag?: MemberTagOmit
     securityAlert?: SecurityAlertOmit
     visitor?: VisitorOmit
-    bmq_courses?: bmq_coursesOmit
-    bmq_enrollments?: bmq_enrollmentsOmit
+    bmqCourse?: BmqCourseOmit
+    bmqEnrollment?: BmqEnrollmentOmit
     migrations?: migrationsOmit
     report_audit_log?: report_audit_logOmit
-    report_settings?: report_settingsOmit
+    reportSetting?: ReportSettingOmit
     trainingYear?: TrainingYearOmit
     ddsAssignment?: DdsAssignmentOmit
     responsibilityAuditLog?: ResponsibilityAuditLogOmit
@@ -3513,6 +3603,7 @@ export namespace Prisma {
     account?: AccountOmit
     verification?: VerificationOmit
     setting?: SettingOmit
+    alertConfig?: AlertConfigOmit
   }
 
   /* Types for Logging */
@@ -3856,7 +3947,7 @@ export namespace Prisma {
    */
 
   export type MemberCountOutputType = {
-    bmq_enrollments: number
+    bmqEnrollments: number
     checkins: number
     visitors: number
     memberTags: number
@@ -3865,7 +3956,7 @@ export namespace Prisma {
   }
 
   export type MemberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_enrollments?: boolean | MemberCountOutputTypeCountBmq_enrollmentsArgs
+    bmqEnrollments?: boolean | MemberCountOutputTypeCountBmqEnrollmentsArgs
     checkins?: boolean | MemberCountOutputTypeCountCheckinsArgs
     visitors?: boolean | MemberCountOutputTypeCountVisitorsArgs
     memberTags?: boolean | MemberCountOutputTypeCountMemberTagsArgs
@@ -3887,8 +3978,8 @@ export namespace Prisma {
   /**
    * MemberCountOutputType without action
    */
-  export type MemberCountOutputTypeCountBmq_enrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: bmq_enrollmentsWhereInput
+  export type MemberCountOutputTypeCountBmqEnrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BmqEnrollmentWhereInput
   }
 
   /**
@@ -3959,33 +4050,33 @@ export namespace Prisma {
 
 
   /**
-   * Count Type Bmq_coursesCountOutputType
+   * Count Type BmqCourseCountOutputType
    */
 
-  export type Bmq_coursesCountOutputType = {
-    bmq_enrollments: number
+  export type BmqCourseCountOutputType = {
+    bmqEnrollments: number
   }
 
-  export type Bmq_coursesCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_enrollments?: boolean | Bmq_coursesCountOutputTypeCountBmq_enrollmentsArgs
+  export type BmqCourseCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bmqEnrollments?: boolean | BmqCourseCountOutputTypeCountBmqEnrollmentsArgs
   }
 
   // Custom InputTypes
   /**
-   * Bmq_coursesCountOutputType without action
+   * BmqCourseCountOutputType without action
    */
-  export type Bmq_coursesCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Bmq_coursesCountOutputType
+     * Select specific fields to fetch from the BmqCourseCountOutputType
      */
-    select?: Bmq_coursesCountOutputTypeSelect<ExtArgs> | null
+    select?: BmqCourseCountOutputTypeSelect<ExtArgs> | null
   }
 
   /**
-   * Bmq_coursesCountOutputType without action
+   * BmqCourseCountOutputType without action
    */
-  export type Bmq_coursesCountOutputTypeCountBmq_enrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: bmq_enrollmentsWhereInput
+  export type BmqCourseCountOutputTypeCountBmqEnrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BmqEnrollmentWhereInput
   }
 
 
@@ -14131,7 +14222,7 @@ export namespace Prisma {
     contract_start?: boolean
     contract_end?: boolean
     badge?: boolean | Member$badgeArgs<ExtArgs>
-    bmq_enrollments?: boolean | Member$bmq_enrollmentsArgs<ExtArgs>
+    bmqEnrollments?: boolean | Member$bmqEnrollmentsArgs<ExtArgs>
     checkins?: boolean | Member$checkinsArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
     visitors?: boolean | Member$visitorsArgs<ExtArgs>
@@ -14235,7 +14326,7 @@ export namespace Prisma {
   export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rank" | "firstName" | "lastName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end", ExtArgs["result"]["member"]>
   export type MemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     badge?: boolean | Member$badgeArgs<ExtArgs>
-    bmq_enrollments?: boolean | Member$bmq_enrollmentsArgs<ExtArgs>
+    bmqEnrollments?: boolean | Member$bmqEnrollmentsArgs<ExtArgs>
     checkins?: boolean | Member$checkinsArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
     visitors?: boolean | Member$visitorsArgs<ExtArgs>
@@ -14263,7 +14354,7 @@ export namespace Prisma {
     name: "Member"
     objects: {
       badge: Prisma.$BadgePayload<ExtArgs> | null
-      bmq_enrollments: Prisma.$bmq_enrollmentsPayload<ExtArgs>[]
+      bmqEnrollments: Prisma.$BmqEnrollmentPayload<ExtArgs>[]
       checkins: Prisma.$CheckinPayload<ExtArgs>[]
       division: Prisma.$DivisionPayload<ExtArgs> | null
       visitors: Prisma.$VisitorPayload<ExtArgs>[]
@@ -14693,7 +14784,7 @@ export namespace Prisma {
   export interface Prisma__MemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     badge<T extends Member$badgeArgs<ExtArgs> = {}>(args?: Subset<T, Member$badgeArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    bmq_enrollments<T extends Member$bmq_enrollmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$bmq_enrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    bmqEnrollments<T extends Member$bmqEnrollmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$bmqEnrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkins<T extends Member$checkinsArgs<ExtArgs> = {}>(args?: Subset<T, Member$checkinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     division<T extends Member$divisionArgs<ExtArgs> = {}>(args?: Subset<T, Member$divisionArgs<ExtArgs>>): Prisma__DivisionClient<$Result.GetResult<Prisma.$DivisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     visitors<T extends Member$visitorsArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -15170,27 +15261,27 @@ export namespace Prisma {
   }
 
   /**
-   * Member.bmq_enrollments
+   * Member.bmqEnrollments
    */
-  export type Member$bmq_enrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Member$bmqEnrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
-    where?: bmq_enrollmentsWhereInput
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    include?: BmqEnrollmentInclude<ExtArgs> | null
+    where?: BmqEnrollmentWhereInput
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
+    cursor?: BmqEnrollmentWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: Bmq_enrollmentsScalarFieldEnum | Bmq_enrollmentsScalarFieldEnum[]
+    distinct?: BmqEnrollmentScalarFieldEnum | BmqEnrollmentScalarFieldEnum[]
   }
 
   /**
@@ -20078,402 +20169,402 @@ export namespace Prisma {
 
 
   /**
-   * Model bmq_courses
+   * Model BmqCourse
    */
 
-  export type AggregateBmq_courses = {
-    _count: Bmq_coursesCountAggregateOutputType | null
-    _min: Bmq_coursesMinAggregateOutputType | null
-    _max: Bmq_coursesMaxAggregateOutputType | null
+  export type AggregateBmqCourse = {
+    _count: BmqCourseCountAggregateOutputType | null
+    _min: BmqCourseMinAggregateOutputType | null
+    _max: BmqCourseMaxAggregateOutputType | null
   }
 
-  export type Bmq_coursesMinAggregateOutputType = {
+  export type BmqCourseMinAggregateOutputType = {
     id: string | null
     name: string | null
-    start_date: Date | null
-    end_date: Date | null
-    training_start_time: Date | null
-    training_end_time: Date | null
-    is_active: boolean | null
-    created_at: Date | null
-    updated_at: Date | null
+    startDate: Date | null
+    endDate: Date | null
+    trainingStartTime: Date | null
+    trainingEndTime: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type Bmq_coursesMaxAggregateOutputType = {
+  export type BmqCourseMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    start_date: Date | null
-    end_date: Date | null
-    training_start_time: Date | null
-    training_end_time: Date | null
-    is_active: boolean | null
-    created_at: Date | null
-    updated_at: Date | null
+    startDate: Date | null
+    endDate: Date | null
+    trainingStartTime: Date | null
+    trainingEndTime: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type Bmq_coursesCountAggregateOutputType = {
+  export type BmqCourseCountAggregateOutputType = {
     id: number
     name: number
-    start_date: number
-    end_date: number
-    training_start_time: number
-    training_end_time: number
-    is_active: number
-    created_at: number
-    updated_at: number
-    training_days: number
+    startDate: number
+    endDate: number
+    trainingStartTime: number
+    trainingEndTime: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    trainingDays: number
     _all: number
   }
 
 
-  export type Bmq_coursesMinAggregateInputType = {
+  export type BmqCourseMinAggregateInputType = {
     id?: true
     name?: true
-    start_date?: true
-    end_date?: true
-    training_start_time?: true
-    training_end_time?: true
-    is_active?: true
-    created_at?: true
-    updated_at?: true
+    startDate?: true
+    endDate?: true
+    trainingStartTime?: true
+    trainingEndTime?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
-  export type Bmq_coursesMaxAggregateInputType = {
+  export type BmqCourseMaxAggregateInputType = {
     id?: true
     name?: true
-    start_date?: true
-    end_date?: true
-    training_start_time?: true
-    training_end_time?: true
-    is_active?: true
-    created_at?: true
-    updated_at?: true
+    startDate?: true
+    endDate?: true
+    trainingStartTime?: true
+    trainingEndTime?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
-  export type Bmq_coursesCountAggregateInputType = {
+  export type BmqCourseCountAggregateInputType = {
     id?: true
     name?: true
-    start_date?: true
-    end_date?: true
-    training_start_time?: true
-    training_end_time?: true
-    is_active?: true
-    created_at?: true
-    updated_at?: true
-    training_days?: true
+    startDate?: true
+    endDate?: true
+    trainingStartTime?: true
+    trainingEndTime?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    trainingDays?: true
     _all?: true
   }
 
-  export type Bmq_coursesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which bmq_courses to aggregate.
+     * Filter which BmqCourse to aggregate.
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_courses to fetch.
+     * Determine the order of BmqCourses to fetch.
      */
-    orderBy?: bmq_coursesOrderByWithRelationInput | bmq_coursesOrderByWithRelationInput[]
+    orderBy?: BmqCourseOrderByWithRelationInput | BmqCourseOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: bmq_coursesWhereUniqueInput
+    cursor?: BmqCourseWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_courses from the position of the cursor.
+     * Take `±n` BmqCourses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_courses.
+     * Skip the first `n` BmqCourses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned bmq_courses
+     * Count returned BmqCourses
     **/
-    _count?: true | Bmq_coursesCountAggregateInputType
+    _count?: true | BmqCourseCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: Bmq_coursesMinAggregateInputType
+    _min?: BmqCourseMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: Bmq_coursesMaxAggregateInputType
+    _max?: BmqCourseMaxAggregateInputType
   }
 
-  export type GetBmq_coursesAggregateType<T extends Bmq_coursesAggregateArgs> = {
-        [P in keyof T & keyof AggregateBmq_courses]: P extends '_count' | 'count'
+  export type GetBmqCourseAggregateType<T extends BmqCourseAggregateArgs> = {
+        [P in keyof T & keyof AggregateBmqCourse]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateBmq_courses[P]>
-      : GetScalarType<T[P], AggregateBmq_courses[P]>
+        : GetScalarType<T[P], AggregateBmqCourse[P]>
+      : GetScalarType<T[P], AggregateBmqCourse[P]>
   }
 
 
 
 
-  export type bmq_coursesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: bmq_coursesWhereInput
-    orderBy?: bmq_coursesOrderByWithAggregationInput | bmq_coursesOrderByWithAggregationInput[]
-    by: Bmq_coursesScalarFieldEnum[] | Bmq_coursesScalarFieldEnum
-    having?: bmq_coursesScalarWhereWithAggregatesInput
+  export type BmqCourseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BmqCourseWhereInput
+    orderBy?: BmqCourseOrderByWithAggregationInput | BmqCourseOrderByWithAggregationInput[]
+    by: BmqCourseScalarFieldEnum[] | BmqCourseScalarFieldEnum
+    having?: BmqCourseScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: Bmq_coursesCountAggregateInputType | true
-    _min?: Bmq_coursesMinAggregateInputType
-    _max?: Bmq_coursesMaxAggregateInputType
+    _count?: BmqCourseCountAggregateInputType | true
+    _min?: BmqCourseMinAggregateInputType
+    _max?: BmqCourseMaxAggregateInputType
   }
 
-  export type Bmq_coursesGroupByOutputType = {
+  export type BmqCourseGroupByOutputType = {
     id: string
     name: string
-    start_date: Date
-    end_date: Date
-    training_start_time: Date
-    training_end_time: Date
-    is_active: boolean | null
-    created_at: Date | null
-    updated_at: Date | null
-    training_days: string[]
-    _count: Bmq_coursesCountAggregateOutputType | null
-    _min: Bmq_coursesMinAggregateOutputType | null
-    _max: Bmq_coursesMaxAggregateOutputType | null
+    startDate: Date
+    endDate: Date
+    trainingStartTime: Date
+    trainingEndTime: Date
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    trainingDays: string[]
+    _count: BmqCourseCountAggregateOutputType | null
+    _min: BmqCourseMinAggregateOutputType | null
+    _max: BmqCourseMaxAggregateOutputType | null
   }
 
-  type GetBmq_coursesGroupByPayload<T extends bmq_coursesGroupByArgs> = Prisma.PrismaPromise<
+  type GetBmqCourseGroupByPayload<T extends BmqCourseGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<Bmq_coursesGroupByOutputType, T['by']> &
+      PickEnumerable<BmqCourseGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof Bmq_coursesGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof BmqCourseGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], Bmq_coursesGroupByOutputType[P]>
-            : GetScalarType<T[P], Bmq_coursesGroupByOutputType[P]>
+              : GetScalarType<T[P], BmqCourseGroupByOutputType[P]>
+            : GetScalarType<T[P], BmqCourseGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type bmq_coursesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqCourseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    start_date?: boolean
-    end_date?: boolean
-    training_start_time?: boolean
-    training_end_time?: boolean
-    is_active?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    training_days?: boolean
-    bmq_enrollments?: boolean | bmq_courses$bmq_enrollmentsArgs<ExtArgs>
-    _count?: boolean | Bmq_coursesCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["bmq_courses"]>
+    startDate?: boolean
+    endDate?: boolean
+    trainingStartTime?: boolean
+    trainingEndTime?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    trainingDays?: boolean
+    bmqEnrollments?: boolean | BmqCourse$bmqEnrollmentsArgs<ExtArgs>
+    _count?: boolean | BmqCourseCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bmqCourse"]>
 
-  export type bmq_coursesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqCourseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    start_date?: boolean
-    end_date?: boolean
-    training_start_time?: boolean
-    training_end_time?: boolean
-    is_active?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    training_days?: boolean
-  }, ExtArgs["result"]["bmq_courses"]>
+    startDate?: boolean
+    endDate?: boolean
+    trainingStartTime?: boolean
+    trainingEndTime?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    trainingDays?: boolean
+  }, ExtArgs["result"]["bmqCourse"]>
 
-  export type bmq_coursesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqCourseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    start_date?: boolean
-    end_date?: boolean
-    training_start_time?: boolean
-    training_end_time?: boolean
-    is_active?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    training_days?: boolean
-  }, ExtArgs["result"]["bmq_courses"]>
+    startDate?: boolean
+    endDate?: boolean
+    trainingStartTime?: boolean
+    trainingEndTime?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    trainingDays?: boolean
+  }, ExtArgs["result"]["bmqCourse"]>
 
-  export type bmq_coursesSelectScalar = {
+  export type BmqCourseSelectScalar = {
     id?: boolean
     name?: boolean
-    start_date?: boolean
-    end_date?: boolean
-    training_start_time?: boolean
-    training_end_time?: boolean
-    is_active?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    training_days?: boolean
+    startDate?: boolean
+    endDate?: boolean
+    trainingStartTime?: boolean
+    trainingEndTime?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    trainingDays?: boolean
   }
 
-  export type bmq_coursesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "start_date" | "end_date" | "training_start_time" | "training_end_time" | "is_active" | "created_at" | "updated_at" | "training_days", ExtArgs["result"]["bmq_courses"]>
-  export type bmq_coursesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_enrollments?: boolean | bmq_courses$bmq_enrollmentsArgs<ExtArgs>
-    _count?: boolean | Bmq_coursesCountOutputTypeDefaultArgs<ExtArgs>
+  export type BmqCourseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "startDate" | "endDate" | "trainingStartTime" | "trainingEndTime" | "isActive" | "createdAt" | "updatedAt" | "trainingDays", ExtArgs["result"]["bmqCourse"]>
+  export type BmqCourseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bmqEnrollments?: boolean | BmqCourse$bmqEnrollmentsArgs<ExtArgs>
+    _count?: boolean | BmqCourseCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type bmq_coursesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type bmq_coursesIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type BmqCourseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type BmqCourseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
-  export type $bmq_coursesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "bmq_courses"
+  export type $BmqCoursePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BmqCourse"
     objects: {
-      bmq_enrollments: Prisma.$bmq_enrollmentsPayload<ExtArgs>[]
+      bmqEnrollments: Prisma.$BmqEnrollmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      start_date: Date
-      end_date: Date
-      training_start_time: Date
-      training_end_time: Date
-      is_active: boolean | null
-      created_at: Date | null
-      updated_at: Date | null
-      training_days: string[]
-    }, ExtArgs["result"]["bmq_courses"]>
+      startDate: Date
+      endDate: Date
+      trainingStartTime: Date
+      trainingEndTime: Date
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+      trainingDays: string[]
+    }, ExtArgs["result"]["bmqCourse"]>
     composites: {}
   }
 
-  type bmq_coursesGetPayload<S extends boolean | null | undefined | bmq_coursesDefaultArgs> = $Result.GetResult<Prisma.$bmq_coursesPayload, S>
+  type BmqCourseGetPayload<S extends boolean | null | undefined | BmqCourseDefaultArgs> = $Result.GetResult<Prisma.$BmqCoursePayload, S>
 
-  type bmq_coursesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<bmq_coursesFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Bmq_coursesCountAggregateInputType | true
+  type BmqCourseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BmqCourseFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BmqCourseCountAggregateInputType | true
     }
 
-  export interface bmq_coursesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['bmq_courses'], meta: { name: 'bmq_courses' } }
+  export interface BmqCourseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BmqCourse'], meta: { name: 'BmqCourse' } }
     /**
-     * Find zero or one Bmq_courses that matches the filter.
-     * @param {bmq_coursesFindUniqueArgs} args - Arguments to find a Bmq_courses
+     * Find zero or one BmqCourse that matches the filter.
+     * @param {BmqCourseFindUniqueArgs} args - Arguments to find a BmqCourse
      * @example
-     * // Get one Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findUnique({
+     * // Get one BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends bmq_coursesFindUniqueArgs>(args: SelectSubset<T, bmq_coursesFindUniqueArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends BmqCourseFindUniqueArgs>(args: SelectSubset<T, BmqCourseFindUniqueArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Bmq_courses that matches the filter or throw an error with `error.code='P2025'`
+     * Find one BmqCourse that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {bmq_coursesFindUniqueOrThrowArgs} args - Arguments to find a Bmq_courses
+     * @param {BmqCourseFindUniqueOrThrowArgs} args - Arguments to find a BmqCourse
      * @example
-     * // Get one Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findUniqueOrThrow({
+     * // Get one BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends bmq_coursesFindUniqueOrThrowArgs>(args: SelectSubset<T, bmq_coursesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends BmqCourseFindUniqueOrThrowArgs>(args: SelectSubset<T, BmqCourseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Bmq_courses that matches the filter.
+     * Find the first BmqCourse that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesFindFirstArgs} args - Arguments to find a Bmq_courses
+     * @param {BmqCourseFindFirstArgs} args - Arguments to find a BmqCourse
      * @example
-     * // Get one Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findFirst({
+     * // Get one BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends bmq_coursesFindFirstArgs>(args?: SelectSubset<T, bmq_coursesFindFirstArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends BmqCourseFindFirstArgs>(args?: SelectSubset<T, BmqCourseFindFirstArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Bmq_courses that matches the filter or
+     * Find the first BmqCourse that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesFindFirstOrThrowArgs} args - Arguments to find a Bmq_courses
+     * @param {BmqCourseFindFirstOrThrowArgs} args - Arguments to find a BmqCourse
      * @example
-     * // Get one Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findFirstOrThrow({
+     * // Get one BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends bmq_coursesFindFirstOrThrowArgs>(args?: SelectSubset<T, bmq_coursesFindFirstOrThrowArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends BmqCourseFindFirstOrThrowArgs>(args?: SelectSubset<T, BmqCourseFindFirstOrThrowArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Bmq_courses that matches the filter.
+     * Find zero or more BmqCourses that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {BmqCourseFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findMany()
+     * // Get all BmqCourses
+     * const bmqCourses = await prisma.bmqCourse.findMany()
      * 
-     * // Get first 10 Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.findMany({ take: 10 })
+     * // Get first 10 BmqCourses
+     * const bmqCourses = await prisma.bmqCourse.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const bmq_coursesWithIdOnly = await prisma.bmq_courses.findMany({ select: { id: true } })
+     * const bmqCourseWithIdOnly = await prisma.bmqCourse.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends bmq_coursesFindManyArgs>(args?: SelectSubset<T, bmq_coursesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends BmqCourseFindManyArgs>(args?: SelectSubset<T, BmqCourseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Bmq_courses.
-     * @param {bmq_coursesCreateArgs} args - Arguments to create a Bmq_courses.
+     * Create a BmqCourse.
+     * @param {BmqCourseCreateArgs} args - Arguments to create a BmqCourse.
      * @example
-     * // Create one Bmq_courses
-     * const Bmq_courses = await prisma.bmq_courses.create({
+     * // Create one BmqCourse
+     * const BmqCourse = await prisma.bmqCourse.create({
      *   data: {
-     *     // ... data to create a Bmq_courses
+     *     // ... data to create a BmqCourse
      *   }
      * })
      * 
      */
-    create<T extends bmq_coursesCreateArgs>(args: SelectSubset<T, bmq_coursesCreateArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends BmqCourseCreateArgs>(args: SelectSubset<T, BmqCourseCreateArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Bmq_courses.
-     * @param {bmq_coursesCreateManyArgs} args - Arguments to create many Bmq_courses.
+     * Create many BmqCourses.
+     * @param {BmqCourseCreateManyArgs} args - Arguments to create many BmqCourses.
      * @example
-     * // Create many Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.createMany({
+     * // Create many BmqCourses
+     * const bmqCourse = await prisma.bmqCourse.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends bmq_coursesCreateManyArgs>(args?: SelectSubset<T, bmq_coursesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends BmqCourseCreateManyArgs>(args?: SelectSubset<T, BmqCourseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Bmq_courses and returns the data saved in the database.
-     * @param {bmq_coursesCreateManyAndReturnArgs} args - Arguments to create many Bmq_courses.
+     * Create many BmqCourses and returns the data saved in the database.
+     * @param {BmqCourseCreateManyAndReturnArgs} args - Arguments to create many BmqCourses.
      * @example
-     * // Create many Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.createManyAndReturn({
+     * // Create many BmqCourses
+     * const bmqCourse = await prisma.bmqCourse.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Bmq_courses and only return the `id`
-     * const bmq_coursesWithIdOnly = await prisma.bmq_courses.createManyAndReturn({
+     * // Create many BmqCourses and only return the `id`
+     * const bmqCourseWithIdOnly = await prisma.bmqCourse.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -20483,28 +20574,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends bmq_coursesCreateManyAndReturnArgs>(args?: SelectSubset<T, bmq_coursesCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends BmqCourseCreateManyAndReturnArgs>(args?: SelectSubset<T, BmqCourseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Bmq_courses.
-     * @param {bmq_coursesDeleteArgs} args - Arguments to delete one Bmq_courses.
+     * Delete a BmqCourse.
+     * @param {BmqCourseDeleteArgs} args - Arguments to delete one BmqCourse.
      * @example
-     * // Delete one Bmq_courses
-     * const Bmq_courses = await prisma.bmq_courses.delete({
+     * // Delete one BmqCourse
+     * const BmqCourse = await prisma.bmqCourse.delete({
      *   where: {
-     *     // ... filter to delete one Bmq_courses
+     *     // ... filter to delete one BmqCourse
      *   }
      * })
      * 
      */
-    delete<T extends bmq_coursesDeleteArgs>(args: SelectSubset<T, bmq_coursesDeleteArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends BmqCourseDeleteArgs>(args: SelectSubset<T, BmqCourseDeleteArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Bmq_courses.
-     * @param {bmq_coursesUpdateArgs} args - Arguments to update one Bmq_courses.
+     * Update one BmqCourse.
+     * @param {BmqCourseUpdateArgs} args - Arguments to update one BmqCourse.
      * @example
-     * // Update one Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.update({
+     * // Update one BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -20514,30 +20605,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends bmq_coursesUpdateArgs>(args: SelectSubset<T, bmq_coursesUpdateArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends BmqCourseUpdateArgs>(args: SelectSubset<T, BmqCourseUpdateArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Bmq_courses.
-     * @param {bmq_coursesDeleteManyArgs} args - Arguments to filter Bmq_courses to delete.
+     * Delete zero or more BmqCourses.
+     * @param {BmqCourseDeleteManyArgs} args - Arguments to filter BmqCourses to delete.
      * @example
-     * // Delete a few Bmq_courses
-     * const { count } = await prisma.bmq_courses.deleteMany({
+     * // Delete a few BmqCourses
+     * const { count } = await prisma.bmqCourse.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends bmq_coursesDeleteManyArgs>(args?: SelectSubset<T, bmq_coursesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends BmqCourseDeleteManyArgs>(args?: SelectSubset<T, BmqCourseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Bmq_courses.
+     * Update zero or more BmqCourses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {BmqCourseUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.updateMany({
+     * // Update many BmqCourses
+     * const bmqCourse = await prisma.bmqCourse.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -20547,14 +20638,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends bmq_coursesUpdateManyArgs>(args: SelectSubset<T, bmq_coursesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends BmqCourseUpdateManyArgs>(args: SelectSubset<T, BmqCourseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Bmq_courses and returns the data updated in the database.
-     * @param {bmq_coursesUpdateManyAndReturnArgs} args - Arguments to update many Bmq_courses.
+     * Update zero or more BmqCourses and returns the data updated in the database.
+     * @param {BmqCourseUpdateManyAndReturnArgs} args - Arguments to update many BmqCourses.
      * @example
-     * // Update many Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.updateManyAndReturn({
+     * // Update many BmqCourses
+     * const bmqCourse = await prisma.bmqCourse.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -20563,8 +20654,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Bmq_courses and only return the `id`
-     * const bmq_coursesWithIdOnly = await prisma.bmq_courses.updateManyAndReturn({
+     * // Update zero or more BmqCourses and only return the `id`
+     * const bmqCourseWithIdOnly = await prisma.bmqCourse.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -20577,56 +20668,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends bmq_coursesUpdateManyAndReturnArgs>(args: SelectSubset<T, bmq_coursesUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends BmqCourseUpdateManyAndReturnArgs>(args: SelectSubset<T, BmqCourseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Bmq_courses.
-     * @param {bmq_coursesUpsertArgs} args - Arguments to update or create a Bmq_courses.
+     * Create or update one BmqCourse.
+     * @param {BmqCourseUpsertArgs} args - Arguments to update or create a BmqCourse.
      * @example
-     * // Update or create a Bmq_courses
-     * const bmq_courses = await prisma.bmq_courses.upsert({
+     * // Update or create a BmqCourse
+     * const bmqCourse = await prisma.bmqCourse.upsert({
      *   create: {
-     *     // ... data to create a Bmq_courses
+     *     // ... data to create a BmqCourse
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Bmq_courses we want to update
+     *     // ... the filter for the BmqCourse we want to update
      *   }
      * })
      */
-    upsert<T extends bmq_coursesUpsertArgs>(args: SelectSubset<T, bmq_coursesUpsertArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends BmqCourseUpsertArgs>(args: SelectSubset<T, BmqCourseUpsertArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Bmq_courses.
+     * Count the number of BmqCourses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesCountArgs} args - Arguments to filter Bmq_courses to count.
+     * @param {BmqCourseCountArgs} args - Arguments to filter BmqCourses to count.
      * @example
-     * // Count the number of Bmq_courses
-     * const count = await prisma.bmq_courses.count({
+     * // Count the number of BmqCourses
+     * const count = await prisma.bmqCourse.count({
      *   where: {
-     *     // ... the filter for the Bmq_courses we want to count
+     *     // ... the filter for the BmqCourses we want to count
      *   }
      * })
     **/
-    count<T extends bmq_coursesCountArgs>(
-      args?: Subset<T, bmq_coursesCountArgs>,
+    count<T extends BmqCourseCountArgs>(
+      args?: Subset<T, BmqCourseCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], Bmq_coursesCountAggregateOutputType>
+          : GetScalarType<T['select'], BmqCourseCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Bmq_courses.
+     * Allows you to perform aggregations operations on a BmqCourse.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {Bmq_coursesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {BmqCourseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -20646,13 +20737,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends Bmq_coursesAggregateArgs>(args: Subset<T, Bmq_coursesAggregateArgs>): Prisma.PrismaPromise<GetBmq_coursesAggregateType<T>>
+    aggregate<T extends BmqCourseAggregateArgs>(args: Subset<T, BmqCourseAggregateArgs>): Prisma.PrismaPromise<GetBmqCourseAggregateType<T>>
 
     /**
-     * Group by Bmq_courses.
+     * Group by BmqCourse.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_coursesGroupByArgs} args - Group by arguments.
+     * @param {BmqCourseGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -20667,14 +20758,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends bmq_coursesGroupByArgs,
+      T extends BmqCourseGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: bmq_coursesGroupByArgs['orderBy'] }
-        : { orderBy?: bmq_coursesGroupByArgs['orderBy'] },
+        ? { orderBy: BmqCourseGroupByArgs['orderBy'] }
+        : { orderBy?: BmqCourseGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -20723,22 +20814,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, bmq_coursesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBmq_coursesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, BmqCourseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBmqCourseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the bmq_courses model
+   * Fields of the BmqCourse model
    */
-  readonly fields: bmq_coursesFieldRefs;
+  readonly fields: BmqCourseFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for bmq_courses.
+   * The delegate class that acts as a "Promise-like" for BmqCourse.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__bmq_coursesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__BmqCourseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    bmq_enrollments<T extends bmq_courses$bmq_enrollmentsArgs<ExtArgs> = {}>(args?: Subset<T, bmq_courses$bmq_enrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    bmqEnrollments<T extends BmqCourse$bmqEnrollmentsArgs<ExtArgs> = {}>(args?: Subset<T, BmqCourse$bmqEnrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20765,813 +20856,813 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the bmq_courses model
+   * Fields of the BmqCourse model
    */
-  interface bmq_coursesFieldRefs {
-    readonly id: FieldRef<"bmq_courses", 'String'>
-    readonly name: FieldRef<"bmq_courses", 'String'>
-    readonly start_date: FieldRef<"bmq_courses", 'DateTime'>
-    readonly end_date: FieldRef<"bmq_courses", 'DateTime'>
-    readonly training_start_time: FieldRef<"bmq_courses", 'DateTime'>
-    readonly training_end_time: FieldRef<"bmq_courses", 'DateTime'>
-    readonly is_active: FieldRef<"bmq_courses", 'Boolean'>
-    readonly created_at: FieldRef<"bmq_courses", 'DateTime'>
-    readonly updated_at: FieldRef<"bmq_courses", 'DateTime'>
-    readonly training_days: FieldRef<"bmq_courses", 'String[]'>
+  interface BmqCourseFieldRefs {
+    readonly id: FieldRef<"BmqCourse", 'String'>
+    readonly name: FieldRef<"BmqCourse", 'String'>
+    readonly startDate: FieldRef<"BmqCourse", 'DateTime'>
+    readonly endDate: FieldRef<"BmqCourse", 'DateTime'>
+    readonly trainingStartTime: FieldRef<"BmqCourse", 'DateTime'>
+    readonly trainingEndTime: FieldRef<"BmqCourse", 'DateTime'>
+    readonly isActive: FieldRef<"BmqCourse", 'Boolean'>
+    readonly createdAt: FieldRef<"BmqCourse", 'DateTime'>
+    readonly updatedAt: FieldRef<"BmqCourse", 'DateTime'>
+    readonly trainingDays: FieldRef<"BmqCourse", 'String[]'>
   }
     
 
   // Custom InputTypes
   /**
-   * bmq_courses findUnique
+   * BmqCourse findUnique
    */
-  export type bmq_coursesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_courses to fetch.
+     * Filter, which BmqCourse to fetch.
      */
-    where: bmq_coursesWhereUniqueInput
+    where: BmqCourseWhereUniqueInput
   }
 
   /**
-   * bmq_courses findUniqueOrThrow
+   * BmqCourse findUniqueOrThrow
    */
-  export type bmq_coursesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_courses to fetch.
+     * Filter, which BmqCourse to fetch.
      */
-    where: bmq_coursesWhereUniqueInput
+    where: BmqCourseWhereUniqueInput
   }
 
   /**
-   * bmq_courses findFirst
+   * BmqCourse findFirst
    */
-  export type bmq_coursesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_courses to fetch.
+     * Filter, which BmqCourse to fetch.
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_courses to fetch.
+     * Determine the order of BmqCourses to fetch.
      */
-    orderBy?: bmq_coursesOrderByWithRelationInput | bmq_coursesOrderByWithRelationInput[]
+    orderBy?: BmqCourseOrderByWithRelationInput | BmqCourseOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for bmq_courses.
+     * Sets the position for searching for BmqCourses.
      */
-    cursor?: bmq_coursesWhereUniqueInput
+    cursor?: BmqCourseWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_courses from the position of the cursor.
+     * Take `±n` BmqCourses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_courses.
+     * Skip the first `n` BmqCourses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of bmq_courses.
+     * Filter by unique combinations of BmqCourses.
      */
-    distinct?: Bmq_coursesScalarFieldEnum | Bmq_coursesScalarFieldEnum[]
+    distinct?: BmqCourseScalarFieldEnum | BmqCourseScalarFieldEnum[]
   }
 
   /**
-   * bmq_courses findFirstOrThrow
+   * BmqCourse findFirstOrThrow
    */
-  export type bmq_coursesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_courses to fetch.
+     * Filter, which BmqCourse to fetch.
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_courses to fetch.
+     * Determine the order of BmqCourses to fetch.
      */
-    orderBy?: bmq_coursesOrderByWithRelationInput | bmq_coursesOrderByWithRelationInput[]
+    orderBy?: BmqCourseOrderByWithRelationInput | BmqCourseOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for bmq_courses.
+     * Sets the position for searching for BmqCourses.
      */
-    cursor?: bmq_coursesWhereUniqueInput
+    cursor?: BmqCourseWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_courses from the position of the cursor.
+     * Take `±n` BmqCourses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_courses.
+     * Skip the first `n` BmqCourses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of bmq_courses.
+     * Filter by unique combinations of BmqCourses.
      */
-    distinct?: Bmq_coursesScalarFieldEnum | Bmq_coursesScalarFieldEnum[]
+    distinct?: BmqCourseScalarFieldEnum | BmqCourseScalarFieldEnum[]
   }
 
   /**
-   * bmq_courses findMany
+   * BmqCourse findMany
    */
-  export type bmq_coursesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_courses to fetch.
+     * Filter, which BmqCourses to fetch.
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_courses to fetch.
+     * Determine the order of BmqCourses to fetch.
      */
-    orderBy?: bmq_coursesOrderByWithRelationInput | bmq_coursesOrderByWithRelationInput[]
+    orderBy?: BmqCourseOrderByWithRelationInput | BmqCourseOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing bmq_courses.
+     * Sets the position for listing BmqCourses.
      */
-    cursor?: bmq_coursesWhereUniqueInput
+    cursor?: BmqCourseWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_courses from the position of the cursor.
+     * Take `±n` BmqCourses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_courses.
+     * Skip the first `n` BmqCourses.
      */
     skip?: number
-    distinct?: Bmq_coursesScalarFieldEnum | Bmq_coursesScalarFieldEnum[]
+    distinct?: BmqCourseScalarFieldEnum | BmqCourseScalarFieldEnum[]
   }
 
   /**
-   * bmq_courses create
+   * BmqCourse create
    */
-  export type bmq_coursesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * The data needed to create a bmq_courses.
+     * The data needed to create a BmqCourse.
      */
-    data: XOR<bmq_coursesCreateInput, bmq_coursesUncheckedCreateInput>
+    data: XOR<BmqCourseCreateInput, BmqCourseUncheckedCreateInput>
   }
 
   /**
-   * bmq_courses createMany
+   * BmqCourse createMany
    */
-  export type bmq_coursesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many bmq_courses.
+     * The data used to create many BmqCourses.
      */
-    data: bmq_coursesCreateManyInput | bmq_coursesCreateManyInput[]
+    data: BmqCourseCreateManyInput | BmqCourseCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * bmq_courses createManyAndReturn
+   * BmqCourse createManyAndReturn
    */
-  export type bmq_coursesCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelectCreateManyAndReturn<ExtArgs> | null
+    select?: BmqCourseSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
-     * The data used to create many bmq_courses.
+     * The data used to create many BmqCourses.
      */
-    data: bmq_coursesCreateManyInput | bmq_coursesCreateManyInput[]
+    data: BmqCourseCreateManyInput | BmqCourseCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * bmq_courses update
+   * BmqCourse update
    */
-  export type bmq_coursesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * The data needed to update a bmq_courses.
+     * The data needed to update a BmqCourse.
      */
-    data: XOR<bmq_coursesUpdateInput, bmq_coursesUncheckedUpdateInput>
+    data: XOR<BmqCourseUpdateInput, BmqCourseUncheckedUpdateInput>
     /**
-     * Choose, which bmq_courses to update.
+     * Choose, which BmqCourse to update.
      */
-    where: bmq_coursesWhereUniqueInput
+    where: BmqCourseWhereUniqueInput
   }
 
   /**
-   * bmq_courses updateMany
+   * BmqCourse updateMany
    */
-  export type bmq_coursesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update bmq_courses.
+     * The data used to update BmqCourses.
      */
-    data: XOR<bmq_coursesUpdateManyMutationInput, bmq_coursesUncheckedUpdateManyInput>
+    data: XOR<BmqCourseUpdateManyMutationInput, BmqCourseUncheckedUpdateManyInput>
     /**
-     * Filter which bmq_courses to update
+     * Filter which BmqCourses to update
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
-     * Limit how many bmq_courses to update.
+     * Limit how many BmqCourses to update.
      */
     limit?: number
   }
 
   /**
-   * bmq_courses updateManyAndReturn
+   * BmqCourse updateManyAndReturn
    */
-  export type bmq_coursesUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: BmqCourseSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
-     * The data used to update bmq_courses.
+     * The data used to update BmqCourses.
      */
-    data: XOR<bmq_coursesUpdateManyMutationInput, bmq_coursesUncheckedUpdateManyInput>
+    data: XOR<BmqCourseUpdateManyMutationInput, BmqCourseUncheckedUpdateManyInput>
     /**
-     * Filter which bmq_courses to update
+     * Filter which BmqCourses to update
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
-     * Limit how many bmq_courses to update.
+     * Limit how many BmqCourses to update.
      */
     limit?: number
   }
 
   /**
-   * bmq_courses upsert
+   * BmqCourse upsert
    */
-  export type bmq_coursesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * The filter to search for the bmq_courses to update in case it exists.
+     * The filter to search for the BmqCourse to update in case it exists.
      */
-    where: bmq_coursesWhereUniqueInput
+    where: BmqCourseWhereUniqueInput
     /**
-     * In case the bmq_courses found by the `where` argument doesn't exist, create a new bmq_courses with this data.
+     * In case the BmqCourse found by the `where` argument doesn't exist, create a new BmqCourse with this data.
      */
-    create: XOR<bmq_coursesCreateInput, bmq_coursesUncheckedCreateInput>
+    create: XOR<BmqCourseCreateInput, BmqCourseUncheckedCreateInput>
     /**
-     * In case the bmq_courses was found with the provided `where` argument, update it with this data.
+     * In case the BmqCourse was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<bmq_coursesUpdateInput, bmq_coursesUncheckedUpdateInput>
+    update: XOR<BmqCourseUpdateInput, BmqCourseUncheckedUpdateInput>
   }
 
   /**
-   * bmq_courses delete
+   * BmqCourse delete
    */
-  export type bmq_coursesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
     /**
-     * Filter which bmq_courses to delete.
+     * Filter which BmqCourse to delete.
      */
-    where: bmq_coursesWhereUniqueInput
+    where: BmqCourseWhereUniqueInput
   }
 
   /**
-   * bmq_courses deleteMany
+   * BmqCourse deleteMany
    */
-  export type bmq_coursesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which bmq_courses to delete
+     * Filter which BmqCourses to delete
      */
-    where?: bmq_coursesWhereInput
+    where?: BmqCourseWhereInput
     /**
-     * Limit how many bmq_courses to delete.
+     * Limit how many BmqCourses to delete.
      */
     limit?: number
   }
 
   /**
-   * bmq_courses.bmq_enrollments
+   * BmqCourse.bmqEnrollments
    */
-  export type bmq_courses$bmq_enrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourse$bmqEnrollmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
-    where?: bmq_enrollmentsWhereInput
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    include?: BmqEnrollmentInclude<ExtArgs> | null
+    where?: BmqEnrollmentWhereInput
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
+    cursor?: BmqEnrollmentWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: Bmq_enrollmentsScalarFieldEnum | Bmq_enrollmentsScalarFieldEnum[]
+    distinct?: BmqEnrollmentScalarFieldEnum | BmqEnrollmentScalarFieldEnum[]
   }
 
   /**
-   * bmq_courses without action
+   * BmqCourse without action
    */
-  export type bmq_coursesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqCourseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_courses
+     * Select specific fields to fetch from the BmqCourse
      */
-    select?: bmq_coursesSelect<ExtArgs> | null
+    select?: BmqCourseSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_courses
+     * Omit specific fields from the BmqCourse
      */
-    omit?: bmq_coursesOmit<ExtArgs> | null
+    omit?: BmqCourseOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_coursesInclude<ExtArgs> | null
+    include?: BmqCourseInclude<ExtArgs> | null
   }
 
 
   /**
-   * Model bmq_enrollments
+   * Model BmqEnrollment
    */
 
-  export type AggregateBmq_enrollments = {
-    _count: Bmq_enrollmentsCountAggregateOutputType | null
-    _min: Bmq_enrollmentsMinAggregateOutputType | null
-    _max: Bmq_enrollmentsMaxAggregateOutputType | null
+  export type AggregateBmqEnrollment = {
+    _count: BmqEnrollmentCountAggregateOutputType | null
+    _min: BmqEnrollmentMinAggregateOutputType | null
+    _max: BmqEnrollmentMaxAggregateOutputType | null
   }
 
-  export type Bmq_enrollmentsMinAggregateOutputType = {
+  export type BmqEnrollmentMinAggregateOutputType = {
     id: string | null
-    member_id: string | null
-    bmq_course_id: string | null
-    enrolled_at: Date | null
-    completed_at: Date | null
+    memberId: string | null
+    bmqCourseId: string | null
+    enrolledAt: Date | null
+    completedAt: Date | null
     status: string | null
   }
 
-  export type Bmq_enrollmentsMaxAggregateOutputType = {
+  export type BmqEnrollmentMaxAggregateOutputType = {
     id: string | null
-    member_id: string | null
-    bmq_course_id: string | null
-    enrolled_at: Date | null
-    completed_at: Date | null
+    memberId: string | null
+    bmqCourseId: string | null
+    enrolledAt: Date | null
+    completedAt: Date | null
     status: string | null
   }
 
-  export type Bmq_enrollmentsCountAggregateOutputType = {
+  export type BmqEnrollmentCountAggregateOutputType = {
     id: number
-    member_id: number
-    bmq_course_id: number
-    enrolled_at: number
-    completed_at: number
+    memberId: number
+    bmqCourseId: number
+    enrolledAt: number
+    completedAt: number
     status: number
     _all: number
   }
 
 
-  export type Bmq_enrollmentsMinAggregateInputType = {
+  export type BmqEnrollmentMinAggregateInputType = {
     id?: true
-    member_id?: true
-    bmq_course_id?: true
-    enrolled_at?: true
-    completed_at?: true
+    memberId?: true
+    bmqCourseId?: true
+    enrolledAt?: true
+    completedAt?: true
     status?: true
   }
 
-  export type Bmq_enrollmentsMaxAggregateInputType = {
+  export type BmqEnrollmentMaxAggregateInputType = {
     id?: true
-    member_id?: true
-    bmq_course_id?: true
-    enrolled_at?: true
-    completed_at?: true
+    memberId?: true
+    bmqCourseId?: true
+    enrolledAt?: true
+    completedAt?: true
     status?: true
   }
 
-  export type Bmq_enrollmentsCountAggregateInputType = {
+  export type BmqEnrollmentCountAggregateInputType = {
     id?: true
-    member_id?: true
-    bmq_course_id?: true
-    enrolled_at?: true
-    completed_at?: true
+    memberId?: true
+    bmqCourseId?: true
+    enrolledAt?: true
+    completedAt?: true
     status?: true
     _all?: true
   }
 
-  export type Bmq_enrollmentsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which bmq_enrollments to aggregate.
+     * Filter which BmqEnrollment to aggregate.
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_enrollments to fetch.
+     * Determine the order of BmqEnrollments to fetch.
      */
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    cursor?: BmqEnrollmentWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_enrollments from the position of the cursor.
+     * Take `±n` BmqEnrollments from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_enrollments.
+     * Skip the first `n` BmqEnrollments.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned bmq_enrollments
+     * Count returned BmqEnrollments
     **/
-    _count?: true | Bmq_enrollmentsCountAggregateInputType
+    _count?: true | BmqEnrollmentCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: Bmq_enrollmentsMinAggregateInputType
+    _min?: BmqEnrollmentMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: Bmq_enrollmentsMaxAggregateInputType
+    _max?: BmqEnrollmentMaxAggregateInputType
   }
 
-  export type GetBmq_enrollmentsAggregateType<T extends Bmq_enrollmentsAggregateArgs> = {
-        [P in keyof T & keyof AggregateBmq_enrollments]: P extends '_count' | 'count'
+  export type GetBmqEnrollmentAggregateType<T extends BmqEnrollmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateBmqEnrollment]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateBmq_enrollments[P]>
-      : GetScalarType<T[P], AggregateBmq_enrollments[P]>
+        : GetScalarType<T[P], AggregateBmqEnrollment[P]>
+      : GetScalarType<T[P], AggregateBmqEnrollment[P]>
   }
 
 
 
 
-  export type bmq_enrollmentsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: bmq_enrollmentsWhereInput
-    orderBy?: bmq_enrollmentsOrderByWithAggregationInput | bmq_enrollmentsOrderByWithAggregationInput[]
-    by: Bmq_enrollmentsScalarFieldEnum[] | Bmq_enrollmentsScalarFieldEnum
-    having?: bmq_enrollmentsScalarWhereWithAggregatesInput
+  export type BmqEnrollmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BmqEnrollmentWhereInput
+    orderBy?: BmqEnrollmentOrderByWithAggregationInput | BmqEnrollmentOrderByWithAggregationInput[]
+    by: BmqEnrollmentScalarFieldEnum[] | BmqEnrollmentScalarFieldEnum
+    having?: BmqEnrollmentScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: Bmq_enrollmentsCountAggregateInputType | true
-    _min?: Bmq_enrollmentsMinAggregateInputType
-    _max?: Bmq_enrollmentsMaxAggregateInputType
+    _count?: BmqEnrollmentCountAggregateInputType | true
+    _min?: BmqEnrollmentMinAggregateInputType
+    _max?: BmqEnrollmentMaxAggregateInputType
   }
 
-  export type Bmq_enrollmentsGroupByOutputType = {
+  export type BmqEnrollmentGroupByOutputType = {
     id: string
-    member_id: string
-    bmq_course_id: string
-    enrolled_at: Date | null
-    completed_at: Date | null
-    status: string | null
-    _count: Bmq_enrollmentsCountAggregateOutputType | null
-    _min: Bmq_enrollmentsMinAggregateOutputType | null
-    _max: Bmq_enrollmentsMaxAggregateOutputType | null
+    memberId: string
+    bmqCourseId: string
+    enrolledAt: Date
+    completedAt: Date | null
+    status: string
+    _count: BmqEnrollmentCountAggregateOutputType | null
+    _min: BmqEnrollmentMinAggregateOutputType | null
+    _max: BmqEnrollmentMaxAggregateOutputType | null
   }
 
-  type GetBmq_enrollmentsGroupByPayload<T extends bmq_enrollmentsGroupByArgs> = Prisma.PrismaPromise<
+  type GetBmqEnrollmentGroupByPayload<T extends BmqEnrollmentGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<Bmq_enrollmentsGroupByOutputType, T['by']> &
+      PickEnumerable<BmqEnrollmentGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof Bmq_enrollmentsGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof BmqEnrollmentGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], Bmq_enrollmentsGroupByOutputType[P]>
-            : GetScalarType<T[P], Bmq_enrollmentsGroupByOutputType[P]>
+              : GetScalarType<T[P], BmqEnrollmentGroupByOutputType[P]>
+            : GetScalarType<T[P], BmqEnrollmentGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type bmq_enrollmentsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqEnrollmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    member_id?: boolean
-    bmq_course_id?: boolean
-    enrolled_at?: boolean
-    completed_at?: boolean
+    memberId?: boolean
+    bmqCourseId?: boolean
+    enrolledAt?: boolean
+    completedAt?: boolean
     status?: boolean
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["bmq_enrollments"]>
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bmqEnrollment"]>
 
-  export type bmq_enrollmentsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqEnrollmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    member_id?: boolean
-    bmq_course_id?: boolean
-    enrolled_at?: boolean
-    completed_at?: boolean
+    memberId?: boolean
+    bmqCourseId?: boolean
+    enrolledAt?: boolean
+    completedAt?: boolean
     status?: boolean
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["bmq_enrollments"]>
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bmqEnrollment"]>
 
-  export type bmq_enrollmentsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type BmqEnrollmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    member_id?: boolean
-    bmq_course_id?: boolean
-    enrolled_at?: boolean
-    completed_at?: boolean
+    memberId?: boolean
+    bmqCourseId?: boolean
+    enrolledAt?: boolean
+    completedAt?: boolean
     status?: boolean
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["bmq_enrollments"]>
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bmqEnrollment"]>
 
-  export type bmq_enrollmentsSelectScalar = {
+  export type BmqEnrollmentSelectScalar = {
     id?: boolean
-    member_id?: boolean
-    bmq_course_id?: boolean
-    enrolled_at?: boolean
-    completed_at?: boolean
+    memberId?: boolean
+    bmqCourseId?: boolean
+    enrolledAt?: boolean
+    completedAt?: boolean
     status?: boolean
   }
 
-  export type bmq_enrollmentsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "member_id" | "bmq_course_id" | "enrolled_at" | "completed_at" | "status", ExtArgs["result"]["bmq_enrollments"]>
-  export type bmq_enrollmentsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
+  export type BmqEnrollmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "memberId" | "bmqCourseId" | "enrolledAt" | "completedAt" | "status", ExtArgs["result"]["bmqEnrollment"]>
+  export type BmqEnrollmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
   }
-  export type bmq_enrollmentsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
+  export type BmqEnrollmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
   }
-  export type bmq_enrollmentsIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    bmq_courses?: boolean | bmq_coursesDefaultArgs<ExtArgs>
-    members?: boolean | MemberDefaultArgs<ExtArgs>
+  export type BmqEnrollmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    bmqCourse?: boolean | BmqCourseDefaultArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
   }
 
-  export type $bmq_enrollmentsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "bmq_enrollments"
+  export type $BmqEnrollmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BmqEnrollment"
     objects: {
-      bmq_courses: Prisma.$bmq_coursesPayload<ExtArgs>
-      members: Prisma.$MemberPayload<ExtArgs>
+      bmqCourse: Prisma.$BmqCoursePayload<ExtArgs>
+      member: Prisma.$MemberPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      member_id: string
-      bmq_course_id: string
-      enrolled_at: Date | null
-      completed_at: Date | null
-      status: string | null
-    }, ExtArgs["result"]["bmq_enrollments"]>
+      memberId: string
+      bmqCourseId: string
+      enrolledAt: Date
+      completedAt: Date | null
+      status: string
+    }, ExtArgs["result"]["bmqEnrollment"]>
     composites: {}
   }
 
-  type bmq_enrollmentsGetPayload<S extends boolean | null | undefined | bmq_enrollmentsDefaultArgs> = $Result.GetResult<Prisma.$bmq_enrollmentsPayload, S>
+  type BmqEnrollmentGetPayload<S extends boolean | null | undefined | BmqEnrollmentDefaultArgs> = $Result.GetResult<Prisma.$BmqEnrollmentPayload, S>
 
-  type bmq_enrollmentsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<bmq_enrollmentsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Bmq_enrollmentsCountAggregateInputType | true
+  type BmqEnrollmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BmqEnrollmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BmqEnrollmentCountAggregateInputType | true
     }
 
-  export interface bmq_enrollmentsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['bmq_enrollments'], meta: { name: 'bmq_enrollments' } }
+  export interface BmqEnrollmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BmqEnrollment'], meta: { name: 'BmqEnrollment' } }
     /**
-     * Find zero or one Bmq_enrollments that matches the filter.
-     * @param {bmq_enrollmentsFindUniqueArgs} args - Arguments to find a Bmq_enrollments
+     * Find zero or one BmqEnrollment that matches the filter.
+     * @param {BmqEnrollmentFindUniqueArgs} args - Arguments to find a BmqEnrollment
      * @example
-     * // Get one Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findUnique({
+     * // Get one BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends bmq_enrollmentsFindUniqueArgs>(args: SelectSubset<T, bmq_enrollmentsFindUniqueArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends BmqEnrollmentFindUniqueArgs>(args: SelectSubset<T, BmqEnrollmentFindUniqueArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Bmq_enrollments that matches the filter or throw an error with `error.code='P2025'`
+     * Find one BmqEnrollment that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {bmq_enrollmentsFindUniqueOrThrowArgs} args - Arguments to find a Bmq_enrollments
+     * @param {BmqEnrollmentFindUniqueOrThrowArgs} args - Arguments to find a BmqEnrollment
      * @example
-     * // Get one Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findUniqueOrThrow({
+     * // Get one BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends bmq_enrollmentsFindUniqueOrThrowArgs>(args: SelectSubset<T, bmq_enrollmentsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends BmqEnrollmentFindUniqueOrThrowArgs>(args: SelectSubset<T, BmqEnrollmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Bmq_enrollments that matches the filter.
+     * Find the first BmqEnrollment that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsFindFirstArgs} args - Arguments to find a Bmq_enrollments
+     * @param {BmqEnrollmentFindFirstArgs} args - Arguments to find a BmqEnrollment
      * @example
-     * // Get one Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findFirst({
+     * // Get one BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends bmq_enrollmentsFindFirstArgs>(args?: SelectSubset<T, bmq_enrollmentsFindFirstArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends BmqEnrollmentFindFirstArgs>(args?: SelectSubset<T, BmqEnrollmentFindFirstArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Bmq_enrollments that matches the filter or
+     * Find the first BmqEnrollment that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsFindFirstOrThrowArgs} args - Arguments to find a Bmq_enrollments
+     * @param {BmqEnrollmentFindFirstOrThrowArgs} args - Arguments to find a BmqEnrollment
      * @example
-     * // Get one Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findFirstOrThrow({
+     * // Get one BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends bmq_enrollmentsFindFirstOrThrowArgs>(args?: SelectSubset<T, bmq_enrollmentsFindFirstOrThrowArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends BmqEnrollmentFindFirstOrThrowArgs>(args?: SelectSubset<T, BmqEnrollmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Bmq_enrollments that matches the filter.
+     * Find zero or more BmqEnrollments that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {BmqEnrollmentFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findMany()
+     * // Get all BmqEnrollments
+     * const bmqEnrollments = await prisma.bmqEnrollment.findMany()
      * 
-     * // Get first 10 Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.findMany({ take: 10 })
+     * // Get first 10 BmqEnrollments
+     * const bmqEnrollments = await prisma.bmqEnrollment.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const bmq_enrollmentsWithIdOnly = await prisma.bmq_enrollments.findMany({ select: { id: true } })
+     * const bmqEnrollmentWithIdOnly = await prisma.bmqEnrollment.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends bmq_enrollmentsFindManyArgs>(args?: SelectSubset<T, bmq_enrollmentsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends BmqEnrollmentFindManyArgs>(args?: SelectSubset<T, BmqEnrollmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Bmq_enrollments.
-     * @param {bmq_enrollmentsCreateArgs} args - Arguments to create a Bmq_enrollments.
+     * Create a BmqEnrollment.
+     * @param {BmqEnrollmentCreateArgs} args - Arguments to create a BmqEnrollment.
      * @example
-     * // Create one Bmq_enrollments
-     * const Bmq_enrollments = await prisma.bmq_enrollments.create({
+     * // Create one BmqEnrollment
+     * const BmqEnrollment = await prisma.bmqEnrollment.create({
      *   data: {
-     *     // ... data to create a Bmq_enrollments
+     *     // ... data to create a BmqEnrollment
      *   }
      * })
      * 
      */
-    create<T extends bmq_enrollmentsCreateArgs>(args: SelectSubset<T, bmq_enrollmentsCreateArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends BmqEnrollmentCreateArgs>(args: SelectSubset<T, BmqEnrollmentCreateArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Bmq_enrollments.
-     * @param {bmq_enrollmentsCreateManyArgs} args - Arguments to create many Bmq_enrollments.
+     * Create many BmqEnrollments.
+     * @param {BmqEnrollmentCreateManyArgs} args - Arguments to create many BmqEnrollments.
      * @example
-     * // Create many Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.createMany({
+     * // Create many BmqEnrollments
+     * const bmqEnrollment = await prisma.bmqEnrollment.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends bmq_enrollmentsCreateManyArgs>(args?: SelectSubset<T, bmq_enrollmentsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends BmqEnrollmentCreateManyArgs>(args?: SelectSubset<T, BmqEnrollmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Bmq_enrollments and returns the data saved in the database.
-     * @param {bmq_enrollmentsCreateManyAndReturnArgs} args - Arguments to create many Bmq_enrollments.
+     * Create many BmqEnrollments and returns the data saved in the database.
+     * @param {BmqEnrollmentCreateManyAndReturnArgs} args - Arguments to create many BmqEnrollments.
      * @example
-     * // Create many Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.createManyAndReturn({
+     * // Create many BmqEnrollments
+     * const bmqEnrollment = await prisma.bmqEnrollment.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Bmq_enrollments and only return the `id`
-     * const bmq_enrollmentsWithIdOnly = await prisma.bmq_enrollments.createManyAndReturn({
+     * // Create many BmqEnrollments and only return the `id`
+     * const bmqEnrollmentWithIdOnly = await prisma.bmqEnrollment.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -21581,28 +21672,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends bmq_enrollmentsCreateManyAndReturnArgs>(args?: SelectSubset<T, bmq_enrollmentsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends BmqEnrollmentCreateManyAndReturnArgs>(args?: SelectSubset<T, BmqEnrollmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Bmq_enrollments.
-     * @param {bmq_enrollmentsDeleteArgs} args - Arguments to delete one Bmq_enrollments.
+     * Delete a BmqEnrollment.
+     * @param {BmqEnrollmentDeleteArgs} args - Arguments to delete one BmqEnrollment.
      * @example
-     * // Delete one Bmq_enrollments
-     * const Bmq_enrollments = await prisma.bmq_enrollments.delete({
+     * // Delete one BmqEnrollment
+     * const BmqEnrollment = await prisma.bmqEnrollment.delete({
      *   where: {
-     *     // ... filter to delete one Bmq_enrollments
+     *     // ... filter to delete one BmqEnrollment
      *   }
      * })
      * 
      */
-    delete<T extends bmq_enrollmentsDeleteArgs>(args: SelectSubset<T, bmq_enrollmentsDeleteArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends BmqEnrollmentDeleteArgs>(args: SelectSubset<T, BmqEnrollmentDeleteArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Bmq_enrollments.
-     * @param {bmq_enrollmentsUpdateArgs} args - Arguments to update one Bmq_enrollments.
+     * Update one BmqEnrollment.
+     * @param {BmqEnrollmentUpdateArgs} args - Arguments to update one BmqEnrollment.
      * @example
-     * // Update one Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.update({
+     * // Update one BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -21612,30 +21703,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends bmq_enrollmentsUpdateArgs>(args: SelectSubset<T, bmq_enrollmentsUpdateArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends BmqEnrollmentUpdateArgs>(args: SelectSubset<T, BmqEnrollmentUpdateArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Bmq_enrollments.
-     * @param {bmq_enrollmentsDeleteManyArgs} args - Arguments to filter Bmq_enrollments to delete.
+     * Delete zero or more BmqEnrollments.
+     * @param {BmqEnrollmentDeleteManyArgs} args - Arguments to filter BmqEnrollments to delete.
      * @example
-     * // Delete a few Bmq_enrollments
-     * const { count } = await prisma.bmq_enrollments.deleteMany({
+     * // Delete a few BmqEnrollments
+     * const { count } = await prisma.bmqEnrollment.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends bmq_enrollmentsDeleteManyArgs>(args?: SelectSubset<T, bmq_enrollmentsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends BmqEnrollmentDeleteManyArgs>(args?: SelectSubset<T, BmqEnrollmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Bmq_enrollments.
+     * Update zero or more BmqEnrollments.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {BmqEnrollmentUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.updateMany({
+     * // Update many BmqEnrollments
+     * const bmqEnrollment = await prisma.bmqEnrollment.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -21645,14 +21736,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends bmq_enrollmentsUpdateManyArgs>(args: SelectSubset<T, bmq_enrollmentsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends BmqEnrollmentUpdateManyArgs>(args: SelectSubset<T, BmqEnrollmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Bmq_enrollments and returns the data updated in the database.
-     * @param {bmq_enrollmentsUpdateManyAndReturnArgs} args - Arguments to update many Bmq_enrollments.
+     * Update zero or more BmqEnrollments and returns the data updated in the database.
+     * @param {BmqEnrollmentUpdateManyAndReturnArgs} args - Arguments to update many BmqEnrollments.
      * @example
-     * // Update many Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.updateManyAndReturn({
+     * // Update many BmqEnrollments
+     * const bmqEnrollment = await prisma.bmqEnrollment.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -21661,8 +21752,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Bmq_enrollments and only return the `id`
-     * const bmq_enrollmentsWithIdOnly = await prisma.bmq_enrollments.updateManyAndReturn({
+     * // Update zero or more BmqEnrollments and only return the `id`
+     * const bmqEnrollmentWithIdOnly = await prisma.bmqEnrollment.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -21675,56 +21766,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends bmq_enrollmentsUpdateManyAndReturnArgs>(args: SelectSubset<T, bmq_enrollmentsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends BmqEnrollmentUpdateManyAndReturnArgs>(args: SelectSubset<T, BmqEnrollmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Bmq_enrollments.
-     * @param {bmq_enrollmentsUpsertArgs} args - Arguments to update or create a Bmq_enrollments.
+     * Create or update one BmqEnrollment.
+     * @param {BmqEnrollmentUpsertArgs} args - Arguments to update or create a BmqEnrollment.
      * @example
-     * // Update or create a Bmq_enrollments
-     * const bmq_enrollments = await prisma.bmq_enrollments.upsert({
+     * // Update or create a BmqEnrollment
+     * const bmqEnrollment = await prisma.bmqEnrollment.upsert({
      *   create: {
-     *     // ... data to create a Bmq_enrollments
+     *     // ... data to create a BmqEnrollment
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Bmq_enrollments we want to update
+     *     // ... the filter for the BmqEnrollment we want to update
      *   }
      * })
      */
-    upsert<T extends bmq_enrollmentsUpsertArgs>(args: SelectSubset<T, bmq_enrollmentsUpsertArgs<ExtArgs>>): Prisma__bmq_enrollmentsClient<$Result.GetResult<Prisma.$bmq_enrollmentsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends BmqEnrollmentUpsertArgs>(args: SelectSubset<T, BmqEnrollmentUpsertArgs<ExtArgs>>): Prisma__BmqEnrollmentClient<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Bmq_enrollments.
+     * Count the number of BmqEnrollments.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsCountArgs} args - Arguments to filter Bmq_enrollments to count.
+     * @param {BmqEnrollmentCountArgs} args - Arguments to filter BmqEnrollments to count.
      * @example
-     * // Count the number of Bmq_enrollments
-     * const count = await prisma.bmq_enrollments.count({
+     * // Count the number of BmqEnrollments
+     * const count = await prisma.bmqEnrollment.count({
      *   where: {
-     *     // ... the filter for the Bmq_enrollments we want to count
+     *     // ... the filter for the BmqEnrollments we want to count
      *   }
      * })
     **/
-    count<T extends bmq_enrollmentsCountArgs>(
-      args?: Subset<T, bmq_enrollmentsCountArgs>,
+    count<T extends BmqEnrollmentCountArgs>(
+      args?: Subset<T, BmqEnrollmentCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], Bmq_enrollmentsCountAggregateOutputType>
+          : GetScalarType<T['select'], BmqEnrollmentCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Bmq_enrollments.
+     * Allows you to perform aggregations operations on a BmqEnrollment.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {Bmq_enrollmentsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {BmqEnrollmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -21744,13 +21835,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends Bmq_enrollmentsAggregateArgs>(args: Subset<T, Bmq_enrollmentsAggregateArgs>): Prisma.PrismaPromise<GetBmq_enrollmentsAggregateType<T>>
+    aggregate<T extends BmqEnrollmentAggregateArgs>(args: Subset<T, BmqEnrollmentAggregateArgs>): Prisma.PrismaPromise<GetBmqEnrollmentAggregateType<T>>
 
     /**
-     * Group by Bmq_enrollments.
+     * Group by BmqEnrollment.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {bmq_enrollmentsGroupByArgs} args - Group by arguments.
+     * @param {BmqEnrollmentGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -21765,14 +21856,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends bmq_enrollmentsGroupByArgs,
+      T extends BmqEnrollmentGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: bmq_enrollmentsGroupByArgs['orderBy'] }
-        : { orderBy?: bmq_enrollmentsGroupByArgs['orderBy'] },
+        ? { orderBy: BmqEnrollmentGroupByArgs['orderBy'] }
+        : { orderBy?: BmqEnrollmentGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -21821,23 +21912,23 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, bmq_enrollmentsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBmq_enrollmentsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, BmqEnrollmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBmqEnrollmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the bmq_enrollments model
+   * Fields of the BmqEnrollment model
    */
-  readonly fields: bmq_enrollmentsFieldRefs;
+  readonly fields: BmqEnrollmentFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for bmq_enrollments.
+   * The delegate class that acts as a "Promise-like" for BmqEnrollment.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__bmq_enrollmentsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__BmqEnrollmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    bmq_courses<T extends bmq_coursesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, bmq_coursesDefaultArgs<ExtArgs>>): Prisma__bmq_coursesClient<$Result.GetResult<Prisma.$bmq_coursesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    members<T extends MemberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MemberDefaultArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    bmqCourse<T extends BmqCourseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BmqCourseDefaultArgs<ExtArgs>>): Prisma__BmqCourseClient<$Result.GetResult<Prisma.$BmqCoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    member<T extends MemberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MemberDefaultArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21864,426 +21955,426 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the bmq_enrollments model
+   * Fields of the BmqEnrollment model
    */
-  interface bmq_enrollmentsFieldRefs {
-    readonly id: FieldRef<"bmq_enrollments", 'String'>
-    readonly member_id: FieldRef<"bmq_enrollments", 'String'>
-    readonly bmq_course_id: FieldRef<"bmq_enrollments", 'String'>
-    readonly enrolled_at: FieldRef<"bmq_enrollments", 'DateTime'>
-    readonly completed_at: FieldRef<"bmq_enrollments", 'DateTime'>
-    readonly status: FieldRef<"bmq_enrollments", 'String'>
+  interface BmqEnrollmentFieldRefs {
+    readonly id: FieldRef<"BmqEnrollment", 'String'>
+    readonly memberId: FieldRef<"BmqEnrollment", 'String'>
+    readonly bmqCourseId: FieldRef<"BmqEnrollment", 'String'>
+    readonly enrolledAt: FieldRef<"BmqEnrollment", 'DateTime'>
+    readonly completedAt: FieldRef<"BmqEnrollment", 'DateTime'>
+    readonly status: FieldRef<"BmqEnrollment", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * bmq_enrollments findUnique
+   * BmqEnrollment findUnique
    */
-  export type bmq_enrollmentsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_enrollments to fetch.
+     * Filter, which BmqEnrollment to fetch.
      */
-    where: bmq_enrollmentsWhereUniqueInput
+    where: BmqEnrollmentWhereUniqueInput
   }
 
   /**
-   * bmq_enrollments findUniqueOrThrow
+   * BmqEnrollment findUniqueOrThrow
    */
-  export type bmq_enrollmentsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_enrollments to fetch.
+     * Filter, which BmqEnrollment to fetch.
      */
-    where: bmq_enrollmentsWhereUniqueInput
+    where: BmqEnrollmentWhereUniqueInput
   }
 
   /**
-   * bmq_enrollments findFirst
+   * BmqEnrollment findFirst
    */
-  export type bmq_enrollmentsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_enrollments to fetch.
+     * Filter, which BmqEnrollment to fetch.
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_enrollments to fetch.
+     * Determine the order of BmqEnrollments to fetch.
      */
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for bmq_enrollments.
+     * Sets the position for searching for BmqEnrollments.
      */
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    cursor?: BmqEnrollmentWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_enrollments from the position of the cursor.
+     * Take `±n` BmqEnrollments from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_enrollments.
+     * Skip the first `n` BmqEnrollments.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of bmq_enrollments.
+     * Filter by unique combinations of BmqEnrollments.
      */
-    distinct?: Bmq_enrollmentsScalarFieldEnum | Bmq_enrollmentsScalarFieldEnum[]
+    distinct?: BmqEnrollmentScalarFieldEnum | BmqEnrollmentScalarFieldEnum[]
   }
 
   /**
-   * bmq_enrollments findFirstOrThrow
+   * BmqEnrollment findFirstOrThrow
    */
-  export type bmq_enrollmentsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_enrollments to fetch.
+     * Filter, which BmqEnrollment to fetch.
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_enrollments to fetch.
+     * Determine the order of BmqEnrollments to fetch.
      */
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for bmq_enrollments.
+     * Sets the position for searching for BmqEnrollments.
      */
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    cursor?: BmqEnrollmentWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_enrollments from the position of the cursor.
+     * Take `±n` BmqEnrollments from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_enrollments.
+     * Skip the first `n` BmqEnrollments.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of bmq_enrollments.
+     * Filter by unique combinations of BmqEnrollments.
      */
-    distinct?: Bmq_enrollmentsScalarFieldEnum | Bmq_enrollmentsScalarFieldEnum[]
+    distinct?: BmqEnrollmentScalarFieldEnum | BmqEnrollmentScalarFieldEnum[]
   }
 
   /**
-   * bmq_enrollments findMany
+   * BmqEnrollment findMany
    */
-  export type bmq_enrollmentsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter, which bmq_enrollments to fetch.
+     * Filter, which BmqEnrollments to fetch.
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of bmq_enrollments to fetch.
+     * Determine the order of BmqEnrollments to fetch.
      */
-    orderBy?: bmq_enrollmentsOrderByWithRelationInput | bmq_enrollmentsOrderByWithRelationInput[]
+    orderBy?: BmqEnrollmentOrderByWithRelationInput | BmqEnrollmentOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing bmq_enrollments.
+     * Sets the position for listing BmqEnrollments.
      */
-    cursor?: bmq_enrollmentsWhereUniqueInput
+    cursor?: BmqEnrollmentWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` bmq_enrollments from the position of the cursor.
+     * Take `±n` BmqEnrollments from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` bmq_enrollments.
+     * Skip the first `n` BmqEnrollments.
      */
     skip?: number
-    distinct?: Bmq_enrollmentsScalarFieldEnum | Bmq_enrollmentsScalarFieldEnum[]
+    distinct?: BmqEnrollmentScalarFieldEnum | BmqEnrollmentScalarFieldEnum[]
   }
 
   /**
-   * bmq_enrollments create
+   * BmqEnrollment create
    */
-  export type bmq_enrollmentsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * The data needed to create a bmq_enrollments.
+     * The data needed to create a BmqEnrollment.
      */
-    data: XOR<bmq_enrollmentsCreateInput, bmq_enrollmentsUncheckedCreateInput>
+    data: XOR<BmqEnrollmentCreateInput, BmqEnrollmentUncheckedCreateInput>
   }
 
   /**
-   * bmq_enrollments createMany
+   * BmqEnrollment createMany
    */
-  export type bmq_enrollmentsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many bmq_enrollments.
+     * The data used to create many BmqEnrollments.
      */
-    data: bmq_enrollmentsCreateManyInput | bmq_enrollmentsCreateManyInput[]
+    data: BmqEnrollmentCreateManyInput | BmqEnrollmentCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * bmq_enrollments createManyAndReturn
+   * BmqEnrollment createManyAndReturn
    */
-  export type bmq_enrollmentsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelectCreateManyAndReturn<ExtArgs> | null
+    select?: BmqEnrollmentSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
-     * The data used to create many bmq_enrollments.
+     * The data used to create many BmqEnrollments.
      */
-    data: bmq_enrollmentsCreateManyInput | bmq_enrollmentsCreateManyInput[]
+    data: BmqEnrollmentCreateManyInput | BmqEnrollmentCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: BmqEnrollmentIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * bmq_enrollments update
+   * BmqEnrollment update
    */
-  export type bmq_enrollmentsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * The data needed to update a bmq_enrollments.
+     * The data needed to update a BmqEnrollment.
      */
-    data: XOR<bmq_enrollmentsUpdateInput, bmq_enrollmentsUncheckedUpdateInput>
+    data: XOR<BmqEnrollmentUpdateInput, BmqEnrollmentUncheckedUpdateInput>
     /**
-     * Choose, which bmq_enrollments to update.
+     * Choose, which BmqEnrollment to update.
      */
-    where: bmq_enrollmentsWhereUniqueInput
+    where: BmqEnrollmentWhereUniqueInput
   }
 
   /**
-   * bmq_enrollments updateMany
+   * BmqEnrollment updateMany
    */
-  export type bmq_enrollmentsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update bmq_enrollments.
+     * The data used to update BmqEnrollments.
      */
-    data: XOR<bmq_enrollmentsUpdateManyMutationInput, bmq_enrollmentsUncheckedUpdateManyInput>
+    data: XOR<BmqEnrollmentUpdateManyMutationInput, BmqEnrollmentUncheckedUpdateManyInput>
     /**
-     * Filter which bmq_enrollments to update
+     * Filter which BmqEnrollments to update
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
-     * Limit how many bmq_enrollments to update.
+     * Limit how many BmqEnrollments to update.
      */
     limit?: number
   }
 
   /**
-   * bmq_enrollments updateManyAndReturn
+   * BmqEnrollment updateManyAndReturn
    */
-  export type bmq_enrollmentsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: BmqEnrollmentSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
-     * The data used to update bmq_enrollments.
+     * The data used to update BmqEnrollments.
      */
-    data: XOR<bmq_enrollmentsUpdateManyMutationInput, bmq_enrollmentsUncheckedUpdateManyInput>
+    data: XOR<BmqEnrollmentUpdateManyMutationInput, BmqEnrollmentUncheckedUpdateManyInput>
     /**
-     * Filter which bmq_enrollments to update
+     * Filter which BmqEnrollments to update
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
-     * Limit how many bmq_enrollments to update.
+     * Limit how many BmqEnrollments to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: BmqEnrollmentIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * bmq_enrollments upsert
+   * BmqEnrollment upsert
    */
-  export type bmq_enrollmentsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * The filter to search for the bmq_enrollments to update in case it exists.
+     * The filter to search for the BmqEnrollment to update in case it exists.
      */
-    where: bmq_enrollmentsWhereUniqueInput
+    where: BmqEnrollmentWhereUniqueInput
     /**
-     * In case the bmq_enrollments found by the `where` argument doesn't exist, create a new bmq_enrollments with this data.
+     * In case the BmqEnrollment found by the `where` argument doesn't exist, create a new BmqEnrollment with this data.
      */
-    create: XOR<bmq_enrollmentsCreateInput, bmq_enrollmentsUncheckedCreateInput>
+    create: XOR<BmqEnrollmentCreateInput, BmqEnrollmentUncheckedCreateInput>
     /**
-     * In case the bmq_enrollments was found with the provided `where` argument, update it with this data.
+     * In case the BmqEnrollment was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<bmq_enrollmentsUpdateInput, bmq_enrollmentsUncheckedUpdateInput>
+    update: XOR<BmqEnrollmentUpdateInput, BmqEnrollmentUncheckedUpdateInput>
   }
 
   /**
-   * bmq_enrollments delete
+   * BmqEnrollment delete
    */
-  export type bmq_enrollmentsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
     /**
-     * Filter which bmq_enrollments to delete.
+     * Filter which BmqEnrollment to delete.
      */
-    where: bmq_enrollmentsWhereUniqueInput
+    where: BmqEnrollmentWhereUniqueInput
   }
 
   /**
-   * bmq_enrollments deleteMany
+   * BmqEnrollment deleteMany
    */
-  export type bmq_enrollmentsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which bmq_enrollments to delete
+     * Filter which BmqEnrollments to delete
      */
-    where?: bmq_enrollmentsWhereInput
+    where?: BmqEnrollmentWhereInput
     /**
-     * Limit how many bmq_enrollments to delete.
+     * Limit how many BmqEnrollments to delete.
      */
     limit?: number
   }
 
   /**
-   * bmq_enrollments without action
+   * BmqEnrollment without action
    */
-  export type bmq_enrollmentsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type BmqEnrollmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the bmq_enrollments
+     * Select specific fields to fetch from the BmqEnrollment
      */
-    select?: bmq_enrollmentsSelect<ExtArgs> | null
+    select?: BmqEnrollmentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the bmq_enrollments
+     * Omit specific fields from the BmqEnrollment
      */
-    omit?: bmq_enrollmentsOmit<ExtArgs> | null
+    omit?: BmqEnrollmentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: bmq_enrollmentsInclude<ExtArgs> | null
+    include?: BmqEnrollmentInclude<ExtArgs> | null
   }
 
 
@@ -24454,308 +24545,308 @@ export namespace Prisma {
 
 
   /**
-   * Model report_settings
+   * Model ReportSetting
    */
 
-  export type AggregateReport_settings = {
-    _count: Report_settingsCountAggregateOutputType | null
-    _min: Report_settingsMinAggregateOutputType | null
-    _max: Report_settingsMaxAggregateOutputType | null
+  export type AggregateReportSetting = {
+    _count: ReportSettingCountAggregateOutputType | null
+    _min: ReportSettingMinAggregateOutputType | null
+    _max: ReportSettingMaxAggregateOutputType | null
   }
 
-  export type Report_settingsMinAggregateOutputType = {
+  export type ReportSettingMinAggregateOutputType = {
     key: string | null
-    updated_at: Date | null
+    updatedAt: Date | null
   }
 
-  export type Report_settingsMaxAggregateOutputType = {
+  export type ReportSettingMaxAggregateOutputType = {
     key: string | null
-    updated_at: Date | null
+    updatedAt: Date | null
   }
 
-  export type Report_settingsCountAggregateOutputType = {
+  export type ReportSettingCountAggregateOutputType = {
     key: number
     value: number
-    updated_at: number
+    updatedAt: number
     _all: number
   }
 
 
-  export type Report_settingsMinAggregateInputType = {
+  export type ReportSettingMinAggregateInputType = {
     key?: true
-    updated_at?: true
+    updatedAt?: true
   }
 
-  export type Report_settingsMaxAggregateInputType = {
+  export type ReportSettingMaxAggregateInputType = {
     key?: true
-    updated_at?: true
+    updatedAt?: true
   }
 
-  export type Report_settingsCountAggregateInputType = {
+  export type ReportSettingCountAggregateInputType = {
     key?: true
     value?: true
-    updated_at?: true
+    updatedAt?: true
     _all?: true
   }
 
-  export type Report_settingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which report_settings to aggregate.
+     * Filter which ReportSetting to aggregate.
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of report_settings to fetch.
+     * Determine the order of ReportSettings to fetch.
      */
-    orderBy?: report_settingsOrderByWithRelationInput | report_settingsOrderByWithRelationInput[]
+    orderBy?: ReportSettingOrderByWithRelationInput | ReportSettingOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: report_settingsWhereUniqueInput
+    cursor?: ReportSettingWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` report_settings from the position of the cursor.
+     * Take `±n` ReportSettings from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` report_settings.
+     * Skip the first `n` ReportSettings.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned report_settings
+     * Count returned ReportSettings
     **/
-    _count?: true | Report_settingsCountAggregateInputType
+    _count?: true | ReportSettingCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: Report_settingsMinAggregateInputType
+    _min?: ReportSettingMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: Report_settingsMaxAggregateInputType
+    _max?: ReportSettingMaxAggregateInputType
   }
 
-  export type GetReport_settingsAggregateType<T extends Report_settingsAggregateArgs> = {
-        [P in keyof T & keyof AggregateReport_settings]: P extends '_count' | 'count'
+  export type GetReportSettingAggregateType<T extends ReportSettingAggregateArgs> = {
+        [P in keyof T & keyof AggregateReportSetting]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateReport_settings[P]>
-      : GetScalarType<T[P], AggregateReport_settings[P]>
+        : GetScalarType<T[P], AggregateReportSetting[P]>
+      : GetScalarType<T[P], AggregateReportSetting[P]>
   }
 
 
 
 
-  export type report_settingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: report_settingsWhereInput
-    orderBy?: report_settingsOrderByWithAggregationInput | report_settingsOrderByWithAggregationInput[]
-    by: Report_settingsScalarFieldEnum[] | Report_settingsScalarFieldEnum
-    having?: report_settingsScalarWhereWithAggregatesInput
+  export type ReportSettingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportSettingWhereInput
+    orderBy?: ReportSettingOrderByWithAggregationInput | ReportSettingOrderByWithAggregationInput[]
+    by: ReportSettingScalarFieldEnum[] | ReportSettingScalarFieldEnum
+    having?: ReportSettingScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: Report_settingsCountAggregateInputType | true
-    _min?: Report_settingsMinAggregateInputType
-    _max?: Report_settingsMaxAggregateInputType
+    _count?: ReportSettingCountAggregateInputType | true
+    _min?: ReportSettingMinAggregateInputType
+    _max?: ReportSettingMaxAggregateInputType
   }
 
-  export type Report_settingsGroupByOutputType = {
+  export type ReportSettingGroupByOutputType = {
     key: string
     value: JsonValue
-    updated_at: Date | null
-    _count: Report_settingsCountAggregateOutputType | null
-    _min: Report_settingsMinAggregateOutputType | null
-    _max: Report_settingsMaxAggregateOutputType | null
+    updatedAt: Date
+    _count: ReportSettingCountAggregateOutputType | null
+    _min: ReportSettingMinAggregateOutputType | null
+    _max: ReportSettingMaxAggregateOutputType | null
   }
 
-  type GetReport_settingsGroupByPayload<T extends report_settingsGroupByArgs> = Prisma.PrismaPromise<
+  type GetReportSettingGroupByPayload<T extends ReportSettingGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<Report_settingsGroupByOutputType, T['by']> &
+      PickEnumerable<ReportSettingGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof Report_settingsGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof ReportSettingGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], Report_settingsGroupByOutputType[P]>
-            : GetScalarType<T[P], Report_settingsGroupByOutputType[P]>
+              : GetScalarType<T[P], ReportSettingGroupByOutputType[P]>
+            : GetScalarType<T[P], ReportSettingGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type report_settingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ReportSettingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     key?: boolean
     value?: boolean
-    updated_at?: boolean
-  }, ExtArgs["result"]["report_settings"]>
+    updatedAt?: boolean
+  }, ExtArgs["result"]["reportSetting"]>
 
-  export type report_settingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ReportSettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     key?: boolean
     value?: boolean
-    updated_at?: boolean
-  }, ExtArgs["result"]["report_settings"]>
+    updatedAt?: boolean
+  }, ExtArgs["result"]["reportSetting"]>
 
-  export type report_settingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ReportSettingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     key?: boolean
     value?: boolean
-    updated_at?: boolean
-  }, ExtArgs["result"]["report_settings"]>
+    updatedAt?: boolean
+  }, ExtArgs["result"]["reportSetting"]>
 
-  export type report_settingsSelectScalar = {
+  export type ReportSettingSelectScalar = {
     key?: boolean
     value?: boolean
-    updated_at?: boolean
+    updatedAt?: boolean
   }
 
-  export type report_settingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"key" | "value" | "updated_at", ExtArgs["result"]["report_settings"]>
+  export type ReportSettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"key" | "value" | "updatedAt", ExtArgs["result"]["reportSetting"]>
 
-  export type $report_settingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "report_settings"
+  export type $ReportSettingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ReportSetting"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       key: string
       value: Prisma.JsonValue
-      updated_at: Date | null
-    }, ExtArgs["result"]["report_settings"]>
+      updatedAt: Date
+    }, ExtArgs["result"]["reportSetting"]>
     composites: {}
   }
 
-  type report_settingsGetPayload<S extends boolean | null | undefined | report_settingsDefaultArgs> = $Result.GetResult<Prisma.$report_settingsPayload, S>
+  type ReportSettingGetPayload<S extends boolean | null | undefined | ReportSettingDefaultArgs> = $Result.GetResult<Prisma.$ReportSettingPayload, S>
 
-  type report_settingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<report_settingsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Report_settingsCountAggregateInputType | true
+  type ReportSettingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReportSettingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReportSettingCountAggregateInputType | true
     }
 
-  export interface report_settingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['report_settings'], meta: { name: 'report_settings' } }
+  export interface ReportSettingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ReportSetting'], meta: { name: 'ReportSetting' } }
     /**
-     * Find zero or one Report_settings that matches the filter.
-     * @param {report_settingsFindUniqueArgs} args - Arguments to find a Report_settings
+     * Find zero or one ReportSetting that matches the filter.
+     * @param {ReportSettingFindUniqueArgs} args - Arguments to find a ReportSetting
      * @example
-     * // Get one Report_settings
-     * const report_settings = await prisma.report_settings.findUnique({
+     * // Get one ReportSetting
+     * const reportSetting = await prisma.reportSetting.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends report_settingsFindUniqueArgs>(args: SelectSubset<T, report_settingsFindUniqueArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends ReportSettingFindUniqueArgs>(args: SelectSubset<T, ReportSettingFindUniqueArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Report_settings that matches the filter or throw an error with `error.code='P2025'`
+     * Find one ReportSetting that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {report_settingsFindUniqueOrThrowArgs} args - Arguments to find a Report_settings
+     * @param {ReportSettingFindUniqueOrThrowArgs} args - Arguments to find a ReportSetting
      * @example
-     * // Get one Report_settings
-     * const report_settings = await prisma.report_settings.findUniqueOrThrow({
+     * // Get one ReportSetting
+     * const reportSetting = await prisma.reportSetting.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends report_settingsFindUniqueOrThrowArgs>(args: SelectSubset<T, report_settingsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends ReportSettingFindUniqueOrThrowArgs>(args: SelectSubset<T, ReportSettingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Report_settings that matches the filter.
+     * Find the first ReportSetting that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsFindFirstArgs} args - Arguments to find a Report_settings
+     * @param {ReportSettingFindFirstArgs} args - Arguments to find a ReportSetting
      * @example
-     * // Get one Report_settings
-     * const report_settings = await prisma.report_settings.findFirst({
+     * // Get one ReportSetting
+     * const reportSetting = await prisma.reportSetting.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends report_settingsFindFirstArgs>(args?: SelectSubset<T, report_settingsFindFirstArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends ReportSettingFindFirstArgs>(args?: SelectSubset<T, ReportSettingFindFirstArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Report_settings that matches the filter or
+     * Find the first ReportSetting that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsFindFirstOrThrowArgs} args - Arguments to find a Report_settings
+     * @param {ReportSettingFindFirstOrThrowArgs} args - Arguments to find a ReportSetting
      * @example
-     * // Get one Report_settings
-     * const report_settings = await prisma.report_settings.findFirstOrThrow({
+     * // Get one ReportSetting
+     * const reportSetting = await prisma.reportSetting.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends report_settingsFindFirstOrThrowArgs>(args?: SelectSubset<T, report_settingsFindFirstOrThrowArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends ReportSettingFindFirstOrThrowArgs>(args?: SelectSubset<T, ReportSettingFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Report_settings that matches the filter.
+     * Find zero or more ReportSettings that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {ReportSettingFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Report_settings
-     * const report_settings = await prisma.report_settings.findMany()
+     * // Get all ReportSettings
+     * const reportSettings = await prisma.reportSetting.findMany()
      * 
-     * // Get first 10 Report_settings
-     * const report_settings = await prisma.report_settings.findMany({ take: 10 })
+     * // Get first 10 ReportSettings
+     * const reportSettings = await prisma.reportSetting.findMany({ take: 10 })
      * 
      * // Only select the `key`
-     * const report_settingsWithKeyOnly = await prisma.report_settings.findMany({ select: { key: true } })
+     * const reportSettingWithKeyOnly = await prisma.reportSetting.findMany({ select: { key: true } })
      * 
      */
-    findMany<T extends report_settingsFindManyArgs>(args?: SelectSubset<T, report_settingsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends ReportSettingFindManyArgs>(args?: SelectSubset<T, ReportSettingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Report_settings.
-     * @param {report_settingsCreateArgs} args - Arguments to create a Report_settings.
+     * Create a ReportSetting.
+     * @param {ReportSettingCreateArgs} args - Arguments to create a ReportSetting.
      * @example
-     * // Create one Report_settings
-     * const Report_settings = await prisma.report_settings.create({
+     * // Create one ReportSetting
+     * const ReportSetting = await prisma.reportSetting.create({
      *   data: {
-     *     // ... data to create a Report_settings
+     *     // ... data to create a ReportSetting
      *   }
      * })
      * 
      */
-    create<T extends report_settingsCreateArgs>(args: SelectSubset<T, report_settingsCreateArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends ReportSettingCreateArgs>(args: SelectSubset<T, ReportSettingCreateArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Report_settings.
-     * @param {report_settingsCreateManyArgs} args - Arguments to create many Report_settings.
+     * Create many ReportSettings.
+     * @param {ReportSettingCreateManyArgs} args - Arguments to create many ReportSettings.
      * @example
-     * // Create many Report_settings
-     * const report_settings = await prisma.report_settings.createMany({
+     * // Create many ReportSettings
+     * const reportSetting = await prisma.reportSetting.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends report_settingsCreateManyArgs>(args?: SelectSubset<T, report_settingsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends ReportSettingCreateManyArgs>(args?: SelectSubset<T, ReportSettingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Report_settings and returns the data saved in the database.
-     * @param {report_settingsCreateManyAndReturnArgs} args - Arguments to create many Report_settings.
+     * Create many ReportSettings and returns the data saved in the database.
+     * @param {ReportSettingCreateManyAndReturnArgs} args - Arguments to create many ReportSettings.
      * @example
-     * // Create many Report_settings
-     * const report_settings = await prisma.report_settings.createManyAndReturn({
+     * // Create many ReportSettings
+     * const reportSetting = await prisma.reportSetting.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Report_settings and only return the `key`
-     * const report_settingsWithKeyOnly = await prisma.report_settings.createManyAndReturn({
+     * // Create many ReportSettings and only return the `key`
+     * const reportSettingWithKeyOnly = await prisma.reportSetting.createManyAndReturn({
      *   select: { key: true },
      *   data: [
      *     // ... provide data here
@@ -24765,28 +24856,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends report_settingsCreateManyAndReturnArgs>(args?: SelectSubset<T, report_settingsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends ReportSettingCreateManyAndReturnArgs>(args?: SelectSubset<T, ReportSettingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Report_settings.
-     * @param {report_settingsDeleteArgs} args - Arguments to delete one Report_settings.
+     * Delete a ReportSetting.
+     * @param {ReportSettingDeleteArgs} args - Arguments to delete one ReportSetting.
      * @example
-     * // Delete one Report_settings
-     * const Report_settings = await prisma.report_settings.delete({
+     * // Delete one ReportSetting
+     * const ReportSetting = await prisma.reportSetting.delete({
      *   where: {
-     *     // ... filter to delete one Report_settings
+     *     // ... filter to delete one ReportSetting
      *   }
      * })
      * 
      */
-    delete<T extends report_settingsDeleteArgs>(args: SelectSubset<T, report_settingsDeleteArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends ReportSettingDeleteArgs>(args: SelectSubset<T, ReportSettingDeleteArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Report_settings.
-     * @param {report_settingsUpdateArgs} args - Arguments to update one Report_settings.
+     * Update one ReportSetting.
+     * @param {ReportSettingUpdateArgs} args - Arguments to update one ReportSetting.
      * @example
-     * // Update one Report_settings
-     * const report_settings = await prisma.report_settings.update({
+     * // Update one ReportSetting
+     * const reportSetting = await prisma.reportSetting.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -24796,30 +24887,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends report_settingsUpdateArgs>(args: SelectSubset<T, report_settingsUpdateArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends ReportSettingUpdateArgs>(args: SelectSubset<T, ReportSettingUpdateArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Report_settings.
-     * @param {report_settingsDeleteManyArgs} args - Arguments to filter Report_settings to delete.
+     * Delete zero or more ReportSettings.
+     * @param {ReportSettingDeleteManyArgs} args - Arguments to filter ReportSettings to delete.
      * @example
-     * // Delete a few Report_settings
-     * const { count } = await prisma.report_settings.deleteMany({
+     * // Delete a few ReportSettings
+     * const { count } = await prisma.reportSetting.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends report_settingsDeleteManyArgs>(args?: SelectSubset<T, report_settingsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends ReportSettingDeleteManyArgs>(args?: SelectSubset<T, ReportSettingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Report_settings.
+     * Update zero or more ReportSettings.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {ReportSettingUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Report_settings
-     * const report_settings = await prisma.report_settings.updateMany({
+     * // Update many ReportSettings
+     * const reportSetting = await prisma.reportSetting.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -24829,14 +24920,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends report_settingsUpdateManyArgs>(args: SelectSubset<T, report_settingsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends ReportSettingUpdateManyArgs>(args: SelectSubset<T, ReportSettingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Report_settings and returns the data updated in the database.
-     * @param {report_settingsUpdateManyAndReturnArgs} args - Arguments to update many Report_settings.
+     * Update zero or more ReportSettings and returns the data updated in the database.
+     * @param {ReportSettingUpdateManyAndReturnArgs} args - Arguments to update many ReportSettings.
      * @example
-     * // Update many Report_settings
-     * const report_settings = await prisma.report_settings.updateManyAndReturn({
+     * // Update many ReportSettings
+     * const reportSetting = await prisma.reportSetting.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -24845,8 +24936,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Report_settings and only return the `key`
-     * const report_settingsWithKeyOnly = await prisma.report_settings.updateManyAndReturn({
+     * // Update zero or more ReportSettings and only return the `key`
+     * const reportSettingWithKeyOnly = await prisma.reportSetting.updateManyAndReturn({
      *   select: { key: true },
      *   where: {
      *     // ... provide filter here
@@ -24859,56 +24950,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends report_settingsUpdateManyAndReturnArgs>(args: SelectSubset<T, report_settingsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends ReportSettingUpdateManyAndReturnArgs>(args: SelectSubset<T, ReportSettingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Report_settings.
-     * @param {report_settingsUpsertArgs} args - Arguments to update or create a Report_settings.
+     * Create or update one ReportSetting.
+     * @param {ReportSettingUpsertArgs} args - Arguments to update or create a ReportSetting.
      * @example
-     * // Update or create a Report_settings
-     * const report_settings = await prisma.report_settings.upsert({
+     * // Update or create a ReportSetting
+     * const reportSetting = await prisma.reportSetting.upsert({
      *   create: {
-     *     // ... data to create a Report_settings
+     *     // ... data to create a ReportSetting
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Report_settings we want to update
+     *     // ... the filter for the ReportSetting we want to update
      *   }
      * })
      */
-    upsert<T extends report_settingsUpsertArgs>(args: SelectSubset<T, report_settingsUpsertArgs<ExtArgs>>): Prisma__report_settingsClient<$Result.GetResult<Prisma.$report_settingsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends ReportSettingUpsertArgs>(args: SelectSubset<T, ReportSettingUpsertArgs<ExtArgs>>): Prisma__ReportSettingClient<$Result.GetResult<Prisma.$ReportSettingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Report_settings.
+     * Count the number of ReportSettings.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsCountArgs} args - Arguments to filter Report_settings to count.
+     * @param {ReportSettingCountArgs} args - Arguments to filter ReportSettings to count.
      * @example
-     * // Count the number of Report_settings
-     * const count = await prisma.report_settings.count({
+     * // Count the number of ReportSettings
+     * const count = await prisma.reportSetting.count({
      *   where: {
-     *     // ... the filter for the Report_settings we want to count
+     *     // ... the filter for the ReportSettings we want to count
      *   }
      * })
     **/
-    count<T extends report_settingsCountArgs>(
-      args?: Subset<T, report_settingsCountArgs>,
+    count<T extends ReportSettingCountArgs>(
+      args?: Subset<T, ReportSettingCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], Report_settingsCountAggregateOutputType>
+          : GetScalarType<T['select'], ReportSettingCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Report_settings.
+     * Allows you to perform aggregations operations on a ReportSetting.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {Report_settingsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {ReportSettingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -24928,13 +25019,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends Report_settingsAggregateArgs>(args: Subset<T, Report_settingsAggregateArgs>): Prisma.PrismaPromise<GetReport_settingsAggregateType<T>>
+    aggregate<T extends ReportSettingAggregateArgs>(args: Subset<T, ReportSettingAggregateArgs>): Prisma.PrismaPromise<GetReportSettingAggregateType<T>>
 
     /**
-     * Group by Report_settings.
+     * Group by ReportSetting.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {report_settingsGroupByArgs} args - Group by arguments.
+     * @param {ReportSettingGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -24949,14 +25040,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends report_settingsGroupByArgs,
+      T extends ReportSettingGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: report_settingsGroupByArgs['orderBy'] }
-        : { orderBy?: report_settingsGroupByArgs['orderBy'] },
+        ? { orderBy: ReportSettingGroupByArgs['orderBy'] }
+        : { orderBy?: ReportSettingGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -25005,20 +25096,20 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, report_settingsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReport_settingsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, ReportSettingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReportSettingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the report_settings model
+   * Fields of the ReportSetting model
    */
-  readonly fields: report_settingsFieldRefs;
+  readonly fields: ReportSettingFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for report_settings.
+   * The delegate class that acts as a "Promise-like" for ReportSetting.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__report_settingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__ReportSettingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -25046,375 +25137,375 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the report_settings model
+   * Fields of the ReportSetting model
    */
-  interface report_settingsFieldRefs {
-    readonly key: FieldRef<"report_settings", 'String'>
-    readonly value: FieldRef<"report_settings", 'Json'>
-    readonly updated_at: FieldRef<"report_settings", 'DateTime'>
+  interface ReportSettingFieldRefs {
+    readonly key: FieldRef<"ReportSetting", 'String'>
+    readonly value: FieldRef<"ReportSetting", 'Json'>
+    readonly updatedAt: FieldRef<"ReportSetting", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * report_settings findUnique
+   * ReportSetting findUnique
    */
-  export type report_settingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter, which report_settings to fetch.
+     * Filter, which ReportSetting to fetch.
      */
-    where: report_settingsWhereUniqueInput
+    where: ReportSettingWhereUniqueInput
   }
 
   /**
-   * report_settings findUniqueOrThrow
+   * ReportSetting findUniqueOrThrow
    */
-  export type report_settingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter, which report_settings to fetch.
+     * Filter, which ReportSetting to fetch.
      */
-    where: report_settingsWhereUniqueInput
+    where: ReportSettingWhereUniqueInput
   }
 
   /**
-   * report_settings findFirst
+   * ReportSetting findFirst
    */
-  export type report_settingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter, which report_settings to fetch.
+     * Filter, which ReportSetting to fetch.
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of report_settings to fetch.
+     * Determine the order of ReportSettings to fetch.
      */
-    orderBy?: report_settingsOrderByWithRelationInput | report_settingsOrderByWithRelationInput[]
+    orderBy?: ReportSettingOrderByWithRelationInput | ReportSettingOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for report_settings.
+     * Sets the position for searching for ReportSettings.
      */
-    cursor?: report_settingsWhereUniqueInput
+    cursor?: ReportSettingWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` report_settings from the position of the cursor.
+     * Take `±n` ReportSettings from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` report_settings.
+     * Skip the first `n` ReportSettings.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of report_settings.
+     * Filter by unique combinations of ReportSettings.
      */
-    distinct?: Report_settingsScalarFieldEnum | Report_settingsScalarFieldEnum[]
+    distinct?: ReportSettingScalarFieldEnum | ReportSettingScalarFieldEnum[]
   }
 
   /**
-   * report_settings findFirstOrThrow
+   * ReportSetting findFirstOrThrow
    */
-  export type report_settingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter, which report_settings to fetch.
+     * Filter, which ReportSetting to fetch.
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of report_settings to fetch.
+     * Determine the order of ReportSettings to fetch.
      */
-    orderBy?: report_settingsOrderByWithRelationInput | report_settingsOrderByWithRelationInput[]
+    orderBy?: ReportSettingOrderByWithRelationInput | ReportSettingOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for report_settings.
+     * Sets the position for searching for ReportSettings.
      */
-    cursor?: report_settingsWhereUniqueInput
+    cursor?: ReportSettingWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` report_settings from the position of the cursor.
+     * Take `±n` ReportSettings from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` report_settings.
+     * Skip the first `n` ReportSettings.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of report_settings.
+     * Filter by unique combinations of ReportSettings.
      */
-    distinct?: Report_settingsScalarFieldEnum | Report_settingsScalarFieldEnum[]
+    distinct?: ReportSettingScalarFieldEnum | ReportSettingScalarFieldEnum[]
   }
 
   /**
-   * report_settings findMany
+   * ReportSetting findMany
    */
-  export type report_settingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter, which report_settings to fetch.
+     * Filter, which ReportSettings to fetch.
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of report_settings to fetch.
+     * Determine the order of ReportSettings to fetch.
      */
-    orderBy?: report_settingsOrderByWithRelationInput | report_settingsOrderByWithRelationInput[]
+    orderBy?: ReportSettingOrderByWithRelationInput | ReportSettingOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing report_settings.
+     * Sets the position for listing ReportSettings.
      */
-    cursor?: report_settingsWhereUniqueInput
+    cursor?: ReportSettingWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` report_settings from the position of the cursor.
+     * Take `±n` ReportSettings from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` report_settings.
+     * Skip the first `n` ReportSettings.
      */
     skip?: number
-    distinct?: Report_settingsScalarFieldEnum | Report_settingsScalarFieldEnum[]
+    distinct?: ReportSettingScalarFieldEnum | ReportSettingScalarFieldEnum[]
   }
 
   /**
-   * report_settings create
+   * ReportSetting create
    */
-  export type report_settingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * The data needed to create a report_settings.
+     * The data needed to create a ReportSetting.
      */
-    data: XOR<report_settingsCreateInput, report_settingsUncheckedCreateInput>
+    data: XOR<ReportSettingCreateInput, ReportSettingUncheckedCreateInput>
   }
 
   /**
-   * report_settings createMany
+   * ReportSetting createMany
    */
-  export type report_settingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many report_settings.
+     * The data used to create many ReportSettings.
      */
-    data: report_settingsCreateManyInput | report_settingsCreateManyInput[]
+    data: ReportSettingCreateManyInput | ReportSettingCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * report_settings createManyAndReturn
+   * ReportSetting createManyAndReturn
    */
-  export type report_settingsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelectCreateManyAndReturn<ExtArgs> | null
+    select?: ReportSettingSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * The data used to create many report_settings.
+     * The data used to create many ReportSettings.
      */
-    data: report_settingsCreateManyInput | report_settingsCreateManyInput[]
+    data: ReportSettingCreateManyInput | ReportSettingCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * report_settings update
+   * ReportSetting update
    */
-  export type report_settingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * The data needed to update a report_settings.
+     * The data needed to update a ReportSetting.
      */
-    data: XOR<report_settingsUpdateInput, report_settingsUncheckedUpdateInput>
+    data: XOR<ReportSettingUpdateInput, ReportSettingUncheckedUpdateInput>
     /**
-     * Choose, which report_settings to update.
+     * Choose, which ReportSetting to update.
      */
-    where: report_settingsWhereUniqueInput
+    where: ReportSettingWhereUniqueInput
   }
 
   /**
-   * report_settings updateMany
+   * ReportSetting updateMany
    */
-  export type report_settingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update report_settings.
+     * The data used to update ReportSettings.
      */
-    data: XOR<report_settingsUpdateManyMutationInput, report_settingsUncheckedUpdateManyInput>
+    data: XOR<ReportSettingUpdateManyMutationInput, ReportSettingUncheckedUpdateManyInput>
     /**
-     * Filter which report_settings to update
+     * Filter which ReportSettings to update
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
-     * Limit how many report_settings to update.
+     * Limit how many ReportSettings to update.
      */
     limit?: number
   }
 
   /**
-   * report_settings updateManyAndReturn
+   * ReportSetting updateManyAndReturn
    */
-  export type report_settingsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: ReportSettingSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * The data used to update report_settings.
+     * The data used to update ReportSettings.
      */
-    data: XOR<report_settingsUpdateManyMutationInput, report_settingsUncheckedUpdateManyInput>
+    data: XOR<ReportSettingUpdateManyMutationInput, ReportSettingUncheckedUpdateManyInput>
     /**
-     * Filter which report_settings to update
+     * Filter which ReportSettings to update
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
-     * Limit how many report_settings to update.
+     * Limit how many ReportSettings to update.
      */
     limit?: number
   }
 
   /**
-   * report_settings upsert
+   * ReportSetting upsert
    */
-  export type report_settingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * The filter to search for the report_settings to update in case it exists.
+     * The filter to search for the ReportSetting to update in case it exists.
      */
-    where: report_settingsWhereUniqueInput
+    where: ReportSettingWhereUniqueInput
     /**
-     * In case the report_settings found by the `where` argument doesn't exist, create a new report_settings with this data.
+     * In case the ReportSetting found by the `where` argument doesn't exist, create a new ReportSetting with this data.
      */
-    create: XOR<report_settingsCreateInput, report_settingsUncheckedCreateInput>
+    create: XOR<ReportSettingCreateInput, ReportSettingUncheckedCreateInput>
     /**
-     * In case the report_settings was found with the provided `where` argument, update it with this data.
+     * In case the ReportSetting was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<report_settingsUpdateInput, report_settingsUncheckedUpdateInput>
+    update: XOR<ReportSettingUpdateInput, ReportSettingUncheckedUpdateInput>
   }
 
   /**
-   * report_settings delete
+   * ReportSetting delete
    */
-  export type report_settingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
     /**
-     * Filter which report_settings to delete.
+     * Filter which ReportSetting to delete.
      */
-    where: report_settingsWhereUniqueInput
+    where: ReportSettingWhereUniqueInput
   }
 
   /**
-   * report_settings deleteMany
+   * ReportSetting deleteMany
    */
-  export type report_settingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which report_settings to delete
+     * Filter which ReportSettings to delete
      */
-    where?: report_settingsWhereInput
+    where?: ReportSettingWhereInput
     /**
-     * Limit how many report_settings to delete.
+     * Limit how many ReportSettings to delete.
      */
     limit?: number
   }
 
   /**
-   * report_settings without action
+   * ReportSetting without action
    */
-  export type report_settingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ReportSettingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the report_settings
+     * Select specific fields to fetch from the ReportSetting
      */
-    select?: report_settingsSelect<ExtArgs> | null
+    select?: ReportSettingSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the report_settings
+     * Omit specific fields from the ReportSetting
      */
-    omit?: report_settingsOmit<ExtArgs> | null
+    omit?: ReportSettingOmit<ExtArgs> | null
   }
 
 
@@ -39581,6 +39672,971 @@ export namespace Prisma {
 
 
   /**
+   * Model AlertConfig
+   */
+
+  export type AggregateAlertConfig = {
+    _count: AlertConfigCountAggregateOutputType | null
+    _min: AlertConfigMinAggregateOutputType | null
+    _max: AlertConfigMaxAggregateOutputType | null
+  }
+
+  export type AlertConfigMinAggregateOutputType = {
+    key: string | null
+    updatedAt: Date | null
+  }
+
+  export type AlertConfigMaxAggregateOutputType = {
+    key: string | null
+    updatedAt: Date | null
+  }
+
+  export type AlertConfigCountAggregateOutputType = {
+    key: number
+    config: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AlertConfigMinAggregateInputType = {
+    key?: true
+    updatedAt?: true
+  }
+
+  export type AlertConfigMaxAggregateInputType = {
+    key?: true
+    updatedAt?: true
+  }
+
+  export type AlertConfigCountAggregateInputType = {
+    key?: true
+    config?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AlertConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AlertConfig to aggregate.
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AlertConfigs to fetch.
+     */
+    orderBy?: AlertConfigOrderByWithRelationInput | AlertConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AlertConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AlertConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AlertConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AlertConfigs
+    **/
+    _count?: true | AlertConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AlertConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AlertConfigMaxAggregateInputType
+  }
+
+  export type GetAlertConfigAggregateType<T extends AlertConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateAlertConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAlertConfig[P]>
+      : GetScalarType<T[P], AggregateAlertConfig[P]>
+  }
+
+
+
+
+  export type AlertConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AlertConfigWhereInput
+    orderBy?: AlertConfigOrderByWithAggregationInput | AlertConfigOrderByWithAggregationInput[]
+    by: AlertConfigScalarFieldEnum[] | AlertConfigScalarFieldEnum
+    having?: AlertConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AlertConfigCountAggregateInputType | true
+    _min?: AlertConfigMinAggregateInputType
+    _max?: AlertConfigMaxAggregateInputType
+  }
+
+  export type AlertConfigGroupByOutputType = {
+    key: string
+    config: JsonValue
+    updatedAt: Date
+    _count: AlertConfigCountAggregateOutputType | null
+    _min: AlertConfigMinAggregateOutputType | null
+    _max: AlertConfigMaxAggregateOutputType | null
+  }
+
+  type GetAlertConfigGroupByPayload<T extends AlertConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AlertConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AlertConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AlertConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], AlertConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AlertConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    config?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["alertConfig"]>
+
+  export type AlertConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    config?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["alertConfig"]>
+
+  export type AlertConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    config?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["alertConfig"]>
+
+  export type AlertConfigSelectScalar = {
+    key?: boolean
+    config?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AlertConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"key" | "config" | "updatedAt", ExtArgs["result"]["alertConfig"]>
+
+  export type $AlertConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AlertConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      key: string
+      config: Prisma.JsonValue
+      updatedAt: Date
+    }, ExtArgs["result"]["alertConfig"]>
+    composites: {}
+  }
+
+  type AlertConfigGetPayload<S extends boolean | null | undefined | AlertConfigDefaultArgs> = $Result.GetResult<Prisma.$AlertConfigPayload, S>
+
+  type AlertConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AlertConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AlertConfigCountAggregateInputType | true
+    }
+
+  export interface AlertConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AlertConfig'], meta: { name: 'AlertConfig' } }
+    /**
+     * Find zero or one AlertConfig that matches the filter.
+     * @param {AlertConfigFindUniqueArgs} args - Arguments to find a AlertConfig
+     * @example
+     * // Get one AlertConfig
+     * const alertConfig = await prisma.alertConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AlertConfigFindUniqueArgs>(args: SelectSubset<T, AlertConfigFindUniqueArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AlertConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AlertConfigFindUniqueOrThrowArgs} args - Arguments to find a AlertConfig
+     * @example
+     * // Get one AlertConfig
+     * const alertConfig = await prisma.alertConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AlertConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, AlertConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AlertConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigFindFirstArgs} args - Arguments to find a AlertConfig
+     * @example
+     * // Get one AlertConfig
+     * const alertConfig = await prisma.alertConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AlertConfigFindFirstArgs>(args?: SelectSubset<T, AlertConfigFindFirstArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AlertConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigFindFirstOrThrowArgs} args - Arguments to find a AlertConfig
+     * @example
+     * // Get one AlertConfig
+     * const alertConfig = await prisma.alertConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AlertConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, AlertConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AlertConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AlertConfigs
+     * const alertConfigs = await prisma.alertConfig.findMany()
+     * 
+     * // Get first 10 AlertConfigs
+     * const alertConfigs = await prisma.alertConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `key`
+     * const alertConfigWithKeyOnly = await prisma.alertConfig.findMany({ select: { key: true } })
+     * 
+     */
+    findMany<T extends AlertConfigFindManyArgs>(args?: SelectSubset<T, AlertConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AlertConfig.
+     * @param {AlertConfigCreateArgs} args - Arguments to create a AlertConfig.
+     * @example
+     * // Create one AlertConfig
+     * const AlertConfig = await prisma.alertConfig.create({
+     *   data: {
+     *     // ... data to create a AlertConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends AlertConfigCreateArgs>(args: SelectSubset<T, AlertConfigCreateArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AlertConfigs.
+     * @param {AlertConfigCreateManyArgs} args - Arguments to create many AlertConfigs.
+     * @example
+     * // Create many AlertConfigs
+     * const alertConfig = await prisma.alertConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AlertConfigCreateManyArgs>(args?: SelectSubset<T, AlertConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AlertConfigs and returns the data saved in the database.
+     * @param {AlertConfigCreateManyAndReturnArgs} args - Arguments to create many AlertConfigs.
+     * @example
+     * // Create many AlertConfigs
+     * const alertConfig = await prisma.alertConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AlertConfigs and only return the `key`
+     * const alertConfigWithKeyOnly = await prisma.alertConfig.createManyAndReturn({
+     *   select: { key: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AlertConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, AlertConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AlertConfig.
+     * @param {AlertConfigDeleteArgs} args - Arguments to delete one AlertConfig.
+     * @example
+     * // Delete one AlertConfig
+     * const AlertConfig = await prisma.alertConfig.delete({
+     *   where: {
+     *     // ... filter to delete one AlertConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AlertConfigDeleteArgs>(args: SelectSubset<T, AlertConfigDeleteArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AlertConfig.
+     * @param {AlertConfigUpdateArgs} args - Arguments to update one AlertConfig.
+     * @example
+     * // Update one AlertConfig
+     * const alertConfig = await prisma.alertConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AlertConfigUpdateArgs>(args: SelectSubset<T, AlertConfigUpdateArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AlertConfigs.
+     * @param {AlertConfigDeleteManyArgs} args - Arguments to filter AlertConfigs to delete.
+     * @example
+     * // Delete a few AlertConfigs
+     * const { count } = await prisma.alertConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AlertConfigDeleteManyArgs>(args?: SelectSubset<T, AlertConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AlertConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AlertConfigs
+     * const alertConfig = await prisma.alertConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AlertConfigUpdateManyArgs>(args: SelectSubset<T, AlertConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AlertConfigs and returns the data updated in the database.
+     * @param {AlertConfigUpdateManyAndReturnArgs} args - Arguments to update many AlertConfigs.
+     * @example
+     * // Update many AlertConfigs
+     * const alertConfig = await prisma.alertConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AlertConfigs and only return the `key`
+     * const alertConfigWithKeyOnly = await prisma.alertConfig.updateManyAndReturn({
+     *   select: { key: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AlertConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, AlertConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AlertConfig.
+     * @param {AlertConfigUpsertArgs} args - Arguments to update or create a AlertConfig.
+     * @example
+     * // Update or create a AlertConfig
+     * const alertConfig = await prisma.alertConfig.upsert({
+     *   create: {
+     *     // ... data to create a AlertConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AlertConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AlertConfigUpsertArgs>(args: SelectSubset<T, AlertConfigUpsertArgs<ExtArgs>>): Prisma__AlertConfigClient<$Result.GetResult<Prisma.$AlertConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AlertConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigCountArgs} args - Arguments to filter AlertConfigs to count.
+     * @example
+     * // Count the number of AlertConfigs
+     * const count = await prisma.alertConfig.count({
+     *   where: {
+     *     // ... the filter for the AlertConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends AlertConfigCountArgs>(
+      args?: Subset<T, AlertConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AlertConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AlertConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AlertConfigAggregateArgs>(args: Subset<T, AlertConfigAggregateArgs>): Prisma.PrismaPromise<GetAlertConfigAggregateType<T>>
+
+    /**
+     * Group by AlertConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AlertConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AlertConfigGroupByArgs['orderBy'] }
+        : { orderBy?: AlertConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AlertConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAlertConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AlertConfig model
+   */
+  readonly fields: AlertConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AlertConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AlertConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AlertConfig model
+   */
+  interface AlertConfigFieldRefs {
+    readonly key: FieldRef<"AlertConfig", 'String'>
+    readonly config: FieldRef<"AlertConfig", 'Json'>
+    readonly updatedAt: FieldRef<"AlertConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AlertConfig findUnique
+   */
+  export type AlertConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AlertConfig to fetch.
+     */
+    where: AlertConfigWhereUniqueInput
+  }
+
+  /**
+   * AlertConfig findUniqueOrThrow
+   */
+  export type AlertConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AlertConfig to fetch.
+     */
+    where: AlertConfigWhereUniqueInput
+  }
+
+  /**
+   * AlertConfig findFirst
+   */
+  export type AlertConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AlertConfig to fetch.
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AlertConfigs to fetch.
+     */
+    orderBy?: AlertConfigOrderByWithRelationInput | AlertConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AlertConfigs.
+     */
+    cursor?: AlertConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AlertConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AlertConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AlertConfigs.
+     */
+    distinct?: AlertConfigScalarFieldEnum | AlertConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AlertConfig findFirstOrThrow
+   */
+  export type AlertConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AlertConfig to fetch.
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AlertConfigs to fetch.
+     */
+    orderBy?: AlertConfigOrderByWithRelationInput | AlertConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AlertConfigs.
+     */
+    cursor?: AlertConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AlertConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AlertConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AlertConfigs.
+     */
+    distinct?: AlertConfigScalarFieldEnum | AlertConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AlertConfig findMany
+   */
+  export type AlertConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter, which AlertConfigs to fetch.
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AlertConfigs to fetch.
+     */
+    orderBy?: AlertConfigOrderByWithRelationInput | AlertConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AlertConfigs.
+     */
+    cursor?: AlertConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AlertConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AlertConfigs.
+     */
+    skip?: number
+    distinct?: AlertConfigScalarFieldEnum | AlertConfigScalarFieldEnum[]
+  }
+
+  /**
+   * AlertConfig create
+   */
+  export type AlertConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AlertConfig.
+     */
+    data: XOR<AlertConfigCreateInput, AlertConfigUncheckedCreateInput>
+  }
+
+  /**
+   * AlertConfig createMany
+   */
+  export type AlertConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AlertConfigs.
+     */
+    data: AlertConfigCreateManyInput | AlertConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AlertConfig createManyAndReturn
+   */
+  export type AlertConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many AlertConfigs.
+     */
+    data: AlertConfigCreateManyInput | AlertConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AlertConfig update
+   */
+  export type AlertConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AlertConfig.
+     */
+    data: XOR<AlertConfigUpdateInput, AlertConfigUncheckedUpdateInput>
+    /**
+     * Choose, which AlertConfig to update.
+     */
+    where: AlertConfigWhereUniqueInput
+  }
+
+  /**
+   * AlertConfig updateMany
+   */
+  export type AlertConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AlertConfigs.
+     */
+    data: XOR<AlertConfigUpdateManyMutationInput, AlertConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which AlertConfigs to update
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * Limit how many AlertConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AlertConfig updateManyAndReturn
+   */
+  export type AlertConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update AlertConfigs.
+     */
+    data: XOR<AlertConfigUpdateManyMutationInput, AlertConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which AlertConfigs to update
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * Limit how many AlertConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AlertConfig upsert
+   */
+  export type AlertConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AlertConfig to update in case it exists.
+     */
+    where: AlertConfigWhereUniqueInput
+    /**
+     * In case the AlertConfig found by the `where` argument doesn't exist, create a new AlertConfig with this data.
+     */
+    create: XOR<AlertConfigCreateInput, AlertConfigUncheckedCreateInput>
+    /**
+     * In case the AlertConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AlertConfigUpdateInput, AlertConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * AlertConfig delete
+   */
+  export type AlertConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+    /**
+     * Filter which AlertConfig to delete.
+     */
+    where: AlertConfigWhereUniqueInput
+  }
+
+  /**
+   * AlertConfig deleteMany
+   */
+  export type AlertConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AlertConfigs to delete
+     */
+    where?: AlertConfigWhereInput
+    /**
+     * Limit how many AlertConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AlertConfig without action
+   */
+  export type AlertConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AlertConfig
+     */
+    select?: AlertConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AlertConfig
+     */
+    omit?: AlertConfigOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -39819,32 +40875,32 @@ export namespace Prisma {
   export type VisitorScalarFieldEnum = (typeof VisitorScalarFieldEnum)[keyof typeof VisitorScalarFieldEnum]
 
 
-  export const Bmq_coursesScalarFieldEnum: {
+  export const BmqCourseScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    start_date: 'start_date',
-    end_date: 'end_date',
-    training_start_time: 'training_start_time',
-    training_end_time: 'training_end_time',
-    is_active: 'is_active',
-    created_at: 'created_at',
-    updated_at: 'updated_at',
-    training_days: 'training_days'
+    startDate: 'startDate',
+    endDate: 'endDate',
+    trainingStartTime: 'trainingStartTime',
+    trainingEndTime: 'trainingEndTime',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    trainingDays: 'trainingDays'
   };
 
-  export type Bmq_coursesScalarFieldEnum = (typeof Bmq_coursesScalarFieldEnum)[keyof typeof Bmq_coursesScalarFieldEnum]
+  export type BmqCourseScalarFieldEnum = (typeof BmqCourseScalarFieldEnum)[keyof typeof BmqCourseScalarFieldEnum]
 
 
-  export const Bmq_enrollmentsScalarFieldEnum: {
+  export const BmqEnrollmentScalarFieldEnum: {
     id: 'id',
-    member_id: 'member_id',
-    bmq_course_id: 'bmq_course_id',
-    enrolled_at: 'enrolled_at',
-    completed_at: 'completed_at',
+    memberId: 'memberId',
+    bmqCourseId: 'bmqCourseId',
+    enrolledAt: 'enrolledAt',
+    completedAt: 'completedAt',
     status: 'status'
   };
 
-  export type Bmq_enrollmentsScalarFieldEnum = (typeof Bmq_enrollmentsScalarFieldEnum)[keyof typeof Bmq_enrollmentsScalarFieldEnum]
+  export type BmqEnrollmentScalarFieldEnum = (typeof BmqEnrollmentScalarFieldEnum)[keyof typeof BmqEnrollmentScalarFieldEnum]
 
 
   export const MigrationsScalarFieldEnum: {
@@ -39871,13 +40927,13 @@ export namespace Prisma {
   export type Report_audit_logScalarFieldEnum = (typeof Report_audit_logScalarFieldEnum)[keyof typeof Report_audit_logScalarFieldEnum]
 
 
-  export const Report_settingsScalarFieldEnum: {
+  export const ReportSettingScalarFieldEnum: {
     key: 'key',
     value: 'value',
-    updated_at: 'updated_at'
+    updatedAt: 'updatedAt'
   };
 
-  export type Report_settingsScalarFieldEnum = (typeof Report_settingsScalarFieldEnum)[keyof typeof Report_settingsScalarFieldEnum]
+  export type ReportSettingScalarFieldEnum = (typeof ReportSettingScalarFieldEnum)[keyof typeof ReportSettingScalarFieldEnum]
 
 
   export const TrainingYearScalarFieldEnum: {
@@ -40064,6 +41120,15 @@ export namespace Prisma {
   };
 
   export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
+
+
+  export const AlertConfigScalarFieldEnum: {
+    key: 'key',
+    config: 'config',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AlertConfigScalarFieldEnum = (typeof AlertConfigScalarFieldEnum)[keyof typeof AlertConfigScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -40943,7 +42008,7 @@ export namespace Prisma {
     contract_start?: DateTimeNullableFilter<"Member"> | Date | string | null
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
-    bmq_enrollments?: Bmq_enrollmentsListRelationFilter
+    bmqEnrollments?: BmqEnrollmentListRelationFilter
     checkins?: CheckinListRelationFilter
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
     visitors?: VisitorListRelationFilter
@@ -40980,7 +42045,7 @@ export namespace Prisma {
     contract_start?: SortOrderInput | SortOrder
     contract_end?: SortOrderInput | SortOrder
     badge?: BadgeOrderByWithRelationInput
-    bmq_enrollments?: bmq_enrollmentsOrderByRelationAggregateInput
+    bmqEnrollments?: BmqEnrollmentOrderByRelationAggregateInput
     checkins?: CheckinOrderByRelationAggregateInput
     division?: DivisionOrderByWithRelationInput
     visitors?: VisitorOrderByRelationAggregateInput
@@ -41020,7 +42085,7 @@ export namespace Prisma {
     contract_start?: DateTimeNullableFilter<"Member"> | Date | string | null
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
-    bmq_enrollments?: Bmq_enrollmentsListRelationFilter
+    bmqEnrollments?: BmqEnrollmentListRelationFilter
     checkins?: CheckinListRelationFilter
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
     visitors?: VisitorListRelationFilter
@@ -41429,148 +42494,148 @@ export namespace Prisma {
     createdByAdmin?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
   }
 
-  export type bmq_coursesWhereInput = {
-    AND?: bmq_coursesWhereInput | bmq_coursesWhereInput[]
-    OR?: bmq_coursesWhereInput[]
-    NOT?: bmq_coursesWhereInput | bmq_coursesWhereInput[]
-    id?: UuidFilter<"bmq_courses"> | string
-    name?: StringFilter<"bmq_courses"> | string
-    start_date?: DateTimeFilter<"bmq_courses"> | Date | string
-    end_date?: DateTimeFilter<"bmq_courses"> | Date | string
-    training_start_time?: DateTimeFilter<"bmq_courses"> | Date | string
-    training_end_time?: DateTimeFilter<"bmq_courses"> | Date | string
-    is_active?: BoolNullableFilter<"bmq_courses"> | boolean | null
-    created_at?: DateTimeNullableFilter<"bmq_courses"> | Date | string | null
-    updated_at?: DateTimeNullableFilter<"bmq_courses"> | Date | string | null
-    training_days?: StringNullableListFilter<"bmq_courses">
-    bmq_enrollments?: Bmq_enrollmentsListRelationFilter
+  export type BmqCourseWhereInput = {
+    AND?: BmqCourseWhereInput | BmqCourseWhereInput[]
+    OR?: BmqCourseWhereInput[]
+    NOT?: BmqCourseWhereInput | BmqCourseWhereInput[]
+    id?: UuidFilter<"BmqCourse"> | string
+    name?: StringFilter<"BmqCourse"> | string
+    startDate?: DateTimeFilter<"BmqCourse"> | Date | string
+    endDate?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingStartTime?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingEndTime?: DateTimeFilter<"BmqCourse"> | Date | string
+    isActive?: BoolFilter<"BmqCourse"> | boolean
+    createdAt?: DateTimeFilter<"BmqCourse"> | Date | string
+    updatedAt?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingDays?: StringNullableListFilter<"BmqCourse">
+    bmqEnrollments?: BmqEnrollmentListRelationFilter
   }
 
-  export type bmq_coursesOrderByWithRelationInput = {
+  export type BmqCourseOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    start_date?: SortOrder
-    end_date?: SortOrder
-    training_start_time?: SortOrder
-    training_end_time?: SortOrder
-    is_active?: SortOrderInput | SortOrder
-    created_at?: SortOrderInput | SortOrder
-    updated_at?: SortOrderInput | SortOrder
-    training_days?: SortOrder
-    bmq_enrollments?: bmq_enrollmentsOrderByRelationAggregateInput
+    startDate?: SortOrder
+    endDate?: SortOrder
+    trainingStartTime?: SortOrder
+    trainingEndTime?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    trainingDays?: SortOrder
+    bmqEnrollments?: BmqEnrollmentOrderByRelationAggregateInput
   }
 
-  export type bmq_coursesWhereUniqueInput = Prisma.AtLeast<{
+  export type BmqCourseWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: bmq_coursesWhereInput | bmq_coursesWhereInput[]
-    OR?: bmq_coursesWhereInput[]
-    NOT?: bmq_coursesWhereInput | bmq_coursesWhereInput[]
-    name?: StringFilter<"bmq_courses"> | string
-    start_date?: DateTimeFilter<"bmq_courses"> | Date | string
-    end_date?: DateTimeFilter<"bmq_courses"> | Date | string
-    training_start_time?: DateTimeFilter<"bmq_courses"> | Date | string
-    training_end_time?: DateTimeFilter<"bmq_courses"> | Date | string
-    is_active?: BoolNullableFilter<"bmq_courses"> | boolean | null
-    created_at?: DateTimeNullableFilter<"bmq_courses"> | Date | string | null
-    updated_at?: DateTimeNullableFilter<"bmq_courses"> | Date | string | null
-    training_days?: StringNullableListFilter<"bmq_courses">
-    bmq_enrollments?: Bmq_enrollmentsListRelationFilter
+    AND?: BmqCourseWhereInput | BmqCourseWhereInput[]
+    OR?: BmqCourseWhereInput[]
+    NOT?: BmqCourseWhereInput | BmqCourseWhereInput[]
+    name?: StringFilter<"BmqCourse"> | string
+    startDate?: DateTimeFilter<"BmqCourse"> | Date | string
+    endDate?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingStartTime?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingEndTime?: DateTimeFilter<"BmqCourse"> | Date | string
+    isActive?: BoolFilter<"BmqCourse"> | boolean
+    createdAt?: DateTimeFilter<"BmqCourse"> | Date | string
+    updatedAt?: DateTimeFilter<"BmqCourse"> | Date | string
+    trainingDays?: StringNullableListFilter<"BmqCourse">
+    bmqEnrollments?: BmqEnrollmentListRelationFilter
   }, "id">
 
-  export type bmq_coursesOrderByWithAggregationInput = {
+  export type BmqCourseOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    start_date?: SortOrder
-    end_date?: SortOrder
-    training_start_time?: SortOrder
-    training_end_time?: SortOrder
-    is_active?: SortOrderInput | SortOrder
-    created_at?: SortOrderInput | SortOrder
-    updated_at?: SortOrderInput | SortOrder
-    training_days?: SortOrder
-    _count?: bmq_coursesCountOrderByAggregateInput
-    _max?: bmq_coursesMaxOrderByAggregateInput
-    _min?: bmq_coursesMinOrderByAggregateInput
+    startDate?: SortOrder
+    endDate?: SortOrder
+    trainingStartTime?: SortOrder
+    trainingEndTime?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    trainingDays?: SortOrder
+    _count?: BmqCourseCountOrderByAggregateInput
+    _max?: BmqCourseMaxOrderByAggregateInput
+    _min?: BmqCourseMinOrderByAggregateInput
   }
 
-  export type bmq_coursesScalarWhereWithAggregatesInput = {
-    AND?: bmq_coursesScalarWhereWithAggregatesInput | bmq_coursesScalarWhereWithAggregatesInput[]
-    OR?: bmq_coursesScalarWhereWithAggregatesInput[]
-    NOT?: bmq_coursesScalarWhereWithAggregatesInput | bmq_coursesScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"bmq_courses"> | string
-    name?: StringWithAggregatesFilter<"bmq_courses"> | string
-    start_date?: DateTimeWithAggregatesFilter<"bmq_courses"> | Date | string
-    end_date?: DateTimeWithAggregatesFilter<"bmq_courses"> | Date | string
-    training_start_time?: DateTimeWithAggregatesFilter<"bmq_courses"> | Date | string
-    training_end_time?: DateTimeWithAggregatesFilter<"bmq_courses"> | Date | string
-    is_active?: BoolNullableWithAggregatesFilter<"bmq_courses"> | boolean | null
-    created_at?: DateTimeNullableWithAggregatesFilter<"bmq_courses"> | Date | string | null
-    updated_at?: DateTimeNullableWithAggregatesFilter<"bmq_courses"> | Date | string | null
-    training_days?: StringNullableListFilter<"bmq_courses">
+  export type BmqCourseScalarWhereWithAggregatesInput = {
+    AND?: BmqCourseScalarWhereWithAggregatesInput | BmqCourseScalarWhereWithAggregatesInput[]
+    OR?: BmqCourseScalarWhereWithAggregatesInput[]
+    NOT?: BmqCourseScalarWhereWithAggregatesInput | BmqCourseScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"BmqCourse"> | string
+    name?: StringWithAggregatesFilter<"BmqCourse"> | string
+    startDate?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    endDate?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    trainingStartTime?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    trainingEndTime?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    isActive?: BoolWithAggregatesFilter<"BmqCourse"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BmqCourse"> | Date | string
+    trainingDays?: StringNullableListFilter<"BmqCourse">
   }
 
-  export type bmq_enrollmentsWhereInput = {
-    AND?: bmq_enrollmentsWhereInput | bmq_enrollmentsWhereInput[]
-    OR?: bmq_enrollmentsWhereInput[]
-    NOT?: bmq_enrollmentsWhereInput | bmq_enrollmentsWhereInput[]
-    id?: UuidFilter<"bmq_enrollments"> | string
-    member_id?: UuidFilter<"bmq_enrollments"> | string
-    bmq_course_id?: UuidFilter<"bmq_enrollments"> | string
-    enrolled_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    completed_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    status?: StringNullableFilter<"bmq_enrollments"> | string | null
-    bmq_courses?: XOR<Bmq_coursesScalarRelationFilter, bmq_coursesWhereInput>
-    members?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  export type BmqEnrollmentWhereInput = {
+    AND?: BmqEnrollmentWhereInput | BmqEnrollmentWhereInput[]
+    OR?: BmqEnrollmentWhereInput[]
+    NOT?: BmqEnrollmentWhereInput | BmqEnrollmentWhereInput[]
+    id?: UuidFilter<"BmqEnrollment"> | string
+    memberId?: UuidFilter<"BmqEnrollment"> | string
+    bmqCourseId?: UuidFilter<"BmqEnrollment"> | string
+    enrolledAt?: DateTimeFilter<"BmqEnrollment"> | Date | string
+    completedAt?: DateTimeNullableFilter<"BmqEnrollment"> | Date | string | null
+    status?: StringFilter<"BmqEnrollment"> | string
+    bmqCourse?: XOR<BmqCourseScalarRelationFilter, BmqCourseWhereInput>
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
   }
 
-  export type bmq_enrollmentsOrderByWithRelationInput = {
+  export type BmqEnrollmentOrderByWithRelationInput = {
     id?: SortOrder
-    member_id?: SortOrder
-    bmq_course_id?: SortOrder
-    enrolled_at?: SortOrderInput | SortOrder
-    completed_at?: SortOrderInput | SortOrder
-    status?: SortOrderInput | SortOrder
-    bmq_courses?: bmq_coursesOrderByWithRelationInput
-    members?: MemberOrderByWithRelationInput
+    memberId?: SortOrder
+    bmqCourseId?: SortOrder
+    enrolledAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    bmqCourse?: BmqCourseOrderByWithRelationInput
+    member?: MemberOrderByWithRelationInput
   }
 
-  export type bmq_enrollmentsWhereUniqueInput = Prisma.AtLeast<{
+  export type BmqEnrollmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    member_id_bmq_course_id?: bmq_enrollmentsMember_idBmq_course_idCompoundUniqueInput
-    AND?: bmq_enrollmentsWhereInput | bmq_enrollmentsWhereInput[]
-    OR?: bmq_enrollmentsWhereInput[]
-    NOT?: bmq_enrollmentsWhereInput | bmq_enrollmentsWhereInput[]
-    member_id?: UuidFilter<"bmq_enrollments"> | string
-    bmq_course_id?: UuidFilter<"bmq_enrollments"> | string
-    enrolled_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    completed_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    status?: StringNullableFilter<"bmq_enrollments"> | string | null
-    bmq_courses?: XOR<Bmq_coursesScalarRelationFilter, bmq_coursesWhereInput>
-    members?: XOR<MemberScalarRelationFilter, MemberWhereInput>
-  }, "id" | "member_id_bmq_course_id">
+    memberId_bmqCourseId?: BmqEnrollmentMemberIdBmqCourseIdCompoundUniqueInput
+    AND?: BmqEnrollmentWhereInput | BmqEnrollmentWhereInput[]
+    OR?: BmqEnrollmentWhereInput[]
+    NOT?: BmqEnrollmentWhereInput | BmqEnrollmentWhereInput[]
+    memberId?: UuidFilter<"BmqEnrollment"> | string
+    bmqCourseId?: UuidFilter<"BmqEnrollment"> | string
+    enrolledAt?: DateTimeFilter<"BmqEnrollment"> | Date | string
+    completedAt?: DateTimeNullableFilter<"BmqEnrollment"> | Date | string | null
+    status?: StringFilter<"BmqEnrollment"> | string
+    bmqCourse?: XOR<BmqCourseScalarRelationFilter, BmqCourseWhereInput>
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  }, "id" | "memberId_bmqCourseId">
 
-  export type bmq_enrollmentsOrderByWithAggregationInput = {
+  export type BmqEnrollmentOrderByWithAggregationInput = {
     id?: SortOrder
-    member_id?: SortOrder
-    bmq_course_id?: SortOrder
-    enrolled_at?: SortOrderInput | SortOrder
-    completed_at?: SortOrderInput | SortOrder
-    status?: SortOrderInput | SortOrder
-    _count?: bmq_enrollmentsCountOrderByAggregateInput
-    _max?: bmq_enrollmentsMaxOrderByAggregateInput
-    _min?: bmq_enrollmentsMinOrderByAggregateInput
+    memberId?: SortOrder
+    bmqCourseId?: SortOrder
+    enrolledAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    _count?: BmqEnrollmentCountOrderByAggregateInput
+    _max?: BmqEnrollmentMaxOrderByAggregateInput
+    _min?: BmqEnrollmentMinOrderByAggregateInput
   }
 
-  export type bmq_enrollmentsScalarWhereWithAggregatesInput = {
-    AND?: bmq_enrollmentsScalarWhereWithAggregatesInput | bmq_enrollmentsScalarWhereWithAggregatesInput[]
-    OR?: bmq_enrollmentsScalarWhereWithAggregatesInput[]
-    NOT?: bmq_enrollmentsScalarWhereWithAggregatesInput | bmq_enrollmentsScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"bmq_enrollments"> | string
-    member_id?: UuidWithAggregatesFilter<"bmq_enrollments"> | string
-    bmq_course_id?: UuidWithAggregatesFilter<"bmq_enrollments"> | string
-    enrolled_at?: DateTimeNullableWithAggregatesFilter<"bmq_enrollments"> | Date | string | null
-    completed_at?: DateTimeNullableWithAggregatesFilter<"bmq_enrollments"> | Date | string | null
-    status?: StringNullableWithAggregatesFilter<"bmq_enrollments"> | string | null
+  export type BmqEnrollmentScalarWhereWithAggregatesInput = {
+    AND?: BmqEnrollmentScalarWhereWithAggregatesInput | BmqEnrollmentScalarWhereWithAggregatesInput[]
+    OR?: BmqEnrollmentScalarWhereWithAggregatesInput[]
+    NOT?: BmqEnrollmentScalarWhereWithAggregatesInput | BmqEnrollmentScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"BmqEnrollment"> | string
+    memberId?: UuidWithAggregatesFilter<"BmqEnrollment"> | string
+    bmqCourseId?: UuidWithAggregatesFilter<"BmqEnrollment"> | string
+    enrolledAt?: DateTimeWithAggregatesFilter<"BmqEnrollment"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"BmqEnrollment"> | Date | string | null
+    status?: StringWithAggregatesFilter<"BmqEnrollment"> | string
   }
 
   export type migrationsWhereInput = {
@@ -41694,46 +42759,46 @@ export namespace Prisma {
     generation_time_ms?: IntNullableWithAggregatesFilter<"report_audit_log"> | number | null
   }
 
-  export type report_settingsWhereInput = {
-    AND?: report_settingsWhereInput | report_settingsWhereInput[]
-    OR?: report_settingsWhereInput[]
-    NOT?: report_settingsWhereInput | report_settingsWhereInput[]
-    key?: StringFilter<"report_settings"> | string
-    value?: JsonFilter<"report_settings">
-    updated_at?: DateTimeNullableFilter<"report_settings"> | Date | string | null
+  export type ReportSettingWhereInput = {
+    AND?: ReportSettingWhereInput | ReportSettingWhereInput[]
+    OR?: ReportSettingWhereInput[]
+    NOT?: ReportSettingWhereInput | ReportSettingWhereInput[]
+    key?: StringFilter<"ReportSetting"> | string
+    value?: JsonFilter<"ReportSetting">
+    updatedAt?: DateTimeFilter<"ReportSetting"> | Date | string
   }
 
-  export type report_settingsOrderByWithRelationInput = {
+  export type ReportSettingOrderByWithRelationInput = {
     key?: SortOrder
     value?: SortOrder
-    updated_at?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type report_settingsWhereUniqueInput = Prisma.AtLeast<{
+  export type ReportSettingWhereUniqueInput = Prisma.AtLeast<{
     key?: string
-    AND?: report_settingsWhereInput | report_settingsWhereInput[]
-    OR?: report_settingsWhereInput[]
-    NOT?: report_settingsWhereInput | report_settingsWhereInput[]
-    value?: JsonFilter<"report_settings">
-    updated_at?: DateTimeNullableFilter<"report_settings"> | Date | string | null
+    AND?: ReportSettingWhereInput | ReportSettingWhereInput[]
+    OR?: ReportSettingWhereInput[]
+    NOT?: ReportSettingWhereInput | ReportSettingWhereInput[]
+    value?: JsonFilter<"ReportSetting">
+    updatedAt?: DateTimeFilter<"ReportSetting"> | Date | string
   }, "key">
 
-  export type report_settingsOrderByWithAggregationInput = {
+  export type ReportSettingOrderByWithAggregationInput = {
     key?: SortOrder
     value?: SortOrder
-    updated_at?: SortOrderInput | SortOrder
-    _count?: report_settingsCountOrderByAggregateInput
-    _max?: report_settingsMaxOrderByAggregateInput
-    _min?: report_settingsMinOrderByAggregateInput
+    updatedAt?: SortOrder
+    _count?: ReportSettingCountOrderByAggregateInput
+    _max?: ReportSettingMaxOrderByAggregateInput
+    _min?: ReportSettingMinOrderByAggregateInput
   }
 
-  export type report_settingsScalarWhereWithAggregatesInput = {
-    AND?: report_settingsScalarWhereWithAggregatesInput | report_settingsScalarWhereWithAggregatesInput[]
-    OR?: report_settingsScalarWhereWithAggregatesInput[]
-    NOT?: report_settingsScalarWhereWithAggregatesInput | report_settingsScalarWhereWithAggregatesInput[]
-    key?: StringWithAggregatesFilter<"report_settings"> | string
-    value?: JsonWithAggregatesFilter<"report_settings">
-    updated_at?: DateTimeNullableWithAggregatesFilter<"report_settings"> | Date | string | null
+  export type ReportSettingScalarWhereWithAggregatesInput = {
+    AND?: ReportSettingScalarWhereWithAggregatesInput | ReportSettingScalarWhereWithAggregatesInput[]
+    OR?: ReportSettingScalarWhereWithAggregatesInput[]
+    NOT?: ReportSettingScalarWhereWithAggregatesInput | ReportSettingScalarWhereWithAggregatesInput[]
+    key?: StringWithAggregatesFilter<"ReportSetting"> | string
+    value?: JsonWithAggregatesFilter<"ReportSetting">
+    updatedAt?: DateTimeWithAggregatesFilter<"ReportSetting"> | Date | string
   }
 
   export type TrainingYearWhereInput = {
@@ -42665,6 +43730,48 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Setting"> | Date | string
   }
 
+  export type AlertConfigWhereInput = {
+    AND?: AlertConfigWhereInput | AlertConfigWhereInput[]
+    OR?: AlertConfigWhereInput[]
+    NOT?: AlertConfigWhereInput | AlertConfigWhereInput[]
+    key?: StringFilter<"AlertConfig"> | string
+    config?: JsonFilter<"AlertConfig">
+    updatedAt?: DateTimeFilter<"AlertConfig"> | Date | string
+  }
+
+  export type AlertConfigOrderByWithRelationInput = {
+    key?: SortOrder
+    config?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AlertConfigWhereUniqueInput = Prisma.AtLeast<{
+    key?: string
+    AND?: AlertConfigWhereInput | AlertConfigWhereInput[]
+    OR?: AlertConfigWhereInput[]
+    NOT?: AlertConfigWhereInput | AlertConfigWhereInput[]
+    config?: JsonFilter<"AlertConfig">
+    updatedAt?: DateTimeFilter<"AlertConfig"> | Date | string
+  }, "key">
+
+  export type AlertConfigOrderByWithAggregationInput = {
+    key?: SortOrder
+    config?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AlertConfigCountOrderByAggregateInput
+    _max?: AlertConfigMaxOrderByAggregateInput
+    _min?: AlertConfigMinOrderByAggregateInput
+  }
+
+  export type AlertConfigScalarWhereWithAggregatesInput = {
+    AND?: AlertConfigScalarWhereWithAggregatesInput | AlertConfigScalarWhereWithAggregatesInput[]
+    OR?: AlertConfigScalarWhereWithAggregatesInput[]
+    NOT?: AlertConfigScalarWhereWithAggregatesInput | AlertConfigScalarWhereWithAggregatesInput[]
+    key?: StringWithAggregatesFilter<"AlertConfig"> | string
+    config?: JsonWithAggregatesFilter<"AlertConfig">
+    updatedAt?: DateTimeWithAggregatesFilter<"AlertConfig"> | Date | string
+  }
+
   export type AdminUserCreateInput = {
     id?: string
     username: string
@@ -43493,7 +44600,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -43529,7 +44636,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -43559,7 +44666,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -43595,7 +44702,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -44040,160 +45147,160 @@ export namespace Prisma {
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type bmq_coursesCreateInput = {
+  export type BmqCourseCreateInput = {
     id?: string
     name: string
-    start_date: Date | string
-    end_date: Date | string
-    training_start_time: Date | string
-    training_end_time: Date | string
-    is_active?: boolean | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    training_days?: bmq_coursesCreatetraining_daysInput | string[]
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutBmq_coursesInput
+    startDate: Date | string
+    endDate: Date | string
+    trainingStartTime: Date | string
+    trainingEndTime: Date | string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trainingDays?: BmqCourseCreatetrainingDaysInput | string[]
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutBmqCourseInput
   }
 
-  export type bmq_coursesUncheckedCreateInput = {
+  export type BmqCourseUncheckedCreateInput = {
     id?: string
     name: string
-    start_date: Date | string
-    end_date: Date | string
-    training_start_time: Date | string
-    training_end_time: Date | string
-    is_active?: boolean | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    training_days?: bmq_coursesCreatetraining_daysInput | string[]
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutBmq_coursesInput
+    startDate: Date | string
+    endDate: Date | string
+    trainingStartTime: Date | string
+    trainingEndTime: Date | string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trainingDays?: BmqCourseCreatetrainingDaysInput | string[]
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutBmqCourseInput
   }
 
-  export type bmq_coursesUpdateInput = {
+  export type BmqCourseUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutBmq_coursesNestedInput
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutBmqCourseNestedInput
   }
 
-  export type bmq_coursesUncheckedUpdateInput = {
+  export type BmqCourseUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutBmq_coursesNestedInput
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutBmqCourseNestedInput
   }
 
-  export type bmq_coursesCreateManyInput = {
+  export type BmqCourseCreateManyInput = {
     id?: string
     name: string
-    start_date: Date | string
-    end_date: Date | string
-    training_start_time: Date | string
-    training_end_time: Date | string
-    is_active?: boolean | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    training_days?: bmq_coursesCreatetraining_daysInput | string[]
+    startDate: Date | string
+    endDate: Date | string
+    trainingStartTime: Date | string
+    trainingEndTime: Date | string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trainingDays?: BmqCourseCreatetrainingDaysInput | string[]
   }
 
-  export type bmq_coursesUpdateManyMutationInput = {
+  export type BmqCourseUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
   }
 
-  export type bmq_coursesUncheckedUpdateManyInput = {
+  export type BmqCourseUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
   }
 
-  export type bmq_enrollmentsCreateInput = {
+  export type BmqEnrollmentCreateInput = {
     id?: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
-    bmq_courses: bmq_coursesCreateNestedOneWithoutBmq_enrollmentsInput
-    members: MemberCreateNestedOneWithoutBmq_enrollmentsInput
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
+    bmqCourse: BmqCourseCreateNestedOneWithoutBmqEnrollmentsInput
+    member: MemberCreateNestedOneWithoutBmqEnrollmentsInput
   }
 
-  export type bmq_enrollmentsUncheckedCreateInput = {
+  export type BmqEnrollmentUncheckedCreateInput = {
     id?: string
-    member_id: string
-    bmq_course_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    memberId: string
+    bmqCourseId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
-  export type bmq_enrollmentsUpdateInput = {
+  export type BmqEnrollmentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    bmq_courses?: bmq_coursesUpdateOneRequiredWithoutBmq_enrollmentsNestedInput
-    members?: MemberUpdateOneRequiredWithoutBmq_enrollmentsNestedInput
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    bmqCourse?: BmqCourseUpdateOneRequiredWithoutBmqEnrollmentsNestedInput
+    member?: MemberUpdateOneRequiredWithoutBmqEnrollmentsNestedInput
   }
 
-  export type bmq_enrollmentsUncheckedUpdateInput = {
+  export type BmqEnrollmentUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    member_id?: StringFieldUpdateOperationsInput | string
-    bmq_course_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    bmqCourseId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
-  export type bmq_enrollmentsCreateManyInput = {
+  export type BmqEnrollmentCreateManyInput = {
     id?: string
-    member_id: string
-    bmq_course_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    memberId: string
+    bmqCourseId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
-  export type bmq_enrollmentsUpdateManyMutationInput = {
+  export type BmqEnrollmentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
-  export type bmq_enrollmentsUncheckedUpdateManyInput = {
+  export type BmqEnrollmentUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    member_id?: StringFieldUpdateOperationsInput | string
-    bmq_course_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    bmqCourseId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type migrationsCreateInput = {
@@ -44318,46 +45425,46 @@ export namespace Prisma {
     generation_time_ms?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type report_settingsCreateInput = {
+  export type ReportSettingCreateInput = {
     key: string
     value: JsonNullValueInput | InputJsonValue
-    updated_at?: Date | string | null
+    updatedAt?: Date | string
   }
 
-  export type report_settingsUncheckedCreateInput = {
+  export type ReportSettingUncheckedCreateInput = {
     key: string
     value: JsonNullValueInput | InputJsonValue
-    updated_at?: Date | string | null
+    updatedAt?: Date | string
   }
 
-  export type report_settingsUpdateInput = {
+  export type ReportSettingUpdateInput = {
     key?: StringFieldUpdateOperationsInput | string
     value?: JsonNullValueInput | InputJsonValue
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type report_settingsUncheckedUpdateInput = {
+  export type ReportSettingUncheckedUpdateInput = {
     key?: StringFieldUpdateOperationsInput | string
     value?: JsonNullValueInput | InputJsonValue
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type report_settingsCreateManyInput = {
+  export type ReportSettingCreateManyInput = {
     key: string
     value: JsonNullValueInput | InputJsonValue
-    updated_at?: Date | string | null
+    updatedAt?: Date | string
   }
 
-  export type report_settingsUpdateManyMutationInput = {
+  export type ReportSettingUpdateManyMutationInput = {
     key?: StringFieldUpdateOperationsInput | string
     value?: JsonNullValueInput | InputJsonValue
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type report_settingsUncheckedUpdateManyInput = {
+  export type ReportSettingUncheckedUpdateManyInput = {
     key?: StringFieldUpdateOperationsInput | string
     value?: JsonNullValueInput | InputJsonValue
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TrainingYearCreateInput = {
@@ -45408,6 +46515,48 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AlertConfigCreateInput = {
+    key: string
+    config: JsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type AlertConfigUncheckedCreateInput = {
+    key: string
+    config: JsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type AlertConfigUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    config?: JsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertConfigUncheckedUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    config?: JsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertConfigCreateManyInput = {
+    key: string
+    config: JsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type AlertConfigUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    config?: JsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertConfigUncheckedUpdateManyInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    config?: JsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -46110,10 +47259,10 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type Bmq_enrollmentsListRelationFilter = {
-    every?: bmq_enrollmentsWhereInput
-    some?: bmq_enrollmentsWhereInput
-    none?: bmq_enrollmentsWhereInput
+  export type BmqEnrollmentListRelationFilter = {
+    every?: BmqEnrollmentWhereInput
+    some?: BmqEnrollmentWhereInput
+    none?: BmqEnrollmentWhereInput
   }
 
   export type DivisionNullableScalarRelationFilter = {
@@ -46137,7 +47286,7 @@ export namespace Prisma {
     isNot?: MemberStatusWhereInput | null
   }
 
-  export type bmq_enrollmentsOrderByRelationAggregateInput = {
+  export type BmqEnrollmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -46448,77 +47597,77 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
-  export type bmq_coursesCountOrderByAggregateInput = {
+  export type BmqCourseCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    start_date?: SortOrder
-    end_date?: SortOrder
-    training_start_time?: SortOrder
-    training_end_time?: SortOrder
-    is_active?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    training_days?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    trainingStartTime?: SortOrder
+    trainingEndTime?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    trainingDays?: SortOrder
   }
 
-  export type bmq_coursesMaxOrderByAggregateInput = {
+  export type BmqCourseMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    start_date?: SortOrder
-    end_date?: SortOrder
-    training_start_time?: SortOrder
-    training_end_time?: SortOrder
-    is_active?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    trainingStartTime?: SortOrder
+    trainingEndTime?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type bmq_coursesMinOrderByAggregateInput = {
+  export type BmqCourseMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    start_date?: SortOrder
-    end_date?: SortOrder
-    training_start_time?: SortOrder
-    training_end_time?: SortOrder
-    is_active?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
+    startDate?: SortOrder
+    endDate?: SortOrder
+    trainingStartTime?: SortOrder
+    trainingEndTime?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type Bmq_coursesScalarRelationFilter = {
-    is?: bmq_coursesWhereInput
-    isNot?: bmq_coursesWhereInput
+  export type BmqCourseScalarRelationFilter = {
+    is?: BmqCourseWhereInput
+    isNot?: BmqCourseWhereInput
   }
 
-  export type bmq_enrollmentsMember_idBmq_course_idCompoundUniqueInput = {
-    member_id: string
-    bmq_course_id: string
+  export type BmqEnrollmentMemberIdBmqCourseIdCompoundUniqueInput = {
+    memberId: string
+    bmqCourseId: string
   }
 
-  export type bmq_enrollmentsCountOrderByAggregateInput = {
+  export type BmqEnrollmentCountOrderByAggregateInput = {
     id?: SortOrder
-    member_id?: SortOrder
-    bmq_course_id?: SortOrder
-    enrolled_at?: SortOrder
-    completed_at?: SortOrder
+    memberId?: SortOrder
+    bmqCourseId?: SortOrder
+    enrolledAt?: SortOrder
+    completedAt?: SortOrder
     status?: SortOrder
   }
 
-  export type bmq_enrollmentsMaxOrderByAggregateInput = {
+  export type BmqEnrollmentMaxOrderByAggregateInput = {
     id?: SortOrder
-    member_id?: SortOrder
-    bmq_course_id?: SortOrder
-    enrolled_at?: SortOrder
-    completed_at?: SortOrder
+    memberId?: SortOrder
+    bmqCourseId?: SortOrder
+    enrolledAt?: SortOrder
+    completedAt?: SortOrder
     status?: SortOrder
   }
 
-  export type bmq_enrollmentsMinOrderByAggregateInput = {
+  export type BmqEnrollmentMinOrderByAggregateInput = {
     id?: SortOrder
-    member_id?: SortOrder
-    bmq_course_id?: SortOrder
-    enrolled_at?: SortOrder
-    completed_at?: SortOrder
+    memberId?: SortOrder
+    bmqCourseId?: SortOrder
+    enrolledAt?: SortOrder
+    completedAt?: SortOrder
     status?: SortOrder
   }
 
@@ -46668,20 +47817,20 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type report_settingsCountOrderByAggregateInput = {
+  export type ReportSettingCountOrderByAggregateInput = {
     key?: SortOrder
     value?: SortOrder
-    updated_at?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type report_settingsMaxOrderByAggregateInput = {
+  export type ReportSettingMaxOrderByAggregateInput = {
     key?: SortOrder
-    updated_at?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type report_settingsMinOrderByAggregateInput = {
+  export type ReportSettingMinOrderByAggregateInput = {
     key?: SortOrder
-    updated_at?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TrainingYearCountOrderByAggregateInput = {
@@ -47174,6 +48323,22 @@ export namespace Prisma {
     category?: SortOrder
     description?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AlertConfigCountOrderByAggregateInput = {
+    key?: SortOrder
+    config?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AlertConfigMaxOrderByAggregateInput = {
+    key?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AlertConfigMinOrderByAggregateInput = {
+    key?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -48091,11 +49256,11 @@ export namespace Prisma {
     connect?: BadgeWhereUniqueInput
   }
 
-  export type bmq_enrollmentsCreateNestedManyWithoutMembersInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput> | bmq_enrollmentsCreateWithoutMembersInput[] | bmq_enrollmentsUncheckedCreateWithoutMembersInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutMembersInput | bmq_enrollmentsCreateOrConnectWithoutMembersInput[]
-    createMany?: bmq_enrollmentsCreateManyMembersInputEnvelope
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
+  export type BmqEnrollmentCreateNestedManyWithoutMemberInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
+    createMany?: BmqEnrollmentCreateManyMemberInputEnvelope
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
   }
 
   export type CheckinCreateNestedManyWithoutMemberInput = {
@@ -48151,11 +49316,11 @@ export namespace Prisma {
     connect?: MemberStatusWhereUniqueInput
   }
 
-  export type bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput> | bmq_enrollmentsCreateWithoutMembersInput[] | bmq_enrollmentsUncheckedCreateWithoutMembersInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutMembersInput | bmq_enrollmentsCreateOrConnectWithoutMembersInput[]
-    createMany?: bmq_enrollmentsCreateManyMembersInputEnvelope
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
+  export type BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
+    createMany?: BmqEnrollmentCreateManyMemberInputEnvelope
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
   }
 
   export type CheckinUncheckedCreateNestedManyWithoutMemberInput = {
@@ -48203,18 +49368,18 @@ export namespace Prisma {
     update?: XOR<XOR<BadgeUpdateToOneWithWhereWithoutMembersInput, BadgeUpdateWithoutMembersInput>, BadgeUncheckedUpdateWithoutMembersInput>
   }
 
-  export type bmq_enrollmentsUpdateManyWithoutMembersNestedInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput> | bmq_enrollmentsCreateWithoutMembersInput[] | bmq_enrollmentsUncheckedCreateWithoutMembersInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutMembersInput | bmq_enrollmentsCreateOrConnectWithoutMembersInput[]
-    upsert?: bmq_enrollmentsUpsertWithWhereUniqueWithoutMembersInput | bmq_enrollmentsUpsertWithWhereUniqueWithoutMembersInput[]
-    createMany?: bmq_enrollmentsCreateManyMembersInputEnvelope
-    set?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    disconnect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    delete?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    update?: bmq_enrollmentsUpdateWithWhereUniqueWithoutMembersInput | bmq_enrollmentsUpdateWithWhereUniqueWithoutMembersInput[]
-    updateMany?: bmq_enrollmentsUpdateManyWithWhereWithoutMembersInput | bmq_enrollmentsUpdateManyWithWhereWithoutMembersInput[]
-    deleteMany?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
+  export type BmqEnrollmentUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
+    upsert?: BmqEnrollmentUpsertWithWhereUniqueWithoutMemberInput | BmqEnrollmentUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: BmqEnrollmentCreateManyMemberInputEnvelope
+    set?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    disconnect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    delete?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    update?: BmqEnrollmentUpdateWithWhereUniqueWithoutMemberInput | BmqEnrollmentUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: BmqEnrollmentUpdateManyWithWhereWithoutMemberInput | BmqEnrollmentUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
   }
 
   export type CheckinUpdateManyWithoutMemberNestedInput = {
@@ -48317,18 +49482,18 @@ export namespace Prisma {
     update?: XOR<XOR<MemberStatusUpdateToOneWithWhereWithoutMembersInput, MemberStatusUpdateWithoutMembersInput>, MemberStatusUncheckedUpdateWithoutMembersInput>
   }
 
-  export type bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput> | bmq_enrollmentsCreateWithoutMembersInput[] | bmq_enrollmentsUncheckedCreateWithoutMembersInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutMembersInput | bmq_enrollmentsCreateOrConnectWithoutMembersInput[]
-    upsert?: bmq_enrollmentsUpsertWithWhereUniqueWithoutMembersInput | bmq_enrollmentsUpsertWithWhereUniqueWithoutMembersInput[]
-    createMany?: bmq_enrollmentsCreateManyMembersInputEnvelope
-    set?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    disconnect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    delete?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    update?: bmq_enrollmentsUpdateWithWhereUniqueWithoutMembersInput | bmq_enrollmentsUpdateWithWhereUniqueWithoutMembersInput[]
-    updateMany?: bmq_enrollmentsUpdateManyWithWhereWithoutMembersInput | bmq_enrollmentsUpdateManyWithWhereWithoutMembersInput[]
-    deleteMany?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
+  export type BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
+    upsert?: BmqEnrollmentUpsertWithWhereUniqueWithoutMemberInput | BmqEnrollmentUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: BmqEnrollmentCreateManyMemberInputEnvelope
+    set?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    disconnect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    delete?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    update?: BmqEnrollmentUpdateWithWhereUniqueWithoutMemberInput | BmqEnrollmentUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: BmqEnrollmentUpdateManyWithWhereWithoutMemberInput | BmqEnrollmentUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
   }
 
   export type CheckinUncheckedUpdateManyWithoutMemberNestedInput = {
@@ -48575,83 +49740,83 @@ export namespace Prisma {
     update?: XOR<XOR<VisitTypeUpdateToOneWithWhereWithoutVisitorsInput, VisitTypeUpdateWithoutVisitorsInput>, VisitTypeUncheckedUpdateWithoutVisitorsInput>
   }
 
-  export type bmq_coursesCreatetraining_daysInput = {
+  export type BmqCourseCreatetrainingDaysInput = {
     set: string[]
   }
 
-  export type bmq_enrollmentsCreateNestedManyWithoutBmq_coursesInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput> | bmq_enrollmentsCreateWithoutBmq_coursesInput[] | bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput | bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput[]
-    createMany?: bmq_enrollmentsCreateManyBmq_coursesInputEnvelope
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
+  export type BmqEnrollmentCreateNestedManyWithoutBmqCourseInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput> | BmqEnrollmentCreateWithoutBmqCourseInput[] | BmqEnrollmentUncheckedCreateWithoutBmqCourseInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutBmqCourseInput | BmqEnrollmentCreateOrConnectWithoutBmqCourseInput[]
+    createMany?: BmqEnrollmentCreateManyBmqCourseInputEnvelope
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
   }
 
-  export type bmq_enrollmentsUncheckedCreateNestedManyWithoutBmq_coursesInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput> | bmq_enrollmentsCreateWithoutBmq_coursesInput[] | bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput | bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput[]
-    createMany?: bmq_enrollmentsCreateManyBmq_coursesInputEnvelope
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
+  export type BmqEnrollmentUncheckedCreateNestedManyWithoutBmqCourseInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput> | BmqEnrollmentCreateWithoutBmqCourseInput[] | BmqEnrollmentUncheckedCreateWithoutBmqCourseInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutBmqCourseInput | BmqEnrollmentCreateOrConnectWithoutBmqCourseInput[]
+    createMany?: BmqEnrollmentCreateManyBmqCourseInputEnvelope
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
   }
 
-  export type bmq_coursesUpdatetraining_daysInput = {
+  export type BmqCourseUpdatetrainingDaysInput = {
     set?: string[]
     push?: string | string[]
   }
 
-  export type bmq_enrollmentsUpdateManyWithoutBmq_coursesNestedInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput> | bmq_enrollmentsCreateWithoutBmq_coursesInput[] | bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput | bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput[]
-    upsert?: bmq_enrollmentsUpsertWithWhereUniqueWithoutBmq_coursesInput | bmq_enrollmentsUpsertWithWhereUniqueWithoutBmq_coursesInput[]
-    createMany?: bmq_enrollmentsCreateManyBmq_coursesInputEnvelope
-    set?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    disconnect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    delete?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    update?: bmq_enrollmentsUpdateWithWhereUniqueWithoutBmq_coursesInput | bmq_enrollmentsUpdateWithWhereUniqueWithoutBmq_coursesInput[]
-    updateMany?: bmq_enrollmentsUpdateManyWithWhereWithoutBmq_coursesInput | bmq_enrollmentsUpdateManyWithWhereWithoutBmq_coursesInput[]
-    deleteMany?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
+  export type BmqEnrollmentUpdateManyWithoutBmqCourseNestedInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput> | BmqEnrollmentCreateWithoutBmqCourseInput[] | BmqEnrollmentUncheckedCreateWithoutBmqCourseInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutBmqCourseInput | BmqEnrollmentCreateOrConnectWithoutBmqCourseInput[]
+    upsert?: BmqEnrollmentUpsertWithWhereUniqueWithoutBmqCourseInput | BmqEnrollmentUpsertWithWhereUniqueWithoutBmqCourseInput[]
+    createMany?: BmqEnrollmentCreateManyBmqCourseInputEnvelope
+    set?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    disconnect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    delete?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    update?: BmqEnrollmentUpdateWithWhereUniqueWithoutBmqCourseInput | BmqEnrollmentUpdateWithWhereUniqueWithoutBmqCourseInput[]
+    updateMany?: BmqEnrollmentUpdateManyWithWhereWithoutBmqCourseInput | BmqEnrollmentUpdateManyWithWhereWithoutBmqCourseInput[]
+    deleteMany?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
   }
 
-  export type bmq_enrollmentsUncheckedUpdateManyWithoutBmq_coursesNestedInput = {
-    create?: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput> | bmq_enrollmentsCreateWithoutBmq_coursesInput[] | bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput[]
-    connectOrCreate?: bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput | bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput[]
-    upsert?: bmq_enrollmentsUpsertWithWhereUniqueWithoutBmq_coursesInput | bmq_enrollmentsUpsertWithWhereUniqueWithoutBmq_coursesInput[]
-    createMany?: bmq_enrollmentsCreateManyBmq_coursesInputEnvelope
-    set?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    disconnect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    delete?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    connect?: bmq_enrollmentsWhereUniqueInput | bmq_enrollmentsWhereUniqueInput[]
-    update?: bmq_enrollmentsUpdateWithWhereUniqueWithoutBmq_coursesInput | bmq_enrollmentsUpdateWithWhereUniqueWithoutBmq_coursesInput[]
-    updateMany?: bmq_enrollmentsUpdateManyWithWhereWithoutBmq_coursesInput | bmq_enrollmentsUpdateManyWithWhereWithoutBmq_coursesInput[]
-    deleteMany?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
+  export type BmqEnrollmentUncheckedUpdateManyWithoutBmqCourseNestedInput = {
+    create?: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput> | BmqEnrollmentCreateWithoutBmqCourseInput[] | BmqEnrollmentUncheckedCreateWithoutBmqCourseInput[]
+    connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutBmqCourseInput | BmqEnrollmentCreateOrConnectWithoutBmqCourseInput[]
+    upsert?: BmqEnrollmentUpsertWithWhereUniqueWithoutBmqCourseInput | BmqEnrollmentUpsertWithWhereUniqueWithoutBmqCourseInput[]
+    createMany?: BmqEnrollmentCreateManyBmqCourseInputEnvelope
+    set?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    disconnect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    delete?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    connect?: BmqEnrollmentWhereUniqueInput | BmqEnrollmentWhereUniqueInput[]
+    update?: BmqEnrollmentUpdateWithWhereUniqueWithoutBmqCourseInput | BmqEnrollmentUpdateWithWhereUniqueWithoutBmqCourseInput[]
+    updateMany?: BmqEnrollmentUpdateManyWithWhereWithoutBmqCourseInput | BmqEnrollmentUpdateManyWithWhereWithoutBmqCourseInput[]
+    deleteMany?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
   }
 
-  export type bmq_coursesCreateNestedOneWithoutBmq_enrollmentsInput = {
-    create?: XOR<bmq_coursesCreateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedCreateWithoutBmq_enrollmentsInput>
-    connectOrCreate?: bmq_coursesCreateOrConnectWithoutBmq_enrollmentsInput
-    connect?: bmq_coursesWhereUniqueInput
+  export type BmqCourseCreateNestedOneWithoutBmqEnrollmentsInput = {
+    create?: XOR<BmqCourseCreateWithoutBmqEnrollmentsInput, BmqCourseUncheckedCreateWithoutBmqEnrollmentsInput>
+    connectOrCreate?: BmqCourseCreateOrConnectWithoutBmqEnrollmentsInput
+    connect?: BmqCourseWhereUniqueInput
   }
 
-  export type MemberCreateNestedOneWithoutBmq_enrollmentsInput = {
-    create?: XOR<MemberCreateWithoutBmq_enrollmentsInput, MemberUncheckedCreateWithoutBmq_enrollmentsInput>
-    connectOrCreate?: MemberCreateOrConnectWithoutBmq_enrollmentsInput
+  export type MemberCreateNestedOneWithoutBmqEnrollmentsInput = {
+    create?: XOR<MemberCreateWithoutBmqEnrollmentsInput, MemberUncheckedCreateWithoutBmqEnrollmentsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutBmqEnrollmentsInput
     connect?: MemberWhereUniqueInput
   }
 
-  export type bmq_coursesUpdateOneRequiredWithoutBmq_enrollmentsNestedInput = {
-    create?: XOR<bmq_coursesCreateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedCreateWithoutBmq_enrollmentsInput>
-    connectOrCreate?: bmq_coursesCreateOrConnectWithoutBmq_enrollmentsInput
-    upsert?: bmq_coursesUpsertWithoutBmq_enrollmentsInput
-    connect?: bmq_coursesWhereUniqueInput
-    update?: XOR<XOR<bmq_coursesUpdateToOneWithWhereWithoutBmq_enrollmentsInput, bmq_coursesUpdateWithoutBmq_enrollmentsInput>, bmq_coursesUncheckedUpdateWithoutBmq_enrollmentsInput>
+  export type BmqCourseUpdateOneRequiredWithoutBmqEnrollmentsNestedInput = {
+    create?: XOR<BmqCourseCreateWithoutBmqEnrollmentsInput, BmqCourseUncheckedCreateWithoutBmqEnrollmentsInput>
+    connectOrCreate?: BmqCourseCreateOrConnectWithoutBmqEnrollmentsInput
+    upsert?: BmqCourseUpsertWithoutBmqEnrollmentsInput
+    connect?: BmqCourseWhereUniqueInput
+    update?: XOR<XOR<BmqCourseUpdateToOneWithWhereWithoutBmqEnrollmentsInput, BmqCourseUpdateWithoutBmqEnrollmentsInput>, BmqCourseUncheckedUpdateWithoutBmqEnrollmentsInput>
   }
 
-  export type MemberUpdateOneRequiredWithoutBmq_enrollmentsNestedInput = {
-    create?: XOR<MemberCreateWithoutBmq_enrollmentsInput, MemberUncheckedCreateWithoutBmq_enrollmentsInput>
-    connectOrCreate?: MemberCreateOrConnectWithoutBmq_enrollmentsInput
-    upsert?: MemberUpsertWithoutBmq_enrollmentsInput
+  export type MemberUpdateOneRequiredWithoutBmqEnrollmentsNestedInput = {
+    create?: XOR<MemberCreateWithoutBmqEnrollmentsInput, MemberUncheckedCreateWithoutBmqEnrollmentsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutBmqEnrollmentsInput
+    upsert?: MemberUpsertWithoutBmqEnrollmentsInput
     connect?: MemberWhereUniqueInput
-    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutBmq_enrollmentsInput, MemberUpdateWithoutBmq_enrollmentsInput>, MemberUncheckedUpdateWithoutBmq_enrollmentsInput>
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutBmqEnrollmentsInput, MemberUpdateWithoutBmqEnrollmentsInput>, MemberUncheckedUpdateWithoutBmqEnrollmentsInput>
   }
 
   export type AdminUserCreateNestedOneWithoutReport_audit_logInput = {
@@ -50404,7 +51569,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -50439,7 +51604,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -50817,7 +51982,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
@@ -50852,7 +52017,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
@@ -51003,7 +52168,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
@@ -51038,7 +52203,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
@@ -51067,7 +52232,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
@@ -51101,7 +52266,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -51656,29 +52821,29 @@ export namespace Prisma {
     create: XOR<BadgeCreateWithoutMembersInput, BadgeUncheckedCreateWithoutMembersInput>
   }
 
-  export type bmq_enrollmentsCreateWithoutMembersInput = {
+  export type BmqEnrollmentCreateWithoutMemberInput = {
     id?: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
-    bmq_courses: bmq_coursesCreateNestedOneWithoutBmq_enrollmentsInput
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
+    bmqCourse: BmqCourseCreateNestedOneWithoutBmqEnrollmentsInput
   }
 
-  export type bmq_enrollmentsUncheckedCreateWithoutMembersInput = {
+  export type BmqEnrollmentUncheckedCreateWithoutMemberInput = {
     id?: string
-    bmq_course_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    bmqCourseId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
-  export type bmq_enrollmentsCreateOrConnectWithoutMembersInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    create: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput>
+  export type BmqEnrollmentCreateOrConnectWithoutMemberInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    create: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput>
   }
 
-  export type bmq_enrollmentsCreateManyMembersInputEnvelope = {
-    data: bmq_enrollmentsCreateManyMembersInput | bmq_enrollmentsCreateManyMembersInput[]
+  export type BmqEnrollmentCreateManyMemberInputEnvelope = {
+    data: BmqEnrollmentCreateManyMemberInput | BmqEnrollmentCreateManyMemberInput[]
     skipDuplicates?: boolean
   }
 
@@ -51976,32 +53141,32 @@ export namespace Prisma {
     visitors?: VisitorUncheckedUpdateManyWithoutBadgeNestedInput
   }
 
-  export type bmq_enrollmentsUpsertWithWhereUniqueWithoutMembersInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    update: XOR<bmq_enrollmentsUpdateWithoutMembersInput, bmq_enrollmentsUncheckedUpdateWithoutMembersInput>
-    create: XOR<bmq_enrollmentsCreateWithoutMembersInput, bmq_enrollmentsUncheckedCreateWithoutMembersInput>
+  export type BmqEnrollmentUpsertWithWhereUniqueWithoutMemberInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    update: XOR<BmqEnrollmentUpdateWithoutMemberInput, BmqEnrollmentUncheckedUpdateWithoutMemberInput>
+    create: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput>
   }
 
-  export type bmq_enrollmentsUpdateWithWhereUniqueWithoutMembersInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    data: XOR<bmq_enrollmentsUpdateWithoutMembersInput, bmq_enrollmentsUncheckedUpdateWithoutMembersInput>
+  export type BmqEnrollmentUpdateWithWhereUniqueWithoutMemberInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    data: XOR<BmqEnrollmentUpdateWithoutMemberInput, BmqEnrollmentUncheckedUpdateWithoutMemberInput>
   }
 
-  export type bmq_enrollmentsUpdateManyWithWhereWithoutMembersInput = {
-    where: bmq_enrollmentsScalarWhereInput
-    data: XOR<bmq_enrollmentsUpdateManyMutationInput, bmq_enrollmentsUncheckedUpdateManyWithoutMembersInput>
+  export type BmqEnrollmentUpdateManyWithWhereWithoutMemberInput = {
+    where: BmqEnrollmentScalarWhereInput
+    data: XOR<BmqEnrollmentUpdateManyMutationInput, BmqEnrollmentUncheckedUpdateManyWithoutMemberInput>
   }
 
-  export type bmq_enrollmentsScalarWhereInput = {
-    AND?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
-    OR?: bmq_enrollmentsScalarWhereInput[]
-    NOT?: bmq_enrollmentsScalarWhereInput | bmq_enrollmentsScalarWhereInput[]
-    id?: UuidFilter<"bmq_enrollments"> | string
-    member_id?: UuidFilter<"bmq_enrollments"> | string
-    bmq_course_id?: UuidFilter<"bmq_enrollments"> | string
-    enrolled_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    completed_at?: DateTimeNullableFilter<"bmq_enrollments"> | Date | string | null
-    status?: StringNullableFilter<"bmq_enrollments"> | string | null
+  export type BmqEnrollmentScalarWhereInput = {
+    AND?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
+    OR?: BmqEnrollmentScalarWhereInput[]
+    NOT?: BmqEnrollmentScalarWhereInput | BmqEnrollmentScalarWhereInput[]
+    id?: UuidFilter<"BmqEnrollment"> | string
+    memberId?: UuidFilter<"BmqEnrollment"> | string
+    bmqCourseId?: UuidFilter<"BmqEnrollment"> | string
+    enrolledAt?: DateTimeFilter<"BmqEnrollment"> | Date | string
+    completedAt?: DateTimeNullableFilter<"BmqEnrollment"> | Date | string | null
+    status?: StringFilter<"BmqEnrollment"> | string
   }
 
   export type CheckinUpsertWithWhereUniqueWithoutMemberInput = {
@@ -52245,7 +53410,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -52280,7 +53445,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
@@ -52350,7 +53515,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -52385,7 +53550,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
@@ -52659,7 +53824,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
@@ -52694,7 +53859,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
@@ -52907,7 +54072,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
@@ -52942,7 +54107,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
@@ -53023,80 +54188,80 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type bmq_enrollmentsCreateWithoutBmq_coursesInput = {
+  export type BmqEnrollmentCreateWithoutBmqCourseInput = {
     id?: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
-    members: MemberCreateNestedOneWithoutBmq_enrollmentsInput
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
+    member: MemberCreateNestedOneWithoutBmqEnrollmentsInput
   }
 
-  export type bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput = {
+  export type BmqEnrollmentUncheckedCreateWithoutBmqCourseInput = {
     id?: string
-    member_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    memberId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
-  export type bmq_enrollmentsCreateOrConnectWithoutBmq_coursesInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    create: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput>
+  export type BmqEnrollmentCreateOrConnectWithoutBmqCourseInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    create: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput>
   }
 
-  export type bmq_enrollmentsCreateManyBmq_coursesInputEnvelope = {
-    data: bmq_enrollmentsCreateManyBmq_coursesInput | bmq_enrollmentsCreateManyBmq_coursesInput[]
+  export type BmqEnrollmentCreateManyBmqCourseInputEnvelope = {
+    data: BmqEnrollmentCreateManyBmqCourseInput | BmqEnrollmentCreateManyBmqCourseInput[]
     skipDuplicates?: boolean
   }
 
-  export type bmq_enrollmentsUpsertWithWhereUniqueWithoutBmq_coursesInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    update: XOR<bmq_enrollmentsUpdateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedUpdateWithoutBmq_coursesInput>
-    create: XOR<bmq_enrollmentsCreateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedCreateWithoutBmq_coursesInput>
+  export type BmqEnrollmentUpsertWithWhereUniqueWithoutBmqCourseInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    update: XOR<BmqEnrollmentUpdateWithoutBmqCourseInput, BmqEnrollmentUncheckedUpdateWithoutBmqCourseInput>
+    create: XOR<BmqEnrollmentCreateWithoutBmqCourseInput, BmqEnrollmentUncheckedCreateWithoutBmqCourseInput>
   }
 
-  export type bmq_enrollmentsUpdateWithWhereUniqueWithoutBmq_coursesInput = {
-    where: bmq_enrollmentsWhereUniqueInput
-    data: XOR<bmq_enrollmentsUpdateWithoutBmq_coursesInput, bmq_enrollmentsUncheckedUpdateWithoutBmq_coursesInput>
+  export type BmqEnrollmentUpdateWithWhereUniqueWithoutBmqCourseInput = {
+    where: BmqEnrollmentWhereUniqueInput
+    data: XOR<BmqEnrollmentUpdateWithoutBmqCourseInput, BmqEnrollmentUncheckedUpdateWithoutBmqCourseInput>
   }
 
-  export type bmq_enrollmentsUpdateManyWithWhereWithoutBmq_coursesInput = {
-    where: bmq_enrollmentsScalarWhereInput
-    data: XOR<bmq_enrollmentsUpdateManyMutationInput, bmq_enrollmentsUncheckedUpdateManyWithoutBmq_coursesInput>
+  export type BmqEnrollmentUpdateManyWithWhereWithoutBmqCourseInput = {
+    where: BmqEnrollmentScalarWhereInput
+    data: XOR<BmqEnrollmentUpdateManyMutationInput, BmqEnrollmentUncheckedUpdateManyWithoutBmqCourseInput>
   }
 
-  export type bmq_coursesCreateWithoutBmq_enrollmentsInput = {
+  export type BmqCourseCreateWithoutBmqEnrollmentsInput = {
     id?: string
     name: string
-    start_date: Date | string
-    end_date: Date | string
-    training_start_time: Date | string
-    training_end_time: Date | string
-    is_active?: boolean | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    training_days?: bmq_coursesCreatetraining_daysInput | string[]
+    startDate: Date | string
+    endDate: Date | string
+    trainingStartTime: Date | string
+    trainingEndTime: Date | string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trainingDays?: BmqCourseCreatetrainingDaysInput | string[]
   }
 
-  export type bmq_coursesUncheckedCreateWithoutBmq_enrollmentsInput = {
+  export type BmqCourseUncheckedCreateWithoutBmqEnrollmentsInput = {
     id?: string
     name: string
-    start_date: Date | string
-    end_date: Date | string
-    training_start_time: Date | string
-    training_end_time: Date | string
-    is_active?: boolean | null
-    created_at?: Date | string | null
-    updated_at?: Date | string | null
-    training_days?: bmq_coursesCreatetraining_daysInput | string[]
+    startDate: Date | string
+    endDate: Date | string
+    trainingStartTime: Date | string
+    trainingEndTime: Date | string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    trainingDays?: BmqCourseCreatetrainingDaysInput | string[]
   }
 
-  export type bmq_coursesCreateOrConnectWithoutBmq_enrollmentsInput = {
-    where: bmq_coursesWhereUniqueInput
-    create: XOR<bmq_coursesCreateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedCreateWithoutBmq_enrollmentsInput>
+  export type BmqCourseCreateOrConnectWithoutBmqEnrollmentsInput = {
+    where: BmqCourseWhereUniqueInput
+    create: XOR<BmqCourseCreateWithoutBmqEnrollmentsInput, BmqCourseUncheckedCreateWithoutBmqEnrollmentsInput>
   }
 
-  export type MemberCreateWithoutBmq_enrollmentsInput = {
+  export type MemberCreateWithoutBmqEnrollmentsInput = {
     id?: string
     serviceNumber: string
     rank: string
@@ -53128,7 +54293,7 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
   }
 
-  export type MemberUncheckedCreateWithoutBmq_enrollmentsInput = {
+  export type MemberUncheckedCreateWithoutBmqEnrollmentsInput = {
     id?: string
     serviceNumber: string
     rank: string
@@ -53160,60 +54325,60 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
   }
 
-  export type MemberCreateOrConnectWithoutBmq_enrollmentsInput = {
+  export type MemberCreateOrConnectWithoutBmqEnrollmentsInput = {
     where: MemberWhereUniqueInput
-    create: XOR<MemberCreateWithoutBmq_enrollmentsInput, MemberUncheckedCreateWithoutBmq_enrollmentsInput>
+    create: XOR<MemberCreateWithoutBmqEnrollmentsInput, MemberUncheckedCreateWithoutBmqEnrollmentsInput>
   }
 
-  export type bmq_coursesUpsertWithoutBmq_enrollmentsInput = {
-    update: XOR<bmq_coursesUpdateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedUpdateWithoutBmq_enrollmentsInput>
-    create: XOR<bmq_coursesCreateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedCreateWithoutBmq_enrollmentsInput>
-    where?: bmq_coursesWhereInput
+  export type BmqCourseUpsertWithoutBmqEnrollmentsInput = {
+    update: XOR<BmqCourseUpdateWithoutBmqEnrollmentsInput, BmqCourseUncheckedUpdateWithoutBmqEnrollmentsInput>
+    create: XOR<BmqCourseCreateWithoutBmqEnrollmentsInput, BmqCourseUncheckedCreateWithoutBmqEnrollmentsInput>
+    where?: BmqCourseWhereInput
   }
 
-  export type bmq_coursesUpdateToOneWithWhereWithoutBmq_enrollmentsInput = {
-    where?: bmq_coursesWhereInput
-    data: XOR<bmq_coursesUpdateWithoutBmq_enrollmentsInput, bmq_coursesUncheckedUpdateWithoutBmq_enrollmentsInput>
+  export type BmqCourseUpdateToOneWithWhereWithoutBmqEnrollmentsInput = {
+    where?: BmqCourseWhereInput
+    data: XOR<BmqCourseUpdateWithoutBmqEnrollmentsInput, BmqCourseUncheckedUpdateWithoutBmqEnrollmentsInput>
   }
 
-  export type bmq_coursesUpdateWithoutBmq_enrollmentsInput = {
+  export type BmqCourseUpdateWithoutBmqEnrollmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
   }
 
-  export type bmq_coursesUncheckedUpdateWithoutBmq_enrollmentsInput = {
+  export type BmqCourseUncheckedUpdateWithoutBmqEnrollmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    start_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    end_date?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_start_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    training_end_time?: DateTimeFieldUpdateOperationsInput | Date | string
-    is_active?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    created_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    training_days?: bmq_coursesUpdatetraining_daysInput | string[]
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingStartTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingEndTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trainingDays?: BmqCourseUpdatetrainingDaysInput | string[]
   }
 
-  export type MemberUpsertWithoutBmq_enrollmentsInput = {
-    update: XOR<MemberUpdateWithoutBmq_enrollmentsInput, MemberUncheckedUpdateWithoutBmq_enrollmentsInput>
-    create: XOR<MemberCreateWithoutBmq_enrollmentsInput, MemberUncheckedCreateWithoutBmq_enrollmentsInput>
+  export type MemberUpsertWithoutBmqEnrollmentsInput = {
+    update: XOR<MemberUpdateWithoutBmqEnrollmentsInput, MemberUncheckedUpdateWithoutBmqEnrollmentsInput>
+    create: XOR<MemberCreateWithoutBmqEnrollmentsInput, MemberUncheckedCreateWithoutBmqEnrollmentsInput>
     where?: MemberWhereInput
   }
 
-  export type MemberUpdateToOneWithWhereWithoutBmq_enrollmentsInput = {
+  export type MemberUpdateToOneWithWhereWithoutBmqEnrollmentsInput = {
     where?: MemberWhereInput
-    data: XOR<MemberUpdateWithoutBmq_enrollmentsInput, MemberUncheckedUpdateWithoutBmq_enrollmentsInput>
+    data: XOR<MemberUpdateWithoutBmqEnrollmentsInput, MemberUncheckedUpdateWithoutBmqEnrollmentsInput>
   }
 
-  export type MemberUpdateWithoutBmq_enrollmentsInput = {
+  export type MemberUpdateWithoutBmqEnrollmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     serviceNumber?: StringFieldUpdateOperationsInput | string
     rank?: StringFieldUpdateOperationsInput | string
@@ -53245,7 +54410,7 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
   }
 
-  export type MemberUncheckedUpdateWithoutBmq_enrollmentsInput = {
+  export type MemberUncheckedUpdateWithoutBmqEnrollmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     serviceNumber?: StringFieldUpdateOperationsInput | string
     rank?: StringFieldUpdateOperationsInput | string
@@ -53419,7 +54584,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -53454,7 +54619,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -53488,7 +54653,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -53523,7 +54688,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -53625,7 +54790,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -53660,7 +54825,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -53700,7 +54865,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -53735,7 +54900,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -53827,7 +54992,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -53861,7 +55026,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -53917,7 +55082,7 @@ export namespace Prisma {
     contract_start?: Date | string | null
     contract_end?: Date | string | null
     badge?: BadgeCreateNestedOneWithoutMembersInput
-    bmq_enrollments?: bmq_enrollmentsCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitors?: VisitorCreateNestedManyWithoutHostMemberInput
@@ -53951,7 +55116,7 @@ export namespace Prisma {
     notes?: string | null
     contract_start?: Date | string | null
     contract_end?: Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedCreateNestedManyWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -55104,7 +56269,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -55139,7 +56304,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -55275,7 +56440,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
@@ -55309,7 +56474,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -55513,12 +56678,12 @@ export namespace Prisma {
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type bmq_enrollmentsCreateManyMembersInput = {
+  export type BmqEnrollmentCreateManyMemberInput = {
     id?: string
-    bmq_course_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    bmqCourseId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
   export type CheckinCreateManyMemberInput = {
@@ -55585,28 +56750,28 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type bmq_enrollmentsUpdateWithoutMembersInput = {
+  export type BmqEnrollmentUpdateWithoutMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    bmq_courses?: bmq_coursesUpdateOneRequiredWithoutBmq_enrollmentsNestedInput
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    bmqCourse?: BmqCourseUpdateOneRequiredWithoutBmqEnrollmentsNestedInput
   }
 
-  export type bmq_enrollmentsUncheckedUpdateWithoutMembersInput = {
+  export type BmqEnrollmentUncheckedUpdateWithoutMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
-    bmq_course_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    bmqCourseId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
-  export type bmq_enrollmentsUncheckedUpdateManyWithoutMembersInput = {
+  export type BmqEnrollmentUncheckedUpdateManyWithoutMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
-    bmq_course_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    bmqCourseId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type CheckinUpdateWithoutMemberInput = {
@@ -55825,36 +56990,36 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type bmq_enrollmentsCreateManyBmq_coursesInput = {
+  export type BmqEnrollmentCreateManyBmqCourseInput = {
     id?: string
-    member_id: string
-    enrolled_at?: Date | string | null
-    completed_at?: Date | string | null
-    status?: string | null
+    memberId: string
+    enrolledAt?: Date | string
+    completedAt?: Date | string | null
+    status?: string
   }
 
-  export type bmq_enrollmentsUpdateWithoutBmq_coursesInput = {
+  export type BmqEnrollmentUpdateWithoutBmqCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
-    members?: MemberUpdateOneRequiredWithoutBmq_enrollmentsNestedInput
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    member?: MemberUpdateOneRequiredWithoutBmqEnrollmentsNestedInput
   }
 
-  export type bmq_enrollmentsUncheckedUpdateWithoutBmq_coursesInput = {
+  export type BmqEnrollmentUncheckedUpdateWithoutBmqCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
-    member_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
-  export type bmq_enrollmentsUncheckedUpdateManyWithoutBmq_coursesInput = {
+  export type BmqEnrollmentUncheckedUpdateManyWithoutBmqCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
-    member_id?: StringFieldUpdateOperationsInput | string
-    enrolled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
   }
 
   export type MemberCreateManyMemberStatusRefInput = {
@@ -55905,7 +57070,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -55939,7 +57104,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -56021,7 +57186,7 @@ export namespace Prisma {
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     badge?: BadgeUpdateOneWithoutMembersNestedInput
-    bmq_enrollments?: bmq_enrollmentsUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
@@ -56055,7 +57220,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    bmq_enrollments?: bmq_enrollmentsUncheckedUpdateManyWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput

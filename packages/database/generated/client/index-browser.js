@@ -306,25 +306,25 @@ exports.Prisma.VisitorScalarFieldEnum = {
   createdByAdmin: 'createdByAdmin'
 };
 
-exports.Prisma.Bmq_coursesScalarFieldEnum = {
+exports.Prisma.BmqCourseScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  training_start_time: 'training_start_time',
-  training_end_time: 'training_end_time',
-  is_active: 'is_active',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-  training_days: 'training_days'
+  startDate: 'startDate',
+  endDate: 'endDate',
+  trainingStartTime: 'trainingStartTime',
+  trainingEndTime: 'trainingEndTime',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  trainingDays: 'trainingDays'
 };
 
-exports.Prisma.Bmq_enrollmentsScalarFieldEnum = {
+exports.Prisma.BmqEnrollmentScalarFieldEnum = {
   id: 'id',
-  member_id: 'member_id',
-  bmq_course_id: 'bmq_course_id',
-  enrolled_at: 'enrolled_at',
-  completed_at: 'completed_at',
+  memberId: 'memberId',
+  bmqCourseId: 'bmqCourseId',
+  enrolledAt: 'enrolledAt',
+  completedAt: 'completedAt',
   status: 'status'
 };
 
@@ -346,10 +346,10 @@ exports.Prisma.Report_audit_logScalarFieldEnum = {
   generation_time_ms: 'generation_time_ms'
 };
 
-exports.Prisma.Report_settingsScalarFieldEnum = {
+exports.Prisma.ReportSettingScalarFieldEnum = {
   key: 'key',
   value: 'value',
-  updated_at: 'updated_at'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TrainingYearScalarFieldEnum = {
@@ -499,6 +499,12 @@ exports.Prisma.SettingScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AlertConfigScalarFieldEnum = {
+  key: 'key',
+  config: 'config',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -544,11 +550,11 @@ exports.Prisma.ModelName = {
   MemberTag: 'MemberTag',
   SecurityAlert: 'SecurityAlert',
   Visitor: 'Visitor',
-  bmq_courses: 'bmq_courses',
-  bmq_enrollments: 'bmq_enrollments',
+  BmqCourse: 'BmqCourse',
+  BmqEnrollment: 'BmqEnrollment',
   migrations: 'migrations',
   report_audit_log: 'report_audit_log',
-  report_settings: 'report_settings',
+  ReportSetting: 'ReportSetting',
   TrainingYear: 'TrainingYear',
   DdsAssignment: 'DdsAssignment',
   ResponsibilityAuditLog: 'ResponsibilityAuditLog',
@@ -561,7 +567,8 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Setting: 'Setting'
+  Setting: 'Setting',
+  AlertConfig: 'AlertConfig'
 };
 
 /**

@@ -1,6 +1,5 @@
 import type { PrismaClient, report_settings } from '@sentinel/database'
-import { prisma as defaultPrisma } from '@sentinel/database'
-import type { Prisma } from '@prisma/client'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 type JsonValue = Prisma.JsonValue
 
