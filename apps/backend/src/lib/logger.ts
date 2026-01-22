@@ -72,13 +72,20 @@ export const logger = winston.createLogger({
         process.env.NODE_ENV === 'development'
           ? winston.format.combine(
               winston.format.colorize(),
-              winston.format.printf(({ timestamp, level, message, module, correlationId, userId, ...meta }) => {
-                const moduleStr = module ? `[${module}]` : ''
-                const corrIdStr = correlationId && typeof correlationId === 'string' ? `[${correlationId.slice(0, 8)}]` : ''
-                const userIdStr = userId && typeof userId === 'string' ? `[user:${userId.slice(0, 8)}]` : ''
-                const metaStr = Object.keys(meta).length > 0 ? `\n${JSON.stringify(meta, null, 2)}` : ''
-                return `${timestamp} ${level} ${moduleStr}${corrIdStr}${userIdStr}: ${message}${metaStr}`
-              })
+              winston.format.printf(
+                ({ timestamp, level, message, module, correlationId, userId, ...meta }) => {
+                  const moduleStr = module ? `[${module}]` : ''
+                  const corrIdStr =
+                    correlationId && typeof correlationId === 'string'
+                      ? `[${correlationId.slice(0, 8)}]`
+                      : ''
+                  const userIdStr =
+                    userId && typeof userId === 'string' ? `[user:${userId.slice(0, 8)}]` : ''
+                  const metaStr =
+                    Object.keys(meta).length > 0 ? `\n${JSON.stringify(meta, null, 2)}` : ''
+                  return `${timestamp} ${level} ${moduleStr}${corrIdStr}${userIdStr}: ${message}${metaStr}`
+                }
+              )
             )
           : winston.format.json(),
     }),
@@ -131,7 +138,11 @@ export function logQuery(query: string, duration: number, metadata: Record<strin
 /**
  * Log authentication event
  */
-export function logAuthEvent(event: string, userId?: string, metadata: Record<string, unknown> = {}) {
+export function logAuthEvent(
+  event: string,
+  userId?: string,
+  metadata: Record<string, unknown> = {}
+) {
   authLogger.info('Auth Event', {
     event,
     userId,
@@ -142,7 +153,11 @@ export function logAuthEvent(event: string, userId?: string, metadata: Record<st
 /**
  * Log WebSocket event
  */
-export function logWsEvent(event: string, socketId: string, metadata: Record<string, unknown> = {}) {
+export function logWsEvent(
+  event: string,
+  socketId: string,
+  metadata: Record<string, unknown> = {}
+) {
   wsLogger.info('WebSocket Event', {
     event,
     socketId,

@@ -1,5 +1,5 @@
-import type { PrismaClient } from "@sentinel/database";
-import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
+import type { PrismaClient } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 /**
  * Repository for AlertConfig operations
@@ -7,17 +7,17 @@ import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
  * Manages security alert rule configurations
  */
 export class AlertConfigRepository {
-  private prisma: PrismaClient;
+  private prisma: PrismaClient
 
   constructor(prismaClient?: PrismaClient) {
-    this.prisma = prismaClient || defaultPrisma;
+    this.prisma = prismaClient || defaultPrisma
   }
 
   /**
    * Find all alert configurations
    */
   async findAll() {
-    return await this.prisma.alertConfig.findMany();
+    return await this.prisma.alertConfig.findMany()
   }
 
   /**
@@ -26,7 +26,7 @@ export class AlertConfigRepository {
   async findByKey(key: string) {
     return await this.prisma.alertConfig.findUnique({
       where: { key },
-    });
+    })
   }
 
   /**
@@ -43,14 +43,14 @@ export class AlertConfigRepository {
         key,
         config: config as Prisma.InputJsonValue,
       },
-    });
+    })
   }
 
   /**
    * Bulk upsert multiple configurations in a transaction
    */
   async bulkUpsert(configs: Record<string, Record<string, unknown>>): Promise<string[]> {
-    const updated: string[] = [];
+    const updated: string[] = []
 
     await this.prisma.$transaction(async (tx) => {
       for (const [key, config] of Object.entries(configs)) {
@@ -64,11 +64,11 @@ export class AlertConfigRepository {
             key,
             config: config as Prisma.InputJsonValue,
           },
-        });
-        updated.push(key);
+        })
+        updated.push(key)
       }
-    });
+    })
 
-    return updated;
+    return updated
   }
 }

@@ -65,8 +65,7 @@ export const devRouter = s.router(devContract, {
         divisionId: member.division?.id ?? 'Unknown',
         mess: member.mess || null,
         badgeSerialNumber: member.badge?.serialNumber || null,
-        isPresent:
-          member.checkins.length > 0 && member.checkins[0]?.direction === 'in',
+        isPresent: member.checkins.length > 0 && member.checkins[0]?.direction === 'in',
       }))
 
       return {
@@ -80,8 +79,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to get members',
+          message: error instanceof Error ? error.message : 'Failed to get members',
         },
       }
     }
@@ -124,8 +122,7 @@ export const devRouter = s.router(devContract, {
 
       // Filter to only those whose latest checkin is 'in'
       const actuallyPresent = presentMembers.filter(
-        (member) =>
-          member.checkins.length > 0 && member.checkins[0]?.direction === 'in'
+        (member) => member.checkins.length > 0 && member.checkins[0]?.direction === 'in'
       )
 
       if (actuallyPresent.length === 0) {
@@ -167,10 +164,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to clear check-ins',
+          message: error instanceof Error ? error.message : 'Failed to clear check-ins',
         },
       }
     }
@@ -251,8 +245,7 @@ export const devRouter = s.router(devContract, {
 
       // Determine direction (toggle between in/out)
       const lastCheckin = member.checkins[0]
-      const direction: 'in' | 'out' =
-        !lastCheckin || lastCheckin.direction === 'out' ? 'in' : 'out'
+      const direction: 'in' | 'out' = !lastCheckin || lastCheckin.direction === 'out' ? 'in' : 'out'
 
       // Create checkin record
       const timestamp = config.timestamp ? new Date(config.timestamp) : new Date()
@@ -291,8 +284,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to process mock scan',
+          message: error instanceof Error ? error.message : 'Failed to process mock scan',
         },
       }
     }

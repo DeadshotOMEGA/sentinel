@@ -34,10 +34,7 @@ export const membersRouter = s.router(memberContract, {
         filters.status = query.status as MemberStatus
       }
 
-      const result = await memberRepo.findPaginated(
-        { page, limit },
-        filters
-      )
+      const result = await memberRepo.findPaginated({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 

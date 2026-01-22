@@ -5,9 +5,7 @@
       "get": {
         "description": "Get paginated list of members with optional filtering by division, rank, and status",
         "summary": "List all members",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [],
         "responses": {
           "200": {
@@ -27,9 +25,7 @@
       "post": {
         "description": "Create a new member with the provided information",
         "summary": "Create new member",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [],
         "responses": {
           "201": {
@@ -54,9 +50,7 @@
       "get": {
         "description": "Retrieve a single member by their unique ID",
         "summary": "Get member by ID",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [
           {
             "name": "id",
@@ -88,9 +82,7 @@
       "patch": {
         "description": "Update an existing member with the provided information",
         "summary": "Update member",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [
           {
             "name": "id",
@@ -125,9 +117,7 @@
       "delete": {
         "description": "Delete a member by their unique ID",
         "summary": "Delete member",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [
           {
             "name": "id",
@@ -161,9 +151,7 @@
       "get": {
         "description": "Find a member by their service number",
         "summary": "Search member by service number",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [
           {
             "name": "serviceNumber",
@@ -197,9 +185,7 @@
       "get": {
         "description": "Get paginated list of checkins with optional filtering by member, division, date range, and direction",
         "summary": "List all checkins",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [],
         "responses": {
           "200": {
@@ -219,9 +205,7 @@
       "post": {
         "description": "Record a new checkin for a member",
         "summary": "Create new checkin",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [],
         "responses": {
           "201": {
@@ -246,9 +230,7 @@
       "get": {
         "description": "Get current presence statistics (total present, by division)",
         "summary": "Get presence status",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [],
         "responses": {
           "200": {
@@ -267,9 +249,7 @@
       "get": {
         "description": "Retrieve a single checkin by its unique ID",
         "summary": "Get checkin by ID",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [
           {
             "name": "id",
@@ -301,9 +281,7 @@
       "patch": {
         "description": "Update checkin properties (e.g., flag for review, change direction)",
         "summary": "Update checkin",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [
           {
             "name": "id",
@@ -335,9 +313,7 @@
       "delete": {
         "description": "Delete a checkin by its unique ID",
         "summary": "Delete checkin",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [
           {
             "name": "id",
@@ -371,9 +347,7 @@
       "post": {
         "description": "Create multiple checkins at once (used for offline sync from kiosks)",
         "summary": "Bulk create checkins",
-        "tags": [
-          "checkins"
-        ],
+        "tags": ["checkins"],
         "parameters": [],
         "responses": {
           "201": {
@@ -395,9 +369,7 @@
       "get": {
         "description": "Get all checkins for a specific member",
         "summary": "Get member checkins",
-        "tags": [
-          "members"
-        ],
+        "tags": ["members"],
         "parameters": [
           {
             "name": "id",
@@ -431,9 +403,7 @@
       "get": {
         "description": "Get paginated list of divisions with optional search and statistics",
         "summary": "List all divisions",
-        "tags": [
-          "divisions"
-        ],
+        "tags": ["divisions"],
         "parameters": [],
         "responses": {
           "200": {
@@ -453,9 +423,7 @@
       "post": {
         "description": "Create a new division with the provided information",
         "summary": "Create new division",
-        "tags": [
-          "divisions"
-        ],
+        "tags": ["divisions"],
         "parameters": [],
         "responses": {
           "201": {
@@ -480,9 +448,7 @@
       "get": {
         "description": "Retrieve a single division by its unique ID",
         "summary": "Get division by ID",
-        "tags": [
-          "divisions"
-        ],
+        "tags": ["divisions"],
         "parameters": [
           {
             "name": "id",
@@ -514,9 +480,7 @@
       "patch": {
         "description": "Update an existing division with the provided information",
         "summary": "Update division",
-        "tags": [
-          "divisions"
-        ],
+        "tags": ["divisions"],
         "parameters": [
           {
             "name": "id",
@@ -551,9 +515,7 @@
       "delete": {
         "description": "Delete a division by its unique ID (only if no members assigned)",
         "summary": "Delete division",
-        "tags": [
-          "divisions"
-        ],
+        "tags": ["divisions"],
         "parameters": [
           {
             "name": "id",
@@ -590,9 +552,7 @@
       "get": {
         "description": "Get paginated list of badges with optional filtering by status and assignment type",
         "summary": "List all badges",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [],
         "responses": {
           "200": {
@@ -612,9 +572,7 @@
       "post": {
         "description": "Create a new badge with the provided information",
         "summary": "Create new badge",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [],
         "responses": {
           "201": {
@@ -639,9 +597,7 @@
       "get": {
         "description": "Get badge statistics (total, assigned, unassigned, by status)",
         "summary": "Get badge statistics",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [],
         "responses": {
           "200": {
@@ -660,9 +616,7 @@
       "get": {
         "description": "Find a badge by its serial number",
         "summary": "Get badge by serial number",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "serialNumber",
@@ -696,9 +650,7 @@
       "get": {
         "description": "Retrieve a single badge by its unique ID",
         "summary": "Get badge by ID",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "id",
@@ -730,9 +682,7 @@
       "patch": {
         "description": "Update an existing badge with the provided information",
         "summary": "Update badge",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "id",
@@ -767,9 +717,7 @@
       "delete": {
         "description": "Delete a badge by its unique ID",
         "summary": "Delete badge",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "id",
@@ -803,9 +751,7 @@
       "post": {
         "description": "Assign a badge to a member or visitor",
         "summary": "Assign badge",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "id",
@@ -842,9 +788,7 @@
       "post": {
         "description": "Unassign a badge from its current assignment",
         "summary": "Unassign badge",
-        "tags": [
-          "badges"
-        ],
+        "tags": ["badges"],
         "parameters": [
           {
             "name": "id",
@@ -878,9 +822,7 @@
       "get": {
         "description": "Get list of available badges for assignment to event attendees",
         "summary": "Get available badges",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [],
         "responses": {
           "200": {
@@ -899,9 +841,7 @@
       "get": {
         "description": "Get list of all events",
         "summary": "List all events",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [],
         "responses": {
           "200": {
@@ -918,9 +858,7 @@
       "post": {
         "description": "Create a new event with the provided information",
         "summary": "Create new event",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [],
         "responses": {
           "201": {
@@ -945,9 +883,7 @@
       "post": {
         "description": "Close an event and optionally expire all attendee badges",
         "summary": "Close event",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -978,9 +914,7 @@
       "get": {
         "description": "Get presence statistics for an event (total, active, checked out, expired)",
         "summary": "Get event presence stats",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1011,9 +945,7 @@
       "get": {
         "description": "Get list of all attendees for an event",
         "summary": "Get event attendees",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1042,9 +974,7 @@
       "post": {
         "description": "Add a new attendee to an event",
         "summary": "Add attendee to event",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1078,9 +1008,7 @@
       "post": {
         "description": "Assign a badge to an event attendee",
         "summary": "Assign badge to attendee",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1125,9 +1053,7 @@
       "delete": {
         "description": "Unassign the badge from an event attendee",
         "summary": "Unassign badge from attendee",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1166,9 +1092,7 @@
       "patch": {
         "description": "Update an event attendee",
         "summary": "Update attendee",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1208,9 +1132,7 @@
       "delete": {
         "description": "Remove an attendee from an event",
         "summary": "Remove attendee",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1249,9 +1171,7 @@
       "get": {
         "description": "Retrieve a single event by its unique ID",
         "summary": "Get event by ID",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1280,9 +1200,7 @@
       "patch": {
         "description": "Update an existing event with the provided information",
         "summary": "Update event",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1314,9 +1232,7 @@
       "delete": {
         "description": "Delete an event",
         "summary": "Delete event",
-        "tags": [
-          "events"
-        ],
+        "tags": ["events"],
         "parameters": [
           {
             "name": "id",
@@ -1347,9 +1263,7 @@
       "get": {
         "description": "Get list of all currently signed in visitors",
         "summary": "Get active visitors",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1368,9 +1282,7 @@
       "get": {
         "description": "Get paginated list of visitors with optional filtering",
         "summary": "List all visitors",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1390,9 +1302,7 @@
       "post": {
         "description": "Sign in a new visitor",
         "summary": "Create new visitor",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [],
         "responses": {
           "201": {
@@ -1414,9 +1324,7 @@
       "post": {
         "description": "Sign out a visitor",
         "summary": "Checkout visitor",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [
           {
             "name": "id",
@@ -1447,9 +1355,7 @@
       "get": {
         "description": "Retrieve a single visitor by their unique ID",
         "summary": "Get visitor by ID",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [
           {
             "name": "id",
@@ -1478,9 +1384,7 @@
       "patch": {
         "description": "Update visitor details (event, host, purpose)",
         "summary": "Update visitor",
-        "tags": [
-          "visitors"
-        ],
+        "tags": ["visitors"],
         "parameters": [
           {
             "name": "id",
@@ -1514,9 +1418,7 @@
       "get": {
         "description": "Get the member who currently holds the Lockup tag",
         "summary": "Get lockup tag holder",
-        "tags": [
-          "tags"
-        ],
+        "tags": ["tags"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1535,9 +1437,7 @@
       "post": {
         "description": "Transfer the Lockup tag from current holder to a new member",
         "summary": "Transfer lockup tag",
-        "tags": [
-          "tags"
-        ],
+        "tags": ["tags"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1562,9 +1462,7 @@
       "get": {
         "description": "Get all active (unacknowledged) security alerts",
         "summary": "Get active security alerts",
-        "tags": [
-          "security-alerts"
-        ],
+        "tags": ["security-alerts"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1583,9 +1481,7 @@
       "post": {
         "description": "Create a new security alert (badge disabled, unknown, inactive member)",
         "summary": "Create security alert",
-        "tags": [
-          "security-alerts"
-        ],
+        "tags": ["security-alerts"],
         "parameters": [],
         "responses": {
           "201": {
@@ -1607,9 +1503,7 @@
       "post": {
         "description": "Acknowledge a security alert (marks as no longer active)",
         "summary": "Acknowledge security alert",
-        "tags": [
-          "security-alerts"
-        ],
+        "tags": ["security-alerts"],
         "parameters": [
           {
             "name": "id",
@@ -1643,9 +1537,7 @@
       "get": {
         "description": "Retrieve a single security alert by its unique ID",
         "summary": "Get security alert by ID",
-        "tags": [
-          "security-alerts"
-        ],
+        "tags": ["security-alerts"],
         "parameters": [
           {
             "name": "id",
@@ -1676,9 +1568,7 @@
       "get": {
         "description": "Get today's active DDS assignment",
         "summary": "Get current DDS",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1697,9 +1587,7 @@
       "get": {
         "description": "Check if a DDS has been assigned for today",
         "summary": "Check if DDS exists",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1718,9 +1606,7 @@
       "get": {
         "description": "Get audit log entries for DDS responsibility (accepts, assignments, transfers, releases)",
         "summary": "Get DDS audit log",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1739,9 +1625,7 @@
       "post": {
         "description": "Member self-accepts DDS role (first check-in of day)",
         "summary": "Accept DDS",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [
           {
             "name": "id",
@@ -1778,9 +1662,7 @@
       "post": {
         "description": "Admin assigns DDS role to a member",
         "summary": "Assign DDS",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1808,9 +1690,7 @@
       "post": {
         "description": "Admin transfers DDS role from current holder to another member",
         "summary": "Transfer DDS",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1838,9 +1718,7 @@
       "post": {
         "description": "Release DDS role (during checkout or by admin)",
         "summary": "Release DDS",
-        "tags": [
-          "dds"
-        ],
+        "tags": ["dds"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1865,9 +1743,7 @@
       "get": {
         "description": "Get all currently present members and visitors for lockup confirmation screen",
         "summary": "Get present people for lockup",
-        "tags": [
-          "lockup"
-        ],
+        "tags": ["lockup"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1886,9 +1762,7 @@
       "get": {
         "description": "Check if a member has the Lockup tag and is authorized to perform building lockup",
         "summary": "Check lockup authorization",
-        "tags": [
-          "lockup"
-        ],
+        "tags": ["lockup"],
         "parameters": [
           {
             "name": "id",
@@ -1919,9 +1793,7 @@
       "post": {
         "description": "Bulk checkout all present members and visitors (requires Lockup tag)",
         "summary": "Execute building lockup",
-        "tags": [
-          "lockup"
-        ],
+        "tags": ["lockup"],
         "parameters": [
           {
             "name": "id",
@@ -1955,9 +1827,7 @@
       "get": {
         "description": "Returns all visit types with usage counts",
         "summary": "List all visit types",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "200": {
@@ -1974,9 +1844,7 @@
       "post": {
         "description": "Create a new visit type (admin only)",
         "summary": "Create visit type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2001,9 +1869,7 @@
       "put": {
         "description": "Update an existing visit type (admin only)",
         "summary": "Update visit type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2038,9 +1904,7 @@
       "delete": {
         "description": "Delete a visit type if not in use (admin only)",
         "summary": "Delete visit type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2074,9 +1938,7 @@
       "get": {
         "description": "Returns all member statuses with usage counts",
         "summary": "List all member statuses",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "200": {
@@ -2093,9 +1955,7 @@
       "post": {
         "description": "Create a new member status (admin only)",
         "summary": "Create member status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2120,9 +1980,7 @@
       "put": {
         "description": "Update an existing member status (admin only)",
         "summary": "Update member status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2157,9 +2015,7 @@
       "delete": {
         "description": "Delete a member status if not in use (admin only)",
         "summary": "Delete member status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2193,9 +2049,7 @@
       "get": {
         "description": "Returns all member types with usage counts",
         "summary": "List all member types",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "200": {
@@ -2212,9 +2066,7 @@
       "post": {
         "description": "Create a new member type (admin only)",
         "summary": "Create member type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2239,9 +2091,7 @@
       "put": {
         "description": "Update an existing member type (admin only)",
         "summary": "Update member type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2276,9 +2126,7 @@
       "delete": {
         "description": "Delete a member type if not in use (admin only)",
         "summary": "Delete member type",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2312,9 +2160,7 @@
       "get": {
         "description": "Returns all badge statuses with usage counts",
         "summary": "List all badge statuses",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "200": {
@@ -2331,9 +2177,7 @@
       "post": {
         "description": "Create a new badge status (admin only)",
         "summary": "Create badge status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2358,9 +2202,7 @@
       "put": {
         "description": "Update an existing badge status (admin only)",
         "summary": "Update badge status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2395,9 +2237,7 @@
       "delete": {
         "description": "Delete a badge status if not in use (admin only)",
         "summary": "Delete badge status",
-        "tags": [
-          "enums"
-        ],
+        "tags": ["enums"],
         "parameters": [
           {
             "name": "id",
@@ -2431,9 +2271,7 @@
       "get": {
         "description": "Get list of all application settings with optional category filtering",
         "summary": "List all settings",
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "parameters": [],
         "responses": {
           "200": {
@@ -2450,9 +2288,7 @@
       "post": {
         "description": "Create a new application setting (admin only)",
         "summary": "Create new setting",
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2480,9 +2316,7 @@
       "get": {
         "description": "Retrieve a single setting by its unique key",
         "summary": "Get setting by key",
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "parameters": [
           {
             "name": "key",
@@ -2511,9 +2345,7 @@
       "put": {
         "description": "Update an existing setting value (admin only)",
         "summary": "Update setting",
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "parameters": [
           {
             "name": "key",
@@ -2548,9 +2380,7 @@
       "delete": {
         "description": "Delete a setting by its unique key (admin only)",
         "summary": "Delete setting",
-        "tags": [
-          "settings"
-        ],
+        "tags": ["settings"],
         "parameters": [
           {
             "name": "key",
@@ -2584,9 +2414,7 @@
       "get": {
         "description": "Get list of all admin users including disabled accounts. Requires admin or developer role.",
         "summary": "List all admin users",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [],
         "responses": {
           "200": {
@@ -2606,9 +2434,7 @@
       "post": {
         "description": "Create a new admin user with role-based access control. Admins cannot create developer accounts (privilege escalation protection).",
         "summary": "Create new admin user",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [],
         "responses": {
           "201": {
@@ -2636,9 +2462,7 @@
       "get": {
         "description": "Retrieve admin user details by ID. Requires admin or developer role.",
         "summary": "Get admin user by ID",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2670,9 +2494,7 @@
       "put": {
         "description": "Update admin user details. Cannot modify users with higher privileges than actor. Role changes tracked in audit log.",
         "summary": "Update admin user",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2710,9 +2532,7 @@
       "delete": {
         "description": "Permanently delete admin user (developer only). Cannot delete yourself or the last active developer account.",
         "summary": "Delete admin user",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2749,9 +2569,7 @@
       "post": {
         "description": "Reset password for admin user (admin-initiated). Cannot reset passwords for higher-privilege users.",
         "summary": "Reset admin user password",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2788,9 +2606,7 @@
       "post": {
         "description": "Soft delete admin user account by disabling. Cannot disable yourself or the last active developer account.",
         "summary": "Disable admin user",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2830,9 +2646,7 @@
       "post": {
         "description": "Re-enable a disabled admin user account. Cannot enable users with higher privileges than actor.",
         "summary": "Enable admin user",
-        "tags": [
-          "admin-users"
-        ],
+        "tags": ["admin-users"],
         "parameters": [
           {
             "name": "id",
@@ -2872,9 +2686,7 @@
       "get": {
         "description": "Get all items for a given list type (event_role, rank, mess, moc) with usage counts. Items are ordered by displayOrder and name.",
         "summary": "List all items for a list type",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -2903,9 +2715,7 @@
       "post": {
         "description": "Create a new list item with a unique code. Code is automatically normalized to lowercase with underscores. If displayOrder is not provided, item is appended to the end.",
         "summary": "Create a new list item",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -2939,9 +2749,7 @@
       "put": {
         "description": "Update the display order of list items. Provide an array of item IDs in the desired order. displayOrder will be set sequentially (1, 2, 3, ...).",
         "summary": "Reorder list items",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -2972,9 +2780,7 @@
       "get": {
         "description": "Get the number of records currently using this list item. Used to prevent deletion of items in use.",
         "summary": "Get usage count for a list item",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -3016,9 +2822,7 @@
       "put": {
         "description": "Update an existing list item. All fields are optional. If updating code, uniqueness is checked within the list type.",
         "summary": "Update a list item",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -3061,9 +2865,7 @@
       "delete": {
         "description": "Delete a list item. System items cannot be deleted. Items currently in use cannot be deleted - reassign or delete the records using this item first.",
         "summary": "Delete a list item",
-        "tags": [
-          "lists"
-        ],
+        "tags": ["lists"],
         "parameters": [
           {
             "name": "listType",
@@ -3108,9 +2910,7 @@
       "get": {
         "description": "Get all training years ordered by start date (newest first)",
         "summary": "List all training years",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3127,9 +2927,7 @@
       "post": {
         "description": "Create a new training year with holiday exclusions and day exceptions. Admin role required.",
         "summary": "Create training year",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [],
         "responses": {
           "201": {
@@ -3154,9 +2952,7 @@
       "get": {
         "description": "Get the training year marked as current",
         "summary": "Get current training year",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3178,9 +2974,7 @@
       "get": {
         "description": "Get a specific training year by its unique identifier",
         "summary": "Get training year by ID",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [
           {
             "name": "id",
@@ -3209,9 +3003,7 @@
       "put": {
         "description": "Update an existing training year. Admin role required.",
         "summary": "Update training year",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [
           {
             "name": "id",
@@ -3246,9 +3038,7 @@
       "delete": {
         "description": "Delete a training year. Cannot delete the current training year. Admin role required.",
         "summary": "Delete training year",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [
           {
             "name": "id",
@@ -3285,9 +3075,7 @@
       "put": {
         "description": "Mark a training year as current. Automatically unsets other current years via database trigger. Admin role required.",
         "summary": "Set current training year",
-        "tags": [
-          "training-years"
-        ],
+        "tags": ["training-years"],
         "parameters": [
           {
             "name": "id",
@@ -3321,9 +3109,7 @@
       "get": {
         "description": "Get all BMQ courses with optional active filter. Includes enrollment count for each course.",
         "summary": "List all BMQ courses",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3340,9 +3126,7 @@
       "post": {
         "description": "Create a new BMQ course with training schedule. Admin role required.",
         "summary": "Create BMQ course",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [],
         "responses": {
           "201": {
@@ -3367,9 +3151,7 @@
       "get": {
         "description": "Get all BMQ course enrollments for a specific member with course details",
         "summary": "Get member BMQ enrollments",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "memberId",
@@ -3400,9 +3182,7 @@
       "get": {
         "description": "Get a specific BMQ course by its unique identifier with enrollment count",
         "summary": "Get BMQ course by ID",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "id",
@@ -3431,9 +3211,7 @@
       "put": {
         "description": "Update an existing BMQ course. Admin role required.",
         "summary": "Update BMQ course",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "id",
@@ -3468,9 +3246,7 @@
       "delete": {
         "description": "Delete a BMQ course and all associated enrollments. Admin role required.",
         "summary": "Delete BMQ course",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "id",
@@ -3504,9 +3280,7 @@
       "get": {
         "description": "Get all enrollments for a BMQ course with member details",
         "summary": "Get course enrollments",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "courseId",
@@ -3535,9 +3309,7 @@
       "post": {
         "description": "Enroll a member in a BMQ course. Prevents duplicate enrollments. Admin role required.",
         "summary": "Enroll member in course",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "courseId",
@@ -3577,9 +3349,7 @@
       "put": {
         "description": "Update enrollment status (enrolled, completed, withdrawn). Requires completion date when marking completed. Admin role required.",
         "summary": "Update enrollment status",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "id",
@@ -3614,9 +3384,7 @@
       "delete": {
         "description": "Remove a member enrollment from a BMQ course. Admin role required.",
         "summary": "Delete enrollment",
-        "tags": [
-          "bmq-courses"
-        ],
+        "tags": ["bmq-courses"],
         "parameters": [
           {
             "name": "id",
@@ -3650,9 +3418,7 @@
       "get": {
         "description": "Get all report configuration settings with their values and timestamps",
         "summary": "Get all report settings",
-        "tags": [
-          "report-settings"
-        ],
+        "tags": ["report-settings"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3669,9 +3435,7 @@
       "put": {
         "description": "Update multiple report settings in a single transaction. Admin role required.",
         "summary": "Bulk update report settings",
-        "tags": [
-          "report-settings"
-        ],
+        "tags": ["report-settings"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3696,9 +3460,7 @@
       "get": {
         "description": "Get a specific report setting by its key (schedule, working_hours, thresholds, member_handling, formatting)",
         "summary": "Get setting by key",
-        "tags": [
-          "report-settings"
-        ],
+        "tags": ["report-settings"],
         "parameters": [
           {
             "name": "key",
@@ -3727,9 +3489,7 @@
       "put": {
         "description": "Update a specific report setting. Creates the setting if it does not exist. Admin role required.",
         "summary": "Update setting by key",
-        "tags": [
-          "report-settings"
-        ],
+        "tags": ["report-settings"],
         "parameters": [
           {
             "name": "key",
@@ -3766,9 +3526,7 @@
       "get": {
         "description": "Get all security alert rule configurations",
         "summary": "Get all alert configurations",
-        "tags": [
-          "alert-configs"
-        ],
+        "tags": ["alert-configs"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3785,9 +3543,7 @@
       "put": {
         "description": "Update multiple alert configurations in a single transaction. Admin role required.",
         "summary": "Bulk update alert configurations",
-        "tags": [
-          "alert-configs"
-        ],
+        "tags": ["alert-configs"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3812,9 +3568,7 @@
       "get": {
         "description": "Get a specific alert configuration by its key (badge_disabled, badge_unknown, inactive_member, etc.)",
         "summary": "Get configuration by key",
-        "tags": [
-          "alert-configs"
-        ],
+        "tags": ["alert-configs"],
         "parameters": [
           {
             "name": "key",
@@ -3843,9 +3597,7 @@
       "put": {
         "description": "Update a specific alert configuration. Creates the configuration if it does not exist. Admin role required.",
         "summary": "Update configuration by key",
-        "tags": [
-          "alert-configs"
-        ],
+        "tags": ["alert-configs"],
         "parameters": [
           {
             "name": "key",
@@ -3882,9 +3634,7 @@
       "post": {
         "description": "Generate a summary of current day check-ins including present FT staff, absent FT staff, and present reserve members, with optional filtering by division and member type",
         "summary": "Generate daily check-in report",
-        "tags": [
-          "reports"
-        ],
+        "tags": ["reports"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3906,9 +3656,7 @@
       "post": {
         "description": "Generate attendance report for training nights over a specified period, with attendance percentages, trends, threshold flags, and BMQ badges",
         "summary": "Generate training night attendance report",
-        "tags": [
-          "reports"
-        ],
+        "tags": ["reports"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3933,9 +3681,7 @@
       "post": {
         "description": "Generate attendance report for a specific BMQ course, showing enrollment status and attendance percentages for all enrolled members",
         "summary": "Generate BMQ attendance report",
-        "tags": [
-          "reports"
-        ],
+        "tags": ["reports"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3960,9 +3706,7 @@
       "post": {
         "description": "Generate complete personnel roster with member details, optionally filtered by division and sorted by division/rank or alphabetically",
         "summary": "Generate personnel roster",
-        "tags": [
-          "reports"
-        ],
+        "tags": ["reports"],
         "parameters": [],
         "responses": {
           "200": {
@@ -3984,9 +3728,7 @@
       "post": {
         "description": "Generate summary of all visitors over a date range, with optional filtering by visit type and organization, including visit duration statistics",
         "summary": "Generate visitor summary",
-        "tags": [
-          "reports"
-        ],
+        "tags": ["reports"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4008,9 +3750,7 @@
       "post": {
         "description": "Clear all data from members, checkins, visitors, badges, events, event_attendees, and event_checkins tables. Requires admin role.",
         "summary": "Clear all data",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4032,9 +3772,7 @@
       "post": {
         "description": "Clear all data from a specific table. Requires admin role.",
         "summary": "Clear specific table",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4059,9 +3797,7 @@
       "post": {
         "description": "Clear all data and reset cached services to initial state. Requires admin role.",
         "summary": "Reset database and services",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4083,9 +3819,7 @@
       "get": {
         "description": "Get default parameters for attendance simulation. Requires admin role.",
         "summary": "Get simulation defaults",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4104,9 +3838,7 @@
       "post": {
         "description": "Validate simulation parameters and estimate impact. Requires admin role.",
         "summary": "Precheck simulation",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4131,9 +3863,7 @@
       "post": {
         "description": "Generate realistic check-in data over a date range. Requires admin role.",
         "summary": "Run attendance simulation",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4158,9 +3888,7 @@
       "post": {
         "description": "Set all member creation dates to a target date for testing. Requires admin role.",
         "summary": "Backdate member creation",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4185,9 +3913,7 @@
       "get": {
         "description": "Get list of available database seeding scenarios. Requires admin role.",
         "summary": "List seeding scenarios",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4206,9 +3932,7 @@
       "post": {
         "description": "Populate database with a predefined scenario (empty, minimal, standard, realistic, stress_test). Requires admin role.",
         "summary": "Seed database scenario",
-        "tags": [
-          "dev-tools"
-        ],
+        "tags": ["dev-tools"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4233,9 +3957,7 @@
       "get": {
         "description": "Get all active members with badge serial numbers and current presence status. Disabled in production.",
         "summary": "Get all members with presence",
-        "tags": [
-          "dev"
-        ],
+        "tags": ["dev"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4257,9 +3979,7 @@
       "delete": {
         "description": "Create check-out records for all currently present members. Broadcasts presence update via WebSocket. Disabled in production.",
         "summary": "Clear all current check-ins",
-        "tags": [
-          "dev"
-        ],
+        "tags": ["dev"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4281,9 +4001,7 @@
       "post": {
         "description": "Simulate an RFID badge scan with the same behavior as real hardware scans (creates checkin records, broadcasts WebSocket updates). Disabled in production.",
         "summary": "Mock RFID badge scan",
-        "tags": [
-          "dev"
-        ],
+        "tags": ["dev"],
         "parameters": [],
         "responses": {
           "200": {

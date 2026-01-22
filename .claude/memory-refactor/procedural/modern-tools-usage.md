@@ -5,11 +5,13 @@ When Bash commands are appropriate (after considering specialized tools like Rea
 ## Core Principle
 
 **Always prefer specialized tools first:**
+
 - Read tool > `cat`/`bat`/`head`/`tail`
 - Grep tool > `rg`/`grep` (Grep tool uses rg internally)
 - Glob tool > `fd`/`find`
 
 **Only use bash commands when:**
+
 - Specialized tools can't handle the task
 - Building complex pipelines
 - Scripting multi-step operations
@@ -25,6 +27,7 @@ When Bash commands are appropriate (after considering specialized tools like Rea
 **Prefer over:** `find` command
 
 **Common patterns:**
+
 ```bash
 # Find TypeScript files
 fd -e ts -e tsx
@@ -46,11 +49,13 @@ fd -H -I pattern
 ### sg / ast-grep (structural code search)
 
 **Use when:**
+
 - Refactoring code patterns across multiple files
 - Finding complex code structures (not just text)
 - Language-aware search (respects syntax)
 
 **Examples:**
+
 ```bash
 # Find all useState hooks
 sg -p 'useState($$$)'
@@ -63,6 +68,7 @@ sg -p 'console.log($$$)' -r '' --lang typescript
 ```
 
 **When to use:**
+
 - Large-scale refactoring tasks
 - Finding code patterns that regex can't express
 - Type-aware searches
@@ -74,11 +80,13 @@ sg -p 'console.log($$$)' -r '' --lang typescript
 ### jq (JSON processing)
 
 **Use when:**
+
 - Parsing JSON in bash pipelines
 - Extracting fields from JSON responses
 - Transforming JSON data
 
 **Common patterns:**
+
 ```bash
 # Extract field
 curl api.example.com | jq '.data.users'
@@ -100,11 +108,13 @@ jq -r '.results[].name' data.json
 ### xq (XML/HTML processing)
 
 **Use when:**
+
 - Parsing XML/HTML in bash pipelines
 - Extracting data from structured XML
 - XML transformation tasks
 
 **Common patterns:**
+
 ```bash
 # Query XML with XPath
 xq '.root.items.item[]' data.xml
@@ -123,11 +133,13 @@ xq '.config."@version"' settings.xml
 ### pq (Parquet query)
 
 **Use when:**
+
 - Analyzing parquet data files
 - Querying columnar data
 - Data science/analytics tasks
 
 **Common patterns:**
+
 ```bash
 # Schema inspection
 pq schema data.parquet
@@ -175,23 +187,27 @@ These commands are automatically rewritten by `pretooluse-modern-tools.py`:
 ## Examples
 
 ### Good: Use jq for JSON in pipelines
+
 ```bash
 gh api repos/user/project/issues | jq '.[] | {number, title, state}'
 ```
 
 ### Good: Use sg for structural refactoring
+
 ```bash
 # Find all React components using old lifecycle methods
 sg -p 'componentWillMount($$$)' --lang typescript
 ```
 
 ### Good: Use fd in complex bash operations
+
 ```bash
 # Find and process files in one pipeline
 fd -e json -x jq '.version' {} \; | sort -u
 ```
 
 ### Bad: Using bash find when Glob tool works
+
 ```bash
 # ❌ Don't do this
 Bash("find . -name '*.ts'")
@@ -201,6 +217,7 @@ Glob(pattern="**/*.ts")
 ```
 
 ### Bad: Using bash grep when Grep tool works
+
 ```bash
 # ❌ Don't do this
 Bash("rg 'pattern' .")

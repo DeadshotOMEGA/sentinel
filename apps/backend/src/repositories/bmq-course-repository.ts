@@ -1,5 +1,5 @@
-import type { PrismaClient } from "@sentinel/database";
-import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
+import type { PrismaClient } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 /**
  * Repository for BMQ Course operations
@@ -7,31 +7,31 @@ import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
  * Manages Basic Military Qualification courses and member enrollments
  */
 export class BmqCourseRepository {
-  private prisma: PrismaClient;
+  private prisma: PrismaClient
 
   constructor(prismaClient?: PrismaClient) {
-    this.prisma = prismaClient || defaultPrisma;
+    this.prisma = prismaClient || defaultPrisma
   }
 
   /**
    * Find all BMQ courses with optional active filter
    */
   async findAll(activeFilter?: boolean) {
-    const where: Prisma.BmqCourseWhereInput = {};
+    const where: Prisma.BmqCourseWhereInput = {}
 
     if (activeFilter !== undefined) {
-      where.isActive = activeFilter;
+      where.isActive = activeFilter
     }
 
     return await this.prisma.bmqCourse.findMany({
       where,
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
       include: {
         _count: {
           select: { bmqEnrollments: true },
         },
       },
-    });
+    })
   }
 
   /**
@@ -45,7 +45,7 @@ export class BmqCourseRepository {
           select: { bmqEnrollments: true },
         },
       },
-    });
+    })
   }
 
   /**
@@ -54,7 +54,7 @@ export class BmqCourseRepository {
   async create(data: Prisma.BmqCourseCreateInput) {
     return await this.prisma.bmqCourse.create({
       data,
-    });
+    })
   }
 
   /**
@@ -64,7 +64,7 @@ export class BmqCourseRepository {
     return await this.prisma.bmqCourse.update({
       where: { id },
       data,
-    });
+    })
   }
 
   /**
@@ -79,15 +79,15 @@ export class BmqCourseRepository {
           select: { bmqEnrollments: true },
         },
       },
-    });
+    })
 
-    const enrollmentCount = course?._count.bmqEnrollments || 0;
+    const enrollmentCount = course?._count.bmqEnrollments || 0
 
     await this.prisma.bmqCourse.delete({
       where: { id },
-    });
+    })
 
-    return enrollmentCount;
+    return enrollmentCount
   }
 
   /**
@@ -108,11 +108,8 @@ export class BmqCourseRepository {
           },
         },
       },
-      orderBy: [
-        { member: { lastName: "asc" } },
-        { member: { firstName: "asc" } },
-      ],
-    });
+      orderBy: [{ member: { lastName: 'asc' } }, { member: { firstName: 'asc' } }],
+    })
   }
 
   /**
@@ -124,8 +121,8 @@ export class BmqCourseRepository {
       include: {
         bmqCourse: true,
       },
-      orderBy: { bmqCourse: { startDate: "desc" } },
-    });
+      orderBy: { bmqCourse: { startDate: 'desc' } },
+    })
   }
 
   /**
@@ -136,26 +133,22 @@ export class BmqCourseRepository {
       data: {
         bmqCourseId: courseId,
         memberId,
-        status: "enrolled",
+        status: 'enrolled',
       },
-    });
+    })
   }
 
   /**
    * Update enrollment status
    */
-  async updateEnrollment(
-    id: string,
-    status: string,
-    completedAt?: string | null,
-  ) {
+  async updateEnrollment(id: string, status: string, completedAt?: string | null) {
     return await this.prisma.bmqEnrollment.update({
       where: { id },
       data: {
         status,
         completedAt: completedAt ? new Date(completedAt) : null,
       },
-    });
+    })
   }
 
   /**
@@ -164,7 +157,7 @@ export class BmqCourseRepository {
   async deleteEnrollment(id: string): Promise<void> {
     await this.prisma.bmqEnrollment.delete({
       where: { id },
-    });
+    })
   }
 
   /**
@@ -173,7 +166,7 @@ export class BmqCourseRepository {
   async findEnrollmentById(id: string) {
     return await this.prisma.bmqEnrollment.findUnique({
       where: { id },
-    });
+    })
   }
 
   /**
@@ -187,6 +180,6 @@ export class BmqCourseRepository {
           bmqCourseId: courseId,
         },
       },
-    });
+    })
   }
 }

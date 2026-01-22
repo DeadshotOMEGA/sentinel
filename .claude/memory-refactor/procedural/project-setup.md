@@ -16,6 +16,7 @@ find .claude -name "*.sh" -exec chmod +x {} \;
 ```
 
 **Symptoms of missing permissions:**
+
 - `Permission denied` when hooks run
 - Scripts work with `python3 script.py` but not `./script.py`
 
@@ -69,11 +70,13 @@ python --version  # Should show Python 3.x.x
 ```
 
 **Why this matters:**
+
 - Some tools/scripts expect `python` command
 - Makefiles may use `python` instead of `python3`
 - Consistent cross-platform behavior
 
 **Alternative (symlink):**
+
 ```bash
 sudo ln -s /usr/bin/python3 /usr/bin/python
 ```
@@ -102,12 +105,12 @@ echo "Exit code: $?"  # Should be 0
 
 ## Platform-Specific Notes
 
-| Platform | Watch For |
-|----------|-----------|
-| **WSL2** | Line endings (CRLF), `python` command missing, file permissions |
+| Platform    | Watch For                                                                     |
+| ----------- | ----------------------------------------------------------------------------- |
+| **WSL2**    | Line endings (CRLF), `python` command missing, file permissions               |
 | **Windows** | Shebangs don't work natively; use `python script.py` instead of `./script.py` |
-| **macOS** | `sed -i` requires `sed -i ''` (empty string argument) |
-| **Linux** | `python` command may be missing (use `update-alternatives`) |
+| **macOS**   | `sed -i` requires `sed -i ''` (empty string argument)                         |
+| **Linux**   | `python` command may be missing (use `update-alternatives`)                   |
 
 ## Quick Validation Script
 

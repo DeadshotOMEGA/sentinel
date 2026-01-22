@@ -2,7 +2,4 @@
 
 ## Directory Layout
 
-
-
 ## Important
-

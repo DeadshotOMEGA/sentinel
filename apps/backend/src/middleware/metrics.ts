@@ -22,18 +22,17 @@ import { apiLogger } from '../lib/logger.js'
  * - /api/badges/serial/ABC123 -> /api/badges/serial/:serialNumber
  */
 function normalizePath(path: string): string {
-  return path
-    // UUID pattern
-    .replace(
-      /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-      '/:id'
-    )
-    // Serial numbers (alphanumeric, 4-20 chars)
-    .replace(/\/serial\/[A-Z0-9]{4,20}/gi, '/serial/:serialNumber')
-    // Service numbers (alphanumeric, 4-20 chars)
-    .replace(/\/service\/[A-Z0-9]{4,20}/gi, '/service/:serviceNumber')
-    // Numeric IDs
-    .replace(/\/\d+/g, '/:id')
+  return (
+    path
+      // UUID pattern
+      .replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '/:id')
+      // Serial numbers (alphanumeric, 4-20 chars)
+      .replace(/\/serial\/[A-Z0-9]{4,20}/gi, '/serial/:serialNumber')
+      // Service numbers (alphanumeric, 4-20 chars)
+      .replace(/\/service\/[A-Z0-9]{4,20}/gi, '/service/:serviceNumber')
+      // Numeric IDs
+      .replace(/\/\d+/g, '/:id')
+  )
 }
 
 /**

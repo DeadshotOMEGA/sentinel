@@ -1,5 +1,5 @@
-import type { PrismaClient, ReportSetting } from "@sentinel/database";
-import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
+import type { PrismaClient, ReportSetting } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 /**
  * Repository for ReportSetting operations
@@ -7,17 +7,17 @@ import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
  * Manages key-value report configuration settings
  */
 export class ReportSettingRepository {
-  private prisma: PrismaClient;
+  private prisma: PrismaClient
 
   constructor(prismaClient?: PrismaClient) {
-    this.prisma = prismaClient || defaultPrisma;
+    this.prisma = prismaClient || defaultPrisma
   }
 
   /**
    * Find all report settings
    */
   async findAll(): Promise<ReportSetting[]> {
-    return await this.prisma.reportSetting.findMany();
+    return await this.prisma.reportSetting.findMany()
   }
 
   /**
@@ -26,7 +26,7 @@ export class ReportSettingRepository {
   async findByKey(key: string): Promise<ReportSetting | null> {
     return await this.prisma.reportSetting.findUnique({
       where: { key },
-    });
+    })
   }
 
   /**
@@ -43,14 +43,14 @@ export class ReportSettingRepository {
         key,
         value: value as Prisma.InputJsonValue,
       },
-    });
+    })
   }
 
   /**
    * Bulk upsert multiple settings in a transaction
    */
   async bulkUpsert(settings: Record<string, unknown>): Promise<string[]> {
-    const updated: string[] = [];
+    const updated: string[] = []
 
     await this.prisma.$transaction(async (tx) => {
       for (const [key, value] of Object.entries(settings)) {
@@ -64,11 +64,11 @@ export class ReportSettingRepository {
             key,
             value: value as Prisma.InputJsonValue,
           },
-        });
-        updated.push(key);
+        })
+        updated.push(key)
       }
-    });
+    })
 
-    return updated;
+    return updated
   }
 }

@@ -12,6 +12,7 @@ It is the single source of truth for rule authoring.
 ## Required Characteristics
 
 All rules MUST:
+
 - Be actionable and imperative
 - Be unconditionally true for their directory scope
 - Avoid rationale or background explanation
@@ -29,19 +30,24 @@ Every `CLAUDE.md` MUST follow this structure:
 # CLAUDE Rules: <Area Name>
 
 ## Scope
+
 Applies when editing files under: <path>
 
 ## Non-Negotiables (MUST / MUST NOT)
+
 - MUST ...
 - MUST NOT ...
 
 ## Defaults (SHOULD)
+
 - SHOULD ...
 
 ## Workflow
+
 - When X changes, do Y
 
 ## Output Contracts (only if required)
+
 - Output MUST include ...
 ```
 
@@ -68,6 +74,7 @@ Applies when editing files under: <path>
 ## Review Checklist
 
 For each rule file, verify:
+
 - Single domain only
 - Correct directory scope
 - Imperative language

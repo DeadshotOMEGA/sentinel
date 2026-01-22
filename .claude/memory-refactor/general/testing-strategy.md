@@ -5,6 +5,7 @@ Integration-first testing with real databases. Prioritize integration tests over
 ## Philosophy
 
 **Why Integration-First?**
+
 1. Catch real issues (tests run against actual PostgreSQL, not mocks)
 2. Confidence in deployments (if tests pass, code works with real database)
 3. Faster development (no time wasted maintaining mocks)
@@ -13,21 +14,21 @@ Integration-first testing with real databases. Prioritize integration tests over
 
 ## Test Distribution
 
-| Type | Percentage | Use For |
-|------|-----------|---------|
-| **Integration** | 70-90% | Repositories, services, routes |
-| **Unit** | 10-20% | Pure functions, utilities, validators |
-| **E2E** | 5-10% | Critical user flows |
+| Type            | Percentage | Use For                               |
+| --------------- | ---------- | ------------------------------------- |
+| **Integration** | 70-90%     | Repositories, services, routes        |
+| **Unit**        | 10-20%     | Pure functions, utilities, validators |
+| **E2E**         | 5-10%      | Critical user flows                   |
 
 ## Coverage Targets
 
-| Layer | Target | Priority |
-|-------|--------|----------|
-| Repositories | 90%+ | 🔴 High |
-| Services | 85%+ | 🔴 High |
-| Routes | 80%+ | 🟡 Medium |
-| Overall | 80%+ | 🟡 Medium |
-| Utils | 70%+ | 🟢 Low |
+| Layer        | Target | Priority  |
+| ------------ | ------ | --------- |
+| Repositories | 90%+   | 🔴 High   |
+| Services     | 85%+   | 🔴 High   |
+| Routes       | 80%+   | 🟡 Medium |
+| Overall      | 80%+   | 🟡 Medium |
+| Utils        | 70%+   | 🟢 Low    |
 
 ## Test Types
 
@@ -38,6 +39,7 @@ Integration-first testing with real databases. Prioritize integration tests over
 **Tools**: Vitest + Testcontainers (PostgreSQL) + Supertest (routes)
 
 **Characteristics**:
+
 - Real database (testcontainers)
 - Database reset between tests
 - Test actual behavior
@@ -49,6 +51,7 @@ Integration-first testing with real databases. Prioritize integration tests over
 **Use for**: Pure functions, utilities, validators
 
 **Characteristics**:
+
 - No external dependencies
 - Fast execution (< 1ms per test)
 - Test logic only, not I/O
@@ -63,6 +66,7 @@ Integration-first testing with real databases. Prioritize integration tests over
 **Tools**: Playwright
 
 **Characteristics**:
+
 - Full application stack
 - Browser automation
 - Test complete user journeys
@@ -73,6 +77,7 @@ Integration-first testing with real databases. Prioritize integration tests over
 ## Repository Testing Requirements
 
 Every repository must test:
+
 - ✅ CRUD operations (create, read, update, delete)
 - ✅ Unique constraints & FK violations
 - ✅ Query filters & pagination
@@ -124,6 +129,7 @@ tests/
 ## Common Patterns
 
 **Repository test setup**:
+
 ```typescript
 describe('MyRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -138,18 +144,17 @@ describe('MyRepository Integration Tests', () => {
 ```
 
 **Route test with Supertest**:
+
 ```typescript
 describe('POST /api/members', () => {
   it('should create member with 201 status', async () => {
-    await request(app)
-      .post('/api/members')
-      .send({ firstName: 'John', lastName: 'Doe' })
-      .expect(201)
+    await request(app).post('/api/members').send({ firstName: 'John', lastName: 'Doe' }).expect(201)
   })
 })
 ```
 
 **Test data factories** (NOT fixtures):
+
 ```typescript
 function createMemberData(overrides = {}) {
   return {
@@ -173,16 +178,19 @@ pnpm test:watch          # Watch mode (TDD)
 ## Troubleshooting
 
 **Slow tests** (> 5s per file):
+
 - ✅ Reuse testcontainers (`.withReuse()`)
 - ✅ Run queries in parallel where possible
 - ✅ Only create data you need
 
 **Flaky tests**:
+
 - ✅ Reset database between tests (`beforeEach`)
 - ✅ Don't depend on execution order
 - ✅ Await all async operations
 
 **Low coverage**:
+
 - ✅ Run `pnpm test:coverage` to see uncovered lines
 - ✅ Test all branches (success + error paths)
 - ✅ Add tests for error cases
@@ -190,6 +198,7 @@ pnpm test:watch          # Watch mode (TDD)
 ## Migration Checklist
 
 When migrating a repository:
+
 - [ ] Extract repository file
 - [ ] Update imports to new structure
 - [ ] Add dependency injection constructor

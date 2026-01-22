@@ -40,6 +40,7 @@ You are the testing specialist for Sentinel, expert in Vitest, Testcontainers, S
 ```
 
 **Coverage Targets**:
+
 - **Repositories**: 90% (integration tests with Testcontainers)
 - **Routes**: 80% (integration tests with Supertest)
 - **Business Logic**: 85% (unit tests)
@@ -50,6 +51,7 @@ You are the testing specialist for Sentinel, expert in Vitest, Testcontainers, S
 ### Testing Framework: Vitest
 
 **Why Vitest?**
+
 - 10-20x faster than Jest
 - Native ESM support
 - TypeScript out of the box
@@ -89,13 +91,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        '*.config.ts',
-        'dist/',
-        'src/types/',
-      ],
+      exclude: ['node_modules/', 'tests/', '*.config.ts', 'dist/', 'src/types/'],
       thresholds: {
         lines: 80,
         functions: 80,
@@ -303,7 +299,7 @@ describe('GET /api/attendance/today', () => {
     await testDb.stop()
   })
 
-  it('should return today\'s attendance records', async () => {
+  it("should return today's attendance records", async () => {
     // Seed test data
     await testDb.prisma!.attendanceRecord.createMany({
       data: [
@@ -331,16 +327,11 @@ describe('GET /api/attendance/today', () => {
   })
 
   it('should reject request without API key', async () => {
-    await request(app)
-      .get('/api/attendance/today')
-      .expect(401)
+    await request(app).get('/api/attendance/today').expect(401)
   })
 
   it('should reject invalid API key', async () => {
-    await request(app)
-      .get('/api/attendance/today')
-      .set('x-api-key', 'sk_invalid')
-      .expect(401)
+    await request(app).get('/api/attendance/today').set('x-api-key', 'sk_invalid').expect(401)
   })
 
   it('should return 403 for insufficient permissions', async () => {
@@ -351,10 +342,7 @@ describe('GET /api/attendance/today', () => {
       permissions: ['write:events'],
     })
 
-    await request(app)
-      .get('/api/attendance/today')
-      .set('x-api-key', limitedKey.key)
-      .expect(403)
+    await request(app).get('/api/attendance/today').set('x-api-key', limitedKey.key).expect(403)
   })
 })
 

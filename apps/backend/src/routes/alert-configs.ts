@@ -37,10 +37,7 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch alert configurations',
+          message: error instanceof Error ? error.message : 'Failed to fetch alert configurations',
         },
       }
     }
@@ -76,10 +73,7 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch alert configuration',
+          message: error instanceof Error ? error.message : 'Failed to fetch alert configuration',
         },
       }
     }
@@ -118,10 +112,7 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update alert configuration',
+          message: error instanceof Error ? error.message : 'Failed to update alert configuration',
         },
       }
     }
@@ -170,9 +161,7 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to bulk update alert configurations',
+            error instanceof Error ? error.message : 'Failed to bulk update alert configurations',
         },
       }
     }

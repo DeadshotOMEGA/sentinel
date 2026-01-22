@@ -2,10 +2,7 @@ import 'dotenv/config'
 import { createServer } from 'http'
 import { createApp } from './app.js'
 import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger.js'
-import {
-  initializeWebSocketServer,
-  shutdownWebSocketServer,
-} from './websocket/server.js'
+import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
 
 /**
  * Validate required environment variables

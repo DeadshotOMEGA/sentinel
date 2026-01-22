@@ -93,9 +93,15 @@ const openApiDocument = generateOpenApi(
       { name: 'dds', description: 'Daily Duty Staff management' },
       { name: 'lockup', description: 'Building lockup operations' },
       { name: 'visit-types', description: 'Visit type enumeration and lookup' },
-      { name: 'member-statuses', description: 'Member status enumeration (Active, Inactive, etc.)' },
+      {
+        name: 'member-statuses',
+        description: 'Member status enumeration (Active, Inactive, etc.)',
+      },
       { name: 'member-types', description: 'Member type enumeration (NCM, Officer, etc.)' },
-      { name: 'badge-statuses', description: 'Badge status enumeration (Assigned, Disabled, etc.)' },
+      {
+        name: 'badge-statuses',
+        description: 'Badge status enumeration (Assigned, Disabled, etc.)',
+      },
       { name: 'settings', description: 'System configuration and settings management' },
       { name: 'admin-users', description: 'Administrative user and role management' },
       { name: 'lists', description: 'Consolidated list endpoints for dropdowns and references' },
@@ -104,7 +110,10 @@ const openApiDocument = generateOpenApi(
       { name: 'report-settings', description: 'Report configuration and parameters' },
       { name: 'alert-configs', description: 'Security alert rule configuration' },
       { name: 'reports', description: 'Report generation and data export' },
-      { name: 'dev-tools', description: 'Development utilities (database reset, simulation, scenarios)' },
+      {
+        name: 'dev-tools',
+        description: 'Development utilities (database reset, simulation, scenarios)',
+      },
       { name: 'dev', description: 'Development endpoints for testing and debugging' },
     ],
     components: {

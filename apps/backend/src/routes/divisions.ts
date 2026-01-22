@@ -1,10 +1,6 @@
 import { initServer } from '@ts-rest/express'
 import { divisionContract } from '@sentinel/contracts'
-import type {
-  CreateDivisionInput,
-  UpdateDivisionInput,
-  IdParam,
-} from '@sentinel/contracts'
+import type { CreateDivisionInput, UpdateDivisionInput, IdParam } from '@sentinel/contracts'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 

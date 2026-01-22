@@ -45,9 +45,7 @@ export const badgesRouter = s.router(badgeContract, {
       }
       if (query.search) {
         const searchLower = query.search.toLowerCase()
-        badges = badges.filter((b) =>
-          b.serialNumber.toLowerCase().includes(searchLower)
-        )
+        badges = badges.filter((b) => b.serialNumber.toLowerCase().includes(searchLower))
       }
 
       // Paginate
@@ -422,11 +420,7 @@ export const badgesRouter = s.router(badgeContract, {
         }
       }
 
-      const badge = await badgeRepo.assign(
-        params.id,
-        body.assignedToId,
-        body.assignmentType
-      )
+      const badge = await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
 
       let assignedTo = null
       if (badge.assignmentType === 'member' && badge.assignedToId) {

@@ -61,10 +61,7 @@ export class TrainingYearRepository {
    * If setting isCurrent to true, a database trigger will automatically
    * unset isCurrent on all other training years.
    */
-  async update(
-    id: string,
-    data: Prisma.TrainingYearUpdateInput
-  ): Promise<TrainingYear> {
+  async update(id: string, data: Prisma.TrainingYearUpdateInput): Promise<TrainingYear> {
     return await this.prisma.trainingYear.update({
       where: { id },
       data,

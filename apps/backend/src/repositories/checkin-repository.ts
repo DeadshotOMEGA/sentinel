@@ -7,9 +7,9 @@ import type {
   PaginationParams,
   MemberType,
   MemberStatus,
-} from "@sentinel/types";
-import type { PrismaClientInstance } from "@sentinel/database";
-import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
+} from '@sentinel/types'
+import type { PrismaClientInstance } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 // TODO: Implement Redis caching when infrastructure is ready
 // import { redis } from '../redis';
@@ -18,131 +18,126 @@ import { prisma as defaultPrisma, Prisma } from "@sentinel/database";
 // import { getKioskName } from '../../utils/kiosk-names';
 
 interface CheckinFilters {
-  memberId?: string;
-  badgeId?: string;
-  kioskId?: string;
+  memberId?: string
+  badgeId?: string
+  kioskId?: string
   dateRange?: {
-    start: Date;
-    end: Date;
-  };
+    start: Date
+    end: Date
+  }
 }
 
 interface MemberPresenceItem {
-  member: MemberWithDivision;
-  status: "present" | "absent";
-  lastCheckin?: Checkin;
+  member: MemberWithDivision
+  status: 'present' | 'absent'
+  lastCheckin?: Checkin
 }
 
 interface PresentMember {
-  id: string;
-  firstName: string;
-  lastName: string;
-  rank: string;
-  division: string;
-  divisionId: string | null;
-  memberType: "class_a" | "class_b" | "class_c" | "reg_force";
-  mess: string | null;
-  checkedInAt: string;
-  kioskId?: string;
+  id: string
+  firstName: string
+  lastName: string
+  rank: string
+  division: string
+  divisionId: string | null
+  memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
+  mess: string | null
+  checkedInAt: string
+  kioskId?: string
 }
 
 export class CheckinRepository {
-  private prisma: PrismaClientInstance;
+  private prisma: PrismaClientInstance
 
   /**
    * @param prismaClient - Optional Prisma client (injected in tests)
    */
   constructor(prismaClient?: PrismaClientInstance) {
-    this.prisma = prismaClient || defaultPrisma;
+    this.prisma = prismaClient || defaultPrisma
   }
 
   /**
    * Build Prisma where clause from filters
    */
   private buildWhereClause(filters?: CheckinFilters): Prisma.CheckinWhereInput {
-    const where: Prisma.CheckinWhereInput = {};
+    const where: Prisma.CheckinWhereInput = {}
 
     if (filters?.memberId) {
-      where.memberId = filters.memberId;
+      where.memberId = filters.memberId
     }
 
     if (filters?.badgeId) {
-      where.badgeId = filters.badgeId;
+      where.badgeId = filters.badgeId
     }
 
     if (filters?.kioskId) {
-      where.kioskId = filters.kioskId;
+      where.kioskId = filters.kioskId
     }
 
     if (filters?.dateRange) {
       where.timestamp = {
         gte: filters.dateRange.start,
         lte: filters.dateRange.end,
-      };
+      }
     }
 
-    return where;
+    return where
   }
 
   /**
    * Convert Prisma Checkin to application Checkin type
    */
   private toCheckin(prismaCheckin: {
-    id: string;
-    memberId: string | null;
-    badgeId: string | null;
-    direction: string;
-    timestamp: Date;
-    kioskId: string;
-    synced: boolean | null;
-    createdAt: Date | null;
-    method?: string | null;
-    createdByAdmin?: string | null;
+    id: string
+    memberId: string | null
+    badgeId: string | null
+    direction: string
+    timestamp: Date
+    kioskId: string
+    synced: boolean | null
+    createdAt: Date | null
+    method?: string | null
+    createdByAdmin?: string | null
   }): Checkin {
     if (!prismaCheckin.memberId) {
-      throw new Error(`Checkin ${prismaCheckin.id} missing required memberId`);
+      throw new Error(`Checkin ${prismaCheckin.id} missing required memberId`)
     }
     if (!prismaCheckin.badgeId) {
       throw new Error(
-        `Checkin ${prismaCheckin.id} for member ${prismaCheckin.memberId} missing badgeId - member may need badge assignment`,
-      );
+        `Checkin ${prismaCheckin.id} for member ${prismaCheckin.memberId} missing badgeId - member may need badge assignment`
+      )
     }
 
-    const method =
-      prismaCheckin.method === "admin_manual" ? "admin_manual" : "badge";
-    const synced = prismaCheckin.synced === false ? false : true;
-    const createdAt = prismaCheckin.createdAt
-      ? prismaCheckin.createdAt
-      : prismaCheckin.timestamp;
+    const method = prismaCheckin.method === 'admin_manual' ? 'admin_manual' : 'badge'
+    const synced = prismaCheckin.synced === false ? false : true
+    const createdAt = prismaCheckin.createdAt ? prismaCheckin.createdAt : prismaCheckin.timestamp
 
     return {
       id: prismaCheckin.id,
       memberId: prismaCheckin.memberId,
       badgeId: prismaCheckin.badgeId,
-      direction: prismaCheckin.direction as "in" | "out",
+      direction: prismaCheckin.direction as 'in' | 'out',
       timestamp: prismaCheckin.timestamp,
       kioskId: prismaCheckin.kioskId,
       synced,
       method,
-      createdByAdmin: prismaCheckin.createdByAdmin
-        ? prismaCheckin.createdByAdmin
-        : undefined,
+      createdByAdmin: prismaCheckin.createdByAdmin ? prismaCheckin.createdByAdmin : undefined,
       createdAt,
-    };
+    }
   }
 
   /**
    * Find all checkins with optional filters
    */
   async findAll(filters?: CheckinFilters): Promise<Checkin[]> {
-    const where = this.buildWhereClause(filters);
+    const where = this.buildWhereClause(filters)
 
     const checkins = await this.prisma.checkin.findMany({
       where,
-      orderBy: { timestamp: "desc" },
-    });
+      orderBy: { timestamp: 'desc' },
+    })
 
-    return checkins.map((c) => this.toCheckin(c));
+    return checkins.map((c) => this.toCheckin(c))
   }
 
   /**
@@ -150,34 +145,31 @@ export class CheckinRepository {
    */
   async findPaginated(
     params: PaginationParams,
-    filters?: CheckinFilters,
+    filters?: CheckinFilters
   ): Promise<{ checkins: Checkin[]; total: number }> {
     if (!params.page || params.page < 1) {
-      throw new Error("Invalid page number: must be >= 1");
+      throw new Error('Invalid page number: must be >= 1')
     }
     if (!params.limit || params.limit < 1 || params.limit > 100) {
-      throw new Error("Invalid limit: must be between 1 and 100");
+      throw new Error('Invalid limit: must be between 1 and 100')
     }
 
-    const page = params.page;
-    const limit = params.limit;
-    const sortOrder = params.sortOrder ?? "desc";
+    const page = params.page
+    const limit = params.limit
+    const sortOrder = params.sortOrder ?? 'desc'
 
     // Validate sortBy column
-    const allowedSortColumns: Record<
-      string,
-      keyof Prisma.CheckinOrderByWithRelationInput
-    > = {
-      timestamp: "timestamp",
-      direction: "direction",
-    };
+    const allowedSortColumns: Record<string, keyof Prisma.CheckinOrderByWithRelationInput> = {
+      timestamp: 'timestamp',
+      direction: 'direction',
+    }
     const sortByColumn =
       params.sortBy && allowedSortColumns[params.sortBy]
         ? allowedSortColumns[params.sortBy]
-        : "timestamp";
+        : 'timestamp'
 
-    const skip = (page - 1) * limit;
-    const where = this.buildWhereClause(filters);
+    const skip = (page - 1) * limit
+    const where = this.buildWhereClause(filters)
 
     const [total, checkins] = await Promise.all([
       this.prisma.checkin.count({ where }),
@@ -187,12 +179,12 @@ export class CheckinRepository {
         skip,
         take: limit,
       }),
-    ]);
+    ])
 
     return {
       checkins: checkins.map((c) => this.toCheckin(c)),
       total,
-    };
+    }
   }
 
   /**
@@ -201,13 +193,13 @@ export class CheckinRepository {
   async findById(id: string): Promise<Checkin | null> {
     const checkin = await this.prisma.checkin.findUnique({
       where: { id },
-    });
+    })
 
     if (!checkin) {
-      return null;
+      return null
     }
 
-    return this.toCheckin(checkin);
+    return this.toCheckin(checkin)
   }
 
   /**
@@ -216,70 +208,68 @@ export class CheckinRepository {
   async findLatestByMember(memberId: string): Promise<Checkin | null> {
     const checkin = await this.prisma.checkin.findFirst({
       where: { memberId },
-      orderBy: { timestamp: "desc" },
-    });
+      orderBy: { timestamp: 'desc' },
+    })
 
     if (!checkin) {
-      return null;
+      return null
     }
 
-    return this.toCheckin(checkin);
+    return this.toCheckin(checkin)
   }
 
   /**
    * Find latest checkins for multiple members (batch operation to prevent N+1 queries)
    * Returns a map of memberId -> latest checkin
    */
-  async findLatestByMembers(
-    memberIds: string[],
-  ): Promise<Map<string, Checkin>> {
+  async findLatestByMembers(memberIds: string[]): Promise<Map<string, Checkin>> {
     if (memberIds.length === 0) {
-      return new Map();
+      return new Map()
     }
 
     // Use raw query for DISTINCT ON (not supported in Prisma)
     const rows = await this.prisma.$queryRaw<
       Array<{
-        id: string;
-        member_id: string;
-        badge_id: string;
-        direction: string;
-        timestamp: Date;
-        kiosk_id: string;
-        synced: boolean | null;
-        created_at: Date | null;
-        method: string | null;
-        created_by_admin: string | null;
+        id: string
+        member_id: string
+        badge_id: string
+        direction: string
+        timestamp: Date
+        kiosk_id: string
+        synced: boolean | null
+        created_at: Date | null
+        method: string | null
+        created_by_admin: string | null
       }>
     >`
       SELECT DISTINCT ON (member_id) *
       FROM checkins
       WHERE member_id = ANY(${memberIds}::uuid[])
       ORDER BY member_id, timestamp DESC
-    `;
+    `
 
-    const resultMap = new Map<string, Checkin>();
+    const resultMap = new Map<string, Checkin>()
 
     rows.forEach((row) => {
-      const method = row.method === "admin_manual" ? "admin_manual" : "badge";
-      const synced = row.synced === false ? false : true;
-      const createdAt = row.created_at ? row.created_at : row.timestamp;
+      const method = row.method === 'admin_manual' ? 'admin_manual' : 'badge'
+      const synced = row.synced === false ? false : true
+      const createdAt = row.created_at ? row.created_at : row.timestamp
 
       resultMap.set(row.member_id, {
         id: row.id,
         memberId: row.member_id,
         badgeId: row.badge_id,
-        direction: row.direction as "in" | "out",
+        direction: row.direction as 'in' | 'out',
         timestamp: row.timestamp,
         kioskId: row.kiosk_id,
         synced,
         method,
         createdByAdmin: row.created_by_admin ? row.created_by_admin : undefined,
         createdAt,
-      });
-    });
+      })
+    })
 
-    return resultMap;
+    return resultMap
   }
 
   /**
@@ -287,15 +277,15 @@ export class CheckinRepository {
    */
   async create(data: CreateCheckinInput): Promise<Checkin> {
     if (!data.kioskId) {
-      throw new Error("kioskId is required for checkin creation");
+      throw new Error('kioskId is required for checkin creation')
     }
 
     if (data.synced === undefined) {
-      data.synced = true;
+      data.synced = true
     }
 
     // HIGH-15 FIX: Invalidate cache BEFORE insert to prevent race condition
-    await this.invalidatePresenceCache();
+    await this.invalidatePresenceCache()
 
     const checkin = await this.prisma.checkin.create({
       data: {
@@ -308,46 +298,44 @@ export class CheckinRepository {
         // Note: flaggedForReview and flagReason are not in the current schema
         // If they need to be added, update the Prisma schema first
       },
-    });
+    })
 
-    return this.toCheckin(checkin);
+    return this.toCheckin(checkin)
   }
 
   /**
    * Bulk create checkins (for offline sync)
    */
-  async bulkCreate(
-    checkins: CreateCheckinInput[],
-  ): Promise<{
-    success: number;
-    failed: number;
-    errors: Array<{ index: number; error: string }>;
+  async bulkCreate(checkins: CreateCheckinInput[]): Promise<{
+    success: number
+    failed: number
+    errors: Array<{ index: number; error: string }>
   }> {
     if (checkins.length === 0) {
-      return { success: 0, failed: 0, errors: [] };
+      return { success: 0, failed: 0, errors: [] }
     }
 
     if (checkins.length > 100) {
-      throw new Error("Cannot create more than 100 checkins at once");
+      throw new Error('Cannot create more than 100 checkins at once')
     }
 
-    await this.invalidatePresenceCache();
+    await this.invalidatePresenceCache()
 
-    const errors: Array<{ index: number; error: string }> = [];
-    let successCount = 0;
+    const errors: Array<{ index: number; error: string }> = []
+    let successCount = 0
 
     // Process each checkin individually to handle partial failures
     for (let i = 0; i < checkins.length; i++) {
       try {
-        const checkin = checkins[i];
-        if (!checkin) throw new Error("Checkin data missing");
-        await this.create(checkin);
-        successCount++;
+        const checkin = checkins[i]
+        if (!checkin) throw new Error('Checkin data missing')
+        await this.create(checkin)
+        successCount++
       } catch (error) {
         errors.push({
           index: i,
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
       }
     }
 
@@ -355,22 +343,19 @@ export class CheckinRepository {
       success: successCount,
       failed: errors.length,
       errors,
-    };
+    }
   }
 
   /**
    * Update checkin (e.g., flag for review, change direction)
    */
-  async update(
-    id: string,
-    data: Partial<CreateCheckinInput>,
-  ): Promise<Checkin> {
-    const existing = await this.findById(id);
+  async update(id: string, data: Partial<CreateCheckinInput>): Promise<Checkin> {
+    const existing = await this.findById(id)
     if (!existing) {
-      throw new Error(`Checkin with ID '${id}' not found`);
+      throw new Error(`Checkin with ID '${id}' not found`)
     }
 
-    await this.invalidatePresenceCache();
+    await this.invalidatePresenceCache()
 
     const updated = await this.prisma.checkin.update({
       where: { id },
@@ -379,25 +364,25 @@ export class CheckinRepository {
         // Note: flaggedForReview and flagReason are not in the current schema
         // If they need to be added, update the Prisma schema first
       },
-    });
+    })
 
-    return this.toCheckin(updated);
+    return this.toCheckin(updated)
   }
 
   /**
    * Delete checkin
    */
   async delete(id: string): Promise<void> {
-    const existing = await this.findById(id);
+    const existing = await this.findById(id)
     if (!existing) {
-      throw new Error(`Checkin with ID '${id}' not found`);
+      throw new Error(`Checkin with ID '${id}' not found`)
     }
 
-    await this.invalidatePresenceCache();
+    await this.invalidatePresenceCache()
 
     await this.prisma.checkin.delete({
       where: { id },
-    });
+    })
   }
 
   /**
@@ -413,10 +398,10 @@ export class CheckinRepository {
           },
         },
       },
-    });
+    })
 
     if (!checkin || !checkin.member || !checkin.member.division) {
-      return null;
+      return null
     }
 
     return {
@@ -429,7 +414,7 @@ export class CheckinRepository {
         lastName: checkin.member.lastName,
         initials: checkin.member.initials ?? undefined,
         rank: checkin.member.rank,
-        divisionId: checkin.member.divisionId ?? "",
+        divisionId: checkin.member.divisionId ?? '',
         mess: checkin.member.mess ?? undefined,
         moc: checkin.member.moc ?? undefined,
         memberType: checkin.member.memberType as unknown as MemberType,
@@ -450,7 +435,7 @@ export class CheckinRepository {
           updatedAt: checkin.member.division.updatedAt ?? new Date(),
         },
       },
-    };
+    }
   }
 
   /**
@@ -458,34 +443,31 @@ export class CheckinRepository {
    */
   async findPaginatedWithMembers(
     params: PaginationParams,
-    filters?: CheckinFilters,
+    filters?: CheckinFilters
   ): Promise<{ checkins: CheckinWithMember[]; total: number }> {
     if (!params.page || params.page < 1) {
-      throw new Error("Invalid page number: must be >= 1");
+      throw new Error('Invalid page number: must be >= 1')
     }
     if (!params.limit || params.limit < 1 || params.limit > 100) {
-      throw new Error("Invalid limit: must be between 1 and 100");
+      throw new Error('Invalid limit: must be between 1 and 100')
     }
 
-    const page = params.page;
-    const limit = params.limit;
-    const sortOrder = params.sortOrder ?? "desc";
+    const page = params.page
+    const limit = params.limit
+    const sortOrder = params.sortOrder ?? 'desc'
 
     // Validate sortBy column
-    const allowedSortColumns: Record<
-      string,
-      keyof Prisma.CheckinOrderByWithRelationInput
-    > = {
-      timestamp: "timestamp",
-      direction: "direction",
-    };
+    const allowedSortColumns: Record<string, keyof Prisma.CheckinOrderByWithRelationInput> = {
+      timestamp: 'timestamp',
+      direction: 'direction',
+    }
     const sortByColumn =
       params.sortBy && allowedSortColumns[params.sortBy]
         ? allowedSortColumns[params.sortBy]
-        : "timestamp";
+        : 'timestamp'
 
-    const skip = (page - 1) * limit;
-    const where = this.buildWhereClause(filters);
+    const skip = (page - 1) * limit
+    const where = this.buildWhereClause(filters)
 
     const [total, checkins] = await Promise.all([
       this.prisma.checkin.count({ where }),
@@ -502,12 +484,12 @@ export class CheckinRepository {
           },
         },
       }),
-    ]);
+    ])
 
     return {
       checkins: checkins.map((c) => {
         if (!c.member || !c.member.division) {
-          throw new Error(`Checkin ${c.id} missing member or division data`);
+          throw new Error(`Checkin ${c.id} missing member or division data`)
         }
 
         return {
@@ -518,7 +500,7 @@ export class CheckinRepository {
             rank: c.member.rank,
             firstName: c.member.firstName,
             lastName: c.member.lastName,
-            divisionId: c.member.divisionId ?? "",
+            divisionId: c.member.divisionId ?? '',
             email: c.member.email || undefined,
             mobilePhone: c.member.mobilePhone || undefined,
             memberType: c.member.memberType as MemberType,
@@ -544,10 +526,10 @@ export class CheckinRepository {
             memberTypeId: c.member.memberTypeId || undefined,
             memberStatusId: c.member.memberStatusId || undefined,
           },
-        };
+        }
       }),
       total,
-    };
+    }
   }
 
   /**
@@ -564,12 +546,12 @@ export class CheckinRepository {
     // Calculate stats using raw query for performance (preserves complex CTEs)
     const rows = await this.prisma.$queryRaw<
       Array<{
-        total_members: bigint;
-        present: bigint;
-        absent: bigint;
-        on_leave: bigint;
-        late_arrivals: bigint;
-        visitors: bigint;
+        total_members: bigint
+        present: bigint
+        absent: bigint
+        on_leave: bigint
+        late_arrivals: bigint
+        visitors: bigint
       }>
     >`
       WITH latest_checkins AS (
@@ -610,16 +592,16 @@ export class CheckinRepository {
       FROM member_counts mc
       CROSS JOIN late_arrivals la
       CROSS JOIN active_visitors av
-    `;
+    `
 
     if (!rows || rows.length === 0) {
-      throw new Error("Failed to get presence stats");
+      throw new Error('Failed to get presence stats')
     }
 
-    const row = rows[0]!;
-    const totalMembers = Number(row.total_members);
-    const present = Number(row.present);
-    const absent = Number(row.absent);
+    const row = rows[0]!
+    const totalMembers = Number(row.total_members)
+    const present = Number(row.present)
+    const absent = Number(row.absent)
 
     const stats: PresenceStats = {
       total: totalMembers,
@@ -629,13 +611,13 @@ export class CheckinRepository {
       onLeave: Number(row.on_leave) || 0,
       percentagePresent: totalMembers > 0 ? (present / totalMembers) * 100 : 0,
       byDivision: [],
-    };
+    }
 
     // TODO: Implement Redis caching when infrastructure is ready
     // Cache the result
     // await redis.setex(this.PRESENCE_CACHE_KEY, this.PRESENCE_CACHE_TTL, JSON.stringify(stats));
 
-    return stats;
+    return stats
   }
 
   /**
@@ -644,17 +626,17 @@ export class CheckinRepository {
   async getPresentMembers(): Promise<PresentMember[]> {
     const rows = await this.prisma.$queryRaw<
       Array<{
-        id: string;
-        first_name: string;
-        last_name: string;
-        rank: string;
-        mess: string | null;
-        division_id: string;
-        division_name: string;
-        member_type: string;
-        checked_in_at: Date;
-        kiosk_id: string | null;
-        tags: string | null;
+        id: string
+        first_name: string
+        last_name: string
+        rank: string
+        mess: string | null
+        division_id: string
+        division_name: string
+        member_type: string
+        checked_in_at: Date
+        kiosk_id: string | null
+        tags: string | null
       }>
     >`
       WITH latest_checkins AS (
@@ -698,7 +680,7 @@ export class CheckinRepository {
       LEFT JOIN member_tags_agg mta ON m.id = mta.member_id
       WHERE m.status = 'active' AND lc.direction = 'in'
       ORDER BY lc.timestamp DESC
-    `;
+    `
 
     return rows.map((row) => ({
       id: row.id,
@@ -707,16 +689,12 @@ export class CheckinRepository {
       rank: row.rank,
       division: row.division_name,
       divisionId: row.division_id,
-      memberType: row.member_type as
-        | "class_a"
-        | "class_b"
-        | "class_c"
-        | "reg_force",
+      memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
       mess: row.mess,
       checkedInAt: row.checked_in_at.toISOString(),
       kioskId: row.kiosk_id ?? undefined,
       tags: row.tags ? JSON.parse(row.tags) : [],
-    }));
+    }))
   }
 
   /**
@@ -725,40 +703,40 @@ export class CheckinRepository {
   async getMemberPresenceList(): Promise<MemberPresenceItem[]> {
     const rows = await this.prisma.$queryRaw<
       Array<{
-        id: string;
-        service_number: string;
-        employee_number: string | null;
-        first_name: string;
-        last_name: string;
-        initials: string | null;
-        rank: string;
-        division_id: string;
-        mess: string | null;
-        moc: string | null;
-        member_type: string;
-        class_details: string | null;
-        status: string;
-        email: string | null;
-        home_phone: string | null;
-        mobile_phone: string | null;
-        badge_id: string | null;
-        member_created_at: Date;
-        member_updated_at: Date;
-        division_name: string;
-        division_code: string;
-        division_description: string | null;
-        division_created_at: Date;
-        division_updated_at: Date;
-        checkin_id: string | null;
-        checkin_member_id: string | null;
-        checkin_badge_id: string | null;
-        direction: string | null;
-        timestamp: Date | null;
-        kiosk_id: string | null;
-        synced: boolean | null;
-        checkin_created_at: Date | null;
-        checkin_method: string | null;
-        checkin_created_by_admin: string | null;
+        id: string
+        service_number: string
+        employee_number: string | null
+        first_name: string
+        last_name: string
+        initials: string | null
+        rank: string
+        division_id: string
+        mess: string | null
+        moc: string | null
+        member_type: string
+        class_details: string | null
+        status: string
+        email: string | null
+        home_phone: string | null
+        mobile_phone: string | null
+        badge_id: string | null
+        member_created_at: Date
+        member_updated_at: Date
+        division_name: string
+        division_code: string
+        division_description: string | null
+        division_created_at: Date
+        division_updated_at: Date
+        checkin_id: string | null
+        checkin_member_id: string | null
+        checkin_badge_id: string | null
+        direction: string | null
+        timestamp: Date | null
+        kiosk_id: string | null
+        synced: boolean | null
+        checkin_created_at: Date | null
+        checkin_method: string | null
+        checkin_created_by_admin: string | null
       }>
     >`
       SELECT
@@ -782,7 +760,7 @@ export class CheckinRepository {
       ) c ON true
       WHERE m.status = 'active'
       ORDER BY m.last_name, m.first_name
-    `;
+    `
 
     return rows.map((row) => {
       const member: MemberWithDivision = {
@@ -813,9 +791,9 @@ export class CheckinRepository {
           createdAt: row.division_created_at,
           updatedAt: row.division_updated_at,
         },
-      };
+      }
 
-      let lastCheckin: Checkin | undefined;
+      let lastCheckin: Checkin | undefined
       if (
         row.checkin_id &&
         row.checkin_member_id &&
@@ -823,38 +801,32 @@ export class CheckinRepository {
         row.timestamp &&
         row.kiosk_id !== null
       ) {
-        const checkinMethod =
-          row.checkin_method === "admin_manual" ? "admin_manual" : "badge";
-        const checkinSynced = row.synced === false ? false : true;
-        const checkinCreatedAt = row.checkin_created_at
-          ? row.checkin_created_at
-          : row.timestamp;
+        const checkinMethod = row.checkin_method === 'admin_manual' ? 'admin_manual' : 'badge'
+        const checkinSynced = row.synced === false ? false : true
+        const checkinCreatedAt = row.checkin_created_at ? row.checkin_created_at : row.timestamp
 
         lastCheckin = {
           id: row.checkin_id,
           memberId: row.checkin_member_id,
           badgeId: row.checkin_badge_id,
-          direction: row.direction as "in" | "out",
+          direction: row.direction as 'in' | 'out',
           timestamp: row.timestamp,
           kioskId: row.kiosk_id,
           synced: checkinSynced,
           method: checkinMethod,
-          createdByAdmin: row.checkin_created_by_admin
-            ? row.checkin_created_by_admin
-            : undefined,
+          createdByAdmin: row.checkin_created_by_admin ? row.checkin_created_by_admin : undefined,
           createdAt: checkinCreatedAt,
-        };
+        }
       }
 
-      const status: "present" | "absent" =
-        row.direction === "in" ? "present" : "absent";
+      const status: 'present' | 'absent' = row.direction === 'in' ? 'present' : 'absent'
 
       return {
         member,
         status,
         lastCheckin,
-      };
-    });
+      }
+    })
   }
 
   /**
@@ -872,20 +844,20 @@ export class CheckinRepository {
     // Use raw query for UNION (not supported in Prisma)
     const rows = await this.prisma.$queryRaw<
       Array<{
-        type: string;
-        id: string;
-        timestamp: Date;
-        direction: string;
-        name: string;
-        rank: string | null;
-        division: string | null;
-        kiosk_id: string | null;
-        organization: string | null;
-        visit_type: string | null;
-        visit_reason: string | null;
-        host_name: string | null;
-        event_id: string | null;
-        event_name: string | null;
+        type: string
+        id: string
+        timestamp: Date
+        direction: string
+        name: string
+        rank: string | null
+        division: string | null
+        kiosk_id: string | null
+        organization: string | null
+        visit_type: string | null
+        visit_reason: string | null
+        host_name: string | null
+        event_id: string | null
+        event_name: string | null
       }>
     >`
       (
@@ -936,13 +908,13 @@ export class CheckinRepository {
       )
       ORDER BY timestamp DESC
       LIMIT ${limit}
-    `;
+    `
 
     return rows.map((row) => ({
-      type: row.type as "checkin" | "visitor",
+      type: row.type as 'checkin' | 'visitor',
       id: row.id,
       timestamp: row.timestamp.toISOString(),
-      direction: row.direction as "in" | "out",
+      direction: row.direction as 'in' | 'out',
       name: row.name,
       rank: row.rank ?? undefined,
       division: row.division ?? undefined,
@@ -955,30 +927,30 @@ export class CheckinRepository {
       hostName: row.host_name ?? undefined,
       eventId: row.event_id ?? undefined,
       eventName: row.event_name ?? undefined,
-    }));
+    }))
   }
 }
 
 interface RecentActivityItem {
-  type: "checkin" | "visitor";
-  id: string;
-  timestamp: string;
-  direction: "in" | "out";
-  name: string;
+  type: 'checkin' | 'visitor'
+  id: string
+  timestamp: string
+  direction: 'in' | 'out'
+  name: string
   // Member fields
-  rank?: string;
-  division?: string;
+  rank?: string
+  division?: string
   // Location
-  kioskId?: string;
-  kioskName?: string;
+  kioskId?: string
+  kioskName?: string
   // Visitor fields
-  organization?: string;
-  visitType?: string;
-  visitReason?: string;
-  hostName?: string;
+  organization?: string
+  visitType?: string
+  visitReason?: string
+  hostName?: string
   // Event context
-  eventId?: string;
-  eventName?: string;
+  eventId?: string
+  eventName?: string
 }
 
-export const checkinRepository = new CheckinRepository();
+export const checkinRepository = new CheckinRepository()

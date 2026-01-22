@@ -5,7 +5,6 @@ import { authLogger } from '../lib/logger.js'
 
 const router = Router()
 
-
 /**
  * RFID Login Request Schema
  */

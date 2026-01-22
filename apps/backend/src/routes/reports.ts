@@ -54,11 +54,7 @@ export const reportsRouter = s.router(reportContract, {
         division: { id: string; name: string }
       }> = []
 
-      if (
-        !config.memberType ||
-        config.memberType === 'all' ||
-        config.memberType === 'ft_staff'
-      ) {
+      if (!config.memberType || config.memberType === 'all' || config.memberType === 'ft_staff') {
         // Present FT staff
         const presentFT = await prisma.member.findMany({
           where: {
@@ -150,11 +146,7 @@ export const reportsRouter = s.router(reportContract, {
         division: { id: string; name: string }
       }> = []
 
-      if (
-        !config.memberType ||
-        config.memberType === 'all' ||
-        config.memberType === 'reserve'
-      ) {
+      if (!config.memberType || config.memberType === 'all' || config.memberType === 'reserve') {
         const presentRes = await prisma.member.findMany({
           where: {
             ...memberWhere,
@@ -193,10 +185,7 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Calculate summary by division
-      const divisionSummary: Record<
-        string,
-        { name: string; ftStaff: number; reserve: number }
-      > = {}
+      const divisionSummary: Record<string, { name: string; ftStaff: number; reserve: number }> = {}
 
       for (const member of presentFTStaff) {
         const divisionId = member.division.id
@@ -254,9 +243,7 @@ export const reportsRouter = s.router(reportContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate daily check-in report',
+            error instanceof Error ? error.message : 'Failed to generate daily check-in report',
         },
       }
     }
@@ -273,7 +260,10 @@ export const reportsRouter = s.router(reportContract, {
       let periodStart: string = ''
       let periodEnd: string = ''
 
-      if (config.period === 'custom' || (!config.period && config.periodStart && config.periodEnd)) {
+      if (
+        config.period === 'custom' ||
+        (!config.period && config.periodStart && config.periodEnd)
+      ) {
         periodStart = config.periodStart ?? ''
         periodEnd = config.periodEnd ?? ''
       } else {
@@ -560,9 +550,7 @@ export const reportsRouter = s.router(reportContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate BMQ attendance report',
+            error instanceof Error ? error.message : 'Failed to generate BMQ attendance report',
         },
       }
     }
@@ -644,10 +632,7 @@ export const reportsRouter = s.router(reportContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate personnel roster',
+          message: error instanceof Error ? error.message : 'Failed to generate personnel roster',
         },
       }
     }
@@ -701,16 +686,17 @@ export const reportsRouter = s.router(reportContract, {
 
       const records = visitors.map((visitor) => ({
         id: visitor.id,
-        fullName: visitor.firstName && visitor.lastName ? `${visitor.firstName} ${visitor.lastName}` : visitor.id,
+        fullName:
+          visitor.firstName && visitor.lastName
+            ? `${visitor.firstName} ${visitor.lastName}`
+            : visitor.id,
         organization: visitor.organization || null,
         purpose: visitor.purpose || null,
         visitType: visitor.visitType,
         checkInTime: visitor.checkInTime.toISOString(),
         checkOutTime: visitor.checkOutTime?.toISOString() || null,
         duration: visitor.checkOutTime
-          ? Math.round(
-              (visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000
-            )
+          ? Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000)
           : null,
         hostMember: visitor.hostMember
           ? {
@@ -735,8 +721,7 @@ export const reportsRouter = s.router(reportContract, {
         byVisitType[visitor.visitType] = (byVisitType[visitor.visitType] || 0) + 1
 
         if (visitor.organization) {
-          byOrganization[visitor.organization] =
-            (byOrganization[visitor.organization] || 0) + 1
+          byOrganization[visitor.organization] = (byOrganization[visitor.organization] || 0) + 1
         }
       }
 
@@ -764,10 +749,7 @@ export const reportsRouter = s.router(reportContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate visitor summary',
+          message: error instanceof Error ? error.message : 'Failed to generate visitor summary',
         },
       }
     }

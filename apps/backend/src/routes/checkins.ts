@@ -37,10 +37,7 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
-      const result = await checkinRepo.findPaginatedWithMembers(
-        { page, limit },
-        filters
-      )
+      const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 
@@ -58,14 +55,16 @@ export const checkinsRouter = s.router(checkinContract, {
             flaggedForReview: null,
             flagReason: null,
             method: checkin.method ?? null,
-            member: checkin.member ? {
-              id: checkin.member.id,
-              serviceNumber: checkin.member.serviceNumber,
-              rank: checkin.member.rank,
-              firstName: checkin.member.firstName,
-              lastName: checkin.member.lastName,
-              divisionId: checkin.member.divisionId,
-            } : null,
+            member: checkin.member
+              ? {
+                  id: checkin.member.id,
+                  serviceNumber: checkin.member.serviceNumber,
+                  rank: checkin.member.rank,
+                  firstName: checkin.member.firstName,
+                  lastName: checkin.member.lastName,
+                  divisionId: checkin.member.divisionId,
+                }
+              : null,
           })),
           total: result.total,
           page,
@@ -174,14 +173,16 @@ export const checkinsRouter = s.router(checkinContract, {
           flaggedForReview: null,
           flagReason: null,
           method: checkin.method ?? null,
-          member: checkin.member ? {
-            id: checkin.member.id,
-            serviceNumber: checkin.member.serviceNumber,
-            rank: checkin.member.rank,
-            firstName: checkin.member.firstName,
-            lastName: checkin.member.lastName,
-            divisionId: checkin.member.divisionId,
-          } : null,
+          member: checkin.member
+            ? {
+                id: checkin.member.id,
+                serviceNumber: checkin.member.serviceNumber,
+                rank: checkin.member.rank,
+                firstName: checkin.member.firstName,
+                lastName: checkin.member.lastName,
+                divisionId: checkin.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -229,14 +230,16 @@ export const checkinsRouter = s.router(checkinContract, {
           flaggedForReview: null,
           flagReason: null,
           method: checkinWithMember.method ?? null,
-          member: checkinWithMember.member ? {
-            id: checkinWithMember.member.id,
-            serviceNumber: checkinWithMember.member.serviceNumber,
-            rank: checkinWithMember.member.rank,
-            firstName: checkinWithMember.member.firstName,
-            lastName: checkinWithMember.member.lastName,
-            divisionId: checkinWithMember.member.divisionId,
-          } : null,
+          member: checkinWithMember.member
+            ? {
+                id: checkinWithMember.member.id,
+                serviceNumber: checkinWithMember.member.serviceNumber,
+                rank: checkinWithMember.member.rank,
+                firstName: checkinWithMember.member.firstName,
+                lastName: checkinWithMember.member.lastName,
+                divisionId: checkinWithMember.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -338,14 +341,16 @@ export const checkinsRouter = s.router(checkinContract, {
           flaggedForReview: null,
           flagReason: null,
           method: checkinWithMember.method ?? null,
-          member: checkinWithMember.member ? {
-            id: checkinWithMember.member.id,
-            serviceNumber: checkinWithMember.member.serviceNumber,
-            rank: checkinWithMember.member.rank,
-            firstName: checkinWithMember.member.firstName,
-            lastName: checkinWithMember.member.lastName,
-            divisionId: checkinWithMember.member.divisionId,
-          } : null,
+          member: checkinWithMember.member
+            ? {
+                id: checkinWithMember.member.id,
+                serviceNumber: checkinWithMember.member.serviceNumber,
+                rank: checkinWithMember.member.rank,
+                firstName: checkinWithMember.member.firstName,
+                lastName: checkinWithMember.member.lastName,
+                divisionId: checkinWithMember.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -424,10 +429,7 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
-      const result = await checkinRepo.findPaginatedWithMembers(
-        { page, limit },
-        filters
-      )
+      const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 
@@ -445,14 +447,16 @@ export const checkinsRouter = s.router(checkinContract, {
             flaggedForReview: null,
             flagReason: null,
             method: checkin.method ?? null,
-            member: checkin.member ? {
-              id: checkin.member.id,
-              serviceNumber: checkin.member.serviceNumber,
-              rank: checkin.member.rank,
-              firstName: checkin.member.firstName,
-              lastName: checkin.member.lastName,
-              divisionId: checkin.member.divisionId,
-            } : null,
+            member: checkin.member
+              ? {
+                  id: checkin.member.id,
+                  serviceNumber: checkin.member.serviceNumber,
+                  rank: checkin.member.rank,
+                  firstName: checkin.member.firstName,
+                  lastName: checkin.member.lastName,
+                  divisionId: checkin.member.divisionId,
+                }
+              : null,
           })),
           total: result.total,
           page,

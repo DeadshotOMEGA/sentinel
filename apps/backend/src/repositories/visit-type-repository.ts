@@ -1,10 +1,6 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import type {
-  VisitTypeEnum,
-  CreateVisitTypeInput,
-  UpdateVisitTypeInput,
-} from '@sentinel/types'
+import type { VisitTypeEnum, CreateVisitTypeInput, UpdateVisitTypeInput } from '@sentinel/types'
 
 interface VisitTypeRow {
   id: string

@@ -46,8 +46,7 @@ export const reportSettingsRouter = s.router(reportSettingContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to fetch settings',
+          message: error instanceof Error ? error.message : 'Failed to fetch settings',
         },
       }
     }
@@ -164,10 +163,7 @@ export const reportSettingsRouter = s.router(reportSettingContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to bulk update settings',
+          message: error instanceof Error ? error.message : 'Failed to bulk update settings',
         },
       }
     }

@@ -1,11 +1,7 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type { Division as PrismaDivision } from '@sentinel/database'
-import type {
-  Division,
-  CreateDivisionInput,
-  UpdateDivisionInput,
-} from '@sentinel/types'
+import type { Division, CreateDivisionInput, UpdateDivisionInput } from '@sentinel/types'
 
 /**
  * Convert Prisma Division (null) to shared Division (undefined)

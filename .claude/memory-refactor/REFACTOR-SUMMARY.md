@@ -31,11 +31,11 @@
 
 **From**: `sentinel/.claude/rules/`
 
-| File | Reason | Next Action |
-|------|--------|-------------|
-| `10_testing-standards.md` | Only applies to backend tests (Vitest, Testcontainers) | Move to `apps/backend/.claude/rules/testing.md` |
-| `20_database-patterns.md` | Only applies to backend database layer (Prisma, Kysely) | Move to `apps/backend/.claude/rules/database.md` |
-| `30_auth-security.md` | Only applies to backend auth layer (better-auth, API keys) | Move to `apps/backend/.claude/rules/auth-security.md` |
+| File                      | Reason                                                     | Next Action                                           |
+| ------------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| `10_testing-standards.md` | Only applies to backend tests (Vitest, Testcontainers)     | Move to `apps/backend/.claude/rules/testing.md`       |
+| `20_database-patterns.md` | Only applies to backend database layer (Prisma, Kysely)    | Move to `apps/backend/.claude/rules/database.md`      |
+| `30_auth-security.md`     | Only applies to backend auth layer (better-auth, API keys) | Move to `apps/backend/.claude/rules/auth-security.md` |
 
 **Total**: 3 files
 
@@ -45,13 +45,13 @@
 
 **From**: `~/.claude/rules/` and `sentinel/.claude/rules/`
 
-| File | Reason | Next Action |
-|------|--------|-------------|
-| `git-workflow.md` | Git Flow applies across entire project | Review: Keep in project root or simplify? |
-| `testing-strategy.md` | Integration-first philosophy applies to all tests | Review: Keep in project root or extract to global principles? |
-| `json-validation.md` | Applies to backend + frontend (both parse JSON) | Review: Extract pattern to global or keep project-specific? |
-| `90_monorepo-structure.md` | Monorepo conventions (pnpm workspaces, imports) | **KEEP** in `sentinel/.claude/rules/` (simplified) |
-| `code-quality.md` | Mixed: Some universal, some project-specific | **SPLIT**: Universal → global, package manager → project |
+| File                       | Reason                                            | Next Action                                                   |
+| -------------------------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| `git-workflow.md`          | Git Flow applies across entire project            | Review: Keep in project root or simplify?                     |
+| `testing-strategy.md`      | Integration-first philosophy applies to all tests | Review: Keep in project root or extract to global principles? |
+| `json-validation.md`       | Applies to backend + frontend (both parse JSON)   | Review: Extract pattern to global or keep project-specific?   |
+| `90_monorepo-structure.md` | Monorepo conventions (pnpm workspaces, imports)   | **KEEP** in `sentinel/.claude/rules/` (simplified)            |
+| `code-quality.md`          | Mixed: Some universal, some project-specific      | **SPLIT**: Universal → global, package manager → project      |
 
 **Total**: 5 files
 
@@ -61,15 +61,15 @@
 
 **From**: `~/.claude/rules/`
 
-| File | Reason | Next Action |
-|------|--------|-------------|
-| `releases.md` | GitHub releases workflow (not universal) | Convert to how-to guide or delete if not used |
-| `markdown-delegation.md` | Assumes doc-orchestrator agent exists | Convert to how-to or move to docs/ |
-| `project-setup.md` | One-time setup checklist | Move to project README or docs/guides/ |
-| `git-operations.md` | Git pre-operation checks (best practices, not rules) | Convert to how-to or delete if redundant with git-workflow.md |
-| `modern-tools-usage.md` | Verbose tool reference (fd, sg, jq) | Convert to reference doc or simplify dramatically |
-| `agents-skills.md` | Agent/skill creation guide with tier metadata | Move to docs/guides/ or .claude/agents/README.md |
-| `project-structure.md` | Appears incomplete | Review and complete or delete |
+| File                     | Reason                                               | Next Action                                                   |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------- |
+| `releases.md`            | GitHub releases workflow (not universal)             | Convert to how-to guide or delete if not used                 |
+| `markdown-delegation.md` | Assumes doc-orchestrator agent exists                | Convert to how-to or move to docs/                            |
+| `project-setup.md`       | One-time setup checklist                             | Move to project README or docs/guides/                        |
+| `git-operations.md`      | Git pre-operation checks (best practices, not rules) | Convert to how-to or delete if redundant with git-workflow.md |
+| `modern-tools-usage.md`  | Verbose tool reference (fd, sg, jq)                  | Convert to reference doc or simplify dramatically             |
+| `agents-skills.md`       | Agent/skill creation guide with tier metadata        | Move to docs/guides/ or .claude/agents/README.md              |
+| `project-structure.md`   | Appears incomplete                                   | Review and complete or delete                                 |
 
 **Total**: 7 files
 
@@ -82,6 +82,7 @@
 **Create**: `~/.claude/rules/core-principles.md`
 
 Extract from `code-quality.md`:
+
 - ✅ ALWAYS read files before editing
 - ✅ NEVER use `any` type
 - ✅ ALWAYS throw errors early
@@ -89,6 +90,7 @@ Extract from `code-quality.md`:
 - ✅ Use specialized tools (Read > cat, Grep > grep, Glob > find)
 
 **Update**: `~/.claude/CLAUDE.md`
+
 - ✅ Keep: Forbidden directories, Context7, platform notes
 - ❌ Remove: Project-specific commands (pnpm test, etc.)
 
@@ -102,6 +104,7 @@ Extract from `code-quality.md`:
 # Backend Layer Rules
 
 Domain-specific rules in `rules/` subdirectory:
+
 - [testing.md](rules/testing.md) - Vitest, Testcontainers, Supertest
 - [database.md](rules/database.md) - Prisma, Kysely, migrations
 - [auth-security.md](rules/auth-security.md) - better-auth, API keys, OWASP
@@ -110,6 +113,7 @@ These rules ONLY apply to backend code.
 ```
 
 **Create**: Backend rule files
+
 - `apps/backend/.claude/rules/testing.md` (from `10_testing-standards.md`)
 - `apps/backend/.claude/rules/database.md` (from `20_database-patterns.md`)
 - `apps/backend/.claude/rules/auth-security.md` (from `30_auth-security.md`)
@@ -121,10 +125,12 @@ These rules ONLY apply to backend code.
 ### Phase 4: Simplify Project Root
 
 **Keep**: `sentinel/.claude/rules/90_monorepo-structure.md`
+
 - Extract verbose examples
 - Keep core import conventions, dependency management, build order
 
 **Update**: `sentinel/CLAUDE.md`
+
 - Remove detailed testing/database/auth sections
 - Replace with: "See `apps/backend/.claude/CLAUDE.md` for backend rules"
 - Keep: Architecture table, quick commands, specialized agents
@@ -156,16 +162,19 @@ These rules ONLY apply to backend code.
 
 **Files Analyzed**: 12 rules + 2 CLAUDE.md = 14 files
 **Files Categorized**:
+
 - Backend-specific: 3 files (20%)
 - General project: 5 files (33%)
 - Procedural: 7 files (47%)
 
 **Token Reduction Estimate**:
+
 - Current: ~15,000 tokens loaded per session (all global + project rules)
 - After refactor: ~3,000 tokens (only universal principles + project root)
 - **Savings**: 80% reduction in unnecessary context
 
 **Precision Improvement**:
+
 - Backend tasks: Only load backend rules (targeted)
 - Frontend tasks: Only load frontend rules (when created)
 - General tasks: Only load universal principles
@@ -207,12 +216,14 @@ These rules ONLY apply to backend code.
 Before proceeding with Phase 2-5:
 
 **Questions for user**:
+
 1. Do you want to proceed with Phase 2 (extract universal principles to global)?
 2. Do you want to proceed with Phase 3 (push backend rules to `apps/backend/.claude/`)?
 3. How should we handle procedural files (convert to docs, delete, merge)?
 4. Should we delete original files after moving, or keep as backup?
 
 **Recommendation**:
+
 - Start with Phase 2 + 3 (extract universal + push backend rules)
 - Review procedural files manually (case-by-case decision)
 - Delete originals only after confirming new structure works
@@ -222,17 +233,20 @@ Before proceeding with Phase 2-5:
 ## Success Criteria
 
 **After refactor, Claude should**:
+
 1. ✅ Only load universal principles for all projects (global)
 2. ✅ Load backend rules ONLY when working in `apps/backend/`
 3. ✅ Load project root rules for project-wide tasks (monorepo, git)
 4. ✅ Never load procedural guides unless explicitly referenced
 
 **Token budget per task**:
+
 - Simple task: < 1,000 tokens (universal only)
 - Backend task: < 3,000 tokens (universal + backend layer)
 - Project-wide task: < 2,000 tokens (universal + project root)
 
 **Current vs After**:
+
 - Current: 15,000 tokens (everything loaded)
 - After: 1,000-3,000 tokens (targeted loading)
 - **Improvement**: 5-15x reduction

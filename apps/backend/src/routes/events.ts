@@ -307,7 +307,13 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Assign badge to attendee
    */
-  assignBadgeToAttendee: async ({ params, body }: { params: { id: string; attendeeId: string }; body: AssignBadgeToAttendeeInput }) => {
+  assignBadgeToAttendee: async ({
+    params,
+    body,
+  }: {
+    params: { id: string; attendeeId: string }
+    body: AssignBadgeToAttendeeInput
+  }) => {
     try {
       const attendee = await eventService.assignBadgeToAttendee(
         params.id,
@@ -413,7 +419,13 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Update attendee
    */
-  updateAttendee: async ({ params, body }: { params: { id: string; attendeeId: string }; body: UpdateAttendeeInput }) => {
+  updateAttendee: async ({
+    params,
+    body,
+  }: {
+    params: { id: string; attendeeId: string }
+    body: UpdateAttendeeInput
+  }) => {
     try {
       const attendee = await eventRepo.updateAttendee(params.attendeeId, {
         name: body.name,

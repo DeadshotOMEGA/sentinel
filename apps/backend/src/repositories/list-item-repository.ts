@@ -1,11 +1,6 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import type {
-  ListType,
-  ListItem,
-  CreateListItemInput,
-  UpdateListItemInput,
-} from '@sentinel/types'
+import type { ListType, ListItem, CreateListItemInput, UpdateListItemInput } from '@sentinel/types'
 
 /**
  * Raw database row structure for list_items

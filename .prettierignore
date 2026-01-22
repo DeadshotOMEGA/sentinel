@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+coverage
+.next
+generated
+
+# Generated files
+*.d.ts
+*.js.map
+*.d.ts.map
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Config files that should maintain their format
+.prettierrc
+.prettierignore

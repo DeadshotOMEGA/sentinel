@@ -1,8 +1,8 @@
 ---
 paths:
-  - "**/pnpm-workspace.yaml"
-  - "**/package.json"
-  - "**/tsconfig.json"
+  - '**/pnpm-workspace.yaml'
+  - '**/package.json'
+  - '**/tsconfig.json'
 ---
 
 # Monorepo Structure
@@ -18,6 +18,7 @@ Examples: `@sentinel/backend`, `@sentinel/frontend`, `@sentinel/contracts`, `@se
 ## Import Conventions
 
 ### Workspace Packages
+
 ```typescript
 // ✅ Good: Use package name
 import { personnelContract } from '@sentinel/contracts'
@@ -28,6 +29,7 @@ import { personnelContract } from '../../../packages/contracts/src/personnel.con
 ```
 
 ### Internal Imports (within same package)
+
 ```typescript
 // ✅ Good: Use path alias (@)
 import { PersonnelRepository } from '@/repositories/personnelRepository'
@@ -51,6 +53,7 @@ pnpm --filter @sentinel/backend add @sentinel/contracts@workspace:*
 ```
 
 **Dependency Principles**:
+
 1. Shared devDependencies → Root `package.json`
 2. Package-specific → Package `package.json`
 3. Workspace dependencies → Use `workspace:*` protocol
@@ -65,6 +68,7 @@ pnpm --filter @sentinel/backend... build  # Build package + deps
 ```
 
 **Build Order for Sentinel**:
+
 1. `@sentinel/types` (no dependencies)
 2. `@sentinel/database` (depends on types)
 3. `@sentinel/contracts` (depends on types)
@@ -82,6 +86,7 @@ pnpm --filter @sentinel/backend dev    # Terminal 2
 ## Environment Variables
 
 **Per-package `.env.local` files**:
+
 ```
 sentinel/
 ├── apps/backend/.env.local        # Backend vars
@@ -90,6 +95,7 @@ sentinel/
 ```
 
 **Load in packages**:
+
 ```typescript
 import dotenv from 'dotenv'
 import path from 'path'
@@ -103,19 +109,20 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
 ## Common Commands
 
-| Task | Command |
-|------|---------|
-| Install all | `pnpm install` |
-| Dev (backend) | `pnpm dev` |
-| Test all | `pnpm test` |
-| Build all | `pnpm -r build` |
-| Build specific | `pnpm --filter @sentinel/backend build` |
+| Task           | Command                                       |
+| -------------- | --------------------------------------------- |
+| Install all    | `pnpm install`                                |
+| Dev (backend)  | `pnpm dev`                                    |
+| Test all       | `pnpm test`                                   |
+| Build all      | `pnpm -r build`                               |
+| Build specific | `pnpm --filter @sentinel/backend build`       |
 | Add to package | `pnpm --filter @sentinel/backend add express` |
-| Add to root | `pnpm add -D -w typescript` |
+| Add to root    | `pnpm add -D -w typescript`                   |
 
 ## TypeScript Configuration
 
 **Root tsconfig.json** (shared):
+
 ```json
 {
   "compilerOptions": {
@@ -123,12 +130,13 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "declaration": true,
+    "declaration": true
   }
 }
 ```
 
 **Package tsconfig.json** (extends root):
+
 ```json
 {
   "extends": "../../tsconfig.json",
@@ -138,10 +146,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "references": [
-    { "path": "../contracts" },
-    { "path": "../database" }
-  ]
+  "references": [{ "path": "../contracts" }, { "path": "../database" }]
 }
 ```
 
@@ -150,19 +155,23 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 ## Common Mistakes
 
 ### ❌ Don't Use npm/yarn (Use pnpm)
+
 **Bad**: `npm install`, `yarn add express`
 **Good**: `pnpm install`, `pnpm add express`
 **Why**: Bun not installed. pnpm configured and faster in WSL2.
 
 ### ❌ Don't Install at Root (Unless Shared)
+
 **Bad**: `pnpm add express` (installs at root)
 **Good**: `pnpm --filter @sentinel/backend add express`
 
 ### ❌ Don't Use Relative Imports Across Packages
+
 **Bad**: `import { Contract } from '../../../packages/contracts/src/personnel.contract'`
 **Good**: `import { Contract } from '@sentinel/contracts'`
 
 ### ❌ Don't Forget to Build Shared Packages
+
 **Bad**: Make changes to `packages/contracts`, run backend without rebuilding contracts
 **Good**: `pnpm --filter @sentinel/contracts build` (or run in watch mode)
 

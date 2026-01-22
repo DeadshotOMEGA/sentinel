@@ -30,11 +30,7 @@ const badgeStatusRepo = new BadgeStatusRepository(getPrismaClient())
  * Convert repository enum type to API format
  */
 function toEnumResponse(
-  item:
-    | VisitTypeEnum
-    | MemberStatusEnum
-    | MemberTypeEnum
-    | BadgeStatusEnum,
+  item: VisitTypeEnum | MemberStatusEnum | MemberTypeEnum | BadgeStatusEnum,
   usageCount?: number
 ): EnumResponse {
   return {
@@ -42,7 +38,7 @@ function toEnumResponse(
     code: item.code,
     name: item.name,
     description: item.description ?? null,
-    color: 'color' in item ? item.color ?? null : null,
+    color: 'color' in item ? (item.color ?? null) : null,
     usageCount,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
@@ -74,10 +70,7 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch visit types',
+          message: error instanceof Error ? error.message : 'Failed to fetch visit types',
         },
       }
     }
@@ -118,10 +111,7 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to create visit type',
+          message: error instanceof Error ? error.message : 'Failed to create visit type',
         },
       }
     }
@@ -176,10 +166,7 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update visit type',
+          message: error instanceof Error ? error.message : 'Failed to update visit type',
         },
       }
     }
@@ -228,10 +215,7 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to delete visit type',
+          message: error instanceof Error ? error.message : 'Failed to delete visit type',
         },
       }
     }
@@ -263,10 +247,7 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch member statuses',
+          message: error instanceof Error ? error.message : 'Failed to fetch member statuses',
         },
       }
     }
@@ -307,10 +288,7 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to create member status',
+          message: error instanceof Error ? error.message : 'Failed to create member status',
         },
       }
     }
@@ -365,10 +343,7 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update member status',
+          message: error instanceof Error ? error.message : 'Failed to update member status',
         },
       }
     }
@@ -417,10 +392,7 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to delete member status',
+          message: error instanceof Error ? error.message : 'Failed to delete member status',
         },
       }
     }
@@ -452,10 +424,7 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch member types',
+          message: error instanceof Error ? error.message : 'Failed to fetch member types',
         },
       }
     }
@@ -495,10 +464,7 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to create member type',
+          message: error instanceof Error ? error.message : 'Failed to create member type',
         },
       }
     }
@@ -552,10 +518,7 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update member type',
+          message: error instanceof Error ? error.message : 'Failed to update member type',
         },
       }
     }
@@ -604,10 +567,7 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to delete member type',
+          message: error instanceof Error ? error.message : 'Failed to delete member type',
         },
       }
     }
@@ -639,10 +599,7 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch badge statuses',
+          message: error instanceof Error ? error.message : 'Failed to fetch badge statuses',
         },
       }
     }
@@ -683,10 +640,7 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to create badge status',
+          message: error instanceof Error ? error.message : 'Failed to create badge status',
         },
       }
     }
@@ -741,10 +695,7 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update badge status',
+          message: error instanceof Error ? error.message : 'Failed to update badge status',
         },
       }
     }
@@ -793,10 +744,7 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to delete badge status',
+          message: error instanceof Error ? error.message : 'Failed to delete badge status',
         },
       }
     }

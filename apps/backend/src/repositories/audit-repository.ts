@@ -42,23 +42,23 @@ export type AuditAction =
   | 'user_disabled'
   | 'user_enabled'
   | 'password_reset'
-  | 'role_changed';
+  | 'role_changed'
 
 interface AuditLogEntry {
-  adminUserId: string | null;
-  action: AuditAction;
-  entityType: string;
-  entityId: string | null;
-  details: Record<string, unknown>;
-  ipAddress: string;
+  adminUserId: string | null
+  action: AuditAction
+  entityType: string
+  entityId: string | null
+  details: Record<string, unknown>
+  ipAddress: string
 }
 
 interface AuditLogFilters {
-  action?: AuditAction | AuditAction[];
-  actorId?: string;
-  entityId?: string;
-  startDate?: Date;
-  endDate?: Date;
+  action?: AuditAction | AuditAction[]
+  actorId?: string
+  entityId?: string
+  startDate?: Date
+  endDate?: Date
 }
 
 export class AuditRepository {
@@ -81,7 +81,7 @@ export class AuditRepository {
         details: entry.details as Prisma.JsonObject,
         ipAddress: entry.ipAddress,
       },
-    });
+    })
   }
 
   /**
@@ -91,29 +91,27 @@ export class AuditRepository {
     filters: AuditLogFilters,
     pagination: { page: number; limit: number }
   ): Promise<PrismaAuditLog[]> {
-    const where: Prisma.AuditLogWhereInput = {};
+    const where: Prisma.AuditLogWhereInput = {}
 
     if (filters.action) {
-      where.action = Array.isArray(filters.action)
-        ? { in: filters.action }
-        : filters.action;
+      where.action = Array.isArray(filters.action) ? { in: filters.action } : filters.action
     }
 
     if (filters.actorId) {
-      where.adminUserId = filters.actorId;
+      where.adminUserId = filters.actorId
     }
 
     if (filters.entityId) {
-      where.entityId = filters.entityId;
+      where.entityId = filters.entityId
     }
 
     if (filters.startDate || filters.endDate) {
-      where.createdAt = {};
+      where.createdAt = {}
       if (filters.startDate) {
-        where.createdAt.gte = filters.startDate;
+        where.createdAt.gte = filters.startDate
       }
       if (filters.endDate) {
-        where.createdAt.lte = filters.endDate;
+        where.createdAt.lte = filters.endDate
       }
     }
 
@@ -124,43 +122,41 @@ export class AuditRepository {
       },
       skip: (pagination.page - 1) * pagination.limit,
       take: pagination.limit,
-    });
+    })
 
-    return logs;
+    return logs
   }
 
   /**
    * Count audit logs matching filters
    */
   async countUserAuditLogs(filters: AuditLogFilters): Promise<number> {
-    const where: Prisma.AuditLogWhereInput = {};
+    const where: Prisma.AuditLogWhereInput = {}
 
     if (filters.action) {
-      where.action = Array.isArray(filters.action)
-        ? { in: filters.action }
-        : filters.action;
+      where.action = Array.isArray(filters.action) ? { in: filters.action } : filters.action
     }
 
     if (filters.actorId) {
-      where.adminUserId = filters.actorId;
+      where.adminUserId = filters.actorId
     }
 
     if (filters.entityId) {
-      where.entityId = filters.entityId;
+      where.entityId = filters.entityId
     }
 
     if (filters.startDate || filters.endDate) {
-      where.createdAt = {};
+      where.createdAt = {}
       if (filters.startDate) {
-        where.createdAt.gte = filters.startDate;
+        where.createdAt.gte = filters.startDate
       }
       if (filters.endDate) {
-        where.createdAt.lte = filters.endDate;
+        where.createdAt.lte = filters.endDate
       }
     }
 
-    return await this.prisma.auditLog.count({ where });
+    return await this.prisma.auditLog.count({ where })
   }
 }
 
-export const auditRepository = new AuditRepository();
+export const auditRepository = new AuditRepository()

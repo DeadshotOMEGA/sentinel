@@ -37,7 +37,7 @@ function mapToEvent(event: PrismaEvent): Event {
     endDate: event.endDate,
     status: event.status as Event['status'],
     autoExpireBadges: event.autoExpireBadges ?? true,
-    customRoles: event.customRoles ? event.customRoles as Record<string, unknown> : undefined,
+    customRoles: event.customRoles ? (event.customRoles as Record<string, unknown>) : undefined,
     createdBy: event.createdBy ?? undefined,
     createdAt: event.createdAt ?? new Date(),
     updatedAt: event.updatedAt ?? new Date(),

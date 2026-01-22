@@ -45,7 +45,9 @@ async function benchmark(name: string, fn: () => Promise<any>): Promise<Benchmar
 
 async function runBenchmarks() {
   console.log('🔍 Benchmarking Prisma Query Performance\n')
-  console.log(`Thresholds: OK < ${THRESHOLD_OK}ms, SLOW < ${THRESHOLD_SLOW}ms, VERY_SLOW >= ${THRESHOLD_SLOW}ms\n`)
+  console.log(
+    `Thresholds: OK < ${THRESHOLD_OK}ms, SLOW < ${THRESHOLD_SLOW}ms, VERY_SLOW >= ${THRESHOLD_SLOW}ms\n`
+  )
 
   const results: BenchmarkResult[] = []
 
@@ -146,8 +148,7 @@ async function runBenchmarks() {
   console.log('├────────────────────────────────────────────────────────┼──────────┼──────────┤')
 
   results.forEach((result) => {
-    const statusSymbol =
-      result.status === 'OK' ? '✅' : result.status === 'SLOW' ? '⚠️ ' : '❌'
+    const statusSymbol = result.status === 'OK' ? '✅' : result.status === 'SLOW' ? '⚠️ ' : '❌'
     const name = result.name.padEnd(54)
     const duration = result.duration.toFixed(2).padStart(8)
     const status = (statusSymbol + ' ' + result.status).padEnd(8)
@@ -163,7 +164,9 @@ async function runBenchmarks() {
   console.log('\n📈 Summary:\n')
   console.log(`Total queries benchmarked: ${results.length}`)
   console.log(`OK (< ${THRESHOLD_OK}ms): ${results.filter((r) => r.status === 'OK').length}`)
-  console.log(`SLOW (${THRESHOLD_OK}-${THRESHOLD_SLOW}ms): ${results.filter((r) => r.status === 'SLOW').length}`)
+  console.log(
+    `SLOW (${THRESHOLD_OK}-${THRESHOLD_SLOW}ms): ${results.filter((r) => r.status === 'SLOW').length}`
+  )
   console.log(`VERY SLOW (>= ${THRESHOLD_SLOW}ms): ${verySlow.length}`)
 
   console.log('\n💡 Recommendations:\n')

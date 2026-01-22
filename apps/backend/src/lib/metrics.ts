@@ -250,7 +250,12 @@ export const securityAlertsTotal = new Counter({
 /**
  * Record an HTTP request
  */
-export function recordHttpRequest(method: string, path: string, statusCode: number, duration: number) {
+export function recordHttpRequest(
+  method: string,
+  path: string,
+  statusCode: number,
+  duration: number
+) {
   httpRequestsTotal.inc({ method, path, status: statusCode.toString() })
   httpRequestDuration.observe({ method, path }, duration)
 }
@@ -273,14 +278,19 @@ export function recordAuthAttempt(result: 'success' | 'failure', method: 'sessio
 /**
  * Record a check-in
  */
-export function recordCheckin(direction: 'in' | 'out', type: 'normal' | 'late' | 'early' = 'normal') {
+export function recordCheckin(
+  direction: 'in' | 'out',
+  type: 'normal' | 'late' | 'early' = 'normal'
+) {
   checkinsTotal.inc({ direction, type })
 }
 
 /**
  * Record a badge operation
  */
-export function recordBadgeOperation(operation: 'assigned' | 'unassigned' | 'created' | 'deactivated') {
+export function recordBadgeOperation(
+  operation: 'assigned' | 'unassigned' | 'created' | 'deactivated'
+) {
   badgeOperationsTotal.inc({ operation })
 }
 
@@ -308,6 +318,9 @@ export function recordDdsAssignment(status: 'assigned' | 'completed' | 'cancelle
 /**
  * Record a security alert
  */
-export function recordSecurityAlert(severity: 'low' | 'medium' | 'high' | 'critical', type: string) {
+export function recordSecurityAlert(
+  severity: 'low' | 'medium' | 'high' | 'critical',
+  type: string
+) {
   securityAlertsTotal.inc({ severity, type })
 }

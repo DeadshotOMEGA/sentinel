@@ -121,8 +121,7 @@ export const lockupRouter = s.router(lockupContract, {
           stats: {
             membersCheckedOut: result.checkedOut.members.length,
             visitorsCheckedOut: result.checkedOut.visitors.length,
-            totalCheckedOut:
-              result.checkedOut.members.length + result.checkedOut.visitors.length,
+            totalCheckedOut: result.checkedOut.members.length + result.checkedOut.visitors.length,
           },
         },
       }

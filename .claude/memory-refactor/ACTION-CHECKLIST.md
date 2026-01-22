@@ -25,6 +25,7 @@ touch ~/.claude/rules/core-principles.md
 ```
 
 **Content to extract from `code-quality.md`**:
+
 - File operations (read before edit, batch edits)
 - Code standards (no `any`, throw early, delegate)
 - Tool usage (specialized tools first)
@@ -34,10 +35,12 @@ touch ~/.claude/rules/core-principles.md
 **File**: `~/.claude/CLAUDE.md`
 
 **Remove**:
+
 - Project-specific commands table (pnpm test, bun install, etc.)
 - Package manager preference (bun vs pnpm)
 
 **Keep**:
+
 - Forbidden directories pattern
 - Context7 MCP integration
 - Platform notes (WSL2, python command, line endings)
@@ -46,6 +49,7 @@ touch ~/.claude/rules/core-principles.md
 ### 2.3 Delete Redundant Global Rules
 
 **After extracting to `core-principles.md`**:
+
 ```bash
 rm ~/.claude/rules/code-quality.md  # Content moved to core-principles
 ```
@@ -66,10 +70,12 @@ touch apps/backend/.claude/CLAUDE.md
 ```
 
 **Content**:
+
 ```markdown
 # Backend Layer Rules
 
 Domain-specific rules in `rules/` subdirectory:
+
 - [testing.md](rules/testing.md) - Vitest, Testcontainers, Supertest
 - [database.md](rules/database.md) - Prisma, Kysely, migrations
 - [auth-security.md](rules/auth-security.md) - better-auth, API keys, OWASP
@@ -80,6 +86,7 @@ These rules ONLY apply to backend code.
 ### 3.2 Create Backend Rule Files
 
 **Copy from refactor folder**:
+
 ```bash
 # Testing
 cp .claude/memory-refactor/backend/10_testing-standards.md \
@@ -104,6 +111,7 @@ cp .claude/memory-refactor/backend/30_auth-security.md \
 ## Domain Rules
 
 Detailed patterns in `.claude/rules/`:
+
 - Testing: @.claude/rules/10_testing-standards.md
 - Database: @.claude/rules/20_database-patterns.md
 - Auth/Security: @.claude/rules/30_auth-security.md
@@ -123,6 +131,7 @@ Detailed patterns in `.claude/rules/`:
 ### 3.4 Delete Original Numbered Files
 
 **After confirming new structure works**:
+
 ```bash
 rm .claude/rules/10_testing-standards.md
 rm .claude/rules/20_database-patterns.md
@@ -143,12 +152,14 @@ rm .claude/rules/30_auth-security.md
 **Target**: 100 lines (core rules only)
 
 **Keep**:
+
 - Package naming convention
 - Import conventions (workspace packages vs internal)
 - Dependency management commands
 - Build order
 
 **Remove**:
+
 - Verbose examples
 - Common mistakes section (move to docs if needed)
 - Environment variables setup (covered in project setup)
@@ -157,15 +168,16 @@ rm .claude/rules/30_auth-security.md
 
 **Decision for each file in `general/`**:
 
-| File | Action |
-|------|--------|
-| `git-workflow.md` | Keep in `sentinel/.claude/rules/` (project-wide) |
-| `testing-strategy.md` | Extract philosophy to global `core-principles.md`, delete specific patterns (now in backend) |
-| `json-validation.md` | Extract pattern to global `core-principles.md` |
-| `code-quality.md` | Already handled in Phase 2 |
-| `90_monorepo-structure.md` | Simplify (see 4.1) |
+| File                       | Action                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `git-workflow.md`          | Keep in `sentinel/.claude/rules/` (project-wide)                                             |
+| `testing-strategy.md`      | Extract philosophy to global `core-principles.md`, delete specific patterns (now in backend) |
+| `json-validation.md`       | Extract pattern to global `core-principles.md`                                               |
+| `code-quality.md`          | Already handled in Phase 2                                                                   |
+| `90_monorepo-structure.md` | Simplify (see 4.1)                                                                           |
 
 **Commands**:
+
 ```bash
 # Move git-workflow to project
 cp .claude/memory-refactor/general/git-workflow.md \
@@ -184,6 +196,7 @@ cp .claude/memory-refactor/general/git-workflow.md \
 ### 5.1 Convert to Docs
 
 **Create how-to guides**:
+
 ```bash
 # Setup guide
 cat .claude/memory-refactor/procedural/project-setup.md \
@@ -197,6 +210,7 @@ cat .claude/memory-refactor/procedural/agents-skills.md \
 ### 5.2 Convert to Reference
 
 **Modern tools reference**:
+
 ```bash
 # Simplify and move to docs
 # (Manual editing required - extract tool table only)
@@ -206,12 +220,14 @@ touch docs/guides/reference/modern-cli-tools.md
 ### 5.3 Merge or Delete
 
 **Candidates for deletion**:
+
 - `markdown-delegation.md` - Redundant (doc-orchestrator handles this)
 - `git-operations.md` - Redundant with `git-workflow.md`
 - `releases.md` - Not currently used (GitHub releases not set up)
 - `project-structure.md` - Incomplete, redundant with monorepo-structure
 
 **Command** (after manual review):
+
 ```bash
 # Delete if confirmed redundant
 rm .claude/memory-refactor/procedural/markdown-delegation.md
@@ -229,6 +245,7 @@ rm .claude/memory-refactor/procedural/project-structure.md
 ### 6.1 Remove Global Rules (After Extraction)
 
 **Files to delete from `~/.claude/rules/`**:
+
 ```bash
 rm ~/.claude/rules/releases.md
 rm ~/.claude/rules/markdown-delegation.md
@@ -246,11 +263,13 @@ rm ~/.claude/rules/json-validation.md  # Extracted to core-principles
 ### 6.2 Archive Refactor Folder
 
 **After confirming everything works**:
+
 ```bash
 mv .claude/memory-refactor .claude/memory-refactor-2026-01-20-complete
 ```
 
 Or delete entirely:
+
 ```bash
 rm -rf .claude/memory-refactor
 ```
@@ -262,22 +281,26 @@ rm -rf .claude/memory-refactor
 After completing all phases:
 
 ### Global Rules
+
 - [ ] Only 1-2 files in `~/.claude/rules/` (core-principles.md)
 - [ ] Global CLAUDE.md has no project-specific commands
 - [ ] Token count for global context < 2,000 tokens
 
 ### Project Rules
+
 - [ ] `apps/backend/.claude/` exists with CLAUDE.md + rules/
 - [ ] Backend rules (testing, database, auth) only in backend layer
 - [ ] Project root `.claude/rules/` only has monorepo-structure + git-workflow
 - [ ] Project CLAUDE.md references backend layer (not duplicating rules)
 
 ### Documentation
+
 - [ ] Procedural guides moved to `docs/guides/howto/`
 - [ ] No procedural content in `.claude/rules/`
 - [ ] How-to guides follow Diátaxis framework
 
 ### Token Budget
+
 - [ ] Global context: < 2,000 tokens
 - [ ] Project context: < 1,500 tokens
 - [ ] Backend context: < 2,500 tokens
@@ -313,13 +336,13 @@ cp .claude/memory-refactor/general/git-workflow.md .claude/rules/
 
 ## Timeline Estimate
 
-| Phase | Complexity | Time Estimate |
-|-------|-----------|---------------|
-| Phase 2 | Low | 15-30 min (manual extraction) |
-| Phase 3 | Low | 10-15 min (copy + rename files) |
-| Phase 4 | Medium | 20-30 min (simplify monorepo rule) |
-| Phase 5 | High | 45-60 min (review each procedural file) |
-| Phase 6 | Low | 5-10 min (delete + archive) |
+| Phase   | Complexity | Time Estimate                           |
+| ------- | ---------- | --------------------------------------- |
+| Phase 2 | Low        | 15-30 min (manual extraction)           |
+| Phase 3 | Low        | 10-15 min (copy + rename files)         |
+| Phase 4 | Medium     | 20-30 min (simplify monorepo rule)      |
+| Phase 5 | High       | 45-60 min (review each procedural file) |
+| Phase 6 | Low        | 5-10 min (delete + archive)             |
 
 **Total**: 1.5-2.5 hours
 

@@ -1,33 +1,33 @@
-import { initServer } from "@ts-rest/express";
-import { ddsContract } from "@sentinel/contracts";
+import { initServer } from '@ts-rest/express'
+import { ddsContract } from '@sentinel/contracts'
 import type {
   DdsAuditLogQuery,
   AssignDdsInput,
   TransferDdsInput,
   ReleaseDdsInput,
   IdParam,
-} from "@sentinel/contracts";
-import { DdsService } from "../services/dds-service.js";
-import { getPrismaClient } from "../lib/database.js";
+} from '@sentinel/contracts'
+import { DdsService } from '../services/dds-service.js'
+import { getPrismaClient } from '../lib/database.js'
 
-const s = initServer();
+const s = initServer()
 
-const ddsService = new DdsService(getPrismaClient());
+const ddsService = new DdsService(getPrismaClient())
 
 interface DdsAssignmentData {
-  id: string;
-  memberId: string;
-  assignedDate: Date | string;
-  acceptedAt: Date | string | null;
-  releasedAt: Date | string | null;
-  transferredTo: string | null;
-  assignedBy: string | null;
-  status: string;
-  notes: string | null;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  member: { id: string; name: string; rank: string; division: string | null };
-  assignedByAdminName: string | null;
+  id: string
+  memberId: string
+  assignedDate: Date | string
+  acceptedAt: Date | string | null
+  releasedAt: Date | string | null
+  transferredTo: string | null
+  assignedBy: string | null
+  status: string
+  notes: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  member: { id: string; name: string; rank: string; division: string | null }
+  assignedByAdminName: string | null
 }
 
 /**
@@ -53,15 +53,9 @@ function toApiFormat(assignment: DdsAssignmentData) {
         : assignment.releasedAt
           ? String(assignment.releasedAt)
           : null,
-    transferredTo: assignment.transferredTo
-      ? String(assignment.transferredTo)
-      : null,
+    transferredTo: assignment.transferredTo ? String(assignment.transferredTo) : null,
     assignedBy: assignment.assignedBy ? String(assignment.assignedBy) : null,
-    status: String(assignment.status) as
-      | "pending"
-      | "active"
-      | "transferred"
-      | "released",
+    status: String(assignment.status) as 'pending' | 'active' | 'transferred' | 'released',
     notes: assignment.notes ? String(assignment.notes) : null,
     createdAt:
       assignment.createdAt instanceof Date
@@ -75,7 +69,7 @@ function toApiFormat(assignment: DdsAssignmentData) {
     assignedByAdminName: assignment.assignedByAdminName
       ? String(assignment.assignedByAdminName)
       : null,
-  };
+  }
 }
 
 /**
@@ -87,7 +81,7 @@ export const ddsRouter = s.router(ddsContract, {
    */
   getCurrentDds: async () => {
     try {
-      const assignment = await ddsService.getCurrentDds();
+      const assignment = await ddsService.getCurrentDds()
 
       if (!assignment) {
         return {
@@ -95,7 +89,7 @@ export const ddsRouter = s.router(ddsContract, {
           body: {
             assignment: null,
           },
-        };
+        }
       }
 
       return {
@@ -103,18 +97,15 @@ export const ddsRouter = s.router(ddsContract, {
         body: {
           assignment: toApiFormat(assignment),
         },
-      };
+      }
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch current DDS",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch current DDS',
         },
-      };
+      }
     }
   },
 
@@ -123,25 +114,22 @@ export const ddsRouter = s.router(ddsContract, {
    */
   checkDdsExists: async () => {
     try {
-      const exists = await ddsService.hasDdsForToday();
+      const exists = await ddsService.hasDdsForToday()
 
       return {
         status: 200 as const,
         body: {
           exists,
         },
-      };
+      }
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to check DDS exists",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to check DDS exists',
         },
-      };
+      }
     }
   },
 
@@ -150,8 +138,8 @@ export const ddsRouter = s.router(ddsContract, {
    */
   getAuditLog: async ({ query }: { query: DdsAuditLogQuery }) => {
     try {
-      const limit = query.limit || 50;
-      const logs = await ddsService.getAuditLog(query.memberId, limit);
+      const limit = query.limit || 50
+      const logs = await ddsService.getAuditLog(query.memberId, limit)
 
       return {
         status: 200 as const,
@@ -170,18 +158,15 @@ export const ddsRouter = s.router(ddsContract, {
           })),
           count: logs.length,
         },
-      };
+      }
     } catch (error) {
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch audit log",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch audit log',
         },
-      };
+      }
     }
   },
 
@@ -190,48 +175,44 @@ export const ddsRouter = s.router(ddsContract, {
    */
   acceptDds: async ({ params }: { params: IdParam }) => {
     try {
-      const assignment = await ddsService.acceptDds(params.id);
+      const assignment = await ddsService.acceptDds(params.id)
 
       return {
         status: 200 as const,
         body: {
           success: true,
-          message: "DDS accepted successfully",
+          message: 'DDS accepted successfully',
           assignment: toApiFormat(assignment),
         },
-      };
+      }
     } catch (error) {
-      if (error instanceof Error && error.message.includes("not found")) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
           body: {
-            error: "NOT_FOUND",
+            error: 'NOT_FOUND',
             message: error.message,
           },
-        };
+        }
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("already been assigned")
-      ) {
+      if (error instanceof Error && error.message.includes('already been assigned')) {
         return {
           status: 409 as const,
           body: {
-            error: "CONFLICT",
+            error: 'CONFLICT',
             message: error.message,
           },
-        };
+        }
       }
 
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to accept DDS",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to accept DDS',
         },
-      };
+      }
     }
   },
 
@@ -242,54 +223,46 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using placeholder until auth is implemented
-      const adminId = "system";
+      const adminId = 'system'
 
-      const assignment = await ddsService.assignDds(
-        body.memberId,
-        adminId,
-        body.notes,
-      );
+      const assignment = await ddsService.assignDds(body.memberId, adminId, body.notes)
 
       return {
         status: 200 as const,
         body: {
           success: true,
-          message: "DDS assigned successfully",
+          message: 'DDS assigned successfully',
           assignment: toApiFormat(assignment),
         },
-      };
+      }
     } catch (error) {
-      if (error instanceof Error && error.message.includes("not found")) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
           body: {
-            error: "NOT_FOUND",
+            error: 'NOT_FOUND',
             message: error.message,
           },
-        };
+        }
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("already been assigned")
-      ) {
+      if (error instanceof Error && error.message.includes('already been assigned')) {
         return {
           status: 409 as const,
           body: {
-            error: "CONFLICT",
+            error: 'CONFLICT',
             message: error.message,
           },
-        };
+        }
       }
 
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to assign DDS",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to assign DDS',
         },
-      };
+      }
     }
   },
 
@@ -300,51 +273,46 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using placeholder until auth is implemented
-      const adminId = "system";
+      const adminId = 'system'
 
-      const assignment = await ddsService.transferDds(
-        body.toMemberId,
-        adminId,
-        body.notes,
-      );
+      const assignment = await ddsService.transferDds(body.toMemberId, adminId, body.notes)
 
       return {
         status: 200 as const,
         body: {
           success: true,
-          message: "DDS transferred successfully",
+          message: 'DDS transferred successfully',
           assignment: toApiFormat(assignment),
         },
-      };
+      }
     } catch (error) {
-      if (error instanceof Error && error.message.includes("not found")) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
           body: {
-            error: "NOT_FOUND",
+            error: 'NOT_FOUND',
             message: error.message,
           },
-        };
+        }
       }
 
-      if (error instanceof Error && error.message.includes("Cannot transfer")) {
+      if (error instanceof Error && error.message.includes('Cannot transfer')) {
         return {
           status: 400 as const,
           body: {
-            error: "VALIDATION_ERROR",
+            error: 'VALIDATION_ERROR',
             message: error.message,
           },
-        };
+        }
       }
 
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to transfer DDS",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to transfer DDS',
         },
-      };
+      }
     }
   },
 
@@ -355,35 +323,34 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using placeholder until auth is implemented
-      const adminId = "system";
+      const adminId = 'system'
 
-      await ddsService.releaseDds(adminId, body.notes);
+      await ddsService.releaseDds(adminId, body.notes)
 
       return {
         status: 200 as const,
         body: {
           assignment: null,
         },
-      };
+      }
     } catch (error) {
-      if (error instanceof Error && error.message.includes("not found")) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
           body: {
-            error: "NOT_FOUND",
+            error: 'NOT_FOUND',
             message: error.message,
           },
-        };
+        }
       }
 
       return {
         status: 500 as const,
         body: {
-          error: "INTERNAL_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to release DDS",
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to release DDS',
         },
-      };
+      }
     }
   },
-});
+})

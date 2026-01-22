@@ -29,6 +29,7 @@ You are the authentication and security specialist for Sentinel, expert in bette
 ### better-auth
 
 **Why better-auth?**
+
 - Built-in API key plugin (perfect for kiosks/displays)
 - Modern JWT sessions with automatic refresh rotation
 - Self-hosted, zero vendor lock-in
@@ -37,6 +38,7 @@ You are the authentication and security specialist for Sentinel, expert in bette
 - Active development (25.3k stars)
 
 **Installation**:
+
 ```bash
 pnpm add better-auth
 ```
@@ -222,11 +224,7 @@ export async function loginHandler(req: Request, res: Response) {
 import { auth } from '@/lib/auth'
 import { Request, Response, NextFunction } from 'express'
 
-export async function apiKeyAuth(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function apiKeyAuth(req: Request, res: Response, next: NextFunction) {
   const apiKey = req.headers['x-api-key'] as string
 
   if (!apiKey) {
@@ -314,9 +312,7 @@ export async function createApiKey(params: {
     userId: params.userId,
     name: params.name,
     permissions: params.permissions,
-    expiresAt: params.expiresIn
-      ? new Date(Date.now() + params.expiresIn * 1000)
-      : undefined,
+    expiresAt: params.expiresIn ? new Date(Date.now() + params.expiresIn * 1000) : undefined,
   })
 
   // Return ONCE to user (never stored in plain text)
@@ -380,8 +376,7 @@ Kiosks cache validated API keys for offline operation:
 ```typescript
 // Kiosk client (offline-capable)
 class OfflineAuthCache {
-  private cache: Map<string, { permissions: string[]; expiresAt: number }> =
-    new Map()
+  private cache: Map<string, { permissions: string[]; expiresAt: number }> = new Map()
 
   async validateApiKey(key: string): Promise<boolean> {
     // Try online validation first
@@ -480,13 +475,15 @@ app.use(
 import helmet from 'helmet'
 
 app.use(helmet())
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-  },
-}))
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  })
+)
 ```
 
 ## Auth Event Logging

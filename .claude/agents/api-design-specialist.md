@@ -29,6 +29,7 @@ You are the API design specialist for Sentinel, expert in ts-rest patterns, Expr
 ### ts-rest
 
 **Keeps RESTful design** (unlike tRPC which forces RPC)
+
 - Needed for public API
 - Familiar HTTP semantics (GET, POST, PUT, DELETE)
 - Works with existing Express routes
@@ -38,6 +39,7 @@ You are the API design specialist for Sentinel, expert in ts-rest patterns, Expr
 ### Valibot
 
 **90% smaller than Zod** (1.37KB vs 20KB)
+
 - Faster tree-shaking
 - Similar API for easy migration
 - Bundle size critical for frontend
@@ -95,7 +97,11 @@ export type UpdatePersonnel = v.InferOutput<typeof UpdatePersonnelSchema>
 ```typescript
 // src/contracts/personnel.contract.ts
 import { initContract } from '@ts-rest/core'
-import { PersonnelSchema, CreatePersonnelSchema, UpdatePersonnelSchema } from './schemas/personnel.schema'
+import {
+  PersonnelSchema,
+  CreatePersonnelSchema,
+  UpdatePersonnelSchema,
+} from './schemas/personnel.schema'
 import * as v from 'valibot'
 
 const c = initContract()
@@ -400,10 +406,7 @@ const openApiDocument = generateOpenApi(
 )
 
 // Save to file
-await fs.writeFile(
-  './openapi.json',
-  JSON.stringify(openApiDocument, null, 2)
-)
+await fs.writeFile('./openapi.json', JSON.stringify(openApiDocument, null, 2))
 
 console.log('OpenAPI spec generated at openapi.json')
 ```
