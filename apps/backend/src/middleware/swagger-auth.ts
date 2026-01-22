@@ -34,7 +34,7 @@ export function swaggerAuth(req: Request, res: Response, next: NextFunction): vo
   }
 
   // Mode 2: Public access (no auth required)
-  if (authMode === 'false' || authMode === false) {
+  if (authMode === 'false') {
     next()
     return
   }
@@ -57,6 +57,14 @@ export function swaggerAuth(req: Request, res: Response, next: NextFunction): vo
     }
 
     const base64Credentials = authHeader.split(' ')[1]
+    if (!base64Credentials) {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Swagger UI"')
+      res.status(401).json({
+        error: 'UNAUTHORIZED',
+        message: 'Invalid authorization header format',
+      })
+      return
+    }
     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8')
     const [username, password] = credentials.split(':')
 

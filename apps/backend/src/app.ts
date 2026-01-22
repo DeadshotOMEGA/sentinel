@@ -71,7 +71,7 @@ import { logger } from './lib/logger.js'
 /**
  * Create and configure Express application
  */
-export function createApp() {
+export function createApp(): express.Express {
   const app = express()
 
   // Trust proxy (required for rate limiting and IP detection when behind reverse proxy)

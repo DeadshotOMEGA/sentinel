@@ -125,9 +125,9 @@ const openApiDocument = generateOpenApi(
   },
   {
     setOperationId: false,
-    operationMapper: (operation, appRoute) => ({
+    operationMapper: (operation, appRoute, _id) => ({
       ...operation,
-      tags: [appRoute.path.split('/')[2]], // Extract tag from /api/{resource}/*
+      tags: [appRoute.path.split('/')[2]].filter((tag): tag is string => tag !== undefined), // Extract tag from /api/{resource}/*
     }),
   }
 )
