@@ -538,8 +538,8 @@ describe('MemberRepository Integration Tests', () => {
       const member2 = await createMember(testDb.prisma!, { status: 'active' })
 
       const updates = [
-        { id: member1.id, data: { status: 'inactive' as const } },
-        { id: member2.id, data: { status: 'transferred' as const } },
+        { id: member1.id, status: 'inactive' as const },
+        { id: member2.id, status: 'transferred' as const },
       ]
 
       const count = await repo.bulkUpdate(updates)
@@ -562,8 +562,8 @@ describe('MemberRepository Integration Tests', () => {
       const member1 = await createMember(testDb.prisma!, { status: 'active' })
 
       const updates = [
-        { id: member1.id, data: { status: 'inactive' as const } },
-        { id: 'a0ebe404-c5d1-41c6-b2da-0f647e49057f', data: { status: 'inactive' as const } },
+        { id: member1.id, status: 'inactive' as const },
+        { id: 'a0ebe404-c5d1-41c6-b2da-0f647e49057f', status: 'inactive' as const },
       ]
 
       await expect(repo.bulkUpdate(updates)).rejects.toThrow()
@@ -784,7 +784,7 @@ describe('MemberRepository Integration Tests', () => {
 
         const results = await repo.findAll({
           status: 'inactive',
-          divisionId: 'non-existent-division',
+          divisionId: 'a0ebe404-c5d1-41c6-b2da-0f647e49057f',
         })
 
         expect(results).toEqual([])
@@ -811,7 +811,7 @@ describe('MemberRepository Integration Tests', () => {
           limit: 10,
         })
 
-        expect(result.items).toEqual([])
+        expect(result.members).toEqual([])
         expect(result.total).toBe(1)
         expect(result.totalPages).toBe(1)
       })
@@ -825,22 +825,21 @@ describe('MemberRepository Integration Tests', () => {
           limit: 1,
         })
 
-        expect(result.items).toHaveLength(1)
+        expect(result.members).toHaveLength(1)
         expect(result.total).toBe(2)
         expect(result.totalPages).toBe(2)
       })
 
-      it('should handle very large limit', async () => {
+      it('should reject very large limit', async () => {
         await createMember(testDb.prisma!)
         await createMember(testDb.prisma!)
 
-        const result = await repo.findPaginated({
-          page: 1,
-          limit: 1000,
-        })
-
-        expect(result.items).toHaveLength(2)
-        expect(result.total).toBe(2)
+        await expect(
+          repo.findPaginated({
+            page: 1,
+            limit: 1000,
+          })
+        ).rejects.toThrow('Invalid limit: must be between 1 and 100')
       })
     })
 
@@ -848,7 +847,7 @@ describe('MemberRepository Integration Tests', () => {
       it('should handle empty array in bulkCreate', async () => {
         const result = await repo.bulkCreate([])
 
-        expect(result).toEqual([])
+        expect(result).toBe(0)
       })
 
       it('should handle single item in bulkUpdate', async () => {
