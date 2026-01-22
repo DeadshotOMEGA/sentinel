@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
@@ -31,7 +31,7 @@ RUN pnpm --filter @sentinel/database prisma generate
 RUN pnpm -r build
 
 # Production stage
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
@@ -47,8 +47,8 @@ COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/types/package.json ./packages/types/
 COPY apps/backend/package.json ./apps/backend/
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+# Install production dependencies only (skip lifecycle scripts like husky)
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Copy built artifacts from builder
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
