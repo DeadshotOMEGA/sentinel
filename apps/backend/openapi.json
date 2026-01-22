@@ -1,0 +1,2098 @@
+{
+  "openapi": "3.0.2",
+  "paths": {
+    "/api/members": {
+      "get": {
+        "description": "Get paginated list of members with optional filtering by division, rank, and status",
+        "summary": "List all members",
+        "tags": [
+          "members"
+        ],
+        "parameters": [],
+        "operationId": "getMembers",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new member with the provided information",
+        "summary": "Create new member",
+        "tags": [
+          "members"
+        ],
+        "parameters": [],
+        "operationId": "createMember",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/members/{id}": {
+      "get": {
+        "description": "Retrieve a single member by their unique ID",
+        "summary": "Get member by ID",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getMemberById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an existing member with the provided information",
+        "summary": "Update member",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateMember",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a member by their unique ID",
+        "summary": "Delete member",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteMember",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/members/search/{serviceNumber}": {
+      "get": {
+        "description": "Find a member by their service number",
+        "summary": "Search member by service number",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "serviceNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "searchByServiceNumber",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/checkins": {
+      "get": {
+        "description": "Get paginated list of checkins with optional filtering by member, division, date range, and direction",
+        "summary": "List all checkins",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [],
+        "operationId": "getCheckins",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Record a new checkin for a member",
+        "summary": "Create new checkin",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [],
+        "operationId": "createCheckin",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/checkins/presence": {
+      "get": {
+        "description": "Get current presence statistics (total present, by division)",
+        "summary": "Get presence status",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [],
+        "operationId": "getPresenceStatus",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/checkins/{id}": {
+      "get": {
+        "description": "Retrieve a single checkin by its unique ID",
+        "summary": "Get checkin by ID",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getCheckinById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update checkin properties (e.g., flag for review, change direction)",
+        "summary": "Update checkin",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateCheckin",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a checkin by its unique ID",
+        "summary": "Delete checkin",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteCheckin",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/checkins/bulk": {
+      "post": {
+        "description": "Create multiple checkins at once (used for offline sync from kiosks)",
+        "summary": "Bulk create checkins",
+        "tags": [
+          "checkins"
+        ],
+        "parameters": [],
+        "operationId": "bulkCreateCheckins",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/members/{id}/checkins": {
+      "get": {
+        "description": "Get all checkins for a specific member",
+        "summary": "Get member checkins",
+        "tags": [
+          "members"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getMemberCheckins",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/divisions": {
+      "get": {
+        "description": "Get paginated list of divisions with optional search and statistics",
+        "summary": "List all divisions",
+        "tags": [
+          "divisions"
+        ],
+        "parameters": [],
+        "operationId": "getDivisions",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new division with the provided information",
+        "summary": "Create new division",
+        "tags": [
+          "divisions"
+        ],
+        "parameters": [],
+        "operationId": "createDivision",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/divisions/{id}": {
+      "get": {
+        "description": "Retrieve a single division by its unique ID",
+        "summary": "Get division by ID",
+        "tags": [
+          "divisions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getDivisionById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an existing division with the provided information",
+        "summary": "Update division",
+        "tags": [
+          "divisions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateDivision",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a division by its unique ID (only if no members assigned)",
+        "summary": "Delete division",
+        "tags": [
+          "divisions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteDivision",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges": {
+      "get": {
+        "description": "Get paginated list of badges with optional filtering by status and assignment type",
+        "summary": "List all badges",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [],
+        "operationId": "getBadges",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new badge with the provided information",
+        "summary": "Create new badge",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [],
+        "operationId": "createBadge",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges/stats": {
+      "get": {
+        "description": "Get badge statistics (total, assigned, unassigned, by status)",
+        "summary": "Get badge statistics",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [],
+        "operationId": "getBadgeStats",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges/serial/{serialNumber}": {
+      "get": {
+        "description": "Find a badge by its serial number",
+        "summary": "Get badge by serial number",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "serialNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getBadgeBySerialNumber",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges/{id}": {
+      "get": {
+        "description": "Retrieve a single badge by its unique ID",
+        "summary": "Get badge by ID",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getBadgeById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an existing badge with the provided information",
+        "summary": "Update badge",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateBadge",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a badge by its unique ID",
+        "summary": "Delete badge",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteBadge",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges/{id}/assign": {
+      "post": {
+        "description": "Assign a badge to a member or visitor",
+        "summary": "Assign badge",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "assignBadge",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/badges/{id}/unassign": {
+      "post": {
+        "description": "Unassign a badge from its current assignment",
+        "summary": "Unassign badge",
+        "tags": [
+          "badges"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "unassignBadge",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/badges/available": {
+      "get": {
+        "description": "Get list of available badges for assignment to event attendees",
+        "summary": "Get available badges",
+        "tags": [
+          "events"
+        ],
+        "parameters": [],
+        "operationId": "getAvailableBadges",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "description": "Get list of all events",
+        "summary": "List all events",
+        "tags": [
+          "events"
+        ],
+        "parameters": [],
+        "operationId": "getEvents",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new event with the provided information",
+        "summary": "Create new event",
+        "tags": [
+          "events"
+        ],
+        "parameters": [],
+        "operationId": "createEvent",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/close": {
+      "post": {
+        "description": "Close an event and optionally expire all attendee badges",
+        "summary": "Close event",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "closeEvent",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/stats": {
+      "get": {
+        "description": "Get presence statistics for an event (total, active, checked out, expired)",
+        "summary": "Get event presence stats",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getEventStats",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/attendees": {
+      "get": {
+        "description": "Get list of all attendees for an event",
+        "summary": "Get event attendees",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getEventAttendees",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Add a new attendee to an event",
+        "summary": "Add attendee to event",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "addAttendee",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/attendees/{attendeeId}/assign-badge": {
+      "post": {
+        "description": "Assign a badge to an event attendee",
+        "summary": "Assign badge to attendee",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attendeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "assignBadgeToAttendee",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/attendees/{attendeeId}/badge": {
+      "delete": {
+        "description": "Unassign the badge from an event attendee",
+        "summary": "Unassign badge from attendee",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attendeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "unassignBadgeFromAttendee",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}/attendees/{attendeeId}": {
+      "patch": {
+        "description": "Update an event attendee",
+        "summary": "Update attendee",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attendeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateAttendee",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Remove an attendee from an event",
+        "summary": "Remove attendee",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attendeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "removeAttendee",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/events/{id}": {
+      "get": {
+        "description": "Retrieve a single event by its unique ID",
+        "summary": "Get event by ID",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getEventById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an existing event with the provided information",
+        "summary": "Update event",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateEvent",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete an event",
+        "summary": "Delete event",
+        "tags": [
+          "events"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "deleteEvent",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/visitors/active": {
+      "get": {
+        "description": "Get list of all currently signed in visitors",
+        "summary": "Get active visitors",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [],
+        "operationId": "getActiveVisitors",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/visitors": {
+      "get": {
+        "description": "Get paginated list of visitors with optional filtering",
+        "summary": "List all visitors",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [],
+        "operationId": "getVisitors",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Sign in a new visitor",
+        "summary": "Create new visitor",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [],
+        "operationId": "createVisitor",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/visitors/{id}/checkout": {
+      "post": {
+        "description": "Sign out a visitor",
+        "summary": "Checkout visitor",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "checkoutVisitor",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/visitors/{id}": {
+      "get": {
+        "description": "Retrieve a single visitor by their unique ID",
+        "summary": "Get visitor by ID",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getVisitorById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Update visitor details (event, host, purpose)",
+        "summary": "Update visitor",
+        "tags": [
+          "visitors"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "updateVisitor",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/tags/lockup/holder": {
+      "get": {
+        "description": "Get the member who currently holds the Lockup tag",
+        "summary": "Get lockup tag holder",
+        "tags": [
+          "tags"
+        ],
+        "parameters": [],
+        "operationId": "getLockupHolder",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/tags/lockup/transfer": {
+      "post": {
+        "description": "Transfer the Lockup tag from current holder to a new member",
+        "summary": "Transfer lockup tag",
+        "tags": [
+          "tags"
+        ],
+        "parameters": [],
+        "operationId": "transferLockupTag",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/security-alerts/active": {
+      "get": {
+        "description": "Get all active (unacknowledged) security alerts",
+        "summary": "Get active security alerts",
+        "tags": [
+          "security-alerts"
+        ],
+        "parameters": [],
+        "operationId": "getActiveAlerts",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/security-alerts": {
+      "post": {
+        "description": "Create a new security alert (badge disabled, unknown, inactive member)",
+        "summary": "Create security alert",
+        "tags": [
+          "security-alerts"
+        ],
+        "parameters": [],
+        "operationId": "createAlert",
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/security-alerts/{id}/acknowledge": {
+      "post": {
+        "description": "Acknowledge a security alert (marks as no longer active)",
+        "summary": "Acknowledge security alert",
+        "tags": [
+          "security-alerts"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "acknowledgeAlert",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/security-alerts/{id}": {
+      "get": {
+        "description": "Retrieve a single security alert by its unique ID",
+        "summary": "Get security alert by ID",
+        "tags": [
+          "security-alerts"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "getAlertById",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/current": {
+      "get": {
+        "description": "Get today's active DDS assignment",
+        "summary": "Get current DDS",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "getCurrentDds",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/exists": {
+      "get": {
+        "description": "Check if a DDS has been assigned for today",
+        "summary": "Check if DDS exists",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "checkDdsExists",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/audit-log": {
+      "get": {
+        "description": "Get audit log entries for DDS responsibility (accepts, assignments, transfers, releases)",
+        "summary": "Get DDS audit log",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "getAuditLog",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/accept/{id}": {
+      "post": {
+        "description": "Member self-accepts DDS role (first check-in of day)",
+        "summary": "Accept DDS",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "acceptDds",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/assign": {
+      "post": {
+        "description": "Admin assigns DDS role to a member",
+        "summary": "Assign DDS",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "assignDds",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/transfer": {
+      "post": {
+        "description": "Admin transfers DDS role from current holder to another member",
+        "summary": "Transfer DDS",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "transferDds",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/dds/release": {
+      "post": {
+        "description": "Release DDS role (during checkout or by admin)",
+        "summary": "Release DDS",
+        "tags": [
+          "dds"
+        ],
+        "parameters": [],
+        "operationId": "releaseDds",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lockup/present": {
+      "get": {
+        "description": "Get all currently present members and visitors for lockup confirmation screen",
+        "summary": "Get present people for lockup",
+        "tags": [
+          "lockup"
+        ],
+        "parameters": [],
+        "operationId": "getPresentForLockup",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lockup/check-auth/{id}": {
+      "get": {
+        "description": "Check if a member has the Lockup tag and is authorized to perform building lockup",
+        "summary": "Check lockup authorization",
+        "tags": [
+          "lockup"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "checkLockupAuth",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/lockup/execute/{id}": {
+      "post": {
+        "description": "Bulk checkout all present members and visitors (requires Lockup tag)",
+        "summary": "Execute building lockup",
+        "tags": [
+          "lockup"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "executeLockup",
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Sentinel API",
+    "version": "1.0.0",
+    "description": "RFID-based attendance tracking system for HMCS Chippawa naval reserve unit"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.sentinel.example.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "members",
+      "description": "Member management operations"
+    },
+    {
+      "name": "checkins",
+      "description": "Check-in and attendance tracking"
+    },
+    {
+      "name": "divisions",
+      "description": "Division management"
+    },
+    {
+      "name": "badges",
+      "description": "Badge assignment and tracking"
+    },
+    {
+      "name": "events",
+      "description": "Event and attendee management"
+    },
+    {
+      "name": "visitors",
+      "description": "Visitor sign-in and tracking"
+    },
+    {
+      "name": "tags",
+      "description": "Responsibility tag management"
+    },
+    {
+      "name": "security-alerts",
+      "description": "Security alert system"
+    },
+    {
+      "name": "dds",
+      "description": "Daily Duty Staff management"
+    },
+    {
+      "name": "lockup",
+      "description": "Building lockup operations"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "apiKeyAuth": []
+    }
+  ]
+}
