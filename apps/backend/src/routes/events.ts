@@ -1,5 +1,13 @@
 import { initServer } from '@ts-rest/express'
 import { eventContract } from '@sentinel/contracts'
+import type {
+  CreateEventInput,
+  UpdateEventInput,
+  CreateAttendeeInput,
+  UpdateAttendeeInput,
+  AssignBadgeToAttendeeInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { EventService } from '../services/event-service.js'
 import { EventRepository } from '../repositories/event-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -77,7 +85,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Create new event
    */
-  createEvent: async ({ body }) => {
+  createEvent: async ({ body }: { body: CreateEventInput }) => {
     try {
       eventService.validateEventDates(new Date(body.startDate), new Date(body.endDate))
 
@@ -134,7 +142,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Close event
    */
-  closeEvent: async ({ params }) => {
+  closeEvent: async ({ params }: { params: IdParam }) => {
     try {
       const result = await eventService.closeEvent(params.id)
 
@@ -182,7 +190,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Get event presence statistics
    */
-  getEventStats: async ({ params }) => {
+  getEventStats: async ({ params }: { params: IdParam }) => {
     try {
       const stats = await eventService.getEventPresenceStats(params.id)
 
@@ -214,7 +222,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Get event attendees
    */
-  getEventAttendees: async ({ params }) => {
+  getEventAttendees: async ({ params }: { params: IdParam }) => {
     try {
       const attendees = await eventRepo.findByEventId(params.id)
 
@@ -252,7 +260,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Add attendee to event
    */
-  addAttendee: async ({ body }) => {
+  addAttendee: async ({ body }: { body: CreateAttendeeInput }) => {
     try {
       const attendee = await eventRepo.addAttendee({
         eventId: body.eventId,
@@ -299,7 +307,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Assign badge to attendee
    */
-  assignBadgeToAttendee: async ({ params, body }) => {
+  assignBadgeToAttendee: async ({ params, body }: { params: { id: string; attendeeId: string }; body: AssignBadgeToAttendeeInput }) => {
     try {
       const attendee = await eventService.assignBadgeToAttendee(
         params.id,
@@ -359,7 +367,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Unassign badge from attendee
    */
-  unassignBadgeFromAttendee: async ({ params }) => {
+  unassignBadgeFromAttendee: async ({ params }: { params: { id: string; attendeeId: string } }) => {
     try {
       const attendee = await eventService.unassignBadgeFromAttendee(params.id, params.attendeeId)
 
@@ -405,7 +413,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Update attendee
    */
-  updateAttendee: async ({ params, body }) => {
+  updateAttendee: async ({ params, body }: { params: { id: string; attendeeId: string }; body: UpdateAttendeeInput }) => {
     try {
       const attendee = await eventRepo.updateAttendee(params.attendeeId, {
         name: body.name,
@@ -461,7 +469,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Remove attendee from event
    */
-  removeAttendee: async ({ params }) => {
+  removeAttendee: async ({ params }: { params: { id: string; attendeeId: string } }) => {
     try {
       await eventRepo.removeAttendee(params.attendeeId)
 
@@ -496,7 +504,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Get event by ID
    */
-  getEventById: async ({ params }) => {
+  getEventById: async ({ params }: { params: IdParam }) => {
     try {
       const event = await eventRepo.findById(params.id)
 
@@ -541,7 +549,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Update event
    */
-  updateEvent: async ({ params, body }) => {
+  updateEvent: async ({ params, body }: { params: IdParam; body: UpdateEventInput }) => {
     try {
       if (body.startDate && body.endDate) {
         eventService.validateEventDates(new Date(body.startDate), new Date(body.endDate))
@@ -599,7 +607,7 @@ export const eventsRouter = s.router(eventContract, {
   /**
    * Delete event
    */
-  deleteEvent: async ({ params }) => {
+  deleteEvent: async ({ params }: { params: IdParam }) => {
     try {
       await eventRepo.delete(params.id)
 

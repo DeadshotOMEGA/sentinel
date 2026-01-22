@@ -1,5 +1,10 @@
 import { initServer } from '@ts-rest/express'
 import { trainingYearContract } from '@sentinel/contracts'
+import type {
+  CreateTrainingYear,
+  UpdateTrainingYear,
+  TrainingYearIdParam,
+} from '@sentinel/contracts'
 import { TrainingYearRepository } from '../repositories/training-year-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -80,7 +85,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
    * GET /api/training-years/:id - Get training year by ID
    */
-  getById: async ({ params }) => {
+  getById: async ({ params }: { params: TrainingYearIdParam }) => {
     try {
       const trainingYear = await trainingYearRepo.findById(params.id)
 
@@ -117,7 +122,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
    * POST /api/training-years - Create new training year
    */
-  create: async ({ body }) => {
+  create: async ({ body }: { body: CreateTrainingYear }) => {
     try {
       const trainingYear = await trainingYearRepo.create({
         name: body.name,
@@ -151,7 +156,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
    * PUT /api/training-years/:id - Update training year
    */
-  update: async ({ params, body }) => {
+  update: async ({ params, body }: { params: TrainingYearIdParam; body: UpdateTrainingYear }) => {
     try {
       // Check if training year exists
       const existing = await trainingYearRepo.findById(params.id)
@@ -166,7 +171,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
       }
 
       // Build update data
-      const updateData: any = {}
+      const updateData: Record<string, unknown> = {}
       if (body.name !== undefined) updateData.name = body.name
       if (body.startDate !== undefined)
         updateData.startDate = new Date(body.startDate)
@@ -214,7 +219,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
    * PUT /api/training-years/:id/set-current - Set as current training year
    */
-  setCurrent: async ({ params }) => {
+  setCurrent: async ({ params }: { params: TrainingYearIdParam }) => {
     try {
       // Check if training year exists
       const existing = await trainingYearRepo.findById(params.id)
@@ -254,7 +259,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
    * DELETE /api/training-years/:id - Delete training year
    */
-  delete: async ({ params }) => {
+  delete: async ({ params }: { params: TrainingYearIdParam }) => {
     try {
       // Check if training year exists
       const existing = await trainingYearRepo.findById(params.id)
@@ -304,7 +309,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
 /**
  * Convert TrainingYear database model to API response format
  */
-function toApiFormat(trainingYear: any) {
+function toApiFormat(trainingYear: Record<string, unknown>) {
   return {
     id: trainingYear.id,
     name: trainingYear.name,

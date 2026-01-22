@@ -1,5 +1,12 @@
 import { initServer } from '@ts-rest/express'
 import { checkinContract } from '@sentinel/contracts'
+import type {
+  CheckinListQuery,
+  CreateCheckinInput,
+  BulkCreateCheckinsInput,
+  UpdateCheckinInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -14,13 +21,13 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get all checkins with pagination and filtering
    */
-  getCheckins: async ({ query }) => {
+  getCheckins: async ({ query }: { query: CheckinListQuery }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
-      const filters: any = {}
+      const filters: Record<string, unknown> = {}
       if (query.memberId) filters.memberId = query.memberId
       if (query.kioskId) filters.kioskId = query.kioskId
       if (query.startDate && query.endDate) {
@@ -140,7 +147,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get single checkin by ID
    */
-  getCheckinById: async ({ params }) => {
+  getCheckinById: async ({ params }: { params: IdParam }) => {
     try {
       const checkin = await checkinRepo.findByIdWithMember(params.id)
 
@@ -191,7 +198,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Create new checkin
    */
-  createCheckin: async ({ body }) => {
+  createCheckin: async ({ body }: { body: CreateCheckinInput }) => {
     try {
       const checkin = await checkinRepo.create({
         memberId: body.memberId,
@@ -267,7 +274,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Bulk create checkins (for offline sync)
    */
-  bulkCreateCheckins: async ({ body }) => {
+  bulkCreateCheckins: async ({ body }: { body: BulkCreateCheckinsInput }) => {
     try {
       const checkins = body.checkins.map((c) => ({
         memberId: c.memberId,
@@ -305,7 +312,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Update existing checkin
    */
-  updateCheckin: async ({ params, body }) => {
+  updateCheckin: async ({ params, body }: { params: IdParam; body: UpdateCheckinInput }) => {
     try {
       const updated = await checkinRepo.update(params.id, {
         direction: body.direction,
@@ -365,7 +372,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Delete checkin
    */
-  deleteCheckin: async ({ params }) => {
+  deleteCheckin: async ({ params }: { params: IdParam }) => {
     try {
       await checkinRepo.delete(params.id)
 
@@ -400,13 +407,13 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get checkins for a specific member
    */
-  getMemberCheckins: async ({ params, query }) => {
+  getMemberCheckins: async ({ params, query }: { params: IdParam; query: CheckinListQuery }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
-      const filters: any = {
+      const filters: Record<string, unknown> = {
         memberId: params.id,
       }
       if (query.kioskId) filters.kioskId = query.kioskId

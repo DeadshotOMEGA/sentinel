@@ -1,5 +1,10 @@
 import { initServer } from '@ts-rest/express'
 import { divisionContract } from '@sentinel/contracts'
+import type {
+  CreateDivisionInput,
+  UpdateDivisionInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -55,7 +60,7 @@ export const divisionsRouter = s.router(divisionContract, {
   /**
    * Get single division by ID
    */
-  getDivisionById: async ({ params }) => {
+  getDivisionById: async ({ params }: { params: IdParam }) => {
     try {
       const division = await divisionRepo.findById(params.id)
 
@@ -97,7 +102,7 @@ export const divisionsRouter = s.router(divisionContract, {
   /**
    * Create new division
    */
-  createDivision: async ({ body }) => {
+  createDivision: async ({ body }: { body: CreateDivisionInput }) => {
     try {
       const division = await divisionRepo.create({
         name: body.name,
@@ -142,7 +147,7 @@ export const divisionsRouter = s.router(divisionContract, {
   /**
    * Update existing division
    */
-  updateDivision: async ({ params, body }) => {
+  updateDivision: async ({ params, body }: { params: IdParam; body: UpdateDivisionInput }) => {
     try {
       const division = await divisionRepo.update(params.id, {
         name: body.name,
@@ -198,7 +203,7 @@ export const divisionsRouter = s.router(divisionContract, {
   /**
    * Delete division
    */
-  deleteDivision: async ({ params }) => {
+  deleteDivision: async ({ params }: { params: IdParam }) => {
     try {
       await divisionRepo.delete(params.id)
 

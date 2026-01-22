@@ -1,5 +1,12 @@
 import { initServer } from '@ts-rest/express'
 import { ddsContract } from '@sentinel/contracts'
+import type {
+  DdsAuditLogQuery,
+  AssignDdsInput,
+  TransferDdsInput,
+  ReleaseDdsInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { DdsService } from '../services/dds-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -10,7 +17,7 @@ const ddsService = new DdsService(getPrismaClient())
 /**
  * Helper to transform DDS assignment to API format
  */
-function toApiFormat(assignment: any) {
+function toApiFormat(assignment: Record<string, unknown>) {
   return {
     id: assignment.id,
     memberId: assignment.memberId,
@@ -92,7 +99,7 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Get DDS audit log
    */
-  getAuditLog: async ({ query }) => {
+  getAuditLog: async ({ query }: { query: DdsAuditLogQuery }) => {
     try {
       const limit = query.limit || 50
       const logs = await ddsService.getAuditLog(query.memberId, limit)
@@ -129,7 +136,7 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Member self-accepts DDS at kiosk
    */
-  acceptDds: async ({ params }) => {
+  acceptDds: async ({ params }: { params: IdParam }) => {
     try {
       const assignment = await ddsService.acceptDds(params.id)
 
@@ -175,7 +182,7 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Admin assigns DDS to a member
    */
-  assignDds: async ({ body }) => {
+  assignDds: async ({ body }: { body: AssignDdsInput }) => {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using null until auth is implemented
@@ -225,7 +232,7 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Transfer DDS to another member
    */
-  transferDds: async ({ body }) => {
+  transferDds: async ({ body }: { body: TransferDdsInput }) => {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using null until auth is implemented
@@ -275,7 +282,7 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Release DDS role
    */
-  releaseDds: async ({ body }) => {
+  releaseDds: async ({ body }: { body: ReleaseDdsInput }) => {
     try {
       // Get admin ID from request context (would be from auth middleware)
       // For now, using null until auth is implemented
