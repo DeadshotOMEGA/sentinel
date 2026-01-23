@@ -122,7 +122,7 @@ export function broadcastVisitorSignout(visitor: {
  */
 export function broadcastSecurityAlert(alert: {
   id: string
-  alertType: 'badge_disabled' | 'badge_unknown' | 'inactive_member'
+  alertType: 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access'
   severity: 'critical' | 'warning' | 'info'
   badgeSerial: string | null
   kioskId: string
