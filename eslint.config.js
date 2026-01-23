@@ -4,6 +4,7 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 
+/** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   // Ignore patterns
   {
