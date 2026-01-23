@@ -204,7 +204,7 @@ export const createTestData = {
         const division = await createTestData.division(prisma)
         divisionId = division.id
       } else {
-        divisionId = divisions[0].id
+        divisionId = divisions[0]!.id
       }
     }
 
@@ -215,6 +215,7 @@ export const createTestData = {
         firstName: overrides.firstName || 'Test',
         lastName: overrides.lastName || 'Member',
         divisionId,
+        memberType: overrides.memberType || 'class_a',
         status: overrides.status || 'ACTIVE',
         ...overrides,
       },
@@ -229,9 +230,8 @@ export const createTestData = {
       data: {
         serialNumber: overrides.serialNumber || `B${Date.now()}`,
         status: overrides.status || 'ACTIVE',
-        memberId: overrides.memberId || null,
-        visitorId: overrides.visitorId || null,
-        assignedAt: overrides.assignedAt || null,
+        assignmentType: overrides.assignmentType || 'unassigned',
+        assignedToId: overrides.assignedToId || null,
         ...overrides,
       },
     })
@@ -251,8 +251,9 @@ export const createTestData = {
     return await prisma.checkin.create({
       data: {
         badgeId,
-        scannedAt: overrides.scannedAt || new Date(),
-        direction: overrides.direction || 'IN',
+        timestamp: overrides.timestamp || new Date(),
+        direction: overrides.direction || 'in',
+        kioskId: overrides.kioskId || 'KIOSK_TEST',
         ...overrides,
       },
     })
@@ -264,11 +265,12 @@ export const createTestData = {
   visitor: async (prisma: PrismaClient, overrides: Partial<any> = {}) => {
     return await prisma.visitor.create({
       data: {
-        firstName: overrides.firstName || 'Test',
-        lastName: overrides.lastName || 'Visitor',
+        name: overrides.name || 'Test Visitor',
         organization: overrides.organization || 'Test Org',
-        purpose: overrides.purpose || 'Testing',
-        visitDate: overrides.visitDate || new Date(),
+        visitType: overrides.visitType || 'guest',
+        visitReason: overrides.visitReason || 'Testing',
+        kioskId: overrides.kioskId || 'KIOSK_TEST',
+        checkInTime: overrides.checkInTime || new Date(),
         ...overrides,
       },
     })
@@ -280,6 +282,7 @@ export const createTestData = {
   event: async (prisma: PrismaClient, overrides: Partial<any> = {}) => {
     return await prisma.event.create({
       data: {
+        code: overrides.code || `EVT${Date.now()}`,
         name: overrides.name || 'Test Event',
         description: overrides.description || 'Test Event Description',
         startDate: overrides.startDate || new Date(),

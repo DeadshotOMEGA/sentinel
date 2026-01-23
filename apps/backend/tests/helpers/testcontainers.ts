@@ -184,7 +184,7 @@ export class TestDatabase {
 
     await this.prisma.listItem.createMany({
       data: [
-        { code: 'general', name: 'General', description: 'General list item' },
+        { code: 'general', name: 'General', description: 'General list item', listType: 'general' },
       ],
       skipDuplicates: true,
     })
