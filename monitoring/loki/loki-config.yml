@@ -78,7 +78,6 @@ limits_config:
 
   # Unordered writes (helpful for distributed logging)
   unordered_writes: true
-  max_chunk_age: 2h
 
 # Query frontend configuration
 query_range:
