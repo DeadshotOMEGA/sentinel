@@ -73,7 +73,7 @@ async function runBenchmarks() {
     await benchmark('findMany with join strategy', async () => {
       await prisma.member.findMany({
         take: 50,
-        relationLoadStrategy: 'join',
+        relationLoadStrategy: 'join' as const,
         include: { division: true },
       })
     })
@@ -84,7 +84,7 @@ async function runBenchmarks() {
     await benchmark('Complex query (member + division + checkins)', async () => {
       await prisma.member.findMany({
         take: 20,
-        relationLoadStrategy: 'join',
+        relationLoadStrategy: 'join' as const,
         include: {
           division: true,
           checkins: {
@@ -128,7 +128,7 @@ async function runBenchmarks() {
     await benchmark('Checkin with member and badge relations', async () => {
       await prisma.checkin.findMany({
         take: 50,
-        relationLoadStrategy: 'join',
+        relationLoadStrategy: 'join' as const,
         include: {
           member: {
             include: {
