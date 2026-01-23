@@ -58,13 +58,6 @@ scrape_configs:
           service: 'grafana'
           application: 'monitoring'
 
-# Storage configuration
-storage:
-  tsdb:
-    path: /prometheus
-    retention.time: 15d
-    retention.size: 10GB
-
 # Remote write/read (optional - for long-term storage)
 # remote_write:
 #   - url: "http://long-term-storage:9009/api/v1/write"
