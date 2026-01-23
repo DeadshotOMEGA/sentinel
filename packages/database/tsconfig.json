@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "rootDir": ".",
+    "outDir": "./dist",
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "prisma/prisma.config.ts"],
-  "exclude": ["node_modules", "dist", "prisma/migrations"]
+  "exclude": ["node_modules", "dist", "prisma/migrations", "generated"]
 }

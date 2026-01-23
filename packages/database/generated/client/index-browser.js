@@ -139,6 +139,11 @@ exports.Prisma.AdminUserScalarFieldEnum = {
   updatedBy: 'updatedBy'
 };
 
+exports.Prisma.RelationLoadStrategy = {
+  query: 'query',
+  join: 'join'
+};
+
 exports.Prisma.AuditLogScalarFieldEnum = {
   id: 'id',
   adminUserId: 'adminUserId',
