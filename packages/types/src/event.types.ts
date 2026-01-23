@@ -1,7 +1,7 @@
 // Event-related types
 
 export type EventStatus = 'draft' | 'active' | 'completed' | 'cancelled'
-export type AttendeeStatus = 'pending' | 'approved' | 'denied' | 'checked_in'
+export type AttendeeStatus = 'pending' | 'approved' | 'denied' | 'checked_in' | 'expired'
 
 export interface Event {
   id: string

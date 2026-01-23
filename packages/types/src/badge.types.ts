@@ -1,6 +1,6 @@
 // Badge-related types
 
-export type BadgeAssignmentType = 'member' | 'visitor' | 'unassigned'
+export type BadgeAssignmentType = 'member' | 'visitor' | 'event' | 'unassigned'
 
 export interface Badge {
   id: string
@@ -60,6 +60,7 @@ export interface BadgeStatusEnum {
   name: string
   code: string
   description?: string
+  color?: string
   createdAt: Date
   updatedAt: Date
 }
