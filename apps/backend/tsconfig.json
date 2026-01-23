@@ -3,6 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": ".",
+    "declaration": false,
+    "declarationMap": false,
     "paths": {
       "@/*": ["./src/*"],
       "@sentinel/contracts": ["../../packages/contracts/src"],
