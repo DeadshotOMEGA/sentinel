@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "declaration": false,
     "declarationMap": false,
+    "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"],
       "@sentinel/contracts": ["../../packages/contracts/src"],
