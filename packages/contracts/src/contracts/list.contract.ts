@@ -95,7 +95,7 @@ export const listContract = c.router({
     method: 'GET',
     path: '/api/lists/:listType/:id/usage',
     pathParams: v.object({
-      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      ...ListTypeParamSchema.entries,
       id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
     }),
     responses: {
@@ -117,7 +117,7 @@ export const listContract = c.router({
     method: 'PUT',
     path: '/api/lists/:listType/:id',
     pathParams: v.object({
-      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      ...ListTypeParamSchema.entries,
       id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
     }),
     body: UpdateListItemSchema,
@@ -141,7 +141,7 @@ export const listContract = c.router({
     method: 'DELETE',
     path: '/api/lists/:listType/:id',
     pathParams: v.object({
-      listType: v.pipe(v.string(), v.picklist(['visit-types', 'member-statuses', 'member-types', 'badge-statuses'] as const)),
+      ...ListTypeParamSchema.entries,
       id: v.pipe(v.string('ID is required'), v.uuid('Invalid ID format')),
     }),
     body: c.type<undefined>(),

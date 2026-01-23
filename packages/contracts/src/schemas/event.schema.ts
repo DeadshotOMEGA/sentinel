@@ -8,7 +8,13 @@ export const EventStatusEnum = v.picklist(['draft', 'active', 'completed', 'canc
 /**
  * Event attendee status values
  */
-export const AttendeeStatusEnum = v.picklist(['pending', 'approved', 'denied', 'checked_in'])
+export const AttendeeStatusEnum = v.picklist([
+  'pending',
+  'approved',
+  'denied',
+  'checked_in',
+  'expired',
+])
 
 /**
  * Create event request schema
