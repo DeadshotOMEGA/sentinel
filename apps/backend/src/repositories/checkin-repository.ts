@@ -27,13 +27,13 @@ interface CheckinFilters {
   }
 }
 
-interface MemberPresenceItem {
+export interface MemberPresenceItem {
   member: MemberWithDivision
   status: 'present' | 'absent'
   lastCheckin?: Checkin
 }
 
-interface PresentMember {
+export interface PresentMember {
   id: string
   firstName: string
   lastName: string

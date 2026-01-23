@@ -92,7 +92,7 @@ export class ListItemRepository {
   /**
    * Create a new list item
    */
-  async create(listType: ListType, data: CreateListItemInput): Promise<ListItem> {
+  async create(listType: ListType, data: Omit<CreateListItemInput, 'listType'>): Promise<ListItem> {
     // Get max display order if not provided
     let displayOrder = data.displayOrder
     if (displayOrder === undefined) {
