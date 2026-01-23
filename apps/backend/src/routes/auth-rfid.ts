@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
 
-const router = Router()
+const router: Router = Router()
 
 /**
  * RFID Login Request Schema

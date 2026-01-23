@@ -3,7 +3,7 @@ import { getPrismaClient } from '../lib/database.js'
 import { logger } from '../lib/logger.js'
 import { register } from '../lib/metrics.js'
 
-export const healthRouter = Router()
+export const healthRouter: Router = Router()
 
 /**
  * Overall health check

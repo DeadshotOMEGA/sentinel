@@ -135,8 +135,8 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
-        memberTypeId: body.memberTypeId,
-        memberStatusId: body.memberStatusId,
+        memberType: 'regular', // TODO: Map from memberTypeId when FK migration complete
+        // memberTypeId and memberStatusId not yet supported by repository
         badgeId: body.badgeId,
       })
 

@@ -99,7 +99,6 @@ export const listsRouter = s.router(listContract, {
       // Create the item
       // Note: Repository takes listType separately, not in the data object
       const item = await listItemRepo.create(params.listType, {
-        listType: params.listType, // Required by CreateListItemInput type
         code: body.code,
         name: body.name,
         displayOrder: body.displayOrder,

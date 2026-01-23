@@ -454,7 +454,7 @@ export const reportsRouter = s.router(reportContract, {
       const enrollments = await prisma.bmqEnrollment.findMany({
         where: enrollmentWhere,
         include: {
-          members: {
+          member: {
             include: {
               division: {
                 select: {
@@ -474,39 +474,21 @@ export const reportsRouter = s.router(reportContract, {
           },
         },
         orderBy: {
-          members: {
+          member: {
             lastName: 'asc',
           },
         },
       })
 
       // Filter by division if specified
-      interface EnrollmentRecord {
-        id: string
-        member_id: string
-        bmq_course_id: string
-        enrolledAt: Date
-        completed_at: Date | null
-        status: string
-        members: {
-          id: string
-          serviceNumber: string
-          firstName: string
-          lastName: string
-          rank: string
-          divisionId: string | null
-          division: { id: string; name: string } | null
-          checkins: { id: string; timestamp: Date; direction: string }[]
-        }
-      }
       const filteredEnrollments =
         config.organizationOption === 'specific_division' && config.divisionId
-          ? enrollments.filter((e: EnrollmentRecord) => e.members.divisionId === config.divisionId)
+          ? enrollments.filter((e) => e.member.divisionId === config.divisionId)
           : enrollments
 
       // Calculate attendance for each enrollment
-      const records = filteredEnrollments.map((enrollment: EnrollmentRecord) => {
-        const totalCheckins = enrollment.members.checkins.length
+      const records = filteredEnrollments.map((enrollment) => {
+        const totalCheckins = enrollment.member.checkins.length
         const attendance = {
           status: totalCheckins === 0 ? ('new' as const) : ('calculated' as const),
           percentage: totalCheckins > 0 ? Math.round((totalCheckins / 20) * 100) : undefined, // Simplified
@@ -516,21 +498,21 @@ export const reportsRouter = s.router(reportContract, {
 
         return {
           member: {
-            id: enrollment.members.id,
-            serviceNumber: enrollment.members.serviceNumber,
-            firstName: enrollment.members.firstName,
-            lastName: enrollment.members.lastName,
-            rank: enrollment.members.rank,
+            id: enrollment.member.id,
+            serviceNumber: enrollment.member.serviceNumber,
+            firstName: enrollment.member.firstName,
+            lastName: enrollment.member.lastName,
+            rank: enrollment.member.rank,
             division: {
-              id: enrollment.members.division?.id ?? 'Unknown',
-              name: enrollment.members.division?.name ?? 'Unknown',
+              id: enrollment.member.division?.id ?? 'Unknown',
+              name: enrollment.member.division?.name ?? 'Unknown',
             },
           },
           attendance,
           enrollment: {
             id: enrollment.id,
             enrolledAt: enrollment.enrolledAt.toISOString(),
-            completedAt: enrollment.completed_at?.toISOString() || null,
+            completedAt: enrollment.completedAt?.toISOString() || null,
             status: enrollment.status,
           },
         }
@@ -686,12 +668,9 @@ export const reportsRouter = s.router(reportContract, {
 
       const records = visitors.map((visitor) => ({
         id: visitor.id,
-        fullName:
-          visitor.firstName && visitor.lastName
-            ? `${visitor.firstName} ${visitor.lastName}`
-            : visitor.id,
+        fullName: visitor.name || visitor.id,
         organization: visitor.organization || null,
-        purpose: visitor.purpose || null,
+        purpose: visitor.visitReason || null,
         visitType: visitor.visitType,
         checkInTime: visitor.checkInTime.toISOString(),
         checkOutTime: visitor.checkOutTime?.toISOString() || null,

@@ -30,7 +30,7 @@ try {
  * Swagger UI Router
  * Interactive API documentation with "Try it out" functionality
  */
-export const swaggerRouter = Router()
+export const swaggerRouter: Router = Router()
 
 swaggerRouter.use(
   '/',
@@ -51,7 +51,7 @@ swaggerRouter.use(
  * ReDoc Router
  * Clean, responsive API reference documentation
  */
-export const redocRouter = Router()
+export const redocRouter: Router = Router()
 
 redocRouter.get('/', (_req, res) => {
   res.send(`
@@ -81,7 +81,7 @@ redocRouter.get('/', (_req, res) => {
  * OpenAPI Spec Router
  * Serves the raw OpenAPI JSON specification
  */
-export const openapiRouter = Router()
+export const openapiRouter: Router = Router()
 
 openapiRouter.get('/', (_req, res) => {
   res.setHeader('Content-Type', 'application/json')

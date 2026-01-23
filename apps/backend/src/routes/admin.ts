@@ -4,7 +4,7 @@ import { auth } from '../lib/auth.js'
 import { requireRole, Role } from '../middleware/roles.js'
 import { authLogger } from '../lib/logger.js'
 
-const router = Router()
+const router: Router = Router()
 
 /**
  * Create User Schema
@@ -107,17 +107,18 @@ router.post(
         name: result.data.name || result.data.email.split('@')[0],
       }
 
-      const user = await auth.api.createUser({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const user = await (auth.api.createUser as any)({
         body: createUserBody,
         headers: req.headers as Record<string, string>,
       })
 
-      const userData = user.data || user
-      const userIdValue =
-        (userData as Record<string, unknown>)?.user?.id || (userData as Record<string, unknown>)?.id
-      const emailValue =
-        (userData as Record<string, unknown>)?.user?.email ||
-        (userData as Record<string, unknown>)?.email
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userData = (user as any).data || user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userIdValue = (userData as any)?.user?.id || (userData as any)?.id
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const emailValue = (userData as any)?.user?.email || (userData as any)?.email
 
       authLogger.info('User created', {
         userId: String(userIdValue),
@@ -283,7 +284,8 @@ router.delete(
       const sessionId = req.params.id
 
       // Use better-auth admin plugin to revoke session
-      await auth.api.revokeSession({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (auth.api.revokeSession as any)({
         body: { token: sessionId },
         headers: req.headers as Record<string, string>,
       })

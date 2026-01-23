@@ -34,7 +34,7 @@ export const lockupRouter = s.router(lockupContract, {
       const visitorsFormatted = presentData.visitors.map((v) => ({
         id: v.id,
         name: v.name,
-        organization: v.organization,
+        organization: v.organization || 'Unknown',
         visitType: v.visitType,
         checkInTime: v.checkInTime.toISOString(),
       }))

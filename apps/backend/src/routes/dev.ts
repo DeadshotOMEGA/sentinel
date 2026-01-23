@@ -242,6 +242,15 @@ export const devRouter = s.router(devContract, {
       }
 
       const member = badge.members[0]
+      if (!member) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: `Badge ${config.serialNumber} is not assigned to any member`,
+          },
+        }
+      }
 
       // Determine direction (toggle between in/out)
       const lastCheckin = member.checkins[0]
@@ -273,7 +282,7 @@ export const devRouter = s.router(devContract, {
             firstName: member.firstName,
             lastName: member.lastName,
             rank: member.rank,
-            division: member.division.name,
+            division: member.division?.name || 'Unknown',
           },
           timestamp: checkin.timestamp.toISOString(),
           message: `${member.firstName} ${member.lastName} checked ${direction}`,
