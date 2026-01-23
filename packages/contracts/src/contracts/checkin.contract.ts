@@ -46,7 +46,6 @@ export const checkinContract = c.router({
   getPresenceStatus: {
     method: 'GET',
     path: '/api/checkins/presence',
-    body: c.type<undefined>(),
     responses: {
       200: PresenceStatusResponseSchema,
       401: ErrorResponseSchema,

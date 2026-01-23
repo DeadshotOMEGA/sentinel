@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@sentinel/database'
 
 async function testConnection() {
   // Ensure DATABASE_URL is set
@@ -25,7 +25,7 @@ async function testConnection() {
     )
 
     console.log(`\n📊 Found ${tables.length} tables in database:`)
-    tables.forEach((t) => console.log(`   - ${t.tablename}`))
+    tables.forEach((t: { tablename: string }) => console.log(`   - ${t.tablename}`))
 
     // Check if schema matches our Prisma schema
     const expectedTables = [
@@ -36,8 +36,8 @@ async function testConnection() {
       'security_alerts', 'tags', 'training_years', 'visitors'
     ]
 
-    const tableNames = tables.map((t) => t.tablename)
-    const missingTables = expectedTables.filter((t) => !tableNames.includes(t))
+    const tableNames = tables.map((t: { tablename: string }) => t.tablename)
+    const missingTables = expectedTables.filter((t: string) => !tableNames.includes(t))
 
     if (missingTables.length > 0) {
       console.log(`\n⚠️  Missing tables (need to run migrations):`)
@@ -51,12 +51,13 @@ async function testConnection() {
       `SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '_prisma_migrations') as exists`
     )
 
-    if (migrationTable[0].exists) {
+    const firstRow = migrationTable[0]
+    if (firstRow && firstRow.exists) {
       const migrations = await prisma.$queryRawUnsafe<Array<{ migration_name: string }>>(
         `SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 5`
       )
       console.log(`\n📝 Recent migrations:`)
-      migrations.forEach((m) => console.log(`   - ${m.migration_name}`))
+      migrations.forEach((m: { migration_name: string }) => console.log(`   - ${m.migration_name}`))
     } else {
       console.log(`\n⚠️  No _prisma_migrations table found (database not initialized with Prisma)`)
     }

@@ -1,14 +1,5 @@
 import * as v from 'valibot'
-
-/**
- * Alert type enum
- */
-export const AlertTypeEnum = v.picklist(['badge_disabled', 'badge_unknown', 'inactive_member'])
-
-/**
- * Alert severity enum
- */
-export const AlertSeverityEnum = v.picklist(['critical', 'warning', 'info'])
+import { AlertTypeEnum, AlertSeverityEnum } from './alert-config.schema.js'
 
 /**
  * Create security alert request schema

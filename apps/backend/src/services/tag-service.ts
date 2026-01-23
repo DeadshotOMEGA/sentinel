@@ -2,14 +2,14 @@ import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { NotFoundError } from '../middleware/error-handler.js'
 
-interface LockupHolder {
+export interface LockupHolder {
   id: string
   rank: string
   firstName: string
   lastName: string
 }
 
-interface TransferLockupResult {
+export interface TransferLockupResult {
   success: boolean
   previousHolder: LockupHolder | null
   newHolder: LockupHolder

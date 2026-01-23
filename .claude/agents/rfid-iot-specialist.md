@@ -155,94 +155,91 @@ RFID Reader → Server → Kiosks + Admins
 ```typescript
 // In socket.ts connection handler
 if (clientType === 'READER') {
-  socket.on('rfid:scan', async (data: {
-    rfidCardNumber: string
-    readerId: string
-    timestamp: string
-  }) => {
-    try {
-      // Validate personnel exists
-      const personnel = await prisma.personnel.findFirst({
-        where: {
-          rfidCard: {
-            cardNumber: data.rfidCardNumber,
+  socket.on(
+    'rfid:scan',
+    async (data: { rfidCardNumber: string; readerId: string; timestamp: string }) => {
+      try {
+        // Validate personnel exists
+        const personnel = await prisma.personnel.findFirst({
+          where: {
+            rfidCard: {
+              cardNumber: data.rfidCardNumber,
+            },
           },
-        },
-        include: {
-          rfidCard: true,
-          rank: true,
-        },
-      })
-
-      if (!personnel) {
-        socket.emit('rfid:scan:error', {
-          error: 'Personnel not found',
-          rfidCardNumber: data.rfidCardNumber,
+          include: {
+            rfidCard: true,
+            rank: true,
+          },
         })
-        return
-      }
 
-      // Determine event type (check-in or check-out)
-      const lastEvent = await prisma.attendanceRecord.findFirst({
-        where: { personnelId: personnel.id },
-        orderBy: { timestamp: 'desc' },
-      })
+        if (!personnel) {
+          socket.emit('rfid:scan:error', {
+            error: 'Personnel not found',
+            rfidCardNumber: data.rfidCardNumber,
+          })
+          return
+        }
 
-      const eventType =
-        !lastEvent || lastEvent.eventType === 'CHECK_OUT'
-          ? 'CHECK_IN'
-          : 'CHECK_OUT'
+        // Determine event type (check-in or check-out)
+        const lastEvent = await prisma.attendanceRecord.findFirst({
+          where: { personnelId: personnel.id },
+          orderBy: { timestamp: 'desc' },
+        })
 
-      // Create attendance record
-      const record = await prisma.attendanceRecord.create({
-        data: {
-          personnelId: personnel.id,
-          timestamp: new Date(data.timestamp),
+        const eventType =
+          !lastEvent || lastEvent.eventType === 'CHECK_OUT' ? 'CHECK_IN' : 'CHECK_OUT'
+
+        // Create attendance record
+        const record = await prisma.attendanceRecord.create({
+          data: {
+            personnelId: personnel.id,
+            timestamp: new Date(data.timestamp),
+            eventType,
+            readerId: data.readerId,
+          },
+        })
+
+        // Broadcast to kiosks and admins
+        const eventData = {
+          id: record.id,
           eventType,
+          timestamp: record.timestamp,
+          personnel: {
+            id: personnel.id,
+            firstName: personnel.firstName,
+            lastName: personnel.lastName,
+            rank: personnel.rank,
+            photo: personnel.photoUrl,
+          },
           readerId: data.readerId,
-        },
-      })
+        }
 
-      // Broadcast to kiosks and admins
-      const eventData = {
-        id: record.id,
-        eventType,
-        timestamp: record.timestamp,
-        personnel: {
-          id: personnel.id,
-          firstName: personnel.firstName,
-          lastName: personnel.lastName,
-          rank: personnel.rank,
-          photo: personnel.photoUrl,
-        },
-        readerId: data.readerId,
+        io.to('kiosks').emit('attendance:event', eventData)
+        io.to('admins').emit('attendance:event', eventData)
+
+        // Confirm to reader
+        socket.emit('rfid:scan:success', {
+          recordId: record.id,
+          eventType,
+        })
+
+        // Log auth event
+        await logAuthEvent({
+          type: eventType === 'CHECK_IN' ? 'CHECK_IN' : 'CHECK_OUT',
+          userId: personnel.id,
+          metadata: {
+            readerId: data.readerId,
+            rfidCardNumber: data.rfidCardNumber,
+          },
+        })
+      } catch (error) {
+        socket.emit('rfid:scan:error', {
+          error: 'Failed to process scan',
+          details: error instanceof Error ? error.message : undefined,
+        })
       }
-
-      io.to('kiosks').emit('attendance:event', eventData)
-      io.to('admins').emit('attendance:event', eventData)
-
-      // Confirm to reader
-      socket.emit('rfid:scan:success', {
-        recordId: record.id,
-        eventType,
-      })
-
-      // Log auth event
-      await logAuthEvent({
-        type: eventType === 'CHECK_IN' ? 'CHECK_IN' : 'CHECK_OUT',
-        userId: personnel.id,
-        metadata: {
-          readerId: data.readerId,
-          rfidCardNumber: data.rfidCardNumber,
-        },
-      })
-    } catch (error) {
-      socket.emit('rfid:scan:error', {
-        error: 'Failed to process scan',
-        details: error instanceof Error ? error.message : undefined,
-      })
     }
-  })
+  )
 }
 ```
 

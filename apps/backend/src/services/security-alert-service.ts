@@ -5,7 +5,7 @@ import { Prisma } from '@sentinel/database'
 
 import { broadcastSecurityAlert } from '../websocket/broadcast.js'
 
-type AlertType = 'badge_disabled' | 'badge_unknown' | 'inactive_member'
+type AlertType = 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access'
 type AlertSeverity = 'critical' | 'warning' | 'info'
 
 interface CreateAlertData {

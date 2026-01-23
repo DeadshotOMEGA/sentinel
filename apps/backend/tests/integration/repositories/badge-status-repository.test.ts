@@ -75,9 +75,9 @@ describe('BadgeStatusRepository Integration Tests', () => {
       const statuses = await repo.findAll()
 
       expect(statuses).toHaveLength(3)
-      expect(statuses[0].name).toBe('Alpha')
-      expect(statuses[1].name).toBe('Bravo')
-      expect(statuses[2].name).toBe('Charlie')
+      expect(statuses[0]!.name).toBe('Alpha')
+      expect(statuses[1]!.name).toBe('Bravo')
+      expect(statuses[2]!.name).toBe('Charlie')
     })
   })
 

@@ -1,6 +1,6 @@
 import { initServer } from '@ts-rest/express'
 import { listContract } from '@sentinel/contracts'
-import type { ListType, ListItem } from '@sentinel/types'
+import type { ListItem } from '@sentinel/types'
 import { ListItemRepository } from '../repositories/list-item-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import type { ListItemResponse } from '@sentinel/contracts'
@@ -18,13 +18,13 @@ const VALID_LIST_TYPES = ['event_role', 'rank', 'mess', 'moc'] as const
 function toApiFormat(item: ListItem, usageCount: number): ListItemResponse {
   // Ensure listType is one of the valid API list types
   const listType = item.listType
-  if (!VALID_LIST_TYPES.includes(listType as typeof VALID_LIST_TYPES[number])) {
+  if (!VALID_LIST_TYPES.includes(listType as (typeof VALID_LIST_TYPES)[number])) {
     throw new Error(`Invalid list type: ${listType}`)
   }
 
   return {
     id: item.id,
-    listType: listType as typeof VALID_LIST_TYPES[number],
+    listType: listType as (typeof VALID_LIST_TYPES)[number],
     code: item.code,
     name: item.name,
     displayOrder: item.displayOrder,
@@ -99,7 +99,6 @@ export const listsRouter = s.router(listContract, {
       // Create the item
       // Note: Repository takes listType separately, not in the data object
       const item = await listItemRepo.create(params.listType, {
-        listType: params.listType, // Required by CreateListItemInput type
         code: body.code,
         name: body.name,
         displayOrder: body.displayOrder,
@@ -284,7 +283,8 @@ export const listsRouter = s.router(listContract, {
           status: 400 as const,
           body: {
             error: 'VALIDATION_ERROR',
-            message: 'Cannot delete system items. System items are protected and cannot be deleted.',
+            message:
+              'Cannot delete system items. System items are protected and cannot be deleted.',
           },
         }
       }

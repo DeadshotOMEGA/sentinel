@@ -4,6 +4,7 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 
+/** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   // Ignore patterns
   {
@@ -32,6 +33,20 @@ export default [
         ecmaVersion: 'latest',
         sourceType: 'module',
         project: ['./tsconfig.json', './apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+      },
+      globals: {
+        // Node.js globals
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearImmediate: 'readonly',
       },
     },
     plugins: {

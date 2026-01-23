@@ -7,6 +7,7 @@ import {
   createEvent,
 } from '../../helpers/factories'
 import { VisitorRepository } from '@/repositories/visitor-repository'
+import type { Visitor } from '@sentinel/types'
 
 describe('VisitorRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -169,10 +170,10 @@ describe('VisitorRepository Integration Tests', () => {
       const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
       await createVisitor(testDb.prisma!, {
-        visitDate: yesterday,
+        checkInTime: yesterday,
       })
       await createVisitor(testDb.prisma!, {
-        visitDate: now,
+        checkInTime: now,
       })
 
       const visitors = await repo.findAll({
@@ -195,13 +196,13 @@ describe('VisitorRepository Integration Tests', () => {
   describe('findActive', () => {
     it('should find visitors who have not checked out', async () => {
       await createVisitor(testDb.prisma!, {
-        visitDate: new Date(),
+        checkInTime: new Date(),
       })
 
       const active = await repo.findActive()
 
       expect(active.length).toBeGreaterThanOrEqual(1)
-      active.forEach((visitor) => {
+      active.forEach((visitor: Visitor) => {
         expect(visitor.checkOutTime).toBeUndefined()
       })
     })
@@ -216,7 +217,7 @@ describe('VisitorRepository Integration Tests', () => {
 
       const active = await repo.findActive()
 
-      const found = active.find((v) => v.id === visitor.id)
+      const found = active.find((v: Visitor) => v.id === visitor.id)
       expect(found).toBeUndefined()
     })
 
@@ -242,7 +243,7 @@ describe('VisitorRepository Integration Tests', () => {
 
       expect(active.length).toBeGreaterThanOrEqual(1)
 
-      const withHost = active.find((v) => v.hostMemberId === member.id)
+      const withHost = active.find((v: Visitor) => v.hostMemberId === member.id)
       if (withHost) {
         expect(withHost.hostName).toBeDefined()
       }
@@ -259,7 +260,7 @@ describe('VisitorRepository Integration Tests', () => {
 
       const active = await repo.findActiveWithRelations()
 
-      const withEvent = active.find((v) => v.eventId === event.id)
+      const withEvent = active.find((v: Visitor) => v.eventId === event.id)
       if (withEvent) {
         expect(withEvent.eventName).toBe('Test Event')
       }
@@ -378,8 +379,8 @@ describe('VisitorRepository Integration Tests', () => {
     })
 
     it('should filter by name', async () => {
-      await createVisitor(testDb.prisma!, { firstName: 'John', lastName: 'Doe' })
-      await createVisitor(testDb.prisma!, { firstName: 'Jane', lastName: 'Smith' })
+      await createVisitor(testDb.prisma!, { name: 'John Doe' })
+      await createVisitor(testDb.prisma!, { name: 'Jane Smith' })
 
       const result = await repo.findHistory(
         { name: 'John' },
@@ -387,7 +388,7 @@ describe('VisitorRepository Integration Tests', () => {
       )
 
       expect(result.items).toHaveLength(1)
-      expect(result.items[0].firstName).toBe('John')
+      expect(result.items[0].name).toContain('John')
     })
 
     it('should filter by organization', async () => {
@@ -430,12 +431,12 @@ describe('VisitorRepository Integration Tests', () => {
     it('should handle visitor with badge', async () => {
       const badge = await createBadge(testDb.prisma!)
       const visitor = await createVisitor(testDb.prisma!, {
-        badgeId: badge.id,
+        temporaryBadgeId: badge.id,
       })
 
       const found = await repo.findById(visitor.id)
 
-      expect(found?.badgeId).toBe(badge.id)
+      expect(found?.temporaryBadgeId).toBe(badge.id)
     })
 
     it('should handle visitor without host or event', async () => {

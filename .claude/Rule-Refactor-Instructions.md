@@ -13,14 +13,14 @@ Claude Code should treat this document as **procedural instructions**, not gener
 ## Core Principles
 
 1. **Rules are commands, not documentation**
-   - Rules must tell Claude Code *what to do*
+   - Rules must tell Claude Code _what to do_
    - Explanations, rationale, or teaching belong in `/docs`, not `.claude`
 
 2. **Rules should be pulled by relevance, not pushed globally**
-   - A rule should only apply when it is *always true* for the files being edited
+   - A rule should only apply when it is _always true_ for the files being edited
 
 3. **The deepest valid directory wins**
-   - Rules belong in the *deepest directory where they are unconditionally correct*
+   - Rules belong in the _deepest directory where they are unconditionally correct_
 
 4. **Smaller, scoped rules are preferred**
    - Many small, relevant CLAUDE.md files are better than few large global ones
@@ -30,18 +30,22 @@ Claude Code should treat this document as **procedural instructions**, not gener
 ## Definitions
 
 ### “Push it down”
+
 Move a rule from a higher-level (global or project) location into a **lower-level directory** where the rule is always applicable.
 
 Example:
+
 - Global testing rules → `/backend/.claude/CLAUDE.md`
 - Auth-specific rules → `/backend/auth/.claude/CLAUDE.md`
 
 ---
 
 ### “Split it”
+
 Break a large rule file into **multiple single-responsibility rule files**, each covering only one concern.
 
 A rule file should ideally:
+
 - Cover one domain (testing, auth, DB, frontend UI, etc.)
 - Be relevant to one directory subtree
 - Stay as small as reasonably possible
@@ -54,13 +58,13 @@ For **each rule or paragraph**, answer:
 
 > “If Claude Code edits a random file in this directory, must this rule always apply?”
 
-| Answer | Required Action |
-|------|-----------------|
-| Yes, for entire repo | Keep in root CLAUDE.md |
-| Yes, for a specific layer | Push to that layer’s directory |
-| Yes, for a feature/domain | Push to that feature folder |
-| Only sometimes | Remove from rules |
-| Explains *why*, not *what* | Move to `/docs` |
+| Answer                     | Required Action                |
+| -------------------------- | ------------------------------ |
+| Yes, for entire repo       | Keep in root CLAUDE.md         |
+| Yes, for a specific layer  | Push to that layer’s directory |
+| Yes, for a feature/domain  | Push to that feature folder    |
+| Only sometimes             | Remove from rules              |
+| Explains _why_, not _what_ | Move to `/docs`                |
 
 ---
 
@@ -69,12 +73,14 @@ For **each rule or paragraph**, answer:
 ### Root `CLAUDE.md` (keep minimal)
 
 Allowed content:
+
 - Global philosophy and tone
 - Conflict resolution (“closest CLAUDE.md wins”)
 - Clarification behavior
 - Safety constraints (no invented APIs, no silent assumptions)
 
 Target size:
+
 - **300–600 tokens**
 
 ---
@@ -82,6 +88,7 @@ Target size:
 ### Layer-Level CLAUDE.md Files
 
 Examples:
+
 ```
 /backend/.claude/CLAUDE.md
 /frontend/.claude/CLAUDE.md
@@ -89,6 +96,7 @@ Examples:
 ```
 
 Contain:
+
 - Architectural constraints
 - Layer-specific conventions
 - Tooling expectations relevant to that layer
@@ -98,6 +106,7 @@ Contain:
 ### Domain / Feature-Level CLAUDE.md Files
 
 Examples:
+
 ```
 /backend/auth/.claude/CLAUDE.md
 /backend/tests/.claude/CLAUDE.md
@@ -105,6 +114,7 @@ Examples:
 ```
 
 Contain:
+
 - Highly specific rules
 - Domain invariants
 - Exact formats, schemas, or constraints
@@ -123,6 +133,7 @@ Contain:
 6. Delete or heavily shrink the original global rule file
 
 Repeat until:
+
 - Global rules are minimal
 - Most complexity lives close to the code it governs
 
@@ -140,6 +151,7 @@ Repeat until:
 ## Success Criteria
 
 This refactor is complete when:
+
 - Editing unrelated files does **not** load irrelevant rules
 - Claude Code responses feel lighter and more focused
 - Token usage is significantly reduced
@@ -150,6 +162,7 @@ This refactor is complete when:
 ## Final Instruction to Claude Code
 
 When assisting with this refactor:
+
 - Ask clarifying questions if directory intent is unclear
 - Do not invent directory structure without confirmation
 - Prefer moving rules downward over keeping them global

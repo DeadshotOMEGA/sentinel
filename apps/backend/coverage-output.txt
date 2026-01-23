@@ -1,0 +1,26 @@
+
+> @sentinel/backend@2.0.0 test:coverage /home/sauk/projects/sentinel/apps/backend
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.17 [39m[90m/home/sauk/projects/sentinel/apps/backend[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstdout[2m | tests/integration/repositories/member-repository.test.js[2m > [22m[2mMemberRepository Integration Tests
+[22m[39mStarting PostgreSQL test container...
+
+[90mstdout[2m | tests/integration/repositories/member-repository.test.js[2m > [22m[2mMemberRepository Integration Tests
+[22m[39mApplying database schema...
+Schema applied successfully
+
+[90mstdout[2m | tests/integration/repositories/member-repository.test.js[2m > [22m[2mMemberRepository Integration Tests[2m > [22m[2mcreate[2m > [22m[2mshould throw error on duplicate service number
+[22m[39mprisma:error 
+Invalid `this.prisma.member.create()` invocation in
+/home/sauk/projects/sentinel/apps/backend/src/repositories/member-repository.ts:458:45
+
+  455  * Create a new member
+  456  */
+  457 async create(data: CreateMemberInput): Promise<Member> {
+→ 458   const member = await this.prisma.member.create(
+Unique constraint failed on the fields: (`service_number`)
+

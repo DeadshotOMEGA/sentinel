@@ -1,8 +1,8 @@
 ---
 paths:
-  - "**/*.test.ts"
-  - "**/tests/**/*"
-  - "**/vitest.config.ts"
+  - '**/*.test.ts'
+  - '**/tests/**/*'
+  - '**/vitest.config.ts'
 ---
 
 # Testing Standards
@@ -12,6 +12,7 @@ Integration-first testing using Vitest, Testcontainers, and Supertest.
 ## Testing Strategy
 
 **Trophy Model** (NOT Pyramid):
+
 - **70% Integration** - Testcontainers (DB), Supertest (routes)
 - **15% Unit** - Pure functions, utilities
 - **15% E2E** - Critical user flows (Playwright)
@@ -20,18 +21,19 @@ Integration-first testing using Vitest, Testcontainers, and Supertest.
 
 ## Coverage Targets
 
-| Layer | Target | Enforcement |
-|-------|--------|-------------|
-| Repositories | 90%+ | CI/CD fails if below |
-| Routes | 80%+ | CI/CD fails if below |
-| Services | 85%+ | CI/CD fails if below |
-| Overall | 80%+ | CI/CD fails if below |
+| Layer        | Target | Enforcement          |
+| ------------ | ------ | -------------------- |
+| Repositories | 90%+   | CI/CD fails if below |
+| Routes       | 80%+   | CI/CD fails if below |
+| Services     | 85%+   | CI/CD fails if below |
+| Overall      | 80%+   | CI/CD fails if below |
 
 ## Repository Tests (Testcontainers)
 
 **Required for**: All files in `src/repositories/`
 
 **Must test**:
+
 - ✅ CRUD operations (create, read, update, delete)
 - ✅ Unique constraints & FK violations
 - ✅ Query filters & pagination
@@ -40,6 +42,7 @@ Integration-first testing using Vitest, Testcontainers, and Supertest.
 - ✅ Relations (includes, nested)
 
 **Pattern**:
+
 ```typescript
 describe('PersonnelRepository', () => {
   const testDb = new TestDatabase()
@@ -59,6 +62,7 @@ describe('PersonnelRepository', () => {
 **Required for**: All files in `src/routes/`
 
 **Must test all status codes**:
+
 - ✅ 200 OK, 201 Created
 - ✅ 400 Bad Request (invalid input)
 - ✅ 401 Unauthorized (missing/invalid auth)
@@ -67,13 +71,11 @@ describe('PersonnelRepository', () => {
 - ✅ 500 Internal Server Error
 
 **Pattern**:
+
 ```typescript
 describe('POST /api/members', () => {
   it('should create member with 201 status', async () => {
-    await request(app)
-      .post('/api/members')
-      .send({ firstName: 'John', lastName: 'Doe' })
-      .expect(201)
+    await request(app).post('/api/members').send({ firstName: 'John', lastName: 'Doe' }).expect(201)
   })
 })
 ```
@@ -83,11 +85,13 @@ describe('POST /api/members', () => {
 **Use for**: Pure functions, utilities, complex algorithms
 
 **When to write**:
+
 - ✅ Pure functions (no side effects)
 - ✅ Complex calculations
 - ✅ Utility functions (date formatting, validation)
 
 **When NOT to write**:
+
 - ❌ Database calls (use integration tests)
 - ❌ API calls (use integration tests)
 - ❌ Simple getters/setters
@@ -95,6 +99,7 @@ describe('POST /api/members', () => {
 ## Test Data Management
 
 **Use factories** (NOT fixtures):
+
 ```typescript
 function createMemberData(overrides = {}) {
   return {
@@ -108,10 +113,11 @@ function createMemberData(overrides = {}) {
 ```
 
 **Reset between tests**:
+
 ```typescript
 beforeEach(async () => {
-  await testDb.reset()  // Truncate all tables
-  await testDb.seed()   // Re-create baseline data
+  await testDb.reset() // Truncate all tables
+  await testDb.seed() // Re-create baseline data
 })
 ```
 
@@ -127,16 +133,19 @@ pnpm test:ui             # Visual test runner
 ## Common Mistakes
 
 ### ❌ Don't Mock the Database
+
 **Bad**: `vi.mock('@/lib/db', () => ({...}))`
 **Good**: Use real database with Testcontainers
 
 **Why**: Mocks don't catch SQL errors, constraint violations, or type mismatches.
 
 ### ❌ Don't Use `any` in Tests
+
 **Bad**: `const response: any = await request(app).get('/api/personnel')`
 **Good**: Let TypeScript infer types, use proper assertions
 
 ### ❌ Don't Share Test Data Between Tests
+
 **Bad**: Creating data once in `beforeAll` and reusing
 **Good**: Create fresh data in each test (`beforeEach` reset)
 
@@ -150,6 +159,7 @@ pnpm test:ui             # Visual test runner
 ## Success Metrics
 
 Before merging PR:
+
 - [ ] All new code has tests
 - [ ] Coverage meets thresholds
 - [ ] Tests pass in CI/CD

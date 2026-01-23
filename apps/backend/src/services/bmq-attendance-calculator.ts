@@ -2,8 +2,6 @@
 // This service requires raw SQL queries for performance and was using PostgreSQL pool directly
 // Current implementation is stubbed until database query layer is finalized
 
-import { getThresholdFlag } from './attendance-calculator.js'
-
 interface AttendanceCalculation {
   status: 'calculated' | 'insufficient_data'
   percentage?: number
@@ -26,7 +24,7 @@ interface BMQAttendanceParams {
  * Get all session dates for a BMQ course
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
-export async function getBMQSessions(courseId: string): Promise<Date[]> {
+export async function getBMQSessions(_courseId: string): Promise<Date[]> {
   throw new Error('BMQ sessions query not yet implemented (Phase 3)')
 }
 
@@ -35,9 +33,9 @@ export async function getBMQSessions(courseId: string): Promise<Date[]> {
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
 export async function getBMQCheckins(
-  memberId: string,
-  courseId: string,
-  sessionDates: Date[]
+  _memberId: string,
+  _courseId: string,
+  _sessionDates: Date[]
 ): Promise<Date[]> {
   throw new Error('BMQ checkins query not yet implemented (Phase 3)')
 }
@@ -47,7 +45,7 @@ export async function getBMQCheckins(
  * TODO Phase 3: Implement with raw SQL or Kysely queries
  */
 export async function calculateBMQAttendance(
-  params: BMQAttendanceParams
+  _params: BMQAttendanceParams
 ): Promise<AttendanceCalculation> {
   throw new Error('BMQ attendance calculation not yet implemented (Phase 3)')
 }

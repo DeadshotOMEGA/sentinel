@@ -1,5 +1,12 @@
 import { initServer } from '@ts-rest/express'
 import { badgeContract } from '@sentinel/contracts'
+import type {
+  BadgeListQuery,
+  CreateBadgeInput,
+  UpdateBadgeInput,
+  AssignBadgeInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -16,13 +23,13 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Get all badges with pagination and filtering
    */
-  getBadges: async ({ query }) => {
+  getBadges: async ({ query }: { query: BadgeListQuery }) => {
     try {
       const page = query.page || 1
       const limit = query.limit || 50
 
       // Build filters
-      const filters: any = {}
+      const filters: Record<string, unknown> = {}
       if (query.status) filters.status = query.status
       if (query.assignmentType) filters.assignmentType = query.assignmentType
 
@@ -38,9 +45,7 @@ export const badgesRouter = s.router(badgeContract, {
       }
       if (query.search) {
         const searchLower = query.search.toLowerCase()
-        badges = badges.filter((b) =>
-          b.serialNumber.toLowerCase().includes(searchLower)
-        )
+        badges = badges.filter((b) => b.serialNumber.toLowerCase().includes(searchLower))
       }
 
       // Paginate
@@ -152,7 +157,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Get single badge by ID
    */
-  getBadgeById: async ({ params }) => {
+  getBadgeById: async ({ params }: { params: IdParam }) => {
     try {
       const badge = await badgeRepo.findByIdWithDetails(params.id)
 
@@ -207,7 +212,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Get badge by serial number
    */
-  getBadgeBySerialNumber: async ({ params }) => {
+  getBadgeBySerialNumber: async ({ params }: { params: { serialNumber: string } }) => {
     try {
       const badge = await badgeRepo.findBySerialNumber(params.serialNumber)
 
@@ -262,7 +267,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Create new badge
    */
-  createBadge: async ({ body }) => {
+  createBadge: async ({ body }: { body: CreateBadgeInput }) => {
     try {
       const badge = await badgeRepo.create({
         serialNumber: body.serialNumber,
@@ -323,7 +328,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Update existing badge
    */
-  updateBadge: async ({ params, body }) => {
+  updateBadge: async ({ params, body }: { params: IdParam; body: UpdateBadgeInput }) => {
     try {
       // Update badge status if provided
       let badge = await badgeRepo.findById(params.id)
@@ -399,7 +404,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Assign badge to member or visitor
    */
-  assignBadge: async ({ params, body }) => {
+  assignBadge: async ({ params, body }: { params: IdParam; body: AssignBadgeInput }) => {
     try {
       // Validate that the assigned entity exists
       if (body.assignmentType === 'member') {
@@ -415,11 +420,7 @@ export const badgesRouter = s.router(badgeContract, {
         }
       }
 
-      const badge = await badgeRepo.assign(
-        params.id,
-        body.assignedToId,
-        body.assignmentType
-      )
+      const badge = await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
 
       let assignedTo = null
       if (badge.assignmentType === 'member' && badge.assignedToId) {
@@ -482,7 +483,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Unassign badge
    */
-  unassignBadge: async ({ params }) => {
+  unassignBadge: async ({ params }: { params: IdParam }) => {
     try {
       const badge = await badgeRepo.unassign(params.id)
 
@@ -525,7 +526,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Delete badge
    */
-  deleteBadge: async ({ params }) => {
+  deleteBadge: async ({ params }: { params: IdParam }) => {
     try {
       await badgeRepo.delete(params.id)
 

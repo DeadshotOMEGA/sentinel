@@ -49,6 +49,7 @@ describe('Badges Routes Integration Tests', () => {
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
+      memberType: 'reserve',
     })
     testMemberId = member.id
   })
@@ -134,7 +135,7 @@ describe('Badges Routes Integration Tests', () => {
     })
 
     it('should filter assigned badges only', async () => {
-      const badge1 = await badgeRepo.create({
+      await badgeRepo.create({
         serialNumber: 'BADGE001',
         assignmentType: 'member',
         assignedToId: testMemberId,

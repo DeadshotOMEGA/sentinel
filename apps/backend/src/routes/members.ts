@@ -1,5 +1,12 @@
 import { initServer } from '@ts-rest/express'
 import { memberContract } from '@sentinel/contracts'
+import type {
+  MemberListQuery,
+  CreateMemberInput,
+  UpdateMemberInput,
+  IdParam,
+} from '@sentinel/contracts'
+import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -14,19 +21,20 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Get all members with pagination
    */
-  getMembers: async ({ query }) => {
+  getMembers: async ({ query }: { query: MemberListQuery }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
-      const result = await memberRepo.findPaginated(
-        { page, limit },
-        {
-          divisionId: query.divisionId,
-          search: query.search,
-          status: query.status as any,
-        }
-      )
+      const filters: { divisionId?: string; search?: string; status?: MemberStatus } = {
+        divisionId: query.divisionId,
+        search: query.search,
+      }
+      if (query.status) {
+        filters.status = query.status as MemberStatus
+      }
+
+      const result = await memberRepo.findPaginated({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 
@@ -69,7 +77,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Get single member by ID
    */
-  getMemberById: async ({ params }) => {
+  getMemberById: async ({ params }: { params: IdParam }) => {
     try {
       const member = await memberRepo.findById(params.id)
 
@@ -116,7 +124,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Create new member
    */
-  createMember: async ({ body }) => {
+  createMember: async ({ body }: { body: CreateMemberInput }) => {
     try {
       const member = await memberRepo.create({
         serviceNumber: body.serviceNumber,
@@ -127,6 +135,8 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
+        memberType: 'regular', // TODO: Map from memberTypeId when FK migration complete
+        // memberTypeId and memberStatusId not yet supported by repository
         badgeId: body.badgeId,
       })
 
@@ -174,7 +184,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Update existing member
    */
-  updateMember: async ({ params, body }) => {
+  updateMember: async ({ params, body }: { params: IdParam; body: UpdateMemberInput }) => {
     try {
       const member = await memberRepo.update(params.id, {
         serviceNumber: body.serviceNumber,
@@ -231,7 +241,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Delete member
    */
-  deleteMember: async ({ params }) => {
+  deleteMember: async ({ params }: { params: IdParam }) => {
     try {
       await memberRepo.delete(params.id)
 
@@ -266,7 +276,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Search member by service number
    */
-  searchByServiceNumber: async ({ params }) => {
+  searchByServiceNumber: async ({ params }: { params: { serviceNumber: string } }) => {
     try {
       const member = await memberRepo.findByServiceNumber(params.serviceNumber)
 

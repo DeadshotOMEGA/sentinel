@@ -62,7 +62,7 @@ describe('Security Alerts Routes Integration Tests', () => {
 
     it('should return 200 with active alerts list', async () => {
       // Create test security alerts
-      const alert1 = await testDb.prisma!.securityAlert.create({
+      await testDb.prisma!.securityAlert.create({
         data: {
           alertType: 'badge_disabled',
           severity: 'critical',

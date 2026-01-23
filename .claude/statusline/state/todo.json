@@ -1,7 +1,6 @@
 {
-  "completed": 0,
-  "total": 0,
-  "in_progress": null,
-  "last_updated": "2026-01-21T13:03:19.851796",
-  "cleared_by": "cleanup-state"
+  "completed": 7,
+  "total": 12,
+  "in_progress": "Fixing missing memberType in route tests",
+  "last_updated": "2026-01-22T20:38:57.969620"
 }

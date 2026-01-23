@@ -1,0 +1,66 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'sentinel-dev'
+    environment: 'development'
+
+# Alertmanager configuration (optional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Rule files
+rule_files:
+  # - 'alerts/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Sentinel Backend Application Metrics
+  - job_name: 'sentinel-backend'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:3000']
+        labels:
+          service: 'sentinel-backend'
+          application: 'sentinel'
+          tier: 'backend'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          application: 'monitoring'
+
+  # Loki metrics (optional - for monitoring the monitoring)
+  - job_name: 'loki'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          service: 'loki'
+          application: 'monitoring'
+
+  # Grafana metrics (optional)
+  - job_name: 'grafana'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          service: 'grafana'
+          application: 'monitoring'
+
+# Remote write/read (optional - for long-term storage)
+# remote_write:
+#   - url: "http://long-term-storage:9009/api/v1/write"
+
+# remote_read:
+#   - url: "http://long-term-storage:9009/api/v1/read"

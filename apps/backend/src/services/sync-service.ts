@@ -112,6 +112,7 @@ export class SyncService {
     // Step 1: Validate all timestamps and detect clock drift
     for (let i = 0; i < checkins.length; i++) {
       const checkin = checkins[i]
+      if (!checkin) continue
       const timestamp = new Date(checkin.timestamp)
 
       // TODO Phase 3: Use timestamp validator
@@ -130,7 +131,7 @@ export class SyncService {
         kioskId: checkin.kioskId ?? '',
         originalTimestampStr: checkin.timestamp,
         localTimestamp: checkin.localTimestamp,
-        sequenceNumber: checkin.sequenceNumber,
+        sequenceNumber: checkin.sequenceNumber ?? 0,
         flaggedForReview: driftCheck.flagged,
         flagReason: driftCheck.reason,
       })
@@ -145,12 +146,14 @@ export class SyncService {
 
     for (let i = 0; i < validatedCheckins.length; i++) {
       const current = validatedCheckins[i]
+      if (!current) continue
       const dupKey = `${current.serialNumber}:${current.kioskId}`
 
       // Check if this is a duplicate of a recently seen scan
       let isDuplicate = false
       for (let j = i - 1; j >= 0 && !isDuplicate; j--) {
         const prev = validatedCheckins[j]
+        if (!prev) continue
         const prevDupKey = `${prev.serialNumber}:${prev.kioskId}`
 
         if (
@@ -293,6 +296,7 @@ export class SyncService {
     // Add errors from timestamp validation
     for (const [originalIndex, errorReason] of errorMap.entries()) {
       const checkin = checkins[originalIndex]
+      if (!checkin) continue
       results.push({
         serialNumber: checkin.serialNumber,
         timestamp: checkin.timestamp,

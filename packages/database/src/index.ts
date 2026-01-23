@@ -1,4 +1,4 @@
-export { prisma } from './client'
+export { prisma } from './client.js'
 
 // Re-export Prisma and PrismaClient directly from generated client
 // This preserves the Prisma namespace for type usage

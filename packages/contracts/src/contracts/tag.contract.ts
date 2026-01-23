@@ -21,7 +21,6 @@ export const tagContract = c.router({
   getLockupHolder: {
     method: 'GET',
     path: '/api/tags/lockup/holder',
-    body: c.type<undefined>(),
     responses: {
       200: GetLockupHolderResponseSchema,
       401: ErrorResponseSchema,

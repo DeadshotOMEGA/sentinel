@@ -5,12 +5,15 @@ ts-rest route implementation patterns with Express.
 ---
 
 ## Scope
+
 Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 
 ## Non-Negotiables (MUST / MUST NOT)
 
 **ts-rest Pattern** (CRITICAL):
+
 - MUST use direct async functions (NOT middleware arrays or handler objects):
+
   ```typescript
   // ✅ Correct
   export const router = s.router(contract, {
@@ -32,8 +35,10 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
   ```
 
 **Route Ordering** (CRITICAL):
+
 - MUST define specific paths BEFORE parameterized paths in both contract and router
 - MUST match contract order in router implementation
+
   ```typescript
   // ✅ Correct order in contract
   export const contract = c.router({
@@ -59,6 +64,7 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 **Why**: Express matches routes in definition order. Parameterized routes like `/:id` will match specific paths like `/stats` if defined first.
 
 **Database Access** (CRITICAL):
+
 - MUST use `getPrismaClient()` from `../lib/database.js` for all database queries
 - MUST NOT import `prisma` from `@sentinel/database` in routes
 - MUST use repositories when possible (NOT direct Prisma queries)
@@ -67,22 +73,26 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 **Why**: Routes must support test injection. The global prisma singleton can't be replaced during tests, causing `password authentication failed for user 'placeholder'` errors.
 
 **Response Structure**:
+
 - MUST return `{ status: <number> as const, body: <response> }` from all handlers
 - MUST include `as const` on status codes for type inference
 - MUST NOT return status without `as const` (type error)
 
 **Type Mapping**:
+
 - MUST convert repository types to API response types (use mapping functions)
 - MUST convert Date objects to ISO strings
 - MUST use null for optional fields (NOT undefined)
 - MUST NOT return repository types directly
 
 **Error Handling**:
+
 - MUST handle all error cases: 400, 401, 404, 409, 500
 - MUST wrap repository calls in try/catch
 - MUST return appropriate status codes based on error type
 
 **Status Codes**:
+
 - MUST use 200 for successful GET/PATCH/DELETE
 - MUST use 201 for successful POST
 - MUST use 400 for validation failures
@@ -93,20 +103,24 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 ## Defaults (SHOULD)
 
 **Repository Integration**:
+
 - SHOULD inject PrismaClient via repository constructor
 - SHOULD use dependency injection pattern for testability
 
 **Type Conversion**:
+
 - SHOULD create `toApiFormat()` functions for each resource
 - SHOULD handle optional fields with null fallbacks
 
 **Pagination**:
+
 - SHOULD use standard pagination params: page, limit
 - SHOULD return total, page, limit, totalPages in response
 
 ## Workflow
 
 **When implementing new route**:
+
 1. Create Valibot schema in @sentinel/contracts/src/schemas/
 2. Create ts-rest contract in @sentinel/contracts/src/contracts/
 3. Export from @sentinel/contracts/src/index.ts
@@ -115,6 +129,7 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 6. Write integration tests with Supertest
 
 **When handling errors**:
+
 1. Wrap repository call in try/catch
 2. Check for null (return 404)
 3. Check for Prisma unique constraint (return 409)
@@ -125,6 +140,7 @@ Applies when creating or modifying: `apps/backend/src/routes/*.ts`
 ### Database Access Patterns
 
 **Correct Database Usage**:
+
 ```typescript
 // ✅ Good - Use database service
 import { getPrismaClient } from '../lib/database.js'
@@ -137,6 +153,7 @@ const result = await getPrismaClient().$queryRaw`SELECT 1`
 ```
 
 **Incorrect Usage**:
+
 ```typescript
 // ❌ Bad - Global prisma (breaks tests)
 import { prisma } from '@sentinel/database'
@@ -146,6 +163,7 @@ const result = await prisma.$queryRaw`SELECT 1`
 ```
 
 **Best Practice - Use Repositories**:
+
 ```typescript
 // ✅ Best - Repository handles database access
 import { getPrismaClient } from '../lib/database.js'
@@ -208,12 +226,12 @@ function toApiFormat(member: Member): MemberResponse {
     rank: member.rank,
     firstName: member.firstName,
     lastName: member.lastName,
-    middleInitial: member.initials || null,  // Renamed + nullable
-    email: member.email || null,             // Nullable
-    phoneNumber: member.mobilePhone || member.homePhone || null,  // Combined
+    middleInitial: member.initials || null, // Renamed + nullable
+    email: member.email || null, // Nullable
+    phoneNumber: member.mobilePhone || member.homePhone || null, // Combined
     divisionId: member.divisionId,
     badgeId: member.badgeId || null,
-    createdAt: member.createdAt.toISOString(),  // Date → ISO string
+    createdAt: member.createdAt.toISOString(), // Date → ISO string
     updatedAt: member.updatedAt?.toISOString() || null,
   }
 }

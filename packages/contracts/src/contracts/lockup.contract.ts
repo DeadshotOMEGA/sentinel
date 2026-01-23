@@ -22,7 +22,6 @@ export const lockupContract = c.router({
   getPresentForLockup: {
     method: 'GET',
     path: '/api/lockup/present',
-    body: c.type<undefined>(),
     responses: {
       200: LockupPresentDataResponseSchema,
       401: ErrorResponseSchema,
@@ -39,7 +38,6 @@ export const lockupContract = c.router({
     method: 'GET',
     path: '/api/lockup/check-auth/:id',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: CheckLockupAuthResponseSchema,
       401: ErrorResponseSchema,

@@ -12,6 +12,20 @@ import {
   securityAlertContract,
   ddsContract,
   lockupContract,
+  visitTypesContract,
+  memberStatusesContract,
+  memberTypesContract,
+  badgeStatusesContract,
+  settingContract,
+  adminUserContract,
+  listContract,
+  trainingYearContract,
+  bmqCourseContract,
+  reportSettingContract,
+  alertConfigContract,
+  reportContract,
+  devToolsContract,
+  devContract,
 } from '@sentinel/contracts'
 import { initContract } from '@ts-rest/core'
 
@@ -29,6 +43,20 @@ const apiContract = c.router({
   securityAlerts: securityAlertContract,
   dds: ddsContract,
   lockup: lockupContract,
+  visitTypes: visitTypesContract,
+  memberStatuses: memberStatusesContract,
+  memberTypes: memberTypesContract,
+  badgeStatuses: badgeStatusesContract,
+  settings: settingContract,
+  adminUsers: adminUserContract,
+  lists: listContract,
+  trainingYears: trainingYearContract,
+  bmqCourses: bmqCourseContract,
+  reportSettings: reportSettingContract,
+  alertConfigs: alertConfigContract,
+  reports: reportContract,
+  devTools: devToolsContract,
+  dev: devContract,
 })
 
 // Generate OpenAPI specification
@@ -37,9 +65,11 @@ const openApiDocument = generateOpenApi(
   {
     info: {
       title: 'Sentinel API',
-      version: '1.0.0',
+      version: '2.0.0',
       description:
-        'RFID-based attendance tracking system for HMCS Chippawa naval reserve unit',
+        'RFID-based attendance tracking system for HMCS Chippawa naval reserve unit. ' +
+        'Provides comprehensive APIs for member management, badge assignment, attendance tracking, ' +
+        'visitor management, security alerts, reporting, and administrative operations.',
     },
     servers: [
       {
@@ -62,6 +92,29 @@ const openApiDocument = generateOpenApi(
       { name: 'security-alerts', description: 'Security alert system' },
       { name: 'dds', description: 'Daily Duty Staff management' },
       { name: 'lockup', description: 'Building lockup operations' },
+      { name: 'visit-types', description: 'Visit type enumeration and lookup' },
+      {
+        name: 'member-statuses',
+        description: 'Member status enumeration (Active, Inactive, etc.)',
+      },
+      { name: 'member-types', description: 'Member type enumeration (NCM, Officer, etc.)' },
+      {
+        name: 'badge-statuses',
+        description: 'Badge status enumeration (Assigned, Disabled, etc.)',
+      },
+      { name: 'settings', description: 'System configuration and settings management' },
+      { name: 'admin-users', description: 'Administrative user and role management' },
+      { name: 'lists', description: 'Consolidated list endpoints for dropdowns and references' },
+      { name: 'training-years', description: 'Training year configuration and periods' },
+      { name: 'bmq-courses', description: 'Basic Military Qualification course management' },
+      { name: 'report-settings', description: 'Report configuration and parameters' },
+      { name: 'alert-configs', description: 'Security alert rule configuration' },
+      { name: 'reports', description: 'Report generation and data export' },
+      {
+        name: 'dev-tools',
+        description: 'Development utilities (database reset, simulation, scenarios)',
+      },
+      { name: 'dev', description: 'Development endpoints for testing and debugging' },
     ],
     components: {
       securitySchemes: {
@@ -80,10 +133,10 @@ const openApiDocument = generateOpenApi(
     security: [{ bearerAuth: [] }, { apiKeyAuth: [] }],
   },
   {
-    setOperationId: true,
-    operationMapper: (operation, appRoute) => ({
+    setOperationId: false,
+    operationMapper: (operation, appRoute, _id) => ({
       ...operation,
-      tags: [appRoute.path.split('/')[2]], // Extract tag from /api/{resource}/*
+      tags: [appRoute.path.split('/')[2]].filter((tag): tag is string => tag !== undefined), // Extract tag from /api/{resource}/*
     }),
   }
 )

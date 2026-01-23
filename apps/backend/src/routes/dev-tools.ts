@@ -65,10 +65,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to clear all data',
+          message: error instanceof Error ? error.message : 'Failed to clear all data',
         },
       }
     }
@@ -85,19 +82,13 @@ export const devToolsRouter = s.router(devToolsContract, {
       // Clear the specified table
       switch (config.table) {
         case 'members':
-          count = await prisma.member
-            .deleteMany({})
-            .then((result) => result.count)
+          count = await prisma.member.deleteMany({}).then((result) => result.count)
           break
         case 'checkins':
-          count = await prisma.checkin
-            .deleteMany({})
-            .then((result) => result.count)
+          count = await prisma.checkin.deleteMany({}).then((result) => result.count)
           break
         case 'visitors':
-          count = await prisma.visitor
-            .deleteMany({})
-            .then((result) => result.count)
+          count = await prisma.visitor.deleteMany({}).then((result) => result.count)
           break
         case 'badges':
           count = await prisma.badge.deleteMany({}).then((result) => result.count)
@@ -106,14 +97,10 @@ export const devToolsRouter = s.router(devToolsContract, {
           count = await prisma.event.deleteMany({}).then((result) => result.count)
           break
         case 'event_attendees':
-          count = await prisma.eventAttendee
-            .deleteMany({})
-            .then((result) => result.count)
+          count = await prisma.eventAttendee.deleteMany({}).then((result) => result.count)
           break
         case 'event_checkins':
-          count = await prisma.eventCheckin
-            .deleteMany({})
-            .then((result) => result.count)
+          count = await prisma.eventCheckin.deleteMany({}).then((result) => result.count)
           break
         default:
           return {
@@ -137,8 +124,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to clear table',
+          message: error instanceof Error ? error.message : 'Failed to clear table',
         },
       }
     }
@@ -193,8 +179,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to reset database',
+          message: error instanceof Error ? error.message : 'Failed to reset database',
         },
       }
     }
@@ -209,13 +194,16 @@ export const devToolsRouter = s.router(devToolsContract, {
       const threeMonthsAgo = new Date(now)
       threeMonthsAgo.setMonth(now.getMonth() - 3)
 
+      const startDate = threeMonthsAgo.toISOString().split('T')[0] || ''
+      const endDate = now.toISOString().split('T')[0] || ''
+
       return {
         status: 200 as const,
         body: {
           attendanceRate: 0.7,
           intensity: 'medium',
-          suggestedStartDate: threeMonthsAgo.toISOString().split('T')[0],
-          suggestedEndDate: now.toISOString().split('T')[0],
+          suggestedStartDate: startDate,
+          suggestedEndDate: endDate,
         },
       }
     } catch (error) {
@@ -223,10 +211,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to get simulation defaults',
+          message: error instanceof Error ? error.message : 'Failed to get simulation defaults',
         },
       }
     }
@@ -273,10 +258,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to precheck simulation',
+          message: error instanceof Error ? error.message : 'Failed to precheck simulation',
         },
       }
     }
@@ -326,6 +308,7 @@ export const devToolsRouter = s.router(devToolsContract, {
                   memberId: member.id,
                   direction: 'in',
                   timestamp: checkInTime,
+                  kioskId: 'simulation',
                 },
               })
 
@@ -338,6 +321,7 @@ export const devToolsRouter = s.router(devToolsContract, {
                   memberId: member.id,
                   direction: 'out',
                   timestamp: checkOutTime,
+                  kioskId: 'simulation',
                 },
               })
 
@@ -365,8 +349,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to run simulation',
+          message: error instanceof Error ? error.message : 'Failed to run simulation',
         },
       }
     }
@@ -398,10 +381,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to backdate members',
+          message: error instanceof Error ? error.message : 'Failed to backdate members',
         },
       }
     }
@@ -454,10 +434,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to get scenarios',
+          message: error instanceof Error ? error.message : 'Failed to get scenarios',
         },
       }
     }
@@ -552,8 +529,7 @@ export const devToolsRouter = s.router(devToolsContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to seed scenario',
+          message: error instanceof Error ? error.message : 'Failed to seed scenario',
         },
       }
     }

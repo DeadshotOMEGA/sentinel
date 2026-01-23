@@ -45,7 +45,6 @@ export const badgeContract = c.router({
   getBadgeStats: {
     method: 'GET',
     path: '/api/badges/stats',
-    body: c.type<undefined>(),
     responses: {
       200: BadgeStatsResponseSchema,
       401: ErrorResponseSchema,

@@ -1,6 +1,5 @@
 import type { PrismaClient, ReportSetting } from '@sentinel/database'
-import { prisma as defaultPrisma } from '@sentinel/database'
-import type { Prisma } from '@prisma/client'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 /**
  * Repository for ReportSetting operations
@@ -33,16 +32,16 @@ export class ReportSettingRepository {
   /**
    * Upsert report setting (update or create)
    */
-  async upsert(key: string, value: any): Promise<ReportSetting> {
+  async upsert(key: string, value: unknown): Promise<ReportSetting> {
     return await this.prisma.reportSetting.upsert({
       where: { key },
       update: {
-        value,
+        value: value as Prisma.InputJsonValue,
         updatedAt: new Date(),
       },
       create: {
         key,
-        value,
+        value: value as Prisma.InputJsonValue,
       },
     })
   }
@@ -50,7 +49,7 @@ export class ReportSettingRepository {
   /**
    * Bulk upsert multiple settings in a transaction
    */
-  async bulkUpsert(settings: Record<string, any>): Promise<string[]> {
+  async bulkUpsert(settings: Record<string, unknown>): Promise<string[]> {
     const updated: string[] = []
 
     await this.prisma.$transaction(async (tx) => {
@@ -58,12 +57,12 @@ export class ReportSettingRepository {
         await tx.reportSetting.upsert({
           where: { key },
           update: {
-            value,
+            value: value as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
           create: {
             key,
-            value,
+            value: value as Prisma.InputJsonValue,
           },
         })
         updated.push(key)

@@ -61,12 +61,11 @@ export const devRouter = s.router(devContract, {
         firstName: member.firstName,
         lastName: member.lastName,
         rank: member.rank,
-        division: member.division.name,
-        divisionId: member.division.id,
+        division: member.division?.name ?? 'Unknown',
+        divisionId: member.division?.id ?? 'Unknown',
         mess: member.mess || null,
         badgeSerialNumber: member.badge?.serialNumber || null,
-        isPresent:
-          member.checkins.length > 0 && member.checkins[0].direction === 'in',
+        isPresent: member.checkins.length > 0 && member.checkins[0]?.direction === 'in',
       }))
 
       return {
@@ -80,8 +79,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to get members',
+          message: error instanceof Error ? error.message : 'Failed to get members',
         },
       }
     }
@@ -124,8 +122,7 @@ export const devRouter = s.router(devContract, {
 
       // Filter to only those whose latest checkin is 'in'
       const actuallyPresent = presentMembers.filter(
-        (member) =>
-          member.checkins.length > 0 && member.checkins[0].direction === 'in'
+        (member) => member.checkins.length > 0 && member.checkins[0]?.direction === 'in'
       )
 
       if (actuallyPresent.length === 0) {
@@ -143,7 +140,7 @@ export const devRouter = s.router(devContract, {
       await prisma.checkin.createMany({
         data: actuallyPresent.map((member) => ({
           memberId: member.id,
-          badgeId: member.checkins[0].badgeId,
+          badgeId: member.checkins[0]?.badgeId ?? null,
           direction: 'out' as const,
           timestamp: now,
           kioskId: 'dev-clear-all',
@@ -167,10 +164,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to clear check-ins',
+          message: error instanceof Error ? error.message : 'Failed to clear check-ins',
         },
       }
     }
@@ -198,7 +192,7 @@ export const devRouter = s.router(devContract, {
       const badge = await prisma.badge.findUnique({
         where: { serialNumber: config.serialNumber },
         include: {
-          assignedMember: {
+          members: {
             include: {
               division: {
                 select: {
@@ -212,6 +206,7 @@ export const devRouter = s.router(devContract, {
                 take: 1,
               },
             },
+            take: 1,
           },
         },
       })
@@ -236,7 +231,7 @@ export const devRouter = s.router(devContract, {
         }
       }
 
-      if (!badge.assignedMember) {
+      if (!badge.members || badge.members.length === 0) {
         return {
           status: 400 as const,
           body: {
@@ -246,12 +241,20 @@ export const devRouter = s.router(devContract, {
         }
       }
 
-      const member = badge.assignedMember
+      const member = badge.members[0]
+      if (!member) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: `Badge ${config.serialNumber} is not assigned to any member`,
+          },
+        }
+      }
 
       // Determine direction (toggle between in/out)
       const lastCheckin = member.checkins[0]
-      const direction: 'in' | 'out' =
-        !lastCheckin || lastCheckin.direction === 'out' ? 'in' : 'out'
+      const direction: 'in' | 'out' = !lastCheckin || lastCheckin.direction === 'out' ? 'in' : 'out'
 
       // Create checkin record
       const timestamp = config.timestamp ? new Date(config.timestamp) : new Date()
@@ -279,7 +282,7 @@ export const devRouter = s.router(devContract, {
             firstName: member.firstName,
             lastName: member.lastName,
             rank: member.rank,
-            division: member.division.name,
+            division: member.division?.name || 'Unknown',
           },
           timestamp: checkin.timestamp.toISOString(),
           message: `${member.firstName} ${member.lastName} checked ${direction}`,
@@ -290,8 +293,7 @@ export const devRouter = s.router(devContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to process mock scan',
+          message: error instanceof Error ? error.message : 'Failed to process mock scan',
         },
       }
     }

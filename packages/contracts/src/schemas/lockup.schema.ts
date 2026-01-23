@@ -9,7 +9,7 @@ export const PresentMemberForLockupSchema = v.object({
   lastName: v.string(),
   rank: v.string(),
   division: v.string(),
-  divisionId: v.string(),
+  divisionId: v.nullable(v.string()),
   memberType: v.string(),
   mess: v.nullable(v.string()),
   checkedInAt: v.string(),

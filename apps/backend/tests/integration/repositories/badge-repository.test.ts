@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { BadgeRepository } from '../../../src/repositories/badge-repository'
 import { TestDatabase } from '../../helpers/testcontainers'
-import { createBadge, createMember, createDivision } from '../../helpers/factories'
+import { createBadge, createMember } from '../../helpers/factories'
 import type { CreateBadgeInput } from '@sentinel/types'
 
 describe('BadgeRepository Integration Tests', () => {
@@ -42,6 +42,7 @@ describe('BadgeRepository Integration Tests', () => {
     it('should create a badge with defaults', async () => {
       const input: CreateBadgeInput = {
         serialNumber: 'DEF456',
+        assignmentType: 'unassigned',
       }
 
       const badge = await repo.create(input)
@@ -62,6 +63,7 @@ describe('BadgeRepository Integration Tests', () => {
 
       const input: CreateBadgeInput = {
         serialNumber: 'DUP123',
+        assignmentType: 'unassigned',
       }
 
       await expect(repo.create(input)).rejects.toThrow()
@@ -124,7 +126,7 @@ describe('BadgeRepository Integration Tests', () => {
       const found = await repo.findBySerialNumbers(['EXISTS', 'NOTEXISTS'])
 
       expect(found.length).toBe(1)
-      expect(found[0].serialNumber).toBe('EXISTS')
+      expect(found[0]!.serialNumber).toBe('EXISTS')
     })
   })
 
@@ -152,7 +154,7 @@ describe('BadgeRepository Integration Tests', () => {
       const badges = await repo.findAll({ assignmentType: 'member' })
 
       expect(badges.length).toBe(1)
-      expect(badges[0].serialNumber).toBe('B2')
+      expect(badges[0]!.serialNumber).toBe('B2')
     })
 
     it('should filter by both status and assignment type', async () => {
@@ -162,7 +164,7 @@ describe('BadgeRepository Integration Tests', () => {
       })
 
       expect(badges.length).toBe(1)
-      expect(badges[0].serialNumber).toBe('B1')
+      expect(badges[0]!.serialNumber).toBe('B1')
     })
   })
 

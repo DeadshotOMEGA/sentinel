@@ -58,6 +58,7 @@ describe('DDS Routes Integration Tests', () => {
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
+      memberType: 'reserve',
     })
     testMember1Id = member1.id
 
@@ -67,6 +68,7 @@ describe('DDS Routes Integration Tests', () => {
       firstName: 'Jane',
       lastName: 'Smith',
       divisionId: testDivisionId,
+      memberType: 'reserve',
     })
     testMember2Id = member2.id
 

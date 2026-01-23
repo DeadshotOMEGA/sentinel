@@ -34,7 +34,7 @@ export const lockupRouter = s.router(lockupContract, {
       const visitorsFormatted = presentData.visitors.map((v) => ({
         id: v.id,
         name: v.name,
-        organization: v.organization,
+        organization: v.organization || 'Unknown',
         visitType: v.visitType,
         checkInTime: v.checkInTime.toISOString(),
       }))
@@ -121,8 +121,7 @@ export const lockupRouter = s.router(lockupContract, {
           stats: {
             membersCheckedOut: result.checkedOut.members.length,
             visitorsCheckedOut: result.checkedOut.visitors.length,
-            totalCheckedOut:
-              result.checkedOut.members.length + result.checkedOut.visitors.length,
+            totalCheckedOut: result.checkedOut.members.length + result.checkedOut.visitors.length,
           },
         },
       }

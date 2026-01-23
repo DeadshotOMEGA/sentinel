@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { getPrismaClient } from '../lib/database.js'
 import { logger } from '../lib/logger.js'
+import { register } from '../lib/metrics.js'
 
-export const healthRouter = Router()
+export const healthRouter: Router = Router()
 
 /**
  * Overall health check
@@ -88,25 +89,25 @@ healthRouter.get('/live', (_req, res) => {
 })
 
 /**
- * Basic metrics endpoint
+ * Prometheus metrics endpoint
  *
- * Returns basic application metrics for monitoring
+ * Returns metrics in Prometheus text format for scraping
+ *
+ * Includes:
+ * - HTTP request metrics (rate, duration, active connections)
+ * - Database metrics (query duration, pool stats)
+ * - Authentication metrics (attempts, active sessions)
+ * - Business metrics (check-ins, badges, visitors, events)
+ * - Default Node.js metrics (CPU, memory, event loop)
  */
-healthRouter.get('/metrics', (_req, res) => {
-  const memoryUsage = process.memoryUsage()
-
-  res.status(200).json({
-    uptime: process.uptime(),
-    memory: {
-      heapUsed: memoryUsage.heapUsed,
-      heapTotal: memoryUsage.heapTotal,
-      external: memoryUsage.external,
-      rss: memoryUsage.rss,
-    },
-    cpu: process.cpuUsage(),
-    platform: process.platform,
-    nodeVersion: process.version,
-    environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString(),
-  })
+healthRouter.get('/metrics', async (_req, res) => {
+  try {
+    res.set('Content-Type', register.contentType)
+    res.end(await register.metrics())
+  } catch (error) {
+    logger.error('Failed to generate Prometheus metrics', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    res.status(500).end()
+  }
 })

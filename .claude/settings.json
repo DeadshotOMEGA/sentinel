@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/quality-check/quality-check.js",
+            "continueOnError": false
+          }
+        ]
+      }
+    ],
     "ToolCall": [
       {
         "name": "claudemd-linter",
@@ -10,6 +22,11 @@
           "filePattern": "**/CLAUDE.md"
         }
       }
+    ]
+  },
+  "permissions": {
+    "additionalDirectories": [
+      "/home/sauk/projects/sentinel/.claude/hooks"
     ]
   }
 }

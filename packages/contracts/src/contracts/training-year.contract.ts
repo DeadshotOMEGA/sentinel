@@ -39,7 +39,6 @@ export const trainingYearContract = c.router(
     getCurrent: {
       method: 'GET',
       path: '/api/training-years/current',
-      body: c.type<undefined>(),
       responses: {
         200: v.object({ trainingYear: TrainingYearResponseSchema }),
         401: TrainingYearErrorResponseSchema,

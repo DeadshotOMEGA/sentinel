@@ -29,5 +29,20 @@
       "@sentinel/types": ["./packages/types/src"]
     }
   },
-  "exclude": ["node_modules", "dist", "coverage", ".claude"]
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.next/**",
+    "**/generated/**",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.test.tsx",
+    "**/*.spec.tsx",
+    "**/__tests__/**",
+    "**/tests/**",
+    ".claude",
+    "eslint.config.js"
+  ]
 }

@@ -29,6 +29,7 @@ You are the database and ORM specialist for Sentinel, expert in Prisma schema de
 ### Hybrid ORM Approach (Prisma + Kysely)
 
 **Prisma** for:
+
 - Schema definition and management
 - Type generation
 - Migrations (Prisma Migrate)
@@ -36,12 +37,14 @@ You are the database and ORM specialist for Sentinel, expert in Prisma schema de
 - Relationships and data modeling
 
 **Kysely** for:
+
 - Performance-critical queries (50ms vs 110ms for complex joins)
 - Complex aggregations
 - Type-safe SQL query building
 - Reporting queries
 
 **Raw SQL with `COPY`** for:
+
 - Bulk imports from CSV (3x faster than any ORM)
 - Performance-critical batch operations
 
@@ -55,27 +58,32 @@ Extensions: uuid-ossp, pg_trgm (full-text search)
 ### Core Entities (Estimated 15+ models)
 
 **Personnel Management**:
+
 - Personnel (sailors, officers)
 - Ranks
 - Divisions
 - Positions
 
 **Attendance**:
+
 - AttendanceRecords (check-in/check-out events)
 - Excuses (authorized absences)
 - AttendanceSummaries (aggregated data)
 
 **Hardware**:
+
 - RFIDCards (card assignments)
 - Readers (hardware devices)
 - ReaderEvents (raw RFID scans)
 
 **Auth & Sessions**:
+
 - Users (admin accounts)
 - ApiKeys (kiosk authentication)
 - Sessions (JWT session storage)
 
 **Configuration**:
+
 - Settings (system config)
 - EventTypes (check-in types: parade, training, etc.)
 
@@ -84,6 +92,7 @@ Extensions: uuid-ossp, pg_trgm (full-text search)
 ### Best Practices
 
 1. **Enable Query Optimization**:
+
 ```prisma
 generator client {
   provider        = "prisma-client-js"
@@ -97,12 +106,14 @@ generator client {
 ```
 
 2. **Use Proper Field Types**:
+
 - `@id @default(uuid())` for IDs (not auto-increment for distributed systems)
 - `@updatedAt` for automatic timestamp tracking
 - `Decimal` type for precise numbers (not Float)
 - Enums for fixed value sets
 
 3. **Indexes for Performance**:
+
 ```prisma
 model AttendanceRecord {
   id          String   @id @default(uuid())
@@ -115,6 +126,7 @@ model AttendanceRecord {
 ```
 
 4. **Relations with Proper Foreign Keys**:
+
 ```prisma
 model Personnel {
   id       String             @id @default(uuid())
@@ -151,9 +163,7 @@ const report = await db
   .selectFrom('attendance_records as ar')
   .innerJoin('personnel as p', 'p.id', 'ar.personnel_id')
   .leftJoin('excuses as e', (join) =>
-    join
-      .onRef('e.personnel_id', '=', 'p.id')
-      .on('e.date', '=', sql`DATE(ar.timestamp)`)
+    join.onRef('e.personnel_id', '=', 'p.id').on('e.date', '=', sql`DATE(ar.timestamp)`)
   )
   .select([
     'p.id',
@@ -172,6 +182,7 @@ const report = await db
 ### Type Generation
 
 Generate Kysely types from Prisma schema:
+
 ```bash
 pnpm prisma generate
 pnpm kysely-codegen --out-file src/db/types.ts
@@ -182,6 +193,7 @@ pnpm kysely-codegen --out-file src/db/types.ts
 ### Prisma Migrate
 
 **Development**:
+
 ```bash
 # Create migration
 pnpm prisma migrate dev --name add_attendance_summary_table
@@ -191,6 +203,7 @@ pnpm prisma migrate reset
 ```
 
 **Production**:
+
 ```bash
 # Apply migrations
 pnpm prisma migrate deploy
@@ -265,6 +278,7 @@ async function bulkImportAttendance(csvPath: string) {
 ### 2. Optimizing Slow Queries
 
 1. Enable query logging:
+
 ```typescript
 const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error'],
@@ -272,11 +286,13 @@ const prisma = new PrismaClient({
 ```
 
 2. Check execution plan:
+
 ```sql
 EXPLAIN ANALYZE SELECT ...
 ```
 
 3. Add indexes if missing:
+
 ```prisma
 @@index([field1, field2])
 ```
@@ -286,6 +302,7 @@ EXPLAIN ANALYZE SELECT ...
 ### 3. Data Validation in Schema
 
 Use `@constraint` attributes (requires extension):
+
 ```prisma
 model Personnel {
   email String @unique @constraint(emailRegex: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")

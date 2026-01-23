@@ -11,8 +11,8 @@ import type {
 } from '@sentinel/types'
 
 interface BadgeFilters {
-  status?: BadgeStatus;
-  assignmentType?: BadgeAssignmentType;
+  status?: BadgeStatus
+  assignmentType?: BadgeAssignmentType
 }
 
 /**
@@ -29,7 +29,7 @@ function toBadge(prismaBadge: PrismaBadge): Badge {
     lastUsed: prismaBadge.lastUsed as any,
     createdAt: prismaBadge.createdAt ?? new Date(),
     updatedAt: prismaBadge.updatedAt ?? new Date(),
-  };
+  }
 }
 
 export class BadgeRepository {
@@ -44,16 +44,16 @@ export class BadgeRepository {
    */
   async findAll(filters?: BadgeFilters): Promise<Badge[]> {
     const where: {
-      status?: BadgeStatus;
-      assignmentType?: BadgeAssignmentType;
-    } = {};
+      status?: BadgeStatus
+      assignmentType?: BadgeAssignmentType
+    } = {}
 
     if (filters?.status) {
-      where.status = filters.status;
+      where.status = filters.status
     }
 
     if (filters?.assignmentType) {
-      where.assignmentType = filters.assignmentType;
+      where.assignmentType = filters.assignmentType
     }
 
     const badges = await this.prisma.badge.findMany({
@@ -61,9 +61,9 @@ export class BadgeRepository {
       orderBy: {
         serialNumber: 'asc',
       },
-    });
+    })
 
-    return badges.map(toBadge);
+    return badges.map(toBadge)
   }
 
   /**
@@ -71,16 +71,16 @@ export class BadgeRepository {
    */
   async findAllWithDetails(filters?: BadgeFilters): Promise<BadgeWithDetails[]> {
     const where: {
-      status?: BadgeStatus;
-      assignmentType?: BadgeAssignmentType;
-    } = {};
+      status?: BadgeStatus
+      assignmentType?: BadgeAssignmentType
+    } = {}
 
     if (filters?.status) {
-      where.status = filters.status;
+      where.status = filters.status
     }
 
     if (filters?.assignmentType) {
-      where.assignmentType = filters.assignmentType;
+      where.assignmentType = filters.assignmentType
     }
 
     const badges = await this.prisma.badge.findMany({
@@ -110,31 +110,31 @@ export class BadgeRepository {
           take: 1,
         },
       },
-    });
+    })
 
     return badges.map((badge) => {
-      const { members, checkins, ...badgeData } = badge;
-      const baseBadge = toBadge(badgeData);
+      const { members, checkins, ...badgeData } = badge
+      const baseBadge = toBadge(badgeData)
 
-      const result: BadgeWithDetails = { ...baseBadge };
+      const result: BadgeWithDetails = { ...baseBadge }
 
       if (members.length > 0 && badge.assignmentType === 'member') {
-        result.assignedMember = members[0];
+        result.assignedMember = members[0]
       }
 
       if (checkins.length > 0 && checkins[0]) {
-        const checkin = checkins[0];
+        const checkin = checkins[0]
         if (checkin.timestamp && checkin.kioskId && checkin.direction) {
           result.lastScan = {
             kioskId: checkin.kioskId,
             timestamp: checkin.timestamp,
             direction: checkin.direction,
-          };
+          }
         }
       }
 
-      return result;
-    });
+      return result
+    })
   }
 
   /**
@@ -143,9 +143,9 @@ export class BadgeRepository {
   async findById(id: string): Promise<Badge | null> {
     const badge = await this.prisma.badge.findUnique({
       where: { id },
-    });
+    })
 
-    return badge ? toBadge(badge) : null;
+    return badge ? toBadge(badge) : null
   }
 
   /**
@@ -176,33 +176,33 @@ export class BadgeRepository {
           take: 1,
         },
       },
-    });
+    })
 
     if (!badge) {
-      return null;
+      return null
     }
 
-    const { members, checkins, ...badgeData } = badge;
-    const baseBadge = toBadge(badgeData);
+    const { members, checkins, ...badgeData } = badge
+    const baseBadge = toBadge(badgeData)
 
-    const result: BadgeWithDetails = { ...baseBadge };
+    const result: BadgeWithDetails = { ...baseBadge }
 
     if (members.length > 0 && badge.assignmentType === 'member') {
-      result.assignedMember = members[0];
+      result.assignedMember = members[0]
     }
 
     if (checkins.length > 0 && checkins[0]) {
-      const checkin = checkins[0];
+      const checkin = checkins[0]
       if (checkin.timestamp && checkin.kioskId && checkin.direction) {
         result.lastScan = {
           kioskId: checkin.kioskId,
           timestamp: checkin.timestamp,
           direction: checkin.direction,
-        };
+        }
       }
     }
 
-    return result;
+    return result
   }
 
   /**
@@ -211,9 +211,9 @@ export class BadgeRepository {
   async findBySerialNumber(serialNumber: string): Promise<Badge | null> {
     const badge = await this.prisma.badge.findUnique({
       where: { serialNumber },
-    });
+    })
 
-    return badge ? toBadge(badge) : null;
+    return badge ? toBadge(badge) : null
   }
 
   /**
@@ -221,7 +221,7 @@ export class BadgeRepository {
    */
   async findBySerialNumbers(serialNumbers: string[]): Promise<Badge[]> {
     if (serialNumbers.length === 0) {
-      return [];
+      return []
     }
 
     const badges = await this.prisma.badge.findMany({
@@ -230,15 +230,17 @@ export class BadgeRepository {
           in: serialNumbers,
         },
       },
-    });
+    })
 
-    return badges.map(toBadge);
+    return badges.map(toBadge)
   }
 
   /**
    * Find badge by serial number with joined member data (for single checkin optimization)
    */
-  async findBySerialNumberWithMember(serialNumber: string): Promise<{ badge: Badge; member: MemberWithDivision | null } | null> {
+  async findBySerialNumberWithMember(
+    serialNumber: string
+  ): Promise<{ badge: Badge; member: MemberWithDivision | null } | null> {
     const badge = await this.prisma.badge.findUnique({
       where: { serialNumber },
       include: {
@@ -254,24 +256,25 @@ export class BadgeRepository {
           take: 1,
         },
       },
-    });
+    })
 
     if (!badge) {
-      return null;
+      return null
     }
 
     // Extract member from the array (take 1 ensures max one member)
-    const member = badge.members.length > 0 && badge.assignmentType === 'member'
-      ? (badge.members[0] as MemberWithDivision)
-      : null;
+    const member =
+      badge.members.length > 0 && badge.assignmentType === 'member'
+        ? (badge.members[0] as MemberWithDivision)
+        : null
 
     // Remove the members array from badge before returning
-    const { members: _, ...badgeData } = badge;
+    const { members: _, ...badgeData } = badge
 
     return {
       badge: toBadge(badgeData),
       member,
-    };
+    }
   }
 
   /**
@@ -279,7 +282,7 @@ export class BadgeRepository {
    */
   async create(data: CreateBadgeInput): Promise<Badge> {
     if (!data.serialNumber) {
-      throw new Error('Serial number is required');
+      throw new Error('Serial number is required')
     }
 
     const badge = await this.prisma.badge.create({
@@ -289,9 +292,9 @@ export class BadgeRepository {
         assignedToId: data.assignedToId !== undefined ? data.assignedToId : null,
         status: data.status !== undefined ? data.status : 'active',
       },
-    });
+    })
 
-    return toBadge(badge);
+    return toBadge(badge)
   }
 
   /**
@@ -303,7 +306,7 @@ export class BadgeRepository {
     assignmentType: BadgeAssignmentType
   ): Promise<Badge> {
     if (assignmentType === 'unassigned') {
-      throw new Error('Cannot assign badge with type "unassigned"');
+      throw new Error('Cannot assign badge with type "unassigned"')
     }
 
     const badge = await this.prisma.badge.update({
@@ -313,9 +316,9 @@ export class BadgeRepository {
         assignedToId,
         updatedAt: new Date(),
       },
-    });
+    })
 
-    return toBadge(badge);
+    return toBadge(badge)
   }
 
   /**
@@ -329,9 +332,9 @@ export class BadgeRepository {
         assignedToId: null,
         updatedAt: new Date(),
       },
-    });
+    })
 
-    return toBadge(badge);
+    return toBadge(badge)
   }
 
   /**
@@ -344,9 +347,9 @@ export class BadgeRepository {
         status,
         updatedAt: new Date(),
       },
-    });
+    })
 
-    return toBadge(badge);
+    return toBadge(badge)
   }
 
   /**
@@ -355,6 +358,6 @@ export class BadgeRepository {
   async delete(badgeId: string): Promise<void> {
     await this.prisma.badge.delete({
       where: { id: badgeId },
-    });
+    })
   }
 }

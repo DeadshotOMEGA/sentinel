@@ -28,7 +28,7 @@ export const reportsRouter = s.router(reportContract, {
       today.setHours(0, 0, 0, 0)
 
       // Build where clause for member filtering
-      const memberWhere: any = {
+      const memberWhere: Record<string, unknown> = {
         status: 'active',
       }
 
@@ -37,14 +37,24 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Get present FT staff (members who checked in today)
-      let presentFTStaff: any[] = []
-      let absentFTStaff: any[] = []
+      let presentFTStaff: Array<{
+        id: string
+        serviceNumber: string
+        firstName: string
+        lastName: string
+        rank: string
+        division: { id: string; name: string }
+      }> = []
+      let absentFTStaff: Array<{
+        id: string
+        serviceNumber: string
+        firstName: string
+        lastName: string
+        rank: string
+        division: { id: string; name: string }
+      }> = []
 
-      if (
-        !config.memberType ||
-        config.memberType === 'all' ||
-        config.memberType === 'ft_staff'
-      ) {
+      if (!config.memberType || config.memberType === 'all' || config.memberType === 'ft_staff') {
         // Present FT staff
         const presentFT = await prisma.member.findMany({
           where: {
@@ -79,8 +89,8 @@ export const reportsRouter = s.router(reportContract, {
           lastName: m.lastName,
           rank: m.rank,
           division: {
-            id: m.division.id,
-            name: m.division.name,
+            id: m.division?.id ?? 'Unknown',
+            name: m.division?.name ?? 'Unknown',
           },
         }))
 
@@ -120,20 +130,23 @@ export const reportsRouter = s.router(reportContract, {
           lastName: m.lastName,
           rank: m.rank,
           division: {
-            id: m.division.id,
-            name: m.division.name,
+            id: m.division?.id ?? 'Unknown',
+            name: m.division?.name ?? 'Unknown',
           },
         }))
       }
 
       // Get present reserve members
-      let presentReserve: any[] = []
+      let presentReserve: Array<{
+        id: string
+        serviceNumber: string
+        firstName: string
+        lastName: string
+        rank: string
+        division: { id: string; name: string }
+      }> = []
 
-      if (
-        !config.memberType ||
-        config.memberType === 'all' ||
-        config.memberType === 'reserve'
-      ) {
+      if (!config.memberType || config.memberType === 'all' || config.memberType === 'reserve') {
         const presentRes = await prisma.member.findMany({
           where: {
             ...memberWhere,
@@ -165,38 +178,43 @@ export const reportsRouter = s.router(reportContract, {
           lastName: m.lastName,
           rank: m.rank,
           division: {
-            id: m.division.id,
-            name: m.division.name,
+            id: m.division?.id ?? 'Unknown',
+            name: m.division?.name ?? 'Unknown',
           },
         }))
       }
 
       // Calculate summary by division
-      const divisionSummary: Record<
-        string,
-        { name: string; ftStaff: number; reserve: number }
-      > = {}
+      const divisionSummary: Record<string, { name: string; ftStaff: number; reserve: number }> = {}
 
       for (const member of presentFTStaff) {
-        if (!divisionSummary[member.division.id]) {
-          divisionSummary[member.division.id] = {
+        const divisionId = member.division.id
+        if (!divisionSummary[divisionId]) {
+          divisionSummary[divisionId] = {
             name: member.division.name,
             ftStaff: 0,
             reserve: 0,
           }
         }
-        divisionSummary[member.division.id].ftStaff++
+        const entry = divisionSummary[divisionId]
+        if (entry) {
+          entry.ftStaff++
+        }
       }
 
       for (const member of presentReserve) {
-        if (!divisionSummary[member.division.id]) {
-          divisionSummary[member.division.id] = {
+        const divisionId = member.division.id
+        if (!divisionSummary[divisionId]) {
+          divisionSummary[divisionId] = {
             name: member.division.name,
             ftStaff: 0,
             reserve: 0,
           }
         }
-        divisionSummary[member.division.id].reserve++
+        const entry = divisionSummary[divisionId]
+        if (entry) {
+          entry.reserve++
+        }
       }
 
       return {
@@ -225,9 +243,7 @@ export const reportsRouter = s.router(reportContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate daily check-in report',
+            error instanceof Error ? error.message : 'Failed to generate daily check-in report',
         },
       }
     }
@@ -241,12 +257,15 @@ export const reportsRouter = s.router(reportContract, {
       const config: TrainingNightReportConfig = body
 
       // Calculate period dates based on config
-      let periodStart: string
-      let periodEnd: string
+      let periodStart: string = ''
+      let periodEnd: string = ''
 
-      if (config.period === 'custom' || (!config.period && config.periodStart && config.periodEnd)) {
-        periodStart = config.periodStart!
-        periodEnd = config.periodEnd!
+      if (
+        config.period === 'custom' ||
+        (!config.period && config.periodStart && config.periodEnd)
+      ) {
+        periodStart = config.periodStart ?? ''
+        periodEnd = config.periodEnd ?? ''
       } else {
         // Get current training year
         const trainingYear = await prisma.trainingYear.findFirst({
@@ -266,31 +285,35 @@ export const reportsRouter = s.router(reportContract, {
         const now = new Date()
 
         switch (config.period) {
-          case 'current_year':
-            periodStart = trainingYear.startDate.toISOString().split('T')[0]
-            periodEnd = trainingYear.endDate.toISOString().split('T')[0]
+          case 'current_year': {
+            periodStart = trainingYear.startDate.toISOString().split('T')[0] ?? ''
+            periodEnd = trainingYear.endDate.toISOString().split('T')[0] ?? ''
             break
-          case 'last_quarter':
-            periodEnd = now.toISOString().split('T')[0]
+          }
+          case 'last_quarter': {
+            periodEnd = now.toISOString().split('T')[0] ?? ''
             const quarterStart = new Date(now)
             quarterStart.setMonth(now.getMonth() - 3)
-            periodStart = quarterStart.toISOString().split('T')[0]
+            periodStart = quarterStart.toISOString().split('T')[0] ?? ''
             break
-          case 'last_month':
-            periodEnd = now.toISOString().split('T')[0]
+          }
+          case 'last_month': {
+            periodEnd = now.toISOString().split('T')[0] ?? ''
             const monthStart = new Date(now)
             monthStart.setMonth(now.getMonth() - 1)
-            periodStart = monthStart.toISOString().split('T')[0]
+            periodStart = monthStart.toISOString().split('T')[0] ?? ''
             break
-          default:
+          }
+          default: {
             // Default to current year
-            periodStart = trainingYear.startDate.toISOString().split('T')[0]
-            periodEnd = trainingYear.endDate.toISOString().split('T')[0]
+            periodStart = trainingYear.startDate.toISOString().split('T')[0] ?? ''
+            periodEnd = trainingYear.endDate.toISOString().split('T')[0] ?? ''
+          }
         }
       }
 
       // Build member query
-      const memberWhere: any = {
+      const memberWhere: Record<string, unknown> = {
         status: 'active',
       }
 
@@ -308,7 +331,7 @@ export const reportsRouter = s.router(reportContract, {
 
       // Get members with attendance data
       const members = await prisma.member.findMany({
-        where: memberWhere,
+        where: memberWhere as Record<string, unknown>,
         include: {
           division: {
             select: {
@@ -359,8 +382,8 @@ export const reportsRouter = s.router(reportContract, {
             lastName: member.lastName,
             rank: member.rank,
             division: {
-              id: member.division.id,
-              name: member.division.name,
+              id: member.division?.id ?? 'Unknown',
+              name: member.division?.name ?? 'Unknown',
             },
           },
           attendance,
@@ -370,7 +393,7 @@ export const reportsRouter = s.router(reportContract, {
           },
           isBMQEnrolled: member.bmqEnrollments.length > 0 && config.showBMQBadge,
           enrollmentDate:
-            member.bmqEnrollments.length > 0
+            member.bmqEnrollments.length > 0 && member.bmqEnrollments[0]
               ? member.bmqEnrollments[0].enrolledAt.toISOString()
               : new Date().toISOString(),
         }
@@ -423,8 +446,8 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Build enrollment query
-      const enrollmentWhere: any = {
-        bmqCourseId: config.courseId,
+      const enrollmentWhere: Record<string, unknown> = {
+        bmq_course_id: config.courseId,
       }
 
       // Get enrollments with member data
@@ -481,8 +504,8 @@ export const reportsRouter = s.router(reportContract, {
             lastName: enrollment.member.lastName,
             rank: enrollment.member.rank,
             division: {
-              id: enrollment.member.division.id,
-              name: enrollment.member.division.name,
+              id: enrollment.member.division?.id ?? 'Unknown',
+              name: enrollment.member.division?.name ?? 'Unknown',
             },
           },
           attendance,
@@ -509,9 +532,7 @@ export const reportsRouter = s.router(reportContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate BMQ attendance report',
+            error instanceof Error ? error.message : 'Failed to generate BMQ attendance report',
         },
       }
     }
@@ -525,7 +546,7 @@ export const reportsRouter = s.router(reportContract, {
       const config: PersonnelRosterConfig = body
 
       // Build member query
-      const memberWhere: any = {
+      const memberWhere: Record<string, unknown> = {
         status: 'active',
       }
 
@@ -534,7 +555,7 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Build order by clause
-      const orderBy: any[] = []
+      const orderBy: Array<Record<string, unknown>> = []
 
       switch (config.sortOrder) {
         case 'division_rank':
@@ -570,8 +591,8 @@ export const reportsRouter = s.router(reportContract, {
         lastName: member.lastName,
         middleInitial: member.initials || null,
         division: {
-          id: member.division.id,
-          name: member.division.name,
+          id: member.division?.id ?? 'Unknown',
+          name: member.division?.name ?? 'Unknown',
         },
         badgeId: member.badgeId || null,
         status: member.status,
@@ -593,10 +614,7 @@ export const reportsRouter = s.router(reportContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate personnel roster',
+          message: error instanceof Error ? error.message : 'Failed to generate personnel roster',
         },
       }
     }
@@ -610,7 +628,7 @@ export const reportsRouter = s.router(reportContract, {
       const config: VisitorSummaryConfig = body
 
       // Build visitor query
-      const visitorWhere: any = {
+      const visitorWhere: Record<string, unknown> = {
         checkInTime: {
           gte: new Date(config.startDate),
           lte: new Date(config.endDate),
@@ -650,16 +668,14 @@ export const reportsRouter = s.router(reportContract, {
 
       const records = visitors.map((visitor) => ({
         id: visitor.id,
-        fullName: visitor.fullName,
+        fullName: visitor.name || visitor.id,
         organization: visitor.organization || null,
-        purpose: visitor.purpose || null,
+        purpose: visitor.visitReason || null,
         visitType: visitor.visitType,
         checkInTime: visitor.checkInTime.toISOString(),
         checkOutTime: visitor.checkOutTime?.toISOString() || null,
         duration: visitor.checkOutTime
-          ? Math.round(
-              (visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000
-            )
+          ? Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000)
           : null,
         hostMember: visitor.hostMember
           ? {
@@ -669,8 +685,8 @@ export const reportsRouter = s.router(reportContract, {
               lastName: visitor.hostMember.lastName,
               rank: visitor.hostMember.rank,
               division: {
-                id: visitor.hostMember.division.id,
-                name: visitor.hostMember.division.name,
+                id: visitor.hostMember.division?.id ?? 'Unknown',
+                name: visitor.hostMember.division?.name ?? 'Unknown',
               },
             }
           : null,
@@ -684,8 +700,7 @@ export const reportsRouter = s.router(reportContract, {
         byVisitType[visitor.visitType] = (byVisitType[visitor.visitType] || 0) + 1
 
         if (visitor.organization) {
-          byOrganization[visitor.organization] =
-            (byOrganization[visitor.organization] || 0) + 1
+          byOrganization[visitor.organization] = (byOrganization[visitor.organization] || 0) + 1
         }
       }
 
@@ -713,10 +728,7 @@ export const reportsRouter = s.router(reportContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to generate visitor summary',
+          message: error instanceof Error ? error.message : 'Failed to generate visitor summary',
         },
       }
     }

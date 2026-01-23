@@ -1,0 +1,144 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576
+    timeout: 10s
+
+scrape_configs:
+  # Scrape logs from Docker containers
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: label
+            values: ["com.docker.compose.project=sentinel"]
+
+    relabel_configs:
+      # Only scrape sentinel-backend container
+      - source_labels: ['__meta_docker_container_name']
+        regex: '.*sentinel-backend.*'
+        action: keep
+
+      # Extract container name as job label
+      - source_labels: ['__meta_docker_container_name']
+        target_label: 'container'
+        regex: '/(.*)'
+        replacement: '$1'
+
+      # Add service label
+      - source_labels: ['__meta_docker_container_name']
+        target_label: 'service'
+        regex: '.*sentinel-backend.*'
+        replacement: 'sentinel-backend'
+
+      # Add compose project label
+      - source_labels: ['__meta_docker_compose_project']
+        target_label: 'compose_project'
+
+      # Add container ID
+      - source_labels: ['__meta_docker_container_id']
+        target_label: 'container_id'
+        regex: '(.{12}).*'
+        replacement: '$1'
+
+    pipeline_stages:
+      # Parse JSON logs from Winston
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            correlationId: correlationId
+            userId: userId
+            module: module
+            method: method
+            path: path
+            statusCode: statusCode
+            duration: duration
+            error: error
+            stack: stack
+            service: service
+
+      # Set timestamp from log entry
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Add static labels (always present)
+      - static_labels:
+          job: sentinel-backend
+
+      # Extract labels for indexing (optional, only if fields exist)
+      - labels:
+          level:
+          module:
+
+      # Keep metadata fields for searching (not indexed)
+      - output:
+          source: message
+
+      # Add template for structured output
+      - template:
+          source: output
+          template: '{{ .message }}'
+
+  # Scrape Docker container stdout/stderr directly (fallback)
+  - job_name: docker_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker_logs
+          __path__: /var/lib/docker/containers/*/*-json.log
+
+    pipeline_stages:
+      # Parse Docker's JSON log format
+      - json:
+          expressions:
+            log: log
+            stream: stream
+            time: time
+
+      # Parse the nested log content if it's JSON
+      - json:
+          source: log
+          expressions:
+            level: level
+            message: message
+            correlationId: correlationId
+            module: module
+            statusCode: statusCode
+            service: service
+
+      # Set timestamp
+      - timestamp:
+          source: time
+          format: RFC3339Nano
+
+      # Extract labels
+      - labels:
+          stream:
+          level:
+          module:
+          service:
+
+      # Output the log message
+      - output:
+          source: log
+
+# Limits configuration
+limits_config:
+  readline_rate: 10000
+  readline_burst: 20000
+  max_streams: 10000
+  max_line_size: 256000
+  max_line_size_truncate: true

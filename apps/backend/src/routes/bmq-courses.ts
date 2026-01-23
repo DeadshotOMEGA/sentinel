@@ -34,8 +34,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to fetch BMQ courses',
+          message: error instanceof Error ? error.message : 'Failed to fetch BMQ courses',
         },
       }
     }
@@ -323,11 +322,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
         }
       }
 
-      const enrollment = await bmqRepo.updateEnrollment(
-        params.id,
-        body.status,
-        body.completedAt
-      )
+      const enrollment = await bmqRepo.updateEnrollment(params.id, body.status, body.completedAt)
 
       return {
         status: 200 as const,
@@ -340,8 +335,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to update enrollment',
+          message: error instanceof Error ? error.message : 'Failed to update enrollment',
         },
       }
     }
@@ -375,8 +369,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to delete enrollment',
+          message: error instanceof Error ? error.message : 'Failed to delete enrollment',
         },
       }
     }
@@ -416,10 +409,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch member enrollments',
+          message: error instanceof Error ? error.message : 'Failed to fetch member enrollments',
         },
       }
     }
@@ -454,9 +444,7 @@ function toEnrollmentApiFormat(enrollment: any) {
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt
-      ? enrollment.completedAt.toISOString().split('T')[0]
-      : null,
+    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
     status: enrollment.status,
   }
 }
@@ -470,9 +458,7 @@ function toEnrollmentWithMemberApiFormat(enrollment: any) {
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt
-      ? enrollment.completedAt.toISOString().split('T')[0]
-      : null,
+    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
     status: enrollment.status,
     member: {
       id: enrollment.member.id,
@@ -494,9 +480,7 @@ function toEnrollmentWithCourseApiFormat(enrollment: any) {
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt
-      ? enrollment.completedAt.toISOString().split('T')[0]
-      : null,
+    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
     status: enrollment.status,
     course: toCourseApiFormat(enrollment.bmqCourse),
   }

@@ -1,5 +1,11 @@
 import { initServer } from '@ts-rest/express'
 import { visitorContract } from '@sentinel/contracts'
+import type {
+  VisitorListQuery,
+  CreateVisitorInput,
+  UpdateVisitorInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/broadcast.js'
@@ -26,7 +32,7 @@ export const visitorsRouter = s.router(visitorContract, {
             id: v.id,
             name: v.name,
             organization: v.organization ?? null,
-            visitType: v.visitType,
+            visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
             visitTypeId: v.visitTypeId ?? null,
             visitReason: v.visitReason ?? null,
             eventId: v.eventId ?? null,
@@ -36,7 +42,7 @@ export const visitorsRouter = s.router(visitorContract, {
             temporaryBadgeId: v.temporaryBadgeId ?? null,
             kioskId: v.kioskId,
             adminNotes: v.adminNotes ?? null,
-            checkInMethod: v.checkInMethod || 'kiosk',
+            checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
             createdByAdmin: v.createdByAdmin ?? null,
             createdAt: v.createdAt.toISOString(),
           })),
@@ -57,12 +63,12 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Get all visitors with pagination and filtering
    */
-  getVisitors: async ({ query }) => {
+  getVisitors: async ({ query }: { query: VisitorListQuery }) => {
     try {
       const page = query.page || 1
       const limit = query.limit || 50
 
-      const filters: any = {}
+      const filters: Record<string, unknown> = {}
       if (query.startDate && query.endDate) {
         filters.dateRange = {
           start: new Date(query.startDate),
@@ -89,7 +95,7 @@ export const visitorsRouter = s.router(visitorContract, {
             id: v.id,
             name: v.name,
             organization: v.organization ?? null,
-            visitType: v.visitType,
+            visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
             visitTypeId: v.visitTypeId ?? null,
             visitReason: v.visitReason ?? null,
             eventId: v.eventId ?? null,
@@ -99,7 +105,7 @@ export const visitorsRouter = s.router(visitorContract, {
             temporaryBadgeId: v.temporaryBadgeId ?? null,
             kioskId: v.kioskId,
             adminNotes: v.adminNotes ?? null,
-            checkInMethod: v.checkInMethod || 'kiosk',
+            checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
             createdByAdmin: v.createdByAdmin ?? null,
             createdAt: v.createdAt.toISOString(),
           })),
@@ -123,7 +129,7 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Create new visitor
    */
-  createVisitor: async ({ body }) => {
+  createVisitor: async ({ body }: { body: CreateVisitorInput }) => {
     try {
       const visitor = await visitorRepo.create({
         name: body.name,
@@ -158,7 +164,7 @@ export const visitorsRouter = s.router(visitorContract, {
           id: visitor.id,
           name: visitor.name,
           organization: visitor.organization ?? null,
-          visitType: visitor.visitType,
+          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
           visitTypeId: visitor.visitTypeId ?? null,
           visitReason: visitor.visitReason ?? null,
           eventId: visitor.eventId ?? null,
@@ -168,7 +174,7 @@ export const visitorsRouter = s.router(visitorContract, {
           temporaryBadgeId: visitor.temporaryBadgeId ?? null,
           kioskId: visitor.kioskId,
           adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: visitor.checkInMethod || 'kiosk',
+          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
           createdByAdmin: visitor.createdByAdmin ?? null,
           createdAt: visitor.createdAt.toISOString(),
         },
@@ -187,7 +193,7 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Checkout visitor
    */
-  checkoutVisitor: async ({ params }) => {
+  checkoutVisitor: async ({ params }: { params: IdParam }) => {
     try {
       const visitor = await visitorRepo.checkout(params.id)
 
@@ -209,7 +215,7 @@ export const visitorsRouter = s.router(visitorContract, {
             id: visitor.id,
             name: visitor.name,
             organization: visitor.organization ?? null,
-            visitType: visitor.visitType,
+            visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
             visitTypeId: visitor.visitTypeId ?? null,
             visitReason: visitor.visitReason ?? null,
             eventId: visitor.eventId ?? null,
@@ -219,7 +225,7 @@ export const visitorsRouter = s.router(visitorContract, {
             temporaryBadgeId: visitor.temporaryBadgeId ?? null,
             kioskId: visitor.kioskId,
             adminNotes: visitor.adminNotes ?? null,
-            checkInMethod: visitor.checkInMethod || 'kiosk',
+            checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
             createdByAdmin: visitor.createdByAdmin ?? null,
             createdAt: visitor.createdAt.toISOString(),
           },
@@ -249,7 +255,7 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Get visitor by ID
    */
-  getVisitorById: async ({ params }) => {
+  getVisitorById: async ({ params }: { params: IdParam }) => {
     try {
       const visitor = await visitorRepo.findById(params.id)
 
@@ -269,7 +275,7 @@ export const visitorsRouter = s.router(visitorContract, {
           id: visitor.id,
           name: visitor.name,
           organization: visitor.organization ?? null,
-          visitType: visitor.visitType,
+          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
           visitTypeId: visitor.visitTypeId ?? null,
           visitReason: visitor.visitReason ?? null,
           eventId: visitor.eventId ?? null,
@@ -279,7 +285,7 @@ export const visitorsRouter = s.router(visitorContract, {
           temporaryBadgeId: visitor.temporaryBadgeId ?? null,
           kioskId: visitor.kioskId,
           adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: visitor.checkInMethod || 'kiosk',
+          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
           createdByAdmin: visitor.createdByAdmin ?? null,
           createdAt: visitor.createdAt.toISOString(),
         },
@@ -298,7 +304,7 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Update visitor
    */
-  updateVisitor: async ({ params, body }) => {
+  updateVisitor: async ({ params, body }: { params: IdParam; body: UpdateVisitorInput }) => {
     try {
       const visitor = await visitorRepo.update(params.id, {
         name: body.name,
@@ -322,7 +328,7 @@ export const visitorsRouter = s.router(visitorContract, {
           id: visitor.id,
           name: visitor.name,
           organization: visitor.organization ?? null,
-          visitType: visitor.visitType,
+          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
           visitTypeId: visitor.visitTypeId ?? null,
           visitReason: visitor.visitReason ?? null,
           eventId: visitor.eventId ?? null,
@@ -332,7 +338,7 @@ export const visitorsRouter = s.router(visitorContract, {
           temporaryBadgeId: visitor.temporaryBadgeId ?? null,
           kioskId: visitor.kioskId,
           adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: visitor.checkInMethod || 'kiosk',
+          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
           createdByAdmin: visitor.createdByAdmin ?? null,
           createdAt: visitor.createdAt.toISOString(),
         },

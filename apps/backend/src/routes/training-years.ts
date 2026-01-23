@@ -1,16 +1,45 @@
 import { initServer } from '@ts-rest/express'
-import { trainingYearContract } from '@sentinel/contracts'
+import { trainingYearContract, type TrainingYearResponse } from '@sentinel/contracts'
 import { TrainingYearRepository } from '../repositories/training-year-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import type { TrainingYear } from '@sentinel/database'
 
 const s = initServer()
 const trainingYearRepo = new TrainingYearRepository(getPrismaClient())
 
 /**
- * Training year routes
+ * Convert TrainingYear from repository to API response format
+ */
+function toApiFormat(trainingYear: TrainingYear): TrainingYearResponse {
+  const startDate = trainingYear.startDate.toISOString().split('T')[0]
+  const endDate = trainingYear.endDate.toISOString().split('T')[0]
+
+  // Ensure we have valid date strings
+  if (!startDate || !endDate) {
+    throw new Error('Invalid date format in training year')
+  }
+
+  return {
+    id: trainingYear.id,
+    name: trainingYear.name,
+    startDate,
+    endDate,
+    holidayExclusions: Array.isArray(trainingYear.holidayExclusions)
+      ? (trainingYear.holidayExclusions as TrainingYearResponse['holidayExclusions'])
+      : [],
+    dayExceptions: Array.isArray(trainingYear.dayExceptions)
+      ? (trainingYear.dayExceptions as TrainingYearResponse['dayExceptions'])
+      : [],
+    isCurrent: trainingYear.isCurrent,
+    createdAt: trainingYear.createdAt.toISOString(),
+    updatedAt: trainingYear.updatedAt.toISOString(),
+  }
+}
+
+/**
+ * Training Years routes
  *
  * Manages fiscal training years with holiday exclusions and day exceptions.
- * Only one training year can be marked as current at a time.
  */
 export const trainingYearsRouter = s.router(trainingYearContract, {
   /**
@@ -31,10 +60,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch training years',
+          message: error instanceof Error ? error.message : 'Failed to fetch training years',
         },
       }
     }
@@ -68,10 +94,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch current training year',
+          message: error instanceof Error ? error.message : 'Failed to fetch current training year',
         },
       }
     }
@@ -105,10 +128,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch training year',
+          message: error instanceof Error ? error.message : 'Failed to fetch training year',
         },
       }
     }
@@ -119,14 +139,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
    */
   create: async ({ body }) => {
     try {
-      const trainingYear = await trainingYearRepo.create({
-        name: body.name,
-        startDate: new Date(body.startDate),
-        endDate: new Date(body.endDate),
-        holidayExclusions: body.holidayExclusions || [],
-        dayExceptions: body.dayExceptions || [],
-        isCurrent: body.isCurrent || false,
-      })
+      const trainingYear = await trainingYearRepo.create(body)
 
       return {
         status: 201 as const,
@@ -139,10 +152,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to create training year',
+          message: error instanceof Error ? error.message : 'Failed to create training year',
         },
       }
     }
@@ -153,9 +163,9 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
    */
   update: async ({ params, body }) => {
     try {
-      // Check if training year exists
-      const existing = await trainingYearRepo.findById(params.id)
-      if (!existing) {
+      const trainingYear = await trainingYearRepo.update(params.id, body)
+
+      if (!trainingYear) {
         return {
           status: 404 as const,
           body: {
@@ -164,32 +174,6 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
           },
         }
       }
-
-      // Build update data
-      const updateData: any = {}
-      if (body.name !== undefined) updateData.name = body.name
-      if (body.startDate !== undefined)
-        updateData.startDate = new Date(body.startDate)
-      if (body.endDate !== undefined)
-        updateData.endDate = new Date(body.endDate)
-      if (body.holidayExclusions !== undefined)
-        updateData.holidayExclusions = body.holidayExclusions
-      if (body.dayExceptions !== undefined)
-        updateData.dayExceptions = body.dayExceptions
-      if (body.isCurrent !== undefined) updateData.isCurrent = body.isCurrent
-
-      // Check if there are any fields to update
-      if (Object.keys(updateData).length === 0) {
-        return {
-          status: 400 as const,
-          body: {
-            error: 'VALIDATION_ERROR',
-            message: 'No fields to update',
-          },
-        }
-      }
-
-      const trainingYear = await trainingYearRepo.update(params.id, updateData)
 
       return {
         status: 200 as const,
@@ -202,10 +186,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to update training year',
+          message: error instanceof Error ? error.message : 'Failed to update training year',
         },
       }
     }
@@ -216,9 +197,9 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
    */
   setCurrent: async ({ params }) => {
     try {
-      // Check if training year exists
-      const existing = await trainingYearRepo.findById(params.id)
-      if (!existing) {
+      const trainingYear = await trainingYearRepo.setCurrent(params.id)
+
+      if (!trainingYear) {
         return {
           status: 404 as const,
           body: {
@@ -227,9 +208,6 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
           },
         }
       }
-
-      // Database trigger will automatically unset other current years
-      const trainingYear = await trainingYearRepo.setCurrent(params.id)
 
       return {
         status: 200 as const,
@@ -242,10 +220,7 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to set current training year',
+          message: error instanceof Error ? error.message : 'Failed to set current training year',
         },
       }
     }
@@ -256,9 +231,14 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
    */
   delete: async ({ params }) => {
     try {
-      // Check if training year exists
-      const existing = await trainingYearRepo.findById(params.id)
-      if (!existing) {
+      await trainingYearRepo.delete(params.id)
+
+      return {
+        status: 204 as const,
+        body: undefined,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
           body: {
@@ -268,56 +248,23 @@ export const trainingYearsRouter = s.router(trainingYearContract, {
         }
       }
 
-      // Prevent deletion of current training year
-      if (existing.isCurrent) {
+      if (error instanceof Error && error.message.includes('current')) {
         return {
           status: 400 as const,
           body: {
-            error: 'VALIDATION_ERROR',
-            message:
-              'Cannot delete the current training year. Set another year as current first.',
+            error: 'INVALID_OPERATION',
+            message: 'Cannot delete the current training year',
           },
         }
       }
 
-      await trainingYearRepo.delete(params.id)
-
-      return {
-        status: 204 as const,
-        body: undefined,
-      }
-    } catch (error) {
       return {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Failed to delete training year',
+          message: error instanceof Error ? error.message : 'Failed to delete training year',
         },
       }
     }
   },
 })
-
-/**
- * Convert TrainingYear database model to API response format
- */
-function toApiFormat(trainingYear: any) {
-  return {
-    id: trainingYear.id,
-    name: trainingYear.name,
-    startDate: trainingYear.startDate.toISOString().split('T')[0], // Date only
-    endDate: trainingYear.endDate.toISOString().split('T')[0], // Date only
-    holidayExclusions: Array.isArray(trainingYear.holidayExclusions)
-      ? trainingYear.holidayExclusions
-      : JSON.parse(trainingYear.holidayExclusions || '[]'),
-    dayExceptions: Array.isArray(trainingYear.dayExceptions)
-      ? trainingYear.dayExceptions
-      : JSON.parse(trainingYear.dayExceptions || '[]'),
-    isCurrent: trainingYear.isCurrent,
-    createdAt: trainingYear.createdAt.toISOString(),
-    updatedAt: trainingYear.updatedAt.toISOString(),
-  }
-}

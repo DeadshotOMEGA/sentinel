@@ -41,7 +41,6 @@ export const eventContract = c.router({
   getAvailableBadges: {
     method: 'GET',
     path: '/api/events/badges/available',
-    body: c.type<undefined>(),
     responses: {
       200: AvailableBadgesResponseSchema,
       401: ErrorResponseSchema,
@@ -57,7 +56,6 @@ export const eventContract = c.router({
   getEvents: {
     method: 'GET',
     path: '/api/events',
-    body: c.type<undefined>(),
     responses: {
       200: EventListResponseSchema,
       401: ErrorResponseSchema,
@@ -110,7 +108,6 @@ export const eventContract = c.router({
     method: 'GET',
     path: '/api/events/:id/stats',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: EventPresenceStatsResponseSchema,
       401: ErrorResponseSchema,
@@ -128,7 +125,6 @@ export const eventContract = c.router({
     method: 'GET',
     path: '/api/events/:id/attendees',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: AttendeeListResponseSchema,
       401: ErrorResponseSchema,
@@ -240,7 +236,6 @@ export const eventContract = c.router({
     method: 'GET',
     path: '/api/events/:id',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: EventResponseSchema,
       401: ErrorResponseSchema,

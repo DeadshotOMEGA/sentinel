@@ -85,9 +85,9 @@ describe('TagRepository Integration Tests', () => {
       const tags = await repo.findAll()
 
       expect(tags).toHaveLength(3)
-      expect(tags[0].name).toBe('A-Tag') // Same displayOrder, sorted by name
-      expect(tags[1].name).toBe('B-Tag')
-      expect(tags[2].name).toBe('C-Tag')
+      expect(tags[0]!.name).toBe('A-Tag') // Same displayOrder, sorted by name
+      expect(tags[1]!.name).toBe('B-Tag')
+      expect(tags[2]!.name).toBe('C-Tag')
     })
   })
 
@@ -323,12 +323,12 @@ describe('TagRepository Integration Tests', () => {
       // Fetch all and verify order
       const tags = await repo.findAll()
 
-      expect(tags[0].id).toBe(tag3.id)
-      expect(tags[0].displayOrder).toBe(1)
-      expect(tags[1].id).toBe(tag1.id)
-      expect(tags[1].displayOrder).toBe(2)
-      expect(tags[2].id).toBe(tag2.id)
-      expect(tags[2].displayOrder).toBe(3)
+      expect(tags[0]!.id).toBe(tag3.id)
+      expect(tags[0]!.displayOrder).toBe(1)
+      expect(tags[1]!.id).toBe(tag1.id)
+      expect(tags[1]!.displayOrder).toBe(2)
+      expect(tags[2]!.id).toBe(tag2.id)
+      expect(tags[2]!.displayOrder).toBe(3)
     })
 
     it('should handle empty array', async () => {

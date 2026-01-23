@@ -1,5 +1,12 @@
 import { initServer } from '@ts-rest/express'
 import { checkinContract } from '@sentinel/contracts'
+import type {
+  CheckinListQuery,
+  CreateCheckinInput,
+  BulkCreateCheckinsInput,
+  UpdateCheckinInput,
+  IdParam,
+} from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -14,13 +21,13 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get all checkins with pagination and filtering
    */
-  getCheckins: async ({ query }) => {
+  getCheckins: async ({ query }: { query: CheckinListQuery }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
-      const filters: any = {}
+      const filters: Record<string, unknown> = {}
       if (query.memberId) filters.memberId = query.memberId
       if (query.kioskId) filters.kioskId = query.kioskId
       if (query.startDate && query.endDate) {
@@ -30,10 +37,7 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
-      const result = await checkinRepo.findPaginatedWithMembers(
-        { page, limit },
-        filters
-      )
+      const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 
@@ -51,14 +55,16 @@ export const checkinsRouter = s.router(checkinContract, {
             flaggedForReview: null,
             flagReason: null,
             method: checkin.method ?? null,
-            member: checkin.member ? {
-              id: checkin.member.id,
-              serviceNumber: checkin.member.serviceNumber,
-              rank: checkin.member.rank,
-              firstName: checkin.member.firstName,
-              lastName: checkin.member.lastName,
-              divisionId: checkin.member.divisionId,
-            } : null,
+            member: checkin.member
+              ? {
+                  id: checkin.member.id,
+                  serviceNumber: checkin.member.serviceNumber,
+                  rank: checkin.member.rank,
+                  firstName: checkin.member.firstName,
+                  lastName: checkin.member.lastName,
+                  divisionId: checkin.member.divisionId,
+                }
+              : null,
           })),
           total: result.total,
           page,
@@ -140,7 +146,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get single checkin by ID
    */
-  getCheckinById: async ({ params }) => {
+  getCheckinById: async ({ params }: { params: IdParam }) => {
     try {
       const checkin = await checkinRepo.findByIdWithMember(params.id)
 
@@ -167,14 +173,16 @@ export const checkinsRouter = s.router(checkinContract, {
           flaggedForReview: null,
           flagReason: null,
           method: checkin.method ?? null,
-          member: checkin.member ? {
-            id: checkin.member.id,
-            serviceNumber: checkin.member.serviceNumber,
-            rank: checkin.member.rank,
-            firstName: checkin.member.firstName,
-            lastName: checkin.member.lastName,
-            divisionId: checkin.member.divisionId,
-          } : null,
+          member: checkin.member
+            ? {
+                id: checkin.member.id,
+                serviceNumber: checkin.member.serviceNumber,
+                rank: checkin.member.rank,
+                firstName: checkin.member.firstName,
+                lastName: checkin.member.lastName,
+                divisionId: checkin.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -191,7 +199,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Create new checkin
    */
-  createCheckin: async ({ body }) => {
+  createCheckin: async ({ body }: { body: CreateCheckinInput }) => {
     try {
       const checkin = await checkinRepo.create({
         memberId: body.memberId,
@@ -222,14 +230,16 @@ export const checkinsRouter = s.router(checkinContract, {
           flaggedForReview: null,
           flagReason: null,
           method: checkinWithMember.method ?? null,
-          member: checkinWithMember.member ? {
-            id: checkinWithMember.member.id,
-            serviceNumber: checkinWithMember.member.serviceNumber,
-            rank: checkinWithMember.member.rank,
-            firstName: checkinWithMember.member.firstName,
-            lastName: checkinWithMember.member.lastName,
-            divisionId: checkinWithMember.member.divisionId,
-          } : null,
+          member: checkinWithMember.member
+            ? {
+                id: checkinWithMember.member.id,
+                serviceNumber: checkinWithMember.member.serviceNumber,
+                rank: checkinWithMember.member.rank,
+                firstName: checkinWithMember.member.firstName,
+                lastName: checkinWithMember.member.lastName,
+                divisionId: checkinWithMember.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -267,7 +277,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Bulk create checkins (for offline sync)
    */
-  bulkCreateCheckins: async ({ body }) => {
+  bulkCreateCheckins: async ({ body }: { body: BulkCreateCheckinsInput }) => {
     try {
       const checkins = body.checkins.map((c) => ({
         memberId: c.memberId,
@@ -287,7 +297,7 @@ export const checkinsRouter = s.router(checkinContract, {
           failed: result.failed,
           errors: result.errors.map((e) => ({
             index: e.index,
-            message: e.error,
+            error: e.error,
           })),
         },
       }
@@ -305,7 +315,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Update existing checkin
    */
-  updateCheckin: async ({ params, body }) => {
+  updateCheckin: async ({ params, body }: { params: IdParam; body: UpdateCheckinInput }) => {
     try {
       const updated = await checkinRepo.update(params.id, {
         direction: body.direction,
@@ -322,23 +332,25 @@ export const checkinsRouter = s.router(checkinContract, {
         status: 200 as const,
         body: {
           id: checkinWithMember.id,
-          memberId: checkinWithMember.memberId,
-          badgeId: checkinWithMember.badgeId,
+          memberId: checkinWithMember.memberId ?? null,
+          badgeId: checkinWithMember.badgeId ?? null,
           direction: checkinWithMember.direction,
           timestamp: checkinWithMember.timestamp.toISOString(),
           kioskId: checkinWithMember.kioskId,
-          synced: checkinWithMember.synced,
+          synced: checkinWithMember.synced ?? null,
           flaggedForReview: null,
           flagReason: null,
-          method: checkinWithMember.method,
-          member: checkinWithMember.member ? {
-            id: checkinWithMember.member.id,
-            serviceNumber: checkinWithMember.member.serviceNumber,
-            rank: checkinWithMember.member.rank,
-            firstName: checkinWithMember.member.firstName,
-            lastName: checkinWithMember.member.lastName,
-            divisionId: checkinWithMember.member.divisionId,
-          } : null,
+          method: checkinWithMember.method ?? null,
+          member: checkinWithMember.member
+            ? {
+                id: checkinWithMember.member.id,
+                serviceNumber: checkinWithMember.member.serviceNumber,
+                rank: checkinWithMember.member.rank,
+                firstName: checkinWithMember.member.firstName,
+                lastName: checkinWithMember.member.lastName,
+                divisionId: checkinWithMember.member.divisionId,
+              }
+            : null,
         },
       }
     } catch (error) {
@@ -365,7 +377,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Delete checkin
    */
-  deleteCheckin: async ({ params }) => {
+  deleteCheckin: async ({ params }: { params: IdParam }) => {
     try {
       await checkinRepo.delete(params.id)
 
@@ -400,13 +412,13 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get checkins for a specific member
    */
-  getMemberCheckins: async ({ params, query }) => {
+  getMemberCheckins: async ({ params, query }: { params: IdParam; query: CheckinListQuery }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
       // Build filters from query parameters
-      const filters: any = {
+      const filters: Record<string, unknown> = {
         memberId: params.id,
       }
       if (query.kioskId) filters.kioskId = query.kioskId
@@ -417,10 +429,7 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
-      const result = await checkinRepo.findPaginatedWithMembers(
-        { page, limit },
-        filters
-      )
+      const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
 
       const totalPages = Math.ceil(result.total / limit)
 
@@ -429,23 +438,25 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           checkins: result.checkins.map((checkin) => ({
             id: checkin.id,
-            memberId: checkin.memberId,
-            badgeId: checkin.badgeId,
+            memberId: checkin.memberId ?? null,
+            badgeId: checkin.badgeId ?? null,
             direction: checkin.direction,
             timestamp: checkin.timestamp.toISOString(),
             kioskId: checkin.kioskId,
-            synced: checkin.synced,
+            synced: checkin.synced ?? null,
             flaggedForReview: null,
             flagReason: null,
-            method: checkin.method,
-            member: checkin.member ? {
-              id: checkin.member.id,
-              serviceNumber: checkin.member.serviceNumber,
-              rank: checkin.member.rank,
-              firstName: checkin.member.firstName,
-              lastName: checkin.member.lastName,
-              divisionId: checkin.member.divisionId,
-            } : null,
+            method: checkin.method ?? null,
+            member: checkin.member
+              ? {
+                  id: checkin.member.id,
+                  serviceNumber: checkin.member.serviceNumber,
+                  rank: checkin.member.rank,
+                  firstName: checkin.member.firstName,
+                  lastName: checkin.member.lastName,
+                  divisionId: checkin.member.divisionId,
+                }
+              : null,
           })),
           total: result.total,
           page,

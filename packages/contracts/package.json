@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "description": "API contracts for Sentinel (ts-rest + Valibot)",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

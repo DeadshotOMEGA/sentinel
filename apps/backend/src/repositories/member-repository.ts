@@ -253,10 +253,7 @@ export class MemberRepository {
           },
         },
       },
-      orderBy: [
-        { lastName: 'asc' },
-        { firstName: 'asc' },
-      ],
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     })
 
     return members.map(toMemberWithDivision)
@@ -268,7 +265,13 @@ export class MemberRepository {
   async findPaginated(
     params: PaginationParams,
     filters?: MemberFilters
-  ): Promise<{ members: MemberWithDivision[]; total: number; page: number; limit: number; totalPages: number }> {
+  ): Promise<{
+    members: MemberWithDivision[]
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }> {
     if (!params.page || params.page < 1) {
       throw new Error('Invalid page number: must be >= 1')
     }
@@ -281,16 +284,20 @@ export class MemberRepository {
     const sortOrder = params.sortOrder ? params.sortOrder : 'asc'
 
     // Validate and sanitize sortBy column (allowlist)
-    const allowedSortColumns: Record<string, 'lastName' | 'rank' | 'status' | 'firstName' | 'serviceNumber'> = {
+    const allowedSortColumns: Record<
+      string,
+      'lastName' | 'rank' | 'status' | 'firstName' | 'serviceNumber'
+    > = {
       lastName: 'lastName',
       rank: 'rank',
       status: 'status',
       firstName: 'firstName',
       serviceNumber: 'serviceNumber',
     }
-    const sortByColumn = params.sortBy && allowedSortColumns[params.sortBy]
-      ? allowedSortColumns[params.sortBy]
-      : 'lastName'
+    const sortByColumn =
+      params.sortBy && allowedSortColumns[params.sortBy]
+        ? allowedSortColumns[params.sortBy]
+        : 'lastName'
 
     const skip = (page - 1) * limit
 
@@ -400,10 +407,7 @@ export class MemberRepository {
             },
           },
         },
-        orderBy: [
-          { [sortByColumn as string]: sortOrder },
-          { firstName: sortOrder },
-        ],
+        orderBy: [{ [sortByColumn as string]: sortOrder }, { firstName: sortOrder }],
         skip,
         take: limit,
       }),
@@ -690,10 +694,7 @@ export class MemberRepository {
           },
         },
       },
-      orderBy: [
-        { lastName: 'asc' },
-        { firstName: 'asc' },
-      ],
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     })
 
     return members.map(toMemberWithDivision)
@@ -714,7 +715,8 @@ export class MemberRepository {
         await tx.member.create({
           data: {
             serviceNumber: memberData.serviceNumber,
-            employeeNumber: memberData.employeeNumber !== undefined ? memberData.employeeNumber : null,
+            employeeNumber:
+              memberData.employeeNumber !== undefined ? memberData.employeeNumber : null,
             firstName: memberData.firstName,
             lastName: memberData.lastName,
             initials: memberData.initials !== undefined ? memberData.initials : null,

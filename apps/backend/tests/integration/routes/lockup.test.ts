@@ -23,7 +23,6 @@ describe('Lockup Routes Integration Tests', () => {
   let testMember2Id: string
   let testBadge1Id: string
   let testBadge2Id: string
-  let testVisitor1Id: string
   let lockupTagId: string
 
   beforeAll(async () => {
@@ -75,12 +74,14 @@ describe('Lockup Routes Integration Tests', () => {
     const badge1 = await badgeRepo.create({
       serialNumber: 'BADGE001',
       status: 'active',
+      assignmentType: 'member',
     })
     testBadge1Id = badge1.id
 
     const badge2 = await badgeRepo.create({
       serialNumber: 'BADGE002',
       status: 'active',
+      assignmentType: 'member',
     })
     testBadge2Id = badge2.id
 
@@ -92,6 +93,7 @@ describe('Lockup Routes Integration Tests', () => {
       lastName: 'Doe',
       divisionId: testDivisionId,
       badgeId: testBadge1Id,
+      memberType: 'class_a',
     })
     testMember1Id = member1.id
 
@@ -102,6 +104,7 @@ describe('Lockup Routes Integration Tests', () => {
       lastName: 'Smith',
       divisionId: testDivisionId,
       badgeId: testBadge2Id,
+      memberType: 'class_a',
     })
     testMember2Id = member2.id
   })
@@ -146,7 +149,6 @@ describe('Lockup Routes Integration Tests', () => {
         checkInTime: new Date(),
         kioskId: 'KIOSK001',
       })
-      testVisitor1Id = visitor.id
 
       const response = await request(app)
         .get('/api/lockup/present')

@@ -14,8 +14,8 @@ interface LockupPresentData {
     lastName: string
     rank: string
     division: string
-    divisionId: string
-    memberType: string
+    divisionId: string | null
+    memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
     mess: string | null
     checkedInAt: string
     kioskId?: string
@@ -23,7 +23,7 @@ interface LockupPresentData {
   visitors: Array<{
     id: string
     name: string
-    organization: string
+    organization: string | undefined
     visitType: string
     checkInTime: Date
   }>
@@ -154,12 +154,9 @@ export class LockupService {
     // Process visitor checkouts
     for (const visitor of visitors) {
       try {
-        const checkedOutVisitor = await this.visitorRepo.checkout(visitor.id)
+        await this.visitorRepo.checkout(visitor.id)
 
         // TODO Phase 3: Broadcast visitor signout
-        // if (checkedOutVisitor.checkOutTime) {
-        //   broadcastVisitorSignout({ ... })
-        // }
 
         checkedOutVisitors.push(visitor.id)
       } catch (error) {

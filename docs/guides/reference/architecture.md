@@ -3,7 +3,7 @@ type: reference
 title: "Sentinel Architecture Reference"
 status: published
 created: 2026-01-20
-last_updated: 2026-01-21
+last_updated: 2026-01-22
 ai:
   priority: medium
   context_load: on-demand
@@ -44,6 +44,9 @@ Complete technical architecture and technology stack for the Sentinel RFID Atten
 | **Testing Framework** | Vitest | 4.x | Unit + integration tests |
 | **Test Containers** | Testcontainers | 11.x | Real database for tests |
 | **API Testing** | Supertest | 7.x | HTTP endpoint testing |
+| **Metrics** | prom-client | 15.x | Prometheus metrics collection |
+| **API Documentation** | Swagger UI | 5.x | Interactive API docs |
+| **API Reference** | ReDoc | 2.x | Clean API reference |
 | **Frontend** | TBD | - | Avoiding HeroUI |
 
 ## Key Architectural Features
@@ -72,6 +75,17 @@ Complete technical architecture and technology stack for the Sentinel RFID Atten
 - better-auth for authentication
 - API key management
 - Role-based access control (RBAC)
+
+### Observability
+- **API Documentation**: Swagger UI at `/docs`, ReDoc at `/redoc`
+- **Metrics**: Prometheus metrics at `/metrics` endpoint
+  - HTTP metrics (request rate, duration, active connections)
+  - Database metrics (query duration, pool stats)
+  - Authentication metrics (login attempts, active sessions)
+  - Business metrics (check-ins, badges, visitors, events, DDS, security alerts)
+  - Node.js defaults (CPU, memory, event loop, GC)
+- **Logging**: Winston with correlation IDs via AsyncLocalStorage
+- **Monitoring Stack** (Phase 3): Grafana + Loki + Prometheus (planned)
 
 ## Data Layer
 

@@ -2,21 +2,18 @@
 // This service handles CSV/Excel imports for event attendees
 // Requires papaparse and xlsx libraries
 
-import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 
 export class AttendeeImportService {
-  private prisma: PrismaClient
-
-  constructor(prismaClient?: PrismaClient) {
-    this.prisma = prismaClient || getPrismaClient()
+  constructor() {
+    getPrismaClient()
   }
 
   /**
    * Parse Excel file sheets
    * TODO Phase 3: Implement with xlsx library
    */
-  parseExcelSheets(buffer: Buffer): any[] {
+  parseExcelSheets(_buffer: Buffer): any[] {
     throw new Error('Excel parsing not yet implemented (Phase 3)')
   }
 
@@ -24,7 +21,7 @@ export class AttendeeImportService {
    * Parse Excel to CSV
    * TODO Phase 3: Implement with xlsx library
    */
-  parseExcelToCSV(buffer: Buffer, sheetName: string): string {
+  parseExcelToCSV(_buffer: Buffer, _sheetName: string): string {
     throw new Error('Excel to CSV conversion not yet implemented (Phase 3)')
   }
 
@@ -32,7 +29,7 @@ export class AttendeeImportService {
    * Parse CSV headers
    * TODO Phase 3: Implement with papaparse library
    */
-  parseHeaders(csvText: string): any {
+  parseHeaders(_csvText: string): any {
     throw new Error('CSV header parsing not yet implemented (Phase 3)')
   }
 
@@ -41,10 +38,10 @@ export class AttendeeImportService {
    * TODO Phase 3: Implement validation and preview logic
    */
   async previewImport(
-    eventId: string,
-    csvText: string,
-    mapping: any,
-    roleMapping?: any
+    _eventId: string,
+    _csvText: string,
+    _mapping: any,
+    _roleMapping?: any
   ): Promise<any> {
     throw new Error('Import preview not yet implemented (Phase 3)')
   }
@@ -54,11 +51,11 @@ export class AttendeeImportService {
    * TODO Phase 3: Implement bulk attendee creation
    */
   async executeImport(
-    eventId: string,
-    csvText: string,
-    mapping: any,
-    roleMapping?: any,
-    duplicateResolution?: string
+    _eventId: string,
+    _csvText: string,
+    _mapping: any,
+    _roleMapping?: any,
+    _duplicateResolution?: string
   ): Promise<any> {
     throw new Error('Import execution not yet implemented (Phase 3)')
   }

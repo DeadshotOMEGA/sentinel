@@ -1,5 +1,5 @@
-import type { PrismaClient, AlertConfig } from '@sentinel/database'
-import { prisma as defaultPrisma } from '@sentinel/database'
+import type { PrismaClient } from '@sentinel/database'
+import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 
 /**
  * Repository for AlertConfig operations
@@ -16,14 +16,14 @@ export class AlertConfigRepository {
   /**
    * Find all alert configurations
    */
-  async findAll(): Promise<AlertConfig[]> {
+  async findAll() {
     return await this.prisma.alertConfig.findMany()
   }
 
   /**
    * Find alert configuration by key
    */
-  async findByKey(key: string): Promise<AlertConfig | null> {
+  async findByKey(key: string) {
     return await this.prisma.alertConfig.findUnique({
       where: { key },
     })
@@ -32,16 +32,16 @@ export class AlertConfigRepository {
   /**
    * Upsert alert configuration (update or create)
    */
-  async upsert(key: string, config: any): Promise<AlertConfig> {
+  async upsert(key: string, config: Record<string, unknown>) {
     return await this.prisma.alertConfig.upsert({
       where: { key },
       update: {
-        config,
+        config: config as Prisma.InputJsonValue,
         updatedAt: new Date(),
       },
       create: {
         key,
-        config,
+        config: config as Prisma.InputJsonValue,
       },
     })
   }
@@ -49,7 +49,7 @@ export class AlertConfigRepository {
   /**
    * Bulk upsert multiple configurations in a transaction
    */
-  async bulkUpsert(configs: Record<string, any>): Promise<string[]> {
+  async bulkUpsert(configs: Record<string, Record<string, unknown>>): Promise<string[]> {
     const updated: string[] = []
 
     await this.prisma.$transaction(async (tx) => {
@@ -57,12 +57,12 @@ export class AlertConfigRepository {
         await tx.alertConfig.upsert({
           where: { key },
           update: {
-            config,
+            config: config as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
           create: {
             key,
-            config,
+            config: config as Prisma.InputJsonValue,
           },
         })
         updated.push(key)
