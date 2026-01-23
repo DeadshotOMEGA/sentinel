@@ -39,13 +39,11 @@ export const adapter: PrismaPg = new Proxy({} as PrismaPg, {
     const value = defaultAdapter[prop as keyof PrismaPg]
     return typeof value === 'function' ? value.bind(defaultAdapter) : value
   },
-  apply(_target, thisArg, argumentsList: unknown[]) {
+  apply(_target, _thisArg, _argumentsList: unknown[]) {
     if (!defaultAdapter) {
       defaultAdapter = createAdapter()
     }
-    if (typeof defaultAdapter === 'function') {
-      return defaultAdapter.apply(thisArg, argumentsList)
-    }
+    // PrismaPg is not callable, but Proxy apply trap is required by TypeScript
     throw new Error('Adapter is not callable')
   },
 })
