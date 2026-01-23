@@ -6,27 +6,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/quality-check/quality-check.js",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claudemd-linter.js",
+            "continueOnError": false
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/quality-check/quality-check.js",
             "continueOnError": false
           }
         ]
       }
-    ],
-    "ToolCall": [
-      {
-        "name": "claudemd-linter",
-        "description": "Validate CLAUDE.md files for structure and style compliance",
-        "command": "node .claude/hooks/claudemd-linter.js {file_path}",
-        "filter": {
-          "tools": ["Write", "Edit"],
-          "filePattern": "**/CLAUDE.md"
-        }
-      }
     ]
   },
   "permissions": {
-    "additionalDirectories": [
-      "/home/sauk/projects/sentinel/.claude/hooks"
-    ]
+    "additionalDirectories": ["/home/sauk/projects/sentinel/.claude/hooks"]
   }
 }
