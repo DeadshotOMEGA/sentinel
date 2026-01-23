@@ -70,6 +70,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
@@ -77,6 +78,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
 
       const response = await request(app)
@@ -130,6 +132,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
@@ -158,6 +161,7 @@ describe('Members Routes Integration Tests', () => {
         divisionId: testDivisionId,
         email: 'john.doe@test.com',
         mobilePhone: '123-456-7890',
+        memberType: 'class_a',
       })
       testMemberId = member.id
     })
@@ -249,6 +253,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
 
       // Try to create duplicate
@@ -321,6 +326,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
       testMemberId = member.id
     })
@@ -389,6 +395,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
       testMemberId = member.id
     })
@@ -430,6 +437,7 @@ describe('Members Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
+        memberType: 'class_a',
       })
     })
 

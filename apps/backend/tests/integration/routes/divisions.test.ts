@@ -84,6 +84,7 @@ describe('Divisions Routes Integration Tests', () => {
         firstName: 'John',
         lastName: 'Doe',
         divisionId: division.id,
+        memberType: 'reserve',
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
@@ -91,6 +92,7 @@ describe('Divisions Routes Integration Tests', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: division.id,
+        memberType: 'reserve',
       })
 
       const response = await request(app)

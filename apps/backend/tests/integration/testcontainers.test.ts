@@ -22,8 +22,8 @@ describe('Testcontainers Setup', () => {
     const result = await prisma.$queryRaw<Array<{ now: Date }>>`SELECT NOW() as now`
 
     expect(result).toHaveLength(1)
-    expect(result[0]).toHaveProperty('now')
-    expect(result[0].now).toBeInstanceOf(Date)
+    expect(result[0]!).toHaveProperty('now')
+    expect(result[0]!.now).toBeInstanceOf(Date)
   })
 
   it('should run migrations successfully', async () => {

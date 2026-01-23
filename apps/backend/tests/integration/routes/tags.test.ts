@@ -66,6 +66,7 @@ describe('Tags Routes Integration Tests', () => {
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
+      memberType: 'class_a',
     })
     testMember1Id = member1.id
 
@@ -75,6 +76,7 @@ describe('Tags Routes Integration Tests', () => {
       firstName: 'Jane',
       lastName: 'Smith',
       divisionId: testDivisionId,
+      memberType: 'class_a',
     })
     testMember2Id = member2.id
   })

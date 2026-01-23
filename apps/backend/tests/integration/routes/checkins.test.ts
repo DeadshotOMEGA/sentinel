@@ -60,6 +60,7 @@ describe('Checkins Routes Integration Tests', () => {
       lastName: 'Doe',
       divisionId: division.id,
       badgeId: badge.id,
+      memberType: 'reserve',
     })
     testMemberId = member.id
   })
@@ -138,7 +139,8 @@ describe('Checkins Routes Integration Tests', () => {
         rank: 'LS',
         firstName: 'Jane',
         lastName: 'Smith',
-        divisionId: (await divisionRepo.findAll())[0].id,
+        divisionId: (await divisionRepo.findAll())[0]!.id,
+        memberType: 'reserve',
       })
 
       await checkinRepo.create({
