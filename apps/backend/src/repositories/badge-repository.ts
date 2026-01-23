@@ -24,9 +24,9 @@ function toBadge(prismaBadge: PrismaBadge): Badge {
     id: prismaBadge.id,
     serialNumber: prismaBadge.serialNumber,
     assignmentType: prismaBadge.assignmentType as BadgeAssignmentType,
-    assignedToId: prismaBadge.assignedToId as any,
+    assignedToId: prismaBadge.assignedToId ?? undefined,
     status: prismaBadge.status as BadgeStatus,
-    lastUsed: prismaBadge.lastUsed as any,
+    lastUsed: prismaBadge.lastUsed ?? undefined,
     createdAt: prismaBadge.createdAt ?? new Date(),
     updatedAt: prismaBadge.updatedAt ?? new Date(),
   }

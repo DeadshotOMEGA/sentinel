@@ -130,7 +130,7 @@ export class DivisionRepository {
       await this.prisma.division.delete({
         where: { id },
       })
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Division not found: ${id}`)
     }
   }

@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '@sentinel/database'
 import { admin, apiKey } from 'better-auth/plugins'
+import { randomUUID } from 'crypto'
 
 /**
  * Better-auth configuration for Sentinel backend
@@ -75,8 +76,8 @@ export const auth = betterAuth({
   // Security options
   advanced: {
     generateId: () => {
-      // Use crypto.randomUUID() for ID generation
-      return crypto.randomUUID()
+      // Use randomUUID() for ID generation
+      return randomUUID()
     },
     cookieSameSite: 'lax',
     useSecureCookies: process.env.NODE_ENV === 'production',

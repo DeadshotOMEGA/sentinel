@@ -149,7 +149,7 @@ export class TagRepository {
       await this.prisma.tag.delete({
         where: { id },
       })
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Tag not found: ${id}`)
     }
   }

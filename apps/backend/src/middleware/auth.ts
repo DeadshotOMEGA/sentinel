@@ -7,6 +7,7 @@ import { requestContext } from '../lib/logger.js'
  * Extend Express Request type to include authentication data
  */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: {
