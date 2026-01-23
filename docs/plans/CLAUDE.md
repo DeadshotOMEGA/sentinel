@@ -79,28 +79,17 @@ Applies when creating documentation in: `docs/plans/`
 - active → archived (cancelled/obsolete)
 - active → superseded (new plan replaces, add `superseded_by` link)
 
-## Quick Reference
+## Lifecycle States
 
-**Lifecycle States**:
+- **draft**: Being written, not approved
+- **active**: Currently executing (in `active/` directory)
+- **completed**: Finished (in `completed/` directory)
+- **future**: Deferred/planned work (in `future/` directory)
+- **archived**: Cancelled or no longer relevant
+- **superseded**: Replaced by newer plan
 
-- **draft** - Being written, not approved
-- **active** - Currently executing (in `active/` directory)
-- **completed** - Finished (in `completed/` directory)
-- **future** - Deferred/planned work (in `future/` directory)
-- **archived** - Cancelled or no longer relevant
-- **superseded** - Replaced by newer plan
+## Output Contracts
 
-**Required Sections**:
-
-1. Executive Summary (one paragraph)
-2. Goals (measurable) / Non-Goals
-3. Implementation Phases (with checkboxes)
-4. Success Metrics
-5. Risks & Mitigations
-
-**Related**:
-
-- [Plan Template](../templates/plan.md)
-- [ADRs](../decisions/adr/CLAUDE.md) - Plans reference ADRs
-- [RFCs](../decisions/rfc/CLAUDE.md) - RFCs lead to plans
-- [Plans Index](index.md) - All plans with status
+- Output MUST include frontmatter with type, title, status, created, last_updated, lifecycle, reviewed, related_code
+- Output MUST include Executive Summary, Goals, Implementation Phases, Success Metrics
+- Output MUST use checkbox tasks in phases

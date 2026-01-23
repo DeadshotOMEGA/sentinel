@@ -80,28 +80,14 @@ Applies when creating or reviewing: `docs/plans/future/`
 2. Add archival reason to frontmatter
 3. Keep in `future/` directory for reference
 
-## Quick Reference
-
-**Lifecycle Transitions**:
+## Lifecycle Transitions
 
 - `future` → `active` (when work starts, move to `active/` with date prefix)
 - `future` → `archived` (when obsolete, keep in `future/`)
 - `future` → `superseded` (when replaced by better plan)
 
-**Priority Levels**:
+## Priority Levels
 
 - **HIGH**: Critical for production readiness or significant user value
 - **MEDIUM**: Valuable but not blocking
 - **LOW**: Nice-to-have enhancements
-
-**Effort Estimates**:
-
-- Use realistic time ranges (e.g., "2-3 weeks", "3-4 days")
-- Include total effort across all phases
-- Consider dependencies and unknowns
-
-**Related**:
-
-- [Active Plans](../active/CLAUDE.md) - Current work
-- [Completed Plans](../completed/CLAUDE.md) - Finished work
-- [Plans Index](../index.md) - All plans with status
