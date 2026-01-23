@@ -1,6 +1,11 @@
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 
+// Export datasource configuration for Prisma migrations (required in Prisma 7)
+export const datasource = {
+  url: process.env.DATABASE_URL,
+}
+
 let pool: Pool | null = null
 let adapterInstance: PrismaPg | null = null
 
@@ -31,12 +36,16 @@ export const adapter: PrismaPg = new Proxy({} as PrismaPg, {
     if (!defaultAdapter) {
       defaultAdapter = createAdapter()
     }
-    return (defaultAdapter as any)[prop]
+    const value = defaultAdapter[prop as keyof PrismaPg]
+    return typeof value === 'function' ? value.bind(defaultAdapter) : value
   },
-  apply(_target, thisArg, argumentsList) {
+  apply(_target, thisArg, argumentsList: unknown[]) {
     if (!defaultAdapter) {
       defaultAdapter = createAdapter()
     }
-    return (defaultAdapter as any).apply(thisArg, argumentsList)
+    if (typeof defaultAdapter === 'function') {
+      return defaultAdapter.apply(thisArg, argumentsList)
+    }
+    throw new Error('Adapter is not callable')
   },
 })

@@ -73,13 +73,14 @@ scrape_configs:
           source: timestamp
           format: RFC3339Nano
 
-      # Extract labels for indexing
+      # Add static labels (always present)
+      - static_labels:
+          job: sentinel-backend
+
+      # Extract labels for indexing (optional, only if fields exist)
       - labels:
           level:
-          service:
           module:
-          method:
-          statusCode:
 
       # Keep metadata fields for searching (not indexed)
       - output:

@@ -18,14 +18,15 @@ COPY apps/backend/package.json ./apps/backend/
 # Install production dependencies only (skip dev dependencies and lifecycle scripts)
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# Copy source files and generated artifacts
-# All shared packages export TypeScript source directly
-COPY packages/database/src ./packages/database/src
-COPY packages/database/generated ./packages/database/generated
-COPY packages/database/prisma ./packages/database/prisma
-COPY packages/contracts/src ./packages/contracts/src
-COPY packages/types/src ./packages/types/src
-# Backend: built JavaScript (must build locally first: pnpm build)
+# Copy built artifacts (must build locally first: pnpm build)
+# Database: built JavaScript + generated Prisma client + migrations
+COPY packages/database/dist ./packages/database/dist
+COPY packages/database/generated ./packages/database/dist/generated
+COPY packages/database/prisma ./packages/database/dist/prisma
+# Contracts and types: built JavaScript
+COPY packages/contracts/dist ./packages/contracts/dist
+COPY packages/types/dist ./packages/types/dist
+# Backend: built JavaScript
 COPY apps/backend/dist ./apps/backend/dist
 
 # Set working directory to backend
@@ -39,4 +40,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Run migrations and start server
-CMD ["sh", "-c", "pnpm --filter @sentinel/database prisma:migrate:deploy && node dist/index.js"]
+# Note: Migrations should ideally run separately in a migration job
+# For now, we skip migrations and assume DB is already set up
+CMD ["node", "dist/index.js"]

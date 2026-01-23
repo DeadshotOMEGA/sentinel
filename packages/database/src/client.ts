@@ -1,5 +1,5 @@
-import { PrismaClient } from '../generated/client'
-import { adapter } from '../prisma/prisma.config'
+import { PrismaClient } from '../generated/client/index.js'
+import { adapter } from '../prisma/prisma.config.js'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -31,7 +31,7 @@ function getPrismaClient(): PrismaClient {
 export const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getPrismaClient()
-    const value = (client as any)[prop]
+    const value = client[prop as keyof PrismaClient]
     // Bind methods to the client instance
     if (typeof value === 'function') {
       return value.bind(client)
