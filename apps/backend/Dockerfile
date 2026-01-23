@@ -18,12 +18,15 @@ COPY apps/backend/package.json ./apps/backend/
 # Install production dependencies only (skip dev dependencies and lifecycle scripts)
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# Copy pre-built artifacts (must build locally first: pnpm build)
+# Copy pre-built artifacts and source files
+# Database: built artifacts + Prisma files
 COPY packages/database/dist ./packages/database/dist
 COPY packages/database/generated ./packages/database/generated
 COPY packages/database/prisma ./packages/database/prisma
-COPY packages/contracts/dist ./packages/contracts/dist
-COPY packages/types/dist ./packages/types/dist
+# Contracts and Types: export source TypeScript directly
+COPY packages/contracts/src ./packages/contracts/src
+COPY packages/types/src ./packages/types/src
+# Backend: built JavaScript
 COPY apps/backend/dist ./apps/backend/dist
 
 # Set working directory to backend
