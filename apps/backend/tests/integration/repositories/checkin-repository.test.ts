@@ -4,9 +4,12 @@ import {
   createMember,
   createBadge,
   createCheckin,
-  createDivision,
 } from '../../helpers/factories'
-import { CheckinRepository } from '@/repositories/checkin-repository'
+import {
+  CheckinRepository,
+  type PresentMember,
+  type MemberPresenceItem,
+} from '@/repositories/checkin-repository'
 
 describe('CheckinRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -109,7 +112,7 @@ describe('CheckinRepository Integration Tests', () => {
   describe('findById', () => {
     it('should find checkin by ID', async () => {
       const badge = await createBadge(testDb.prisma!)
-      const member = await createMember(testDb.prisma!, { badgeId: badge.id })
+      await createMember(testDb.prisma!, { badgeId: badge.id })
       const created = await createCheckin(testDb.prisma!, {
         badgeId: badge.id,
         scannedAt: new Date(),
@@ -295,7 +298,7 @@ describe('CheckinRepository Integration Tests', () => {
       const badge = await createBadge(testDb.prisma!)
       const member = await createMember(testDb.prisma!, { badgeId: badge.id })
 
-      const checkin1 = await createCheckin(testDb.prisma!, {
+      await createCheckin(testDb.prisma!, {
         badgeId: badge.id,
         scannedAt: new Date(Date.now() - 10000),
       })
@@ -360,7 +363,7 @@ describe('CheckinRepository Integration Tests', () => {
   describe('getPresenceStats', () => {
     it('should return presence statistics', async () => {
       const badge = await createBadge(testDb.prisma!)
-      const member = await createMember(testDb.prisma!, { badgeId: badge.id })
+      await createMember(testDb.prisma!, { badgeId: badge.id })
       await createCheckin(testDb.prisma!, {
         badgeId: badge.id,
         direction: 'IN',
@@ -408,7 +411,7 @@ describe('CheckinRepository Integration Tests', () => {
       expect(Array.isArray(presentMembers)).toBe(true)
 
       if (presentMembers.length > 0) {
-        const found = presentMembers.find((m) => m.id === member.id)
+        const found = presentMembers.find((m: PresentMember) => m.id === member.id)
         if (found) {
           expect(found.firstName).toBe('John')
           expect(found.lastName).toBe('Doe')
@@ -438,7 +441,7 @@ describe('CheckinRepository Integration Tests', () => {
       expect(Array.isArray(presenceList)).toBe(true)
       expect(presenceList.length).toBeGreaterThanOrEqual(1)
 
-      const memberPresence = presenceList.find((p) => p.member.id === member.id)
+      const memberPresence = presenceList.find((p: MemberPresenceItem) => p.member.id === member.id)
       expect(memberPresence).toBeDefined()
       expect(memberPresence?.status).toBe('present')
     })
@@ -448,7 +451,7 @@ describe('CheckinRepository Integration Tests', () => {
 
       const presenceList = await repo.getMemberPresenceList()
 
-      const memberPresence = presenceList.find((p) => p.member.id === member.id)
+      const memberPresence = presenceList.find((p: MemberPresenceItem) => p.member.id === member.id)
       expect(memberPresence).toBeDefined()
       expect(memberPresence?.status).toBe('absent')
     })
@@ -483,11 +486,11 @@ describe('CheckinRepository Integration Tests', () => {
       const badge = await createBadge(testDb.prisma!)
       await createMember(testDb.prisma!, { badgeId: badge.id })
 
-      const checkin1 = await createCheckin(testDb.prisma!, {
+      await createCheckin(testDb.prisma!, {
         badgeId: badge.id,
         scannedAt: new Date(Date.now() - 10000),
       })
-      const checkin2 = await createCheckin(testDb.prisma!, {
+      await createCheckin(testDb.prisma!, {
         badgeId: badge.id,
         scannedAt: new Date(),
       })

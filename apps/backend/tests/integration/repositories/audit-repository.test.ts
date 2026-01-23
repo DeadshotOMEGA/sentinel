@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { TestDatabase } from '../../helpers/testcontainers'
 import { createAdminUser } from '../../helpers/factories'
 import { AuditRepository } from '@/repositories/audit-repository'
+import type { AuditLog } from '@sentinel/database'
 
 describe('AuditRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -37,7 +38,7 @@ describe('AuditRepository Integration Tests', () => {
       const logs = await repo.findAll({ pagination: { page: 1, limit: 10 } })
 
       expect(logs.length).toBeGreaterThanOrEqual(1)
-      const log = logs.find((l) => l.action === 'member_create')
+      const log = logs.find((l: AuditLog) => l.action === 'member_create')
 
       expect(log).toBeDefined()
       expect(log?.adminUserId).toBe(admin.id)
@@ -58,7 +59,7 @@ describe('AuditRepository Integration Tests', () => {
 
       const logs = await repo.findAll({ pagination: { page: 1, limit: 10 } })
 
-      const log = logs.find((l) => l.action === 'user_created')
+      const log = logs.find((l: AuditLog) => l.action === 'user_created')
 
       expect(log).toBeDefined()
       expect(log?.adminUserId).toBeNull()
@@ -101,7 +102,7 @@ describe('AuditRepository Integration Tests', () => {
 
       const logs = await repo.findAll({ pagination: { page: 1, limit: 10 } })
 
-      const log = logs.find((l) => l.action === 'dev_tools_access')
+      const log = logs.find((l: AuditLog) => l.action === 'dev_tools_access')
       expect(log).toBeDefined()
     })
 
@@ -125,7 +126,7 @@ describe('AuditRepository Integration Tests', () => {
 
       const logs = await repo.findAll({ pagination: { page: 1, limit: 10 } })
 
-      const log = logs.find((l) => l.action === 'import_execute')
+      const log = logs.find((l: AuditLog) => l.action === 'import_execute')
       expect(log).toBeDefined()
       expect(log?.details).toBeDefined()
     })
@@ -173,7 +174,7 @@ describe('AuditRepository Integration Tests', () => {
         pagination: { page: 1, limit: 10 },
       })
 
-      expect(logs.every((log) => log.action === 'login')).toBe(true)
+      expect(logs.every((log: AuditLog) => log.action === 'login')).toBe(true)
     })
 
     it('should filter by multiple actions', async () => {
@@ -209,8 +210,8 @@ describe('AuditRepository Integration Tests', () => {
         pagination: { page: 1, limit: 10 },
       })
 
-      expect(logs.every((log) => log.action === 'login' || log.action === 'logout')).toBe(true)
-      expect(logs.find((log) => log.action === 'badge_assign')).toBeUndefined()
+      expect(logs.every((log: AuditLog) => log.action === 'login' || log.action === 'logout')).toBe(true)
+      expect(logs.find((log: AuditLog) => log.action === 'badge_assign')).toBeUndefined()
     })
 
     it('should filter by actor (admin user)', async () => {
@@ -240,7 +241,7 @@ describe('AuditRepository Integration Tests', () => {
         pagination: { page: 1, limit: 10 },
       })
 
-      expect(logs.every((log) => log.adminUserId === admin1.id)).toBe(true)
+      expect(logs.every((log: AuditLog) => log.adminUserId === admin1.id)).toBe(true)
     })
 
     it('should filter by entity ID', async () => {
@@ -267,7 +268,7 @@ describe('AuditRepository Integration Tests', () => {
         pagination: { page: 1, limit: 10 },
       })
 
-      expect(logs.every((log) => log.entityId === 'member-123')).toBe(true)
+      expect(logs.every((log: AuditLog) => log.entityId === 'member-123')).toBe(true)
     })
 
     it('should filter by date range', async () => {
@@ -334,7 +335,7 @@ describe('AuditRepository Integration Tests', () => {
       })
 
       if (logs.length >= 2) {
-        const timestamps = logs.map((l) => new Date(l.createdAt).getTime())
+        const timestamps = logs.map((l: AuditLog) => new Date(l.createdAt).getTime())
         expect(timestamps[0]).toBeGreaterThanOrEqual(timestamps[1])
       }
     })

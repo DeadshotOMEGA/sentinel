@@ -96,7 +96,7 @@ describe('DivisionRepository Integration Tests', () => {
       const divisions = await repo.findAll()
 
       expect(divisions).toHaveLength(1)
-      const division = divisions[0]
+      const division = divisions[0]!
       expect(typeof division.id).toBe('string')
       expect(typeof division.name).toBe('string')
       expect(typeof division.code).toBe('string')

@@ -6,7 +6,7 @@ import type {
   UpdateEventInput,
   CreateAttendeeInput,
   UpdateAttendeeInput,
-  EventCheckinDirection,
+  CheckinDirection,
 } from '@sentinel/types'
 
 describe('EventRepository Integration Tests', () => {
@@ -99,7 +99,7 @@ describe('EventRepository Integration Tests', () => {
         code: 'TEST004',
         startDate: new Date(),
         endDate: new Date(),
-        status: 'active',
+        status: 'checked_in',
         createdBy: admin!.id,
       }
 
@@ -177,9 +177,9 @@ describe('EventRepository Integration Tests', () => {
       const events = await repo.findAll()
 
       expect(events).toHaveLength(3)
-      expect(events[0].code).toBe('E2') // Latest startDate
-      expect(events[1].code).toBe('E1')
-      expect(events[2].code).toBe('E3') // Earliest startDate
+      expect(events[0]!.code).toBe('E2') // Latest startDate
+      expect(events[1]!.code).toBe('E1')
+      expect(events[2]!.code).toBe('E3') // Earliest startDate
     })
   })
 
@@ -344,7 +344,7 @@ describe('EventRepository Integration Tests', () => {
         rank: 'CPO1',
         organization: 'Test Org',
         role: 'Participant',
-        status: 'active',
+        status: 'checked_in',
       }
 
       const attendee = await repo.addAttendee(input)
@@ -352,7 +352,7 @@ describe('EventRepository Integration Tests', () => {
       expect(attendee.id).toBeDefined()
       expect(attendee.name).toBe('John Doe')
       expect(attendee.eventId).toBe(event.id)
-      expect(attendee.status).toBe('active')
+      expect(attendee.status).toBe('checked_in')
     })
 
     it('should throw error when status is missing', async () => {
@@ -412,29 +412,29 @@ describe('EventRepository Integration Tests', () => {
         name: 'Charlie',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
       await repo.addAttendee({
         eventId: event.id,
         name: 'Alice',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
       await repo.addAttendee({
         eventId: event.id,
         name: 'Bob',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       const attendees = await repo.findByEventId(event.id)
 
       expect(attendees).toHaveLength(3)
-      expect(attendees[0].name).toBe('Alice')
-      expect(attendees[1].name).toBe('Bob')
-      expect(attendees[2].name).toBe('Charlie')
+      expect(attendees[0]!.name).toBe('Alice')
+      expect(attendees[1]!.name).toBe('Bob')
+      expect(attendees[2]!.name).toBe('Charlie')
     })
   })
 
@@ -456,7 +456,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Test Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       const found = await repo.findAttendeeById(created.id)
@@ -490,19 +490,19 @@ describe('EventRepository Integration Tests', () => {
         name: 'Old Name',
         organization: 'Old Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       const update: UpdateAttendeeInput = {
         name: 'New Name',
         organization: 'New Org',
-        status: 'checked_out',
+        status: 'denied',
       }
       const updated = await repo.updateAttendee(created.id, update)
 
       expect(updated.name).toBe('New Name')
       expect(updated.organization).toBe('New Org')
-      expect(updated.status).toBe('checked_out')
+      expect(updated.status).toBe('denied')
     })
 
     it('should throw error when attendee not found', async () => {
@@ -528,7 +528,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       await expect(repo.updateAttendee(created.id, {})).rejects.toThrow('No fields to update')
@@ -553,7 +553,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       await repo.removeAttendee(created.id)
@@ -595,7 +595,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       const updated = await repo.assignBadge(attendee.id, badge.id)
@@ -645,7 +645,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       await repo.assignBadge(attendee.id, badge.id)
@@ -674,21 +674,21 @@ describe('EventRepository Integration Tests', () => {
         name: 'Active 1',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
       await repo.addAttendee({
         eventId: event.id,
         name: 'Active 2',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
       await repo.addAttendee({
         eventId: event.id,
         name: 'Checked Out',
         organization: 'Org',
         role: 'Guest',
-        status: 'checked_out',
+        status: 'denied',
       })
 
       const stats = await repo.getEventPresenceStats(event.id)
@@ -735,20 +735,20 @@ describe('EventRepository Integration Tests', () => {
         name: 'Active',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
       await repo.addAttendee({
         eventId: event.id,
         name: 'Checked Out',
         organization: 'Org',
         role: 'Guest',
-        status: 'checked_out',
+        status: 'denied',
       })
 
       const active = await repo.getActiveAttendees(event.id)
 
       expect(active).toHaveLength(1)
-      expect(active[0].name).toBe('Active')
+      expect(active[0]!.name).toBe('Active')
     })
   })
 
@@ -778,15 +778,15 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
-      const checkin = await repo.recordCheckin(attendee.id, badge.id, 'IN', 'KIOSK-001')
+      const checkin = await repo.recordCheckin(attendee.id, badge.id, 'in', 'KIOSK-001')
 
       expect(checkin.id).toBeDefined()
       expect(checkin.eventAttendeeId).toBe(attendee.id)
       expect(checkin.badgeId).toBe(badge.id)
-      expect(checkin.direction).toBe('IN')
+      expect(checkin.direction).toBe('in')
       expect(checkin.kioskId).toBe('KIOSK-001')
     })
   })
@@ -817,27 +817,27 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       await repo.recordCheckin(
         attendee.id,
         badge.id,
-        'IN',
+        'in',
         'KIOSK-001',
         new Date('2026-01-20T08:00:00')
       )
       await repo.recordCheckin(
         attendee.id,
         badge.id,
-        'OUT',
+        'out',
         'KIOSK-001',
         new Date('2026-01-20T12:00:00')
       )
       await repo.recordCheckin(
         attendee.id,
         badge.id,
-        'IN',
+        'in',
         'KIOSK-001',
         new Date('2026-01-20T13:00:00')
       )
@@ -845,9 +845,9 @@ describe('EventRepository Integration Tests', () => {
       const checkins = await repo.getAttendeeCheckins(attendee.id)
 
       expect(checkins).toHaveLength(3)
-      expect(checkins[0].direction).toBe('IN') // Latest
-      expect(checkins[1].direction).toBe('OUT')
-      expect(checkins[2].direction).toBe('IN') // Earliest
+      expect(checkins[0]!.direction).toBe('in') // Latest
+      expect(checkins[1]!.direction).toBe('out')
+      expect(checkins[2]!.direction).toBe('in') // Earliest
     })
   })
 
@@ -877,27 +877,27 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       await repo.recordCheckin(
         attendee.id,
         badge.id,
-        'IN',
+        'in',
         'KIOSK-001',
         new Date('2026-01-20T08:00:00')
       )
       await repo.recordCheckin(
         attendee.id,
         badge.id,
-        'OUT',
+        'out',
         'KIOSK-001',
         new Date('2026-01-20T12:00:00')
       )
 
       const direction = await repo.getLastCheckinDirection(attendee.id)
 
-      expect(direction).toBe('OUT')
+      expect(direction).toBe('out')
     })
 
     it('should return null when no checkins', async () => {
@@ -917,7 +917,7 @@ describe('EventRepository Integration Tests', () => {
         name: 'John Doe',
         organization: 'Org',
         role: 'Guest',
-        status: 'active',
+        status: 'checked_in',
       })
 
       const direction = await repo.getLastCheckinDirection(attendee.id)

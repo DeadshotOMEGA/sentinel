@@ -9,6 +9,7 @@ import {
 } from '../../helpers/factories'
 import { MemberRepository } from '@/repositories/member-repository'
 import type {
+  Member,
   CreateMemberInput,
   UpdateMemberInput,
   MemberFilterParams,
@@ -219,7 +220,7 @@ describe('MemberRepository Integration Tests', () => {
     })
 
     it('should throw error when updating to duplicate service number', async () => {
-      const member1 = await createMember(testDb.prisma!, { serviceNumber: 'A111111' })
+      await createMember(testDb.prisma!, { serviceNumber: 'A111111' })
       const member2 = await createMember(testDb.prisma!, { serviceNumber: 'A222222' })
 
       await expect(
@@ -289,7 +290,7 @@ describe('MemberRepository Integration Tests', () => {
       const members = await repo.findAll(filters)
 
       expect(members.length).toBe(2)
-      expect(members.every((m) => m.divisionId === div1!.id)).toBe(true)
+      expect(members.every((m: Member) => m.divisionId === div1!.id)).toBe(true)
     })
 
     it('should filter by member type', async () => {
@@ -298,7 +299,7 @@ describe('MemberRepository Integration Tests', () => {
       const members = await repo.findAll(filters)
 
       expect(members.length).toBe(2)
-      expect(members.every((m) => m.memberType === 'reserve')).toBe(true)
+      expect(members.every((m: Member) => m.memberType === 'reserve')).toBe(true)
     })
 
     it('should filter by status', async () => {
@@ -307,7 +308,7 @@ describe('MemberRepository Integration Tests', () => {
       const members = await repo.findAll(filters)
 
       expect(members.length).toBe(2)
-      expect(members.every((m) => m.status === 'active')).toBe(true)
+      expect(members.every((m: Member) => m.status === 'active')).toBe(true)
     })
 
     it('should search by name', async () => {
@@ -320,7 +321,7 @@ describe('MemberRepository Integration Tests', () => {
     })
 
     it('should search by service number', async () => {
-      const member = await createMember(testDb.prisma!, { serviceNumber: 'SEARCH123' })
+      await createMember(testDb.prisma!, { serviceNumber: 'SEARCH123' })
       const filters: MemberFilterParams = { search: 'SEARCH123' }
 
       const members = await repo.findAll(filters)
@@ -409,7 +410,7 @@ describe('MemberRepository Integration Tests', () => {
       const result = await repo.findPaginated(params, filters)
 
       expect(result.members.length).toBeLessThanOrEqual(5)
-      expect(result.members.every((m) => m.status === 'active')).toBe(true)
+      expect(result.members.every((m: Member) => m.status === 'active')).toBe(true)
     })
   })
 
@@ -422,7 +423,7 @@ describe('MemberRepository Integration Tests', () => {
       const found = await repo.findByIds([member1.id, member2.id, member3.id])
 
       expect(found.length).toBe(3)
-      expect(found.map((m) => m.id).sort()).toEqual(
+      expect(found.map((m: Member) => m.id).sort()).toEqual(
         [member1.id, member2.id, member3.id].sort()
       )
     })
@@ -451,7 +452,7 @@ describe('MemberRepository Integration Tests', () => {
       const found = await repo.findByServiceNumbers(['SN1', 'SN2', 'SN3'])
 
       expect(found.length).toBe(3)
-      expect(found.map((m) => m.serviceNumber).sort()).toEqual(['SN1', 'SN2', 'SN3'])
+      expect(found.map((m: Member) => m.serviceNumber).sort()).toEqual(['SN1', 'SN2', 'SN3'])
     })
 
     it('should return empty array when no service numbers provided', async () => {
@@ -629,7 +630,6 @@ describe('MemberRepository Integration Tests', () => {
 
       const member1 = await createMember(testDb.prisma!)
       const member2 = await createMember(testDb.prisma!)
-      const member3 = await createMember(testDb.prisma!)
 
       await repo.addTag(member1.id, tag1.id)
       await repo.addTag(member2.id, tag1.id)
@@ -639,7 +639,7 @@ describe('MemberRepository Integration Tests', () => {
       const members = await repo.findAll(filters)
 
       expect(members.length).toBe(2)
-      expect(members.map((m) => m.id).sort()).toEqual([member1.id, member2.id].sort())
+      expect(members.map((m: Member) => m.id).sort()).toEqual([member1.id, member2.id].sort())
     })
 
     it('should exclude members by tags', async () => {
@@ -653,8 +653,8 @@ describe('MemberRepository Integration Tests', () => {
       const filters: MemberFilterParams = { excludeTags: ['Exclude'] }
       const members = await repo.findAll(filters)
 
-      expect(members.some((m) => m.id === member1.id)).toBe(false)
-      expect(members.some((m) => m.id === member2.id)).toBe(true)
+      expect(members.some((m: Member) => m.id === member1.id)).toBe(false)
+      expect(members.some((m: Member) => m.id === member2.id)).toBe(true)
     })
   })
 

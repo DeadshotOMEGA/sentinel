@@ -75,9 +75,9 @@ describe('MemberTypeRepository Integration Tests', () => {
       const types = await repo.findAll()
 
       expect(types).toHaveLength(3)
-      expect(types[0].name).toBe('Alpha')
-      expect(types[1].name).toBe('Bravo')
-      expect(types[2].name).toBe('Charlie')
+      expect(types[0]!.name).toBe('Alpha')
+      expect(types[1]!.name).toBe('Bravo')
+      expect(types[2]!.name).toBe('Charlie')
     })
   })
 

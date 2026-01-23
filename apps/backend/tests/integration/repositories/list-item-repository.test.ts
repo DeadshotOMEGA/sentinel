@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { TestDatabase } from '../../helpers/testcontainers'
 import { ListItemRepository } from '../../../src/repositories/list-item-repository'
-import type { CreateListItemInput, UpdateListItemInput, ListType } from '@sentinel/types'
+import type { CreateListItemInput, UpdateListItemInput } from '@sentinel/types'
 
 describe('ListItemRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -110,9 +110,9 @@ describe('ListItemRepository Integration Tests', () => {
       const items = await repo.findByType('rank')
 
       expect(items).toHaveLength(3)
-      expect(items[0].name).toBe('Alpha') // Same displayOrder, sorted by name
-      expect(items[1].name).toBe('Bravo')
-      expect(items[2].name).toBe('Charlie')
+      expect(items[0]!.name).toBe('Alpha') // Same displayOrder, sorted by name
+      expect(items[1]!.name).toBe('Bravo')
+      expect(items[2]!.name).toBe('Charlie')
     })
   })
 
@@ -397,7 +397,7 @@ describe('ListItemRepository Integration Tests', () => {
         RETURNING id
       `
 
-      const count = await repo.getUsageCount(unknownItem[0].id)
+      const count = await repo.getUsageCount(unknownItem[0]!.id)
       expect(count).toBe(0)
     })
   })
@@ -422,12 +422,12 @@ describe('ListItemRepository Integration Tests', () => {
       // Fetch all and verify order
       const items = await repo.findByType('rank')
 
-      expect(items[0].id).toBe(item3.id)
-      expect(items[0].displayOrder).toBe(1)
-      expect(items[1].id).toBe(item1.id)
-      expect(items[1].displayOrder).toBe(2)
-      expect(items[2].id).toBe(item2.id)
-      expect(items[2].displayOrder).toBe(3)
+      expect(items[0]!.id).toBe(item3.id)
+      expect(items[0]!.displayOrder).toBe(1)
+      expect(items[1]!.id).toBe(item1.id)
+      expect(items[1]!.displayOrder).toBe(2)
+      expect(items[2]!.id).toBe(item2.id)
+      expect(items[2]!.displayOrder).toBe(3)
     })
 
     it('should handle empty array', async () => {

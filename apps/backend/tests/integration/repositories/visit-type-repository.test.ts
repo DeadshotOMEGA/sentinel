@@ -75,9 +75,9 @@ describe('VisitTypeRepository Integration Tests', () => {
       const types = await repo.findAll()
 
       expect(types).toHaveLength(3)
-      expect(types[0].name).toBe('Alpha')
-      expect(types[1].name).toBe('Bravo')
-      expect(types[2].name).toBe('Charlie')
+      expect(types[0]!.name).toBe('Alpha')
+      expect(types[1]!.name).toBe('Bravo')
+      expect(types[2]!.name).toBe('Charlie')
     })
   })
 
@@ -262,13 +262,13 @@ describe('VisitTypeRepository Integration Tests', () => {
 
       await testDb.prisma!.visitor.create({
         data: {
-          firstName: 'John',
-          lastName: 'Visitor',
+          name: 'John Visitor',
           organization: 'External',
+          visitType: 'guest',
           visitTypeId: type.id,
           hostMemberId: hostMember.id,
+          kioskId: 'KIOSK_TEST',
           checkInTime: new Date(),
-          expectedDuration: 60,
         },
       })
 
@@ -317,20 +317,21 @@ describe('VisitTypeRepository Integration Tests', () => {
       await testDb.prisma!.visitor.createMany({
         data: [
           {
-            firstName: 'John',
-            lastName: 'Visitor',
+            name: 'John Visitor',
             organization: 'External',
+            visitType: 'guest',
             visitTypeId: type.id,
             hostMemberId: hostMember.id,
+            kioskId: 'KIOSK_TEST',
             checkInTime: new Date(),
-            expectedDuration: 60,
           },
           {
-            firstName: 'Jane',
-            lastName: 'Guest',
+            name: 'Jane Guest',
             organization: 'External',
+            visitType: 'guest',
             visitTypeId: type.id,
             hostMemberId: hostMember.id,
+            kioskId: 'KIOSK_TEST',
             checkInTime: new Date(),
             expectedDuration: 120,
           },

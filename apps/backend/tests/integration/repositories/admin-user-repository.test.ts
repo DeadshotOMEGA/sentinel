@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { TestDatabase } from '../../helpers/testcontainers'
 import { createAdminUser } from '../../helpers/factories'
 import { AdminUserRepository } from '@/repositories/admin-user-repository'
+import type { AdminUser } from '@sentinel/types'
 
 describe('AdminUserRepository Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -148,7 +149,7 @@ describe('AdminUserRepository Integration Tests', () => {
       const admins = await repo.findAll()
 
       expect(admins.length).toBeGreaterThanOrEqual(2)
-      admins.forEach((admin) => {
+      admins.forEach((admin: AdminUser) => {
         expect(admin.disabled).toBe(false)
       })
     })
@@ -162,7 +163,7 @@ describe('AdminUserRepository Integration Tests', () => {
 
       const admins = await repo.findAll()
 
-      const found = admins.find((a) => a.id === admin.id)
+      const found = admins.find((a: AdminUser) => a.id === admin.id)
       expect(found).toBeUndefined()
     })
 
@@ -184,8 +185,8 @@ describe('AdminUserRepository Integration Tests', () => {
 
       const admins = await repo.findAllIncludingDisabled()
 
-      const activeFound = admins.find((a) => a.id === active.id)
-      const disabledFound = admins.find((a) => a.id === disabled.id)
+      const activeFound = admins.find((a: AdminUser) => a.id === active.id)
+      const disabledFound = admins.find((a: AdminUser) => a.id === disabled.id)
 
       expect(activeFound).toBeDefined()
       expect(disabledFound).toBeDefined()
@@ -402,7 +403,7 @@ describe('AdminUserRepository Integration Tests', () => {
     it('should handle updating password hash', async () => {
       const admin = await createAdminUser(testDb.prisma!)
 
-      const updated = await repo.update(admin.id, {
+      await repo.update(admin.id, {
         passwordHash: 'new_updated_hash',
       })
 
