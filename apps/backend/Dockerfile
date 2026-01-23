@@ -25,7 +25,7 @@ COPY packages/types ./packages/types/
 COPY apps/backend ./apps/backend/
 
 # Generate Prisma client
-RUN pnpm --filter @sentinel/database prisma generate
+RUN pnpm --filter @sentinel/database prisma:generate
 
 # Build all packages
 RUN pnpm -r build
@@ -69,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"
 
 # Run migrations and start server
-CMD ["sh", "-c", "pnpm --filter @sentinel/database prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "pnpm --filter @sentinel/database prisma:migrate:deploy && node dist/index.js"]
