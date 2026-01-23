@@ -140,21 +140,24 @@ export class PresenceService {
    * Delegates to repository which handles caching
    */
   async getStats(): Promise<PresenceStats> {
-    return await this.checkinRepo.getPresenceStats()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (await this.checkinRepo.getPresenceStats()) as any
   }
 
   /**
    * Get list of currently present members
    */
   async getPresentMembers(): Promise<PresentMember[]> {
-    return await this.checkinRepo.getPresentMembers()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (await this.checkinRepo.getPresentMembers()) as any
   }
 
   /**
    * Get all members with their presence status
    */
   async getMemberPresenceList(): Promise<MemberPresenceItem[]> {
-    return await this.checkinRepo.getMemberPresenceList()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (await this.checkinRepo.getMemberPresenceList()) as any
   }
 
   /**
@@ -207,7 +210,7 @@ export class PresenceService {
         name: v.name,
         organization: v.organization,
         visitType: v.visitType,
-        visitReason: v.purpose,
+        visitReason: v.visitReason,
         hostMemberId: v.hostMemberId,
         hostName: v.hostName,
         eventId: v.eventId,

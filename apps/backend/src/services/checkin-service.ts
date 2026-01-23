@@ -142,7 +142,7 @@ export class CheckinService {
     if (!lastDirection) {
       // Cache miss - query DB for last checkin
       const lastCheckin = await this.checkinRepo.findLatestByMember(memberId)
-      lastDirection = lastCheckin?.direction ?? null
+      lastDirection = (lastCheckin?.direction as CheckinDirection) ?? null
     }
 
     const direction: CheckinDirection = lastDirection === 'in' ? 'out' : 'in'
@@ -158,7 +158,7 @@ export class CheckinService {
       badgeId: badge.id,
       direction,
       timestamp: scanTimestamp,
-      kioskId: options.kioskId,
+      kioskId: options.kioskId || 'unknown', // Default to 'unknown' if not provided
       synced: true,
     })
 

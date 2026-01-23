@@ -123,14 +123,14 @@ export class SyncService {
       // }
 
       // Check for clock drift
-      const driftCheck = validateClockDrift(checkin.localTimestamp ?? new Date(), serverTime)
+      const driftCheck = validateClockDrift(checkin.localTimestamp, serverTime)
 
       validatedCheckins.push({
         serialNumber: checkin.serialNumber,
         timestamp,
         kioskId: checkin.kioskId ?? '',
         originalTimestampStr: checkin.timestamp,
-        localTimestamp: checkin.localTimestamp ?? new Date(),
+        localTimestamp: checkin.localTimestamp,
         sequenceNumber: checkin.sequenceNumber ?? 0,
         flaggedForReview: driftCheck.flagged,
         flagReason: driftCheck.reason,

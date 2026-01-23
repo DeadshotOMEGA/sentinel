@@ -14,8 +14,8 @@ interface LockupPresentData {
     lastName: string
     rank: string
     division: string
-    divisionId: string
-    memberType: string
+    divisionId: string | null
+    memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
     mess: string | null
     checkedInAt: string
     kioskId?: string
@@ -23,7 +23,7 @@ interface LockupPresentData {
   visitors: Array<{
     id: string
     name: string
-    organization: string
+    organization: string | undefined
     visitType: string
     checkInTime: Date
   }>

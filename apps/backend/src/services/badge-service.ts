@@ -190,8 +190,11 @@ export class BadgeService {
       throw new NotFoundError('Badge', badgeId)
     }
 
-    // Auto-unassign when marking as 'returned'
-    if (status === 'returned' && badge.assignmentType !== 'unassigned') {
+    // TODO: Determine correct status for "returned" badges
+    // BadgeStatus type is 'active' | 'inactive' | 'lost' | 'damaged'
+    // 'returned' is not a valid status - should this be 'inactive'?
+    // Auto-unassign when marking as 'inactive' (assuming inactive means returned)
+    if (status === 'inactive' && badge.assignmentType !== 'unassigned') {
       await this.unassign(badgeId)
     }
 
