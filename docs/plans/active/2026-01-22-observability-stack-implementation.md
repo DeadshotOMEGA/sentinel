@@ -1588,13 +1588,129 @@ docker-compose up -d
 
 ### Next Steps 🔄
 
-8. End-to-end integration testing - **NEXT**
-9. Update documentation (if needed)
-10. Create PR to `rebuild` branch
-11. Code review
-12. Merge and deploy
+8. ✅ Created testing documentation - 2026-01-22
+   - ✅ Comprehensive testing guide: `docs/guides/howto/howto-test-observability-stack.md`
+   - ✅ Quick start guide: `TESTING-NEXT-STEPS.md`
+   - ✅ Documented all 12 testing steps with checklists
+   - ✅ Included troubleshooting section
+9. ⚠️ **Integration testing blocked** - 2026-01-22
+   - ❌ Backend fails to compile due to **46 pre-existing TypeScript errors**
+   - ❌ Errors are in non-observability files (routes, services)
+   - ✅ Observability code has only 3 minor warnings (easily fixable)
+   - ✅ Docker Desktop is running
+   - ⚠️ **BLOCKER**: Must fix TypeScript errors before testing can proceed
+   - 📝 Status documented in `OBSERVABILITY-STATUS.md`
+10. **Fix blocking TypeScript errors** - **NEXT (REQUIRED)**
+    - Fix 46 compilation errors in routes and services
+    - Estimated time: 2-4 hours
+    - See `OBSERVABILITY-STATUS.md` for error details
+11. **Run integration tests** (after TypeScript fixes)
+    - Follow `TESTING-NEXT-STEPS.md`
+    - Complete all 12 test scenarios in testing guide
+    - Document results
+12. Update documentation with test results
+13. Create PR to `rebuild` branch
+14. Code review
+15. Merge and deploy
 
 **Phase 4 (Sentry)** - DEFERRED (can be added later following Phase 4 instructions)
+
+---
+
+## Testing Documentation Created
+
+### Files Created for Testing
+
+1. **Comprehensive Testing Guide** - `docs/guides/howto/howto-test-observability-stack.md`
+   - 12-step testing process with detailed checklists
+   - Prerequisites and setup instructions
+   - Service health verification procedures
+   - Swagger UI, Prometheus, Grafana, and Loki testing
+   - Correlation ID tracing validation
+   - Performance benchmarking
+   - Troubleshooting guide
+   - Success criteria
+   - ~400 lines, complete end-to-end coverage
+
+2. **Quick Start Guide** - `TESTING-NEXT-STEPS.md` (project root)
+   - Current status summary
+   - Prerequisites checklist
+   - Quick start commands
+   - Testing checklist
+   - Post-testing actions (PR creation template)
+   - Quick reference links
+
+### Testing Prerequisites
+
+Before running tests, you must:
+
+1. **Start Docker Desktop on Windows**
+   - Open Docker Desktop application
+   - Wait for Docker daemon to fully start
+   - Verify: `docker ps` should work without errors
+
+2. **Build Backend** (if not already built)
+   ```bash
+   pnpm build --filter @sentinel/backend
+   ```
+
+3. **Set Environment Variables**
+   ```bash
+   # Ensure .env.local exists
+   cp .env.example .env.local
+
+   # Set Grafana password (if not already set)
+   echo "GRAFANA_ADMIN_PASSWORD=$(openssl rand -base64 32)" >> .env.local
+   ```
+
+### Quick Start Testing
+
+```bash
+# 1. Start all services
+docker compose --profile backend --profile monitoring up -d
+
+# 2. Wait 30-60 seconds for health checks
+
+# 3. Verify services
+docker compose ps
+
+# 4. Run through testing guide
+# Follow: docs/guides/howto/howto-test-observability-stack.md
+```
+
+### What Gets Tested
+
+- **Swagger UI**: All 23 endpoints, "Try it out" functionality, authentication
+- **Prometheus Metrics**: HTTP, database, auth, and business metrics
+- **Grafana**: 4 pre-built dashboards, datasource connectivity
+- **Loki**: Log aggregation, filtering, correlation ID search
+- **End-to-end**: Correlation ID tracing through entire request flow
+- **Performance**: Response time overhead, memory usage
+
+### Expected Results
+
+All tests should pass with:
+- ✅ All services showing "healthy" status
+- ✅ Swagger UI loading 23 endpoints
+- ✅ Prometheus metrics endpoint returning data
+- ✅ Grafana showing all 4 dashboards
+- ✅ Loki aggregating backend logs
+- ✅ Correlation ID tracing working
+- ✅ Performance overhead <10%
+- ✅ Total monitoring stack RAM <1GB
+
+### After Testing
+
+1. **If all tests pass**:
+   - Update this plan with test results
+   - Create PR using template in `TESTING-NEXT-STEPS.md`
+   - Request code review
+
+2. **If tests fail**:
+   - Check troubleshooting section in testing guide
+   - Document issues in this plan
+   - Fix and retest
+   - Commit fixes before PR
 
 ---
 
