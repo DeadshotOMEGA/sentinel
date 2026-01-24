@@ -24,9 +24,9 @@ export default [
   // Base JavaScript config
   js.configs.recommended,
 
-  // TypeScript files
+  // Backend TypeScript files (Node.js)
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['apps/backend/**/*.ts', 'packages/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -47,6 +47,61 @@ export default [
         clearInterval: 'readonly',
         setImmediate: 'readonly',
         clearImmediate: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      ...tsPlugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+    },
+  },
+
+  // Frontend TypeScript files (Browser)
+  {
+    files: ['apps/frontend-admin/**/*.ts', 'apps/frontend-admin/**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        project: ['./tsconfig.json', './apps/*/tsconfig.json'],
+      },
+      globals: {
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        location: 'readonly',
+        fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        Event: 'readonly',
+        EventTarget: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        Element: 'readonly',
+        Node: 'readonly',
+        // Common globals
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
       },
     },
     plugins: {
