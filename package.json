@@ -5,6 +5,10 @@
   "description": "RFID Attendance Tracking System for HMCS Chippawa",
   "scripts": {
     "dev": "pnpm --filter @sentinel/backend dev",
+    "dev:backend": "pnpm --filter @sentinel/backend dev",
+    "dev:frontend": "pnpm --filter frontend-admin dev",
+    "dev:all": "bash scripts/cleanup-ports.sh && concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"cyan,magenta\" \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "cleanup": "bash scripts/cleanup-ports.sh",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
@@ -23,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "@vitest/coverage-v8": "^4.0.17",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",

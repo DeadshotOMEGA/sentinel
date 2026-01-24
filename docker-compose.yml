@@ -134,12 +134,12 @@ services:
     image: grafana/grafana:10.2.3
     container_name: sentinel-grafana
     ports:
-      - "3001:3000"
+      - "3002:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_SERVER_ROOT_URL=http://localhost:3002
       - GF_AUTH_ANONYMOUS_ENABLED=false
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
