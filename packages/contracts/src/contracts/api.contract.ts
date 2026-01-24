@@ -14,6 +14,8 @@ import { alertConfigContract } from './alert-config.contract.js'
 import { reportContract } from './report.contract.js'
 import { devToolsContract } from './dev-tools.contract.js'
 import { devContract } from './dev.contract.js'
+import { securityAlertContract } from './security-alert.contract.js'
+import { ddsContract } from './dds.contract.js'
 
 const c = initContract()
 
@@ -23,22 +25,27 @@ const c = initContract()
  * Combines all route contracts into a single API contract
  * for use with ts-rest client and server
  */
-export const apiContract = c.router({
-  members: memberContract,
-  checkins: checkinContract,
-  divisions: divisionContract,
-  badges: badgeContract,
-  auditLogs: auditContract,
-  enums: enumContract,
-  adminUsers: adminUserContract,
-  lists: listContract,
-  trainingYears: trainingYearContract,
-  bmqCourses: bmqCourseContract,
-  reportSettings: reportSettingContract,
-  alertConfigs: alertConfigContract,
-  reports: reportContract,
-  devTools: devToolsContract,
-  dev: devContract,
-}, {
-  pathPrefix: '',
-})
+export const apiContract = c.router(
+  {
+    members: memberContract,
+    checkins: checkinContract,
+    divisions: divisionContract,
+    badges: badgeContract,
+    auditLogs: auditContract,
+    enums: enumContract,
+    adminUsers: adminUserContract,
+    lists: listContract,
+    trainingYears: trainingYearContract,
+    bmqCourses: bmqCourseContract,
+    reportSettings: reportSettingContract,
+    alertConfigs: alertConfigContract,
+    reports: reportContract,
+    devTools: devToolsContract,
+    dev: devContract,
+    securityAlerts: securityAlertContract,
+    dds: ddsContract,
+  },
+  {
+    pathPrefix: '',
+  }
+)
