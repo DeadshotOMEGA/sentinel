@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@sentinel/contracts": ["../../packages/contracts/src"],
+      "@sentinel/contracts": ["../../packages/contracts/dist"],
       "@sentinel/types": ["../../packages/types/src"],
       "@sentinel/database": ["../../packages/database/src"]
     }

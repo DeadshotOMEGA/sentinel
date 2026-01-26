@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@sentinel/contracts', '@sentinel/types', '@sentinel/database'],
   async rewrites() {
     return [
       {
