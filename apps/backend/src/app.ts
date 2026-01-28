@@ -11,7 +11,6 @@ import {
   badgeContract,
   eventContract,
   visitorContract,
-  tagContract,
   securityAlertContract,
   ddsContract,
   lockupContract,
@@ -19,9 +18,11 @@ import {
   memberStatusesContract,
   memberTypesContract,
   badgeStatusesContract,
+  tagsContract,
   settingContract,
   adminUserContract,
   listContract,
+  rankContract,
   // TODO: Fix training-years router type issues
   // trainingYearContract,
   bmqCourseContract,
@@ -30,6 +31,9 @@ import {
   reportContract,
   devToolsContract,
   devContract,
+  databaseExplorerContract,
+  qualificationContract,
+  scheduleContract,
 } from '@sentinel/contracts'
 import { requestLogger } from './middleware/request-logger.js'
 import { metricsMiddleware } from './middleware/metrics.js'
@@ -44,7 +48,6 @@ import { divisionsRouter } from './routes/divisions.js'
 import { badgesRouter } from './routes/badges.js'
 import { eventsRouter } from './routes/events.js'
 import { visitorsRouter } from './routes/visitors.js'
-import { tagsRouter } from './routes/tags.js'
 import { securityAlertsRouter } from './routes/security-alerts.js'
 import { ddsRouter } from './routes/dds.js'
 import { lockupRouter } from './routes/lockup.js'
@@ -53,6 +56,7 @@ import {
   memberStatusesRouter,
   memberTypesRouter,
   badgeStatusesRouter,
+  tagsRouter as enumTagsRouter,
 } from './routes/enums.js'
 import { settingsRouter } from './routes/settings.js'
 import { adminUsersRouter } from './routes/admin-users.js'
@@ -65,6 +69,10 @@ import { alertConfigsRouter } from './routes/alert-configs.js'
 import { reportsRouter } from './routes/reports.js'
 import { devToolsRouter } from './routes/dev-tools.js'
 import { devRouter } from './routes/dev.js'
+import { databaseExplorerRouter } from './routes/database-explorer.js'
+import { ranksRouter } from './routes/ranks.js'
+import { qualificationsRouter } from './routes/qualifications.js'
+import { schedulesRouter } from './routes/schedules.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
 import { auth } from './lib/auth.js'
@@ -219,15 +227,6 @@ export function createApp(): Express {
       })
     },
   })
-  createExpressEndpoints(tagContract, tagsRouter, app, {
-    requestValidationErrorHandler: (err, _req, res) => {
-      return res.status(400).json({
-        error: 'VALIDATION_ERROR',
-        message: 'Request validation failed',
-        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
-      })
-    },
-  })
   createExpressEndpoints(securityAlertContract, securityAlertsRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
@@ -291,6 +290,15 @@ export function createApp(): Express {
       })
     },
   })
+  createExpressEndpoints(tagsContract, enumTagsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
   createExpressEndpoints(settingContract, settingsRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
@@ -310,6 +318,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(listContract, listsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(rankContract, ranksRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
@@ -374,6 +391,33 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(devContract, devRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(databaseExplorerContract, databaseExplorerRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(qualificationContract, qualificationsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(scheduleContract, schedulesRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

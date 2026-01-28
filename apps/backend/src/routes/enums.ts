@@ -4,19 +4,22 @@ import {
   memberStatusesContract,
   memberTypesContract,
   badgeStatusesContract,
+  tagsContract,
 } from '@sentinel/contracts'
 import { VisitTypeRepository } from '../repositories/visit-type-repository.js'
 import { MemberStatusRepository } from '../repositories/member-status-repository.js'
 import { MemberTypeRepository } from '../repositories/member-type-repository.js'
 import { BadgeStatusRepository } from '../repositories/badge-status-repository.js'
+import { TagRepository } from '../repositories/tag-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import type {
   VisitTypeEnum,
   MemberStatusEnum,
   MemberTypeEnum,
   BadgeStatusEnum,
+  Tag,
 } from '@sentinel/types'
-import type { EnumResponse } from '@sentinel/contracts'
+import type { EnumResponse, TagResponse } from '@sentinel/contracts'
 
 const s = initServer()
 
@@ -25,6 +28,7 @@ const visitTypeRepo = new VisitTypeRepository(getPrismaClient())
 const memberStatusRepo = new MemberStatusRepository(getPrismaClient())
 const memberTypeRepo = new MemberTypeRepository(getPrismaClient())
 const badgeStatusRepo = new BadgeStatusRepository(getPrismaClient())
+const tagRepo = new TagRepository(getPrismaClient())
 
 /**
  * Convert repository enum type to API format
@@ -38,7 +42,25 @@ function toEnumResponse(
     code: item.code,
     name: item.name,
     description: item.description ?? null,
-    color: 'color' in item ? (item.color ?? null) : null,
+    chipVariant: 'chipVariant' in item ? item.chipVariant : 'solid',
+    chipColor: 'chipColor' in item ? item.chipColor : 'default',
+    usageCount,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  }
+}
+
+/**
+ * Convert Tag to API response format
+ */
+function toTagResponse(item: Tag, usageCount?: number): TagResponse {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description ?? null,
+    chipVariant: item.chipVariant ?? 'solid',
+    chipColor: item.chipColor ?? 'default',
+    displayOrder: item.displayOrder,
     usageCount,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
@@ -97,7 +119,8 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -152,7 +175,8 @@ export const visitTypesRouter = s.router(visitTypesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -274,7 +298,8 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -329,7 +354,8 @@ export const memberStatusesRouter = s.router(memberStatusesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -451,6 +477,8 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -505,6 +533,8 @@ export const memberTypesRouter = s.router(memberTypesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -626,7 +656,8 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -681,7 +712,8 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         code: body.code,
         name: body.name,
         description: body.description,
-        color: body.color,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
       })
 
       return {
@@ -745,6 +777,185 @@ export const badgeStatusesRouter = s.router(badgeStatusesContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to delete badge status',
+        },
+      }
+    }
+  },
+})
+
+// ==================== Tags ====================
+
+export const tagsRouter = s.router(tagsContract, {
+  /**
+   * Get all tags with usage counts
+   */
+  getTags: async () => {
+    try {
+      const items = await tagRepo.findAll()
+      const tags = await Promise.all(
+        items.map(async (item) => {
+          const usageCount = await tagRepo.getUsageCount(item.id)
+          return toTagResponse(item, usageCount)
+        })
+      )
+
+      return {
+        status: 200 as const,
+        body: { tags },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch tags',
+        },
+      }
+    }
+  },
+
+  /**
+   * Create new tag
+   */
+  createTag: async ({ body }) => {
+    try {
+      // Check if name already exists
+      const existing = await tagRepo.findByName(body.name)
+      if (existing) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: `Tag name "${body.name}" already exists`,
+          },
+        }
+      }
+
+      const tag = await tagRepo.create({
+        name: body.name,
+        description: body.description,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
+        displayOrder: body.displayOrder,
+      })
+
+      return {
+        status: 201 as const,
+        body: {
+          tag: toTagResponse(tag),
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create tag',
+        },
+      }
+    }
+  },
+
+  /**
+   * Update tag
+   */
+  updateTag: async ({ params, body }) => {
+    try {
+      // Check if tag exists
+      const existing = await tagRepo.findById(params.id)
+      if (!existing) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Tag with ID '${params.id}' not found`,
+          },
+        }
+      }
+
+      // If updating name, check for conflicts
+      if (body.name && body.name !== existing.name) {
+        const conflict = await tagRepo.findByName(body.name)
+        if (conflict) {
+          return {
+            status: 409 as const,
+            body: {
+              error: 'CONFLICT',
+              message: `Tag name "${body.name}" already exists`,
+            },
+          }
+        }
+      }
+
+      const tag = await tagRepo.update(params.id, {
+        name: body.name,
+        description: body.description,
+        chipVariant: body.chipVariant,
+        chipColor: body.chipColor,
+        displayOrder: body.displayOrder,
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          tag: toTagResponse(tag),
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to update tag',
+        },
+      }
+    }
+  },
+
+  /**
+   * Delete tag
+   */
+  deleteTag: async ({ params }) => {
+    try {
+      // Check if tag exists
+      const existing = await tagRepo.findById(params.id)
+      if (!existing) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Tag with ID '${params.id}' not found`,
+          },
+        }
+      }
+
+      // Check usage count
+      const usageCount = await tagRepo.getUsageCount(params.id)
+      if (usageCount > 0) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: `Cannot delete this tag. It is currently assigned to ${usageCount} members.`,
+          },
+        }
+      }
+
+      await tagRepo.delete(params.id)
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: 'Tag deleted successfully',
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to delete tag',
         },
       }
     }

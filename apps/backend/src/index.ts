@@ -3,6 +3,7 @@ import { createServer } from 'http'
 import { createApp } from './app.js'
 import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger.js'
 import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
+import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
 
 /**
  * Validate required environment variables
@@ -52,20 +53,45 @@ async function main() {
     const host = process.env.HOST || '0.0.0.0'
 
     // Start server
-    httpServer.listen(port, host, () => {
+    httpServer.listen(port, host, async () => {
       logStartup(port, process.env.NODE_ENV || 'development')
       logger.info('Server listening', {
         port,
         host,
         url: `http://localhost:${port}`,
       })
+
+      // Start job scheduler (after server is listening)
+      try {
+        await startJobScheduler({
+          timezone: process.env.TIMEZONE || 'America/Winnipeg',
+          dayRolloverTime: process.env.DAY_ROLLOVER_TIME || '03:00',
+          dutyWatchAlertTime: process.env.DUTY_WATCH_ALERT_TIME || '19:00',
+          lockupWarningTime: process.env.LOCKUP_WARNING_TIME || '22:00',
+          lockupCriticalTime: process.env.LOCKUP_CRITICAL_TIME || '23:00',
+        })
+      } catch (error) {
+        logger.error('Failed to start job scheduler', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+        // Don't fail startup if jobs fail - the server can still operate
+      }
     })
 
     // Graceful shutdown handlers
     const shutdown = async (signal: string) => {
       logShutdown(signal)
 
-      // Shutdown WebSocket server first
+      // Stop job scheduler first
+      try {
+        await stopJobScheduler()
+      } catch (error) {
+        logger.error('Error stopping job scheduler', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
+      }
+
+      // Shutdown WebSocket server
       await shutdownWebSocketServer(io)
 
       httpServer.close(() => {

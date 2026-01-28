@@ -5,9 +5,12 @@ import type {
   CreateMemberInput,
   UpdateMemberInput,
   IdParam,
+  PreviewImportRequest,
+  ExecuteImportRequest,
 } from '@sentinel/contracts'
 import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
+import { importService } from '../services/import-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
@@ -26,9 +29,10 @@ export const membersRouter = s.router(memberContract, {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
-      const filters: { divisionId?: string; search?: string; status?: MemberStatus } = {
+      const filters: { divisionId?: string; search?: string; status?: MemberStatus; qualificationCode?: string } = {
         divisionId: query.divisionId,
         search: query.search,
+        qualificationCode: query.qualificationCode,
       }
       if (query.status) {
         filters.status = query.status as MemberStatus
@@ -52,8 +56,14 @@ export const membersRouter = s.router(memberContract, {
             phoneNumber: member.mobilePhone || member.homePhone || null,
             divisionId: member.divisionId,
             badgeId: member.badgeId || null,
-            memberTypeId: null,
-            memberStatusId: null,
+            memberTypeId: member.memberTypeId || null,
+            memberStatusId: member.memberStatusId || null,
+            qualifications: member.qualifications?.map((q) => ({
+              code: q.code,
+              name: q.name,
+            })),
+            missedCheckoutCount: member.missedCheckoutCount ?? 0,
+            lastMissedCheckout: member.lastMissedCheckout?.toISOString() ?? null,
             createdAt: member.createdAt.toISOString(),
             updatedAt: member.updatedAt?.toISOString() || null,
           })),
@@ -135,7 +145,7 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
-        memberType: 'regular', // TODO: Map from memberTypeId when FK migration complete
+        memberType: 'class_a', // TODO: Map from memberTypeId when FK migration complete
         // memberTypeId and memberStatusId not yet supported by repository
         badgeId: body.badgeId,
       })
@@ -196,6 +206,8 @@ export const membersRouter = s.router(memberContract, {
         email: body.email,
         mobilePhone: body.phoneNumber,
         badgeId: body.badgeId,
+        memberTypeId: body.memberTypeId,
+        memberStatusId: body.memberStatusId,
       })
 
       return {
@@ -211,8 +223,8 @@ export const membersRouter = s.router(memberContract, {
           phoneNumber: member.mobilePhone || null,
           divisionId: member.divisionId,
           badgeId: member.badgeId || null,
-          memberTypeId: null,
-          memberStatusId: null,
+          memberTypeId: member.memberTypeId || null,
+          memberStatusId: member.memberStatusId || null,
           createdAt: member.createdAt.toISOString(),
           updatedAt: member.updatedAt?.toISOString() || null,
         },
@@ -315,6 +327,55 @@ export const membersRouter = s.router(memberContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to search member',
+        },
+      }
+    }
+  },
+
+  /**
+   * Preview Nominal Roll import
+   */
+  previewImport: async ({ body }: { body: PreviewImportRequest }) => {
+    try {
+      const preview = await importService.generatePreview(body.csvText)
+
+      return {
+        status: 200 as const,
+        body: preview,
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to preview import',
+        },
+      }
+    }
+  },
+
+  /**
+   * Execute Nominal Roll import
+   */
+  executeImport: async ({ body }: { body: ExecuteImportRequest }) => {
+    try {
+      const result = await importService.executeImport(
+        body.csvText,
+        body.deactivateIds,
+        body.excludeRows,
+        body.createDivisions
+      )
+
+      return {
+        status: 200 as const,
+        body: result,
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to execute import',
         },
       }
     }

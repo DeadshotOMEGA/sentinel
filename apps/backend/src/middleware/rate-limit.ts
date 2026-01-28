@@ -8,14 +8,17 @@ import { logger } from '../lib/logger.js'
  * For production with multiple instances, consider Redis store.
  */
 
+const isDevelopment = process.env.NODE_ENV !== 'production'
+
 /**
  * General API rate limiter
  *
- * Limits: 100 requests per 15 minutes per IP
+ * Limits: 100 requests per 15 minutes per IP (production)
+ * Limits: 1000 requests per 15 minutes per IP (development)
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
+  max: isDevelopment ? 1000 : 100, // Higher limit in development for bulk operations
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Too many requests from this IP, please try again later.',

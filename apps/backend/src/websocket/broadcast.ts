@@ -118,16 +118,34 @@ export function broadcastVisitorSignout(visitor: {
 }
 
 /**
+ * Security alert types - includes both badge-related and system alerts
+ */
+export type SecurityAlertType =
+  | 'badge_disabled'
+  | 'badge_unknown'
+  | 'inactive_member'
+  | 'unauthorized_access'
+  | 'lockup_reminder'
+  | 'lockup_not_executed'
+  | 'duty_watch_missing'
+  | 'duty_watch_not_checked_in'
+  | 'building_not_secured'
+  | 'member_missed_checkout'
+  | 'system'
+
+/**
  * Broadcast security alert
  */
 export function broadcastSecurityAlert(alert: {
   id: string
-  alertType: 'badge_disabled' | 'badge_unknown' | 'inactive_member' | 'unauthorized_access'
+  alertType: SecurityAlertType
   severity: 'critical' | 'warning' | 'info'
-  badgeSerial: string | null
-  kioskId: string
   message: string
-  createdAt: string
+  status: 'active' | 'acknowledged' | 'dismissed'
+  timestamp: string
+  acknowledgedAt: string | null
+  badgeSerial?: string | null
+  kioskId?: string
 }) {
   if (!io) {
     logger.warn('Cannot broadcast security alert: Socket.IO not initialized')
@@ -191,6 +209,61 @@ export function broadcastLockupExecution(data: {
     performedBy: data.performedBy,
     membersCheckedOut: data.membersCheckedOut,
     visitorsCheckedOut: data.visitorsCheckedOut,
+  })
+}
+
+/**
+ * Broadcast lockup transfer
+ */
+export function broadcastLockupTransfer(data: {
+  transferId: string
+  fromMemberId: string
+  fromMemberName: string
+  toMemberId: string
+  toMemberName: string
+  reason: string
+  timestamp: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast lockup transfer: Socket.IO not initialized')
+    return
+  }
+
+  io.to('lockup').emit('lockup:transferred', data)
+
+  logger.info('Broadcasted lockup transfer', {
+    transferId: data.transferId,
+    fromMemberId: data.fromMemberId,
+    toMemberId: data.toMemberId,
+    reason: data.reason,
+  })
+}
+
+/**
+ * Broadcast lockup status update
+ */
+export function broadcastLockupStatusUpdate(data: {
+  date: string
+  buildingStatus: 'secured' | 'open' | 'locking_up'
+  currentHolder: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+  } | null
+  timestamp: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast lockup status: Socket.IO not initialized')
+    return
+  }
+
+  io.to('lockup').emit('lockup:status', data)
+
+  logger.debug('Broadcasted lockup status update', {
+    date: data.date,
+    buildingStatus: data.buildingStatus,
+    holderId: data.currentHolder?.id,
   })
 }
 
@@ -259,5 +332,58 @@ export function broadcastKioskStatus(kiosk: {
   logger.debug('Broadcasted kiosk status', {
     kioskId: kiosk.kioskId,
     status: kiosk.status,
+  })
+}
+
+/**
+ * Broadcast schedule update
+ */
+export function broadcastScheduleUpdate(data: {
+  action: 'created' | 'updated' | 'published' | 'deleted'
+  scheduleId: string
+  dutyRoleCode: string
+  weekStartDate: string
+  status: string
+  timestamp: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast schedule update: Socket.IO not initialized')
+    return
+  }
+
+  io.to('schedules').emit('schedule:update', data)
+
+  logger.debug('Broadcasted schedule update', {
+    action: data.action,
+    scheduleId: data.scheduleId,
+    dutyRoleCode: data.dutyRoleCode,
+    weekStartDate: data.weekStartDate,
+  })
+}
+
+/**
+ * Broadcast schedule assignment update
+ */
+export function broadcastScheduleAssignmentUpdate(data: {
+  action: 'created' | 'updated' | 'deleted'
+  scheduleId: string
+  assignmentId: string
+  memberId: string
+  memberName: string
+  positionCode: string | null
+  timestamp: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast schedule assignment update: Socket.IO not initialized')
+    return
+  }
+
+  io.to('schedules').emit('schedule:assignment', data)
+
+  logger.debug('Broadcasted schedule assignment update', {
+    action: data.action,
+    scheduleId: data.scheduleId,
+    assignmentId: data.assignmentId,
+    memberId: data.memberId,
   })
 }
