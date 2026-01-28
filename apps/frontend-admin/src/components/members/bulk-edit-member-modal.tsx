@@ -193,15 +193,13 @@ export function BulkEditMemberModal({
           {/* Progress indicator */}
           {isSubmitting && (
             <div className="space-y-2">
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-2 bg-base-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-sm text-muted-foreground text-center">
-                Updating... {progress}%
-              </p>
+              <p className="text-sm text-base-content/60 text-center">Updating... {progress}%</p>
             </div>
           )}
         </div>

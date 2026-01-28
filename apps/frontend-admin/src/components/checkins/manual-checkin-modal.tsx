@@ -138,7 +138,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
           {/* Member Selection */}
           <div>
             <Label htmlFor="memberId">
-              Member <span className="text-destructive">*</span>
+              Member <span className="text-error">*</span>
             </Label>
             <Select
               value={selectedMemberId}
@@ -156,14 +156,14 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
               </SelectContent>
             </Select>
             {errors.memberId && (
-              <p className="text-sm text-destructive mt-1">{errors.memberId.message}</p>
+              <p className="text-sm text-error mt-1">{errors.memberId.message}</p>
             )}
           </div>
 
           {/* Direction Selection */}
           <div>
             <Label htmlFor="direction">
-              Direction <span className="text-destructive">*</span>
+              Direction <span className="text-error">*</span>
             </Label>
             <Select
               value={selectedDirection}
@@ -180,18 +180,19 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
               </SelectContent>
             </Select>
             {errors.direction && (
-              <p className="text-sm text-destructive mt-1">{errors.direction.message}</p>
+              <p className="text-sm text-error mt-1">{errors.direction.message}</p>
             )}
           </div>
 
           {/* Lockup Warning */}
           {selectedDirection === 'OUT' && selectedMemberId && holdsLockup && (
-            <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm">
+              <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium text-yellow-700">Lockup Holder</p>
-                <p className="text-yellow-600">
-                  This member holds lockup responsibility. They must transfer lockup or lock up the building before checking out.
+                <p className="font-medium text-warning">Lockup Holder</p>
+                <p className="text-warning">
+                  This member holds lockup responsibility. They must transfer lockup or lock up the
+                  building before checking out.
                 </p>
               </div>
             </div>
@@ -213,7 +214,9 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
               {(isSubmitting || loadingCheckoutOptions) && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              {selectedDirection === 'OUT' && holdsLockup ? 'Handle Lockup & Check Out' : 'Create Check-in'}
+              {selectedDirection === 'OUT' && holdsLockup
+                ? 'Handle Lockup & Check Out'
+                : 'Create Check-in'}
             </Button>
           </DialogFooter>
         </form>

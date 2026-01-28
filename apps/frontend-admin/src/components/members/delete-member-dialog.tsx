@@ -49,7 +49,7 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
           <AlertDialogAction
             onClick={handleDelete}
             disabled={deleteMember.isPending}
-            className="bg-destructive hover:bg-destructive/90"
+            className="bg-error hover:bg-error/90"
           >
             {deleteMember.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Delete

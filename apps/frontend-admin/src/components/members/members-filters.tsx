@@ -55,7 +55,12 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
     })
   }
 
-  const hasActiveFilters = filters.divisionId || filters.rank || filters.status || filters.search || filters.qualificationCode
+  const hasActiveFilters =
+    filters.divisionId ||
+    filters.rank ||
+    filters.status ||
+    filters.search ||
+    filters.qualificationCode
 
   return (
     <div className="p-4 rounded-lg border-none mb-6">
@@ -64,7 +69,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
         <div className="md:col-span-2">
           <Label htmlFor="search">Search</Label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
             <Input
               id="search"
               placeholder="Search by name or service number..."

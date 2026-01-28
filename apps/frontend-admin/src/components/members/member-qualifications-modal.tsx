@@ -134,10 +134,10 @@ export function MemberQualificationsModal({
           <div className="space-y-4">
             {loadingQuals ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
               </div>
             ) : qualifications?.data?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-8 text-base-content/60">
                 <AlertCircle className="h-8 w-8 mb-2" />
                 <p>No qualifications assigned</p>
               </div>
@@ -146,7 +146,7 @@ export function MemberQualificationsModal({
                 {qualifications?.data?.map((qual) => (
                   <div
                     key={qual.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border"
+                    className="flex items-center justify-between p-3 bg-base-200/50 rounded-lg border"
                   >
                     <div className="flex items-center gap-3">
                       <Badge
@@ -156,10 +156,8 @@ export function MemberQualificationsModal({
                         {qual.qualificationType.code}
                       </Badge>
                       <div>
-                        <p className="font-medium text-sm">
-                          {qual.qualificationType.name}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <p className="font-medium text-sm">{qual.qualificationType.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-base-content/60">
                           <span>Granted {formatDate(qual.grantedAt)}</span>
                           {qual.expiresAt && (
                             <>
@@ -174,32 +172,23 @@ export function MemberQualificationsModal({
                       </div>
                     </div>
                     {qual.status === 'active' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setRevokeQualId(qual.id)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setRevokeQualId(qual.id)}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
-                    {qual.status !== 'active' && (
-                      <Badge variant="outline">{qual.status}</Badge>
-                    )}
+                    {qual.status !== 'active' && <Badge variant="outline">{qual.status}</Badge>}
                   </div>
                 ))}
               </div>
             )}
 
             <div className="pt-4 border-t">
-              <Button
-                onClick={() => setIsGrantDialogOpen(true)}
-                disabled={!availableTypes?.length}
-              >
+              <Button onClick={() => setIsGrantDialogOpen(true)} disabled={!availableTypes?.length}>
                 <Plus className="h-4 w-4 mr-2" />
                 Grant Qualification
               </Button>
               {!availableTypes?.length && qualTypes?.data?.length && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-base-content/60 mt-2">
                   Member has all available qualifications
                 </p>
               )}
@@ -211,19 +200,15 @@ export function MemberQualificationsModal({
                 <AlertTriangle className="h-4 w-4" />
                 Checkout Compliance
               </h4>
-              <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg border">
+              <div className="flex items-center gap-4 p-3 bg-base-200/50 rounded-lg border">
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Missed Checkouts</p>
-                  <p className="text-2xl font-bold">
-                    {member.missedCheckoutCount ?? 0}
-                  </p>
+                  <p className="text-sm text-base-content/60">Missed Checkouts</p>
+                  <p className="text-2xl font-bold">{member.missedCheckoutCount ?? 0}</p>
                 </div>
                 {member.lastMissedCheckout && (
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Last Missed</p>
-                    <p className="text-sm font-medium">
-                      {formatDate(member.lastMissedCheckout)}
-                    </p>
+                    <p className="text-sm text-base-content/60">Last Missed</p>
+                    <p className="text-sm font-medium">{formatDate(member.lastMissedCheckout)}</p>
                   </div>
                 )}
                 {(member.missedCheckoutCount ?? 0) > 3 && (
@@ -241,8 +226,7 @@ export function MemberQualificationsModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Grant Qualification</AlertDialogTitle>
             <AlertDialogDescription>
-              Select a qualification to grant to {member.rank} {member.firstName}{' '}
-              {member.lastName}
+              Select a qualification to grant to {member.rank} {member.firstName} {member.lastName}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -298,9 +282,7 @@ export function MemberQualificationsModal({
               onClick={handleGrant}
               disabled={!grantTypeId || grantQualification.isPending}
             >
-              {grantQualification.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
+              {grantQualification.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Grant
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -313,8 +295,7 @@ export function MemberQualificationsModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke Qualification?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will revoke the qualification from the member. This action cannot be
-              undone.
+              This will revoke the qualification from the member. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -333,11 +314,9 @@ export function MemberQualificationsModal({
             <AlertDialogAction
               onClick={handleRevoke}
               disabled={revokeQualification.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
-              {revokeQualification.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
+              {revokeQualification.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Revoke
             </AlertDialogAction>
           </AlertDialogFooter>

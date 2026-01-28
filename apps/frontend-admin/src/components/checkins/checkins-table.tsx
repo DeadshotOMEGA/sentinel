@@ -55,7 +55,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           return (
             <div className="text-sm">
               <div className="font-medium">{date.toLocaleDateString()}</div>
-              <div className="text-muted-foreground">{date.toLocaleTimeString()}</div>
+              <div className="text-base-content/60">{date.toLocaleTimeString()}</div>
             </div>
           )
         },
@@ -65,13 +65,13 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         header: 'Member',
         cell: (info) => {
           const member = info.row.original.member
-          if (!member) return <span className="text-muted-foreground">Unknown</span>
+          if (!member) return <span className="text-base-content/60">Unknown</span>
           return (
             <div className="text-sm">
               <div className="font-medium">
                 {member.rank} {member.firstName} {member.lastName}
               </div>
-              <div className="text-muted-foreground">{member.serviceNumber}</div>
+              <div className="text-base-content/60">{member.serviceNumber}</div>
             </div>
           )
         },
@@ -114,7 +114,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         header: 'Status',
         cell: (info) => {
           const flagged = info.getValue()
-          if (!flagged) return <span className="text-muted-foreground">Normal</span>
+          if (!flagged) return <span className="text-base-content/60">Normal</span>
           return (
             <Badge variant="destructive" className="text-xs">
               Flagged
@@ -136,27 +136,27 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
 
   if (isError) {
     return (
-      <div className="bg-card p-6 rounded-lg border shadow-sm">
-        <p className="text-sm text-destructive">Failed to load check-ins</p>
+      <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
+        <p className="text-sm text-error">Failed to load check-ins</p>
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-lg border shadow-sm">
+      <div className="bg-base-100 rounded-lg border shadow-sm">
         <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
+          <div className="h-10 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-card rounded-lg border shadow-sm">
+    <div className="bg-base-100 rounded-lg border shadow-sm">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -184,10 +184,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-muted-foreground"
-              >
+              <TableCell colSpan={columns.length} className="h-24 text-center text-base-content/60">
                 No check-ins found
               </TableCell>
             </TableRow>
@@ -198,7 +195,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
       {/* Pagination Controls */}
       <div className="flex items-center justify-between px-4 py-4 border-t">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
+          <span className="text-sm text-base-content/60">Rows per page</span>
           <Select value={filters.limit.toString()} onValueChange={(_value) => onPageChange(1)}>
             <SelectTrigger className="w-20">
               <SelectValue />
@@ -212,7 +209,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-base-content/60">
             Page {data?.page ?? 1} of {data?.totalPages ?? 1}
           </span>
 

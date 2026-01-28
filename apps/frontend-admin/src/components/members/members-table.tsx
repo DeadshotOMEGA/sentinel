@@ -38,15 +38,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Pencil,
-  Trash2,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  X,
-  Shield,
-} from 'lucide-react'
+import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, X, Shield } from 'lucide-react'
 // import { useAuthStore } from '@/store/auth-store' // Re-enable when auth is implemented
 import { cn } from '@/lib/utils'
 import type { MemberResponse } from '@sentinel/contracts'
@@ -103,7 +95,9 @@ export function MembersTable({ filters }: MembersTableProps) {
   // Rank order map for proper military rank sorting (higher displayOrder = more senior)
   const rankOrderMap = useMemo(() => {
     if (!enums?.rankDetails) return new Map<string, number>()
-    return new Map(enums.rankDetails.map((r: { code: string; displayOrder: number }) => [r.code, r.displayOrder]))
+    return new Map(
+      enums.rankDetails.map((r: { code: string; displayOrder: number }) => [r.code, r.displayOrder])
+    )
   }, [enums])
 
   // Get selected members - keys are member IDs since we use getRowId
@@ -266,7 +260,7 @@ export function MembersTable({ filters }: MembersTableProps) {
         ),
         cell: (info): React.ReactNode => {
           const statusId = info.getValue() as string | null | undefined
-          if (!statusId) return <span className="text-muted-foreground">N/A</span>
+          if (!statusId) return <span className="text-base-content/60">N/A</span>
           const statusName = memberStatusMap.get(statusId)
           return <Badge variant="default">{String(statusName ?? 'Unknown')}</Badge>
         },
@@ -292,7 +286,7 @@ export function MembersTable({ filters }: MembersTableProps) {
         ),
         cell: (info) => {
           const badgeId = info.getValue()
-          if (!badgeId) return <span className="text-muted-foreground">No Badge</span>
+          if (!badgeId) return <span className="text-base-content/60">No Badge</span>
           return <span className="font-mono text-sm">{badgeId.slice(0, 8)}...</span>
         },
         enableSorting: true,
@@ -304,7 +298,7 @@ export function MembersTable({ filters }: MembersTableProps) {
           const member = info.row.original
           const quals = member.qualifications
           if (!quals || quals.length === 0) {
-            return <span className="text-muted-foreground">—</span>
+            return <span className="text-base-content/60">—</span>
           }
           return (
             <div className="flex flex-wrap gap-1">
@@ -341,7 +335,7 @@ export function MembersTable({ filters }: MembersTableProps) {
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDeletingMemberId(member.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <Trash2 className="h-4 w-4 text-error" />
                 </Button>
               </div>
             )
@@ -373,20 +367,20 @@ export function MembersTable({ filters }: MembersTableProps) {
 
   if (isError) {
     return (
-      <div className="bg-card p-6 rounded-none border shadow-none">
-        <p className="text-sm text-destructive">Failed to load members</p>
+      <div className="bg-base-100 p-6 rounded-none border shadow-none">
+        <p className="text-sm text-error">Failed to load members</p>
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-none border shadow-none">
+      <div className="bg-base-100 rounded-none border shadow-none">
         <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
+          <div className="h-10 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
         </div>
       </div>
     )
@@ -394,12 +388,14 @@ export function MembersTable({ filters }: MembersTableProps) {
 
   return (
     <>
-      <div className="bg-card rounded-none border shadow-none">
+      <div className="bg-base-100 rounded-none border shadow-none">
         {/* Bulk Actions Toolbar - always rendered to prevent layout shift */}
         <div
           className={cn(
             'flex items-center justify-between px-4 py-3 border-b transition-all duration-200',
-            selectedCount > 0 ? 'bg-muted/50 opacity-100' : 'opacity-0 h-0 py-0 overflow-hidden border-b-0'
+            selectedCount > 0
+              ? 'bg-base-200/50 opacity-100'
+              : 'opacity-0 h-0 py-0 overflow-hidden border-b-0'
           )}
         >
           <div className="flex items-center gap-4">
@@ -410,7 +406,7 @@ export function MembersTable({ filters }: MembersTableProps) {
               variant="ghost"
               size="sm"
               onClick={() => setRowSelection({})}
-              className="text-muted-foreground"
+              className="text-base-content/60"
             >
               <X className="h-4 w-4 mr-1" />
               Clear selection
@@ -438,11 +434,7 @@ export function MembersTable({ filters }: MembersTableProps) {
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit {selectedCount > 1 ? `(${selectedCount})` : ''}
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowBulkDeleteDialog(true)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteDialog(true)}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete {selectedCount > 1 ? `(${selectedCount})` : ''}
               </Button>
@@ -470,7 +462,7 @@ export function MembersTable({ filters }: MembersTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
-                  className={row.getIsSelected() ? 'bg-muted/50' : ''}
+                  className={row.getIsSelected() ? 'bg-base-200/50' : ''}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -483,7 +475,7 @@ export function MembersTable({ filters }: MembersTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
+                  className="h-24 text-center text-base-content/60"
                 >
                   No members found
                 </TableCell>
@@ -494,7 +486,7 @@ export function MembersTable({ filters }: MembersTableProps) {
 
         {/* Footer with total count */}
         <div className="flex items-center justify-end px-4 py-3 border-t">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-base-content/60">
             {data?.total ?? 0} {(data?.total ?? 0) === 1 ? 'member' : 'members'}
           </span>
         </div>
@@ -538,7 +530,7 @@ export function MembersTable({ filters }: MembersTableProps) {
             <AlertDialogAction
               onClick={handleBulkDelete}
               disabled={isBulkDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
               {isBulkDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>

@@ -146,7 +146,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             {/* Service Number */}
             <div>
               <Label htmlFor="serviceNumber">
-                Service Number <span className="text-destructive">*</span>
+                Service Number <span className="text-error">*</span>
               </Label>
               <Input
                 id="serviceNumber"
@@ -154,14 +154,14 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 placeholder="e.g., V123456"
               />
               {errors.serviceNumber && (
-                <p className="text-sm text-destructive mt-1">{errors.serviceNumber.message}</p>
+                <p className="text-sm text-error mt-1">{errors.serviceNumber.message}</p>
               )}
             </div>
 
             {/* Rank */}
             <div>
               <Label htmlFor="rank">
-                Rank <span className="text-destructive">*</span>
+                Rank <span className="text-error">*</span>
               </Label>
               <Select
                 value={selectedRank}
@@ -178,15 +178,13 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                   ))}
                 </SelectContent>
               </Select>
-              {errors.rank && (
-                <p className="text-sm text-destructive mt-1">{errors.rank.message}</p>
-              )}
+              {errors.rank && <p className="text-sm text-error mt-1">{errors.rank.message}</p>}
             </div>
 
             {/* First Name */}
             <div>
               <Label htmlFor="firstName">
-                First Name <span className="text-destructive">*</span>
+                First Name <span className="text-error">*</span>
               </Label>
               <Input
                 id="firstName"
@@ -194,14 +192,14 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 placeholder="John"
               />
               {errors.firstName && (
-                <p className="text-sm text-destructive mt-1">{errors.firstName.message}</p>
+                <p className="text-sm text-error mt-1">{errors.firstName.message}</p>
               )}
             </div>
 
             {/* Last Name */}
             <div>
               <Label htmlFor="lastName">
-                Last Name <span className="text-destructive">*</span>
+                Last Name <span className="text-error">*</span>
               </Label>
               <Input
                 id="lastName"
@@ -209,7 +207,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 placeholder="Doe"
               />
               {errors.lastName && (
-                <p className="text-sm text-destructive mt-1">{errors.lastName.message}</p>
+                <p className="text-sm text-error mt-1">{errors.lastName.message}</p>
               )}
             </div>
 
@@ -227,7 +225,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             {/* Division */}
             <div>
               <Label htmlFor="divisionId">
-                Division <span className="text-destructive">*</span>
+                Division <span className="text-error">*</span>
               </Label>
               <Select
                 value={selectedDivisionId}
@@ -245,7 +243,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 </SelectContent>
               </Select>
               {errors.divisionId && (
-                <p className="text-sm text-destructive mt-1">{errors.divisionId.message}</p>
+                <p className="text-sm text-error mt-1">{errors.divisionId.message}</p>
               )}
             </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react'
 import { useImportPreview, useExecuteImport } from '@/hooks/use-members'
 import type { PreviewImportResponse } from '@sentinel/contracts'
 import {
@@ -23,7 +24,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Loader2, Upload, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, FolderPlus } from 'lucide-react'
+import {
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  FolderPlus,
+} from 'lucide-react'
 
 interface NominalRollImportDialogProps {
   open: boolean
@@ -44,17 +52,23 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     errors: true,
     divisions: true,
   })
-  const [result, setResult] = useState<{ added: number; updated: number; deactivated: number; excluded: number; divisionsCreated: number } | null>(null)
+  const [result, setResult] = useState<{
+    added: number
+    updated: number
+    deactivated: number
+    excluded: number
+    divisionsCreated: number
+  } | null>(null)
 
   const importPreview = useImportPreview()
   const executeImport = useExecuteImport()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<any>): void => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
+    const reader = new (window as any).FileReader()
+    reader.onload = (event: any) => {
       const text = event.target?.result as string
       setCsvText(text)
     }
@@ -110,7 +124,13 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     setExcludedErrorRows(new Set())
     setCreateDivisions(true)
     setResult(null)
-    setExpandedSections({ toAdd: true, toUpdate: false, toReview: false, errors: true, divisions: true })
+    setExpandedSections({
+      toAdd: true,
+      toUpdate: false,
+      toReview: false,
+      errors: true,
+      divisions: true,
+    })
     onOpenChange(false)
   }
 
@@ -122,7 +142,13 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     setExcludedErrorRows(new Set())
     setCreateDivisions(true)
     setResult(null)
-    setExpandedSections({ toAdd: true, toUpdate: false, toReview: false, errors: true, divisions: true })
+    setExpandedSections({
+      toAdd: true,
+      toUpdate: false,
+      toReview: false,
+      errors: true,
+      divisions: true,
+    })
   }
 
   const toggleDeactivate = (id: string) => {
@@ -150,18 +176,19 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
   }
 
   // Separate excludable errors from blocking errors
-  const excludableErrors = preview?.errors.filter(e => e.excludable) ?? []
-  const blockingErrors = preview?.errors.filter(e => !e.excludable) ?? []
+  const excludableErrors = preview?.errors.filter((e) => e.excludable) ?? []
+  const blockingErrors = preview?.errors.filter((e) => !e.excludable) ?? []
   const hasDivisionsToCreate = (preview?.divisionsToCreate?.length ?? 0) > 0
 
   // Can proceed if: no blocking errors AND all excludable errors are selected for exclusion
   // AND either no divisions to create OR user has agreed to create them
-  const allExcludableErrorsSelected = excludableErrors.length > 0 &&
-    excludableErrors.every(e => excludedErrorRows.has(e.row))
+  const allExcludableErrorsSelected =
+    excludableErrors.length > 0 && excludableErrors.every((e) => excludedErrorRows.has(e.row))
   const hasBlockingErrors = blockingErrors.length > 0
-  const hasUnresolvedErrors = excludableErrors.some(e => !excludedErrorRows.has(e.row))
+  const hasUnresolvedErrors = excludableErrors.some((e) => !excludedErrorRows.has(e.row))
   const divisionsOk = !hasDivisionsToCreate || createDivisions
-  const canProceed = !hasBlockingErrors && (!hasUnresolvedErrors || excludableErrors.length === 0) && divisionsOk
+  const canProceed =
+    !hasBlockingErrors && (!hasUnresolvedErrors || excludableErrors.length === 0) && divisionsOk
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -191,7 +218,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 disabled={importPreview.isPending}
               />
               {csvText && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-base-content/60">
                   File loaded ({csvText.split('\n').length - 1} rows)
                 </p>
               )}
@@ -254,8 +281,9 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                       </TableBody>
                     </Table>
                     {!createDivisions && (
-                      <p className="text-sm text-amber-600 mt-3">
-                        ⚠ Import will skip members in these divisions. Check the box above to create them.
+                      <p className="text-sm text-warning mt-3">
+                        ⚠ Import will skip members in these divisions. Check the box above to create
+                        them.
                       </p>
                     )}
                   </div>
@@ -265,17 +293,17 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
 
             {/* Errors Section */}
             {preview.errors.length > 0 && (
-              <Card className="p-4 border-destructive">
+              <Card className="p-4 border-error">
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('errors')}
                 >
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-destructive" />
-                    <h3 className="font-semibold text-destructive">
+                    <AlertCircle className="h-5 w-5 text-error" />
+                    <h3 className="font-semibold text-error">
                       Errors: {preview.errors.length}
                       {excludedErrorRows.size > 0 && (
-                        <span className="text-muted-foreground font-normal ml-2">
+                        <span className="text-base-content/60 font-normal ml-2">
                           ({excludedErrorRows.size} will be excluded)
                         </span>
                       )}
@@ -290,14 +318,16 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 {expandedSections.errors && (
                   <div className="mt-4">
                     {excludableErrors.length > 0 && (
-                      <p className="text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-base-content/60 mb-3">
                         Select rows to exclude from import, or fix the CSV and re-upload:
                       </p>
                     )}
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          {excludableErrors.length > 0 && <TableHead className="w-12">Exclude</TableHead>}
+                          {excludableErrors.length > 0 && (
+                            <TableHead className="w-12">Exclude</TableHead>
+                          )}
                           <TableHead className="w-16">Row</TableHead>
                           <TableHead>Member</TableHead>
                           <TableHead>Field</TableHead>
@@ -308,12 +338,17 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                         {preview.errors.map((error, idx) => {
                           const context = error.context
                           const memberDisplay = context
-                            ? [context.rank, context.firstName, context.lastName].filter(Boolean).join(' ') || '(unknown)'
+                            ? [context.rank, context.firstName, context.lastName]
+                                .filter(Boolean)
+                                .join(' ') || '(unknown)'
                             : '(unknown)'
                           const isExcluded = excludedErrorRows.has(error.row)
 
                           return (
-                            <TableRow key={idx} className={isExcluded ? 'opacity-50 line-through' : ''}>
+                            <TableRow
+                              key={idx}
+                              className={isExcluded ? 'opacity-50 line-through' : ''}
+                            >
                               {excludableErrors.length > 0 && (
                                 <TableCell>
                                   {error.excludable && (
@@ -334,14 +369,14 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                                   {error.field}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-destructive">{error.message}</TableCell>
+                              <TableCell className="text-error">{error.message}</TableCell>
                             </TableRow>
                           )
                         })}
                       </TableBody>
                     </Table>
                     {allExcludableErrorsSelected && excludableErrors.length > 0 && (
-                      <p className="text-sm text-green-600 mt-3">
+                      <p className="text-sm text-success mt-3">
                         ✓ All errors will be excluded. You can proceed with the import.
                       </p>
                     )}
@@ -477,7 +512,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 </div>
                 {expandedSections.toReview && (
                   <div className="mt-4 max-h-60 overflow-y-auto">
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-sm text-base-content/60 mb-2">
                       Select members to deactivate (not found in CSV):
                     </p>
                     <Table>
@@ -519,7 +554,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
         {/* Step 3: Complete */}
         {step === 3 && result && (
           <div className="space-y-4 text-center py-8">
-            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
+            <CheckCircle2 className="h-16 w-16 text-success mx-auto" />
             <h3 className="text-2xl font-semibold">Import Complete!</h3>
             <div className="flex justify-center flex-wrap gap-6 text-lg">
               {result.divisionsCreated > 0 && (
@@ -529,20 +564,20 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 </div>
               )}
               <div>
-                <span className="font-semibold text-green-600">{result.added}</span> added
+                <span className="font-semibold text-success">{result.added}</span> added
               </div>
               <div>
                 <span className="font-semibold text-blue-600">{result.updated}</span> updated
               </div>
               {result.deactivated > 0 && (
                 <div>
-                  <span className="font-semibold text-yellow-600">{result.deactivated}</span>{' '}
+                  <span className="font-semibold text-warning">{result.deactivated}</span>{' '}
                   deactivated
                 </div>
               )}
               {result.excluded > 0 && (
                 <div>
-                  <span className="font-semibold text-muted-foreground">{result.excluded}</span>{' '}
+                  <span className="font-semibold text-base-content/60">{result.excluded}</span>{' '}
                   excluded
                 </div>
               )}
@@ -568,10 +603,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
               <Button variant="outline" onClick={() => setStep(1)}>
                 Back
               </Button>
-              <Button
-                onClick={handleExecute}
-                disabled={!canProceed || executeImport.isPending}
-              >
+              <Button onClick={handleExecute} disabled={!canProceed || executeImport.isPending}>
                 {executeImport.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {excludedErrorRows.size > 0
                   ? `Execute Import (Excluding ${excludedErrorRows.size} Row${excludedErrorRows.size > 1 ? 's' : ''})`
