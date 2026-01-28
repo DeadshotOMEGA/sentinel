@@ -13,7 +13,8 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate:member-types": "tsx scripts/migrate-member-types.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -23,7 +24,9 @@
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
+    "dotenv": "^17.2.3",
     "prisma": "^7.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

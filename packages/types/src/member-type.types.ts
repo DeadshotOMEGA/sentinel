@@ -5,7 +5,8 @@ export interface MemberTypeEnum {
   code: string
   name: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -14,12 +15,14 @@ export interface CreateMemberTypeInput {
   code: string
   name: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }
 
 export interface UpdateMemberTypeInput {
   code?: string
   name?: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }

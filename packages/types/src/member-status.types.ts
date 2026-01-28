@@ -5,7 +5,8 @@ export interface MemberStatusEnum {
   code: string
   name: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -14,12 +15,14 @@ export interface CreateMemberStatusInput {
   code: string
   name: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }
 
 export interface UpdateMemberStatusInput {
   code?: string
   name?: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }

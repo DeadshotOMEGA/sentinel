@@ -235,6 +235,7 @@ exports.Prisma.EventScalarFieldEnum = {
 exports.Prisma.MemberScalarFieldEnum = {
   id: 'id',
   serviceNumber: 'serviceNumber',
+  rankId: 'rankId',
   rank: 'rank',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -256,15 +257,18 @@ exports.Prisma.MemberScalarFieldEnum = {
   homePhone: 'homePhone',
   notes: 'notes',
   contract_start: 'contract_start',
-  contract_end: 'contract_end'
+  contract_end: 'contract_end',
+  missedCheckoutCount: 'missedCheckoutCount',
+  lastMissedCheckout: 'lastMissedCheckout'
 };
 
 exports.Prisma.TagScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  color: 'color',
   description: 'description',
   displayOrder: 'displayOrder',
+  chipVariant: 'chipVariant',
+  chipColor: 'chipColor',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -401,7 +405,8 @@ exports.Prisma.MemberStatusScalarFieldEnum = {
   code: 'code',
   name: 'name',
   description: 'description',
-  color: 'color',
+  chipVariant: 'chipVariant',
+  chipColor: 'chipColor',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -411,7 +416,8 @@ exports.Prisma.MemberTypeScalarFieldEnum = {
   code: 'code',
   name: 'name',
   description: 'description',
-  color: 'color',
+  chipVariant: 'chipVariant',
+  chipColor: 'chipColor',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -421,7 +427,8 @@ exports.Prisma.VisitTypeScalarFieldEnum = {
   code: 'code',
   name: 'name',
   description: 'description',
-  color: 'color',
+  chipVariant: 'chipVariant',
+  chipColor: 'chipColor',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -431,7 +438,8 @@ exports.Prisma.BadgeStatusScalarFieldEnum = {
   code: 'code',
   name: 'name',
   description: 'description',
-  color: 'color',
+  chipVariant: 'chipVariant',
+  chipColor: 'chipColor',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -444,6 +452,19 @@ exports.Prisma.ListItemScalarFieldEnum = {
   displayOrder: 'displayOrder',
   description: 'description',
   isSystem: 'isSystem',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RankScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  branch: 'branch',
+  category: 'category',
+  displayOrder: 'displayOrder',
+  isActive: 'isActive',
+  replacedBy: 'replacedBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -510,6 +531,133 @@ exports.Prisma.AlertConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.QualificationTypeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  canReceiveLockup: 'canReceiveLockup',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MemberQualificationScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  qualificationTypeId: 'qualificationTypeId',
+  status: 'status',
+  grantedAt: 'grantedAt',
+  grantedBy: 'grantedBy',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  revokedBy: 'revokedBy',
+  revokeReason: 'revokeReason',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DutyRoleScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  roleType: 'roleType',
+  scheduleType: 'scheduleType',
+  activeDays: 'activeDays',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DutyPositionScalarFieldEnum = {
+  id: 'id',
+  dutyRoleId: 'dutyRoleId',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  maxSlots: 'maxSlots',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WeeklyScheduleScalarFieldEnum = {
+  id: 'id',
+  dutyRoleId: 'dutyRoleId',
+  weekStartDate: 'weekStartDate',
+  status: 'status',
+  createdBy: 'createdBy',
+  publishedAt: 'publishedAt',
+  publishedBy: 'publishedBy',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ScheduleAssignmentScalarFieldEnum = {
+  id: 'id',
+  scheduleId: 'scheduleId',
+  dutyPositionId: 'dutyPositionId',
+  memberId: 'memberId',
+  status: 'status',
+  confirmedAt: 'confirmedAt',
+  releasedAt: 'releasedAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LockupStatusScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  currentHolderId: 'currentHolderId',
+  acquiredAt: 'acquiredAt',
+  buildingStatus: 'buildingStatus',
+  securedAt: 'securedAt',
+  securedBy: 'securedBy',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LockupTransferScalarFieldEnum = {
+  id: 'id',
+  lockupStatusId: 'lockupStatusId',
+  fromMemberId: 'fromMemberId',
+  toMemberId: 'toMemberId',
+  transferredAt: 'transferredAt',
+  reason: 'reason',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LockupExecutionScalarFieldEnum = {
+  id: 'id',
+  lockupStatusId: 'lockupStatusId',
+  executedBy: 'executedBy',
+  executedAt: 'executedAt',
+  membersCheckedOut: 'membersCheckedOut',
+  visitorsCheckedOut: 'visitorsCheckedOut',
+  totalCheckedOut: 'totalCheckedOut',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MissedCheckoutScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  date: 'date',
+  originalCheckinAt: 'originalCheckinAt',
+  forcedCheckoutAt: 'forcedCheckoutAt',
+  resolvedBy: 'resolvedBy',
+  resolvedByAdminId: 'resolvedByAdminId',
+  lockupExecutionId: 'lockupExecutionId',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -568,12 +716,23 @@ exports.Prisma.ModelName = {
   VisitType: 'VisitType',
   BadgeStatus: 'BadgeStatus',
   ListItem: 'ListItem',
+  Rank: 'Rank',
   User: 'User',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
   Setting: 'Setting',
-  AlertConfig: 'AlertConfig'
+  AlertConfig: 'AlertConfig',
+  QualificationType: 'QualificationType',
+  MemberQualification: 'MemberQualification',
+  DutyRole: 'DutyRole',
+  DutyPosition: 'DutyPosition',
+  WeeklySchedule: 'WeeklySchedule',
+  ScheduleAssignment: 'ScheduleAssignment',
+  LockupStatus: 'LockupStatus',
+  LockupTransfer: 'LockupTransfer',
+  LockupExecution: 'LockupExecution',
+  MissedCheckout: 'MissedCheckout'
 };
 
 /**

@@ -4,7 +4,7 @@ import type { Badge } from './badge.types'
 import type { Tag } from './tag.types'
 
 export type MemberStatus = 'active' | 'inactive' | 'transferred' | 'retired' | 'pending_review'
-export type MemberType = 'reserve' | 'regular' | 'civilian' | 'cadet'
+export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force'
 
 export interface Member {
   id: string
@@ -18,6 +18,8 @@ export interface Member {
   mess?: string
   moc?: string
   memberType: MemberType
+  memberTypeId?: string
+  memberStatusId?: string
   classDetails?: string
   notes?: string
   contractStart?: Date
@@ -27,6 +29,8 @@ export interface Member {
   homePhone?: string
   mobilePhone?: string
   badgeId?: string
+  missedCheckoutCount?: number
+  lastMissedCheckout?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -41,10 +45,16 @@ export interface Division {
   updatedAt: Date | null
 }
 
+export interface QualificationSummary {
+  code: string
+  name: string
+}
+
 export interface MemberWithDivision extends Member {
   division: Division
   badge?: Badge
   tags?: Tag[]
+  qualifications?: QualificationSummary[]
 }
 
 export interface CreateMemberInput {
@@ -58,6 +68,7 @@ export interface CreateMemberInput {
   mess?: string
   moc?: string
   memberType: MemberType
+  memberTypeId?: string
   classDetails?: string
   status?: MemberStatus
   email?: string
@@ -77,6 +88,8 @@ export interface UpdateMemberInput {
   mess?: string
   moc?: string
   memberType?: MemberType
+  memberTypeId?: string
+  memberStatusId?: string
   classDetails?: string
   status?: MemberStatus
   email?: string

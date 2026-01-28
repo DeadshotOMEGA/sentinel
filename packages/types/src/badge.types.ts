@@ -60,7 +60,8 @@ export interface BadgeStatusEnum {
   name: string
   code: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -69,12 +70,14 @@ export interface CreateBadgeStatusInput {
   name: string
   code: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }
 
 export interface UpdateBadgeStatusInput {
   name?: string
   code?: string
   description?: string
-  color?: string
+  chipVariant?: string
+  chipColor?: string
 }
