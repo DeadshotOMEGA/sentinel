@@ -9,7 +9,7 @@ export function useEnums() {
     queryFn: async () => {
       // Fetch all enum types in parallel
       const [ranksRes, memberStatusesRes, memberTypesRes] = await Promise.all([
-        apiClient.lists.getListItems({ params: { listType: 'rank' } }),
+        apiClient.ranks.list({ query: { active: 'true' } }),
         apiClient.enums.memberStatuses.getMemberStatuses(),
         apiClient.enums.memberTypes.getMemberTypes(),
       ])
@@ -25,7 +25,8 @@ export function useEnums() {
       }
 
       return {
-        ranks: ranksRes.body.items.map((item) => item.name),
+        ranks: ranksRes.body.map((rank) => rank.code),
+        rankDetails: ranksRes.body, // Full rank objects with displayOrder for sorting
         memberStatuses: memberStatusesRes.body.memberStatuses,
         memberTypes: memberTypesRes.body.memberTypes,
       }

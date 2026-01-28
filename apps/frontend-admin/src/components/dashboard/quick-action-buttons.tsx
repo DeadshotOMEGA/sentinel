@@ -1,11 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { UserPlus, Users, FileText, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/auth-store'
+import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 
 export function QuickActionButtons() {
   const user = useAuthStore((state) => state.user)
+  const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
 
   // Check user role for permissions
   const canManualCheckin = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
@@ -16,10 +19,7 @@ export function QuickActionButtons() {
       <Button
         variant="default"
         disabled={!canManualCheckin}
-        onClick={() => {
-          // TODO: Open manual check-in modal
-          console.log('Manual check-in clicked')
-        }}
+        onClick={() => setIsCheckinModalOpen(true)}
       >
         <UserPlus className="h-4 w-4 mr-2" />
         Manual Check-in
@@ -58,6 +58,8 @@ export function QuickActionButtons() {
         <Lock className="h-4 w-4 mr-2" />
         Execute Lockup
       </Button>
+
+      <ManualCheckinModal open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen} />
     </div>
   )
 }

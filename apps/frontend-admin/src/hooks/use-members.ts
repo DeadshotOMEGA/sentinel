@@ -11,6 +11,7 @@ interface MembersQueryParams {
   rank?: string
   status?: string
   search?: string
+  qualificationCode?: string
 }
 
 export function useMembers(params: MembersQueryParams = {}) {
@@ -25,6 +26,7 @@ export function useMembers(params: MembersQueryParams = {}) {
           rank: params.rank,
           status: params.status,
           search: params.search,
+          qualificationCode: params.qualificationCode,
         },
       })
       if (response.status !== 200) {
@@ -106,6 +108,45 @@ export function useDeleteMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
+    },
+  })
+}
+
+export function useImportPreview() {
+  return useMutation({
+    mutationFn: async (csvText: string) => {
+      const response = await apiClient.members.previewImport({
+        body: { csvText },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to preview import')
+      }
+      return response.body
+    },
+  })
+}
+
+export function useExecuteImport() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: {
+      csvText: string
+      deactivateIds?: string[]
+      excludeRows?: number[]
+      createDivisions?: boolean
+    }) => {
+      const response = await apiClient.members.executeImport({
+        body: data,
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to execute import')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+      queryClient.invalidateQueries({ queryKey: ['divisions'] })
     },
   })
 }

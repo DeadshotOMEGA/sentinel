@@ -9,6 +9,9 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/members', label: 'Members' },
   { href: '/checkins', label: 'Check-ins' },
+  { href: '/schedules', label: 'Schedules' },
+  { href: '/database', label: 'Database' },
+  { href: '/settings', label: 'Settings' },
 ];
 
 export function TopNav() {

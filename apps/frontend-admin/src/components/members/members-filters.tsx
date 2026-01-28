@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
+import { useQualificationTypes } from '@/hooks/use-qualifications'
 import { X, Search } from 'lucide-react'
 
 interface MembersFiltersProps {
@@ -21,6 +22,7 @@ interface MembersFiltersProps {
     rank?: string
     status?: string
     search?: string
+    qualificationCode?: string
   }
   onFilterChange: (filters: Partial<MembersFiltersProps['filters']>) => void
 }
@@ -28,6 +30,7 @@ interface MembersFiltersProps {
 export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps) {
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
+  const { data: qualificationTypes } = useQualificationTypes()
   const [searchInput, setSearchInput] = useState(filters.search ?? '')
 
   // Debounce search input
@@ -48,14 +51,15 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
       rank: undefined,
       status: undefined,
       search: undefined,
+      qualificationCode: undefined,
     })
   }
 
-  const hasActiveFilters = filters.divisionId || filters.rank || filters.status || filters.search
+  const hasActiveFilters = filters.divisionId || filters.rank || filters.status || filters.search || filters.qualificationCode
 
   return (
-    <div className="bg-card p-4 rounded-lg border shadow-sm mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="p-4 rounded-lg border-none mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         {/* Search */}
         <div className="md:col-span-2">
           <Label htmlFor="search">Search</Label>
@@ -131,6 +135,29 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Qualification Filter */}
+        <div>
+          <Label htmlFor="qualification">Qualification</Label>
+          <Select
+            value={filters.qualificationCode ?? 'all'}
+            onValueChange={(value) =>
+              onFilterChange({ qualificationCode: value === 'all' ? undefined : value })
+            }
+          >
+            <SelectTrigger id="qualification">
+              <SelectValue placeholder="All Qualifications" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Qualifications</SelectItem>
+              {qualificationTypes?.data.map((type) => (
+                <SelectItem key={type.id} value={type.code}>
+                  {type.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateCheckin } from '@/hooks/use-checkins'
 import { useMembers } from '@/hooks/use-members'
+import { useCheckoutOptions } from '@/hooks/use-lockup'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertTriangle } from 'lucide-react'
+import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import type { CreateCheckinInput } from '@sentinel/contracts'
 
 interface ManualCheckinModalProps {
@@ -36,6 +39,8 @@ interface FormData {
 export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalProps) {
   const { data: membersData } = useMembers({ limit: 100 }) // Get all members for dropdown
   const createCheckin = useCreateCheckin()
+  const [showLockupOptions, setShowLockupOptions] = useState(false)
+  const [pendingCheckout, setPendingCheckout] = useState<FormData | null>(null)
 
   const {
     handleSubmit,
@@ -53,7 +58,29 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   const selectedMemberId = watch('memberId')
   const selectedDirection = watch('direction')
 
+  // Fetch checkout options when checking out
+  const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
+    selectedDirection === 'OUT' && selectedMemberId ? selectedMemberId : ''
+  )
+
+  // Get selected member details for display
+  const selectedMember = membersData?.members.find((m) => m.id === selectedMemberId)
+  const memberName = selectedMember
+    ? `${selectedMember.rank} ${selectedMember.firstName} ${selectedMember.lastName}`
+    : ''
+
+  // Check if member holds lockup and can't checkout normally
+  const holdsLockup = checkoutOptions?.holdsLockup ?? false
+  const canCheckoutNormally = checkoutOptions?.canCheckout ?? true
+
   const onSubmit = async (data: FormData) => {
+    // If checking out and member holds lockup, show lockup options
+    if (data.direction === 'OUT' && holdsLockup && !canCheckoutNormally) {
+      setPendingCheckout(data)
+      setShowLockupOptions(true)
+      return
+    }
+
     try {
       const checkinData: CreateCheckinInput = {
         memberId: data.memberId,
@@ -69,6 +96,33 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
       console.error('Failed to create manual check-in:', error)
     }
   }
+
+  const handleLockupComplete = async () => {
+    // After lockup handled, complete the checkout
+    if (pendingCheckout) {
+      try {
+        const checkinData: CreateCheckinInput = {
+          memberId: pendingCheckout.memberId,
+          direction: pendingCheckout.direction,
+          kioskId: 'ADMIN_MANUAL',
+          method: 'manual',
+        }
+        await createCheckin.mutateAsync(checkinData)
+      } catch (error) {
+        console.error('Failed to complete checkout after lockup:', error)
+      }
+    }
+    setPendingCheckout(null)
+    reset()
+    onOpenChange(false)
+  }
+
+  // Reset pending checkout when modal closes
+  useEffect(() => {
+    if (!open) {
+      setPendingCheckout(null)
+    }
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -130,6 +184,19 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
             )}
           </div>
 
+          {/* Lockup Warning */}
+          {selectedDirection === 'OUT' && selectedMemberId && holdsLockup && (
+            <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-yellow-700">Lockup Holder</p>
+                <p className="text-yellow-600">
+                  This member holds lockup responsibility. They must transfer lockup or lock up the building before checking out.
+                </p>
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
             <Button
               type="button"
@@ -139,13 +206,30 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !selectedMemberId}>
-              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Check-in
+            <Button
+              type="submit"
+              disabled={isSubmitting || !selectedMemberId || loadingCheckoutOptions}
+            >
+              {(isSubmitting || loadingCheckoutOptions) && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              {selectedDirection === 'OUT' && holdsLockup ? 'Handle Lockup & Check Out' : 'Create Check-in'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Lockup Options Modal */}
+      {checkoutOptions && (
+        <LockupOptionsModal
+          open={showLockupOptions}
+          onOpenChange={setShowLockupOptions}
+          memberId={selectedMemberId}
+          memberName={memberName}
+          checkoutOptions={checkoutOptions}
+          onCheckoutComplete={handleLockupComplete}
+        />
+      )}
     </Dialog>
   )
 }
