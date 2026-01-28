@@ -31,7 +31,7 @@ Applies when creating documentation in: `docs/domains/`
 
 **When documenting domain feature**:
 
-1. Verify it's specific to ONE business area (authentication, personnel, checkin, events)
+1. Verify it's specific to ONE business area (authentication, personnel, checkin, events, duty-roles, lockup)
 2. Choose appropriate domain subdirectory
 3. Use type-prefixed filename
 4. Follow Diátaxis classification (tutorial, howto, reference, explanation)
@@ -46,7 +46,7 @@ Applies when creating documentation in: `docs/domains/`
 
 ## Quick Reference
 
-**Subdirectories**: `authentication/`, `personnel/`, `checkin/`, `events/`
+**Subdirectories**: `authentication/`, `personnel/`, `checkin/`, `events/`, `duty-roles/`, `lockup/`
 
 **Decision Guide**:
 

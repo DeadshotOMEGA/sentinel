@@ -58,4 +58,4 @@ Applies when creating or reviewing: `docs/plans/active/`
 
 **Current Active Plans**:
 
-- [Phase 4 Completion](2026-01-23-phase-4-completion.md) - Backend production readiness (3-5 days)
+- _No active plans_

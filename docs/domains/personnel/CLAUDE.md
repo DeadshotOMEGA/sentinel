@@ -8,7 +8,7 @@ Applies when creating documentation in: `docs/domains/personnel/`
 
 **Content Type**:
 
-- MUST document member, division, rank, and badge management features
+- MUST document member, division, rank, badge, and qualification management features
 - MUST be personnel domain-specific (NOT cross-cutting or other domains)
 - MUST follow Diátaxis classification (tutorial, howto, reference, explanation)
 - MUST use type prefix in filenames
@@ -58,10 +58,11 @@ Applies when creating documentation in: `docs/domains/personnel/`
 
 ## Quick Reference
 
-**Core Entities**: Members, Divisions, Badges
+**Core Entities**: Members, Divisions, Badges, Qualifications
 
 **Code Locations**:
 
-- Repositories: `apps/backend/src/repositories/member-repository.ts`
-- Routes: `apps/backend/src/routes/members.ts`
+- Repositories: `apps/backend/src/repositories/member-repository.ts`, `apps/backend/src/repositories/qualification-repository.ts`
+- Routes: `apps/backend/src/routes/members.ts`, `apps/backend/src/routes/qualifications.ts`
+- Services: `apps/backend/src/services/member-service.ts`, `apps/backend/src/services/qualification-service.ts`
 - Schema: `packages/database/prisma/schema.prisma`

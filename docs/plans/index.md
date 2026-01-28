@@ -2,7 +2,7 @@
 
 **Purpose:** Central registry of all implementation plans
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-01-27
 
 ---
 
@@ -22,13 +22,14 @@ Currently executing plans tracked here:
 
 Successfully finished plans:
 
-| Plan                                                                     | Completed  | Duration | Outcome                                                                          |
-| ------------------------------------------------------------------------ | ---------- | -------- | -------------------------------------------------------------------------------- |
-| [Backend Rebuild](completed/backend-rebuild-plan.md)                     | 2026-01-23 | 8 days   | Phases 1-3 complete: 63 API endpoints, 634 tests, WebSocket infrastructure       |
-| [Backend Phase 4 Completion](completed/2026-01-23-phase-4-completion.md) | 2026-01-23 | 5 hours  | Production readiness: Documentation, infrastructure verification, security audit |
-| [Frontend Admin MVP](completed/2026-01-23-frontend-admin-mvp.md)         | 2026-01-26 | 3 days   | All 4 phases complete: Dashboard, Members, Check-ins pages fully implemented     |
+| Plan                                                                                 | Completed  | Duration | Outcome                                                                          |
+| ------------------------------------------------------------------------------------ | ---------- | -------- | -------------------------------------------------------------------------------- |
+| [Backend Rebuild](completed/backend-rebuild-plan.md)                                 | 2026-01-23 | 8 days   | Phases 1-3 complete: 63 API endpoints, 634 tests, WebSocket infrastructure       |
+| [Backend Phase 4 Completion](completed/2026-01-23-phase-4-completion.md)             | 2026-01-23 | 5 hours  | Production readiness: Documentation, infrastructure verification, security audit |
+| [Frontend Admin MVP](completed/2026-01-23-frontend-admin-mvp.md)                     | 2026-01-26 | 3 days   | All 4 phases complete: Dashboard, Members, Check-ins pages fully implemented     |
+| [Duty Roles & Lockup System](completed/2026-01-27-duty-roles-lockup-system.md)       | 2026-01-27 | 1 day    | All 10 phases complete: Qualifications, Schedules, Lockup, Alerts, Kiosk flows   |
 
-**Total Completed:** 3
+**Total Completed:** 4
 
 ---
 
@@ -47,10 +48,10 @@ Plans that were cancelled, superseded, or no longer relevant:
 ## Plan Statistics
 
 - **Active:** 0
-- **Completed:** 3
+- **Completed:** 4
 - **Archived:** 0
-- **Success Rate:** 100% (3/3 completed successfully)
-- **Average Duration:** ~4 days
+- **Success Rate:** 100% (4/4 completed successfully)
+- **Average Duration:** ~3.3 days
 
 ---
 
@@ -95,4 +96,3 @@ Plans that were cancelled, superseded, or no longer relevant:
 - [Plans Format Guide](CLAUDE.md) - How to write plans
 - [Plan Template](../templates/plan.md) - Starting template
 - [ADR Index](../decisions/adr/index.md) - Related decisions
-- [Phase 4 Completion](active/2026-01-23-phase-4-completion.md) - Current active plan

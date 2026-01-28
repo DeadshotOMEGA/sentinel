@@ -64,3 +64,7 @@ Applies when reviewing: `docs/plans/completed/`
 - [Better Auth Plugin Integration](2026-01-19-better-auth-plugin-integration.md)
 - [CLAUDE.md Refactoring](2026-01-20-claude-md-refactoring.md)
 - [Observability Stack Implementation](2026-01-22-observability-stack-implementation.md)
+- [Backend Rebuild](backend-rebuild-plan.md)
+- [Backend Phase 4 Completion](2026-01-23-phase-4-completion.md)
+- [Frontend Admin MVP](2026-01-23-frontend-admin-mvp.md)
+- [Duty Roles & Lockup System](2026-01-27-duty-roles-lockup-system.md)
