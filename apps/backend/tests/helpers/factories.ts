@@ -296,6 +296,177 @@ export async function createSecurityAlert(
 }
 
 /**
+ * Create a duty role
+ */
+export async function createDutyRole(
+  prisma: PrismaClient,
+  overrides: Partial<{
+    code: string
+    name: string
+    description: string
+    roleType: string
+    scheduleType: string
+    activeDays: number[]
+    displayOrder: number
+  }> = {}
+) {
+  const id = getUniqueId()
+
+  return prisma.dutyRole.create({
+    data: {
+      code: `ROLE${id}`,
+      name: `Duty Role ${id}`,
+      description: `Test duty role ${id}`,
+      roleType: 'single',
+      scheduleType: 'weekly',
+      activeDays: [1, 2, 3, 4, 5],
+      displayOrder: id,
+      ...overrides,
+    },
+  })
+}
+
+/**
+ * Create a duty position for a duty role
+ */
+export async function createDutyPosition(
+  prisma: PrismaClient,
+  overrides: Partial<{
+    dutyRoleId: string
+    code: string
+    name: string
+    description: string
+    maxSlots: number
+    displayOrder: number
+  }> = {}
+) {
+  const id = getUniqueId()
+
+  // Ensure duty role exists
+  let dutyRoleId = overrides.dutyRoleId
+  if (!dutyRoleId) {
+    const role = await createDutyRole(prisma)
+    dutyRoleId = role.id
+  }
+
+  return prisma.dutyPosition.create({
+    data: {
+      dutyRoleId,
+      code: `POS${id}`,
+      name: `Position ${id}`,
+      description: `Test position ${id}`,
+      maxSlots: 1,
+      displayOrder: id,
+      ...overrides,
+    },
+  })
+}
+
+/**
+ * Create a weekly schedule
+ */
+export async function createWeeklySchedule(
+  prisma: PrismaClient,
+  overrides: Partial<{
+    dutyRoleId: string
+    weekStartDate: Date
+    status: string
+    createdBy: string
+    publishedAt: Date
+    publishedBy: string
+    notes: string
+  }> = {}
+) {
+  // Ensure duty role exists
+  let dutyRoleId = overrides.dutyRoleId
+  if (!dutyRoleId) {
+    const role = await createDutyRole(prisma)
+    dutyRoleId = role.id
+  }
+
+  // Default to Monday of current week
+  const weekStartDate = overrides.weekStartDate || getMonday(new Date())
+
+  return prisma.weeklySchedule.create({
+    data: {
+      dutyRoleId,
+      weekStartDate,
+      status: 'draft',
+      ...overrides,
+    },
+    include: {
+      dutyRole: {
+        select: { id: true, code: true, name: true },
+      },
+    },
+  })
+}
+
+/**
+ * Create a schedule assignment
+ */
+export async function createScheduleAssignment(
+  prisma: PrismaClient,
+  overrides: Partial<{
+    scheduleId: string
+    dutyPositionId: string
+    memberId: string
+    status: string
+    notes: string
+  }> = {}
+) {
+  // Ensure schedule exists
+  let scheduleId = overrides.scheduleId
+  if (!scheduleId) {
+    const schedule = await createWeeklySchedule(prisma)
+    scheduleId = schedule.id
+  }
+
+  // Ensure member exists
+  let memberId = overrides.memberId
+  if (!memberId) {
+    const member = await createMember(prisma)
+    memberId = member.id
+  }
+
+  return prisma.scheduleAssignment.create({
+    data: {
+      scheduleId,
+      dutyPositionId: overrides.dutyPositionId || null,
+      memberId,
+      status: 'assigned',
+      ...overrides,
+    },
+    include: {
+      member: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          rank: true,
+          serviceNumber: true,
+        },
+      },
+      dutyPosition: {
+        select: { id: true, code: true, name: true },
+      },
+    },
+  })
+}
+
+/**
+ * Helper to get Monday of a given week
+ */
+function getMonday(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+  d.setDate(diff)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+/**
  * Reset factory counter (call in beforeEach if needed for predictable IDs)
  */
 export function resetFactoryCounter() {

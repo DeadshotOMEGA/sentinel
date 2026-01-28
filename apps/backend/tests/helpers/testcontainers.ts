@@ -189,6 +189,30 @@ export class TestDatabase {
       skipDuplicates: true,
     })
 
+    // Create ranks (required for member creation)
+    await this.prisma.rank.createMany({
+      data: [
+        // Navy NCM ranks
+        { code: 'OS', name: 'Ordinary Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 1 },
+        { code: 'AB', name: 'Able Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 2 },
+        { code: 'LS', name: 'Leading Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 3 },
+        { code: 'MS', name: 'Master Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 4 },
+        { code: 'PO2', name: 'Petty Officer 2nd Class', branch: 'navy', category: 'senior_ncm', displayOrder: 5 },
+        { code: 'PO1', name: 'Petty Officer 1st Class', branch: 'navy', category: 'senior_ncm', displayOrder: 6 },
+        { code: 'CPO2', name: 'Chief Petty Officer 2nd Class', branch: 'navy', category: 'senior_ncm', displayOrder: 7 },
+        { code: 'CPO1', name: 'Chief Petty Officer 1st Class', branch: 'navy', category: 'senior_ncm', displayOrder: 8 },
+        // Navy officer ranks
+        { code: 'NCdt', name: 'Naval Cadet', branch: 'navy', category: 'junior_officer', displayOrder: 9 },
+        { code: 'A/SLt', name: 'Acting Sub-Lieutenant', branch: 'navy', category: 'junior_officer', displayOrder: 10 },
+        { code: 'SLt', name: 'Sub-Lieutenant', branch: 'navy', category: 'junior_officer', displayOrder: 11 },
+        { code: 'Lt(N)', name: 'Lieutenant (Navy)', branch: 'navy', category: 'junior_officer', displayOrder: 12 },
+        { code: 'LCdr', name: 'Lieutenant-Commander', branch: 'navy', category: 'senior_officer', displayOrder: 13 },
+        { code: 'Cdr', name: 'Commander', branch: 'navy', category: 'senior_officer', displayOrder: 14 },
+        { code: 'Capt(N)', name: 'Captain (Navy)', branch: 'navy', category: 'senior_officer', displayOrder: 15 },
+      ],
+      skipDuplicates: true,
+    })
+
     // Create default divisions
     await this.prisma.division.createMany({
       data: [
