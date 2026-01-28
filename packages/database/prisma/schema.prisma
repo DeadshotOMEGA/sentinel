@@ -9,32 +9,37 @@ datasource db {
 }
 
 model AdminUser {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username         String             @unique @db.VarChar(100)
-  email            String?            @unique @db.VarChar(255)
-  passwordHash     String             @map("password_hash") @db.VarChar(255)
-  displayName      String             @map("display_name") @db.VarChar(200)
-  fullName         String?            @map("full_name") @db.VarChar(200)
-  role             String             @db.VarChar(20)
-  lastLogin        DateTime?          @map("last_login") @db.Timestamp(6)
-  createdAt        DateTime?          @default(now()) @map("created_at") @db.Timestamp(6)
-  first_name       String?            @db.VarChar(100)
-  last_name        String?            @db.VarChar(100)
-  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
-  disabled         Boolean            @default(false)
-  disabledAt       DateTime?          @map("disabled_at") @db.Timestamp(6)
-  disabledBy       String?            @map("disabled_by") @db.Uuid
-  updatedBy        String?            @map("updated_by") @db.Uuid
-  auditLogs        AuditLog[]
-  checkins         Checkin[]
-  report_audit_log report_audit_log[]
-  securityAlerts   SecurityAlert[]
-  visitors         Visitor[]
-  ddsAssignments   DdsAssignment[]
-  disabledByAdmin  AdminUser?         @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updatedByAdmin   AdminUser?         @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  disabledUsers    AdminUser[]        @relation("DisabledBy")
-  updatedUsers     AdminUser[]        @relation("UpdatedBy")
+  id                      String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username                String                @unique @db.VarChar(100)
+  email                   String?               @unique @db.VarChar(255)
+  passwordHash            String                @map("password_hash") @db.VarChar(255)
+  displayName             String                @map("display_name") @db.VarChar(200)
+  fullName                String?               @map("full_name") @db.VarChar(200)
+  role                    String                @db.VarChar(20)
+  lastLogin               DateTime?             @map("last_login") @db.Timestamp(6)
+  createdAt               DateTime?             @default(now()) @map("created_at") @db.Timestamp(6)
+  first_name              String?               @db.VarChar(100)
+  last_name               String?               @db.VarChar(100)
+  updated_at              DateTime?             @default(now()) @db.Timestamp(6)
+  disabled                Boolean               @default(false)
+  disabledAt              DateTime?             @map("disabled_at") @db.Timestamp(6)
+  disabledBy              String?               @map("disabled_by") @db.Uuid
+  updatedBy               String?               @map("updated_by") @db.Uuid
+  auditLogs               AuditLog[]
+  checkins                Checkin[]
+  report_audit_log        report_audit_log[]
+  securityAlerts          SecurityAlert[]
+  visitors                Visitor[]
+  ddsAssignments          DdsAssignment[]
+  disabledByAdmin         AdminUser?            @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByAdmin          AdminUser?            @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  disabledUsers           AdminUser[]           @relation("DisabledBy")
+  updatedUsers            AdminUser[]           @relation("UpdatedBy")
+  qualificationsGranted   MemberQualification[] @relation("QualificationGrantedBy")
+  qualificationsRevoked   MemberQualification[] @relation("QualificationRevokedBy")
+  schedulesCreated        WeeklySchedule[]      @relation("ScheduleCreatedBy")
+  schedulesPublished      WeeklySchedule[]      @relation("SchedulePublishedBy")
+  missedCheckoutsResolved MissedCheckout[]
 
   @@index([email], map: "idx_admin_users_email")
   @@index([disabled], map: "idx_admin_users_disabled")
@@ -185,46 +190,59 @@ model Event {
 }
 
 model Member {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serviceNumber   String            @unique @map("service_number") @db.VarChar(20)
-  rank            String            @db.VarChar(50)
-  firstName       String            @map("first_name") @db.VarChar(100)
-  lastName        String            @map("last_name") @db.VarChar(100)
-  email           String?           @db.VarChar(255)
-  mobilePhone     String?           @map("mobile_phone") @db.VarChar(50)
-  divisionId      String?           @map("division_id") @db.Uuid
-  badgeId         String?           @map("badge_id") @db.Uuid
-  memberType      String            @map("member_type") @db.VarChar(20)
-  status          String            @default("active") @db.VarChar(20)
-  memberTypeId    String?           @map("member_type_id") @db.Uuid
-  memberStatusId  String?           @map("member_status_id") @db.Uuid
-  createdAt       DateTime?         @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime?         @default(now()) @map("updated_at") @db.Timestamp(6)
-  employeeNumber  String?           @map("employee_number") @db.VarChar(20)
-  initials        String?           @db.VarChar(10)
-  mess            String?           @db.VarChar(50)
-  moc             String?           @db.VarChar(100)
-  classDetails    String?           @map("class_details") @db.VarChar(100)
-  homePhone       String?           @map("home_phone") @db.VarChar(30)
-  notes           String?
-  contract_start  DateTime?         @db.Date
-  contract_end    DateTime?         @db.Date
-  badge           Badge?            @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  bmqEnrollments  BmqEnrollment[]
-  checkins        Checkin[]
-  division        Division?         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  visitors        Visitor[]
-  memberTags      MemberTag[]
-  ddsAssignments  DdsAssignment[]   @relation("DdsMember")
-  ddsTransfers    DdsAssignment[]   @relation("DdsTransferredTo")
-  memberTypeRef   MemberType?       @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  memberStatusRef MemberStatus?     @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber       String                @unique @map("service_number") @db.VarChar(20)
+  rankId              String                @map("rank_id") @db.Uuid
+  rank                String                @db.VarChar(50)
+  firstName           String                @map("first_name") @db.VarChar(100)
+  lastName            String                @map("last_name") @db.VarChar(100)
+  email               String?               @db.VarChar(255)
+  mobilePhone         String?               @map("mobile_phone") @db.VarChar(50)
+  divisionId          String?               @map("division_id") @db.Uuid
+  badgeId             String?               @map("badge_id") @db.Uuid
+  memberType          String                @map("member_type") @db.VarChar(20)
+  status              String                @default("active") @db.VarChar(20)
+  memberTypeId        String?               @map("member_type_id") @db.Uuid
+  memberStatusId      String?               @map("member_status_id") @db.Uuid
+  createdAt           DateTime?             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime?             @default(now()) @map("updated_at") @db.Timestamp(6)
+  employeeNumber      String?               @map("employee_number") @db.VarChar(20)
+  initials            String?               @db.VarChar(10)
+  mess                String?               @db.VarChar(50)
+  moc                 String?               @db.VarChar(100)
+  classDetails        String?               @map("class_details") @db.VarChar(100)
+  homePhone           String?               @map("home_phone") @db.VarChar(30)
+  notes               String?
+  contract_start      DateTime?             @db.Date
+  contract_end        DateTime?             @db.Date
+  missedCheckoutCount Int                   @default(0) @map("missed_checkout_count")
+  lastMissedCheckout  DateTime?             @map("last_missed_checkout") @db.Timestamp(6)
+  rankRef             Rank?                 @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  badge               Badge?                @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  bmqEnrollments      BmqEnrollment[]
+  checkins            Checkin[]
+  division            Division?             @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitors            Visitor[]
+  memberTags          MemberTag[]
+  ddsAssignments      DdsAssignment[]       @relation("DdsMember")
+  ddsTransfers        DdsAssignment[]       @relation("DdsTransferredTo")
+  memberTypeRef       MemberType?           @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  memberStatusRef     MemberStatus?         @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  qualifications      MemberQualification[]
+  scheduleAssignments ScheduleAssignment[]
+  lockupHolding       LockupStatus[]        @relation("LockupCurrentHolder")
+  lockupSecured       LockupStatus[]        @relation("LockupSecuredBy")
+  lockupTransfersFrom LockupTransfer[]      @relation("LockupTransferFrom")
+  lockupTransfersTo   LockupTransfer[]      @relation("LockupTransferTo")
+  lockupExecutions    LockupExecution[]
+  missedCheckouts     MissedCheckout[]
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
   @@index([employeeNumber], map: "idx_members_employee_number")
   @@index([mess], map: "idx_members_mess")
   @@index([moc], map: "idx_members_moc")
+  @@index([rankId], map: "idx_members_rank_id")
   @@index([serviceNumber], map: "idx_members_service_number")
   @@index([status], map: "idx_members_status")
   @@index([email], map: "idx_members_email")
@@ -236,9 +254,10 @@ model Member {
 model Tag {
   id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String      @unique @db.VarChar(100)
-  color        String      @db.VarChar(50)
   description  String?
   displayOrder Int         @default(0) @map("display_order")
+  chipVariant  String      @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor    String      @default("default") @map("chip_color") @db.VarChar(20)
   createdAt    DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
   memberTags   MemberTag[]
@@ -263,19 +282,19 @@ model MemberTag {
 }
 
 model SecurityAlert {
-  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  alertType        String     @map("alert_type") @db.VarChar(50)  // badge_disabled, badge_unknown, inactive_member
-  severity         String     @db.VarChar(20)                      // critical, warning, info
-  badgeSerial      String?    @map("badge_serial") @db.VarChar(100)
-  memberId         String?    @map("member_id") @db.Uuid
-  kioskId          String     @map("kiosk_id") @db.VarChar(50)
-  message          String
-  details          Json?                                           // Additional context (badge status, member info, etc.)
-  status           String     @default("active") @db.VarChar(20)   // active, acknowledged, dismissed
-  acknowledgedBy   String?    @map("acknowledged_by") @db.Uuid
-  acknowledgedAt   DateTime?  @map("acknowledged_at") @db.Timestamp(6)
-  acknowledgeNote  String?    @map("acknowledge_note")
-  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertType       String    @map("alert_type") @db.VarChar(50) // badge_disabled, badge_unknown, inactive_member
+  severity        String    @db.VarChar(20) // critical, warning, info
+  badgeSerial     String?   @map("badge_serial") @db.VarChar(100)
+  memberId        String?   @map("member_id") @db.Uuid
+  kioskId         String    @map("kiosk_id") @db.VarChar(50)
+  message         String
+  details         Json? // Additional context (badge status, member info, etc.)
+  status          String    @default("active") @db.VarChar(20) // active, acknowledged, dismissed
+  acknowledgedBy  String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt  DateTime? @map("acknowledged_at") @db.Timestamp(6)
+  acknowledgeNote String?   @map("acknowledge_note")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
 
   acknowledgedByAdmin AdminUser? @relation(fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
 
@@ -341,14 +360,14 @@ model BmqCourse {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model BmqEnrollment {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  memberId    String     @map("member_id") @db.Uuid
-  bmqCourseId String     @map("bmq_course_id") @db.Uuid
-  enrolledAt  DateTime   @default(now()) @map("enrolled_at") @db.Timestamptz(6)
-  completedAt DateTime?  @map("completed_at") @db.Timestamptz(6)
-  status      String     @default("enrolled") @db.VarChar(20)
-  bmqCourse   BmqCourse  @relation(fields: [bmqCourseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  member      Member     @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId    String    @map("member_id") @db.Uuid
+  bmqCourseId String    @map("bmq_course_id") @db.Uuid
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  status      String    @default("enrolled") @db.VarChar(20)
+  bmqCourse   BmqCourse @relation(fields: [bmqCourseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  member      Member    @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([memberId, bmqCourseId], map: "bmq_enrollments_member_id_bmq_course_id_key")
   @@index([bmqCourseId], map: "idx_bmq_enrollments_course")
@@ -393,15 +412,15 @@ model ReportSetting {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model TrainingYear {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String    @db.VarChar(50)
-  startDate         DateTime  @map("start_date") @db.Date
-  endDate           DateTime  @map("end_date") @db.Date
-  holidayExclusions Json      @default("[]") @map("holiday_exclusions")
-  dayExceptions     Json      @default("[]") @map("day_exceptions")
-  isCurrent         Boolean   @default(false) @map("is_current")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String   @db.VarChar(50)
+  startDate         DateTime @map("start_date") @db.Date
+  endDate           DateTime @map("end_date") @db.Date
+  holidayExclusions Json     @default("[]") @map("holiday_exclusions")
+  dayExceptions     Json     @default("[]") @map("day_exceptions")
+  isCurrent         Boolean  @default(false) @map("is_current")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   @@index([isCurrent], map: "idx_training_years_is_current")
   @@index([startDate], map: "idx_training_years_start_date")
@@ -421,9 +440,9 @@ model DdsAssignment {
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamp(6)
 
-  member               Member     @relation("DdsMember", fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  transferredToMember  Member?    @relation("DdsTransferredTo", fields: [transferredTo], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  assignedByAdmin      AdminUser? @relation(fields: [assignedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  member              Member     @relation("DdsMember", fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  transferredToMember Member?    @relation("DdsTransferredTo", fields: [transferredTo], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  assignedByAdmin     AdminUser? @relation(fields: [assignedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
   @@index([memberId], map: "idx_dds_assignments_member")
   @@index([assignedDate], map: "idx_dds_assignments_date")
@@ -434,8 +453,8 @@ model DdsAssignment {
 model ResponsibilityAuditLog {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   memberId        String   @map("member_id") @db.Uuid
-  tagName         String   @map("tag_name") @db.VarChar(50)  // 'DDS' or 'Lockup'
-  action          String   @db.VarChar(50)                   // assigned, transferred, released, self_accepted
+  tagName         String   @map("tag_name") @db.VarChar(50) // 'DDS' or 'Lockup'
+  action          String   @db.VarChar(50) // assigned, transferred, released, self_accepted
   fromMemberId    String?  @map("from_member_id") @db.Uuid
   toMemberId      String?  @map("to_member_id") @db.Uuid
   performedBy     String?  @map("performed_by") @db.Uuid
@@ -458,7 +477,8 @@ model MemberStatus {
   code        String    @unique @db.VarChar(50)
   name        String    @db.VarChar(100)
   description String?
-  color       String?   @db.VarChar(50)
+  chipVariant String    @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor   String    @default("default") @map("chip_color") @db.VarChar(20)
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
   members     Member[]
@@ -473,7 +493,8 @@ model MemberType {
   code        String    @unique @db.VarChar(50)
   name        String    @db.VarChar(100)
   description String?
-  color       String?   @db.VarChar(50)
+  chipVariant String    @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor   String    @default("default") @map("chip_color") @db.VarChar(20)
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
   members     Member[]
@@ -488,7 +509,8 @@ model VisitType {
   code        String    @unique @db.VarChar(50)
   name        String    @db.VarChar(100)
   description String?
-  color       String?   @db.VarChar(50)
+  chipVariant String    @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor   String    @default("default") @map("chip_color") @db.VarChar(20)
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
   visitors    Visitor[]
@@ -503,7 +525,8 @@ model BadgeStatus {
   code        String    @unique @db.VarChar(50)
   name        String    @db.VarChar(100)
   description String?
-  color       String?   @db.VarChar(50)
+  chipVariant String    @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor   String    @default("default") @map("chip_color") @db.VarChar(20)
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
   badges      Badge[]
@@ -528,6 +551,32 @@ model ListItem {
   @@index([listType], map: "idx_list_items_list_type")
   @@index([listType, displayOrder], map: "idx_list_items_list_type_display_order")
   @@map("list_items")
+}
+
+// ============================================================================
+// RANK TABLE - Canadian Armed Forces rank structure
+// ============================================================================
+
+model Rank {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String    @unique @db.VarChar(10)
+  name         String    @db.VarChar(100)
+  branch       String    @db.VarChar(20) // navy, army, air_force
+  category     String    @db.VarChar(50) // junior_ncm, senior_ncm, junior_officer, senior_officer, general_officer
+  displayOrder Int       @map("display_order") // 1-19 within branch (lower = junior, higher = senior)
+  isActive     Boolean   @default(true) @map("is_active")
+  replacedBy   String?   @map("replaced_by") @db.Uuid
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  members        Member[]
+  replacedByRank Rank?    @relation("RankReplacement", fields: [replacedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replacesRanks  Rank[]   @relation("RankReplacement")
+
+  @@index([branch, displayOrder], map: "idx_ranks_branch_order")
+  @@index([code], map: "idx_ranks_code")
+  @@index([isActive], map: "idx_ranks_active")
+  @@map("ranks")
 }
 
 // ============================================================================
@@ -570,18 +619,18 @@ model Session {
 }
 
 model Account {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String    @map("user_id") @db.Uuid
-  accountId         String    @map("account_id") @db.VarChar(255)
-  providerId        String    @map("provider_id") @db.VarChar(100)
-  accessToken       String?   @map("access_token") @db.Text
-  refreshToken      String?   @map("refresh_token") @db.Text
-  idToken           String?   @map("id_token") @db.Text
-  expiresAt         DateTime? @map("expires_at") @db.Timestamp(6)
-  password          String?   @db.VarChar(255)
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  accountId    String    @map("account_id") @db.VarChar(255)
+  providerId   String    @map("provider_id") @db.VarChar(100)
+  accessToken  String?   @map("access_token") @db.Text
+  refreshToken String?   @map("refresh_token") @db.Text
+  idToken      String?   @map("id_token") @db.Text
+  expiresAt    DateTime? @map("expires_at") @db.Timestamp(6)
+  password     String?   @db.VarChar(255)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId], map: "account_provider_account_unique")
   @@index([userId], map: "idx_accounts_user_id")
@@ -629,4 +678,211 @@ model AlertConfig {
 
   @@index([key], map: "idx_alert_configs_key")
   @@map("alert_configs")
+}
+
+// ============================================================================
+// DUTY ROLES & LOCKUP SYSTEM
+// ============================================================================
+
+model QualificationType {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                 String                @unique @db.VarChar(50)
+  name                 String                @db.VarChar(100)
+  description          String?
+  canReceiveLockup     Boolean               @default(true) @map("can_receive_lockup")
+  displayOrder         Int                   @default(0) @map("display_order")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamp(6)
+  memberQualifications MemberQualification[]
+
+  @@index([code], map: "idx_qualification_types_code")
+  @@index([canReceiveLockup], map: "idx_qualification_types_lockup")
+  @@map("qualification_types")
+}
+
+model MemberQualification {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId            String    @map("member_id") @db.Uuid
+  qualificationTypeId String    @map("qualification_type_id") @db.Uuid
+  status              String    @default("active") @db.VarChar(20) // active, expired, revoked
+  grantedAt           DateTime  @default(now()) @map("granted_at") @db.Timestamp(6)
+  grantedBy           String?   @map("granted_by") @db.Uuid
+  expiresAt           DateTime? @map("expires_at") @db.Timestamp(6)
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamp(6)
+  revokedBy           String?   @map("revoked_by") @db.Uuid
+  revokeReason        String?   @map("revoke_reason")
+  notes               String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  member            Member            @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  qualificationType QualificationType @relation(fields: [qualificationTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  grantedByAdmin    AdminUser?        @relation("QualificationGrantedBy", fields: [grantedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  revokedByAdmin    AdminUser?        @relation("QualificationRevokedBy", fields: [revokedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@unique([memberId, qualificationTypeId], map: "member_qualification_unique")
+  @@index([memberId], map: "idx_member_qualifications_member")
+  @@index([qualificationTypeId], map: "idx_member_qualifications_type")
+  @@index([status], map: "idx_member_qualifications_status")
+  @@map("member_qualifications")
+}
+
+model DutyRole {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String           @unique @db.VarChar(50)
+  name         String           @db.VarChar(100)
+  description  String?
+  roleType     String           @map("role_type") @db.VarChar(20) // single, team
+  scheduleType String           @map("schedule_type") @db.VarChar(20) // weekly
+  activeDays   Int[]            @map("active_days") // 1=Mon, 2=Tue, ..., 7=Sun
+  displayOrder Int              @default(0) @map("display_order")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.Timestamp(6)
+  positions    DutyPosition[]
+  schedules    WeeklySchedule[]
+
+  @@index([code], map: "idx_duty_roles_code")
+  @@map("duty_roles")
+}
+
+model DutyPosition {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dutyRoleId   String               @map("duty_role_id") @db.Uuid
+  code         String               @db.VarChar(50)
+  name         String               @db.VarChar(100)
+  description  String?
+  maxSlots     Int                  @default(1) @map("max_slots")
+  displayOrder Int                  @default(0) @map("display_order")
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamp(6)
+  dutyRole     DutyRole             @relation(fields: [dutyRoleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  assignments  ScheduleAssignment[]
+
+  @@unique([dutyRoleId, code], map: "duty_position_role_code_unique")
+  @@index([dutyRoleId], map: "idx_duty_positions_role")
+  @@map("duty_positions")
+}
+
+model WeeklySchedule {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dutyRoleId       String               @map("duty_role_id") @db.Uuid
+  weekStartDate    DateTime             @map("week_start_date") @db.Date // Always a Monday
+  status           String               @default("draft") @db.VarChar(20) // draft, published, active, archived
+  createdBy        String?              @map("created_by") @db.Uuid
+  publishedAt      DateTime?            @map("published_at") @db.Timestamp(6)
+  publishedBy      String?              @map("published_by") @db.Uuid
+  notes            String?
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamp(6)
+  dutyRole         DutyRole             @relation(fields: [dutyRoleId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdByAdmin   AdminUser?           @relation("ScheduleCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  publishedByAdmin AdminUser?           @relation("SchedulePublishedBy", fields: [publishedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  assignments      ScheduleAssignment[]
+
+  @@unique([dutyRoleId, weekStartDate], map: "weekly_schedule_role_week_unique")
+  @@index([dutyRoleId], map: "idx_weekly_schedules_role")
+  @@index([weekStartDate], map: "idx_weekly_schedules_week")
+  @@index([status], map: "idx_weekly_schedules_status")
+  @@map("weekly_schedules")
+}
+
+model ScheduleAssignment {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scheduleId     String         @map("schedule_id") @db.Uuid
+  dutyPositionId String?        @map("duty_position_id") @db.Uuid // null for single-person roles like DDS
+  memberId       String         @map("member_id") @db.Uuid
+  status         String         @default("assigned") @db.VarChar(20) // assigned, confirmed, released
+  confirmedAt    DateTime?      @map("confirmed_at") @db.Timestamp(6)
+  releasedAt     DateTime?      @map("released_at") @db.Timestamp(6)
+  notes          String?
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  schedule       WeeklySchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  dutyPosition   DutyPosition?  @relation(fields: [dutyPositionId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  member         Member         @relation(fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([scheduleId], map: "idx_schedule_assignments_schedule")
+  @@index([memberId], map: "idx_schedule_assignments_member")
+  @@index([dutyPositionId], map: "idx_schedule_assignments_position")
+  @@map("schedule_assignments")
+}
+
+model LockupStatus {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date            DateTime         @unique @db.Date // Operational date (3am rollover)
+  currentHolderId String?          @map("current_holder_id") @db.Uuid
+  acquiredAt      DateTime?        @map("acquired_at") @db.Timestamp(6)
+  buildingStatus  String           @default("secured") @map("building_status") @db.VarChar(20) // secured, open, locking_up
+  securedAt       DateTime?        @map("secured_at") @db.Timestamp(6)
+  securedBy       String?          @map("secured_by") @db.Uuid
+  isActive        Boolean          @default(true) @map("is_active")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamp(6)
+  currentHolder   Member?          @relation("LockupCurrentHolder", fields: [currentHolderId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  securedByMember Member?          @relation("LockupSecuredBy", fields: [securedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  transfers       LockupTransfer[]
+  execution       LockupExecution?
+
+  @@index([date], map: "idx_lockup_status_date")
+  @@index([isActive], map: "idx_lockup_status_active")
+  @@index([currentHolderId], map: "idx_lockup_status_holder")
+  @@map("lockup_status")
+}
+
+model LockupTransfer {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lockupStatusId String       @map("lockup_status_id") @db.Uuid
+  fromMemberId   String       @map("from_member_id") @db.Uuid
+  toMemberId     String       @map("to_member_id") @db.Uuid
+  transferredAt  DateTime     @default(now()) @map("transferred_at") @db.Timestamp(6)
+  reason         String       @db.VarChar(50) // manual, dds_handoff, duty_watch_takeover
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  lockupStatus   LockupStatus @relation(fields: [lockupStatusId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  fromMember     Member       @relation("LockupTransferFrom", fields: [fromMemberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  toMember       Member       @relation("LockupTransferTo", fields: [toMemberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([lockupStatusId], map: "idx_lockup_transfers_status")
+  @@index([fromMemberId], map: "idx_lockup_transfers_from")
+  @@index([toMemberId], map: "idx_lockup_transfers_to")
+  @@index([transferredAt(sort: Desc)], map: "idx_lockup_transfers_time")
+  @@map("lockup_transfers")
+}
+
+model LockupExecution {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lockupStatusId     String       @unique @map("lockup_status_id") @db.Uuid
+  executedBy         String       @map("executed_by") @db.Uuid
+  executedAt         DateTime     @default(now()) @map("executed_at") @db.Timestamp(6)
+  membersCheckedOut  Json         @default("[]") @map("members_checked_out") // Array of {id, name}
+  visitorsCheckedOut Json         @default("[]") @map("visitors_checked_out") // Array of {id, name}
+  totalCheckedOut    Int          @default(0) @map("total_checked_out")
+  notes              String?
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  lockupStatus       LockupStatus @relation(fields: [lockupStatusId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  executedByMember   Member       @relation(fields: [executedBy], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([executedAt(sort: Desc)], map: "idx_lockup_executions_time")
+  @@index([executedBy], map: "idx_lockup_executions_by")
+  @@map("lockup_executions")
+}
+
+model MissedCheckout {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId          String     @map("member_id") @db.Uuid
+  date              DateTime   @db.Date
+  originalCheckinAt DateTime   @map("original_checkin_at") @db.Timestamp(6)
+  forcedCheckoutAt  DateTime   @default(now()) @map("forced_checkout_at") @db.Timestamp(6)
+  resolvedBy        String     @map("resolved_by") @db.VarChar(30) // lockup_sequence, admin, daily_reset
+  resolvedByAdminId String?    @map("resolved_by_admin_id") @db.Uuid
+  lockupExecutionId String?    @map("lockup_execution_id") @db.Uuid
+  notes             String?
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  member            Member     @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  resolvedByAdmin   AdminUser? @relation(fields: [resolvedByAdminId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([memberId], map: "idx_missed_checkouts_member")
+  @@index([date], map: "idx_missed_checkouts_date")
+  @@index([resolvedBy], map: "idx_missed_checkouts_resolved_by")
+  @@map("missed_checkouts")
 }
