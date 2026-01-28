@@ -56,9 +56,7 @@ export function TableSidebar({
     const filtered: Record<string, TableInfo[]> = {}
 
     for (const [category, categoryTables] of Object.entries(groupedTables)) {
-      const matching = categoryTables.filter((t) =>
-        t.name.toLowerCase().includes(query)
-      )
+      const matching = categoryTables.filter((t) => t.name.toLowerCase().includes(query))
       if (matching.length > 0) {
         filtered[category] = matching
       }
@@ -90,11 +88,11 @@ export function TableSidebar({
   }
 
   return (
-    <div className="w-64 border-r bg-card flex flex-col h-full">
+    <div className="w-64 border-r bg-base-100 flex flex-col h-full">
       {/* Search */}
       <div className="p-3 border-b">
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-base-content/60" />
           <Input
             placeholder="Search tables..."
             value={searchQuery}
@@ -107,14 +105,12 @@ export function TableSidebar({
       {/* Table list */}
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
+          <div className="flex items-center justify-center py-8 text-base-content/60">
             <Database className="h-5 w-5 animate-pulse mr-2" />
             Loading tables...
           </div>
         ) : Object.keys(filteredGroups).length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No tables found
-          </div>
+          <div className="text-center py-8 text-base-content/60 text-sm">No tables found</div>
         ) : (
           Object.entries(filteredGroups).map(([category, categoryTables]) => {
             const isCollapsed = collapsedCategories.has(category)
@@ -125,7 +121,7 @@ export function TableSidebar({
                 {/* Category header */}
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-base-content/60 hover:text-base-content transition-colors"
                 >
                   {isCollapsed ? (
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -149,15 +145,12 @@ export function TableSidebar({
                         className={cn(
                           'w-full flex items-center justify-between px-2 py-1.5 text-sm rounded-md transition-colors',
                           selectedTable === table.name
-                            ? 'bg-accent text-accent-foreground font-medium'
-                            : 'text-foreground/80 hover:bg-accent/50'
+                            ? 'bg-accent text-base-content font-medium'
+                            : 'text-base-content/80 hover:bg-accent/50'
                         )}
                       >
                         <span className="truncate">{table.name}</span>
-                        <Badge
-                          variant="outline"
-                          className="text-xs font-mono ml-2 shrink-0"
-                        >
+                        <Badge variant="outline" className="text-xs font-mono ml-2 shrink-0">
                           {formatRowCount(table.rowCount)}
                         </Badge>
                       </button>

@@ -81,25 +81,25 @@ export function ExecuteLockupModal({
               {/* Current Status */}
               {loadingPresent ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
                 </div>
               ) : (
                 <>
                   {/* People Still Present */}
-                  <div className="p-4 bg-muted/50 rounded-lg border">
+                  <div className="p-4 bg-base-200/50 rounded-lg border">
                     <h4 className="font-medium mb-3">Currently Checked In</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
+                        <User className="h-4 w-4 text-base-content/60" />
                         <span className="text-sm">{memberCount} members</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <Users className="h-4 w-4 text-base-content/60" />
                         <span className="text-sm">{visitorCount} visitors</span>
                       </div>
                     </div>
                     {totalCount > 0 && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-base-content/60 mt-2">
                         These {totalCount} people will be force checked out
                       </p>
                     )}
@@ -111,7 +111,7 @@ export function ExecuteLockupModal({
                       {presentData?.members.slice(0, 5).map((m) => (
                         <div
                           key={m.id}
-                          className="flex items-center justify-between text-sm py-1 px-2 rounded bg-muted/30"
+                          className="flex items-center justify-between text-sm py-1 px-2 rounded bg-base-200/30"
                         >
                           <span>
                             {m.rank} {m.lastName}
@@ -122,7 +122,7 @@ export function ExecuteLockupModal({
                         </div>
                       ))}
                       {memberCount > 5 && (
-                        <p className="text-xs text-muted-foreground text-center py-1">
+                        <p className="text-xs text-base-content/60 text-center py-1">
                           ... and {memberCount - 5} more
                         </p>
                       )}
@@ -131,9 +131,9 @@ export function ExecuteLockupModal({
 
                   {/* Warning */}
                   {totalCount > 0 && (
-                    <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm">
-                      <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
-                      <span className="text-yellow-700">
+                    <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm">
+                      <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                      <span className="text-warning">
                         People still checked in will receive a missed checkout record
                       </span>
                     </div>
@@ -157,13 +157,8 @@ export function ExecuteLockupModal({
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleExecute}
-                disabled={executeLockup.isPending}
-              >
-                {executeLockup.isPending && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
+              <Button onClick={handleExecute} disabled={executeLockup.isPending}>
+                {executeLockup.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Lock className="h-4 w-4 mr-2" />
                 Confirm Lock Up
               </Button>
@@ -172,23 +167,19 @@ export function ExecuteLockupModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-green-600">
+              <DialogTitle className="flex items-center gap-2 text-success">
                 <CheckCircle className="h-5 w-5" />
                 Building Secured
               </DialogTitle>
-              <DialogDescription>
-                The building has been successfully locked up
-              </DialogDescription>
+              <DialogDescription>The building has been successfully locked up</DialogDescription>
             </DialogHeader>
 
             <div className="py-6 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                <Lock className="h-8 w-8 text-green-600" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
+                <Lock className="h-8 w-8 text-success" />
               </div>
               <p className="text-lg font-medium">Lockup Complete</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Secured by {memberName}
-              </p>
+              <p className="text-sm text-base-content/60 mt-1">Secured by {memberName}</p>
             </div>
 
             <DialogFooter>

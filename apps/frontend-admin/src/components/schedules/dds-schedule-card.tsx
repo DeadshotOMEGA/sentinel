@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Plus, X, Check, Loader2, AlertCircle } from 'lucide-react'
+import { User, Plus, Check, Loader2, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +20,6 @@ import {
   useSchedulesByWeek,
   useCreateSchedule,
   useCreateAssignment,
-  useDeleteAssignment,
   usePublishSchedule,
   useDutyRoles,
 } from '@/hooks/use-schedules'
@@ -38,33 +37,11 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
 
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
-  const deleteAssignment = useDeleteAssignment()
   const publishSchedule = usePublishSchedule()
 
   // Find DDS duty role and schedule
   const ddsRole = dutyRoles?.data?.find((r) => r.code === 'DDS')
   const ddsSchedule = schedules?.data?.find((s) => s.dutyRole.code === 'DDS')
-
-  // Get the full schedule with assignments if exists
-  const { data: fullSchedule } = useSchedulesByWeek(weekStartDate)
-  const ddsFullSchedule = fullSchedule?.data?.find((s) => s.dutyRole.code === 'DDS')
-
-  // We need to fetch the schedule with assignments separately
-  // For now, assume we have the assignment from the schedule list
-  // In real implementation, fetch schedule by ID for full details
-
-  const handleCreateSchedule = async () => {
-    if (!ddsRole) return
-
-    try {
-      await createSchedule.mutateAsync({
-        dutyRoleId: ddsRole.id,
-        weekStartDate,
-      })
-    } catch (error) {
-      console.error('Failed to create DDS schedule:', error)
-    }
-  }
 
   const handleAssignMember = async (member: {
     id: string
@@ -125,7 +102,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-24">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
         </CardContent>
       </Card>
     )
@@ -140,9 +117,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
               <User className="h-5 w-5" />
               DDS (Duty Day Staff)
             </CardTitle>
-            <CardDescription>
-              Assigned for the week. Responsible for daily lockup.
-            </CardDescription>
+            <CardDescription>Assigned for the week. Responsible for daily lockup.</CardDescription>
           </div>
           {ddsSchedule && (
             <Badge variant={ddsSchedule.status === 'published' ? 'default' : 'secondary'}>
@@ -154,8 +129,8 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
       <CardContent>
         {!ddsSchedule ? (
           <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
-            <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground mb-4">No DDS schedule for this week</p>
+            <AlertCircle className="h-8 w-8 text-base-content/60 mb-2" />
+            <p className="text-base-content/60 mb-4">No DDS schedule for this week</p>
             <Button onClick={() => setIsMemberPickerOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Assign DDS
@@ -164,32 +139,22 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
         ) : (
           <div className="space-y-4">
             {/* This is a simplified view - in real implementation, fetch assignments */}
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-base-200 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium">DDS Assigned</p>
-                  <p className="text-sm text-muted-foreground">
-                    Schedule created for this week
-                  </p>
+                  <p className="text-sm text-base-content/60">Schedule created for this week</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsMemberPickerOpen(true)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
                   Change
                 </Button>
                 {ddsSchedule.status === 'draft' && (
-                  <Button
-                    size="sm"
-                    onClick={handlePublish}
-                    disabled={publishSchedule.isPending}
-                  >
+                  <Button size="sm" onClick={handlePublish} disabled={publishSchedule.isPending}>
                     {publishSchedule.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -223,9 +188,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveAssignment}>
-              Remove
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleRemoveAssignment}>Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -426,7 +426,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                       </TableBody>
                     </Table>
                     {preview.toAdd.length > 10 && (
-                      <p className="text-sm text-muted-foreground mt-2 text-center">
+                      <p className="text-sm text-base-content/60 mt-2 text-center">
                         ... and {preview.toAdd.length - 10} more
                       </p>
                     )}
@@ -475,7 +475,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                                 ))}
                               </ul>
                               {update.changes.length > 3 && (
-                                <span className="text-muted-foreground">
+                                <span className="text-base-content/60">
                                   ... and {update.changes.length - 3} more
                                 </span>
                               )}
@@ -485,7 +485,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                       </TableBody>
                     </Table>
                     {preview.toUpdate.length > 10 && (
-                      <p className="text-sm text-muted-foreground mt-2 text-center">
+                      <p className="text-sm text-base-content/60 mt-2 text-center">
                         ... and {preview.toUpdate.length - 10} more
                       </p>
                     )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Plus, X, Check, Loader2, AlertCircle } from 'lucide-react'
+import { Users, Plus, X, Check, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,7 +52,7 @@ interface PositionSlotProps {
 
 function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: PositionSlotProps) {
   return (
-    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+    <div className="flex items-center justify-between p-3 bg-base-200/50 rounded-lg border">
       <div className="flex items-center gap-3">
         <Badge variant={assignment ? 'default' : 'outline'} className="w-16 justify-center">
           {position.code}
@@ -64,7 +64,7 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
               : position.name}
           </p>
           {!assignment && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-base-content/60">
               {position.required ? 'Required' : 'Optional'}
             </p>
           )}
@@ -72,21 +72,11 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
       </div>
       <div>
         {assignment ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            disabled={disabled}
-          >
+          <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled}>
             <X className="h-4 w-4" />
           </Button>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAssign}
-            disabled={disabled}
-          >
+          <Button variant="ghost" size="sm" onClick={onAssign} disabled={disabled}>
             <Plus className="h-4 w-4" />
           </Button>
         )}
@@ -114,7 +104,10 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
   const { data: positions } = useDutyRolePositions(dutyWatchRole?.id || '')
 
   // Mock assignments for now - in real implementation, fetch schedule with assignments
-  const assignments: Record<string, { id: string; member: { id: string; firstName: string; lastName: string; rank: string } }> = {}
+  const assignments: Record<
+    string,
+    { id: string; member: { id: string; firstName: string; lastName: string; rank: string } }
+  > = {}
 
   const handleAssignPosition = (positionCode: string) => {
     setSelectedPosition(positionCode)
@@ -198,7 +191,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-32">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
         </CardContent>
       </Card>
     )
@@ -223,11 +216,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
                 {dutyWatchSchedule.status}
               </Badge>
             )}
-            {missingRequired > 0 && (
-              <Badge variant="destructive">
-                {missingRequired} required
-              </Badge>
-            )}
+            {missingRequired > 0 && <Badge variant="destructive">{missingRequired} required</Badge>}
           </div>
         </div>
       </CardHeader>
@@ -265,7 +254,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
         )}
 
         {!dutyWatchSchedule && (
-          <div className="mt-4 pt-4 border-t text-center text-sm text-muted-foreground">
+          <div className="mt-4 pt-4 border-t text-center text-sm text-base-content/60">
             Assign members to positions to create the Duty Watch schedule
           </div>
         )}
@@ -277,7 +266,9 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
         onSelect={handleMemberSelect}
         title={`Assign ${selectedPosition}`}
         description="Select a qualified member for this position"
-        filterQualification={selectedPosition === 'SWK' || selectedPosition === 'DSWK' ? selectedPosition : undefined}
+        filterQualification={
+          selectedPosition === 'SWK' || selectedPosition === 'DSWK' ? selectedPosition : undefined
+        }
         excludeMemberIds={assignedMemberIds}
       />
 
@@ -286,14 +277,13 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Assignment?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove the member from this position. You can assign someone else afterwards.
+              This will remove the member from this position. You can assign someone else
+              afterwards.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveAssignment}>
-              Remove
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleRemoveAssignment}>Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

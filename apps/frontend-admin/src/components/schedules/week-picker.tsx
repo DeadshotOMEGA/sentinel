@@ -60,26 +60,16 @@ export function WeekPicker({ weekStartDate, onWeekChange }: WeekPickerProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handlePreviousWeek}
-        title="Previous week"
-      >
+      <Button variant="outline" size="icon" onClick={handlePreviousWeek} title="Previous week">
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-md min-w-[200px] justify-center">
-        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+      <div className="flex items-center gap-2 px-4 py-2 bg-base-200 rounded-md min-w-[200px] justify-center">
+        <CalendarDays className="h-4 w-4 text-base-content/60" />
         <span className="font-medium">{formatWeekLabel(weekStartDate)}</span>
       </div>
 
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleNextWeek}
-        title="Next week"
-      >
+      <Button variant="outline" size="icon" onClick={handleNextWeek} title="Next week">
         <ChevronRight className="h-4 w-4" />
       </Button>
 

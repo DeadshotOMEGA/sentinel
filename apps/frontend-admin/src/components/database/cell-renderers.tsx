@@ -30,7 +30,7 @@ export function UuidCell({ value }: CellRendererProps) {
 
   return (
     <div className="flex items-center gap-1 font-mono text-xs">
-      <span className="text-muted-foreground">{truncated}...</span>
+      <span className="text-base-content/60">{truncated}...</span>
       <Button
         variant="ghost"
         size="icon"
@@ -38,11 +38,7 @@ export function UuidCell({ value }: CellRendererProps) {
         onClick={handleCopy}
         title="Copy full UUID"
       >
-        {copied ? (
-          <Check className="h-3 w-3 text-green-500" />
-        ) : (
-          <Copy className="h-3 w-3" />
-        )}
+        {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
       </Button>
     </div>
   )
@@ -58,7 +54,7 @@ export function TimestampCell({ value }: CellRendererProps) {
 
   const date = new Date(value as string)
   if (isNaN(date.getTime())) {
-    return <span className="text-muted-foreground">{String(value)}</span>
+    return <span className="text-base-content/60">{String(value)}</span>
   }
 
   const formatted = date.toLocaleDateString('en-US', {
@@ -106,7 +102,7 @@ export function BooleanCell({ value }: CellRendererProps) {
   return value ? (
     <Check className="h-4 w-4 text-green-500" />
   ) : (
-    <X className="h-4 w-4 text-muted-foreground" />
+    <X className="h-4 w-4 text-base-content/60" />
   )
 }
 
@@ -114,7 +110,7 @@ export function BooleanCell({ value }: CellRendererProps) {
  * Null cell - gray "null" text
  */
 export function NullCell() {
-  return <span className="text-muted-foreground/50 italic text-xs">null</span>
+  return <span className="text-base-content/50 italic text-xs">null</span>
 }
 
 /**
@@ -133,10 +129,7 @@ export function LongStringCell({ value }: CellRendererProps) {
   }
 
   return (
-    <span
-      className="text-sm cursor-help"
-      title={str}
-    >
+    <span className="text-sm cursor-help" title={str}>
       {str.slice(0, maxLength)}...
     </span>
   )
@@ -172,12 +165,23 @@ export function getCellRenderer(
   }
 
   // UUID columns (id fields)
-  if (columnName === 'id' || columnName.endsWith('Id') || columnType === 'String' && typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+  if (
+    columnName === 'id' ||
+    columnName.endsWith('Id') ||
+    (columnType === 'String' &&
+      typeof value === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value))
+  ) {
     return <UuidCell value={value} />
   }
 
   // Timestamp columns
-  if (columnType === 'DateTime' || columnName.endsWith('At') || columnName.includes('Time') || columnName.includes('Date')) {
+  if (
+    columnType === 'DateTime' ||
+    columnName.endsWith('At') ||
+    columnName.includes('Time') ||
+    columnName.includes('Date')
+  ) {
     return <TimestampCell value={value} />
   }
 
@@ -192,7 +196,12 @@ export function getCellRenderer(
   }
 
   // Number columns
-  if (columnType === 'Int' || columnType === 'Float' || columnType === 'BigInt' || typeof value === 'number') {
+  if (
+    columnType === 'Int' ||
+    columnType === 'Float' ||
+    columnType === 'BigInt' ||
+    typeof value === 'number'
+  ) {
     return <NumberCell value={value} />
   }
 
