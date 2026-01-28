@@ -1,25 +1,32 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import type { Tag as PrismaTag } from '@sentinel/database'
 import type { Tag, CreateTagInput, UpdateTagInput } from '@sentinel/types'
 
 /**
- * Extended Prisma Tag type that includes display_order
+ * Extended Prisma Tag type that includes display_order and chip fields
  */
-interface PrismaTagWithDisplayOrder extends PrismaTag {
+interface PrismaTagRow {
+  id: string
+  name: string
+  description: string | null
   displayOrder: number
+  chipVariant: string
+  chipColor: string
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 /**
- * Convert Prisma Tag (null) to shared Tag (undefined)
+ * Convert Prisma Tag row to shared Tag type
  */
-function toTag(t: PrismaTagWithDisplayOrder): Tag {
+function toTag(t: PrismaTagRow): Tag {
   return {
     id: t.id,
     name: t.name,
-    color: t.color,
     description: t.description ?? undefined,
     displayOrder: t.displayOrder,
+    chipVariant: t.chipVariant,
+    chipColor: t.chipColor,
     createdAt: t.createdAt ?? new Date(),
     updatedAt: t.updatedAt ?? new Date(),
   }
@@ -36,8 +43,10 @@ export class TagRepository {
    * Find all tags ordered by display_order, then name
    */
   async findAll(): Promise<Tag[]> {
-    const rows = await this.prisma.$queryRaw<PrismaTagWithDisplayOrder[]>`
-      SELECT id, name, color, description, display_order as "displayOrder", created_at as "createdAt", updated_at as "updatedAt"
+    const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
+      SELECT id, name, description, display_order as "displayOrder",
+             chip_variant as "chipVariant", chip_color as "chipColor",
+             created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       ORDER BY display_order, name
     `
@@ -49,8 +58,10 @@ export class TagRepository {
    * Find tag by ID
    */
   async findById(id: string): Promise<Tag | null> {
-    const rows = await this.prisma.$queryRaw<PrismaTagWithDisplayOrder[]>`
-      SELECT id, name, color, description, display_order as "displayOrder", created_at as "createdAt", updated_at as "updatedAt"
+    const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
+      SELECT id, name, description, display_order as "displayOrder",
+             chip_variant as "chipVariant", chip_color as "chipColor",
+             created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       WHERE id = ${id}::uuid
     `
@@ -66,8 +77,10 @@ export class TagRepository {
    * Find tag by name
    */
   async findByName(name: string): Promise<Tag | null> {
-    const rows = await this.prisma.$queryRaw<PrismaTagWithDisplayOrder[]>`
-      SELECT id, name, color, description, display_order as "displayOrder", created_at as "createdAt", updated_at as "updatedAt"
+    const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
+      SELECT id, name, description, display_order as "displayOrder",
+             chip_variant as "chipVariant", chip_color as "chipColor",
+             created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       WHERE name = ${name}
     `
@@ -92,10 +105,15 @@ export class TagRepository {
       displayOrder = (maxOrderResult[0]?.max_order ?? 0) + 1
     }
 
-    const rows = await this.prisma.$queryRaw<PrismaTagWithDisplayOrder[]>`
-      INSERT INTO tags (name, color, description, display_order)
-      VALUES (${data.name}, ${data.color}, ${data.description ?? null}, ${displayOrder})
-      RETURNING id, name, color, description, display_order as "displayOrder", created_at as "createdAt", updated_at as "updatedAt"
+    const chipVariant = data.chipVariant ?? 'solid'
+    const chipColor = data.chipColor ?? 'default'
+
+    const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
+      INSERT INTO tags (name, description, display_order, chip_variant, chip_color)
+      VALUES (${data.name}, ${data.description ?? null}, ${displayOrder}, ${chipVariant}, ${chipColor})
+      RETURNING id, name, description, display_order as "displayOrder",
+                chip_variant as "chipVariant", chip_color as "chipColor",
+                created_at as "createdAt", updated_at as "updatedAt"
     `
 
     if (rows.length === 0) {
@@ -119,19 +137,22 @@ export class TagRepository {
       throw new Error(`Tag not found: ${id}`)
     }
 
-    const rows = await this.prisma.$queryRaw<PrismaTagWithDisplayOrder[]>`
+    const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
       UPDATE tags
       SET
         name = COALESCE(${data.name ?? null}, name),
-        color = COALESCE(${data.color ?? null}, color),
         description = CASE
           WHEN ${data.description !== undefined} THEN ${data.description ?? null}
           ELSE description
         END,
         display_order = COALESCE(${data.displayOrder ?? null}, display_order),
+        chip_variant = COALESCE(${data.chipVariant ?? null}, chip_variant),
+        chip_color = COALESCE(${data.chipColor ?? null}, chip_color),
         updated_at = NOW()
       WHERE id = ${id}::uuid
-      RETURNING id, name, color, description, display_order as "displayOrder", created_at as "createdAt", updated_at as "updatedAt"
+      RETURNING id, name, description, display_order as "displayOrder",
+                chip_variant as "chipVariant", chip_color as "chipColor",
+                created_at as "createdAt", updated_at as "updatedAt"
     `
 
     if (rows.length === 0) {

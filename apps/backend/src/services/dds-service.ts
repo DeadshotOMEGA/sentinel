@@ -2,7 +2,7 @@ import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { Prisma } from '@sentinel/database'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
-import { TagService } from './tag-service.js'
+import { LockupService } from './lockup-service.js'
 
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
 
@@ -71,14 +71,16 @@ const memberInclude = {
 
 export class DdsService {
   private prisma: PrismaClient
-  private tagService: TagService
+  private lockupService: LockupService
 
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
-    this.tagService = new TagService(this.prisma)
+    this.lockupService = new LockupService(this.prisma)
   }
 
-  private transformAssignment(dbResult: any): DdsAssignmentWithMember {
+  private transformAssignment(
+    dbResult: Prisma.DdsAssignmentGetPayload<{ include: typeof memberInclude }>
+  ): DdsAssignmentWithMember {
     return {
       id: dbResult.id,
       memberId: dbResult.memberId,
@@ -175,16 +177,16 @@ export class DdsService {
       },
     })
 
-    // Auto-transfer Lockup tag to new DDS holder
+    // Auto-transfer lockup responsibility to new DDS holder
     try {
-      await this.tagService.transferLockupTag(
+      await this.lockupService.transferLockup(
         memberId,
-        memberId,
-        'system',
+        'dds_handoff',
         'Auto-transferred on DDS acceptance'
       )
     } catch (error) {
-      console.error('Failed to auto-transfer Lockup tag:', error)
+      // Silently fail if no current lockup holder or other validation error
+      console.error('Failed to auto-transfer lockup:', error)
     }
 
     const result = this.transformAssignment(assignment)

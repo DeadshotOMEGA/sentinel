@@ -11,7 +11,8 @@ interface MemberStatusRow {
   code: string
   name: string
   description: string | null
-  color: string | null
+  chip_variant: string | null
+  chip_color: string | null
   created_at: Date
   updated_at: Date
 }
@@ -25,7 +26,8 @@ function toMemberStatus(row: MemberStatusRow): MemberStatusEnum {
     code: row.code,
     name: row.name,
     description: row.description ?? undefined,
-    color: row.color ?? undefined,
+    chipVariant: row.chip_variant ?? undefined,
+    chipColor: row.chip_color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -43,7 +45,7 @@ export class MemberStatusRepository {
    */
   async findAll(): Promise<MemberStatusEnum[]> {
     const rows = await this.prisma.$queryRaw<MemberStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_statuses
       ORDER BY name
     `
@@ -56,7 +58,7 @@ export class MemberStatusRepository {
    */
   async findById(id: string): Promise<MemberStatusEnum | null> {
     const rows = await this.prisma.$queryRaw<MemberStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_statuses
       WHERE id = ${id}::uuid
     `
@@ -69,7 +71,7 @@ export class MemberStatusRepository {
    */
   async findByCode(code: string): Promise<MemberStatusEnum | null> {
     const rows = await this.prisma.$queryRaw<MemberStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_statuses
       WHERE code = ${code}
     `
@@ -82,9 +84,9 @@ export class MemberStatusRepository {
    */
   async create(data: CreateMemberStatusInput): Promise<MemberStatusEnum> {
     const rows = await this.prisma.$queryRaw<MemberStatusRow[]>`
-      INSERT INTO member_statuses (code, name, description, color)
-      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.color ?? null})
-      RETURNING id, code, name, description, color, created_at, updated_at
+      INSERT INTO member_statuses (code, name, description, chip_variant, chip_color)
+      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.chipVariant ?? null}, ${data.chipColor ?? null})
+      RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at
     `
 
     if (rows.length === 0) {
@@ -118,16 +120,20 @@ export class MemberStatusRepository {
       setClauses.push(`description = $${values.length + 1}`)
       values.push(data.description)
     }
-    if (data.color !== undefined) {
-      setClauses.push(`color = $${values.length + 1}`)
-      values.push(data.color)
+    if (data.chipVariant !== undefined) {
+      setClauses.push(`chip_variant = $${values.length + 1}`)
+      values.push(data.chipVariant)
+    }
+    if (data.chipColor !== undefined) {
+      setClauses.push(`chip_color = $${values.length + 1}`)
+      values.push(data.chipColor)
     }
 
     setClauses.push('updated_at = NOW()')
 
     // Use raw query for dynamic update
     const rows = await this.prisma.$queryRawUnsafe<MemberStatusRow[]>(
-      `UPDATE member_statuses SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, color, created_at, updated_at`,
+      `UPDATE member_statuses SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at`,
       ...values,
       id
     )

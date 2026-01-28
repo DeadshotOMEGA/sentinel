@@ -10,6 +10,7 @@ import type {
 } from '@sentinel/types'
 import type { PrismaClientInstance, Member as PrismaMember } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
+import { RankRepository } from './rank-repository.js'
 
 interface MemberFilters extends MemberFilterParams {
   divisionId?: string
@@ -17,6 +18,7 @@ interface MemberFilters extends MemberFilterParams {
   status?: MemberStatus
   search?: string
   hasBadge?: boolean
+  qualificationCode?: string
 }
 
 /**
@@ -39,6 +41,8 @@ function toMember(prismaMember: PrismaMember): Member {
     mess: prismaMember.mess ?? undefined,
     moc: prismaMember.moc ?? undefined,
     memberType: prismaMember.memberType as MemberType,
+    memberTypeId: prismaMember.memberTypeId ?? undefined,
+    memberStatusId: prismaMember.memberStatusId ?? undefined,
     classDetails: prismaMember.classDetails ?? undefined,
     notes: prismaMember.notes ?? undefined,
     contractStart: prismaMember.contract_start ?? undefined,
@@ -48,6 +52,8 @@ function toMember(prismaMember: PrismaMember): Member {
     homePhone: prismaMember.homePhone ?? undefined,
     mobilePhone: prismaMember.mobilePhone ?? undefined,
     badgeId: prismaMember.badgeId ?? undefined,
+    missedCheckoutCount: prismaMember.missedCheckoutCount,
+    lastMissedCheckout: prismaMember.lastMissedCheckout ?? undefined,
     createdAt: prismaMember.createdAt ?? new Date(),
     updatedAt: prismaMember.updatedAt ?? new Date(),
   }
@@ -76,15 +82,34 @@ function toMemberWithDivision(
       createdAt: Date | null
       updatedAt: Date | null
     } | null
+    rankRef?: {
+      id: string
+      code: string
+      name: string
+      branch: string
+      category: string
+      displayOrder: number
+      isActive: boolean
+      replacedBy: string | null
+      createdAt: Date | null
+      updatedAt: Date | null
+    } | null
     memberTags?: Array<{
       tag: {
         id: string
         name: string
-        color: string
         description: string | null
         displayOrder: number
+        chipVariant: string
+        chipColor: string
         createdAt: Date | null
         updatedAt: Date | null
+      }
+    }>
+    qualifications?: Array<{
+      qualificationType: {
+        code: string
+        name: string
       }
     }>
   }
@@ -121,20 +146,47 @@ function toMemberWithDivision(
     })
   }
 
+  // Add rank details if included and exists
+  if (prismaMember.rankRef) {
+    Object.assign(base, {
+      rankDetails: {
+        id: prismaMember.rankRef.id,
+        code: prismaMember.rankRef.code,
+        name: prismaMember.rankRef.name,
+        branch: prismaMember.rankRef.branch,
+        category: prismaMember.rankRef.category,
+        displayOrder: prismaMember.rankRef.displayOrder,
+        isActive: prismaMember.rankRef.isActive,
+        createdAt: prismaMember.rankRef.createdAt ?? new Date(),
+        updatedAt: prismaMember.rankRef.updatedAt ?? new Date(),
+      },
+    })
+  }
+
   // Add tags if included
   if (prismaMember.memberTags) {
-    return {
-      ...base,
+    Object.assign(base, {
       tags: prismaMember.memberTags.map((mt) => ({
         id: mt.tag.id,
         name: mt.tag.name,
-        color: mt.tag.color,
         description: mt.tag.description ?? undefined,
         displayOrder: mt.tag.displayOrder,
+        chipVariant: mt.tag.chipVariant,
+        chipColor: mt.tag.chipColor,
         createdAt: mt.tag.createdAt ?? new Date(),
         updatedAt: mt.tag.updatedAt ?? new Date(),
       })),
-    }
+    })
+  }
+
+  // Add qualifications if included
+  if (prismaMember.qualifications) {
+    Object.assign(base, {
+      qualifications: prismaMember.qualifications.map((q) => ({
+        code: q.qualificationType.code,
+        name: q.qualificationType.name,
+      })),
+    })
   }
 
   return base
@@ -142,9 +194,11 @@ function toMemberWithDivision(
 
 export class MemberRepository {
   private prisma: PrismaClientInstance
+  private rankRepository: RankRepository
 
   constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
+    this.rankRepository = new RankRepository(this.prisma)
   }
 
   /**
@@ -234,6 +288,17 @@ export class MemberRepository {
       }
     }
 
+    if (filters?.qualificationCode) {
+      where.qualifications = {
+        some: {
+          status: 'active',
+          qualificationType: {
+            code: filters.qualificationCode,
+          },
+        },
+      }
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -247,6 +312,7 @@ export class MemberRepository {
       include: {
         division: true,
         badge: true,
+        rankRef: true,
         memberTags: {
           include: {
             tag: true,
@@ -275,8 +341,8 @@ export class MemberRepository {
     if (!params.page || params.page < 1) {
       throw new Error('Invalid page number: must be >= 1')
     }
-    if (!params.limit || params.limit < 1 || params.limit > 100) {
-      throw new Error('Invalid limit: must be between 1 and 100')
+    if (!params.limit || params.limit < 1 || params.limit > 500) {
+      throw new Error('Invalid limit: must be between 1 and 500')
     }
 
     const page = params.page
@@ -385,6 +451,17 @@ export class MemberRepository {
       }
     }
 
+    if (filters?.qualificationCode) {
+      where.qualifications = {
+        some: {
+          status: 'active',
+          qualificationType: {
+            code: filters.qualificationCode,
+          },
+        },
+      }
+    }
+
     if (filters?.search) {
       where.OR = [
         { firstName: { contains: filters.search, mode: 'insensitive' } },
@@ -401,9 +478,16 @@ export class MemberRepository {
         include: {
           division: true,
           badge: true,
+          rankRef: true,
           memberTags: {
             include: {
               tag: true,
+            },
+          },
+          qualifications: {
+            where: { status: 'active' },
+            include: {
+              qualificationType: true,
             },
           },
         },
@@ -459,6 +543,12 @@ export class MemberRepository {
    * Create a new member
    */
   async create(data: CreateMemberInput): Promise<Member> {
+    // Look up rank by code to get rankId
+    const rank = await this.rankRepository.findByCode(data.rank)
+    if (!rank) {
+      throw new Error(`Invalid rank code: ${data.rank}`)
+    }
+
     const member = await this.prisma.member.create({
       data: {
         serviceNumber: data.serviceNumber,
@@ -467,10 +557,12 @@ export class MemberRepository {
         lastName: data.lastName,
         initials: data.initials !== undefined ? data.initials : null,
         rank: data.rank,
+        rankId: rank.id,
         divisionId: data.divisionId,
         mess: data.mess !== undefined ? data.mess : null,
         moc: data.moc !== undefined ? data.moc : null,
         memberType: data.memberType !== undefined ? data.memberType : 'regular',
+        memberTypeId: data.memberTypeId !== undefined ? data.memberTypeId : null,
         classDetails: data.classDetails !== undefined ? data.classDetails : null,
         status: data.status !== undefined ? data.status : 'active',
         email: data.email !== undefined ? data.email : null,
@@ -520,6 +612,9 @@ export class MemberRepository {
     if (data.memberType !== undefined) {
       updateData.memberType = data.memberType
     }
+    if (data.memberTypeId !== undefined) {
+      updateData.memberTypeId = data.memberTypeId
+    }
     if (data.classDetails !== undefined) {
       updateData.classDetails = data.classDetails
     }
@@ -537,6 +632,9 @@ export class MemberRepository {
     }
     if (data.badgeId !== undefined) {
       updateData.badgeId = data.badgeId
+    }
+    if (data.memberStatusId !== undefined) {
+      updateData.memberStatusId = data.memberStatusId
     }
 
     // Handle tags separately - only process if tagIds array is provided
@@ -708,10 +806,28 @@ export class MemberRepository {
       return 0
     }
 
+    // Pre-fetch all ranks to avoid multiple queries in the transaction
+    const uniqueRankCodes = [...new Set(members.map((m) => m.rank))]
+    const ranks = await Promise.all(
+      uniqueRankCodes.map(async (code) => {
+        const rank = await this.rankRepository.findByCode(code)
+        if (!rank) {
+          throw new Error(`Invalid rank code: ${code}`)
+        }
+        return rank
+      })
+    )
+    const rankMap = new Map(ranks.map((r) => [r.code, r.id]))
+
     const result = await this.prisma.$transaction(async (tx) => {
       let insertedCount = 0
 
       for (const memberData of members) {
+        const rankId = rankMap.get(memberData.rank)
+        if (!rankId) {
+          throw new Error(`Invalid rank code: ${memberData.rank}`)
+        }
+
         await tx.member.create({
           data: {
             serviceNumber: memberData.serviceNumber,
@@ -721,10 +837,12 @@ export class MemberRepository {
             lastName: memberData.lastName,
             initials: memberData.initials !== undefined ? memberData.initials : null,
             rank: memberData.rank,
+            rankId: rankId,
             divisionId: memberData.divisionId,
             mess: memberData.mess !== undefined ? memberData.mess : null,
             moc: memberData.moc !== undefined ? memberData.moc : null,
             memberType: memberData.memberType,
+            memberTypeId: memberData.memberTypeId !== undefined ? memberData.memberTypeId : null,
             classDetails: memberData.classDetails !== undefined ? memberData.classDetails : null,
             status: memberData.status !== undefined ? memberData.status : 'active',
             email: memberData.email !== undefined ? memberData.email : null,
@@ -788,6 +906,9 @@ export class MemberRepository {
         }
         if (data.memberType !== undefined) {
           updateData.memberType = data.memberType
+        }
+        if (data.memberTypeId !== undefined) {
+          updateData.memberTypeId = data.memberTypeId
         }
         if (data.classDetails !== undefined) {
           updateData.classDetails = data.classDetails

@@ -7,6 +7,8 @@ interface MemberTypeRow {
   code: string
   name: string
   description: string | null
+  chip_variant: string | null
+  chip_color: string | null
   created_at: Date
   updated_at: Date
 }
@@ -17,6 +19,8 @@ function toMemberType(row: MemberTypeRow): MemberTypeEnum {
     code: row.code,
     name: row.name,
     description: row.description ?? undefined,
+    chipVariant: row.chip_variant ?? undefined,
+    chipColor: row.chip_color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -31,7 +35,7 @@ export class MemberTypeRepository {
 
   async findAll(): Promise<MemberTypeEnum[]> {
     const rows = await this.prisma.$queryRaw<MemberTypeRow[]>`
-      SELECT id, code, name, description, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_types
       ORDER BY name
     `
@@ -40,7 +44,7 @@ export class MemberTypeRepository {
 
   async findById(id: string): Promise<MemberTypeEnum | null> {
     const rows = await this.prisma.$queryRaw<MemberTypeRow[]>`
-      SELECT id, code, name, description, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_types
       WHERE id = ${id}::uuid
     `
@@ -49,7 +53,7 @@ export class MemberTypeRepository {
 
   async findByCode(code: string): Promise<MemberTypeEnum | null> {
     const rows = await this.prisma.$queryRaw<MemberTypeRow[]>`
-      SELECT id, code, name, description, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM member_types
       WHERE code = ${code}
     `
@@ -58,9 +62,9 @@ export class MemberTypeRepository {
 
   async create(data: CreateMemberTypeInput): Promise<MemberTypeEnum> {
     const rows = await this.prisma.$queryRaw<MemberTypeRow[]>`
-      INSERT INTO member_types (code, name, description)
-      VALUES (${data.code}, ${data.name}, ${data.description ?? null})
-      RETURNING id, code, name, description, created_at, updated_at
+      INSERT INTO member_types (code, name, description, chip_variant, chip_color)
+      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.chipVariant ?? null}, ${data.chipColor ?? null})
+      RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at
     `
     if (rows.length === 0) {
       throw new Error('Failed to create member type')
@@ -88,11 +92,19 @@ export class MemberTypeRepository {
       setClauses.push(`description = $${values.length + 1}`)
       values.push(data.description)
     }
+    if (data.chipVariant !== undefined) {
+      setClauses.push(`chip_variant = $${values.length + 1}`)
+      values.push(data.chipVariant)
+    }
+    if (data.chipColor !== undefined) {
+      setClauses.push(`chip_color = $${values.length + 1}`)
+      values.push(data.chipColor)
+    }
 
     setClauses.push('updated_at = NOW()')
 
     const rows = await this.prisma.$queryRawUnsafe<MemberTypeRow[]>(
-      `UPDATE member_types SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, created_at, updated_at`,
+      `UPDATE member_types SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at`,
       ...values,
       id
     )
@@ -129,6 +141,18 @@ export class MemberTypeRepository {
       WHERE member_type_id = ${id}::uuid
     `
     return Number(rows[0]?.count ?? 0)
+  }
+
+  /**
+   * Find or create a member type by code
+   * Used during imports to auto-create member types that don't exist
+   */
+  async upsertByCode(code: string, name: string): Promise<MemberTypeEnum> {
+    const existing = await this.findByCode(code)
+    if (existing) {
+      return existing
+    }
+    return this.create({ code, name })
   }
 }
 

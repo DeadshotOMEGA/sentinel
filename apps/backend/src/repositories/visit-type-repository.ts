@@ -7,7 +7,8 @@ interface VisitTypeRow {
   code: string
   name: string
   description: string | null
-  color: string | null
+  chip_variant: string | null
+  chip_color: string | null
   created_at: Date
   updated_at: Date
 }
@@ -21,7 +22,8 @@ function toVisitType(row: VisitTypeRow): VisitTypeEnum {
     code: row.code,
     name: row.name,
     description: row.description ?? undefined,
-    color: row.color ?? undefined,
+    chipVariant: row.chip_variant ?? undefined,
+    chipColor: row.chip_color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -39,7 +41,7 @@ export class VisitTypeRepository {
    */
   async findAll(): Promise<VisitTypeEnum[]> {
     const rows = await this.prisma.$queryRaw<VisitTypeRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM visit_types
       ORDER BY name
     `
@@ -52,7 +54,7 @@ export class VisitTypeRepository {
    */
   async findById(id: string): Promise<VisitTypeEnum | null> {
     const rows = await this.prisma.$queryRaw<VisitTypeRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM visit_types
       WHERE id = ${id}::uuid
     `
@@ -65,7 +67,7 @@ export class VisitTypeRepository {
    */
   async findByCode(code: string): Promise<VisitTypeEnum | null> {
     const rows = await this.prisma.$queryRaw<VisitTypeRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM visit_types
       WHERE code = ${code}
     `
@@ -78,9 +80,9 @@ export class VisitTypeRepository {
    */
   async create(data: CreateVisitTypeInput): Promise<VisitTypeEnum> {
     const rows = await this.prisma.$queryRaw<VisitTypeRow[]>`
-      INSERT INTO visit_types (code, name, description, color)
-      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.color ?? null})
-      RETURNING id, code, name, description, color, created_at, updated_at
+      INSERT INTO visit_types (code, name, description, chip_variant, chip_color)
+      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.chipVariant ?? null}, ${data.chipColor ?? null})
+      RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at
     `
 
     if (rows.length === 0) {
@@ -114,16 +116,20 @@ export class VisitTypeRepository {
       setClauses.push(`description = $${values.length + 1}`)
       values.push(data.description)
     }
-    if (data.color !== undefined) {
-      setClauses.push(`color = $${values.length + 1}`)
-      values.push(data.color)
+    if (data.chipVariant !== undefined) {
+      setClauses.push(`chip_variant = $${values.length + 1}`)
+      values.push(data.chipVariant)
+    }
+    if (data.chipColor !== undefined) {
+      setClauses.push(`chip_color = $${values.length + 1}`)
+      values.push(data.chipColor)
     }
 
     setClauses.push('updated_at = NOW()')
 
     // Use raw query for dynamic update
     const rows = await this.prisma.$queryRawUnsafe<VisitTypeRow[]>(
-      `UPDATE visit_types SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, color, created_at, updated_at`,
+      `UPDATE visit_types SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at`,
       ...values,
       id
     )

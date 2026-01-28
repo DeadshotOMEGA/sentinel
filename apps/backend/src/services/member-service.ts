@@ -84,8 +84,8 @@ export class MemberService {
       throw new ValidationError('Page must be >= 1')
     }
 
-    if (!params.limit || params.limit < 1 || params.limit > 100) {
-      throw new ValidationError('Limit must be between 1 and 100')
+    if (!params.limit || params.limit < 1 || params.limit > 500) {
+      throw new ValidationError('Limit must be between 1 and 500')
     }
 
     const { members, total } = await this.memberRepo.findPaginated(

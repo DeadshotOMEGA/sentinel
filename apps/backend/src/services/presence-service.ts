@@ -249,6 +249,14 @@ export class PresenceService {
   }
 
   /**
+   * Check if a member is currently present (checked in)
+   */
+  async isMemberPresent(memberId: string): Promise<boolean> {
+    const presentMembers = await this.getPresentMembers()
+    return presentMembers.some((m) => m.id === memberId)
+  }
+
+  /**
    * Get member's last known direction from Redis cache
    * Prepares for ARCH-01 N+1 optimization in Phase 3
    *

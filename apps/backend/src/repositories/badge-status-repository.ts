@@ -11,7 +11,8 @@ interface BadgeStatusRow {
   code: string
   name: string
   description: string | null
-  color: string | null
+  chip_variant: string | null
+  chip_color: string | null
   created_at: Date
   updated_at: Date
 }
@@ -25,6 +26,8 @@ function toBadgeStatus(row: BadgeStatusRow): BadgeStatusEnum {
     code: row.code,
     name: row.name,
     description: row.description ?? undefined,
+    chipVariant: row.chip_variant ?? undefined,
+    chipColor: row.chip_color ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -42,7 +45,7 @@ export class BadgeStatusRepository {
    */
   async findAll(): Promise<BadgeStatusEnum[]> {
     const rows = await this.prisma.$queryRaw<BadgeStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM badge_statuses
       ORDER BY name
     `
@@ -55,7 +58,7 @@ export class BadgeStatusRepository {
    */
   async findById(id: string): Promise<BadgeStatusEnum | null> {
     const rows = await this.prisma.$queryRaw<BadgeStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM badge_statuses
       WHERE id = ${id}::uuid
     `
@@ -68,7 +71,7 @@ export class BadgeStatusRepository {
    */
   async findByCode(code: string): Promise<BadgeStatusEnum | null> {
     const rows = await this.prisma.$queryRaw<BadgeStatusRow[]>`
-      SELECT id, code, name, description, color, created_at, updated_at
+      SELECT id, code, name, description, chip_variant, chip_color, created_at, updated_at
       FROM badge_statuses
       WHERE code = ${code}
     `
@@ -81,9 +84,9 @@ export class BadgeStatusRepository {
    */
   async create(data: CreateBadgeStatusInput): Promise<BadgeStatusEnum> {
     const rows = await this.prisma.$queryRaw<BadgeStatusRow[]>`
-      INSERT INTO badge_statuses (code, name, description, color)
-      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.color ?? null})
-      RETURNING id, code, name, description, color, created_at, updated_at
+      INSERT INTO badge_statuses (code, name, description, chip_variant, chip_color)
+      VALUES (${data.code}, ${data.name}, ${data.description ?? null}, ${data.chipVariant ?? null}, ${data.chipColor ?? null})
+      RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at
     `
 
     if (rows.length === 0) {
@@ -117,16 +120,20 @@ export class BadgeStatusRepository {
       setClauses.push(`description = $${values.length + 1}`)
       values.push(data.description)
     }
-    if (data.color !== undefined) {
-      setClauses.push(`color = $${values.length + 1}`)
-      values.push(data.color)
+    if (data.chipVariant !== undefined) {
+      setClauses.push(`chip_variant = $${values.length + 1}`)
+      values.push(data.chipVariant)
+    }
+    if (data.chipColor !== undefined) {
+      setClauses.push(`chip_color = $${values.length + 1}`)
+      values.push(data.chipColor)
     }
 
     setClauses.push('updated_at = NOW()')
 
     // Use raw query for dynamic update
     const rows = await this.prisma.$queryRawUnsafe<BadgeStatusRow[]>(
-      `UPDATE badge_statuses SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, color, created_at, updated_at`,
+      `UPDATE badge_statuses SET ${setClauses.join(', ')} WHERE id = $${values.length + 1}::uuid RETURNING id, code, name, description, chip_variant, chip_color, created_at, updated_at`,
       ...values,
       id
     )
