@@ -1,5 +1,204 @@
 import * as v from 'valibot'
 
+// ============================================================================
+// Lockup Status Schemas
+// ============================================================================
+
+/**
+ * Building status enum
+ */
+export const BuildingStatusSchema = v.picklist(['secured', 'open', 'locking_up'])
+
+/**
+ * Lockup holder info schema
+ */
+export const LockupHolderSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+  serviceNumber: v.string(),
+})
+
+/**
+ * Lockup status response schema
+ */
+export const LockupStatusResponseSchema = v.object({
+  date: v.string(), // ISO date string (operational date)
+  buildingStatus: BuildingStatusSchema,
+  currentHolder: v.nullable(LockupHolderSchema),
+  acquiredAt: v.nullable(v.string()), // ISO datetime
+  securedAt: v.nullable(v.string()), // ISO datetime
+  securedBy: v.nullable(LockupHolderSchema),
+  isActive: v.boolean(),
+})
+
+/**
+ * Date param schema for status lookup
+ */
+export const DateParamSchema = v.object({
+  date: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')),
+})
+
+// ============================================================================
+// Lockup Transfer Schemas
+// ============================================================================
+
+/**
+ * Transfer reason enum
+ */
+export const TransferReasonSchema = v.picklist([
+  'manual',
+  'dds_handoff',
+  'duty_watch_takeover',
+  'checkout_transfer',
+])
+
+/**
+ * Transfer lockup request schema
+ */
+export const TransferLockupSchema = v.object({
+  toMemberId: v.pipe(v.string(), v.uuid()),
+  reason: TransferReasonSchema,
+  notes: v.optional(v.nullable(v.string())),
+})
+
+/**
+ * Transfer lockup response schema
+ */
+export const TransferLockupResponseSchema = v.object({
+  success: v.boolean(),
+  message: v.string(),
+  transfer: v.object({
+    id: v.string(),
+    fromMemberId: v.string(),
+    toMemberId: v.string(),
+    transferredAt: v.string(),
+    reason: v.string(),
+    notes: v.nullable(v.string()),
+  }),
+  newHolder: LockupHolderSchema,
+})
+
+// ============================================================================
+// Checkout Options Schemas
+// ============================================================================
+
+/**
+ * Checkout option type
+ */
+export const CheckoutOptionSchema = v.picklist([
+  'normal_checkout',
+  'transfer_lockup',
+  'execute_lockup',
+])
+
+/**
+ * Eligible recipient for lockup transfer
+ */
+export const EligibleRecipientSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+  serviceNumber: v.string(),
+  qualifications: v.array(
+    v.object({
+      code: v.string(),
+      name: v.string(),
+    })
+  ),
+})
+
+/**
+ * Checkout options response schema
+ */
+export const CheckoutOptionsResponseSchema = v.object({
+  memberId: v.string(),
+  holdsLockup: v.boolean(),
+  canCheckout: v.boolean(),
+  blockReason: v.nullable(v.string()),
+  availableOptions: v.array(CheckoutOptionSchema),
+  eligibleRecipients: v.optional(v.array(EligibleRecipientSchema)),
+})
+
+// ============================================================================
+// Lockup History Schemas
+// ============================================================================
+
+/**
+ * Lockup transfer history item
+ */
+export const LockupTransferHistorySchema = v.object({
+  id: v.string(),
+  type: v.literal('transfer'),
+  fromMember: LockupHolderSchema,
+  toMember: LockupHolderSchema,
+  reason: v.string(),
+  notes: v.nullable(v.string()),
+  timestamp: v.string(),
+})
+
+/**
+ * Lockup execution history item
+ */
+export const LockupExecutionHistorySchema = v.object({
+  id: v.string(),
+  type: v.literal('execution'),
+  executedBy: LockupHolderSchema,
+  membersCheckedOut: v.number(),
+  visitorsCheckedOut: v.number(),
+  totalCheckedOut: v.number(),
+  notes: v.nullable(v.string()),
+  timestamp: v.string(),
+})
+
+/**
+ * Lockup history item (union type)
+ */
+export const LockupHistoryItemSchema = v.union([
+  LockupTransferHistorySchema,
+  LockupExecutionHistorySchema,
+])
+
+/**
+ * Lockup history query schema
+ */
+export const LockupHistoryQuerySchema = v.object({
+  startDate: v.optional(v.string()),
+  endDate: v.optional(v.string()),
+  limit: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => parseInt(val, 10)),
+      v.number(),
+      v.minValue(1),
+      v.maxValue(100)
+    )
+  ),
+  offset: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => parseInt(val, 10)),
+      v.number(),
+      v.minValue(0)
+    )
+  ),
+})
+
+/**
+ * Lockup history response schema
+ */
+export const LockupHistoryResponseSchema = v.object({
+  items: v.array(LockupHistoryItemSchema),
+  total: v.number(),
+  hasMore: v.boolean(),
+})
+
+// ============================================================================
+// Present People Schemas (existing, kept for lockup execution)
+// ============================================================================
+
 /**
  * Present member for lockup schema
  */
@@ -69,7 +268,24 @@ export const CheckLockupAuthResponseSchema = v.object({
   message: v.string(),
 })
 
-// Type exports
+// Type exports - New types
+export type BuildingStatus = v.InferOutput<typeof BuildingStatusSchema>
+export type LockupHolder = v.InferOutput<typeof LockupHolderSchema>
+export type LockupStatusResponse = v.InferOutput<typeof LockupStatusResponseSchema>
+export type DateParam = v.InferOutput<typeof DateParamSchema>
+export type TransferReason = v.InferOutput<typeof TransferReasonSchema>
+export type TransferLockupInput = v.InferOutput<typeof TransferLockupSchema>
+export type TransferLockupResponse = v.InferOutput<typeof TransferLockupResponseSchema>
+export type CheckoutOption = v.InferOutput<typeof CheckoutOptionSchema>
+export type EligibleRecipient = v.InferOutput<typeof EligibleRecipientSchema>
+export type CheckoutOptionsResponse = v.InferOutput<typeof CheckoutOptionsResponseSchema>
+export type LockupTransferHistory = v.InferOutput<typeof LockupTransferHistorySchema>
+export type LockupExecutionHistory = v.InferOutput<typeof LockupExecutionHistorySchema>
+export type LockupHistoryItem = v.InferOutput<typeof LockupHistoryItemSchema>
+export type LockupHistoryQuery = v.InferOutput<typeof LockupHistoryQuerySchema>
+export type LockupHistoryResponse = v.InferOutput<typeof LockupHistoryResponseSchema>
+
+// Type exports - Existing types
 export type PresentMemberForLockup = v.InferOutput<typeof PresentMemberForLockupSchema>
 export type PresentVisitorForLockup = v.InferOutput<typeof PresentVisitorForLockupSchema>
 export type LockupPresentDataResponse = v.InferOutput<typeof LockupPresentDataResponseSchema>

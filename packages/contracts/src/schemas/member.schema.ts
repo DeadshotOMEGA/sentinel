@@ -1,21 +1,14 @@
 import * as v from 'valibot'
 
 /**
- * Member rank values
+ * Member rank code validation schema
+ * Validates that rank code is a valid string (actual validation happens at API level)
  */
-export const RankEnum = v.picklist([
-  'AB',
-  'LS',
-  'OS',
-  'S3',
-  'S2',
-  'S1',
-  'MS',
-  'PO2',
-  'PO1',
-  'CPO2',
-  'CPO1',
-])
+export const RankCodeSchema = v.pipe(
+  v.string('Rank code is required'),
+  v.minLength(1, 'Rank code must not be empty'),
+  v.maxLength(10, 'Rank code must be at most 10 characters')
+)
 
 /**
  * Create member request schema
@@ -26,7 +19,7 @@ export const CreateMemberSchema = v.object({
     v.minLength(6, 'Service number must be at least 6 characters'),
     v.maxLength(20, 'Service number must be at most 20 characters')
   ),
-  rank: RankEnum,
+  rank: RankCodeSchema,
   firstName: v.pipe(
     v.string('First name is required'),
     v.minLength(1, 'First name cannot be empty'),
@@ -59,7 +52,7 @@ export const UpdateMemberSchema = v.object({
       v.maxLength(20, 'Service number must be at most 20 characters')
     )
   ),
-  rank: v.optional(RankEnum),
+  rank: v.optional(RankCodeSchema),
   firstName: v.optional(
     v.pipe(
       v.string(),
@@ -86,6 +79,14 @@ export const UpdateMemberSchema = v.object({
 })
 
 /**
+ * Member qualification summary for list views
+ */
+export const MemberQualificationSummarySchema = v.object({
+  code: v.string(),
+  name: v.string(),
+})
+
+/**
  * Member response schema
  */
 export const MemberResponseSchema = v.object({
@@ -101,6 +102,9 @@ export const MemberResponseSchema = v.object({
   badgeId: v.nullable(v.string()),
   memberTypeId: v.nullable(v.string()),
   memberStatusId: v.nullable(v.string()),
+  qualifications: v.optional(v.array(MemberQualificationSummarySchema)),
+  missedCheckoutCount: v.optional(v.number()),
+  lastMissedCheckout: v.optional(v.nullable(v.string())),
   createdAt: v.string(),
   updatedAt: v.nullable(v.string()),
 })
@@ -110,11 +114,14 @@ export const MemberResponseSchema = v.object({
  */
 export const MemberListQuerySchema = v.object({
   page: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1))),
-  limit: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))),
+  limit: v.optional(
+    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(500))
+  ),
   search: v.optional(v.string()),
   divisionId: v.optional(v.pipe(v.string(), v.uuid())),
   rank: v.optional(v.string()),
   status: v.optional(v.string()),
+  qualificationCode: v.optional(v.string()),
 })
 
 /**

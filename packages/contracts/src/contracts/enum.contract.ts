@@ -10,6 +10,10 @@ import {
   MemberStatusResponseSchema,
   MemberTypeResponseSchema,
   BadgeStatusResponseSchema,
+  CreateTagSchema,
+  UpdateTagSchema,
+  TagListResponseSchema,
+  SingleTagResponseSchema,
 } from '../schemas/enum.schema.js'
 import {
   ErrorResponseSchema,
@@ -280,6 +284,71 @@ export const badgeStatusesContract = c.router({
 })
 
 /**
+ * Tags routes
+ */
+export const tagsContract = c.router({
+  getTags: {
+    method: 'GET',
+    path: '/api/enums/tags',
+    responses: {
+      200: TagListResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'List all tags',
+    description: 'Returns all tags with usage counts',
+  },
+
+  createTag: {
+    method: 'POST',
+    path: '/api/enums/tags',
+    body: CreateTagSchema,
+    responses: {
+      201: SingleTagResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create tag',
+    description: 'Create a new tag (admin only)',
+  },
+
+  updateTag: {
+    method: 'PUT',
+    path: '/api/enums/tags/:id',
+    pathParams: IdParamSchema,
+    body: UpdateTagSchema,
+    responses: {
+      200: SingleTagResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Update tag',
+    description: 'Update an existing tag (admin only)',
+  },
+
+  deleteTag: {
+    method: 'DELETE',
+    path: '/api/enums/tags/:id',
+    pathParams: IdParamSchema,
+    body: c.type<undefined>(),
+    responses: {
+      200: SuccessResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Delete tag',
+    description: 'Delete a tag if not in use (admin only)',
+  },
+})
+
+/**
  * Combined enum contract
  */
 export const enumContract = c.router({
@@ -287,4 +356,5 @@ export const enumContract = c.router({
   memberStatuses: memberStatusesContract,
   memberTypes: memberTypesContract,
   badgeStatuses: badgeStatusesContract,
+  tags: tagsContract,
 })

@@ -6,6 +6,43 @@ import * as v from 'valibot'
 const CodePattern = /^[a-z0-9_]+$/
 
 /**
+ * Valid chip variants (matching HeroUI styles)
+ */
+export const ChipVariants = [
+  'solid',
+  'bordered',
+  'light',
+  'flat',
+  'faded',
+  'shadow',
+  'dot',
+] as const
+export type ChipVariant = (typeof ChipVariants)[number]
+
+/**
+ * Valid chip colors (includes both semantic and base HeroUI colors)
+ */
+export const ChipColors = [
+  // Semantic colors
+  'default',
+  'primary',
+  'secondary',
+  'success',
+  'warning',
+  'danger',
+  // Base colors
+  'blue',
+  'green',
+  'pink',
+  'purple',
+  'red',
+  'yellow',
+  'cyan',
+  'zinc',
+] as const
+export type ChipColor = (typeof ChipColors)[number]
+
+/**
  * Base enum validation schema (shared across all enum types)
  */
 export const CreateEnumSchema = v.object({
@@ -23,9 +60,8 @@ export const CreateEnumSchema = v.object({
   description: v.optional(
     v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters'))
   ),
-  color: v.optional(
-    v.pipe(v.string(), v.maxLength(20, 'Color must be at most 20 characters'))
-  ),
+  chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
+  chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
 })
 
 /**
@@ -50,9 +86,8 @@ export const UpdateEnumSchema = v.object({
   description: v.optional(
     v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters'))
   ),
-  color: v.optional(
-    v.pipe(v.string(), v.maxLength(20, 'Color must be at most 20 characters'))
-  ),
+  chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
+  chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
 })
 
 /**
@@ -63,7 +98,8 @@ export const EnumResponseSchema = v.object({
   code: v.string(),
   name: v.string(),
   description: v.nullable(v.string()),
-  color: v.optional(v.nullable(v.string())),
+  chipVariant: v.optional(v.string()),
+  chipColor: v.optional(v.string()),
   usageCount: v.optional(v.number()),
   createdAt: v.string(),
   updatedAt: v.string(),
@@ -117,6 +153,59 @@ export const BadgeStatusResponseSchema = v.object({
 })
 
 /**
+ * Tag schemas (Tags use 'name' instead of 'code' and have displayOrder)
+ */
+export const CreateTagSchema = v.object({
+  name: v.pipe(
+    v.string('Name is required'),
+    v.minLength(1, 'Name cannot be empty'),
+    v.maxLength(100, 'Name must be at most 100 characters')
+  ),
+  description: v.optional(
+    v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters'))
+  ),
+  chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
+  chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
+  displayOrder: v.optional(v.number()),
+})
+
+export const UpdateTagSchema = v.object({
+  name: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Name cannot be empty'),
+      v.maxLength(100, 'Name must be at most 100 characters')
+    )
+  ),
+  description: v.optional(
+    v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters'))
+  ),
+  chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
+  chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
+  displayOrder: v.optional(v.number()),
+})
+
+export const TagResponseSchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  description: v.nullable(v.string()),
+  chipVariant: v.optional(v.string()),
+  chipColor: v.optional(v.string()),
+  displayOrder: v.optional(v.number()),
+  usageCount: v.optional(v.number()),
+  createdAt: v.string(),
+  updatedAt: v.string(),
+})
+
+export const TagListResponseSchema = v.object({
+  tags: v.array(TagResponseSchema),
+})
+
+export const SingleTagResponseSchema = v.object({
+  tag: TagResponseSchema,
+})
+
+/**
  * Type exports
  */
 export type CreateEnum = v.InferOutput<typeof CreateEnumSchema>
@@ -130,3 +219,8 @@ export type VisitTypeResponse = v.InferOutput<typeof VisitTypeResponseSchema>
 export type MemberStatusResponse = v.InferOutput<typeof MemberStatusResponseSchema>
 export type MemberTypeResponse = v.InferOutput<typeof MemberTypeResponseSchema>
 export type BadgeStatusResponse = v.InferOutput<typeof BadgeStatusResponseSchema>
+export type CreateTag = v.InferOutput<typeof CreateTagSchema>
+export type UpdateTag = v.InferOutput<typeof UpdateTagSchema>
+export type TagResponse = v.InferOutput<typeof TagResponseSchema>
+export type TagListResponse = v.InferOutput<typeof TagListResponseSchema>
+export type SingleTagResponse = v.InferOutput<typeof SingleTagResponseSchema>

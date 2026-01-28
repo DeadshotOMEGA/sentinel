@@ -8,6 +8,10 @@ import {
   ErrorResponseSchema,
   IdParamSchema,
   SuccessResponseSchema,
+  PreviewImportRequestSchema,
+  PreviewImportResponseSchema,
+  ExecuteImportRequestSchema,
+  ExecuteImportResponseSchema,
 } from '../schemas/index.js'
 
 const c = initContract()
@@ -32,7 +36,8 @@ export const memberContract = c.router({
       500: ErrorResponseSchema,
     },
     summary: 'List all members',
-    description: 'Get paginated list of members with optional filtering by division, rank, and status',
+    description:
+      'Get paginated list of members with optional filtering by division, rank, and status',
   },
 
   /**
@@ -126,5 +131,39 @@ export const memberContract = c.router({
     },
     summary: 'Search member by service number',
     description: 'Find a member by their service number',
+  },
+
+  /**
+   * Preview Nominal Roll import
+   */
+  previewImport: {
+    method: 'POST',
+    path: '/api/members/import/preview',
+    body: PreviewImportRequestSchema,
+    responses: {
+      200: PreviewImportResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Preview member import',
+    description: 'Parse CSV and preview what will be added, updated, or deactivated',
+  },
+
+  /**
+   * Execute Nominal Roll import
+   */
+  executeImport: {
+    method: 'POST',
+    path: '/api/members/import/execute',
+    body: ExecuteImportRequestSchema,
+    responses: {
+      200: ExecuteImportResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Execute member import',
+    description: 'Execute the member import and create/update members in the database',
   },
 })

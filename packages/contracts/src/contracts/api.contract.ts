@@ -16,6 +16,11 @@ import { devToolsContract } from './dev-tools.contract.js'
 import { devContract } from './dev.contract.js'
 import { securityAlertContract } from './security-alert.contract.js'
 import { ddsContract } from './dds.contract.js'
+import { databaseExplorerContract } from './database-explorer.contract.js'
+import { rankContract } from './rank.contract.js'
+import { qualificationContract } from './qualification.contract.js'
+import { scheduleContract } from './schedule.contract.js'
+import { lockupContract } from './lockup.contract.js'
 
 const c = initContract()
 
@@ -44,6 +49,11 @@ export const apiContract = c.router(
     dev: devContract,
     securityAlerts: securityAlertContract,
     dds: ddsContract,
+    databaseExplorer: databaseExplorerContract,
+    ranks: rankContract,
+    qualifications: qualificationContract,
+    schedules: scheduleContract,
+    lockup: lockupContract,
   },
   {
     pathPrefix: '',
