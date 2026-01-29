@@ -3,6 +3,7 @@ import { getPrismaClient } from '../lib/database.js'
 import { Prisma } from '@sentinel/database'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
 import { LockupService } from './lockup-service.js'
+import { ScheduleService } from './schedule-service.js'
 
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
@@ -73,10 +74,12 @@ const memberInclude = {
 export class DdsService {
   private prisma: PrismaClient
   private lockupService: LockupService
+  private scheduleService: ScheduleService
 
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
     this.lockupService = new LockupService(this.prisma)
+    this.scheduleService = new ScheduleService(this.prisma)
   }
 
   private transformAssignment(
@@ -123,11 +126,37 @@ export class DdsService {
       },
     })
 
-    if (!assignment) {
+    if (assignment) {
+      return this.transformAssignment(assignment)
+    }
+
+    // Fall back to published weekly schedule
+    const { dds } = await this.scheduleService.getCurrentDdsFromSchedule()
+
+    if (!dds || dds.status === 'released') {
       return null
     }
 
-    return this.transformAssignment(assignment)
+    return {
+      id: dds.assignmentId,
+      memberId: dds.member.id,
+      assignedDate: today,
+      acceptedAt: null,
+      releasedAt: null,
+      transferredTo: null,
+      assignedBy: null,
+      status: dds.status === 'confirmed' ? 'active' : 'pending',
+      notes: null,
+      createdAt: today,
+      updatedAt: today,
+      member: {
+        id: dds.member.id,
+        name: `${dds.member.firstName} ${dds.member.lastName}`,
+        rank: dds.member.rank,
+        division: null,
+      },
+      assignedByAdminName: null,
+    }
   }
 
   /**

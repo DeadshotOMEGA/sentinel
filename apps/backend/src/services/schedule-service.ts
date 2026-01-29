@@ -147,8 +147,12 @@ export class ScheduleService {
    * Get schedules for a specific week
    */
   async getSchedulesByWeek(date: Date): Promise<WeeklyScheduleEntity[]> {
-    const { start } = getOperationalWeek(date)
-    return this.repository.findSchedulesByWeekStart(start)
+    // Use ensureMonday instead of getOperationalWeek to avoid the 3 AM
+    // day-shift logic. The input is an explicit date (e.g. "2026-01-26"),
+    // not a live timestamp, so the operational-date adjustment would
+    // incorrectly shift midnight dates back one day.
+    const weekStart = this.ensureMonday(date)
+    return this.repository.findSchedulesByWeekStart(weekStart)
   }
 
   /**
@@ -457,7 +461,7 @@ export class ScheduleService {
     dds: CurrentDdsFromSchedule | null
     operationalDate: string
   }> {
-    const { start } = getOperationalWeek(date)
+    const start = this.ensureMonday(date)
     const operationalDate = getOperationalDateISO(date)
 
     const result = await this.repository.findDdsAssignmentForWeek(start)

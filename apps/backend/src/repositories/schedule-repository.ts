@@ -137,6 +137,7 @@ export interface ScheduleListFilter {
   dutyRoleId?: string
   status?: string
   weekStartDate?: Date
+  weekEndDate?: Date
   limit?: number
   offset?: number
 }
@@ -291,7 +292,13 @@ export class ScheduleRepository {
     if (filter.status) {
       where.status = filter.status
     }
-    if (filter.weekStartDate) {
+    if (filter.weekStartDate && filter.weekEndDate) {
+      // Date range query: find all schedules within the range
+      where.weekStartDate = {
+        gte: filter.weekStartDate,
+        lte: filter.weekEndDate,
+      }
+    } else if (filter.weekStartDate) {
       where.weekStartDate = filter.weekStartDate
     }
 

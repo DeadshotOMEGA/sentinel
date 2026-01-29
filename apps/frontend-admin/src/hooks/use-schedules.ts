@@ -91,6 +91,25 @@ export function useSchedules(params: ScheduleListParams = {}) {
   })
 }
 
+export function useSchedulesByDateRange(startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: ['schedules', 'range', startDate, endDate],
+    queryFn: async () => {
+      const response = await apiClient.schedules.listSchedules({
+        query: {
+          weekStartDate: startDate,
+          weekEndDate: endDate,
+        },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch schedules for date range')
+      }
+      return response.body
+    },
+    enabled: !!startDate && !!endDate,
+  })
+}
+
 export function useCurrentSchedules() {
   return useQuery({
     queryKey: ['schedules', 'current'],
@@ -145,7 +164,8 @@ export function useCreateSchedule() {
         body: data,
       })
       if (response.status !== 201) {
-        throw new Error('Failed to create schedule')
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(errorBody?.message || 'Failed to create schedule')
       }
       return response.body
     },

@@ -304,6 +304,7 @@ export const schedulesRouter = s.router(scheduleContract, {
         dutyRoleId: query.dutyRoleId,
         status: query.status,
         weekStartDate: query.weekStartDate ? parseOperationalDate(query.weekStartDate) : undefined,
+        weekEndDate: query.weekEndDate ? parseOperationalDate(query.weekEndDate) : undefined,
         limit: query.limit,
         offset: query.offset,
       })
