@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation'
 import { Bell, Menu, PanelLeftOpen, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
+import { useBackendHealth } from '@/hooks/use-backend-health'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/members', label: 'Members' },
   { href: '/checkins', label: 'Check-ins' },
+  { href: '/events', label: 'Events' },
   { href: '/schedules', label: 'Schedules' },
   { href: '/database', label: 'Database' },
   { href: '/settings', label: 'Settings' },
@@ -21,8 +23,16 @@ interface AppNavbarProps {
   isDrawerOpen: boolean
 }
 
+const statusConfig = {
+  connected: { color: 'badge-success', dot: 'status-success', label: 'Connected' },
+  disconnected: { color: 'badge-error', dot: 'status-error', label: 'Disconnected' },
+  checking: { color: 'badge-warning', dot: 'status-warning', label: 'Checking...' },
+} as const
+
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
+  const backendStatus = useBackendHealth()
+  const { color, dot, label } = statusConfig[backendStatus]
 
   return (
     <div className="navbar w-full shadow-lg bg-primary text-primary-content">
@@ -35,15 +45,15 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
           </label>
         )}
 
-        {/* Logo */}
-        <Link href="/dashboard" className="btn btn-ghost text-xl font-bold">
+        {/* Logo with backend status indicator */}
+        <Link href="/dashboard" className="btn btn-ghost text-2xl font-bold">
           HMCS Chippawa
         </Link>
       </div>
 
       {/* Navigation Links - hidden on mobile, visible on desktop */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
+        <ul className="menu text-lg menu-horizontal px-1">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link href={link.href} className={cn(pathname === link.href && 'active')}>
@@ -55,6 +65,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end">
+        <span className="badge">
+          <span className={cn('status', dot)} />
+          {label}
+        </span>
         <button className="btn btn-ghost btn-circle">
           <Search size={28} strokeWidth={1} />
         </button>

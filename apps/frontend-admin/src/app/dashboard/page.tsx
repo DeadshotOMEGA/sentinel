@@ -1,7 +1,6 @@
 import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
 import { QuickActionButtons } from '@/components/dashboard/quick-action-buttons'
 import { StatusStats } from '@/components/dashboard/status-stats'
-import { DutyWatchWidget } from '@/components/dashboard/duty-watch-widget'
 import { CheckinsFeedWidget } from '@/components/dashboard/checkins-feed-widget'
 
 export default function DashboardPage() {
@@ -14,10 +13,7 @@ export default function DashboardPage() {
       <QuickActionButtons />
 
       {/* Status Stats */}
-      <StatusStats />
-
-      {/* Duty Watch Widget - only visible on Tue/Thu */}
-      <DutyWatchWidget />
+      <div className="mt-6"><StatusStats /></div>
 
       {/* Main Content Check-in Feed */}
       <div className="mt-6"><CheckinsFeedWidget /></div>

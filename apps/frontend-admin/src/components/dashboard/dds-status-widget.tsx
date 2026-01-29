@@ -1,19 +1,19 @@
 'use client'
 
 import { CheckCircle2 } from 'lucide-react'
-import { useDdsStatus } from '@/hooks/use-dds'
+import { useCurrentDds } from '@/hooks/use-schedules'
 
 export function DdsStatusWidget() {
-  const { data: ddsStatus, isLoading } = useDdsStatus()
+  const { data, isLoading } = useCurrentDds()
 
-  const getDdsStatusBadge = (status: string) => {
+  const dds = data?.dds ?? null
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'accepted':
-        return <span className="badge badge-success">Accepted</span>
-      case 'pending':
-        return <span className="badge badge-ghost">Pending</span>
-      case 'transferred':
-        return <span className="badge badge-outline">Transferred</span>
+      case 'confirmed':
+        return <span className="badge badge-success">Confirmed</span>
+      case 'assigned':
+        return <span className="badge badge-ghost">Assigned</span>
       case 'released':
         return <span className="badge">Released</span>
       default:
@@ -36,18 +36,20 @@ export function DdsStatusWidget() {
             <div className="skeleton h-6 w-2/3"></div>
             <div className="skeleton h-8 w-1/2"></div>
           </div>
-        ) : ddsStatus?.assignment ? (
+        ) : dds ? (
           <div className="space-y-3">
-            <p className="font-semibold text-2xl">{ddsStatus.assignment.member.name}</p>
+            <p className="font-semibold text-2xl">
+              {dds.member.rank} {dds.member.firstName} {dds.member.lastName}
+            </p>
             <div className="flex items-center gap-2">
-              {getDdsStatusBadge(ddsStatus.assignment.status)}
+              {getStatusBadge(dds.status)}
               <span className="text-sm text-base-content/60">
-                {new Date(ddsStatus.assignment.assignedDate).toLocaleDateString()}
+                Week of {dds.weekStartDate}
               </span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-base-content/60">No DDS assigned for today</p>
+          <p className="text-sm text-base-content/60">No DDS assigned for this week</p>
         )}
       </div>
     </div>
