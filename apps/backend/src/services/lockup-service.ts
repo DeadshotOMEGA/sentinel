@@ -13,6 +13,7 @@ import { PresenceService } from './presence-service.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { getOperationalDate } from '../utils/operational-date.js'
 import { broadcastLockupExecution, broadcastLockupTransfer } from '../websocket/broadcast.js'
+import { serviceLogger } from '../lib/logger.js'
 
 // ============================================================================
 // Types
@@ -536,7 +537,7 @@ export class LockupService {
           name: `${memberData.rank} ${memberData.firstName} ${memberData.lastName}`,
         })
       } catch (error) {
-        console.error(`Failed to checkout member ${member.id} during lockup:`, error)
+        serviceLogger.error('Failed to checkout member during lockup', { memberId: member.id, error: error instanceof Error ? error.message : String(error) })
       }
     }
 
@@ -550,7 +551,7 @@ export class LockupService {
           name: visitor.name,
         })
       } catch (error) {
-        console.error(`Failed to checkout visitor ${visitor.id} during lockup:`, error)
+        serviceLogger.error('Failed to checkout visitor during lockup', { visitorId: visitor.id, error: error instanceof Error ? error.message : String(error) })
       }
     }
 
@@ -581,7 +582,7 @@ export class LockupService {
           })
         }
       } catch (error) {
-        console.error(`Failed to checkout performer ${performedById} during lockup:`, error)
+        serviceLogger.error('Failed to checkout performer during lockup', { performedById, error: error instanceof Error ? error.message : String(error) })
       }
     }
 

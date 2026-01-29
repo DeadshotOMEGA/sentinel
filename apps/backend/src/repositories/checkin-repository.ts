@@ -102,21 +102,16 @@ export class CheckinRepository {
     if (!prismaCheckin.memberId) {
       throw new Error(`Checkin ${prismaCheckin.id} missing required memberId`)
     }
-    if (!prismaCheckin.badgeId) {
-      throw new Error(
-        `Checkin ${prismaCheckin.id} for member ${prismaCheckin.memberId} missing badgeId - member may need badge assignment`
-      )
-    }
 
-    const method = prismaCheckin.method === 'admin_manual' ? 'admin_manual' : 'badge'
+    const method = prismaCheckin.method ?? 'badge'
     const synced = prismaCheckin.synced === false ? false : true
     const createdAt = prismaCheckin.createdAt ? prismaCheckin.createdAt : prismaCheckin.timestamp
 
     return {
       id: prismaCheckin.id,
       memberId: prismaCheckin.memberId,
-      badgeId: prismaCheckin.badgeId,
-      direction: prismaCheckin.direction as 'in' | 'out',
+      badgeId: prismaCheckin.badgeId ?? undefined,
+      direction: prismaCheckin.direction.toLowerCase() as 'in' | 'out',
       timestamp: prismaCheckin.timestamp,
       kioskId: prismaCheckin.kioskId,
       synced,
@@ -259,7 +254,7 @@ export class CheckinRepository {
         id: row.id,
         memberId: row.member_id,
         badgeId: row.badge_id,
-        direction: row.direction as 'in' | 'out',
+        direction: row.direction.toLowerCase() as 'in' | 'out',
         timestamp: row.timestamp,
         kioskId: row.kiosk_id,
         synced,
@@ -291,12 +286,11 @@ export class CheckinRepository {
       data: {
         memberId: data.memberId,
         badgeId: data.badgeId,
-        direction: data.direction,
+        direction: data.direction.toLowerCase(),
         timestamp: data.timestamp,
         kioskId: data.kioskId,
+        method: data.method,
         synced: data.synced,
-        // Note: flaggedForReview and flagReason are not in the current schema
-        // If they need to be added, update the Prisma schema first
       },
     })
 
@@ -400,10 +394,11 @@ export class CheckinRepository {
       },
     })
 
-    if (!checkin || !checkin.member || !checkin.member.division) {
+    if (!checkin || !checkin.member) {
       return null
     }
 
+    const division = checkin.member.division
     return {
       ...this.toCheckin(checkin),
       member: {
@@ -426,14 +421,22 @@ export class CheckinRepository {
         badgeId: checkin.member.badgeId ?? undefined,
         createdAt: checkin.member.createdAt ?? new Date(),
         updatedAt: checkin.member.updatedAt ?? new Date(),
-        division: {
-          id: checkin.member.division.id,
-          name: checkin.member.division.name,
-          code: checkin.member.division.code,
-          description: checkin.member.division.description ?? undefined,
-          createdAt: checkin.member.division.createdAt ?? new Date(),
-          updatedAt: checkin.member.division.updatedAt ?? new Date(),
-        },
+        division: division
+          ? {
+              id: division.id,
+              name: division.name,
+              code: division.code,
+              description: division.description ?? undefined,
+              createdAt: division.createdAt ?? new Date(),
+              updatedAt: division.updatedAt ?? new Date(),
+            }
+          : {
+              id: '',
+              name: 'Unassigned',
+              code: 'UNASSIGNED',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
       },
     }
   }
@@ -488,10 +491,11 @@ export class CheckinRepository {
 
     return {
       checkins: checkins.map((c) => {
-        if (!c.member || !c.member.division) {
-          throw new Error(`Checkin ${c.id} missing member or division data`)
+        if (!c.member) {
+          throw new Error(`Checkin ${c.id} missing member data`)
         }
 
+        const division = c.member.division
         return {
           ...this.toCheckin(c),
           member: {
@@ -515,14 +519,22 @@ export class CheckinRepository {
             notes: c.member.notes || undefined,
             createdAt: c.member.createdAt || new Date(),
             updatedAt: c.member.updatedAt || new Date(),
-            division: {
-              id: c.member.division.id,
-              name: c.member.division.name,
-              code: c.member.division.code,
-              description: c.member.division.description || undefined,
-              createdAt: c.member.division.createdAt,
-              updatedAt: c.member.division.updatedAt,
-            },
+            division: division
+              ? {
+                  id: division.id,
+                  name: division.name,
+                  code: division.code,
+                  description: division.description || undefined,
+                  createdAt: division.createdAt,
+                  updatedAt: division.updatedAt,
+                }
+              : {
+                  id: '',
+                  name: 'Unassigned',
+                  code: 'UNASSIGNED',
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                },
             memberTypeId: c.member.memberTypeId || undefined,
             memberStatusId: c.member.memberStatusId || undefined,
           },
@@ -809,7 +821,7 @@ export class CheckinRepository {
           id: row.checkin_id,
           memberId: row.checkin_member_id,
           badgeId: row.checkin_badge_id,
-          direction: row.direction as 'in' | 'out',
+          direction: (row.direction?.toLowerCase() ?? 'out') as 'in' | 'out',
           timestamp: row.timestamp,
           kioskId: row.kiosk_id,
           synced: checkinSynced,

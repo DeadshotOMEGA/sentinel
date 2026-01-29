@@ -377,12 +377,11 @@ export const schedulesRouter = s.router(scheduleContract, {
   createSchedule: async ({ body }: { body: CreateScheduleInput }) => {
     try {
       const weekStartDate = parseOperationalDate(body.weekStartDate)
-      // For now, using placeholder admin ID until auth is implemented
-      const adminId = 'system'
+      // TODO: Get admin ID from auth context when authentication is implemented
       const schedule = await scheduleService.createSchedule(
         body.dutyRoleId,
         weekStartDate,
-        adminId,
+        undefined, // No admin ID until auth is implemented
         body.notes ?? undefined
       )
       return {
@@ -480,9 +479,8 @@ export const schedulesRouter = s.router(scheduleContract, {
 
   publishSchedule: async ({ params }: { params: ScheduleIdParam }) => {
     try {
-      // For now, using placeholder admin ID until auth is implemented
-      const adminId = 'system'
-      const schedule = await scheduleService.publishSchedule(params.id, adminId)
+      // TODO: Get admin ID from auth context when authentication is implemented
+      const schedule = await scheduleService.publishSchedule(params.id, undefined)
       return {
         status: 200 as const,
         body: scheduleWithDetailsToApiFormat(schedule),

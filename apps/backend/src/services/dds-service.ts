@@ -5,6 +5,7 @@ import { NotFoundError, ValidationError, ConflictError } from '../middleware/err
 import { LockupService } from './lockup-service.js'
 
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
+import { serviceLogger } from '../lib/logger.js'
 
 interface DdsAssignmentWithMember {
   id: string
@@ -186,7 +187,7 @@ export class DdsService {
       )
     } catch (error) {
       // Silently fail if no current lockup holder or other validation error
-      console.error('Failed to auto-transfer lockup:', error)
+      serviceLogger.error('Failed to auto-transfer lockup', { error: error instanceof Error ? error.message : String(error) })
     }
 
     const result = this.transformAssignment(assignment)

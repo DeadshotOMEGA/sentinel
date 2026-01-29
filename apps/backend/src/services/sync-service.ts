@@ -4,6 +4,7 @@ import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import type { CheckinDirection, Badge, MemberWithDivision } from '@sentinel/types'
+import { serviceLogger } from '../lib/logger.js'
 
 // TODO Phase 3: Implement timestamp validator
 // import { validateCheckinTimestamp } from '../utils/timestamp-validator.js'
@@ -287,7 +288,7 @@ export class SyncService {
     // Log flagged items for admin review
     const flaggedItems = deduplicatedCheckins.filter((item) => item.flaggedForReview)
     if (flaggedItems.length > 0) {
-      console.warn('[Sync] Bulk sync has flagged items', {
+      serviceLogger.warn('Bulk sync has flagged items', {
         kioskId: flaggedItems[0]?.kioskId,
         flaggedCount: flaggedItems.length,
       })

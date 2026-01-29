@@ -11,6 +11,7 @@ import { MemberRepository } from '../repositories/member-repository.js'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { MemberTypeRepository } from '../repositories/member-type-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { toNameCase } from '../utils/name-case.js'
 
 /**
  * Mapping of department codes to full names for auto-creation
@@ -220,8 +221,8 @@ export class ImportService {
           | 'PO1'
           | 'CPO2'
           | 'CPO1',
-        lastName: row['LAST NAME'].trim(),
-        firstName: row['FIRST NAME'].trim(),
+        lastName: toNameCase(row['LAST NAME'].trim()),
+        firstName: toNameCase(row['FIRST NAME'].trim()),
         initials: row.INITIALS?.trim() || undefined,
         department: row.DEPT.trim(),
         mess: row.MESS?.trim() || undefined,

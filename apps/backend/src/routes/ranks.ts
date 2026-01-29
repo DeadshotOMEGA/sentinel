@@ -2,6 +2,7 @@ import { initServer } from '@ts-rest/express'
 import { rankContract } from '@sentinel/contracts'
 import { RankRepository } from '../repositories/rank-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { apiLogger } from '../lib/logger.js'
 
 const s = initServer()
 
@@ -44,7 +45,7 @@ export const ranksRouter = s.router(rankContract, {
           body: serializedRanks,
         }
       } catch (error) {
-        console.error('Error fetching ranks:', error)
+        apiLogger.error('Error fetching ranks', { error: error instanceof Error ? error.message : String(error) })
         return {
           status: 500 as const,
           body: {
@@ -78,7 +79,7 @@ export const ranksRouter = s.router(rankContract, {
           },
         }
       } catch (error) {
-        console.error('Error fetching rank:', error)
+        apiLogger.error('Error fetching rank', { error: error instanceof Error ? error.message : String(error) })
         return {
           status: 500 as const,
           body: {
@@ -97,7 +98,7 @@ export const ranksRouter = s.router(rankContract, {
           body: comparison,
         }
       } catch (error) {
-        console.error('Error comparing ranks:', error)
+        apiLogger.error('Error comparing ranks', { error: error instanceof Error ? error.message : String(error) })
 
         const errorMessage = error instanceof Error ? error.message : 'Failed to compare ranks'
 
@@ -139,7 +140,7 @@ export const ranksRouter = s.router(rankContract, {
           body: stats,
         }
       } catch (error) {
-        console.error('Error fetching rank statistics:', error)
+        apiLogger.error('Error fetching rank statistics', { error: error instanceof Error ? error.message : String(error) })
         return {
           status: 500 as const,
           body: {

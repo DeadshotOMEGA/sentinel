@@ -929,14 +929,26 @@ export const tagsRouter = s.router(tagsContract, {
         }
       }
 
-      // Check usage count
-      const usageCount = await tagRepo.getUsageCount(params.id)
-      if (usageCount > 0) {
+      // Check member assignment usage count
+      const memberUsageCount = await tagRepo.getUsageCount(params.id)
+      if (memberUsageCount > 0) {
         return {
           status: 409 as const,
           body: {
             error: 'CONFLICT',
-            message: `Cannot delete this tag. It is currently assigned to ${usageCount} members.`,
+            message: `Cannot delete this tag. It is currently assigned to ${memberUsageCount} members.`,
+          },
+        }
+      }
+
+      // Check qualification type link usage count
+      const qualificationTypeCount = await tagRepo.getQualificationTypeCount(params.id)
+      if (qualificationTypeCount > 0) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: `Cannot delete this tag. It is linked to ${qualificationTypeCount} qualification type(s).`,
           },
         }
       }

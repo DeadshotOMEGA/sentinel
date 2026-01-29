@@ -206,6 +206,7 @@ export const checkinsRouter = s.router(checkinContract, {
         badgeId: body.badgeId,
         direction: body.direction,
         kioskId: body.kioskId,
+        method: body.method,
         timestamp: body.timestamp ? new Date(body.timestamp) : new Date(),
         synced: true,
       })

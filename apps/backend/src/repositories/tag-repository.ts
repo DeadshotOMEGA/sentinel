@@ -176,6 +176,16 @@ export class TagRepository {
   }
 
   /**
+   * Get the count of qualification types linked to a tag
+   */
+  async getQualificationTypeCount(id: string): Promise<number> {
+    const count = await this.prisma.qualificationType.count({
+      where: { tagId: id },
+    })
+    return count
+  }
+
+  /**
    * Get the count of members with a tag
    */
   async getUsageCount(id: string): Promise<number> {
