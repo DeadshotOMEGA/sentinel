@@ -32,11 +32,11 @@ interface DutyWatchCardProps {
 
 // Duty Watch positions in display order
 const DUTY_WATCH_POSITIONS = [
-  { code: 'SWK', name: 'Senior Warden of the Keys', required: true },
-  { code: 'DSWK', name: 'Deputy Senior Warden', required: true },
+  { code: 'SWK', name: 'Senior Watchkeeper', required: true },
+  { code: 'DSWK', name: 'Deputy Senior Watchkeeper', required: true },
   { code: 'QM', name: 'Quartermaster', required: true },
-  { code: 'BM', name: 'Bosun Mate', required: true },
-  { code: 'APS', name: 'Assistant Petty Sailor', required: false },
+  { code: 'BM', name: "Bos'n Mate", required: true },
+  { code: 'APS', name: 'Access Point Sentry', required: false },
 ]
 
 interface PositionSlotProps {

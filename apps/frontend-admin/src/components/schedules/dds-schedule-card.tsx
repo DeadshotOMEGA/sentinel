@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Plus, Check, Loader2, AlertCircle } from 'lucide-react'
+import { User, Plus, Check, Loader2, AlertCircle, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,14 +18,20 @@ import {
 import { MemberPickerModal } from './member-picker-modal'
 import {
   useSchedulesByWeek,
+  useSchedule,
   useCreateSchedule,
   useCreateAssignment,
+  useDeleteAssignment,
   usePublishSchedule,
   useDutyRoles,
 } from '@/hooks/use-schedules'
 
 interface DdsScheduleCardProps {
   weekStartDate: string
+}
+
+function formatMemberName(member: { rank: string; firstName: string; lastName: string }): string {
+  return `${member.rank} ${member.firstName} ${member.lastName}`
 }
 
 export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
@@ -37,11 +43,18 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
 
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
+  const deleteAssignment = useDeleteAssignment()
   const publishSchedule = usePublishSchedule()
 
   // Find DDS duty role and schedule
   const ddsRole = dutyRoles?.data?.find((r) => r.code === 'DDS')
   const ddsSchedule = schedules?.data?.find((s) => s.dutyRole.code === 'DDS')
+
+  // Fetch full schedule with assignments when we have a schedule
+  const { data: fullSchedule } = useSchedule(ddsSchedule?.id ?? '')
+
+  // Get the current DDS assignment (DDS is a single-person role)
+  const currentAssignment = fullSchedule?.assignments?.[0] ?? null
 
   const handleAssignMember = async (member: {
     id: string
@@ -67,6 +80,13 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
       }
     } else {
       try {
+        // Remove existing assignment first if changing
+        if (currentAssignment) {
+          await deleteAssignment.mutateAsync({
+            scheduleId: ddsSchedule.id,
+            assignmentId: currentAssignment.id,
+          })
+        }
         await createAssignment.mutateAsync({
           scheduleId: ddsSchedule.id,
           data: { memberId: member.id },
@@ -78,8 +98,15 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
   }
 
   const handleRemoveAssignment = async () => {
-    // This would require fetching the full schedule to get the assignment ID
-    // For now, we'll show a placeholder
+    if (!ddsSchedule || !currentAssignment) return
+    try {
+      await deleteAssignment.mutateAsync({
+        scheduleId: ddsSchedule.id,
+        assignmentId: currentAssignment.id,
+      })
+    } catch (error) {
+      console.error('Failed to remove DDS assignment:', error)
+    }
     setIsRemoveDialogOpen(false)
   }
 
@@ -127,10 +154,10 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {!ddsSchedule ? (
+        {!ddsSchedule || !currentAssignment ? (
           <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
             <AlertCircle className="h-8 w-8 text-base-content/60 mb-2" />
-            <p className="text-base-content/60 mb-4">No DDS schedule for this week</p>
+            <p className="text-base-content/60 mb-4">No DDS assigned for this week</p>
             <Button onClick={() => setIsMemberPickerOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Assign DDS
@@ -138,21 +165,33 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* This is a simplified view - in real implementation, fetch assignments */}
             <div className="flex items-center justify-between p-4 bg-base-200 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">DDS Assigned</p>
-                  <p className="text-sm text-base-content/60">Schedule created for this week</p>
+                  <p className="font-medium">{formatMemberName(currentAssignment.member)}</p>
+                  <p className="text-sm text-base-content/60">
+                    {currentAssignment.member.serviceNumber}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
-                  Change
-                </Button>
+                {ddsSchedule.status === 'draft' && (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
+                      Change
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsRemoveDialogOpen(true)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
                 {ddsSchedule.status === 'draft' && (
                   <Button size="sm" onClick={handlePublish} disabled={publishSchedule.isPending}>
                     {publishSchedule.isPending ? (
@@ -183,7 +222,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove DDS Assignment?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove the current DDS assignment. You can assign a new DDS afterwards.
+              This will remove {currentAssignment ? formatMemberName(currentAssignment.member) : 'the current DDS'} from this week&apos;s schedule.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
