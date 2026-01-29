@@ -538,6 +538,7 @@ exports.Prisma.QualificationTypeScalarFieldEnum = {
   description: 'description',
   canReceiveLockup: 'canReceiveLockup',
   displayOrder: 'displayOrder',
+  tagId: 'tagId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

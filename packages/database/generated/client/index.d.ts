@@ -5142,10 +5142,12 @@ export namespace Prisma {
 
   export type TagCountOutputType = {
     memberTags: number
+    qualificationTypes: number
   }
 
   export type TagCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberTags?: boolean | TagCountOutputTypeCountMemberTagsArgs
+    qualificationTypes?: boolean | TagCountOutputTypeCountQualificationTypesArgs
   }
 
   // Custom InputTypes
@@ -5164,6 +5166,13 @@ export namespace Prisma {
    */
   export type TagCountOutputTypeCountMemberTagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MemberTagWhereInput
+  }
+
+  /**
+   * TagCountOutputType without action
+   */
+  export type TagCountOutputTypeCountQualificationTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: QualificationTypeWhereInput
   }
 
 
@@ -17570,6 +17579,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     memberTags?: boolean | Tag$memberTagsArgs<ExtArgs>
+    qualificationTypes?: boolean | Tag$qualificationTypesArgs<ExtArgs>
     _count?: boolean | TagCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tag"]>
 
@@ -17609,6 +17619,7 @@ export namespace Prisma {
   export type TagOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "displayOrder" | "chipVariant" | "chipColor" | "createdAt" | "updatedAt", ExtArgs["result"]["tag"]>
   export type TagInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberTags?: boolean | Tag$memberTagsArgs<ExtArgs>
+    qualificationTypes?: boolean | Tag$qualificationTypesArgs<ExtArgs>
     _count?: boolean | TagCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TagIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -17618,6 +17629,7 @@ export namespace Prisma {
     name: "Tag"
     objects: {
       memberTags: Prisma.$MemberTagPayload<ExtArgs>[]
+      qualificationTypes: Prisma.$QualificationTypePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -18023,6 +18035,7 @@ export namespace Prisma {
   export interface Prisma__TagClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     memberTags<T extends Tag$memberTagsArgs<ExtArgs> = {}>(args?: Subset<T, Tag$memberTagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    qualificationTypes<T extends Tag$qualificationTypesArgs<ExtArgs> = {}>(args?: Subset<T, Tag$qualificationTypesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QualificationTypePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18478,6 +18491,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MemberTagScalarFieldEnum | MemberTagScalarFieldEnum[]
+  }
+
+  /**
+   * Tag.qualificationTypes
+   */
+  export type Tag$qualificationTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QualificationType
+     */
+    select?: QualificationTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QualificationType
+     */
+    omit?: QualificationTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationTypeInclude<ExtArgs> | null
+    where?: QualificationTypeWhereInput
+    orderBy?: QualificationTypeOrderByWithRelationInput | QualificationTypeOrderByWithRelationInput[]
+    cursor?: QualificationTypeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: QualificationTypeScalarFieldEnum | QualificationTypeScalarFieldEnum[]
   }
 
   /**
@@ -44045,6 +44082,7 @@ export namespace Prisma {
     description: string | null
     canReceiveLockup: boolean | null
     displayOrder: number | null
+    tagId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -44056,6 +44094,7 @@ export namespace Prisma {
     description: string | null
     canReceiveLockup: boolean | null
     displayOrder: number | null
+    tagId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -44067,6 +44106,7 @@ export namespace Prisma {
     description: number
     canReceiveLockup: number
     displayOrder: number
+    tagId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -44088,6 +44128,7 @@ export namespace Prisma {
     description?: true
     canReceiveLockup?: true
     displayOrder?: true
+    tagId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -44099,6 +44140,7 @@ export namespace Prisma {
     description?: true
     canReceiveLockup?: true
     displayOrder?: true
+    tagId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -44110,6 +44152,7 @@ export namespace Prisma {
     description?: true
     canReceiveLockup?: true
     displayOrder?: true
+    tagId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -44208,6 +44251,7 @@ export namespace Prisma {
     description: string | null
     canReceiveLockup: boolean
     displayOrder: number
+    tagId: string | null
     createdAt: Date
     updatedAt: Date
     _count: QualificationTypeCountAggregateOutputType | null
@@ -44238,9 +44282,11 @@ export namespace Prisma {
     description?: boolean
     canReceiveLockup?: boolean
     displayOrder?: boolean
+    tagId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     memberQualifications?: boolean | QualificationType$memberQualificationsArgs<ExtArgs>
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
     _count?: boolean | QualificationTypeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationType"]>
 
@@ -44251,8 +44297,10 @@ export namespace Prisma {
     description?: boolean
     canReceiveLockup?: boolean
     displayOrder?: boolean
+    tagId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationType"]>
 
   export type QualificationTypeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -44262,8 +44310,10 @@ export namespace Prisma {
     description?: boolean
     canReceiveLockup?: boolean
     displayOrder?: boolean
+    tagId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationType"]>
 
   export type QualificationTypeSelectScalar = {
@@ -44273,22 +44323,29 @@ export namespace Prisma {
     description?: boolean
     canReceiveLockup?: boolean
     displayOrder?: boolean
+    tagId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type QualificationTypeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "canReceiveLockup" | "displayOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["qualificationType"]>
+  export type QualificationTypeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "canReceiveLockup" | "displayOrder" | "tagId" | "createdAt" | "updatedAt", ExtArgs["result"]["qualificationType"]>
   export type QualificationTypeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberQualifications?: boolean | QualificationType$memberQualificationsArgs<ExtArgs>
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
     _count?: boolean | QualificationTypeCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type QualificationTypeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type QualificationTypeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type QualificationTypeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
+  }
+  export type QualificationTypeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tag?: boolean | QualificationType$tagArgs<ExtArgs>
+  }
 
   export type $QualificationTypePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "QualificationType"
     objects: {
       memberQualifications: Prisma.$MemberQualificationPayload<ExtArgs>[]
+      tag: Prisma.$TagPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -44297,6 +44354,7 @@ export namespace Prisma {
       description: string | null
       canReceiveLockup: boolean
       displayOrder: number
+      tagId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["qualificationType"]>
@@ -44694,6 +44752,7 @@ export namespace Prisma {
   export interface Prisma__QualificationTypeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     memberQualifications<T extends QualificationType$memberQualificationsArgs<ExtArgs> = {}>(args?: Subset<T, QualificationType$memberQualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tag<T extends QualificationType$tagArgs<ExtArgs> = {}>(args?: Subset<T, QualificationType$tagArgs<ExtArgs>>): Prisma__TagClient<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -44729,6 +44788,7 @@ export namespace Prisma {
     readonly description: FieldRef<"QualificationType", 'String'>
     readonly canReceiveLockup: FieldRef<"QualificationType", 'Boolean'>
     readonly displayOrder: FieldRef<"QualificationType", 'Int'>
+    readonly tagId: FieldRef<"QualificationType", 'String'>
     readonly createdAt: FieldRef<"QualificationType", 'DateTime'>
     readonly updatedAt: FieldRef<"QualificationType", 'DateTime'>
   }
@@ -44986,6 +45046,10 @@ export namespace Prisma {
      */
     data: QualificationTypeCreateManyInput | QualificationTypeCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationTypeIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -45057,6 +45121,10 @@ export namespace Prisma {
      * Limit how many QualificationTypes to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationTypeIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -45149,6 +45217,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MemberQualificationScalarFieldEnum | MemberQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * QualificationType.tag
+   */
+  export type QualificationType$tagArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Tag
+     */
+    select?: TagSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Tag
+     */
+    omit?: TagOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TagInclude<ExtArgs> | null
+    where?: TagWhereInput
   }
 
   /**
@@ -56378,6 +56465,7 @@ export namespace Prisma {
     description: 'description',
     canReceiveLockup: 'canReceiveLockup',
     displayOrder: 'displayOrder',
+    tagId: 'tagId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -57625,6 +57713,7 @@ export namespace Prisma {
     createdAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     memberTags?: MemberTagListRelationFilter
+    qualificationTypes?: QualificationTypeListRelationFilter
   }
 
   export type TagOrderByWithRelationInput = {
@@ -57637,6 +57726,7 @@ export namespace Prisma {
     createdAt?: SortOrderInput | SortOrder
     updatedAt?: SortOrderInput | SortOrder
     memberTags?: MemberTagOrderByRelationAggregateInput
+    qualificationTypes?: QualificationTypeOrderByRelationAggregateInput
   }
 
   export type TagWhereUniqueInput = Prisma.AtLeast<{
@@ -57652,6 +57742,7 @@ export namespace Prisma {
     createdAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     memberTags?: MemberTagListRelationFilter
+    qualificationTypes?: QualificationTypeListRelationFilter
   }, "id" | "name">
 
   export type TagOrderByWithAggregationInput = {
@@ -59351,9 +59442,11 @@ export namespace Prisma {
     description?: StringNullableFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
     displayOrder?: IntFilter<"QualificationType"> | number
+    tagId?: UuidNullableFilter<"QualificationType"> | string | null
     createdAt?: DateTimeFilter<"QualificationType"> | Date | string
     updatedAt?: DateTimeFilter<"QualificationType"> | Date | string
     memberQualifications?: MemberQualificationListRelationFilter
+    tag?: XOR<TagNullableScalarRelationFilter, TagWhereInput> | null
   }
 
   export type QualificationTypeOrderByWithRelationInput = {
@@ -59363,9 +59456,11 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     canReceiveLockup?: SortOrder
     displayOrder?: SortOrder
+    tagId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     memberQualifications?: MemberQualificationOrderByRelationAggregateInput
+    tag?: TagOrderByWithRelationInput
   }
 
   export type QualificationTypeWhereUniqueInput = Prisma.AtLeast<{
@@ -59378,9 +59473,11 @@ export namespace Prisma {
     description?: StringNullableFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
     displayOrder?: IntFilter<"QualificationType"> | number
+    tagId?: UuidNullableFilter<"QualificationType"> | string | null
     createdAt?: DateTimeFilter<"QualificationType"> | Date | string
     updatedAt?: DateTimeFilter<"QualificationType"> | Date | string
     memberQualifications?: MemberQualificationListRelationFilter
+    tag?: XOR<TagNullableScalarRelationFilter, TagWhereInput> | null
   }, "id" | "code">
 
   export type QualificationTypeOrderByWithAggregationInput = {
@@ -59390,6 +59487,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     canReceiveLockup?: SortOrder
     displayOrder?: SortOrder
+    tagId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: QualificationTypeCountOrderByAggregateInput
@@ -59409,6 +59507,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolWithAggregatesFilter<"QualificationType"> | boolean
     displayOrder?: IntWithAggregatesFilter<"QualificationType"> | number
+    tagId?: UuidNullableWithAggregatesFilter<"QualificationType"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"QualificationType"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"QualificationType"> | Date | string
   }
@@ -61285,6 +61384,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagCreateNestedManyWithoutTagInput
+    qualificationTypes?: QualificationTypeCreateNestedManyWithoutTagInput
   }
 
   export type TagUncheckedCreateInput = {
@@ -61297,6 +61397,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutTagInput
+    qualificationTypes?: QualificationTypeUncheckedCreateNestedManyWithoutTagInput
   }
 
   export type TagUpdateInput = {
@@ -61309,6 +61410,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUpdateManyWithoutTagNestedInput
+    qualificationTypes?: QualificationTypeUpdateManyWithoutTagNestedInput
   }
 
   export type TagUncheckedUpdateInput = {
@@ -61321,6 +61423,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUncheckedUpdateManyWithoutTagNestedInput
+    qualificationTypes?: QualificationTypeUncheckedUpdateManyWithoutTagNestedInput
   }
 
   export type TagCreateManyInput = {
@@ -63188,6 +63291,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     memberQualifications?: MemberQualificationCreateNestedManyWithoutQualificationTypeInput
+    tag?: TagCreateNestedOneWithoutQualificationTypesInput
   }
 
   export type QualificationTypeUncheckedCreateInput = {
@@ -63197,6 +63301,7 @@ export namespace Prisma {
     description?: string | null
     canReceiveLockup?: boolean
     displayOrder?: number
+    tagId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     memberQualifications?: MemberQualificationUncheckedCreateNestedManyWithoutQualificationTypeInput
@@ -63212,6 +63317,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     memberQualifications?: MemberQualificationUpdateManyWithoutQualificationTypeNestedInput
+    tag?: TagUpdateOneWithoutQualificationTypesNestedInput
   }
 
   export type QualificationTypeUncheckedUpdateInput = {
@@ -63221,6 +63327,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
+    tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     memberQualifications?: MemberQualificationUncheckedUpdateManyWithoutQualificationTypeNestedInput
@@ -63233,6 +63340,7 @@ export namespace Prisma {
     description?: string | null
     canReceiveLockup?: boolean
     displayOrder?: number
+    tagId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63255,6 +63363,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
+    tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65012,6 +65121,16 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type QualificationTypeListRelationFilter = {
+    every?: QualificationTypeWhereInput
+    some?: QualificationTypeWhereInput
+    none?: QualificationTypeWhereInput
+  }
+
+  export type QualificationTypeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type TagCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -66024,6 +66143,11 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type TagNullableScalarRelationFilter = {
+    is?: TagWhereInput | null
+    isNot?: TagWhereInput | null
+  }
+
   export type QualificationTypeCountOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
@@ -66031,6 +66155,7 @@ export namespace Prisma {
     description?: SortOrder
     canReceiveLockup?: SortOrder
     displayOrder?: SortOrder
+    tagId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -66046,6 +66171,7 @@ export namespace Prisma {
     description?: SortOrder
     canReceiveLockup?: SortOrder
     displayOrder?: SortOrder
+    tagId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -66057,6 +66183,7 @@ export namespace Prisma {
     description?: SortOrder
     canReceiveLockup?: SortOrder
     displayOrder?: SortOrder
+    tagId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68299,11 +68426,25 @@ export namespace Prisma {
     connect?: MemberTagWhereUniqueInput | MemberTagWhereUniqueInput[]
   }
 
+  export type QualificationTypeCreateNestedManyWithoutTagInput = {
+    create?: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput> | QualificationTypeCreateWithoutTagInput[] | QualificationTypeUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: QualificationTypeCreateOrConnectWithoutTagInput | QualificationTypeCreateOrConnectWithoutTagInput[]
+    createMany?: QualificationTypeCreateManyTagInputEnvelope
+    connect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+  }
+
   export type MemberTagUncheckedCreateNestedManyWithoutTagInput = {
     create?: XOR<MemberTagCreateWithoutTagInput, MemberTagUncheckedCreateWithoutTagInput> | MemberTagCreateWithoutTagInput[] | MemberTagUncheckedCreateWithoutTagInput[]
     connectOrCreate?: MemberTagCreateOrConnectWithoutTagInput | MemberTagCreateOrConnectWithoutTagInput[]
     createMany?: MemberTagCreateManyTagInputEnvelope
     connect?: MemberTagWhereUniqueInput | MemberTagWhereUniqueInput[]
+  }
+
+  export type QualificationTypeUncheckedCreateNestedManyWithoutTagInput = {
+    create?: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput> | QualificationTypeCreateWithoutTagInput[] | QualificationTypeUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: QualificationTypeCreateOrConnectWithoutTagInput | QualificationTypeCreateOrConnectWithoutTagInput[]
+    createMany?: QualificationTypeCreateManyTagInputEnvelope
+    connect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
   }
 
   export type MemberTagUpdateManyWithoutTagNestedInput = {
@@ -68320,6 +68461,20 @@ export namespace Prisma {
     deleteMany?: MemberTagScalarWhereInput | MemberTagScalarWhereInput[]
   }
 
+  export type QualificationTypeUpdateManyWithoutTagNestedInput = {
+    create?: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput> | QualificationTypeCreateWithoutTagInput[] | QualificationTypeUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: QualificationTypeCreateOrConnectWithoutTagInput | QualificationTypeCreateOrConnectWithoutTagInput[]
+    upsert?: QualificationTypeUpsertWithWhereUniqueWithoutTagInput | QualificationTypeUpsertWithWhereUniqueWithoutTagInput[]
+    createMany?: QualificationTypeCreateManyTagInputEnvelope
+    set?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    disconnect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    delete?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    connect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    update?: QualificationTypeUpdateWithWhereUniqueWithoutTagInput | QualificationTypeUpdateWithWhereUniqueWithoutTagInput[]
+    updateMany?: QualificationTypeUpdateManyWithWhereWithoutTagInput | QualificationTypeUpdateManyWithWhereWithoutTagInput[]
+    deleteMany?: QualificationTypeScalarWhereInput | QualificationTypeScalarWhereInput[]
+  }
+
   export type MemberTagUncheckedUpdateManyWithoutTagNestedInput = {
     create?: XOR<MemberTagCreateWithoutTagInput, MemberTagUncheckedCreateWithoutTagInput> | MemberTagCreateWithoutTagInput[] | MemberTagUncheckedCreateWithoutTagInput[]
     connectOrCreate?: MemberTagCreateOrConnectWithoutTagInput | MemberTagCreateOrConnectWithoutTagInput[]
@@ -68332,6 +68487,20 @@ export namespace Prisma {
     update?: MemberTagUpdateWithWhereUniqueWithoutTagInput | MemberTagUpdateWithWhereUniqueWithoutTagInput[]
     updateMany?: MemberTagUpdateManyWithWhereWithoutTagInput | MemberTagUpdateManyWithWhereWithoutTagInput[]
     deleteMany?: MemberTagScalarWhereInput | MemberTagScalarWhereInput[]
+  }
+
+  export type QualificationTypeUncheckedUpdateManyWithoutTagNestedInput = {
+    create?: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput> | QualificationTypeCreateWithoutTagInput[] | QualificationTypeUncheckedCreateWithoutTagInput[]
+    connectOrCreate?: QualificationTypeCreateOrConnectWithoutTagInput | QualificationTypeCreateOrConnectWithoutTagInput[]
+    upsert?: QualificationTypeUpsertWithWhereUniqueWithoutTagInput | QualificationTypeUpsertWithWhereUniqueWithoutTagInput[]
+    createMany?: QualificationTypeCreateManyTagInputEnvelope
+    set?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    disconnect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    delete?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    connect?: QualificationTypeWhereUniqueInput | QualificationTypeWhereUniqueInput[]
+    update?: QualificationTypeUpdateWithWhereUniqueWithoutTagInput | QualificationTypeUpdateWithWhereUniqueWithoutTagInput[]
+    updateMany?: QualificationTypeUpdateManyWithWhereWithoutTagInput | QualificationTypeUpdateManyWithWhereWithoutTagInput[]
+    deleteMany?: QualificationTypeScalarWhereInput | QualificationTypeScalarWhereInput[]
   }
 
   export type MemberCreateNestedOneWithoutMemberTagsInput = {
@@ -68994,6 +69163,12 @@ export namespace Prisma {
     connect?: MemberQualificationWhereUniqueInput | MemberQualificationWhereUniqueInput[]
   }
 
+  export type TagCreateNestedOneWithoutQualificationTypesInput = {
+    create?: XOR<TagCreateWithoutQualificationTypesInput, TagUncheckedCreateWithoutQualificationTypesInput>
+    connectOrCreate?: TagCreateOrConnectWithoutQualificationTypesInput
+    connect?: TagWhereUniqueInput
+  }
+
   export type MemberQualificationUncheckedCreateNestedManyWithoutQualificationTypeInput = {
     create?: XOR<MemberQualificationCreateWithoutQualificationTypeInput, MemberQualificationUncheckedCreateWithoutQualificationTypeInput> | MemberQualificationCreateWithoutQualificationTypeInput[] | MemberQualificationUncheckedCreateWithoutQualificationTypeInput[]
     connectOrCreate?: MemberQualificationCreateOrConnectWithoutQualificationTypeInput | MemberQualificationCreateOrConnectWithoutQualificationTypeInput[]
@@ -69013,6 +69188,16 @@ export namespace Prisma {
     update?: MemberQualificationUpdateWithWhereUniqueWithoutQualificationTypeInput | MemberQualificationUpdateWithWhereUniqueWithoutQualificationTypeInput[]
     updateMany?: MemberQualificationUpdateManyWithWhereWithoutQualificationTypeInput | MemberQualificationUpdateManyWithWhereWithoutQualificationTypeInput[]
     deleteMany?: MemberQualificationScalarWhereInput | MemberQualificationScalarWhereInput[]
+  }
+
+  export type TagUpdateOneWithoutQualificationTypesNestedInput = {
+    create?: XOR<TagCreateWithoutQualificationTypesInput, TagUncheckedCreateWithoutQualificationTypesInput>
+    connectOrCreate?: TagCreateOrConnectWithoutQualificationTypesInput
+    upsert?: TagUpsertWithoutQualificationTypesInput
+    disconnect?: TagWhereInput | boolean
+    delete?: TagWhereInput | boolean
+    connect?: TagWhereUniqueInput
+    update?: XOR<XOR<TagUpdateToOneWithWhereWithoutQualificationTypesInput, TagUpdateWithoutQualificationTypesInput>, TagUncheckedUpdateWithoutQualificationTypesInput>
   }
 
   export type MemberQualificationUncheckedUpdateManyWithoutQualificationTypeNestedInput = {
@@ -73836,6 +74021,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type QualificationTypeCreateWithoutTagInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    canReceiveLockup?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    memberQualifications?: MemberQualificationCreateNestedManyWithoutQualificationTypeInput
+  }
+
+  export type QualificationTypeUncheckedCreateWithoutTagInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    canReceiveLockup?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    memberQualifications?: MemberQualificationUncheckedCreateNestedManyWithoutQualificationTypeInput
+  }
+
+  export type QualificationTypeCreateOrConnectWithoutTagInput = {
+    where: QualificationTypeWhereUniqueInput
+    create: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput>
+  }
+
+  export type QualificationTypeCreateManyTagInputEnvelope = {
+    data: QualificationTypeCreateManyTagInput | QualificationTypeCreateManyTagInput[]
+    skipDuplicates?: boolean
+  }
+
   export type MemberTagUpsertWithWhereUniqueWithoutTagInput = {
     where: MemberTagWhereUniqueInput
     update: XOR<MemberTagUpdateWithoutTagInput, MemberTagUncheckedUpdateWithoutTagInput>
@@ -73850,6 +74069,37 @@ export namespace Prisma {
   export type MemberTagUpdateManyWithWhereWithoutTagInput = {
     where: MemberTagScalarWhereInput
     data: XOR<MemberTagUpdateManyMutationInput, MemberTagUncheckedUpdateManyWithoutTagInput>
+  }
+
+  export type QualificationTypeUpsertWithWhereUniqueWithoutTagInput = {
+    where: QualificationTypeWhereUniqueInput
+    update: XOR<QualificationTypeUpdateWithoutTagInput, QualificationTypeUncheckedUpdateWithoutTagInput>
+    create: XOR<QualificationTypeCreateWithoutTagInput, QualificationTypeUncheckedCreateWithoutTagInput>
+  }
+
+  export type QualificationTypeUpdateWithWhereUniqueWithoutTagInput = {
+    where: QualificationTypeWhereUniqueInput
+    data: XOR<QualificationTypeUpdateWithoutTagInput, QualificationTypeUncheckedUpdateWithoutTagInput>
+  }
+
+  export type QualificationTypeUpdateManyWithWhereWithoutTagInput = {
+    where: QualificationTypeScalarWhereInput
+    data: XOR<QualificationTypeUpdateManyMutationInput, QualificationTypeUncheckedUpdateManyWithoutTagInput>
+  }
+
+  export type QualificationTypeScalarWhereInput = {
+    AND?: QualificationTypeScalarWhereInput | QualificationTypeScalarWhereInput[]
+    OR?: QualificationTypeScalarWhereInput[]
+    NOT?: QualificationTypeScalarWhereInput | QualificationTypeScalarWhereInput[]
+    id?: UuidFilter<"QualificationType"> | string
+    code?: StringFilter<"QualificationType"> | string
+    name?: StringFilter<"QualificationType"> | string
+    description?: StringNullableFilter<"QualificationType"> | string | null
+    canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
+    displayOrder?: IntFilter<"QualificationType"> | number
+    tagId?: UuidNullableFilter<"QualificationType"> | string | null
+    createdAt?: DateTimeFilter<"QualificationType"> | Date | string
+    updatedAt?: DateTimeFilter<"QualificationType"> | Date | string
   }
 
   export type MemberCreateWithoutMemberTagsInput = {
@@ -73952,6 +74202,7 @@ export namespace Prisma {
     chipColor?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
+    qualificationTypes?: QualificationTypeCreateNestedManyWithoutTagInput
   }
 
   export type TagUncheckedCreateWithoutMemberTagsInput = {
@@ -73963,6 +74214,7 @@ export namespace Prisma {
     chipColor?: string
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
+    qualificationTypes?: QualificationTypeUncheckedCreateNestedManyWithoutTagInput
   }
 
   export type TagCreateOrConnectWithoutMemberTagsInput = {
@@ -74087,6 +74339,7 @@ export namespace Prisma {
     chipColor?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    qualificationTypes?: QualificationTypeUpdateManyWithoutTagNestedInput
   }
 
   export type TagUncheckedUpdateWithoutMemberTagsInput = {
@@ -74098,6 +74351,7 @@ export namespace Prisma {
     chipColor?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    qualificationTypes?: QualificationTypeUncheckedUpdateManyWithoutTagNestedInput
   }
 
   export type AdminUserCreateWithoutSecurityAlertsInput = {
@@ -76660,6 +76914,35 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TagCreateWithoutQualificationTypesInput = {
+    id?: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    chipVariant?: string
+    chipColor?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    memberTags?: MemberTagCreateNestedManyWithoutTagInput
+  }
+
+  export type TagUncheckedCreateWithoutQualificationTypesInput = {
+    id?: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    chipVariant?: string
+    chipColor?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutTagInput
+  }
+
+  export type TagCreateOrConnectWithoutQualificationTypesInput = {
+    where: TagWhereUniqueInput
+    create: XOR<TagCreateWithoutQualificationTypesInput, TagUncheckedCreateWithoutQualificationTypesInput>
+  }
+
   export type MemberQualificationUpsertWithWhereUniqueWithoutQualificationTypeInput = {
     where: MemberQualificationWhereUniqueInput
     update: XOR<MemberQualificationUpdateWithoutQualificationTypeInput, MemberQualificationUncheckedUpdateWithoutQualificationTypeInput>
@@ -76674,6 +76957,41 @@ export namespace Prisma {
   export type MemberQualificationUpdateManyWithWhereWithoutQualificationTypeInput = {
     where: MemberQualificationScalarWhereInput
     data: XOR<MemberQualificationUpdateManyMutationInput, MemberQualificationUncheckedUpdateManyWithoutQualificationTypeInput>
+  }
+
+  export type TagUpsertWithoutQualificationTypesInput = {
+    update: XOR<TagUpdateWithoutQualificationTypesInput, TagUncheckedUpdateWithoutQualificationTypesInput>
+    create: XOR<TagCreateWithoutQualificationTypesInput, TagUncheckedCreateWithoutQualificationTypesInput>
+    where?: TagWhereInput
+  }
+
+  export type TagUpdateToOneWithWhereWithoutQualificationTypesInput = {
+    where?: TagWhereInput
+    data: XOR<TagUpdateWithoutQualificationTypesInput, TagUncheckedUpdateWithoutQualificationTypesInput>
+  }
+
+  export type TagUpdateWithoutQualificationTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    chipVariant?: StringFieldUpdateOperationsInput | string
+    chipColor?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    memberTags?: MemberTagUpdateManyWithoutTagNestedInput
+  }
+
+  export type TagUncheckedUpdateWithoutQualificationTypesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    chipVariant?: StringFieldUpdateOperationsInput | string
+    chipColor?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    memberTags?: MemberTagUncheckedUpdateManyWithoutTagNestedInput
   }
 
   export type MemberCreateWithoutQualificationsInput = {
@@ -76776,6 +77094,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    tag?: TagCreateNestedOneWithoutQualificationTypesInput
   }
 
   export type QualificationTypeUncheckedCreateWithoutMemberQualificationsInput = {
@@ -76785,6 +77104,7 @@ export namespace Prisma {
     description?: string | null
     canReceiveLockup?: boolean
     displayOrder?: number
+    tagId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -77045,6 +77365,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tag?: TagUpdateOneWithoutQualificationTypesNestedInput
   }
 
   export type QualificationTypeUncheckedUpdateWithoutMemberQualificationsInput = {
@@ -77054,6 +77375,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
+    tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -81833,6 +82155,17 @@ export namespace Prisma {
     createdAt?: Date | string | null
   }
 
+  export type QualificationTypeCreateManyTagInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    canReceiveLockup?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type MemberTagUpdateWithoutTagInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -81849,6 +82182,41 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type QualificationTypeUpdateWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberQualifications?: MemberQualificationUpdateManyWithoutQualificationTypeNestedInput
+  }
+
+  export type QualificationTypeUncheckedUpdateWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberQualifications?: MemberQualificationUncheckedUpdateManyWithoutQualificationTypeNestedInput
+  }
+
+  export type QualificationTypeUncheckedUpdateManyWithoutTagInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BmqEnrollmentCreateManyBmqCourseInput = {
