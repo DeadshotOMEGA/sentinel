@@ -22,14 +22,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   useMemberQualifications,
   useQualificationTypes,
@@ -231,49 +223,39 @@ export function MemberQualificationsModal({
           </AlertDialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Qualification Type</Label>
-              <Select value={grantTypeId} onValueChange={setGrantTypeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select qualification..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTypes?.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {type.code}
-                        </Badge>
-                        <span>{type.name}</span>
-                        {type.canReceiveLockup && (
-                          <Badge variant="secondary" className="text-xs">
-                            Lockup
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Qualification Type</legend>
+              <select
+                className="select"
+                value={grantTypeId}
+                onChange={(e) => setGrantTypeId(e.target.value)}
+              >
+                <option value="" disabled>Select qualification...</option>
+                {availableTypes?.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.code} - {type.name}{type.canReceiveLockup ? ' (Lockup)' : ''}
+                  </option>
+                ))}
+              </select>
+            </fieldset>
 
-            <div className="space-y-2">
-              <Label>Expiration Date (Optional)</Label>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Expiration Date (Optional)</legend>
               <Input
                 type="date"
                 value={grantExpiration}
                 onChange={(e) => setGrantExpiration(e.target.value)}
               />
-            </div>
+            </fieldset>
 
-            <div className="space-y-2">
-              <Label>Notes (Optional)</Label>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Notes (Optional)</legend>
               <Input
                 value={grantNotes}
                 onChange={(e) => setGrantNotes(e.target.value)}
                 placeholder="Additional notes..."
               />
-            </div>
+            </fieldset>
           </div>
 
           <AlertDialogFooter>
@@ -300,13 +282,14 @@ export function MemberQualificationsModal({
           </AlertDialogHeader>
 
           <div className="py-4">
-            <Label>Reason (Optional)</Label>
-            <Input
-              value={revokeReason}
-              onChange={(e) => setRevokeReason(e.target.value)}
-              placeholder="Reason for revocation..."
-              className="mt-2"
-            />
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Reason (Optional)</legend>
+              <Input
+                value={revokeReason}
+                onChange={(e) => setRevokeReason(e.target.value)}
+                placeholder="Reason for revocation..."
+              />
+            </fieldset>
           </div>
 
           <AlertDialogFooter>

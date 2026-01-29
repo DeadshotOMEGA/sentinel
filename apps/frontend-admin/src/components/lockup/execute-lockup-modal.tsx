@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { usePresentForLockup, useExecuteLockup } from '@/hooks/use-lockup'
 
@@ -142,15 +141,15 @@ export function ExecuteLockupModal({
               )}
 
               {/* Note Field */}
-              <div className="space-y-2">
-                <Label htmlFor="note">Note (optional)</Label>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Note (optional)</legend>
                 <Input
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Any notes about tonight's lockup..."
                 />
-              </div>
+              </fieldset>
             </div>
 
             <DialogFooter>

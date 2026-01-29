@@ -3,7 +3,6 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 interface PinInputProps {
@@ -23,16 +22,18 @@ export function PinInput({ onSubmit, onBack }: PinInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Label htmlFor="pin">Enter Your PIN</Label>
-      <Input
-        id="pin"
-        type="password"
-        placeholder="****"
-        value={pin}
-        onChange={(e) => setPin(e.target.value)}
-        maxLength={6}
-        autoFocus
-      />
+      <fieldset className="fieldset">
+        <legend className="fieldset-legend">Enter Your PIN</legend>
+        <Input
+          id="pin"
+          type="password"
+          placeholder="****"
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          maxLength={6}
+          autoFocus
+        />
+      </fieldset>
       <div className="flex gap-2">
         <Button type="button" variant="outline" onClick={onBack} className="flex-1">
           Back

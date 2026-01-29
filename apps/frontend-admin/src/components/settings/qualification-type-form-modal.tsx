@@ -19,13 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
@@ -238,42 +231,25 @@ export function QualificationTypeFormModal({
                 control={form.control}
                 name="tagId"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Linked Tag</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                  <fieldset className="fieldset">
+                    <legend className="fieldset-legend">Linked Tag</legend>
+                    <select
+                      className="select"
                       value={field.value || 'none'}
+                      onChange={(e) => field.onChange(e.target.value === 'none' ? null : e.target.value)}
                       disabled={tagsLoading}
                     >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a tag for styling..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          <span className="text-base-content/60">No tag (default styling)</span>
-                        </SelectItem>
-                        {tags?.map((tag) => (
-                          <SelectItem key={tag.id} value={tag.id}>
-                            <div className="flex items-center gap-2">
-                              <Chip
-                                variant={(tag.chipVariant as ChipVariant) || 'solid'}
-                                color={(tag.chipColor as ChipColor) || 'default'}
-                                size="sm"
-                              >
-                                {tag.name}
-                              </Chip>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
+                      <option value="none">No tag (default styling)</option>
+                      {tags?.map((tag) => (
+                        <option key={tag.id} value={tag.id}>
+                          {tag.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="label">
                       Link to a tag to inherit its chip variant and color for display
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                    </span>
+                  </fieldset>
                 )}
               />
 

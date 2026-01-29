@@ -3,14 +3,6 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useDivisions } from '@/hooks/use-divisions'
 import { X } from 'lucide-react'
 
@@ -71,69 +63,63 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
     <div className="bg-base-100 p-4 rounded-lg border shadow-sm mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Start Date */}
-        <div>
-          <Label htmlFor="startDate">Start Date</Label>
+        <fieldset className="fieldset">
+          <legend className="fieldset-legend">Start Date</legend>
           <Input
             id="startDate"
             type="date"
             value={startDateInput}
             onChange={(e) => handleStartDateChange(e.target.value)}
           />
-        </div>
+        </fieldset>
 
         {/* End Date */}
-        <div>
-          <Label htmlFor="endDate">End Date</Label>
+        <fieldset className="fieldset">
+          <legend className="fieldset-legend">End Date</legend>
           <Input
             id="endDate"
             type="date"
             value={endDateInput}
             onChange={(e) => handleEndDateChange(e.target.value)}
           />
-        </div>
+        </fieldset>
 
         {/* Direction Filter */}
-        <div>
-          <Label htmlFor="direction">Direction</Label>
-          <Select
+        <fieldset className="fieldset">
+          <legend className="fieldset-legend">Direction</legend>
+          <select
+            id="direction"
+            className="select"
             value={filters.direction ?? 'all'}
-            onValueChange={(value) =>
-              onFilterChange({ direction: value === 'all' ? undefined : value })
+            onChange={(e) =>
+              onFilterChange({ direction: e.target.value === 'all' ? undefined : e.target.value })
             }
           >
-            <SelectTrigger id="direction">
-              <SelectValue placeholder="All Directions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Directions</SelectItem>
-              <SelectItem value="in">Check In</SelectItem>
-              <SelectItem value="out">Check Out</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <option value="all">All Directions</option>
+            <option value="in">Check In</option>
+            <option value="out">Check Out</option>
+          </select>
+        </fieldset>
 
         {/* Division Filter */}
-        <div>
-          <Label htmlFor="division">Division</Label>
-          <Select
+        <fieldset className="fieldset">
+          <legend className="fieldset-legend">Division</legend>
+          <select
+            id="division"
+            className="select"
             value={filters.divisionId ?? 'all'}
-            onValueChange={(value) =>
-              onFilterChange({ divisionId: value === 'all' ? undefined : value })
+            onChange={(e) =>
+              onFilterChange({ divisionId: e.target.value === 'all' ? undefined : e.target.value })
             }
           >
-            <SelectTrigger id="division">
-              <SelectValue placeholder="All Divisions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Divisions</SelectItem>
-              {divisions?.divisions.map((division) => (
-                <SelectItem key={division.id} value={division.id}>
-                  {division.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <option value="all">All Divisions</option>
+            {divisions?.divisions.map((division) => (
+              <option key={division.id} value={division.id}>
+                {division.name}
+              </option>
+            ))}
+          </select>
+        </fieldset>
 
         {/* Clear Filters Button */}
         {hasActiveFilters && (

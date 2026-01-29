@@ -15,14 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { Loader2 } from 'lucide-react'
 import type { MemberResponse, CreateMemberInput } from '@sentinel/contracts'
 
@@ -144,130 +137,126 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Service Number */}
-            <div>
-              <Label htmlFor="serviceNumber">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
                 Service Number <span className="text-error">*</span>
-              </Label>
+              </legend>
               <Input
                 id="serviceNumber"
                 {...register('serviceNumber', { required: 'Service number is required' })}
                 placeholder="e.g., V123456"
               />
               {errors.serviceNumber && (
-                <p className="text-sm text-error mt-1">{errors.serviceNumber.message}</p>
+                <span className="label text-error">{errors.serviceNumber.message}</span>
               )}
-            </div>
+            </fieldset>
 
             {/* Rank */}
-            <div>
-              <Label htmlFor="rank">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
                 Rank <span className="text-error">*</span>
-              </Label>
-              <Select
+              </legend>
+              <select
+                id="rank"
+                className="select"
                 value={selectedRank}
-                onValueChange={(value) => setValue('rank', value, { shouldValidate: true })}
+                onChange={(e) => setValue('rank', e.target.value, { shouldValidate: true })}
               >
-                <SelectTrigger id="rank">
-                  <SelectValue placeholder="Select rank" />
-                </SelectTrigger>
-                <SelectContent>
-                  {enums?.ranks.map((rank: string) => (
-                    <SelectItem key={rank} value={rank}>
-                      {rank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.rank && <p className="text-sm text-error mt-1">{errors.rank.message}</p>}
-            </div>
+                <option value="" disabled>Select rank</option>
+                {enums?.ranks.map((rank: string) => (
+                  <option key={rank} value={rank}>
+                    {rank}
+                  </option>
+                ))}
+              </select>
+              {errors.rank && <span className="label text-error">{errors.rank.message}</span>}
+            </fieldset>
 
             {/* First Name */}
-            <div>
-              <Label htmlFor="firstName">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
                 First Name <span className="text-error">*</span>
-              </Label>
+              </legend>
               <Input
                 id="firstName"
                 {...register('firstName', { required: 'First name is required' })}
                 placeholder="John"
               />
               {errors.firstName && (
-                <p className="text-sm text-error mt-1">{errors.firstName.message}</p>
+                <span className="label text-error">{errors.firstName.message}</span>
               )}
-            </div>
+            </fieldset>
 
             {/* Last Name */}
-            <div>
-              <Label htmlFor="lastName">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
                 Last Name <span className="text-error">*</span>
-              </Label>
+              </legend>
               <Input
                 id="lastName"
                 {...register('lastName', { required: 'Last name is required' })}
                 placeholder="Doe"
               />
               {errors.lastName && (
-                <p className="text-sm text-error mt-1">{errors.lastName.message}</p>
+                <span className="label text-error">{errors.lastName.message}</span>
               )}
-            </div>
+            </fieldset>
 
             {/* Middle Initial */}
-            <div>
-              <Label htmlFor="middleInitial">Middle Initial</Label>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Middle Initial</legend>
               <Input
                 id="middleInitial"
                 {...register('middleInitial')}
                 placeholder="M"
                 maxLength={5}
               />
-            </div>
+            </fieldset>
 
             {/* Division */}
-            <div>
-              <Label htmlFor="divisionId">
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">
                 Division <span className="text-error">*</span>
-              </Label>
-              <Select
+              </legend>
+              <select
+                id="divisionId"
+                className="select"
                 value={selectedDivisionId}
-                onValueChange={(value) => setValue('divisionId', value, { shouldValidate: true })}
+                onChange={(e) => setValue('divisionId', e.target.value, { shouldValidate: true })}
               >
-                <SelectTrigger id="divisionId">
-                  <SelectValue placeholder="Select division" />
-                </SelectTrigger>
-                <SelectContent>
-                  {divisions?.divisions.map((division) => (
-                    <SelectItem key={division.id} value={division.id}>
-                      {division.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="" disabled>Select division</option>
+                {divisions?.divisions.map((division) => (
+                  <option key={division.id} value={division.id}>
+                    {division.name}
+                  </option>
+                ))}
+              </select>
               {errors.divisionId && (
-                <p className="text-sm text-error mt-1">{errors.divisionId.message}</p>
+                <span className="label text-error">{errors.divisionId.message}</span>
               )}
-            </div>
+            </fieldset>
 
             {/* Email */}
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Email</legend>
               <Input
                 id="email"
                 type="email"
                 {...register('email')}
                 placeholder="john.doe@forces.gc.ca"
               />
-            </div>
+            </fieldset>
 
             {/* Phone Number */}
-            <div>
-              <Label htmlFor="phoneNumber">Phone Number</Label>
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Phone Number</legend>
               <Input
                 id="phoneNumber"
                 type="tel"
                 {...register('phoneNumber')}
                 placeholder="555-1234"
               />
-            </div>
+            </fieldset>
           </div>
 
           <DialogFooter>

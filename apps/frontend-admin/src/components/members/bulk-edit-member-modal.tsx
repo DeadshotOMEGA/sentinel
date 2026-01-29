@@ -13,14 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
 
 interface BulkEditMemberModalProps {
@@ -119,76 +111,76 @@ export function BulkEditMemberModal({
 
         <div className="space-y-4 py-4">
           {/* Rank */}
-          <div className="space-y-2">
-            <Label htmlFor="bulk-rank">Rank</Label>
-            <Select value={rank} onValueChange={setRank}>
-              <SelectTrigger id="bulk-rank">
-                <SelectValue placeholder="Don't change" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CHANGE}>Don't change</SelectItem>
-                {enums?.ranks.map((r: string) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Rank</legend>
+            <select
+              id="bulk-rank"
+              className="select"
+              value={rank}
+              onChange={(e) => setRank(e.target.value)}
+            >
+              <option value={NO_CHANGE}>Don&apos;t change</option>
+              {enums?.ranks.map((r: string) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </fieldset>
 
           {/* Division */}
-          <div className="space-y-2">
-            <Label htmlFor="bulk-division">Division</Label>
-            <Select value={divisionId} onValueChange={setDivisionId}>
-              <SelectTrigger id="bulk-division">
-                <SelectValue placeholder="Don't change" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CHANGE}>Don't change</SelectItem>
-                {divisions?.divisions.map((division) => (
-                  <SelectItem key={division.id} value={division.id}>
-                    {division.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Division</legend>
+            <select
+              id="bulk-division"
+              className="select"
+              value={divisionId}
+              onChange={(e) => setDivisionId(e.target.value)}
+            >
+              <option value={NO_CHANGE}>Don&apos;t change</option>
+              {divisions?.divisions.map((division) => (
+                <option key={division.id} value={division.id}>
+                  {division.name}
+                </option>
+              ))}
+            </select>
+          </fieldset>
 
           {/* Member Status */}
-          <div className="space-y-2">
-            <Label htmlFor="bulk-status">Status</Label>
-            <Select value={memberStatusId} onValueChange={setMemberStatusId}>
-              <SelectTrigger id="bulk-status">
-                <SelectValue placeholder="Don't change" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CHANGE}>Don't change</SelectItem>
-                {enums?.memberStatuses.map((status: { id: string; name: string }) => (
-                  <SelectItem key={status.id} value={status.id}>
-                    {status.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Status</legend>
+            <select
+              id="bulk-status"
+              className="select"
+              value={memberStatusId}
+              onChange={(e) => setMemberStatusId(e.target.value)}
+            >
+              <option value={NO_CHANGE}>Don&apos;t change</option>
+              {enums?.memberStatuses.map((status: { id: string; name: string }) => (
+                <option key={status.id} value={status.id}>
+                  {status.name}
+                </option>
+              ))}
+            </select>
+          </fieldset>
 
           {/* Member Type */}
-          <div className="space-y-2">
-            <Label htmlFor="bulk-type">Member Type</Label>
-            <Select value={memberTypeId} onValueChange={setMemberTypeId}>
-              <SelectTrigger id="bulk-type">
-                <SelectValue placeholder="Don't change" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_CHANGE}>Don't change</SelectItem>
-                {enums?.memberTypes.map((type: { id: string; name: string }) => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Member Type</legend>
+            <select
+              id="bulk-type"
+              className="select"
+              value={memberTypeId}
+              onChange={(e) => setMemberTypeId(e.target.value)}
+            >
+              <option value={NO_CHANGE}>Don&apos;t change</option>
+              {enums?.memberTypes.map((type: { id: string; name: string }) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
+          </fieldset>
 
           {/* Progress indicator */}
           {isSubmitting && (

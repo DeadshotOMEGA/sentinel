@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { useTransferLockup } from '@/hooks/use-lockup'
 import type { EligibleRecipient } from '@sentinel/contracts'
@@ -176,15 +175,15 @@ export function TransferLockupModal({
               </div>
 
               {/* Notes Field */}
-              <div className="space-y-2">
-                <Label htmlFor="transfer-notes">Notes (optional)</Label>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Notes (optional)</legend>
                 <Input
                   id="transfer-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Reason for transfer..."
                 />
-              </div>
+              </fieldset>
             </div>
 
             <DialogFooter>

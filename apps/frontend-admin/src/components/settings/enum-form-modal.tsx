@@ -19,13 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
@@ -248,27 +241,20 @@ export function EnumFormModal({
                   control={form.control}
                   name="chipVariant"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Variant</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
+                    <fieldset className="fieldset">
+                      <legend className="fieldset-legend">Variant</legend>
+                      <select
+                        className="select"
                         value={field.value || 'solid'}
+                        onChange={(e) => field.onChange(e.target.value)}
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select variant" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {CHIP_VARIANTS.map((variant) => (
-                            <SelectItem key={variant.value} value={variant.value}>
-                              {variant.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
+                        {CHIP_VARIANTS.map((variant) => (
+                          <option key={variant.value} value={variant.value}>
+                            {variant.label}
+                          </option>
+                        ))}
+                      </select>
+                    </fieldset>
                   )}
                 />
 
