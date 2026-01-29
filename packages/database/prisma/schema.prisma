@@ -252,15 +252,16 @@ model Member {
 }
 
 model Tag {
-  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String      @unique @db.VarChar(100)
-  description  String?
-  displayOrder Int         @default(0) @map("display_order")
-  chipVariant  String      @default("solid") @map("chip_variant") @db.VarChar(20)
-  chipColor    String      @default("default") @map("chip_color") @db.VarChar(20)
-  createdAt    DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
-  memberTags   MemberTag[]
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String              @unique @db.VarChar(100)
+  description        String?
+  displayOrder       Int                 @default(0) @map("display_order")
+  chipVariant        String              @default("solid") @map("chip_variant") @db.VarChar(20)
+  chipColor          String              @default("default") @map("chip_color") @db.VarChar(20)
+  createdAt          DateTime?           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime?           @default(now()) @map("updated_at") @db.Timestamptz(6)
+  memberTags         MemberTag[]
+  qualificationTypes QualificationType[]
 
   @@index([name], map: "idx_tags_name")
   @@index([displayOrder], map: "idx_tags_display_order")
@@ -691,12 +692,15 @@ model QualificationType {
   description          String?
   canReceiveLockup     Boolean               @default(true) @map("can_receive_lockup")
   displayOrder         Int                   @default(0) @map("display_order")
+  tagId                String?               @map("tag_id") @db.Uuid
   createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamp(6)
   memberQualifications MemberQualification[]
+  tag                  Tag?                  @relation(fields: [tagId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
   @@index([code], map: "idx_qualification_types_code")
   @@index([canReceiveLockup], map: "idx_qualification_types_lockup")
+  @@index([tagId], map: "idx_qualification_types_tag")
   @@map("qualification_types")
 }
 

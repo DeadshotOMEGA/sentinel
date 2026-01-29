@@ -3,7 +3,7 @@ import * as v from 'valibot'
 /**
  * Checkin direction enum
  */
-export const CheckinDirectionEnum = v.picklist(['IN', 'OUT'])
+export const CheckinDirectionEnum = v.picklist(['in', 'out'])
 
 /**
  * Checkin method enum
