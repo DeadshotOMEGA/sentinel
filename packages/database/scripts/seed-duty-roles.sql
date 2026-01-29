@@ -50,7 +50,7 @@ BEGIN
       (gen_random_uuid(), duty_watch_id, 'SWK', 'Senior Watchkeeper', 'Team leader, takes Lockup responsibility', 1, 1, now(), now()),
       (gen_random_uuid(), duty_watch_id, 'DSWK', 'Deputy Senior Watchkeeper', 'Backup to SWK', 1, 2, now(), now()),
       (gen_random_uuid(), duty_watch_id, 'QM', 'Quartermaster', 'Watch duties', 1, 3, now(), now()),
-      (gen_random_uuid(), duty_watch_id, 'BM', 'Boatswain''s Mate', 'Watch duties', 1, 4, now(), now()),
+      (gen_random_uuid(), duty_watch_id, 'BM', 'Bos''n Mate', 'Watch duties', 1, 4, now(), now()),
       (gen_random_uuid(), duty_watch_id, 'APS', 'Access Point Sentry', 'Two positions for access control', 2, 5, now(), now())
     ON CONFLICT DO NOTHING;
   END IF;
