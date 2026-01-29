@@ -66,27 +66,32 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
       root: false, // Disable file-based workers
       jobs: [
         // Daily reset at configured time (default 3:00 AM)
+        // Cron format: minute hour day-of-month month day-of-week
         {
           name: 'daily-reset',
-          cron: `0 ${config.dayRolloverTime.split(':')[1]} ${config.dayRolloverTime.split(':')[0]} * * *`,
+          path: () => runDailyReset(),
+          cron: `${config.dayRolloverTime.split(':')[1]} ${config.dayRolloverTime.split(':')[0]} * * *`,
           timezone: config.timezone,
         },
         // Duty Watch alerts on Tue/Thu at configured time (default 7:00 PM)
         {
           name: 'duty-watch-alerts',
-          cron: `0 ${config.dutyWatchAlertTime.split(':')[1]} ${config.dutyWatchAlertTime.split(':')[0]} * * 2,4`,
+          path: () => runDutyWatchAlerts(),
+          cron: `${config.dutyWatchAlertTime.split(':')[1]} ${config.dutyWatchAlertTime.split(':')[0]} * * 2,4`,
           timezone: config.timezone,
         },
         // Lockup warning at configured time (default 10:00 PM)
         {
           name: 'lockup-warning',
-          cron: `0 ${config.lockupWarningTime.split(':')[1]} ${config.lockupWarningTime.split(':')[0]} * * *`,
+          path: () => runLockupAlerts('warning'),
+          cron: `${config.lockupWarningTime.split(':')[1]} ${config.lockupWarningTime.split(':')[0]} * * *`,
           timezone: config.timezone,
         },
         // Lockup critical at configured time (default 11:00 PM)
         {
           name: 'lockup-critical',
-          cron: `0 ${config.lockupCriticalTime.split(':')[1]} ${config.lockupCriticalTime.split(':')[0]} * * *`,
+          path: () => runLockupAlerts('critical'),
+          cron: `${config.lockupCriticalTime.split(':')[1]} ${config.lockupCriticalTime.split(':')[0]} * * *`,
           timezone: config.timezone,
         },
       ],
@@ -104,42 +109,6 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
     bree.on('worker deleted', (name) => {
       logger.debug(`Job worker deleted: ${name}`)
     })
-
-    // Override job execution to run inline functions
-    bree.run = async function (name?: string) {
-      if (!name) {
-        logger.warn('No job name provided to run')
-        return
-      }
-
-      logger.info(`Running job: ${name}`)
-
-      try {
-        switch (name) {
-          case 'daily-reset':
-            await runDailyReset()
-            break
-          case 'duty-watch-alerts':
-            await runDutyWatchAlerts()
-            break
-          case 'lockup-warning':
-            await runLockupAlerts('warning')
-            break
-          case 'lockup-critical':
-            await runLockupAlerts('critical')
-            break
-          default:
-            logger.warn(`Unknown job: ${name}`)
-        }
-
-        logger.info(`Job completed: ${name}`)
-      } catch (error) {
-        logger.error(`Job failed: ${name}`, {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined,
-        })
-      }
-    }
 
     // Start the scheduler
     await bree.start()

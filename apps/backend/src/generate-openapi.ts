@@ -143,5 +143,7 @@ const openApiDocument = generateOpenApi(
 const outputPath = join(process.cwd(), 'openapi.json')
 writeFileSync(outputPath, JSON.stringify(openApiDocument, null, 2), 'utf-8')
 
-console.log(`✅ OpenAPI documentation generated: ${outputPath}`)
-console.log('📝 View with: npx swagger-ui-watcher openapi.json')
+import { apiLogger } from './lib/logger.js'
+
+apiLogger.info('OpenAPI documentation generated', { outputPath })
+apiLogger.info('View with: npx swagger-ui-watcher openapi.json')
