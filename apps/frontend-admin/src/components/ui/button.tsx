@@ -34,7 +34,7 @@ function Button({
   className,
   variant = 'default',
   size = 'default',
-  _asChild = false,
+  asChild: _asChild = false,
   ...props
 }: ButtonProps) {
   return (

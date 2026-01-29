@@ -1,13 +1,6 @@
 'use client'
 
 import { HEROUI_COLORS, SEMANTIC_COLORS, type ColorName } from '@sentinel/types'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 interface ColorPickerProps {
@@ -53,7 +46,7 @@ function ColorSwatch({ hex, size = 'sm' }: { hex: string; size?: 'sm' | 'md' }) 
   return (
     <div
       className={cn(
-        'rounded-sm border border-border/50',
+        'rounded-sm border border-base-300/50',
         sizeClasses[size]
       )}
       style={{ backgroundColor: hex }}
@@ -70,48 +63,37 @@ export function ColorPicker({
   const selectedColor = COLOR_OPTIONS.find((c) => c.name === value)
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={className}>
-        <SelectValue placeholder={placeholder}>
-          {selectedColor && (
-            <div className="flex items-center gap-2">
-              <ColorSwatch hex={selectedColor.hex} size="sm" />
-              <span>{selectedColor.label}</span>
-            </div>
-          )}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {/* Semantic Colors Section */}
-        <div className="px-2 py-1.5">
-          <div className="text-xs font-semibold text-muted-foreground mb-1">
-            Semantic Colors
-          </div>
+    <div className={cn("relative", className)}>
+      {/* Display the color swatch next to the select */}
+      {selectedColor && (
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+          <ColorSwatch hex={selectedColor.hex} size="sm" />
+        </div>
+      )}
+      <select
+        className={cn(
+          "select select-bordered w-full",
+          selectedColor && "pl-8"
+        )}
+        value={value ?? ''}
+        onChange={(e) => onValueChange(e.target.value)}
+      >
+        <option value="" disabled>{placeholder}</option>
+        <optgroup label="Semantic Colors">
           {COLOR_OPTIONS.filter((c) => c.category === 'semantic').map((color) => (
-            <SelectItem key={color.name} value={color.name}>
-              <div className="flex items-center gap-2">
-                <ColorSwatch hex={color.hex} size="sm" />
-                <span>{color.label}</span>
-              </div>
-            </SelectItem>
+            <option key={color.name} value={color.name}>
+              {color.label}
+            </option>
           ))}
-        </div>
-
-        {/* Base Colors Section */}
-        <div className="px-2 py-1.5 border-t">
-          <div className="text-xs font-semibold text-muted-foreground mb-1">
-            Base Colors
-          </div>
+        </optgroup>
+        <optgroup label="Base Colors">
           {COLOR_OPTIONS.filter((c) => c.category === 'base').map((color) => (
-            <SelectItem key={color.name} value={color.name}>
-              <div className="flex items-center gap-2">
-                <ColorSwatch hex={color.hex} size="sm" />
-                <span>{color.label}</span>
-              </div>
-            </SelectItem>
+            <option key={color.name} value={color.name}>
+              {color.label}
+            </option>
           ))}
-        </div>
-      </SelectContent>
-    </Select>
+        </optgroup>
+      </select>
+    </div>
   )
 }

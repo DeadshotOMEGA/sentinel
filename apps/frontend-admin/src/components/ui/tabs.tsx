@@ -1,55 +1,105 @@
 'use client'
 
 import * as React from 'react'
-import * as TabsPrimitive from '@radix-ui/react-tabs'
-
 import { cn } from '@/lib/utils'
 
-const Tabs = TabsPrimitive.Root
+interface TabsContextValue {
+  value: string
+  onValueChange: (value: string) => void
+}
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground',
-      className
-    )}
-    {...props}
-  />
-))
-TabsList.displayName = TabsPrimitive.List.displayName
+const TabsContext = React.createContext<TabsContextValue>({
+  value: '',
+  onValueChange: () => {},
+})
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
-      className
-    )}
-    {...props}
-  />
-))
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+interface TabsProps extends React.ComponentProps<"div"> {
+  defaultValue?: string
+  value?: string
+  onValueChange?: (value: string) => void
+}
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-      className
-    )}
-    {...props}
-  />
-))
-TabsContent.displayName = TabsPrimitive.Content.displayName
+function Tabs({
+  defaultValue = '',
+  value: controlledValue,
+  onValueChange: controlledOnValueChange,
+  className,
+  ...props
+}: TabsProps) {
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)
+  const value = controlledValue ?? uncontrolledValue
+  const onValueChange = controlledOnValueChange ?? setUncontrolledValue
+
+  return (
+    <TabsContext.Provider value={{ value, onValueChange }}>
+      <div data-slot="tabs" className={className} {...props} />
+    </TabsContext.Provider>
+  )
+}
+
+function TabsList({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      role="tablist"
+      data-slot="tabs-list"
+      className={cn("tabs tabs-bordered", className)}
+      {...props}
+    />
+  )
+}
+
+interface TabsTriggerProps extends React.ComponentProps<"button"> {
+  value: string
+}
+
+function TabsTrigger({
+  className,
+  value,
+  ...props
+}: TabsTriggerProps) {
+  const { value: selectedValue, onValueChange } = React.useContext(TabsContext)
+  const isActive = selectedValue === value
+
+  return (
+    <button
+      role="tab"
+      data-slot="tabs-trigger"
+      data-state={isActive ? 'active' : 'inactive'}
+      className={cn(
+        "tab",
+        isActive && "tab-active",
+        className
+      )}
+      onClick={() => onValueChange(value)}
+      {...props}
+    />
+  )
+}
+
+interface TabsContentProps extends React.ComponentProps<"div"> {
+  value: string
+}
+
+function TabsContent({
+  className,
+  value,
+  ...props
+}: TabsContentProps) {
+  const { value: selectedValue } = React.useContext(TabsContext)
+
+  if (selectedValue !== value) return null
+
+  return (
+    <div
+      role="tabpanel"
+      data-slot="tabs-content"
+      className={cn("mt-2", className)}
+      {...props}
+    />
+  )
+}
 
 export { Tabs, TabsList, TabsTrigger, TabsContent }
