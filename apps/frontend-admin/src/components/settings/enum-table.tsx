@@ -59,14 +59,14 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-8 text-destructive">
+      <div className="text-center py-8 text-error">
         Failed to load {title.toLowerCase()}
       </div>
     )
@@ -80,7 +80,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-sm text-base-content/60">{description}</p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -117,7 +117,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                       {item.name}
                     </Chip>
                   </TableCell>
-                  <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                  <TableCell className="text-base-content/60 max-w-[200px] truncate">
                     {item.description || '-'}
                   </TableCell>
                   <TableCell className="text-right">
@@ -148,7 +148,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columnCount} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={columnCount} className="text-center py-8 text-base-content/60">
                   No {title.toLowerCase()} found. Click "Add New" to create one.
                 </TableCell>
               </TableRow>
@@ -185,7 +185,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
               disabled={deleteEnum.isPending}
             >
               {deleteEnum.isPending ? (

@@ -83,7 +83,7 @@ export function TransferLockupModal({
 
             <div className="space-y-4 py-4">
               {eligibleRecipients.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-base-content/60">
                   <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>No eligible recipients available</p>
                   <p className="text-xs mt-1">
@@ -100,17 +100,17 @@ export function TransferLockupModal({
                         'w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors',
                         selectedRecipient?.id === recipient.id
                           ? 'border-primary bg-primary/5'
-                          : 'border-muted hover:border-muted-foreground/30 hover:bg-muted/50'
+                          : 'border-base-300 hover:border-base-content/30 hover:bg-base-200/50'
                       )}
                       onClick={() => setSelectedRecipient(recipient)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <User className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-base-200">
+                          <User className="h-5 w-5 text-base-content/60" />
                         </div>
                         <div>
                           <p className="font-medium">{formatName(recipient)}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-base-content/60">
                             {recipient.serviceNumber}
                           </p>
                         </div>
@@ -161,8 +161,8 @@ export function TransferLockupModal({
 
             <div className="space-y-4 py-4">
               {/* Transfer Summary */}
-              <div className="p-4 bg-muted/50 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-2">
+              <div className="p-4 bg-base-200/50 rounded-lg border">
+                <p className="text-sm text-base-content/60 mb-2">
                   Transferring lockup to:
                 </p>
                 <p className="text-lg font-semibold">{formatName(selectedRecipient)}</p>
@@ -207,7 +207,7 @@ export function TransferLockupModal({
         {step === 'success' && selectedRecipient && (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-green-600">
+              <DialogTitle className="flex items-center gap-2 text-success">
                 <CheckCircle className="h-5 w-5" />
                 Transfer Complete
               </DialogTitle>
@@ -217,11 +217,11 @@ export function TransferLockupModal({
             </DialogHeader>
 
             <div className="py-6 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                <ArrowRightLeft className="h-8 w-8 text-green-600" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
+                <ArrowRightLeft className="h-8 w-8 text-success" />
               </div>
               <p className="text-lg font-medium">Lockup Transferred</p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-base-content/60 mt-1">
                 {formatName(selectedRecipient)} now holds lockup responsibility
               </p>
             </div>

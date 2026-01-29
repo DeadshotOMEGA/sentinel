@@ -106,8 +106,8 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Directions</SelectItem>
-              <SelectItem value="IN">Check In</SelectItem>
-              <SelectItem value="OUT">Check Out</SelectItem>
+              <SelectItem value="in">Check In</SelectItem>
+              <SelectItem value="out">Check Out</SelectItem>
             </SelectContent>
           </Select>
         </div>

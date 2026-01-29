@@ -89,7 +89,7 @@ export function MemberPickerModal({
         </DialogHeader>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
           <Input
             placeholder="Search by name or service number..."
             value={search}
@@ -100,11 +100,11 @@ export function MemberPickerModal({
 
         <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[400px] border rounded-md">
           {isLoading ? (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
+            <div className="flex items-center justify-center h-full text-base-content/60">
               Loading members...
             </div>
           ) : filteredMembers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+            <div className="flex flex-col items-center justify-center h-full text-base-content/60 gap-2">
               <User className="h-8 w-8" />
               <p>No eligible members found</p>
             </div>
@@ -114,13 +114,13 @@ export function MemberPickerModal({
                 <button
                   key={member.id}
                   onClick={() => handleSelect(member)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-base-200/50 transition-colors text-left"
                 >
                   <div>
                     <div className="font-medium">
                       {member.rank} {member.firstName} {member.lastName}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-base-content/60">
                       {member.serviceNumber}
                     </div>
                     <div className="flex gap-1 mt-1">
@@ -136,7 +136,7 @@ export function MemberPickerModal({
                       )}
                     </div>
                   </div>
-                  <Check className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100" />
+                  <Check className="h-4 w-4 text-base-content/60 opacity-0 group-hover:opacity-100" />
                 </button>
               ))}
             </div>

@@ -292,8 +292,8 @@ export function EnumFormModal({
               </div>
 
               {/* Live Preview */}
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm text-muted-foreground">Preview:</span>
+              <div className="flex items-center gap-3 p-3 bg-base-200/50 rounded-lg">
+                <span className="text-sm text-base-content/60">Preview:</span>
                 <Chip
                   variant={watchedVariant || 'solid'}
                   color={watchedColor || 'default'}
@@ -304,7 +304,7 @@ export function EnumFormModal({
             </div>
 
             {error && (
-              <div className="text-sm text-destructive">
+              <div className="text-sm text-error">
                 {error.message}
               </div>
             )}

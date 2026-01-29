@@ -79,8 +79,8 @@ export function DatabaseTable({
           return (
             <button
               className={cn(
-                'flex items-center gap-1 hover:text-foreground transition-colors',
-                isSorted && 'text-foreground'
+                'flex items-center gap-1 hover:text-base-content transition-colors',
+                isSorted && 'text-base-content'
               )}
               onClick={() => {
                 if (isSorted) {
@@ -96,7 +96,7 @@ export function DatabaseTable({
                 <span className="text-xs text-primary ml-1">(PK)</span>
               )}
               {col.isForeignKey && (
-                <span className="text-xs text-muted-foreground ml-1">(FK)</span>
+                <span className="text-xs text-base-content/60 ml-1">(FK)</span>
               )}
             </button>
           )
@@ -121,21 +121,21 @@ export function DatabaseTable({
 
   if (isError) {
     return (
-      <div className="bg-card p-6 rounded-lg border shadow-sm">
-        <p className="text-sm text-destructive">Failed to load table data</p>
+      <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
+        <p className="text-sm text-error">Failed to load table data</p>
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-lg border shadow-sm">
+      <div className="bg-base-100 rounded-lg border shadow-sm">
         <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
-          <div className="h-12 bg-muted rounded"></div>
+          <div className="h-10 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
+          <div className="h-12 bg-base-200 rounded"></div>
         </div>
       </div>
     )
@@ -143,7 +143,7 @@ export function DatabaseTable({
 
   if (!data) {
     return (
-      <div className="bg-card p-6 rounded-lg border shadow-sm flex items-center justify-center text-muted-foreground">
+      <div className="bg-base-100 p-6 rounded-lg border shadow-sm flex items-center justify-center text-base-content/60">
         Select a table from the sidebar
       </div>
     )
@@ -151,16 +151,16 @@ export function DatabaseTable({
 
   return (
     <>
-      <div className="bg-card rounded-lg border shadow-sm flex flex-col h-full">
+      <div className="bg-base-100 rounded-lg border shadow-sm flex flex-col h-full">
         {/* Table header info */}
-        <div className="px-4 py-3 border-b flex items-center justify-between bg-muted/30">
+        <div className="px-4 py-3 border-b flex items-center justify-between bg-base-200/30">
           <div>
             <h3 className="font-semibold">{data.table}</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-base-content/60">
               {data.total.toLocaleString()} total rows
             </p>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-base-content/60">
             {data.columns.length} columns
           </div>
         </div>
@@ -168,11 +168,11 @@ export function DatabaseTable({
         {/* Table */}
         <div className="flex-1 overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 bg-card z-10">
+            <TableHeader className="sticky top-0 bg-base-100 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="bg-card">
+                    <TableHead key={header.id} className="bg-base-100">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -196,7 +196,7 @@ export function DatabaseTable({
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center text-muted-foreground"
+                    className="h-24 text-center text-base-content/60"
                   >
                     No data in this table
                   </TableCell>
@@ -209,7 +209,7 @@ export function DatabaseTable({
         {/* Pagination Controls */}
         <div className="flex items-center justify-between px-4 py-4 border-t">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Rows per page</span>
+            <span className="text-sm text-base-content/60">Rows per page</span>
             <Select
               value={limit.toString()}
               onValueChange={(value) => {
@@ -230,7 +230,7 @@ export function DatabaseTable({
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-base-content/60">
               Page {page} of {data.totalPages}
             </span>
 

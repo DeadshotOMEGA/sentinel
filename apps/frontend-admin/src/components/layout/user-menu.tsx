@@ -34,9 +34,9 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>
-          <div className="text-xs text-muted-foreground">Signed in as</div>
+          <div className="text-xs text-base-content/60">Signed in as</div>
           <div className="font-semibold">{user.email}</div>
-          <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
+          <div className="text-xs text-base-content/60 capitalize">{user.role}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>

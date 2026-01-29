@@ -82,15 +82,15 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           const direction = info.getValue()
           return (
             <Badge
-              variant={direction === 'IN' ? 'default' : 'secondary'}
+              variant={direction === 'in' ? 'default' : 'secondary'}
               className="flex items-center gap-1 w-fit"
             >
-              {direction === 'IN' ? (
+              {direction === 'in' ? (
                 <ArrowDown className="h-3 w-3" />
               ) : (
                 <ArrowUp className="h-3 w-3" />
               )}
-              {direction}
+              {direction.toUpperCase()}
             </Badge>
           )
         },

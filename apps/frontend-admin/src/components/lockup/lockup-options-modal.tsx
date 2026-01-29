@@ -56,7 +56,7 @@ export function LockupOptionsModal({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               Lockup Responsibility
             </DialogTitle>
             <DialogDescription>
@@ -66,12 +66,12 @@ export function LockupOptionsModal({
 
           <div className="space-y-4">
             {/* Status Info */}
-            <div className="p-4 bg-muted/50 rounded-lg border">
+            <div className="p-4 bg-base-200/50 rounded-lg border">
               <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-muted-foreground" />
+                <User className="h-5 w-5 text-base-content/60" />
                 <div>
                   <p className="font-medium">{memberName}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-base-content/60">
                     You must transfer lockup or lock up the building before checking out
                   </p>
                 </div>
@@ -80,7 +80,7 @@ export function LockupOptionsModal({
 
             {/* Block Reason */}
             {checkoutOptions.blockReason && (
-              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+              <div className="p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
                 {checkoutOptions.blockReason}
               </div>
             )}
@@ -96,7 +96,7 @@ export function LockupOptionsModal({
                   <Lock className="h-5 w-5 mr-3" />
                   <div className="text-left">
                     <p className="font-semibold">Lock Up Building</p>
-                    <p className="text-xs text-muted-foreground font-normal">
+                    <p className="text-xs text-base-content/60 font-normal">
                       Check out all remaining people and secure the building
                     </p>
                   </div>
@@ -112,7 +112,7 @@ export function LockupOptionsModal({
                   <ArrowRightLeft className="h-5 w-5 mr-3" />
                   <div className="text-left">
                     <p className="font-semibold">Transfer Lockup</p>
-                    <p className="text-xs text-muted-foreground font-normal">
+                    <p className="text-xs text-base-content/60 font-normal">
                       Hand over lockup responsibility to another qualified member
                     </p>
                   </div>

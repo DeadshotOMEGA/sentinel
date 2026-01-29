@@ -41,8 +41,8 @@ export function JsonViewerModal({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-auto min-h-0">
-          <pre className="bg-muted rounded-md p-4 text-sm font-mono overflow-x-auto">
-            <code className="text-foreground">{formattedJson}</code>
+          <pre className="bg-base-200 rounded-md p-4 text-sm font-mono overflow-x-auto">
+            <code className="text-base-content">{formattedJson}</code>
           </pre>
         </div>
         <DialogFooter showCloseButton>
