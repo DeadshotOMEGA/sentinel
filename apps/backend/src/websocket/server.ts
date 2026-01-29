@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
 import { logger } from '../lib/logger.js'
+import { socketIOTransport } from '../lib/log-transport-socketio.js'
 import { authenticateSocket } from './auth.js'
 import { registerSocketHandlers } from './handlers.js'
 import { setSocketIOServer } from './broadcast.js'
@@ -29,6 +30,9 @@ export function initializeWebSocketServer(httpServer: HTTPServer): SocketIOServe
 
   // Register Socket.IO instance for broadcasting
   setSocketIOServer(io)
+
+  // Activate real-time log streaming transport
+  socketIOTransport.setIO(io)
 
   // TODO Phase 3: Apply rate limiting for connections (per IP)
   // const connectionLimiter = rateLimit({

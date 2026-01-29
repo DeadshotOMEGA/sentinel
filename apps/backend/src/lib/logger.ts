@@ -1,5 +1,8 @@
 import winston from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
 import { AsyncLocalStorage } from 'async_hooks'
+import { v4 as uuidv4 } from 'uuid'
+import { socketIOTransport } from './log-transport-socketio.js'
 
 /**
  * Request context storage for correlation IDs
@@ -45,6 +48,73 @@ const correlationIdFormat = winston.format((info) => {
 })
 
 /**
+ * Assign a unique ID to each log entry for deduplication
+ */
+const logIdFormat = winston.format((info) => {
+  info.id = uuidv4()
+  return info
+})
+
+/**
+ * Sensitive data redaction format.
+ * Redacts values for keys matching password, secret, token, apiKey, authorization, cookie.
+ */
+const SENSITIVE_KEYS = /^(password|secret|token|apikey|authorization|cookie)$/i
+
+function redactValue(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj === 'string') return obj
+  if (Array.isArray(obj)) return obj.map(redactValue)
+  if (typeof obj === 'object') {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      if (SENSITIVE_KEYS.test(key)) {
+        result[key] = '[REDACTED]'
+      } else if (typeof value === 'object' && value !== null) {
+        result[key] = redactValue(value)
+      } else {
+        result[key] = value
+      }
+    }
+    return result
+  }
+  return obj
+}
+
+const redactionFormat = winston.format((info) => {
+  for (const key of Object.keys(info)) {
+    if (SENSITIVE_KEYS.test(key)) {
+      info[key] = '[REDACTED]'
+    } else if (typeof info[key] === 'object' && info[key] !== null) {
+      info[key] = redactValue(info[key])
+    }
+  }
+  return info
+})
+
+const isDev = process.env.NODE_ENV !== 'production'
+
+/**
+ * File transports for production-grade logging
+ */
+const fileTransports: winston.transport[] = [
+  new DailyRotateFile({
+    filename: 'logs/combined-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '14d',
+    level: 'info',
+  }),
+  new DailyRotateFile({
+    filename: 'logs/error-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '30d',
+    level: 'error',
+  }),
+]
+
+/**
  * Base Winston logger instance
  *
  * Features:
@@ -53,13 +123,19 @@ const correlationIdFormat = winston.format((info) => {
  * - Environment-based log levels
  * - Error stack traces
  * - Timestamp in ISO format
+ * - Daily rotating file transports
+ * - Socket.IO real-time streaming transport
+ * - Sensitive data redaction
+ * - Unique entry IDs for deduplication
  */
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
     winston.format.errors({ stack: true }),
+    logIdFormat(),
     correlationIdFormat(),
+    redactionFormat(),
     winston.format.json()
   ),
   defaultMeta: {
@@ -69,7 +145,7 @@ export const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format:
-        process.env.NODE_ENV === 'development'
+        isDev
           ? winston.format.combine(
               winston.format.colorize(),
               winston.format.printf(
@@ -89,6 +165,14 @@ export const logger = winston.createLogger({
             )
           : winston.format.json(),
     }),
+    socketIOTransport,
+    ...fileTransports,
+  ],
+  exceptionHandlers: [
+    new winston.transports.File({ filename: 'logs/exceptions.log' }),
+  ],
+  rejectionHandlers: [
+    new winston.transports.File({ filename: 'logs/rejections.log' }),
   ],
 })
 
@@ -104,6 +188,22 @@ export const dbLogger = logger.child({ module: 'db' })
 export const authLogger = logger.child({ module: 'auth' })
 export const wsLogger = logger.child({ module: 'websocket' })
 export const serviceLogger = logger.child({ module: 'service' })
+export const jobLogger = logger.child({ module: 'job' })
+export const importLogger = logger.child({ module: 'import' })
+
+/**
+ * Create a timer for profiling operations.
+ * Returns an object with a `done()` method that logs the elapsed time.
+ */
+export function createTimer(label: string, moduleLogger: winston.Logger = logger) {
+  const start = performance.now()
+  return {
+    done(metadata?: Record<string, unknown>) {
+      const elapsed = Math.round(performance.now() - start)
+      moduleLogger.info(`${label} completed`, { duration: elapsed, ...metadata })
+    },
+  }
+}
 
 /**
  * Log HTTP request with correlation ID

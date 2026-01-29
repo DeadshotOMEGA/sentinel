@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io'
 import { logger } from '../lib/logger.js'
+import { socketIOTransport } from '../lib/log-transport-socketio.js'
 import { getUserId, requireRole } from './auth.js'
 
 /**
@@ -132,6 +133,65 @@ export function registerSocketHandlers(socket: Socket) {
   socket.on('kiosks:unsubscribe', () => {
     socket.leave('kiosks')
     logger.debug('Socket unsubscribed from kiosk status', { socketId: socket.id })
+  })
+
+  // Subscribe to live log streaming (admin only)
+  socket.on('logs:subscribe', () => {
+    if (!requireRole(socket, 'admin')) {
+      socket.emit('error', {
+        code: 'FORBIDDEN',
+        message: 'Admin role required to subscribe to logs',
+      })
+      return
+    }
+
+    socket.join('logs')
+    // Send buffered history on subscribe
+    const history = socketIOTransport.getHistory()
+    socket.emit('log:history', history)
+    logger.debug('Socket subscribed to log streaming', { socketId: socket.id })
+  })
+
+  socket.on('logs:unsubscribe', () => {
+    socket.leave('logs')
+    logger.debug('Socket unsubscribed from log streaming', { socketId: socket.id })
+  })
+
+  socket.on('logs:set-level', (level: string) => {
+    if (!requireRole(socket, 'admin')) {
+      socket.emit('error', {
+        code: 'FORBIDDEN',
+        message: 'Admin role required to change log level',
+      })
+      return
+    }
+
+    const validLevels = ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']
+    if (!validLevels.includes(level)) {
+      socket.emit('error', {
+        code: 'INVALID_LEVEL',
+        message: `Invalid log level: ${level}. Valid levels: ${validLevels.join(', ')}`,
+      })
+      return
+    }
+
+    socketIOTransport.level = level
+    logger.info('Log streaming level changed', { level, changedBy: getUserId(socket) })
+    socket.emit('logs:level-changed', { level })
+  })
+
+  socket.on('logs:clear-history', () => {
+    if (!requireRole(socket, 'admin')) {
+      socket.emit('error', {
+        code: 'FORBIDDEN',
+        message: 'Admin role required to clear log history',
+      })
+      return
+    }
+
+    socketIOTransport.clearHistory()
+    logger.info('Log history cleared', { clearedBy: getUserId(socket) })
+    socket.emit('logs:history-cleared')
   })
 
   // Ping/pong for connection health

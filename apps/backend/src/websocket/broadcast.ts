@@ -1,5 +1,6 @@
 import { Server as SocketIOServer } from 'socket.io'
 import { logger } from '../lib/logger.js'
+import type { LogEntry } from '../lib/log-transport-socketio.js'
 
 let io: SocketIOServer | null = null
 
@@ -16,6 +17,17 @@ export function setSocketIOServer(server: SocketIOServer) {
  */
 export function getSocketIOServer(): SocketIOServer | null {
   return io
+}
+
+/**
+ * Broadcast a log entry manually (outside of Winston transport)
+ */
+export function broadcastLogEntry(entry: LogEntry) {
+  if (!io) {
+    return
+  }
+
+  io.to('logs').emit('log:entry', entry)
 }
 
 /**
