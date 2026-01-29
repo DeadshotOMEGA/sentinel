@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { PageShell } from '@/components/layout/page-shell'
 import { WeekPicker } from '@/components/schedules/week-picker'
 import { DdsScheduleCard } from '@/components/schedules/dds-schedule-card'
 import { DutyWatchCard } from '@/components/schedules/duty-watch-card'
@@ -27,8 +26,7 @@ export default function SchedulesPage() {
   })
 
   return (
-    <PageShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -36,7 +34,7 @@ export default function SchedulesPage() {
               <CalendarDays className="h-6 w-6" />
               Weekly Schedules
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-base-content/60">
               Manage DDS and Duty Watch assignments for each week
             </p>
           </div>
@@ -70,7 +68,6 @@ export default function SchedulesPage() {
           <DdsScheduleCard weekStartDate={weekStartDate} />
           <DutyWatchCard weekStartDate={weekStartDate} />
         </div>
-      </div>
-    </PageShell>
+    </div>
   )
 }

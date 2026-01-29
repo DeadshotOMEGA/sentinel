@@ -1,17 +1,16 @@
 'use client'
 
-import { PageShell } from '@/components/layout/page-shell'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EnumTable } from '@/components/settings/enum-table'
+import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BadgeCheck, UserCheck, Building, Tag } from 'lucide-react'
+import { Users, BadgeCheck, UserCheck, Building, Tag, Award } from 'lucide-react'
 
 export default function SettingsPage() {
   return (
-    <PageShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <Tabs defaultValue="member-types" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
+          <TabsList className="grid w-full grid-cols-6 lg:w-[900px]">
             <TabsTrigger value="member-types" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Member Types</span>
@@ -27,6 +26,10 @@ export default function SettingsPage() {
             <TabsTrigger value="visit-types" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               <span className="hidden sm:inline">Visit Types</span>
+            </TabsTrigger>
+            <TabsTrigger value="qualifications" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Qualifications</span>
             </TabsTrigger>
             <TabsTrigger value="tags" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
@@ -82,6 +85,17 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="qualifications">
+            <Card>
+              <CardContent>
+                <QualificationTypeTable
+                  title="Qualification Types"
+                  description="Qualifications that determine member eligibility for duties like lockup"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="tags">
             <Card>
               <CardContent>
@@ -94,7 +108,6 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </PageShell>
+    </div>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { PageShell } from '@/components/layout/page-shell'
 import { CheckinsTable } from '@/components/checkins/checkins-table'
 import { CheckinsFilters } from '@/components/checkins/checkins-filters'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
@@ -34,7 +33,7 @@ export default function CheckinsPage() {
   const canCreateManualCheckin = user?.role && ['developer', 'admin'].includes(user.role)
 
   return (
-    <PageShell>
+    <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Check-ins</h1>
         {canCreateManualCheckin && (
@@ -55,6 +54,6 @@ export default function CheckinsPage() {
           onOpenChange={setIsManualCheckinModalOpen}
         />
       )}
-    </PageShell>
+    </>
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { PageShell } from '@/components/layout/page-shell'
 import { MembersTable } from '@/components/members/members-table'
 import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
@@ -28,7 +27,7 @@ export default function MembersPage() {
   }
 
   return (
-    <PageShell>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
@@ -48,6 +47,6 @@ export default function MembersPage() {
 
       <MemberFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} mode="create" />
       <NominalRollImportDialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen} />
-    </PageShell>
+    </>
   )
 }

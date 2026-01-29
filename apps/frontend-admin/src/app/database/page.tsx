@@ -2,7 +2,6 @@
 
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { TopNav } from '@/components/layout/top-nav'
 import { TableSidebar } from '@/components/database/table-sidebar'
 import { DatabaseTable } from '@/components/database/database-table'
 import { useTableList, useTableData } from '@/hooks/use-database-explorer'
@@ -73,9 +72,7 @@ function DatabasePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <TopNav />
-      <div className="flex flex-1 h-[calc(100vh-4rem)]">
+    <div className="flex flex-1 -m-4 lg:-m-6">
         {/* Sidebar */}
         <TableSidebar
           tables={tableListData?.tables ?? []}
@@ -100,11 +97,11 @@ function DatabasePageContent() {
               onSortChange={handleSortChange}
             />
           ) : (
-            <div className="h-full flex items-center justify-center bg-card rounded-lg border">
+            <div className="h-full flex items-center justify-center bg-base-100 rounded-lg border">
               <div className="text-center space-y-4">
-                <Database className="h-16 w-16 mx-auto text-muted-foreground" />
+                <Database className="h-16 w-16 mx-auto text-base-content/60" />
                 <h2 className="text-xl font-medium">Database Explorer</h2>
-                <p className="text-muted-foreground max-w-sm">
+                <p className="text-base-content/60 max-w-sm">
                   Select a table from the sidebar to view its data. This is a read-only view
                   for exploring the database structure and contents.
                 </p>
@@ -112,7 +109,6 @@ function DatabasePageContent() {
             </div>
           )}
         </main>
-      </div>
     </div>
   )
 }
@@ -121,8 +117,8 @@ export default function DatabasePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
         </div>
       }
     >
