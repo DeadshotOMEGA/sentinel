@@ -34,6 +34,7 @@ import {
   databaseExplorerContract,
   qualificationContract,
   scheduleContract,
+  unitEventContract,
 } from '@sentinel/contracts'
 import { requestLogger } from './middleware/request-logger.js'
 import { metricsMiddleware } from './middleware/metrics.js'
@@ -73,6 +74,7 @@ import { databaseExplorerRouter } from './routes/database-explorer.js'
 import { ranksRouter } from './routes/ranks.js'
 import { qualificationsRouter } from './routes/qualifications.js'
 import { schedulesRouter } from './routes/schedules.js'
+import { unitEventsRouter } from './routes/unit-events.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
 import { auth } from './lib/auth.js'
@@ -418,6 +420,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(scheduleContract, schedulesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(unitEventContract, unitEventsRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

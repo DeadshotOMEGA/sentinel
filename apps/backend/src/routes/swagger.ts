@@ -3,6 +3,7 @@ import swaggerUi from 'swagger-ui-express'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { apiLogger } from '../lib/logger.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -14,7 +15,7 @@ try {
   const specContent = readFileSync(specPath, 'utf-8')
   openApiSpec = JSON.parse(specContent)
 } catch (error) {
-  console.error('Failed to load OpenAPI spec:', error)
+  apiLogger.error('Failed to load OpenAPI spec', { error: error instanceof Error ? error.message : String(error) })
   openApiSpec = {
     openapi: '3.0.2',
     info: {

@@ -190,52 +190,53 @@ model Event {
 }
 
 model Member {
-  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serviceNumber       String                @unique @map("service_number") @db.VarChar(20)
-  rankId              String                @map("rank_id") @db.Uuid
-  rank                String                @db.VarChar(50)
-  firstName           String                @map("first_name") @db.VarChar(100)
-  lastName            String                @map("last_name") @db.VarChar(100)
-  email               String?               @db.VarChar(255)
-  mobilePhone         String?               @map("mobile_phone") @db.VarChar(50)
-  divisionId          String?               @map("division_id") @db.Uuid
-  badgeId             String?               @map("badge_id") @db.Uuid
-  memberType          String                @map("member_type") @db.VarChar(20)
-  status              String                @default("active") @db.VarChar(20)
-  memberTypeId        String?               @map("member_type_id") @db.Uuid
-  memberStatusId      String?               @map("member_status_id") @db.Uuid
-  createdAt           DateTime?             @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt           DateTime?             @default(now()) @map("updated_at") @db.Timestamp(6)
-  employeeNumber      String?               @map("employee_number") @db.VarChar(20)
-  initials            String?               @db.VarChar(10)
-  mess                String?               @db.VarChar(50)
-  moc                 String?               @db.VarChar(100)
-  classDetails        String?               @map("class_details") @db.VarChar(100)
-  homePhone           String?               @map("home_phone") @db.VarChar(30)
-  notes               String?
-  contract_start      DateTime?             @db.Date
-  contract_end        DateTime?             @db.Date
-  missedCheckoutCount Int                   @default(0) @map("missed_checkout_count")
-  lastMissedCheckout  DateTime?             @map("last_missed_checkout") @db.Timestamp(6)
-  rankRef             Rank?                 @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  badge               Badge?                @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  bmqEnrollments      BmqEnrollment[]
-  checkins            Checkin[]
-  division            Division?             @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  visitors            Visitor[]
-  memberTags          MemberTag[]
-  ddsAssignments      DdsAssignment[]       @relation("DdsMember")
-  ddsTransfers        DdsAssignment[]       @relation("DdsTransferredTo")
-  memberTypeRef       MemberType?           @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  memberStatusRef     MemberStatus?         @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  qualifications      MemberQualification[]
-  scheduleAssignments ScheduleAssignment[]
-  lockupHolding       LockupStatus[]        @relation("LockupCurrentHolder")
-  lockupSecured       LockupStatus[]        @relation("LockupSecuredBy")
-  lockupTransfersFrom LockupTransfer[]      @relation("LockupTransferFrom")
-  lockupTransfersTo   LockupTransfer[]      @relation("LockupTransferTo")
-  lockupExecutions    LockupExecution[]
-  missedCheckouts     MissedCheckout[]
+  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber            String                    @unique @map("service_number") @db.VarChar(20)
+  rankId                   String                    @map("rank_id") @db.Uuid
+  rank                     String                    @db.VarChar(50)
+  firstName                String                    @map("first_name") @db.VarChar(100)
+  lastName                 String                    @map("last_name") @db.VarChar(100)
+  email                    String?                   @db.VarChar(255)
+  mobilePhone              String?                   @map("mobile_phone") @db.VarChar(50)
+  divisionId               String?                   @map("division_id") @db.Uuid
+  badgeId                  String?                   @map("badge_id") @db.Uuid
+  memberType               String                    @map("member_type") @db.VarChar(20)
+  status                   String                    @default("active") @db.VarChar(20)
+  memberTypeId             String?                   @map("member_type_id") @db.Uuid
+  memberStatusId           String?                   @map("member_status_id") @db.Uuid
+  createdAt                DateTime?                 @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                DateTime?                 @default(now()) @map("updated_at") @db.Timestamp(6)
+  employeeNumber           String?                   @map("employee_number") @db.VarChar(20)
+  initials                 String?                   @db.VarChar(10)
+  mess                     String?                   @db.VarChar(50)
+  moc                      String?                   @db.VarChar(100)
+  classDetails             String?                   @map("class_details") @db.VarChar(100)
+  homePhone                String?                   @map("home_phone") @db.VarChar(30)
+  notes                    String?
+  contract_start           DateTime?                 @db.Date
+  contract_end             DateTime?                 @db.Date
+  missedCheckoutCount      Int                       @default(0) @map("missed_checkout_count")
+  lastMissedCheckout       DateTime?                 @map("last_missed_checkout") @db.Timestamp(6)
+  rankRef                  Rank?                     @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  badge                    Badge?                    @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  bmqEnrollments           BmqEnrollment[]
+  checkins                 Checkin[]
+  division                 Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitors                 Visitor[]
+  memberTags               MemberTag[]
+  ddsAssignments           DdsAssignment[]           @relation("DdsMember")
+  ddsTransfers             DdsAssignment[]           @relation("DdsTransferredTo")
+  memberTypeRef            MemberType?               @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  memberStatusRef          MemberStatus?             @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  qualifications           MemberQualification[]
+  scheduleAssignments      ScheduleAssignment[]
+  lockupHolding            LockupStatus[]            @relation("LockupCurrentHolder")
+  lockupSecured            LockupStatus[]            @relation("LockupSecuredBy")
+  lockupTransfersFrom      LockupTransfer[]          @relation("LockupTransferFrom")
+  lockupTransfersTo        LockupTransfer[]          @relation("LockupTransferTo")
+  lockupExecutions         LockupExecution[]
+  missedCheckouts          MissedCheckout[]
+  unitEventDutyAssignments UnitEventDutyAssignment[]
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -889,4 +890,92 @@ model MissedCheckout {
   @@index([date], map: "idx_missed_checkouts_date")
   @@index([resolvedBy], map: "idx_missed_checkouts_resolved_by")
   @@map("missed_checkouts")
+}
+
+// ============================================================================
+// UNIT EVENTS & EVENT DUTY WATCH
+// ============================================================================
+
+model UnitEventType {
+  id                     String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String      @db.VarChar(100)
+  category               String      @db.VarChar(50) // mess_dinner, ceremonial, training, social, exercise, vip_visit, remembrance, administrative, other
+  defaultDurationMinutes Int         @default(120) @map("default_duration_minutes")
+  requiresDutyWatch      Boolean     @default(false) @map("requires_duty_watch")
+  defaultMetadata        Json?       @map("default_metadata")
+  displayOrder           Int         @default(0) @map("display_order")
+  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt              DateTime    @updatedAt @map("updated_at") @db.Timestamp(6)
+  unitEvents             UnitEvent[]
+
+  @@index([category], map: "idx_unit_event_types_category")
+  @@map("unit_event_types")
+}
+
+model UnitEvent {
+  id                String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String                    @db.VarChar(200)
+  eventTypeId       String?                   @map("event_type_id") @db.Uuid
+  eventDate         DateTime                  @map("event_date") @db.Date
+  startTime         DateTime?                 @map("start_time") @db.Time(6)
+  endTime           DateTime?                 @map("end_time") @db.Time(6)
+  location          String?                   @db.VarChar(200)
+  description       String?
+  organizer         String?                   @db.VarChar(200)
+  requiresDutyWatch Boolean                   @default(false) @map("requires_duty_watch")
+  status            String                    @default("draft") @db.VarChar(20) // draft, planned, confirmed, in_progress, completed, cancelled, postponed
+  metadata          Json?
+  notes             String?
+  createdBy         String?                   @map("created_by") @db.Uuid
+  createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime                  @updatedAt @map("updated_at") @db.Timestamp(6)
+  eventType         UnitEventType?            @relation(fields: [eventTypeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  dutyPositions     UnitEventDutyPosition[]
+  dutyAssignments   UnitEventDutyAssignment[]
+
+  @@index([eventDate], map: "idx_unit_events_date")
+  @@index([status], map: "idx_unit_events_status")
+  @@index([eventTypeId], map: "idx_unit_events_type")
+  @@map("unit_events")
+}
+
+model UnitEventDutyPosition {
+  id           String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId      String                    @map("event_id") @db.Uuid
+  code         String                    @db.VarChar(50)
+  name         String                    @db.VarChar(100)
+  description  String?
+  maxSlots     Int                       @default(1) @map("max_slots")
+  isStandard   Boolean                   @default(false) @map("is_standard")
+  displayOrder Int                       @default(0) @map("display_order")
+  createdAt    DateTime                  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime                  @updatedAt @map("updated_at") @db.Timestamp(6)
+  event        UnitEvent                 @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  assignments  UnitEventDutyAssignment[]
+
+  @@unique([eventId, code], map: "unit_event_duty_position_event_code_unique")
+  @@index([eventId], map: "idx_unit_event_duty_positions_event")
+  @@map("unit_event_duty_positions")
+}
+
+model UnitEventDutyAssignment {
+  id                  String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId             String                 @map("event_id") @db.Uuid
+  eventDutyPositionId String?                @map("event_duty_position_id") @db.Uuid
+  memberId            String                 @map("member_id") @db.Uuid
+  status              String                 @default("assigned") @db.VarChar(20) // assigned, confirmed, declined, released
+  isVolunteer         Boolean                @default(false) @map("is_volunteer")
+  confirmedAt         DateTime?              @map("confirmed_at") @db.Timestamp(6)
+  releasedAt          DateTime?              @map("released_at") @db.Timestamp(6)
+  notes               String?
+  createdAt           DateTime               @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime               @updatedAt @map("updated_at") @db.Timestamp(6)
+  event               UnitEvent              @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  eventDutyPosition   UnitEventDutyPosition? @relation(fields: [eventDutyPositionId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  member              Member                 @relation(fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@unique([eventId, memberId, eventDutyPositionId], map: "unit_event_duty_assignment_unique")
+  @@index([eventId], map: "idx_unit_event_duty_assignments_event")
+  @@index([memberId], map: "idx_unit_event_duty_assignments_member")
+  @@map("unit_event_duty_assignments")
 }

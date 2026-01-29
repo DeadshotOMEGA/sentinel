@@ -659,6 +659,64 @@ exports.Prisma.MissedCheckoutScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.UnitEventTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  defaultDurationMinutes: 'defaultDurationMinutes',
+  requiresDutyWatch: 'requiresDutyWatch',
+  defaultMetadata: 'defaultMetadata',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UnitEventScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  eventTypeId: 'eventTypeId',
+  eventDate: 'eventDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  location: 'location',
+  description: 'description',
+  organizer: 'organizer',
+  requiresDutyWatch: 'requiresDutyWatch',
+  status: 'status',
+  metadata: 'metadata',
+  notes: 'notes',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UnitEventDutyPositionScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  maxSlots: 'maxSlots',
+  isStandard: 'isStandard',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UnitEventDutyAssignmentScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  eventDutyPositionId: 'eventDutyPositionId',
+  memberId: 'memberId',
+  status: 'status',
+  isVolunteer: 'isVolunteer',
+  confirmedAt: 'confirmedAt',
+  releasedAt: 'releasedAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -733,7 +791,11 @@ exports.Prisma.ModelName = {
   LockupStatus: 'LockupStatus',
   LockupTransfer: 'LockupTransfer',
   LockupExecution: 'LockupExecution',
-  MissedCheckout: 'MissedCheckout'
+  MissedCheckout: 'MissedCheckout',
+  UnitEventType: 'UnitEventType',
+  UnitEvent: 'UnitEvent',
+  UnitEventDutyPosition: 'UnitEventDutyPosition',
+  UnitEventDutyAssignment: 'UnitEventDutyAssignment'
 };
 
 /**

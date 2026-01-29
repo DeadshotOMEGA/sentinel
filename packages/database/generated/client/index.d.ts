@@ -229,6 +229,26 @@ export type LockupExecution = $Result.DefaultSelection<Prisma.$LockupExecutionPa
  * 
  */
 export type MissedCheckout = $Result.DefaultSelection<Prisma.$MissedCheckoutPayload>
+/**
+ * Model UnitEventType
+ * 
+ */
+export type UnitEventType = $Result.DefaultSelection<Prisma.$UnitEventTypePayload>
+/**
+ * Model UnitEvent
+ * 
+ */
+export type UnitEvent = $Result.DefaultSelection<Prisma.$UnitEventPayload>
+/**
+ * Model UnitEventDutyPosition
+ * 
+ */
+export type UnitEventDutyPosition = $Result.DefaultSelection<Prisma.$UnitEventDutyPositionPayload>
+/**
+ * Model UnitEventDutyAssignment
+ * 
+ */
+export type UnitEventDutyAssignment = $Result.DefaultSelection<Prisma.$UnitEventDutyAssignmentPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -776,6 +796,46 @@ export class PrismaClient<
     * ```
     */
   get missedCheckout(): Prisma.MissedCheckoutDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.unitEventType`: Exposes CRUD operations for the **UnitEventType** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UnitEventTypes
+    * const unitEventTypes = await prisma.unitEventType.findMany()
+    * ```
+    */
+  get unitEventType(): Prisma.UnitEventTypeDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.unitEvent`: Exposes CRUD operations for the **UnitEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UnitEvents
+    * const unitEvents = await prisma.unitEvent.findMany()
+    * ```
+    */
+  get unitEvent(): Prisma.UnitEventDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.unitEventDutyPosition`: Exposes CRUD operations for the **UnitEventDutyPosition** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UnitEventDutyPositions
+    * const unitEventDutyPositions = await prisma.unitEventDutyPosition.findMany()
+    * ```
+    */
+  get unitEventDutyPosition(): Prisma.UnitEventDutyPositionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.unitEventDutyAssignment`: Exposes CRUD operations for the **UnitEventDutyAssignment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UnitEventDutyAssignments
+    * const unitEventDutyAssignments = await prisma.unitEventDutyAssignment.findMany()
+    * ```
+    */
+  get unitEventDutyAssignment(): Prisma.UnitEventDutyAssignmentDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1252,7 +1312,11 @@ export namespace Prisma {
     LockupStatus: 'LockupStatus',
     LockupTransfer: 'LockupTransfer',
     LockupExecution: 'LockupExecution',
-    MissedCheckout: 'MissedCheckout'
+    MissedCheckout: 'MissedCheckout',
+    UnitEventType: 'UnitEventType',
+    UnitEvent: 'UnitEvent',
+    UnitEventDutyPosition: 'UnitEventDutyPosition',
+    UnitEventDutyAssignment: 'UnitEventDutyAssignment'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1268,7 +1332,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4454,6 +4518,302 @@ export namespace Prisma {
           }
         }
       }
+      UnitEventType: {
+        payload: Prisma.$UnitEventTypePayload<ExtArgs>
+        fields: Prisma.UnitEventTypeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UnitEventTypeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UnitEventTypeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          findFirst: {
+            args: Prisma.UnitEventTypeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UnitEventTypeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          findMany: {
+            args: Prisma.UnitEventTypeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>[]
+          }
+          create: {
+            args: Prisma.UnitEventTypeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          createMany: {
+            args: Prisma.UnitEventTypeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UnitEventTypeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>[]
+          }
+          delete: {
+            args: Prisma.UnitEventTypeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          update: {
+            args: Prisma.UnitEventTypeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          deleteMany: {
+            args: Prisma.UnitEventTypeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UnitEventTypeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UnitEventTypeUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>[]
+          }
+          upsert: {
+            args: Prisma.UnitEventTypeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventTypePayload>
+          }
+          aggregate: {
+            args: Prisma.UnitEventTypeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUnitEventType>
+          }
+          groupBy: {
+            args: Prisma.UnitEventTypeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventTypeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UnitEventTypeCountArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventTypeCountAggregateOutputType> | number
+          }
+        }
+      }
+      UnitEvent: {
+        payload: Prisma.$UnitEventPayload<ExtArgs>
+        fields: Prisma.UnitEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UnitEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UnitEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          findFirst: {
+            args: Prisma.UnitEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UnitEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          findMany: {
+            args: Prisma.UnitEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>[]
+          }
+          create: {
+            args: Prisma.UnitEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          createMany: {
+            args: Prisma.UnitEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UnitEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>[]
+          }
+          delete: {
+            args: Prisma.UnitEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          update: {
+            args: Prisma.UnitEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.UnitEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UnitEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UnitEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.UnitEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventPayload>
+          }
+          aggregate: {
+            args: Prisma.UnitEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUnitEvent>
+          }
+          groupBy: {
+            args: Prisma.UnitEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UnitEventCountArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventCountAggregateOutputType> | number
+          }
+        }
+      }
+      UnitEventDutyPosition: {
+        payload: Prisma.$UnitEventDutyPositionPayload<ExtArgs>
+        fields: Prisma.UnitEventDutyPositionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UnitEventDutyPositionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UnitEventDutyPositionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          findFirst: {
+            args: Prisma.UnitEventDutyPositionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UnitEventDutyPositionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          findMany: {
+            args: Prisma.UnitEventDutyPositionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>[]
+          }
+          create: {
+            args: Prisma.UnitEventDutyPositionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          createMany: {
+            args: Prisma.UnitEventDutyPositionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UnitEventDutyPositionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>[]
+          }
+          delete: {
+            args: Prisma.UnitEventDutyPositionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          update: {
+            args: Prisma.UnitEventDutyPositionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          deleteMany: {
+            args: Prisma.UnitEventDutyPositionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UnitEventDutyPositionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UnitEventDutyPositionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>[]
+          }
+          upsert: {
+            args: Prisma.UnitEventDutyPositionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyPositionPayload>
+          }
+          aggregate: {
+            args: Prisma.UnitEventDutyPositionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUnitEventDutyPosition>
+          }
+          groupBy: {
+            args: Prisma.UnitEventDutyPositionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventDutyPositionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UnitEventDutyPositionCountArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventDutyPositionCountAggregateOutputType> | number
+          }
+        }
+      }
+      UnitEventDutyAssignment: {
+        payload: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>
+        fields: Prisma.UnitEventDutyAssignmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UnitEventDutyAssignmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UnitEventDutyAssignmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          findFirst: {
+            args: Prisma.UnitEventDutyAssignmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UnitEventDutyAssignmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          findMany: {
+            args: Prisma.UnitEventDutyAssignmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>[]
+          }
+          create: {
+            args: Prisma.UnitEventDutyAssignmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          createMany: {
+            args: Prisma.UnitEventDutyAssignmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UnitEventDutyAssignmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>[]
+          }
+          delete: {
+            args: Prisma.UnitEventDutyAssignmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          update: {
+            args: Prisma.UnitEventDutyAssignmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.UnitEventDutyAssignmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UnitEventDutyAssignmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UnitEventDutyAssignmentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>[]
+          }
+          upsert: {
+            args: Prisma.UnitEventDutyAssignmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UnitEventDutyAssignmentPayload>
+          }
+          aggregate: {
+            args: Prisma.UnitEventDutyAssignmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUnitEventDutyAssignment>
+          }
+          groupBy: {
+            args: Prisma.UnitEventDutyAssignmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventDutyAssignmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UnitEventDutyAssignmentCountArgs<ExtArgs>
+            result: $Utils.Optional<UnitEventDutyAssignmentCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4605,6 +4965,10 @@ export namespace Prisma {
     lockupTransfer?: LockupTransferOmit
     lockupExecution?: LockupExecutionOmit
     missedCheckout?: MissedCheckoutOmit
+    unitEventType?: UnitEventTypeOmit
+    unitEvent?: UnitEventOmit
+    unitEventDutyPosition?: UnitEventDutyPositionOmit
+    unitEventDutyAssignment?: UnitEventDutyAssignmentOmit
   }
 
   /* Types for Logging */
@@ -5007,6 +5371,7 @@ export namespace Prisma {
     lockupTransfersTo: number
     lockupExecutions: number
     missedCheckouts: number
+    unitEventDutyAssignments: number
   }
 
   export type MemberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5024,6 +5389,7 @@ export namespace Prisma {
     lockupTransfersTo?: boolean | MemberCountOutputTypeCountLockupTransfersToArgs
     lockupExecutions?: boolean | MemberCountOutputTypeCountLockupExecutionsArgs
     missedCheckouts?: boolean | MemberCountOutputTypeCountMissedCheckoutsArgs
+    unitEventDutyAssignments?: boolean | MemberCountOutputTypeCountUnitEventDutyAssignmentsArgs
   }
 
   // Custom InputTypes
@@ -5133,6 +5499,13 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountMissedCheckoutsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MissedCheckoutWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountUnitEventDutyAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyAssignmentWhereInput
   }
 
 
@@ -5572,6 +5945,108 @@ export namespace Prisma {
    */
   export type LockupStatusCountOutputTypeCountTransfersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LockupTransferWhereInput
+  }
+
+
+  /**
+   * Count Type UnitEventTypeCountOutputType
+   */
+
+  export type UnitEventTypeCountOutputType = {
+    unitEvents: number
+  }
+
+  export type UnitEventTypeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    unitEvents?: boolean | UnitEventTypeCountOutputTypeCountUnitEventsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UnitEventTypeCountOutputType without action
+   */
+  export type UnitEventTypeCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventTypeCountOutputType
+     */
+    select?: UnitEventTypeCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventTypeCountOutputType without action
+   */
+  export type UnitEventTypeCountOutputTypeCountUnitEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventWhereInput
+  }
+
+
+  /**
+   * Count Type UnitEventCountOutputType
+   */
+
+  export type UnitEventCountOutputType = {
+    dutyPositions: number
+    dutyAssignments: number
+  }
+
+  export type UnitEventCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    dutyPositions?: boolean | UnitEventCountOutputTypeCountDutyPositionsArgs
+    dutyAssignments?: boolean | UnitEventCountOutputTypeCountDutyAssignmentsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UnitEventCountOutputType without action
+   */
+  export type UnitEventCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventCountOutputType
+     */
+    select?: UnitEventCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventCountOutputType without action
+   */
+  export type UnitEventCountOutputTypeCountDutyPositionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyPositionWhereInput
+  }
+
+  /**
+   * UnitEventCountOutputType without action
+   */
+  export type UnitEventCountOutputTypeCountDutyAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyAssignmentWhereInput
+  }
+
+
+  /**
+   * Count Type UnitEventDutyPositionCountOutputType
+   */
+
+  export type UnitEventDutyPositionCountOutputType = {
+    assignments: number
+  }
+
+  export type UnitEventDutyPositionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    assignments?: boolean | UnitEventDutyPositionCountOutputTypeCountAssignmentsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UnitEventDutyPositionCountOutputType without action
+   */
+  export type UnitEventDutyPositionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPositionCountOutputType
+     */
+    select?: UnitEventDutyPositionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventDutyPositionCountOutputType without action
+   */
+  export type UnitEventDutyPositionCountOutputTypeCountAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyAssignmentWhereInput
   }
 
 
@@ -15841,6 +16316,7 @@ export namespace Prisma {
     lockupTransfersTo?: boolean | Member$lockupTransfersToArgs<ExtArgs>
     lockupExecutions?: boolean | Member$lockupExecutionsArgs<ExtArgs>
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
+    unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
@@ -15965,6 +16441,7 @@ export namespace Prisma {
     lockupTransfersTo?: boolean | Member$lockupTransfersToArgs<ExtArgs>
     lockupExecutions?: boolean | Member$lockupExecutionsArgs<ExtArgs>
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
+    unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type MemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16004,6 +16481,7 @@ export namespace Prisma {
       lockupTransfersTo: Prisma.$LockupTransferPayload<ExtArgs>[]
       lockupExecutions: Prisma.$LockupExecutionPayload<ExtArgs>[]
       missedCheckouts: Prisma.$MissedCheckoutPayload<ExtArgs>[]
+      unitEventDutyAssignments: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16446,6 +16924,7 @@ export namespace Prisma {
     lockupTransfersTo<T extends Member$lockupTransfersToArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupTransfersToArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupTransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lockupExecutions<T extends Member$lockupExecutionsArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupExecutionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     missedCheckouts<T extends Member$missedCheckoutsArgs<ExtArgs> = {}>(args?: Subset<T, Member$missedCheckoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MissedCheckoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    unitEventDutyAssignments<T extends Member$unitEventDutyAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$unitEventDutyAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17335,6 +17814,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MissedCheckoutScalarFieldEnum | MissedCheckoutScalarFieldEnum[]
+  }
+
+  /**
+   * Member.unitEventDutyAssignments
+   */
+  export type Member$unitEventDutyAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    where?: UnitEventDutyAssignmentWhereInput
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
   }
 
   /**
@@ -55932,6 +56435,4834 @@ export namespace Prisma {
 
 
   /**
+   * Model UnitEventType
+   */
+
+  export type AggregateUnitEventType = {
+    _count: UnitEventTypeCountAggregateOutputType | null
+    _avg: UnitEventTypeAvgAggregateOutputType | null
+    _sum: UnitEventTypeSumAggregateOutputType | null
+    _min: UnitEventTypeMinAggregateOutputType | null
+    _max: UnitEventTypeMaxAggregateOutputType | null
+  }
+
+  export type UnitEventTypeAvgAggregateOutputType = {
+    defaultDurationMinutes: number | null
+    displayOrder: number | null
+  }
+
+  export type UnitEventTypeSumAggregateOutputType = {
+    defaultDurationMinutes: number | null
+    displayOrder: number | null
+  }
+
+  export type UnitEventTypeMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    defaultDurationMinutes: number | null
+    requiresDutyWatch: boolean | null
+    displayOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventTypeMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    defaultDurationMinutes: number | null
+    requiresDutyWatch: boolean | null
+    displayOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventTypeCountAggregateOutputType = {
+    id: number
+    name: number
+    category: number
+    defaultDurationMinutes: number
+    requiresDutyWatch: number
+    defaultMetadata: number
+    displayOrder: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UnitEventTypeAvgAggregateInputType = {
+    defaultDurationMinutes?: true
+    displayOrder?: true
+  }
+
+  export type UnitEventTypeSumAggregateInputType = {
+    defaultDurationMinutes?: true
+    displayOrder?: true
+  }
+
+  export type UnitEventTypeMinAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    defaultDurationMinutes?: true
+    requiresDutyWatch?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventTypeMaxAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    defaultDurationMinutes?: true
+    requiresDutyWatch?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventTypeCountAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    defaultDurationMinutes?: true
+    requiresDutyWatch?: true
+    defaultMetadata?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UnitEventTypeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventType to aggregate.
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventTypes to fetch.
+     */
+    orderBy?: UnitEventTypeOrderByWithRelationInput | UnitEventTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UnitEventTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UnitEventTypes
+    **/
+    _count?: true | UnitEventTypeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UnitEventTypeAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UnitEventTypeSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UnitEventTypeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UnitEventTypeMaxAggregateInputType
+  }
+
+  export type GetUnitEventTypeAggregateType<T extends UnitEventTypeAggregateArgs> = {
+        [P in keyof T & keyof AggregateUnitEventType]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUnitEventType[P]>
+      : GetScalarType<T[P], AggregateUnitEventType[P]>
+  }
+
+
+
+
+  export type UnitEventTypeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventTypeWhereInput
+    orderBy?: UnitEventTypeOrderByWithAggregationInput | UnitEventTypeOrderByWithAggregationInput[]
+    by: UnitEventTypeScalarFieldEnum[] | UnitEventTypeScalarFieldEnum
+    having?: UnitEventTypeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UnitEventTypeCountAggregateInputType | true
+    _avg?: UnitEventTypeAvgAggregateInputType
+    _sum?: UnitEventTypeSumAggregateInputType
+    _min?: UnitEventTypeMinAggregateInputType
+    _max?: UnitEventTypeMaxAggregateInputType
+  }
+
+  export type UnitEventTypeGroupByOutputType = {
+    id: string
+    name: string
+    category: string
+    defaultDurationMinutes: number
+    requiresDutyWatch: boolean
+    defaultMetadata: JsonValue | null
+    displayOrder: number
+    createdAt: Date
+    updatedAt: Date
+    _count: UnitEventTypeCountAggregateOutputType | null
+    _avg: UnitEventTypeAvgAggregateOutputType | null
+    _sum: UnitEventTypeSumAggregateOutputType | null
+    _min: UnitEventTypeMinAggregateOutputType | null
+    _max: UnitEventTypeMaxAggregateOutputType | null
+  }
+
+  type GetUnitEventTypeGroupByPayload<T extends UnitEventTypeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UnitEventTypeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UnitEventTypeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UnitEventTypeGroupByOutputType[P]>
+            : GetScalarType<T[P], UnitEventTypeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UnitEventTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    defaultDurationMinutes?: boolean
+    requiresDutyWatch?: boolean
+    defaultMetadata?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    unitEvents?: boolean | UnitEventType$unitEventsArgs<ExtArgs>
+    _count?: boolean | UnitEventTypeCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventType"]>
+
+  export type UnitEventTypeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    defaultDurationMinutes?: boolean
+    requiresDutyWatch?: boolean
+    defaultMetadata?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["unitEventType"]>
+
+  export type UnitEventTypeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    defaultDurationMinutes?: boolean
+    requiresDutyWatch?: boolean
+    defaultMetadata?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["unitEventType"]>
+
+  export type UnitEventTypeSelectScalar = {
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    defaultDurationMinutes?: boolean
+    requiresDutyWatch?: boolean
+    defaultMetadata?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UnitEventTypeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "defaultDurationMinutes" | "requiresDutyWatch" | "defaultMetadata" | "displayOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["unitEventType"]>
+  export type UnitEventTypeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    unitEvents?: boolean | UnitEventType$unitEventsArgs<ExtArgs>
+    _count?: boolean | UnitEventTypeCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type UnitEventTypeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type UnitEventTypeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $UnitEventTypePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UnitEventType"
+    objects: {
+      unitEvents: Prisma.$UnitEventPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      category: string
+      defaultDurationMinutes: number
+      requiresDutyWatch: boolean
+      defaultMetadata: Prisma.JsonValue | null
+      displayOrder: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["unitEventType"]>
+    composites: {}
+  }
+
+  type UnitEventTypeGetPayload<S extends boolean | null | undefined | UnitEventTypeDefaultArgs> = $Result.GetResult<Prisma.$UnitEventTypePayload, S>
+
+  type UnitEventTypeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UnitEventTypeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: UnitEventTypeCountAggregateInputType | true
+    }
+
+  export interface UnitEventTypeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UnitEventType'], meta: { name: 'UnitEventType' } }
+    /**
+     * Find zero or one UnitEventType that matches the filter.
+     * @param {UnitEventTypeFindUniqueArgs} args - Arguments to find a UnitEventType
+     * @example
+     * // Get one UnitEventType
+     * const unitEventType = await prisma.unitEventType.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UnitEventTypeFindUniqueArgs>(args: SelectSubset<T, UnitEventTypeFindUniqueArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UnitEventType that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UnitEventTypeFindUniqueOrThrowArgs} args - Arguments to find a UnitEventType
+     * @example
+     * // Get one UnitEventType
+     * const unitEventType = await prisma.unitEventType.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UnitEventTypeFindUniqueOrThrowArgs>(args: SelectSubset<T, UnitEventTypeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventType that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeFindFirstArgs} args - Arguments to find a UnitEventType
+     * @example
+     * // Get one UnitEventType
+     * const unitEventType = await prisma.unitEventType.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UnitEventTypeFindFirstArgs>(args?: SelectSubset<T, UnitEventTypeFindFirstArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventType that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeFindFirstOrThrowArgs} args - Arguments to find a UnitEventType
+     * @example
+     * // Get one UnitEventType
+     * const unitEventType = await prisma.unitEventType.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UnitEventTypeFindFirstOrThrowArgs>(args?: SelectSubset<T, UnitEventTypeFindFirstOrThrowArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UnitEventTypes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UnitEventTypes
+     * const unitEventTypes = await prisma.unitEventType.findMany()
+     * 
+     * // Get first 10 UnitEventTypes
+     * const unitEventTypes = await prisma.unitEventType.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const unitEventTypeWithIdOnly = await prisma.unitEventType.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UnitEventTypeFindManyArgs>(args?: SelectSubset<T, UnitEventTypeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UnitEventType.
+     * @param {UnitEventTypeCreateArgs} args - Arguments to create a UnitEventType.
+     * @example
+     * // Create one UnitEventType
+     * const UnitEventType = await prisma.unitEventType.create({
+     *   data: {
+     *     // ... data to create a UnitEventType
+     *   }
+     * })
+     * 
+     */
+    create<T extends UnitEventTypeCreateArgs>(args: SelectSubset<T, UnitEventTypeCreateArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UnitEventTypes.
+     * @param {UnitEventTypeCreateManyArgs} args - Arguments to create many UnitEventTypes.
+     * @example
+     * // Create many UnitEventTypes
+     * const unitEventType = await prisma.unitEventType.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UnitEventTypeCreateManyArgs>(args?: SelectSubset<T, UnitEventTypeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UnitEventTypes and returns the data saved in the database.
+     * @param {UnitEventTypeCreateManyAndReturnArgs} args - Arguments to create many UnitEventTypes.
+     * @example
+     * // Create many UnitEventTypes
+     * const unitEventType = await prisma.unitEventType.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UnitEventTypes and only return the `id`
+     * const unitEventTypeWithIdOnly = await prisma.unitEventType.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UnitEventTypeCreateManyAndReturnArgs>(args?: SelectSubset<T, UnitEventTypeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UnitEventType.
+     * @param {UnitEventTypeDeleteArgs} args - Arguments to delete one UnitEventType.
+     * @example
+     * // Delete one UnitEventType
+     * const UnitEventType = await prisma.unitEventType.delete({
+     *   where: {
+     *     // ... filter to delete one UnitEventType
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UnitEventTypeDeleteArgs>(args: SelectSubset<T, UnitEventTypeDeleteArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UnitEventType.
+     * @param {UnitEventTypeUpdateArgs} args - Arguments to update one UnitEventType.
+     * @example
+     * // Update one UnitEventType
+     * const unitEventType = await prisma.unitEventType.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UnitEventTypeUpdateArgs>(args: SelectSubset<T, UnitEventTypeUpdateArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UnitEventTypes.
+     * @param {UnitEventTypeDeleteManyArgs} args - Arguments to filter UnitEventTypes to delete.
+     * @example
+     * // Delete a few UnitEventTypes
+     * const { count } = await prisma.unitEventType.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UnitEventTypeDeleteManyArgs>(args?: SelectSubset<T, UnitEventTypeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventTypes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UnitEventTypes
+     * const unitEventType = await prisma.unitEventType.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UnitEventTypeUpdateManyArgs>(args: SelectSubset<T, UnitEventTypeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventTypes and returns the data updated in the database.
+     * @param {UnitEventTypeUpdateManyAndReturnArgs} args - Arguments to update many UnitEventTypes.
+     * @example
+     * // Update many UnitEventTypes
+     * const unitEventType = await prisma.unitEventType.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UnitEventTypes and only return the `id`
+     * const unitEventTypeWithIdOnly = await prisma.unitEventType.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UnitEventTypeUpdateManyAndReturnArgs>(args: SelectSubset<T, UnitEventTypeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UnitEventType.
+     * @param {UnitEventTypeUpsertArgs} args - Arguments to update or create a UnitEventType.
+     * @example
+     * // Update or create a UnitEventType
+     * const unitEventType = await prisma.unitEventType.upsert({
+     *   create: {
+     *     // ... data to create a UnitEventType
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UnitEventType we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UnitEventTypeUpsertArgs>(args: SelectSubset<T, UnitEventTypeUpsertArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UnitEventTypes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeCountArgs} args - Arguments to filter UnitEventTypes to count.
+     * @example
+     * // Count the number of UnitEventTypes
+     * const count = await prisma.unitEventType.count({
+     *   where: {
+     *     // ... the filter for the UnitEventTypes we want to count
+     *   }
+     * })
+    **/
+    count<T extends UnitEventTypeCountArgs>(
+      args?: Subset<T, UnitEventTypeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UnitEventTypeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UnitEventType.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UnitEventTypeAggregateArgs>(args: Subset<T, UnitEventTypeAggregateArgs>): Prisma.PrismaPromise<GetUnitEventTypeAggregateType<T>>
+
+    /**
+     * Group by UnitEventType.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventTypeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UnitEventTypeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UnitEventTypeGroupByArgs['orderBy'] }
+        : { orderBy?: UnitEventTypeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UnitEventTypeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUnitEventTypeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UnitEventType model
+   */
+  readonly fields: UnitEventTypeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UnitEventType.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UnitEventTypeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    unitEvents<T extends UnitEventType$unitEventsArgs<ExtArgs> = {}>(args?: Subset<T, UnitEventType$unitEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UnitEventType model
+   */
+  interface UnitEventTypeFieldRefs {
+    readonly id: FieldRef<"UnitEventType", 'String'>
+    readonly name: FieldRef<"UnitEventType", 'String'>
+    readonly category: FieldRef<"UnitEventType", 'String'>
+    readonly defaultDurationMinutes: FieldRef<"UnitEventType", 'Int'>
+    readonly requiresDutyWatch: FieldRef<"UnitEventType", 'Boolean'>
+    readonly defaultMetadata: FieldRef<"UnitEventType", 'Json'>
+    readonly displayOrder: FieldRef<"UnitEventType", 'Int'>
+    readonly createdAt: FieldRef<"UnitEventType", 'DateTime'>
+    readonly updatedAt: FieldRef<"UnitEventType", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UnitEventType findUnique
+   */
+  export type UnitEventTypeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventType to fetch.
+     */
+    where: UnitEventTypeWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType findUniqueOrThrow
+   */
+  export type UnitEventTypeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventType to fetch.
+     */
+    where: UnitEventTypeWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType findFirst
+   */
+  export type UnitEventTypeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventType to fetch.
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventTypes to fetch.
+     */
+    orderBy?: UnitEventTypeOrderByWithRelationInput | UnitEventTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventTypes.
+     */
+    cursor?: UnitEventTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventTypes.
+     */
+    distinct?: UnitEventTypeScalarFieldEnum | UnitEventTypeScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType findFirstOrThrow
+   */
+  export type UnitEventTypeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventType to fetch.
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventTypes to fetch.
+     */
+    orderBy?: UnitEventTypeOrderByWithRelationInput | UnitEventTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventTypes.
+     */
+    cursor?: UnitEventTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventTypes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventTypes.
+     */
+    distinct?: UnitEventTypeScalarFieldEnum | UnitEventTypeScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType findMany
+   */
+  export type UnitEventTypeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventTypes to fetch.
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventTypes to fetch.
+     */
+    orderBy?: UnitEventTypeOrderByWithRelationInput | UnitEventTypeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UnitEventTypes.
+     */
+    cursor?: UnitEventTypeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventTypes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventTypes.
+     */
+    skip?: number
+    distinct?: UnitEventTypeScalarFieldEnum | UnitEventTypeScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType create
+   */
+  export type UnitEventTypeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UnitEventType.
+     */
+    data: XOR<UnitEventTypeCreateInput, UnitEventTypeUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType createMany
+   */
+  export type UnitEventTypeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UnitEventTypes.
+     */
+    data: UnitEventTypeCreateManyInput | UnitEventTypeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UnitEventType createManyAndReturn
+   */
+  export type UnitEventTypeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * The data used to create many UnitEventTypes.
+     */
+    data: UnitEventTypeCreateManyInput | UnitEventTypeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UnitEventType update
+   */
+  export type UnitEventTypeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UnitEventType.
+     */
+    data: XOR<UnitEventTypeUpdateInput, UnitEventTypeUncheckedUpdateInput>
+    /**
+     * Choose, which UnitEventType to update.
+     */
+    where: UnitEventTypeWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType updateMany
+   */
+  export type UnitEventTypeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UnitEventTypes.
+     */
+    data: XOR<UnitEventTypeUpdateManyMutationInput, UnitEventTypeUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventTypes to update
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * Limit how many UnitEventTypes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventType updateManyAndReturn
+   */
+  export type UnitEventTypeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * The data used to update UnitEventTypes.
+     */
+    data: XOR<UnitEventTypeUpdateManyMutationInput, UnitEventTypeUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventTypes to update
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * Limit how many UnitEventTypes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventType upsert
+   */
+  export type UnitEventTypeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UnitEventType to update in case it exists.
+     */
+    where: UnitEventTypeWhereUniqueInput
+    /**
+     * In case the UnitEventType found by the `where` argument doesn't exist, create a new UnitEventType with this data.
+     */
+    create: XOR<UnitEventTypeCreateInput, UnitEventTypeUncheckedCreateInput>
+    /**
+     * In case the UnitEventType was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UnitEventTypeUpdateInput, UnitEventTypeUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType delete
+   */
+  export type UnitEventTypeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    /**
+     * Filter which UnitEventType to delete.
+     */
+    where: UnitEventTypeWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventType deleteMany
+   */
+  export type UnitEventTypeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventTypes to delete
+     */
+    where?: UnitEventTypeWhereInput
+    /**
+     * Limit how many UnitEventTypes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventType.unitEvents
+   */
+  export type UnitEventType$unitEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    where?: UnitEventWhereInput
+    orderBy?: UnitEventOrderByWithRelationInput | UnitEventOrderByWithRelationInput[]
+    cursor?: UnitEventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UnitEventScalarFieldEnum | UnitEventScalarFieldEnum[]
+  }
+
+  /**
+   * UnitEventType without action
+   */
+  export type UnitEventTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UnitEvent
+   */
+
+  export type AggregateUnitEvent = {
+    _count: UnitEventCountAggregateOutputType | null
+    _min: UnitEventMinAggregateOutputType | null
+    _max: UnitEventMaxAggregateOutputType | null
+  }
+
+  export type UnitEventMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    eventTypeId: string | null
+    eventDate: Date | null
+    startTime: Date | null
+    endTime: Date | null
+    location: string | null
+    description: string | null
+    organizer: string | null
+    requiresDutyWatch: boolean | null
+    status: string | null
+    notes: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    eventTypeId: string | null
+    eventDate: Date | null
+    startTime: Date | null
+    endTime: Date | null
+    location: string | null
+    description: string | null
+    organizer: string | null
+    requiresDutyWatch: boolean | null
+    status: string | null
+    notes: string | null
+    createdBy: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventCountAggregateOutputType = {
+    id: number
+    title: number
+    eventTypeId: number
+    eventDate: number
+    startTime: number
+    endTime: number
+    location: number
+    description: number
+    organizer: number
+    requiresDutyWatch: number
+    status: number
+    metadata: number
+    notes: number
+    createdBy: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UnitEventMinAggregateInputType = {
+    id?: true
+    title?: true
+    eventTypeId?: true
+    eventDate?: true
+    startTime?: true
+    endTime?: true
+    location?: true
+    description?: true
+    organizer?: true
+    requiresDutyWatch?: true
+    status?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventMaxAggregateInputType = {
+    id?: true
+    title?: true
+    eventTypeId?: true
+    eventDate?: true
+    startTime?: true
+    endTime?: true
+    location?: true
+    description?: true
+    organizer?: true
+    requiresDutyWatch?: true
+    status?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventCountAggregateInputType = {
+    id?: true
+    title?: true
+    eventTypeId?: true
+    eventDate?: true
+    startTime?: true
+    endTime?: true
+    location?: true
+    description?: true
+    organizer?: true
+    requiresDutyWatch?: true
+    status?: true
+    metadata?: true
+    notes?: true
+    createdBy?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UnitEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEvent to aggregate.
+     */
+    where?: UnitEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEvents to fetch.
+     */
+    orderBy?: UnitEventOrderByWithRelationInput | UnitEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UnitEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UnitEvents
+    **/
+    _count?: true | UnitEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UnitEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UnitEventMaxAggregateInputType
+  }
+
+  export type GetUnitEventAggregateType<T extends UnitEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateUnitEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUnitEvent[P]>
+      : GetScalarType<T[P], AggregateUnitEvent[P]>
+  }
+
+
+
+
+  export type UnitEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventWhereInput
+    orderBy?: UnitEventOrderByWithAggregationInput | UnitEventOrderByWithAggregationInput[]
+    by: UnitEventScalarFieldEnum[] | UnitEventScalarFieldEnum
+    having?: UnitEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UnitEventCountAggregateInputType | true
+    _min?: UnitEventMinAggregateInputType
+    _max?: UnitEventMaxAggregateInputType
+  }
+
+  export type UnitEventGroupByOutputType = {
+    id: string
+    title: string
+    eventTypeId: string | null
+    eventDate: Date
+    startTime: Date | null
+    endTime: Date | null
+    location: string | null
+    description: string | null
+    organizer: string | null
+    requiresDutyWatch: boolean
+    status: string
+    metadata: JsonValue | null
+    notes: string | null
+    createdBy: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: UnitEventCountAggregateOutputType | null
+    _min: UnitEventMinAggregateOutputType | null
+    _max: UnitEventMaxAggregateOutputType | null
+  }
+
+  type GetUnitEventGroupByPayload<T extends UnitEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UnitEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UnitEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UnitEventGroupByOutputType[P]>
+            : GetScalarType<T[P], UnitEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UnitEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    eventTypeId?: boolean
+    eventDate?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    location?: boolean
+    description?: boolean
+    organizer?: boolean
+    requiresDutyWatch?: boolean
+    status?: boolean
+    metadata?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+    dutyPositions?: boolean | UnitEvent$dutyPositionsArgs<ExtArgs>
+    dutyAssignments?: boolean | UnitEvent$dutyAssignmentsArgs<ExtArgs>
+    _count?: boolean | UnitEventCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEvent"]>
+
+  export type UnitEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    eventTypeId?: boolean
+    eventDate?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    location?: boolean
+    description?: boolean
+    organizer?: boolean
+    requiresDutyWatch?: boolean
+    status?: boolean
+    metadata?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEvent"]>
+
+  export type UnitEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    eventTypeId?: boolean
+    eventDate?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    location?: boolean
+    description?: boolean
+    organizer?: boolean
+    requiresDutyWatch?: boolean
+    status?: boolean
+    metadata?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEvent"]>
+
+  export type UnitEventSelectScalar = {
+    id?: boolean
+    title?: boolean
+    eventTypeId?: boolean
+    eventDate?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    location?: boolean
+    description?: boolean
+    organizer?: boolean
+    requiresDutyWatch?: boolean
+    status?: boolean
+    metadata?: boolean
+    notes?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UnitEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "eventTypeId" | "eventDate" | "startTime" | "endTime" | "location" | "description" | "organizer" | "requiresDutyWatch" | "status" | "metadata" | "notes" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["unitEvent"]>
+  export type UnitEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+    dutyPositions?: boolean | UnitEvent$dutyPositionsArgs<ExtArgs>
+    dutyAssignments?: boolean | UnitEvent$dutyAssignmentsArgs<ExtArgs>
+    _count?: boolean | UnitEventCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type UnitEventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+  }
+  export type UnitEventIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventType?: boolean | UnitEvent$eventTypeArgs<ExtArgs>
+  }
+
+  export type $UnitEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UnitEvent"
+    objects: {
+      eventType: Prisma.$UnitEventTypePayload<ExtArgs> | null
+      dutyPositions: Prisma.$UnitEventDutyPositionPayload<ExtArgs>[]
+      dutyAssignments: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      eventTypeId: string | null
+      eventDate: Date
+      startTime: Date | null
+      endTime: Date | null
+      location: string | null
+      description: string | null
+      organizer: string | null
+      requiresDutyWatch: boolean
+      status: string
+      metadata: Prisma.JsonValue | null
+      notes: string | null
+      createdBy: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["unitEvent"]>
+    composites: {}
+  }
+
+  type UnitEventGetPayload<S extends boolean | null | undefined | UnitEventDefaultArgs> = $Result.GetResult<Prisma.$UnitEventPayload, S>
+
+  type UnitEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UnitEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: UnitEventCountAggregateInputType | true
+    }
+
+  export interface UnitEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UnitEvent'], meta: { name: 'UnitEvent' } }
+    /**
+     * Find zero or one UnitEvent that matches the filter.
+     * @param {UnitEventFindUniqueArgs} args - Arguments to find a UnitEvent
+     * @example
+     * // Get one UnitEvent
+     * const unitEvent = await prisma.unitEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UnitEventFindUniqueArgs>(args: SelectSubset<T, UnitEventFindUniqueArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UnitEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UnitEventFindUniqueOrThrowArgs} args - Arguments to find a UnitEvent
+     * @example
+     * // Get one UnitEvent
+     * const unitEvent = await prisma.unitEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UnitEventFindUniqueOrThrowArgs>(args: SelectSubset<T, UnitEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventFindFirstArgs} args - Arguments to find a UnitEvent
+     * @example
+     * // Get one UnitEvent
+     * const unitEvent = await prisma.unitEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UnitEventFindFirstArgs>(args?: SelectSubset<T, UnitEventFindFirstArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventFindFirstOrThrowArgs} args - Arguments to find a UnitEvent
+     * @example
+     * // Get one UnitEvent
+     * const unitEvent = await prisma.unitEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UnitEventFindFirstOrThrowArgs>(args?: SelectSubset<T, UnitEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UnitEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UnitEvents
+     * const unitEvents = await prisma.unitEvent.findMany()
+     * 
+     * // Get first 10 UnitEvents
+     * const unitEvents = await prisma.unitEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const unitEventWithIdOnly = await prisma.unitEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UnitEventFindManyArgs>(args?: SelectSubset<T, UnitEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UnitEvent.
+     * @param {UnitEventCreateArgs} args - Arguments to create a UnitEvent.
+     * @example
+     * // Create one UnitEvent
+     * const UnitEvent = await prisma.unitEvent.create({
+     *   data: {
+     *     // ... data to create a UnitEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends UnitEventCreateArgs>(args: SelectSubset<T, UnitEventCreateArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UnitEvents.
+     * @param {UnitEventCreateManyArgs} args - Arguments to create many UnitEvents.
+     * @example
+     * // Create many UnitEvents
+     * const unitEvent = await prisma.unitEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UnitEventCreateManyArgs>(args?: SelectSubset<T, UnitEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UnitEvents and returns the data saved in the database.
+     * @param {UnitEventCreateManyAndReturnArgs} args - Arguments to create many UnitEvents.
+     * @example
+     * // Create many UnitEvents
+     * const unitEvent = await prisma.unitEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UnitEvents and only return the `id`
+     * const unitEventWithIdOnly = await prisma.unitEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UnitEventCreateManyAndReturnArgs>(args?: SelectSubset<T, UnitEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UnitEvent.
+     * @param {UnitEventDeleteArgs} args - Arguments to delete one UnitEvent.
+     * @example
+     * // Delete one UnitEvent
+     * const UnitEvent = await prisma.unitEvent.delete({
+     *   where: {
+     *     // ... filter to delete one UnitEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UnitEventDeleteArgs>(args: SelectSubset<T, UnitEventDeleteArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UnitEvent.
+     * @param {UnitEventUpdateArgs} args - Arguments to update one UnitEvent.
+     * @example
+     * // Update one UnitEvent
+     * const unitEvent = await prisma.unitEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UnitEventUpdateArgs>(args: SelectSubset<T, UnitEventUpdateArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UnitEvents.
+     * @param {UnitEventDeleteManyArgs} args - Arguments to filter UnitEvents to delete.
+     * @example
+     * // Delete a few UnitEvents
+     * const { count } = await prisma.unitEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UnitEventDeleteManyArgs>(args?: SelectSubset<T, UnitEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UnitEvents
+     * const unitEvent = await prisma.unitEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UnitEventUpdateManyArgs>(args: SelectSubset<T, UnitEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEvents and returns the data updated in the database.
+     * @param {UnitEventUpdateManyAndReturnArgs} args - Arguments to update many UnitEvents.
+     * @example
+     * // Update many UnitEvents
+     * const unitEvent = await prisma.unitEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UnitEvents and only return the `id`
+     * const unitEventWithIdOnly = await prisma.unitEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UnitEventUpdateManyAndReturnArgs>(args: SelectSubset<T, UnitEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UnitEvent.
+     * @param {UnitEventUpsertArgs} args - Arguments to update or create a UnitEvent.
+     * @example
+     * // Update or create a UnitEvent
+     * const unitEvent = await prisma.unitEvent.upsert({
+     *   create: {
+     *     // ... data to create a UnitEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UnitEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UnitEventUpsertArgs>(args: SelectSubset<T, UnitEventUpsertArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UnitEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventCountArgs} args - Arguments to filter UnitEvents to count.
+     * @example
+     * // Count the number of UnitEvents
+     * const count = await prisma.unitEvent.count({
+     *   where: {
+     *     // ... the filter for the UnitEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends UnitEventCountArgs>(
+      args?: Subset<T, UnitEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UnitEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UnitEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UnitEventAggregateArgs>(args: Subset<T, UnitEventAggregateArgs>): Prisma.PrismaPromise<GetUnitEventAggregateType<T>>
+
+    /**
+     * Group by UnitEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UnitEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UnitEventGroupByArgs['orderBy'] }
+        : { orderBy?: UnitEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UnitEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUnitEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UnitEvent model
+   */
+  readonly fields: UnitEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UnitEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UnitEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    eventType<T extends UnitEvent$eventTypeArgs<ExtArgs> = {}>(args?: Subset<T, UnitEvent$eventTypeArgs<ExtArgs>>): Prisma__UnitEventTypeClient<$Result.GetResult<Prisma.$UnitEventTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    dutyPositions<T extends UnitEvent$dutyPositionsArgs<ExtArgs> = {}>(args?: Subset<T, UnitEvent$dutyPositionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    dutyAssignments<T extends UnitEvent$dutyAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, UnitEvent$dutyAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UnitEvent model
+   */
+  interface UnitEventFieldRefs {
+    readonly id: FieldRef<"UnitEvent", 'String'>
+    readonly title: FieldRef<"UnitEvent", 'String'>
+    readonly eventTypeId: FieldRef<"UnitEvent", 'String'>
+    readonly eventDate: FieldRef<"UnitEvent", 'DateTime'>
+    readonly startTime: FieldRef<"UnitEvent", 'DateTime'>
+    readonly endTime: FieldRef<"UnitEvent", 'DateTime'>
+    readonly location: FieldRef<"UnitEvent", 'String'>
+    readonly description: FieldRef<"UnitEvent", 'String'>
+    readonly organizer: FieldRef<"UnitEvent", 'String'>
+    readonly requiresDutyWatch: FieldRef<"UnitEvent", 'Boolean'>
+    readonly status: FieldRef<"UnitEvent", 'String'>
+    readonly metadata: FieldRef<"UnitEvent", 'Json'>
+    readonly notes: FieldRef<"UnitEvent", 'String'>
+    readonly createdBy: FieldRef<"UnitEvent", 'String'>
+    readonly createdAt: FieldRef<"UnitEvent", 'DateTime'>
+    readonly updatedAt: FieldRef<"UnitEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UnitEvent findUnique
+   */
+  export type UnitEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEvent to fetch.
+     */
+    where: UnitEventWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent findUniqueOrThrow
+   */
+  export type UnitEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEvent to fetch.
+     */
+    where: UnitEventWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent findFirst
+   */
+  export type UnitEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEvent to fetch.
+     */
+    where?: UnitEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEvents to fetch.
+     */
+    orderBy?: UnitEventOrderByWithRelationInput | UnitEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEvents.
+     */
+    cursor?: UnitEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEvents.
+     */
+    distinct?: UnitEventScalarFieldEnum | UnitEventScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent findFirstOrThrow
+   */
+  export type UnitEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEvent to fetch.
+     */
+    where?: UnitEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEvents to fetch.
+     */
+    orderBy?: UnitEventOrderByWithRelationInput | UnitEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEvents.
+     */
+    cursor?: UnitEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEvents.
+     */
+    distinct?: UnitEventScalarFieldEnum | UnitEventScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent findMany
+   */
+  export type UnitEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEvents to fetch.
+     */
+    where?: UnitEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEvents to fetch.
+     */
+    orderBy?: UnitEventOrderByWithRelationInput | UnitEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UnitEvents.
+     */
+    cursor?: UnitEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEvents.
+     */
+    skip?: number
+    distinct?: UnitEventScalarFieldEnum | UnitEventScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent create
+   */
+  export type UnitEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UnitEvent.
+     */
+    data: XOR<UnitEventCreateInput, UnitEventUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent createMany
+   */
+  export type UnitEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UnitEvents.
+     */
+    data: UnitEventCreateManyInput | UnitEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UnitEvent createManyAndReturn
+   */
+  export type UnitEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many UnitEvents.
+     */
+    data: UnitEventCreateManyInput | UnitEventCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEvent update
+   */
+  export type UnitEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UnitEvent.
+     */
+    data: XOR<UnitEventUpdateInput, UnitEventUncheckedUpdateInput>
+    /**
+     * Choose, which UnitEvent to update.
+     */
+    where: UnitEventWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent updateMany
+   */
+  export type UnitEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UnitEvents.
+     */
+    data: XOR<UnitEventUpdateManyMutationInput, UnitEventUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEvents to update
+     */
+    where?: UnitEventWhereInput
+    /**
+     * Limit how many UnitEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEvent updateManyAndReturn
+   */
+  export type UnitEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * The data used to update UnitEvents.
+     */
+    data: XOR<UnitEventUpdateManyMutationInput, UnitEventUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEvents to update
+     */
+    where?: UnitEventWhereInput
+    /**
+     * Limit how many UnitEvents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEvent upsert
+   */
+  export type UnitEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UnitEvent to update in case it exists.
+     */
+    where: UnitEventWhereUniqueInput
+    /**
+     * In case the UnitEvent found by the `where` argument doesn't exist, create a new UnitEvent with this data.
+     */
+    create: XOR<UnitEventCreateInput, UnitEventUncheckedCreateInput>
+    /**
+     * In case the UnitEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UnitEventUpdateInput, UnitEventUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent delete
+   */
+  export type UnitEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+    /**
+     * Filter which UnitEvent to delete.
+     */
+    where: UnitEventWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEvent deleteMany
+   */
+  export type UnitEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEvents to delete
+     */
+    where?: UnitEventWhereInput
+    /**
+     * Limit how many UnitEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEvent.eventType
+   */
+  export type UnitEvent$eventTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventType
+     */
+    select?: UnitEventTypeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventType
+     */
+    omit?: UnitEventTypeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventTypeInclude<ExtArgs> | null
+    where?: UnitEventTypeWhereInput
+  }
+
+  /**
+   * UnitEvent.dutyPositions
+   */
+  export type UnitEvent$dutyPositionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    where?: UnitEventDutyPositionWhereInput
+    orderBy?: UnitEventDutyPositionOrderByWithRelationInput | UnitEventDutyPositionOrderByWithRelationInput[]
+    cursor?: UnitEventDutyPositionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UnitEventDutyPositionScalarFieldEnum | UnitEventDutyPositionScalarFieldEnum[]
+  }
+
+  /**
+   * UnitEvent.dutyAssignments
+   */
+  export type UnitEvent$dutyAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    where?: UnitEventDutyAssignmentWhereInput
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * UnitEvent without action
+   */
+  export type UnitEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEvent
+     */
+    select?: UnitEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEvent
+     */
+    omit?: UnitEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UnitEventDutyPosition
+   */
+
+  export type AggregateUnitEventDutyPosition = {
+    _count: UnitEventDutyPositionCountAggregateOutputType | null
+    _avg: UnitEventDutyPositionAvgAggregateOutputType | null
+    _sum: UnitEventDutyPositionSumAggregateOutputType | null
+    _min: UnitEventDutyPositionMinAggregateOutputType | null
+    _max: UnitEventDutyPositionMaxAggregateOutputType | null
+  }
+
+  export type UnitEventDutyPositionAvgAggregateOutputType = {
+    maxSlots: number | null
+    displayOrder: number | null
+  }
+
+  export type UnitEventDutyPositionSumAggregateOutputType = {
+    maxSlots: number | null
+    displayOrder: number | null
+  }
+
+  export type UnitEventDutyPositionMinAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    maxSlots: number | null
+    isStandard: boolean | null
+    displayOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventDutyPositionMaxAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    maxSlots: number | null
+    isStandard: boolean | null
+    displayOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventDutyPositionCountAggregateOutputType = {
+    id: number
+    eventId: number
+    code: number
+    name: number
+    description: number
+    maxSlots: number
+    isStandard: number
+    displayOrder: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UnitEventDutyPositionAvgAggregateInputType = {
+    maxSlots?: true
+    displayOrder?: true
+  }
+
+  export type UnitEventDutyPositionSumAggregateInputType = {
+    maxSlots?: true
+    displayOrder?: true
+  }
+
+  export type UnitEventDutyPositionMinAggregateInputType = {
+    id?: true
+    eventId?: true
+    code?: true
+    name?: true
+    description?: true
+    maxSlots?: true
+    isStandard?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventDutyPositionMaxAggregateInputType = {
+    id?: true
+    eventId?: true
+    code?: true
+    name?: true
+    description?: true
+    maxSlots?: true
+    isStandard?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventDutyPositionCountAggregateInputType = {
+    id?: true
+    eventId?: true
+    code?: true
+    name?: true
+    description?: true
+    maxSlots?: true
+    isStandard?: true
+    displayOrder?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UnitEventDutyPositionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventDutyPosition to aggregate.
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyPositions to fetch.
+     */
+    orderBy?: UnitEventDutyPositionOrderByWithRelationInput | UnitEventDutyPositionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UnitEventDutyPositionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyPositions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyPositions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UnitEventDutyPositions
+    **/
+    _count?: true | UnitEventDutyPositionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UnitEventDutyPositionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UnitEventDutyPositionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UnitEventDutyPositionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UnitEventDutyPositionMaxAggregateInputType
+  }
+
+  export type GetUnitEventDutyPositionAggregateType<T extends UnitEventDutyPositionAggregateArgs> = {
+        [P in keyof T & keyof AggregateUnitEventDutyPosition]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUnitEventDutyPosition[P]>
+      : GetScalarType<T[P], AggregateUnitEventDutyPosition[P]>
+  }
+
+
+
+
+  export type UnitEventDutyPositionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyPositionWhereInput
+    orderBy?: UnitEventDutyPositionOrderByWithAggregationInput | UnitEventDutyPositionOrderByWithAggregationInput[]
+    by: UnitEventDutyPositionScalarFieldEnum[] | UnitEventDutyPositionScalarFieldEnum
+    having?: UnitEventDutyPositionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UnitEventDutyPositionCountAggregateInputType | true
+    _avg?: UnitEventDutyPositionAvgAggregateInputType
+    _sum?: UnitEventDutyPositionSumAggregateInputType
+    _min?: UnitEventDutyPositionMinAggregateInputType
+    _max?: UnitEventDutyPositionMaxAggregateInputType
+  }
+
+  export type UnitEventDutyPositionGroupByOutputType = {
+    id: string
+    eventId: string
+    code: string
+    name: string
+    description: string | null
+    maxSlots: number
+    isStandard: boolean
+    displayOrder: number
+    createdAt: Date
+    updatedAt: Date
+    _count: UnitEventDutyPositionCountAggregateOutputType | null
+    _avg: UnitEventDutyPositionAvgAggregateOutputType | null
+    _sum: UnitEventDutyPositionSumAggregateOutputType | null
+    _min: UnitEventDutyPositionMinAggregateOutputType | null
+    _max: UnitEventDutyPositionMaxAggregateOutputType | null
+  }
+
+  type GetUnitEventDutyPositionGroupByPayload<T extends UnitEventDutyPositionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UnitEventDutyPositionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UnitEventDutyPositionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UnitEventDutyPositionGroupByOutputType[P]>
+            : GetScalarType<T[P], UnitEventDutyPositionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UnitEventDutyPositionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    maxSlots?: boolean
+    isStandard?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    assignments?: boolean | UnitEventDutyPosition$assignmentsArgs<ExtArgs>
+    _count?: boolean | UnitEventDutyPositionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyPosition"]>
+
+  export type UnitEventDutyPositionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    maxSlots?: boolean
+    isStandard?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyPosition"]>
+
+  export type UnitEventDutyPositionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    maxSlots?: boolean
+    isStandard?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyPosition"]>
+
+  export type UnitEventDutyPositionSelectScalar = {
+    id?: boolean
+    eventId?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    maxSlots?: boolean
+    isStandard?: boolean
+    displayOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UnitEventDutyPositionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "code" | "name" | "description" | "maxSlots" | "isStandard" | "displayOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["unitEventDutyPosition"]>
+  export type UnitEventDutyPositionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    assignments?: boolean | UnitEventDutyPosition$assignmentsArgs<ExtArgs>
+    _count?: boolean | UnitEventDutyPositionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type UnitEventDutyPositionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+  }
+  export type UnitEventDutyPositionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+  }
+
+  export type $UnitEventDutyPositionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UnitEventDutyPosition"
+    objects: {
+      event: Prisma.$UnitEventPayload<ExtArgs>
+      assignments: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventId: string
+      code: string
+      name: string
+      description: string | null
+      maxSlots: number
+      isStandard: boolean
+      displayOrder: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["unitEventDutyPosition"]>
+    composites: {}
+  }
+
+  type UnitEventDutyPositionGetPayload<S extends boolean | null | undefined | UnitEventDutyPositionDefaultArgs> = $Result.GetResult<Prisma.$UnitEventDutyPositionPayload, S>
+
+  type UnitEventDutyPositionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UnitEventDutyPositionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: UnitEventDutyPositionCountAggregateInputType | true
+    }
+
+  export interface UnitEventDutyPositionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UnitEventDutyPosition'], meta: { name: 'UnitEventDutyPosition' } }
+    /**
+     * Find zero or one UnitEventDutyPosition that matches the filter.
+     * @param {UnitEventDutyPositionFindUniqueArgs} args - Arguments to find a UnitEventDutyPosition
+     * @example
+     * // Get one UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UnitEventDutyPositionFindUniqueArgs>(args: SelectSubset<T, UnitEventDutyPositionFindUniqueArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UnitEventDutyPosition that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UnitEventDutyPositionFindUniqueOrThrowArgs} args - Arguments to find a UnitEventDutyPosition
+     * @example
+     * // Get one UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UnitEventDutyPositionFindUniqueOrThrowArgs>(args: SelectSubset<T, UnitEventDutyPositionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventDutyPosition that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionFindFirstArgs} args - Arguments to find a UnitEventDutyPosition
+     * @example
+     * // Get one UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UnitEventDutyPositionFindFirstArgs>(args?: SelectSubset<T, UnitEventDutyPositionFindFirstArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventDutyPosition that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionFindFirstOrThrowArgs} args - Arguments to find a UnitEventDutyPosition
+     * @example
+     * // Get one UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UnitEventDutyPositionFindFirstOrThrowArgs>(args?: SelectSubset<T, UnitEventDutyPositionFindFirstOrThrowArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UnitEventDutyPositions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UnitEventDutyPositions
+     * const unitEventDutyPositions = await prisma.unitEventDutyPosition.findMany()
+     * 
+     * // Get first 10 UnitEventDutyPositions
+     * const unitEventDutyPositions = await prisma.unitEventDutyPosition.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const unitEventDutyPositionWithIdOnly = await prisma.unitEventDutyPosition.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UnitEventDutyPositionFindManyArgs>(args?: SelectSubset<T, UnitEventDutyPositionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UnitEventDutyPosition.
+     * @param {UnitEventDutyPositionCreateArgs} args - Arguments to create a UnitEventDutyPosition.
+     * @example
+     * // Create one UnitEventDutyPosition
+     * const UnitEventDutyPosition = await prisma.unitEventDutyPosition.create({
+     *   data: {
+     *     // ... data to create a UnitEventDutyPosition
+     *   }
+     * })
+     * 
+     */
+    create<T extends UnitEventDutyPositionCreateArgs>(args: SelectSubset<T, UnitEventDutyPositionCreateArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UnitEventDutyPositions.
+     * @param {UnitEventDutyPositionCreateManyArgs} args - Arguments to create many UnitEventDutyPositions.
+     * @example
+     * // Create many UnitEventDutyPositions
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UnitEventDutyPositionCreateManyArgs>(args?: SelectSubset<T, UnitEventDutyPositionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UnitEventDutyPositions and returns the data saved in the database.
+     * @param {UnitEventDutyPositionCreateManyAndReturnArgs} args - Arguments to create many UnitEventDutyPositions.
+     * @example
+     * // Create many UnitEventDutyPositions
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UnitEventDutyPositions and only return the `id`
+     * const unitEventDutyPositionWithIdOnly = await prisma.unitEventDutyPosition.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UnitEventDutyPositionCreateManyAndReturnArgs>(args?: SelectSubset<T, UnitEventDutyPositionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UnitEventDutyPosition.
+     * @param {UnitEventDutyPositionDeleteArgs} args - Arguments to delete one UnitEventDutyPosition.
+     * @example
+     * // Delete one UnitEventDutyPosition
+     * const UnitEventDutyPosition = await prisma.unitEventDutyPosition.delete({
+     *   where: {
+     *     // ... filter to delete one UnitEventDutyPosition
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UnitEventDutyPositionDeleteArgs>(args: SelectSubset<T, UnitEventDutyPositionDeleteArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UnitEventDutyPosition.
+     * @param {UnitEventDutyPositionUpdateArgs} args - Arguments to update one UnitEventDutyPosition.
+     * @example
+     * // Update one UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UnitEventDutyPositionUpdateArgs>(args: SelectSubset<T, UnitEventDutyPositionUpdateArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UnitEventDutyPositions.
+     * @param {UnitEventDutyPositionDeleteManyArgs} args - Arguments to filter UnitEventDutyPositions to delete.
+     * @example
+     * // Delete a few UnitEventDutyPositions
+     * const { count } = await prisma.unitEventDutyPosition.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UnitEventDutyPositionDeleteManyArgs>(args?: SelectSubset<T, UnitEventDutyPositionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventDutyPositions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UnitEventDutyPositions
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UnitEventDutyPositionUpdateManyArgs>(args: SelectSubset<T, UnitEventDutyPositionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventDutyPositions and returns the data updated in the database.
+     * @param {UnitEventDutyPositionUpdateManyAndReturnArgs} args - Arguments to update many UnitEventDutyPositions.
+     * @example
+     * // Update many UnitEventDutyPositions
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UnitEventDutyPositions and only return the `id`
+     * const unitEventDutyPositionWithIdOnly = await prisma.unitEventDutyPosition.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UnitEventDutyPositionUpdateManyAndReturnArgs>(args: SelectSubset<T, UnitEventDutyPositionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UnitEventDutyPosition.
+     * @param {UnitEventDutyPositionUpsertArgs} args - Arguments to update or create a UnitEventDutyPosition.
+     * @example
+     * // Update or create a UnitEventDutyPosition
+     * const unitEventDutyPosition = await prisma.unitEventDutyPosition.upsert({
+     *   create: {
+     *     // ... data to create a UnitEventDutyPosition
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UnitEventDutyPosition we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UnitEventDutyPositionUpsertArgs>(args: SelectSubset<T, UnitEventDutyPositionUpsertArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UnitEventDutyPositions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionCountArgs} args - Arguments to filter UnitEventDutyPositions to count.
+     * @example
+     * // Count the number of UnitEventDutyPositions
+     * const count = await prisma.unitEventDutyPosition.count({
+     *   where: {
+     *     // ... the filter for the UnitEventDutyPositions we want to count
+     *   }
+     * })
+    **/
+    count<T extends UnitEventDutyPositionCountArgs>(
+      args?: Subset<T, UnitEventDutyPositionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UnitEventDutyPositionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UnitEventDutyPosition.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UnitEventDutyPositionAggregateArgs>(args: Subset<T, UnitEventDutyPositionAggregateArgs>): Prisma.PrismaPromise<GetUnitEventDutyPositionAggregateType<T>>
+
+    /**
+     * Group by UnitEventDutyPosition.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyPositionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UnitEventDutyPositionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UnitEventDutyPositionGroupByArgs['orderBy'] }
+        : { orderBy?: UnitEventDutyPositionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UnitEventDutyPositionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUnitEventDutyPositionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UnitEventDutyPosition model
+   */
+  readonly fields: UnitEventDutyPositionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UnitEventDutyPosition.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UnitEventDutyPositionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends UnitEventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UnitEventDefaultArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    assignments<T extends UnitEventDutyPosition$assignmentsArgs<ExtArgs> = {}>(args?: Subset<T, UnitEventDutyPosition$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UnitEventDutyPosition model
+   */
+  interface UnitEventDutyPositionFieldRefs {
+    readonly id: FieldRef<"UnitEventDutyPosition", 'String'>
+    readonly eventId: FieldRef<"UnitEventDutyPosition", 'String'>
+    readonly code: FieldRef<"UnitEventDutyPosition", 'String'>
+    readonly name: FieldRef<"UnitEventDutyPosition", 'String'>
+    readonly description: FieldRef<"UnitEventDutyPosition", 'String'>
+    readonly maxSlots: FieldRef<"UnitEventDutyPosition", 'Int'>
+    readonly isStandard: FieldRef<"UnitEventDutyPosition", 'Boolean'>
+    readonly displayOrder: FieldRef<"UnitEventDutyPosition", 'Int'>
+    readonly createdAt: FieldRef<"UnitEventDutyPosition", 'DateTime'>
+    readonly updatedAt: FieldRef<"UnitEventDutyPosition", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UnitEventDutyPosition findUnique
+   */
+  export type UnitEventDutyPositionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyPosition to fetch.
+     */
+    where: UnitEventDutyPositionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition findUniqueOrThrow
+   */
+  export type UnitEventDutyPositionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyPosition to fetch.
+     */
+    where: UnitEventDutyPositionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition findFirst
+   */
+  export type UnitEventDutyPositionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyPosition to fetch.
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyPositions to fetch.
+     */
+    orderBy?: UnitEventDutyPositionOrderByWithRelationInput | UnitEventDutyPositionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventDutyPositions.
+     */
+    cursor?: UnitEventDutyPositionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyPositions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyPositions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventDutyPositions.
+     */
+    distinct?: UnitEventDutyPositionScalarFieldEnum | UnitEventDutyPositionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition findFirstOrThrow
+   */
+  export type UnitEventDutyPositionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyPosition to fetch.
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyPositions to fetch.
+     */
+    orderBy?: UnitEventDutyPositionOrderByWithRelationInput | UnitEventDutyPositionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventDutyPositions.
+     */
+    cursor?: UnitEventDutyPositionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyPositions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyPositions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventDutyPositions.
+     */
+    distinct?: UnitEventDutyPositionScalarFieldEnum | UnitEventDutyPositionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition findMany
+   */
+  export type UnitEventDutyPositionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyPositions to fetch.
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyPositions to fetch.
+     */
+    orderBy?: UnitEventDutyPositionOrderByWithRelationInput | UnitEventDutyPositionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UnitEventDutyPositions.
+     */
+    cursor?: UnitEventDutyPositionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyPositions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyPositions.
+     */
+    skip?: number
+    distinct?: UnitEventDutyPositionScalarFieldEnum | UnitEventDutyPositionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition create
+   */
+  export type UnitEventDutyPositionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UnitEventDutyPosition.
+     */
+    data: XOR<UnitEventDutyPositionCreateInput, UnitEventDutyPositionUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition createMany
+   */
+  export type UnitEventDutyPositionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UnitEventDutyPositions.
+     */
+    data: UnitEventDutyPositionCreateManyInput | UnitEventDutyPositionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UnitEventDutyPosition createManyAndReturn
+   */
+  export type UnitEventDutyPositionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * The data used to create many UnitEventDutyPositions.
+     */
+    data: UnitEventDutyPositionCreateManyInput | UnitEventDutyPositionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventDutyPosition update
+   */
+  export type UnitEventDutyPositionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UnitEventDutyPosition.
+     */
+    data: XOR<UnitEventDutyPositionUpdateInput, UnitEventDutyPositionUncheckedUpdateInput>
+    /**
+     * Choose, which UnitEventDutyPosition to update.
+     */
+    where: UnitEventDutyPositionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition updateMany
+   */
+  export type UnitEventDutyPositionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UnitEventDutyPositions.
+     */
+    data: XOR<UnitEventDutyPositionUpdateManyMutationInput, UnitEventDutyPositionUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventDutyPositions to update
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * Limit how many UnitEventDutyPositions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventDutyPosition updateManyAndReturn
+   */
+  export type UnitEventDutyPositionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * The data used to update UnitEventDutyPositions.
+     */
+    data: XOR<UnitEventDutyPositionUpdateManyMutationInput, UnitEventDutyPositionUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventDutyPositions to update
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * Limit how many UnitEventDutyPositions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventDutyPosition upsert
+   */
+  export type UnitEventDutyPositionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UnitEventDutyPosition to update in case it exists.
+     */
+    where: UnitEventDutyPositionWhereUniqueInput
+    /**
+     * In case the UnitEventDutyPosition found by the `where` argument doesn't exist, create a new UnitEventDutyPosition with this data.
+     */
+    create: XOR<UnitEventDutyPositionCreateInput, UnitEventDutyPositionUncheckedCreateInput>
+    /**
+     * In case the UnitEventDutyPosition was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UnitEventDutyPositionUpdateInput, UnitEventDutyPositionUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition delete
+   */
+  export type UnitEventDutyPositionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    /**
+     * Filter which UnitEventDutyPosition to delete.
+     */
+    where: UnitEventDutyPositionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyPosition deleteMany
+   */
+  export type UnitEventDutyPositionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventDutyPositions to delete
+     */
+    where?: UnitEventDutyPositionWhereInput
+    /**
+     * Limit how many UnitEventDutyPositions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventDutyPosition.assignments
+   */
+  export type UnitEventDutyPosition$assignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    where?: UnitEventDutyAssignmentWhereInput
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * UnitEventDutyPosition without action
+   */
+  export type UnitEventDutyPositionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UnitEventDutyAssignment
+   */
+
+  export type AggregateUnitEventDutyAssignment = {
+    _count: UnitEventDutyAssignmentCountAggregateOutputType | null
+    _min: UnitEventDutyAssignmentMinAggregateOutputType | null
+    _max: UnitEventDutyAssignmentMaxAggregateOutputType | null
+  }
+
+  export type UnitEventDutyAssignmentMinAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    eventDutyPositionId: string | null
+    memberId: string | null
+    status: string | null
+    isVolunteer: boolean | null
+    confirmedAt: Date | null
+    releasedAt: Date | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventDutyAssignmentMaxAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    eventDutyPositionId: string | null
+    memberId: string | null
+    status: string | null
+    isVolunteer: boolean | null
+    confirmedAt: Date | null
+    releasedAt: Date | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UnitEventDutyAssignmentCountAggregateOutputType = {
+    id: number
+    eventId: number
+    eventDutyPositionId: number
+    memberId: number
+    status: number
+    isVolunteer: number
+    confirmedAt: number
+    releasedAt: number
+    notes: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UnitEventDutyAssignmentMinAggregateInputType = {
+    id?: true
+    eventId?: true
+    eventDutyPositionId?: true
+    memberId?: true
+    status?: true
+    isVolunteer?: true
+    confirmedAt?: true
+    releasedAt?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventDutyAssignmentMaxAggregateInputType = {
+    id?: true
+    eventId?: true
+    eventDutyPositionId?: true
+    memberId?: true
+    status?: true
+    isVolunteer?: true
+    confirmedAt?: true
+    releasedAt?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UnitEventDutyAssignmentCountAggregateInputType = {
+    id?: true
+    eventId?: true
+    eventDutyPositionId?: true
+    memberId?: true
+    status?: true
+    isVolunteer?: true
+    confirmedAt?: true
+    releasedAt?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UnitEventDutyAssignmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventDutyAssignment to aggregate.
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyAssignments to fetch.
+     */
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UnitEventDutyAssignments
+    **/
+    _count?: true | UnitEventDutyAssignmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UnitEventDutyAssignmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UnitEventDutyAssignmentMaxAggregateInputType
+  }
+
+  export type GetUnitEventDutyAssignmentAggregateType<T extends UnitEventDutyAssignmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateUnitEventDutyAssignment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUnitEventDutyAssignment[P]>
+      : GetScalarType<T[P], AggregateUnitEventDutyAssignment[P]>
+  }
+
+
+
+
+  export type UnitEventDutyAssignmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UnitEventDutyAssignmentWhereInput
+    orderBy?: UnitEventDutyAssignmentOrderByWithAggregationInput | UnitEventDutyAssignmentOrderByWithAggregationInput[]
+    by: UnitEventDutyAssignmentScalarFieldEnum[] | UnitEventDutyAssignmentScalarFieldEnum
+    having?: UnitEventDutyAssignmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UnitEventDutyAssignmentCountAggregateInputType | true
+    _min?: UnitEventDutyAssignmentMinAggregateInputType
+    _max?: UnitEventDutyAssignmentMaxAggregateInputType
+  }
+
+  export type UnitEventDutyAssignmentGroupByOutputType = {
+    id: string
+    eventId: string
+    eventDutyPositionId: string | null
+    memberId: string
+    status: string
+    isVolunteer: boolean
+    confirmedAt: Date | null
+    releasedAt: Date | null
+    notes: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: UnitEventDutyAssignmentCountAggregateOutputType | null
+    _min: UnitEventDutyAssignmentMinAggregateOutputType | null
+    _max: UnitEventDutyAssignmentMaxAggregateOutputType | null
+  }
+
+  type GetUnitEventDutyAssignmentGroupByPayload<T extends UnitEventDutyAssignmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UnitEventDutyAssignmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UnitEventDutyAssignmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UnitEventDutyAssignmentGroupByOutputType[P]>
+            : GetScalarType<T[P], UnitEventDutyAssignmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UnitEventDutyAssignmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    eventDutyPositionId?: boolean
+    memberId?: boolean
+    status?: boolean
+    isVolunteer?: boolean
+    confirmedAt?: boolean
+    releasedAt?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyAssignment"]>
+
+  export type UnitEventDutyAssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    eventDutyPositionId?: boolean
+    memberId?: boolean
+    status?: boolean
+    isVolunteer?: boolean
+    confirmedAt?: boolean
+    releasedAt?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyAssignment"]>
+
+  export type UnitEventDutyAssignmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    eventDutyPositionId?: boolean
+    memberId?: boolean
+    status?: boolean
+    isVolunteer?: boolean
+    confirmedAt?: boolean
+    releasedAt?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["unitEventDutyAssignment"]>
+
+  export type UnitEventDutyAssignmentSelectScalar = {
+    id?: boolean
+    eventId?: boolean
+    eventDutyPositionId?: boolean
+    memberId?: boolean
+    status?: boolean
+    isVolunteer?: boolean
+    confirmedAt?: boolean
+    releasedAt?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UnitEventDutyAssignmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "eventDutyPositionId" | "memberId" | "status" | "isVolunteer" | "confirmedAt" | "releasedAt" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["unitEventDutyAssignment"]>
+  export type UnitEventDutyAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+  export type UnitEventDutyAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+  export type UnitEventDutyAssignmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | UnitEventDefaultArgs<ExtArgs>
+    eventDutyPosition?: boolean | UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+
+  export type $UnitEventDutyAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UnitEventDutyAssignment"
+    objects: {
+      event: Prisma.$UnitEventPayload<ExtArgs>
+      eventDutyPosition: Prisma.$UnitEventDutyPositionPayload<ExtArgs> | null
+      member: Prisma.$MemberPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventId: string
+      eventDutyPositionId: string | null
+      memberId: string
+      status: string
+      isVolunteer: boolean
+      confirmedAt: Date | null
+      releasedAt: Date | null
+      notes: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["unitEventDutyAssignment"]>
+    composites: {}
+  }
+
+  type UnitEventDutyAssignmentGetPayload<S extends boolean | null | undefined | UnitEventDutyAssignmentDefaultArgs> = $Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload, S>
+
+  type UnitEventDutyAssignmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UnitEventDutyAssignmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: UnitEventDutyAssignmentCountAggregateInputType | true
+    }
+
+  export interface UnitEventDutyAssignmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UnitEventDutyAssignment'], meta: { name: 'UnitEventDutyAssignment' } }
+    /**
+     * Find zero or one UnitEventDutyAssignment that matches the filter.
+     * @param {UnitEventDutyAssignmentFindUniqueArgs} args - Arguments to find a UnitEventDutyAssignment
+     * @example
+     * // Get one UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UnitEventDutyAssignmentFindUniqueArgs>(args: SelectSubset<T, UnitEventDutyAssignmentFindUniqueArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UnitEventDutyAssignment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UnitEventDutyAssignmentFindUniqueOrThrowArgs} args - Arguments to find a UnitEventDutyAssignment
+     * @example
+     * // Get one UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UnitEventDutyAssignmentFindUniqueOrThrowArgs>(args: SelectSubset<T, UnitEventDutyAssignmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventDutyAssignment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentFindFirstArgs} args - Arguments to find a UnitEventDutyAssignment
+     * @example
+     * // Get one UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UnitEventDutyAssignmentFindFirstArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentFindFirstArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UnitEventDutyAssignment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentFindFirstOrThrowArgs} args - Arguments to find a UnitEventDutyAssignment
+     * @example
+     * // Get one UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UnitEventDutyAssignmentFindFirstOrThrowArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UnitEventDutyAssignments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UnitEventDutyAssignments
+     * const unitEventDutyAssignments = await prisma.unitEventDutyAssignment.findMany()
+     * 
+     * // Get first 10 UnitEventDutyAssignments
+     * const unitEventDutyAssignments = await prisma.unitEventDutyAssignment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const unitEventDutyAssignmentWithIdOnly = await prisma.unitEventDutyAssignment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UnitEventDutyAssignmentFindManyArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UnitEventDutyAssignment.
+     * @param {UnitEventDutyAssignmentCreateArgs} args - Arguments to create a UnitEventDutyAssignment.
+     * @example
+     * // Create one UnitEventDutyAssignment
+     * const UnitEventDutyAssignment = await prisma.unitEventDutyAssignment.create({
+     *   data: {
+     *     // ... data to create a UnitEventDutyAssignment
+     *   }
+     * })
+     * 
+     */
+    create<T extends UnitEventDutyAssignmentCreateArgs>(args: SelectSubset<T, UnitEventDutyAssignmentCreateArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UnitEventDutyAssignments.
+     * @param {UnitEventDutyAssignmentCreateManyArgs} args - Arguments to create many UnitEventDutyAssignments.
+     * @example
+     * // Create many UnitEventDutyAssignments
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UnitEventDutyAssignmentCreateManyArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UnitEventDutyAssignments and returns the data saved in the database.
+     * @param {UnitEventDutyAssignmentCreateManyAndReturnArgs} args - Arguments to create many UnitEventDutyAssignments.
+     * @example
+     * // Create many UnitEventDutyAssignments
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UnitEventDutyAssignments and only return the `id`
+     * const unitEventDutyAssignmentWithIdOnly = await prisma.unitEventDutyAssignment.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UnitEventDutyAssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UnitEventDutyAssignment.
+     * @param {UnitEventDutyAssignmentDeleteArgs} args - Arguments to delete one UnitEventDutyAssignment.
+     * @example
+     * // Delete one UnitEventDutyAssignment
+     * const UnitEventDutyAssignment = await prisma.unitEventDutyAssignment.delete({
+     *   where: {
+     *     // ... filter to delete one UnitEventDutyAssignment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UnitEventDutyAssignmentDeleteArgs>(args: SelectSubset<T, UnitEventDutyAssignmentDeleteArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UnitEventDutyAssignment.
+     * @param {UnitEventDutyAssignmentUpdateArgs} args - Arguments to update one UnitEventDutyAssignment.
+     * @example
+     * // Update one UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UnitEventDutyAssignmentUpdateArgs>(args: SelectSubset<T, UnitEventDutyAssignmentUpdateArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UnitEventDutyAssignments.
+     * @param {UnitEventDutyAssignmentDeleteManyArgs} args - Arguments to filter UnitEventDutyAssignments to delete.
+     * @example
+     * // Delete a few UnitEventDutyAssignments
+     * const { count } = await prisma.unitEventDutyAssignment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UnitEventDutyAssignmentDeleteManyArgs>(args?: SelectSubset<T, UnitEventDutyAssignmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventDutyAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UnitEventDutyAssignments
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UnitEventDutyAssignmentUpdateManyArgs>(args: SelectSubset<T, UnitEventDutyAssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UnitEventDutyAssignments and returns the data updated in the database.
+     * @param {UnitEventDutyAssignmentUpdateManyAndReturnArgs} args - Arguments to update many UnitEventDutyAssignments.
+     * @example
+     * // Update many UnitEventDutyAssignments
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UnitEventDutyAssignments and only return the `id`
+     * const unitEventDutyAssignmentWithIdOnly = await prisma.unitEventDutyAssignment.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UnitEventDutyAssignmentUpdateManyAndReturnArgs>(args: SelectSubset<T, UnitEventDutyAssignmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UnitEventDutyAssignment.
+     * @param {UnitEventDutyAssignmentUpsertArgs} args - Arguments to update or create a UnitEventDutyAssignment.
+     * @example
+     * // Update or create a UnitEventDutyAssignment
+     * const unitEventDutyAssignment = await prisma.unitEventDutyAssignment.upsert({
+     *   create: {
+     *     // ... data to create a UnitEventDutyAssignment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UnitEventDutyAssignment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UnitEventDutyAssignmentUpsertArgs>(args: SelectSubset<T, UnitEventDutyAssignmentUpsertArgs<ExtArgs>>): Prisma__UnitEventDutyAssignmentClient<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UnitEventDutyAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentCountArgs} args - Arguments to filter UnitEventDutyAssignments to count.
+     * @example
+     * // Count the number of UnitEventDutyAssignments
+     * const count = await prisma.unitEventDutyAssignment.count({
+     *   where: {
+     *     // ... the filter for the UnitEventDutyAssignments we want to count
+     *   }
+     * })
+    **/
+    count<T extends UnitEventDutyAssignmentCountArgs>(
+      args?: Subset<T, UnitEventDutyAssignmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UnitEventDutyAssignmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UnitEventDutyAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UnitEventDutyAssignmentAggregateArgs>(args: Subset<T, UnitEventDutyAssignmentAggregateArgs>): Prisma.PrismaPromise<GetUnitEventDutyAssignmentAggregateType<T>>
+
+    /**
+     * Group by UnitEventDutyAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UnitEventDutyAssignmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UnitEventDutyAssignmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UnitEventDutyAssignmentGroupByArgs['orderBy'] }
+        : { orderBy?: UnitEventDutyAssignmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UnitEventDutyAssignmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUnitEventDutyAssignmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UnitEventDutyAssignment model
+   */
+  readonly fields: UnitEventDutyAssignmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UnitEventDutyAssignment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UnitEventDutyAssignmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends UnitEventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UnitEventDefaultArgs<ExtArgs>>): Prisma__UnitEventClient<$Result.GetResult<Prisma.$UnitEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    eventDutyPosition<T extends UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs> = {}>(args?: Subset<T, UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs>>): Prisma__UnitEventDutyPositionClient<$Result.GetResult<Prisma.$UnitEventDutyPositionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    member<T extends MemberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MemberDefaultArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UnitEventDutyAssignment model
+   */
+  interface UnitEventDutyAssignmentFieldRefs {
+    readonly id: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly eventId: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly eventDutyPositionId: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly memberId: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly status: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly isVolunteer: FieldRef<"UnitEventDutyAssignment", 'Boolean'>
+    readonly confirmedAt: FieldRef<"UnitEventDutyAssignment", 'DateTime'>
+    readonly releasedAt: FieldRef<"UnitEventDutyAssignment", 'DateTime'>
+    readonly notes: FieldRef<"UnitEventDutyAssignment", 'String'>
+    readonly createdAt: FieldRef<"UnitEventDutyAssignment", 'DateTime'>
+    readonly updatedAt: FieldRef<"UnitEventDutyAssignment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UnitEventDutyAssignment findUnique
+   */
+  export type UnitEventDutyAssignmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyAssignment to fetch.
+     */
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment findUniqueOrThrow
+   */
+  export type UnitEventDutyAssignmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyAssignment to fetch.
+     */
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment findFirst
+   */
+  export type UnitEventDutyAssignmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyAssignment to fetch.
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyAssignments to fetch.
+     */
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventDutyAssignments.
+     */
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventDutyAssignments.
+     */
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment findFirstOrThrow
+   */
+  export type UnitEventDutyAssignmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyAssignment to fetch.
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyAssignments to fetch.
+     */
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UnitEventDutyAssignments.
+     */
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UnitEventDutyAssignments.
+     */
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment findMany
+   */
+  export type UnitEventDutyAssignmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which UnitEventDutyAssignments to fetch.
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UnitEventDutyAssignments to fetch.
+     */
+    orderBy?: UnitEventDutyAssignmentOrderByWithRelationInput | UnitEventDutyAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UnitEventDutyAssignments.
+     */
+    cursor?: UnitEventDutyAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UnitEventDutyAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UnitEventDutyAssignments.
+     */
+    skip?: number
+    distinct?: UnitEventDutyAssignmentScalarFieldEnum | UnitEventDutyAssignmentScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment create
+   */
+  export type UnitEventDutyAssignmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UnitEventDutyAssignment.
+     */
+    data: XOR<UnitEventDutyAssignmentCreateInput, UnitEventDutyAssignmentUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment createMany
+   */
+  export type UnitEventDutyAssignmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UnitEventDutyAssignments.
+     */
+    data: UnitEventDutyAssignmentCreateManyInput | UnitEventDutyAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UnitEventDutyAssignment createManyAndReturn
+   */
+  export type UnitEventDutyAssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * The data used to create many UnitEventDutyAssignments.
+     */
+    data: UnitEventDutyAssignmentCreateManyInput | UnitEventDutyAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventDutyAssignment update
+   */
+  export type UnitEventDutyAssignmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UnitEventDutyAssignment.
+     */
+    data: XOR<UnitEventDutyAssignmentUpdateInput, UnitEventDutyAssignmentUncheckedUpdateInput>
+    /**
+     * Choose, which UnitEventDutyAssignment to update.
+     */
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment updateMany
+   */
+  export type UnitEventDutyAssignmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UnitEventDutyAssignments.
+     */
+    data: XOR<UnitEventDutyAssignmentUpdateManyMutationInput, UnitEventDutyAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventDutyAssignments to update
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * Limit how many UnitEventDutyAssignments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventDutyAssignment updateManyAndReturn
+   */
+  export type UnitEventDutyAssignmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * The data used to update UnitEventDutyAssignments.
+     */
+    data: XOR<UnitEventDutyAssignmentUpdateManyMutationInput, UnitEventDutyAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which UnitEventDutyAssignments to update
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * Limit how many UnitEventDutyAssignments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UnitEventDutyAssignment upsert
+   */
+  export type UnitEventDutyAssignmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UnitEventDutyAssignment to update in case it exists.
+     */
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    /**
+     * In case the UnitEventDutyAssignment found by the `where` argument doesn't exist, create a new UnitEventDutyAssignment with this data.
+     */
+    create: XOR<UnitEventDutyAssignmentCreateInput, UnitEventDutyAssignmentUncheckedCreateInput>
+    /**
+     * In case the UnitEventDutyAssignment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UnitEventDutyAssignmentUpdateInput, UnitEventDutyAssignmentUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment delete
+   */
+  export type UnitEventDutyAssignmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter which UnitEventDutyAssignment to delete.
+     */
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * UnitEventDutyAssignment deleteMany
+   */
+  export type UnitEventDutyAssignmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UnitEventDutyAssignments to delete
+     */
+    where?: UnitEventDutyAssignmentWhereInput
+    /**
+     * Limit how many UnitEventDutyAssignments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UnitEventDutyAssignment.eventDutyPosition
+   */
+  export type UnitEventDutyAssignment$eventDutyPositionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyPosition
+     */
+    select?: UnitEventDutyPositionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyPosition
+     */
+    omit?: UnitEventDutyPositionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyPositionInclude<ExtArgs> | null
+    where?: UnitEventDutyPositionWhereInput
+  }
+
+  /**
+   * UnitEventDutyAssignment without action
+   */
+  export type UnitEventDutyAssignmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UnitEventDutyAssignment
+     */
+    select?: UnitEventDutyAssignmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UnitEventDutyAssignment
+     */
+    omit?: UnitEventDutyAssignmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UnitEventDutyAssignmentInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -56614,6 +61945,76 @@ export namespace Prisma {
   };
 
   export type MissedCheckoutScalarFieldEnum = (typeof MissedCheckoutScalarFieldEnum)[keyof typeof MissedCheckoutScalarFieldEnum]
+
+
+  export const UnitEventTypeScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    category: 'category',
+    defaultDurationMinutes: 'defaultDurationMinutes',
+    requiresDutyWatch: 'requiresDutyWatch',
+    defaultMetadata: 'defaultMetadata',
+    displayOrder: 'displayOrder',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UnitEventTypeScalarFieldEnum = (typeof UnitEventTypeScalarFieldEnum)[keyof typeof UnitEventTypeScalarFieldEnum]
+
+
+  export const UnitEventScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    eventTypeId: 'eventTypeId',
+    eventDate: 'eventDate',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    location: 'location',
+    description: 'description',
+    organizer: 'organizer',
+    requiresDutyWatch: 'requiresDutyWatch',
+    status: 'status',
+    metadata: 'metadata',
+    notes: 'notes',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UnitEventScalarFieldEnum = (typeof UnitEventScalarFieldEnum)[keyof typeof UnitEventScalarFieldEnum]
+
+
+  export const UnitEventDutyPositionScalarFieldEnum: {
+    id: 'id',
+    eventId: 'eventId',
+    code: 'code',
+    name: 'name',
+    description: 'description',
+    maxSlots: 'maxSlots',
+    isStandard: 'isStandard',
+    displayOrder: 'displayOrder',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UnitEventDutyPositionScalarFieldEnum = (typeof UnitEventDutyPositionScalarFieldEnum)[keyof typeof UnitEventDutyPositionScalarFieldEnum]
+
+
+  export const UnitEventDutyAssignmentScalarFieldEnum: {
+    id: 'id',
+    eventId: 'eventId',
+    eventDutyPositionId: 'eventDutyPositionId',
+    memberId: 'memberId',
+    status: 'status',
+    isVolunteer: 'isVolunteer',
+    confirmedAt: 'confirmedAt',
+    releasedAt: 'releasedAt',
+    notes: 'notes',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UnitEventDutyAssignmentScalarFieldEnum = (typeof UnitEventDutyAssignmentScalarFieldEnum)[keyof typeof UnitEventDutyAssignmentScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -57529,6 +62930,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferListRelationFilter
     lockupExecutions?: LockupExecutionListRelationFilter
     missedCheckouts?: MissedCheckoutListRelationFilter
+    unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
   }
 
   export type MemberOrderByWithRelationInput = {
@@ -57578,6 +62980,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferOrderByRelationAggregateInput
     lockupExecutions?: LockupExecutionOrderByRelationAggregateInput
     missedCheckouts?: MissedCheckoutOrderByRelationAggregateInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentOrderByRelationAggregateInput
   }
 
   export type MemberWhereUniqueInput = Prisma.AtLeast<{
@@ -57630,6 +63033,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferListRelationFilter
     lockupExecutions?: LockupExecutionListRelationFilter
     missedCheckouts?: MissedCheckoutListRelationFilter
+    unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
   }, "id" | "serviceNumber">
 
   export type MemberOrderByWithAggregationInput = {
@@ -60287,6 +65691,377 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"MissedCheckout"> | Date | string
   }
 
+  export type UnitEventTypeWhereInput = {
+    AND?: UnitEventTypeWhereInput | UnitEventTypeWhereInput[]
+    OR?: UnitEventTypeWhereInput[]
+    NOT?: UnitEventTypeWhereInput | UnitEventTypeWhereInput[]
+    id?: UuidFilter<"UnitEventType"> | string
+    name?: StringFilter<"UnitEventType"> | string
+    category?: StringFilter<"UnitEventType"> | string
+    defaultDurationMinutes?: IntFilter<"UnitEventType"> | number
+    requiresDutyWatch?: BoolFilter<"UnitEventType"> | boolean
+    defaultMetadata?: JsonNullableFilter<"UnitEventType">
+    displayOrder?: IntFilter<"UnitEventType"> | number
+    createdAt?: DateTimeFilter<"UnitEventType"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventType"> | Date | string
+    unitEvents?: UnitEventListRelationFilter
+  }
+
+  export type UnitEventTypeOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    defaultDurationMinutes?: SortOrder
+    requiresDutyWatch?: SortOrder
+    defaultMetadata?: SortOrderInput | SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    unitEvents?: UnitEventOrderByRelationAggregateInput
+  }
+
+  export type UnitEventTypeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UnitEventTypeWhereInput | UnitEventTypeWhereInput[]
+    OR?: UnitEventTypeWhereInput[]
+    NOT?: UnitEventTypeWhereInput | UnitEventTypeWhereInput[]
+    name?: StringFilter<"UnitEventType"> | string
+    category?: StringFilter<"UnitEventType"> | string
+    defaultDurationMinutes?: IntFilter<"UnitEventType"> | number
+    requiresDutyWatch?: BoolFilter<"UnitEventType"> | boolean
+    defaultMetadata?: JsonNullableFilter<"UnitEventType">
+    displayOrder?: IntFilter<"UnitEventType"> | number
+    createdAt?: DateTimeFilter<"UnitEventType"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventType"> | Date | string
+    unitEvents?: UnitEventListRelationFilter
+  }, "id">
+
+  export type UnitEventTypeOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    defaultDurationMinutes?: SortOrder
+    requiresDutyWatch?: SortOrder
+    defaultMetadata?: SortOrderInput | SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UnitEventTypeCountOrderByAggregateInput
+    _avg?: UnitEventTypeAvgOrderByAggregateInput
+    _max?: UnitEventTypeMaxOrderByAggregateInput
+    _min?: UnitEventTypeMinOrderByAggregateInput
+    _sum?: UnitEventTypeSumOrderByAggregateInput
+  }
+
+  export type UnitEventTypeScalarWhereWithAggregatesInput = {
+    AND?: UnitEventTypeScalarWhereWithAggregatesInput | UnitEventTypeScalarWhereWithAggregatesInput[]
+    OR?: UnitEventTypeScalarWhereWithAggregatesInput[]
+    NOT?: UnitEventTypeScalarWhereWithAggregatesInput | UnitEventTypeScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"UnitEventType"> | string
+    name?: StringWithAggregatesFilter<"UnitEventType"> | string
+    category?: StringWithAggregatesFilter<"UnitEventType"> | string
+    defaultDurationMinutes?: IntWithAggregatesFilter<"UnitEventType"> | number
+    requiresDutyWatch?: BoolWithAggregatesFilter<"UnitEventType"> | boolean
+    defaultMetadata?: JsonNullableWithAggregatesFilter<"UnitEventType">
+    displayOrder?: IntWithAggregatesFilter<"UnitEventType"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UnitEventType"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UnitEventType"> | Date | string
+  }
+
+  export type UnitEventWhereInput = {
+    AND?: UnitEventWhereInput | UnitEventWhereInput[]
+    OR?: UnitEventWhereInput[]
+    NOT?: UnitEventWhereInput | UnitEventWhereInput[]
+    id?: UuidFilter<"UnitEvent"> | string
+    title?: StringFilter<"UnitEvent"> | string
+    eventTypeId?: UuidNullableFilter<"UnitEvent"> | string | null
+    eventDate?: DateTimeFilter<"UnitEvent"> | Date | string
+    startTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    location?: StringNullableFilter<"UnitEvent"> | string | null
+    description?: StringNullableFilter<"UnitEvent"> | string | null
+    organizer?: StringNullableFilter<"UnitEvent"> | string | null
+    requiresDutyWatch?: BoolFilter<"UnitEvent"> | boolean
+    status?: StringFilter<"UnitEvent"> | string
+    metadata?: JsonNullableFilter<"UnitEvent">
+    notes?: StringNullableFilter<"UnitEvent"> | string | null
+    createdBy?: UuidNullableFilter<"UnitEvent"> | string | null
+    createdAt?: DateTimeFilter<"UnitEvent"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEvent"> | Date | string
+    eventType?: XOR<UnitEventTypeNullableScalarRelationFilter, UnitEventTypeWhereInput> | null
+    dutyPositions?: UnitEventDutyPositionListRelationFilter
+    dutyAssignments?: UnitEventDutyAssignmentListRelationFilter
+  }
+
+  export type UnitEventOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    eventTypeId?: SortOrderInput | SortOrder
+    eventDate?: SortOrder
+    startTime?: SortOrderInput | SortOrder
+    endTime?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    organizer?: SortOrderInput | SortOrder
+    requiresDutyWatch?: SortOrder
+    status?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    eventType?: UnitEventTypeOrderByWithRelationInput
+    dutyPositions?: UnitEventDutyPositionOrderByRelationAggregateInput
+    dutyAssignments?: UnitEventDutyAssignmentOrderByRelationAggregateInput
+  }
+
+  export type UnitEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UnitEventWhereInput | UnitEventWhereInput[]
+    OR?: UnitEventWhereInput[]
+    NOT?: UnitEventWhereInput | UnitEventWhereInput[]
+    title?: StringFilter<"UnitEvent"> | string
+    eventTypeId?: UuidNullableFilter<"UnitEvent"> | string | null
+    eventDate?: DateTimeFilter<"UnitEvent"> | Date | string
+    startTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    location?: StringNullableFilter<"UnitEvent"> | string | null
+    description?: StringNullableFilter<"UnitEvent"> | string | null
+    organizer?: StringNullableFilter<"UnitEvent"> | string | null
+    requiresDutyWatch?: BoolFilter<"UnitEvent"> | boolean
+    status?: StringFilter<"UnitEvent"> | string
+    metadata?: JsonNullableFilter<"UnitEvent">
+    notes?: StringNullableFilter<"UnitEvent"> | string | null
+    createdBy?: UuidNullableFilter<"UnitEvent"> | string | null
+    createdAt?: DateTimeFilter<"UnitEvent"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEvent"> | Date | string
+    eventType?: XOR<UnitEventTypeNullableScalarRelationFilter, UnitEventTypeWhereInput> | null
+    dutyPositions?: UnitEventDutyPositionListRelationFilter
+    dutyAssignments?: UnitEventDutyAssignmentListRelationFilter
+  }, "id">
+
+  export type UnitEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    eventTypeId?: SortOrderInput | SortOrder
+    eventDate?: SortOrder
+    startTime?: SortOrderInput | SortOrder
+    endTime?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
+    organizer?: SortOrderInput | SortOrder
+    requiresDutyWatch?: SortOrder
+    status?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdBy?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UnitEventCountOrderByAggregateInput
+    _max?: UnitEventMaxOrderByAggregateInput
+    _min?: UnitEventMinOrderByAggregateInput
+  }
+
+  export type UnitEventScalarWhereWithAggregatesInput = {
+    AND?: UnitEventScalarWhereWithAggregatesInput | UnitEventScalarWhereWithAggregatesInput[]
+    OR?: UnitEventScalarWhereWithAggregatesInput[]
+    NOT?: UnitEventScalarWhereWithAggregatesInput | UnitEventScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"UnitEvent"> | string
+    title?: StringWithAggregatesFilter<"UnitEvent"> | string
+    eventTypeId?: UuidNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    eventDate?: DateTimeWithAggregatesFilter<"UnitEvent"> | Date | string
+    startTime?: DateTimeNullableWithAggregatesFilter<"UnitEvent"> | Date | string | null
+    endTime?: DateTimeNullableWithAggregatesFilter<"UnitEvent"> | Date | string | null
+    location?: StringNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    description?: StringNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    organizer?: StringNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    requiresDutyWatch?: BoolWithAggregatesFilter<"UnitEvent"> | boolean
+    status?: StringWithAggregatesFilter<"UnitEvent"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"UnitEvent">
+    notes?: StringNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    createdBy?: UuidNullableWithAggregatesFilter<"UnitEvent"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UnitEvent"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UnitEvent"> | Date | string
+  }
+
+  export type UnitEventDutyPositionWhereInput = {
+    AND?: UnitEventDutyPositionWhereInput | UnitEventDutyPositionWhereInput[]
+    OR?: UnitEventDutyPositionWhereInput[]
+    NOT?: UnitEventDutyPositionWhereInput | UnitEventDutyPositionWhereInput[]
+    id?: UuidFilter<"UnitEventDutyPosition"> | string
+    eventId?: UuidFilter<"UnitEventDutyPosition"> | string
+    code?: StringFilter<"UnitEventDutyPosition"> | string
+    name?: StringFilter<"UnitEventDutyPosition"> | string
+    description?: StringNullableFilter<"UnitEventDutyPosition"> | string | null
+    maxSlots?: IntFilter<"UnitEventDutyPosition"> | number
+    isStandard?: BoolFilter<"UnitEventDutyPosition"> | boolean
+    displayOrder?: IntFilter<"UnitEventDutyPosition"> | number
+    createdAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+    event?: XOR<UnitEventScalarRelationFilter, UnitEventWhereInput>
+    assignments?: UnitEventDutyAssignmentListRelationFilter
+  }
+
+  export type UnitEventDutyPositionOrderByWithRelationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    maxSlots?: SortOrder
+    isStandard?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    event?: UnitEventOrderByWithRelationInput
+    assignments?: UnitEventDutyAssignmentOrderByRelationAggregateInput
+  }
+
+  export type UnitEventDutyPositionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    eventId_code?: UnitEventDutyPositionEventIdCodeCompoundUniqueInput
+    AND?: UnitEventDutyPositionWhereInput | UnitEventDutyPositionWhereInput[]
+    OR?: UnitEventDutyPositionWhereInput[]
+    NOT?: UnitEventDutyPositionWhereInput | UnitEventDutyPositionWhereInput[]
+    eventId?: UuidFilter<"UnitEventDutyPosition"> | string
+    code?: StringFilter<"UnitEventDutyPosition"> | string
+    name?: StringFilter<"UnitEventDutyPosition"> | string
+    description?: StringNullableFilter<"UnitEventDutyPosition"> | string | null
+    maxSlots?: IntFilter<"UnitEventDutyPosition"> | number
+    isStandard?: BoolFilter<"UnitEventDutyPosition"> | boolean
+    displayOrder?: IntFilter<"UnitEventDutyPosition"> | number
+    createdAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+    event?: XOR<UnitEventScalarRelationFilter, UnitEventWhereInput>
+    assignments?: UnitEventDutyAssignmentListRelationFilter
+  }, "id" | "eventId_code">
+
+  export type UnitEventDutyPositionOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    maxSlots?: SortOrder
+    isStandard?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UnitEventDutyPositionCountOrderByAggregateInput
+    _avg?: UnitEventDutyPositionAvgOrderByAggregateInput
+    _max?: UnitEventDutyPositionMaxOrderByAggregateInput
+    _min?: UnitEventDutyPositionMinOrderByAggregateInput
+    _sum?: UnitEventDutyPositionSumOrderByAggregateInput
+  }
+
+  export type UnitEventDutyPositionScalarWhereWithAggregatesInput = {
+    AND?: UnitEventDutyPositionScalarWhereWithAggregatesInput | UnitEventDutyPositionScalarWhereWithAggregatesInput[]
+    OR?: UnitEventDutyPositionScalarWhereWithAggregatesInput[]
+    NOT?: UnitEventDutyPositionScalarWhereWithAggregatesInput | UnitEventDutyPositionScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"UnitEventDutyPosition"> | string
+    eventId?: UuidWithAggregatesFilter<"UnitEventDutyPosition"> | string
+    code?: StringWithAggregatesFilter<"UnitEventDutyPosition"> | string
+    name?: StringWithAggregatesFilter<"UnitEventDutyPosition"> | string
+    description?: StringNullableWithAggregatesFilter<"UnitEventDutyPosition"> | string | null
+    maxSlots?: IntWithAggregatesFilter<"UnitEventDutyPosition"> | number
+    isStandard?: BoolWithAggregatesFilter<"UnitEventDutyPosition"> | boolean
+    displayOrder?: IntWithAggregatesFilter<"UnitEventDutyPosition"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UnitEventDutyPosition"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UnitEventDutyPosition"> | Date | string
+  }
+
+  export type UnitEventDutyAssignmentWhereInput = {
+    AND?: UnitEventDutyAssignmentWhereInput | UnitEventDutyAssignmentWhereInput[]
+    OR?: UnitEventDutyAssignmentWhereInput[]
+    NOT?: UnitEventDutyAssignmentWhereInput | UnitEventDutyAssignmentWhereInput[]
+    id?: UuidFilter<"UnitEventDutyAssignment"> | string
+    eventId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    eventDutyPositionId?: UuidNullableFilter<"UnitEventDutyAssignment"> | string | null
+    memberId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    status?: StringFilter<"UnitEventDutyAssignment"> | string
+    isVolunteer?: BoolFilter<"UnitEventDutyAssignment"> | boolean
+    confirmedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    releasedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    notes?: StringNullableFilter<"UnitEventDutyAssignment"> | string | null
+    createdAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+    event?: XOR<UnitEventScalarRelationFilter, UnitEventWhereInput>
+    eventDutyPosition?: XOR<UnitEventDutyPositionNullableScalarRelationFilter, UnitEventDutyPositionWhereInput> | null
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  }
+
+  export type UnitEventDutyAssignmentOrderByWithRelationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    eventDutyPositionId?: SortOrderInput | SortOrder
+    memberId?: SortOrder
+    status?: SortOrder
+    isVolunteer?: SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    releasedAt?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    event?: UnitEventOrderByWithRelationInput
+    eventDutyPosition?: UnitEventDutyPositionOrderByWithRelationInput
+    member?: MemberOrderByWithRelationInput
+  }
+
+  export type UnitEventDutyAssignmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    eventId_memberId_eventDutyPositionId?: UnitEventDutyAssignmentEventIdMemberIdEventDutyPositionIdCompoundUniqueInput
+    AND?: UnitEventDutyAssignmentWhereInput | UnitEventDutyAssignmentWhereInput[]
+    OR?: UnitEventDutyAssignmentWhereInput[]
+    NOT?: UnitEventDutyAssignmentWhereInput | UnitEventDutyAssignmentWhereInput[]
+    eventId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    eventDutyPositionId?: UuidNullableFilter<"UnitEventDutyAssignment"> | string | null
+    memberId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    status?: StringFilter<"UnitEventDutyAssignment"> | string
+    isVolunteer?: BoolFilter<"UnitEventDutyAssignment"> | boolean
+    confirmedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    releasedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    notes?: StringNullableFilter<"UnitEventDutyAssignment"> | string | null
+    createdAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+    event?: XOR<UnitEventScalarRelationFilter, UnitEventWhereInput>
+    eventDutyPosition?: XOR<UnitEventDutyPositionNullableScalarRelationFilter, UnitEventDutyPositionWhereInput> | null
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  }, "id" | "eventId_memberId_eventDutyPositionId">
+
+  export type UnitEventDutyAssignmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    eventDutyPositionId?: SortOrderInput | SortOrder
+    memberId?: SortOrder
+    status?: SortOrder
+    isVolunteer?: SortOrder
+    confirmedAt?: SortOrderInput | SortOrder
+    releasedAt?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UnitEventDutyAssignmentCountOrderByAggregateInput
+    _max?: UnitEventDutyAssignmentMaxOrderByAggregateInput
+    _min?: UnitEventDutyAssignmentMinOrderByAggregateInput
+  }
+
+  export type UnitEventDutyAssignmentScalarWhereWithAggregatesInput = {
+    AND?: UnitEventDutyAssignmentScalarWhereWithAggregatesInput | UnitEventDutyAssignmentScalarWhereWithAggregatesInput[]
+    OR?: UnitEventDutyAssignmentScalarWhereWithAggregatesInput[]
+    NOT?: UnitEventDutyAssignmentScalarWhereWithAggregatesInput | UnitEventDutyAssignmentScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"UnitEventDutyAssignment"> | string
+    eventId?: UuidWithAggregatesFilter<"UnitEventDutyAssignment"> | string
+    eventDutyPositionId?: UuidNullableWithAggregatesFilter<"UnitEventDutyAssignment"> | string | null
+    memberId?: UuidWithAggregatesFilter<"UnitEventDutyAssignment"> | string
+    status?: StringWithAggregatesFilter<"UnitEventDutyAssignment"> | string
+    isVolunteer?: BoolWithAggregatesFilter<"UnitEventDutyAssignment"> | boolean
+    confirmedAt?: DateTimeNullableWithAggregatesFilter<"UnitEventDutyAssignment"> | Date | string | null
+    releasedAt?: DateTimeNullableWithAggregatesFilter<"UnitEventDutyAssignment"> | Date | string | null
+    notes?: StringNullableWithAggregatesFilter<"UnitEventDutyAssignment"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UnitEventDutyAssignment"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UnitEventDutyAssignment"> | Date | string
+  }
+
   export type AdminUserCreateInput = {
     id?: string
     username: string
@@ -61155,6 +66930,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateInput = {
@@ -61199,6 +66975,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUpdateInput = {
@@ -61243,6 +67020,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateInput = {
@@ -61287,6 +67065,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateManyInput = {
@@ -64184,6 +69963,423 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UnitEventTypeCreateInput = {
+    id?: string
+    name: string
+    category: string
+    defaultDurationMinutes?: number
+    requiresDutyWatch?: boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    unitEvents?: UnitEventCreateNestedManyWithoutEventTypeInput
+  }
+
+  export type UnitEventTypeUncheckedCreateInput = {
+    id?: string
+    name: string
+    category: string
+    defaultDurationMinutes?: number
+    requiresDutyWatch?: boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    unitEvents?: UnitEventUncheckedCreateNestedManyWithoutEventTypeInput
+  }
+
+  export type UnitEventTypeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unitEvents?: UnitEventUpdateManyWithoutEventTypeNestedInput
+  }
+
+  export type UnitEventTypeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unitEvents?: UnitEventUncheckedUpdateManyWithoutEventTypeNestedInput
+  }
+
+  export type UnitEventTypeCreateManyInput = {
+    id?: string
+    name: string
+    category: string
+    defaultDurationMinutes?: number
+    requiresDutyWatch?: boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventTypeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventTypeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventCreateInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventType?: UnitEventTypeCreateNestedOneWithoutUnitEventsInput
+    dutyPositions?: UnitEventDutyPositionCreateNestedManyWithoutEventInput
+    dutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventUncheckedCreateInput = {
+    id?: string
+    title: string
+    eventTypeId?: string | null
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedCreateNestedManyWithoutEventInput
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventType?: UnitEventTypeUpdateOneWithoutUnitEventsNestedInput
+    dutyPositions?: UnitEventDutyPositionUpdateManyWithoutEventNestedInput
+    dutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedUpdateManyWithoutEventNestedInput
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventCreateManyInput = {
+    id?: string
+    title: string
+    eventTypeId?: string | null
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyPositionCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: UnitEventCreateNestedOneWithoutDutyPositionsInput
+    assignments?: UnitEventDutyAssignmentCreateNestedManyWithoutEventDutyPositionInput
+  }
+
+  export type UnitEventDutyPositionUncheckedCreateInput = {
+    id?: string
+    eventId: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventDutyPositionInput
+  }
+
+  export type UnitEventDutyPositionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: UnitEventUpdateOneRequiredWithoutDutyPositionsNestedInput
+    assignments?: UnitEventDutyAssignmentUpdateManyWithoutEventDutyPositionNestedInput
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventDutyPositionNestedInput
+  }
+
+  export type UnitEventDutyPositionCreateManyInput = {
+    id?: string
+    eventId: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyPositionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateInput = {
+    id?: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: UnitEventCreateNestedOneWithoutDutyAssignmentsInput
+    eventDutyPosition?: UnitEventDutyPositionCreateNestedOneWithoutAssignmentsInput
+    member: MemberCreateNestedOneWithoutUnitEventDutyAssignmentsInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateInput = {
+    id?: string
+    eventId: string
+    eventDutyPositionId?: string | null
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: UnitEventUpdateOneRequiredWithoutDutyAssignmentsNestedInput
+    eventDutyPosition?: UnitEventDutyPositionUpdateOneWithoutAssignmentsNestedInput
+    member?: MemberUpdateOneRequiredWithoutUnitEventDutyAssignmentsNestedInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateManyInput = {
+    id?: string
+    eventId: string
+    eventDutyPositionId?: string | null
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UuidFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -64983,6 +71179,12 @@ export namespace Prisma {
     none?: LockupExecutionWhereInput
   }
 
+  export type UnitEventDutyAssignmentListRelationFilter = {
+    every?: UnitEventDutyAssignmentWhereInput
+    some?: UnitEventDutyAssignmentWhereInput
+    none?: UnitEventDutyAssignmentWhereInput
+  }
+
   export type BmqEnrollmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -65004,6 +71206,10 @@ export namespace Prisma {
   }
 
   export type LockupExecutionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UnitEventDutyAssignmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -66625,6 +72831,242 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type UnitEventListRelationFilter = {
+    every?: UnitEventWhereInput
+    some?: UnitEventWhereInput
+    none?: UnitEventWhereInput
+  }
+
+  export type UnitEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UnitEventTypeCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    defaultDurationMinutes?: SortOrder
+    requiresDutyWatch?: SortOrder
+    defaultMetadata?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventTypeAvgOrderByAggregateInput = {
+    defaultDurationMinutes?: SortOrder
+    displayOrder?: SortOrder
+  }
+
+  export type UnitEventTypeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    defaultDurationMinutes?: SortOrder
+    requiresDutyWatch?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventTypeMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    defaultDurationMinutes?: SortOrder
+    requiresDutyWatch?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventTypeSumOrderByAggregateInput = {
+    defaultDurationMinutes?: SortOrder
+    displayOrder?: SortOrder
+  }
+
+  export type UnitEventTypeNullableScalarRelationFilter = {
+    is?: UnitEventTypeWhereInput | null
+    isNot?: UnitEventTypeWhereInput | null
+  }
+
+  export type UnitEventDutyPositionListRelationFilter = {
+    every?: UnitEventDutyPositionWhereInput
+    some?: UnitEventDutyPositionWhereInput
+    none?: UnitEventDutyPositionWhereInput
+  }
+
+  export type UnitEventDutyPositionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UnitEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    eventTypeId?: SortOrder
+    eventDate?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    location?: SortOrder
+    description?: SortOrder
+    organizer?: SortOrder
+    requiresDutyWatch?: SortOrder
+    status?: SortOrder
+    metadata?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    eventTypeId?: SortOrder
+    eventDate?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    location?: SortOrder
+    description?: SortOrder
+    organizer?: SortOrder
+    requiresDutyWatch?: SortOrder
+    status?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    eventTypeId?: SortOrder
+    eventDate?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    location?: SortOrder
+    description?: SortOrder
+    organizer?: SortOrder
+    requiresDutyWatch?: SortOrder
+    status?: SortOrder
+    notes?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventScalarRelationFilter = {
+    is?: UnitEventWhereInput
+    isNot?: UnitEventWhereInput
+  }
+
+  export type UnitEventDutyPositionEventIdCodeCompoundUniqueInput = {
+    eventId: string
+    code: string
+  }
+
+  export type UnitEventDutyPositionCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    maxSlots?: SortOrder
+    isStandard?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventDutyPositionAvgOrderByAggregateInput = {
+    maxSlots?: SortOrder
+    displayOrder?: SortOrder
+  }
+
+  export type UnitEventDutyPositionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    maxSlots?: SortOrder
+    isStandard?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventDutyPositionMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    maxSlots?: SortOrder
+    isStandard?: SortOrder
+    displayOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventDutyPositionSumOrderByAggregateInput = {
+    maxSlots?: SortOrder
+    displayOrder?: SortOrder
+  }
+
+  export type UnitEventDutyPositionNullableScalarRelationFilter = {
+    is?: UnitEventDutyPositionWhereInput | null
+    isNot?: UnitEventDutyPositionWhereInput | null
+  }
+
+  export type UnitEventDutyAssignmentEventIdMemberIdEventDutyPositionIdCompoundUniqueInput = {
+    eventId: string
+    memberId: string
+    eventDutyPositionId: string
+  }
+
+  export type UnitEventDutyAssignmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    eventDutyPositionId?: SortOrder
+    memberId?: SortOrder
+    status?: SortOrder
+    isVolunteer?: SortOrder
+    confirmedAt?: SortOrder
+    releasedAt?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventDutyAssignmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    eventDutyPositionId?: SortOrder
+    memberId?: SortOrder
+    status?: SortOrder
+    isVolunteer?: SortOrder
+    confirmedAt?: SortOrder
+    releasedAt?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UnitEventDutyAssignmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    eventDutyPositionId?: SortOrder
+    memberId?: SortOrder
+    status?: SortOrder
+    isVolunteer?: SortOrder
+    confirmedAt?: SortOrder
+    releasedAt?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type AuditLogCreateNestedManyWithoutAdminUserInput = {
     create?: XOR<AuditLogCreateWithoutAdminUserInput, AuditLogUncheckedCreateWithoutAdminUserInput> | AuditLogCreateWithoutAdminUserInput[] | AuditLogUncheckedCreateWithoutAdminUserInput[]
     connectOrCreate?: AuditLogCreateOrConnectWithoutAdminUserInput | AuditLogCreateOrConnectWithoutAdminUserInput[]
@@ -67871,6 +74313,13 @@ export namespace Prisma {
     connect?: MissedCheckoutWhereUniqueInput | MissedCheckoutWhereUniqueInput[]
   }
 
+  export type UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput> | UnitEventDutyAssignmentCreateWithoutMemberInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput | UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyMemberInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
   export type BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -67967,6 +74416,13 @@ export namespace Prisma {
     connectOrCreate?: MissedCheckoutCreateOrConnectWithoutMemberInput | MissedCheckoutCreateOrConnectWithoutMemberInput[]
     createMany?: MissedCheckoutCreateManyMemberInputEnvelope
     connect?: MissedCheckoutWhereUniqueInput | MissedCheckoutWhereUniqueInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput> | UnitEventDutyAssignmentCreateWithoutMemberInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput | UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyMemberInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -68223,6 +74679,20 @@ export namespace Prisma {
     deleteMany?: MissedCheckoutScalarWhereInput | MissedCheckoutScalarWhereInput[]
   }
 
+  export type UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput> | UnitEventDutyAssignmentCreateWithoutMemberInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput | UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutMemberInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyMemberInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
   export type BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -68417,6 +74887,20 @@ export namespace Prisma {
     update?: MissedCheckoutUpdateWithWhereUniqueWithoutMemberInput | MissedCheckoutUpdateWithWhereUniqueWithoutMemberInput[]
     updateMany?: MissedCheckoutUpdateManyWithWhereWithoutMemberInput | MissedCheckoutUpdateManyWithWhereWithoutMemberInput[]
     deleteMany?: MissedCheckoutScalarWhereInput | MissedCheckoutScalarWhereInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput> | UnitEventDutyAssignmentCreateWithoutMemberInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput | UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutMemberInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyMemberInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
   }
 
   export type MemberTagCreateNestedManyWithoutTagInput = {
@@ -69759,6 +76243,248 @@ export namespace Prisma {
     delete?: AdminUserWhereInput | boolean
     connect?: AdminUserWhereUniqueInput
     update?: XOR<XOR<AdminUserUpdateToOneWithWhereWithoutMissedCheckoutsResolvedInput, AdminUserUpdateWithoutMissedCheckoutsResolvedInput>, AdminUserUncheckedUpdateWithoutMissedCheckoutsResolvedInput>
+  }
+
+  export type UnitEventCreateNestedManyWithoutEventTypeInput = {
+    create?: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput> | UnitEventCreateWithoutEventTypeInput[] | UnitEventUncheckedCreateWithoutEventTypeInput[]
+    connectOrCreate?: UnitEventCreateOrConnectWithoutEventTypeInput | UnitEventCreateOrConnectWithoutEventTypeInput[]
+    createMany?: UnitEventCreateManyEventTypeInputEnvelope
+    connect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+  }
+
+  export type UnitEventUncheckedCreateNestedManyWithoutEventTypeInput = {
+    create?: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput> | UnitEventCreateWithoutEventTypeInput[] | UnitEventUncheckedCreateWithoutEventTypeInput[]
+    connectOrCreate?: UnitEventCreateOrConnectWithoutEventTypeInput | UnitEventCreateOrConnectWithoutEventTypeInput[]
+    createMany?: UnitEventCreateManyEventTypeInputEnvelope
+    connect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+  }
+
+  export type UnitEventUpdateManyWithoutEventTypeNestedInput = {
+    create?: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput> | UnitEventCreateWithoutEventTypeInput[] | UnitEventUncheckedCreateWithoutEventTypeInput[]
+    connectOrCreate?: UnitEventCreateOrConnectWithoutEventTypeInput | UnitEventCreateOrConnectWithoutEventTypeInput[]
+    upsert?: UnitEventUpsertWithWhereUniqueWithoutEventTypeInput | UnitEventUpsertWithWhereUniqueWithoutEventTypeInput[]
+    createMany?: UnitEventCreateManyEventTypeInputEnvelope
+    set?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    disconnect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    delete?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    connect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    update?: UnitEventUpdateWithWhereUniqueWithoutEventTypeInput | UnitEventUpdateWithWhereUniqueWithoutEventTypeInput[]
+    updateMany?: UnitEventUpdateManyWithWhereWithoutEventTypeInput | UnitEventUpdateManyWithWhereWithoutEventTypeInput[]
+    deleteMany?: UnitEventScalarWhereInput | UnitEventScalarWhereInput[]
+  }
+
+  export type UnitEventUncheckedUpdateManyWithoutEventTypeNestedInput = {
+    create?: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput> | UnitEventCreateWithoutEventTypeInput[] | UnitEventUncheckedCreateWithoutEventTypeInput[]
+    connectOrCreate?: UnitEventCreateOrConnectWithoutEventTypeInput | UnitEventCreateOrConnectWithoutEventTypeInput[]
+    upsert?: UnitEventUpsertWithWhereUniqueWithoutEventTypeInput | UnitEventUpsertWithWhereUniqueWithoutEventTypeInput[]
+    createMany?: UnitEventCreateManyEventTypeInputEnvelope
+    set?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    disconnect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    delete?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    connect?: UnitEventWhereUniqueInput | UnitEventWhereUniqueInput[]
+    update?: UnitEventUpdateWithWhereUniqueWithoutEventTypeInput | UnitEventUpdateWithWhereUniqueWithoutEventTypeInput[]
+    updateMany?: UnitEventUpdateManyWithWhereWithoutEventTypeInput | UnitEventUpdateManyWithWhereWithoutEventTypeInput[]
+    deleteMany?: UnitEventScalarWhereInput | UnitEventScalarWhereInput[]
+  }
+
+  export type UnitEventTypeCreateNestedOneWithoutUnitEventsInput = {
+    create?: XOR<UnitEventTypeCreateWithoutUnitEventsInput, UnitEventTypeUncheckedCreateWithoutUnitEventsInput>
+    connectOrCreate?: UnitEventTypeCreateOrConnectWithoutUnitEventsInput
+    connect?: UnitEventTypeWhereUniqueInput
+  }
+
+  export type UnitEventDutyPositionCreateNestedManyWithoutEventInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput> | UnitEventDutyPositionCreateWithoutEventInput[] | UnitEventDutyPositionUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutEventInput | UnitEventDutyPositionCreateOrConnectWithoutEventInput[]
+    createMany?: UnitEventDutyPositionCreateManyEventInputEnvelope
+    connect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+  }
+
+  export type UnitEventDutyAssignmentCreateNestedManyWithoutEventInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput> | UnitEventDutyAssignmentCreateWithoutEventInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
+  export type UnitEventDutyPositionUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput> | UnitEventDutyPositionCreateWithoutEventInput[] | UnitEventDutyPositionUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutEventInput | UnitEventDutyPositionCreateOrConnectWithoutEventInput[]
+    createMany?: UnitEventDutyPositionCreateManyEventInputEnvelope
+    connect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput> | UnitEventDutyAssignmentCreateWithoutEventInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
+  export type UnitEventTypeUpdateOneWithoutUnitEventsNestedInput = {
+    create?: XOR<UnitEventTypeCreateWithoutUnitEventsInput, UnitEventTypeUncheckedCreateWithoutUnitEventsInput>
+    connectOrCreate?: UnitEventTypeCreateOrConnectWithoutUnitEventsInput
+    upsert?: UnitEventTypeUpsertWithoutUnitEventsInput
+    disconnect?: UnitEventTypeWhereInput | boolean
+    delete?: UnitEventTypeWhereInput | boolean
+    connect?: UnitEventTypeWhereUniqueInput
+    update?: XOR<XOR<UnitEventTypeUpdateToOneWithWhereWithoutUnitEventsInput, UnitEventTypeUpdateWithoutUnitEventsInput>, UnitEventTypeUncheckedUpdateWithoutUnitEventsInput>
+  }
+
+  export type UnitEventDutyPositionUpdateManyWithoutEventNestedInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput> | UnitEventDutyPositionCreateWithoutEventInput[] | UnitEventDutyPositionUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutEventInput | UnitEventDutyPositionCreateOrConnectWithoutEventInput[]
+    upsert?: UnitEventDutyPositionUpsertWithWhereUniqueWithoutEventInput | UnitEventDutyPositionUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: UnitEventDutyPositionCreateManyEventInputEnvelope
+    set?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    disconnect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    delete?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    connect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    update?: UnitEventDutyPositionUpdateWithWhereUniqueWithoutEventInput | UnitEventDutyPositionUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: UnitEventDutyPositionUpdateManyWithWhereWithoutEventInput | UnitEventDutyPositionUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: UnitEventDutyPositionScalarWhereInput | UnitEventDutyPositionScalarWhereInput[]
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyWithoutEventNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput> | UnitEventDutyAssignmentCreateWithoutEventInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput> | UnitEventDutyPositionCreateWithoutEventInput[] | UnitEventDutyPositionUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutEventInput | UnitEventDutyPositionCreateOrConnectWithoutEventInput[]
+    upsert?: UnitEventDutyPositionUpsertWithWhereUniqueWithoutEventInput | UnitEventDutyPositionUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: UnitEventDutyPositionCreateManyEventInputEnvelope
+    set?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    disconnect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    delete?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    connect?: UnitEventDutyPositionWhereUniqueInput | UnitEventDutyPositionWhereUniqueInput[]
+    update?: UnitEventDutyPositionUpdateWithWhereUniqueWithoutEventInput | UnitEventDutyPositionUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: UnitEventDutyPositionUpdateManyWithWhereWithoutEventInput | UnitEventDutyPositionUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: UnitEventDutyPositionScalarWhereInput | UnitEventDutyPositionScalarWhereInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput> | UnitEventDutyAssignmentCreateWithoutEventInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
+  export type UnitEventCreateNestedOneWithoutDutyPositionsInput = {
+    create?: XOR<UnitEventCreateWithoutDutyPositionsInput, UnitEventUncheckedCreateWithoutDutyPositionsInput>
+    connectOrCreate?: UnitEventCreateOrConnectWithoutDutyPositionsInput
+    connect?: UnitEventWhereUniqueInput
+  }
+
+  export type UnitEventDutyAssignmentCreateNestedManyWithoutEventDutyPositionInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput> | UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventDutyPositionInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventDutyPositionInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput> | UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventDutyPositionInputEnvelope
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
+  export type UnitEventUpdateOneRequiredWithoutDutyPositionsNestedInput = {
+    create?: XOR<UnitEventCreateWithoutDutyPositionsInput, UnitEventUncheckedCreateWithoutDutyPositionsInput>
+    connectOrCreate?: UnitEventCreateOrConnectWithoutDutyPositionsInput
+    upsert?: UnitEventUpsertWithoutDutyPositionsInput
+    connect?: UnitEventWhereUniqueInput
+    update?: XOR<XOR<UnitEventUpdateToOneWithWhereWithoutDutyPositionsInput, UnitEventUpdateWithoutDutyPositionsInput>, UnitEventUncheckedUpdateWithoutDutyPositionsInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyWithoutEventDutyPositionNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput> | UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventDutyPositionInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventDutyPositionInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventDutyPositionInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventDutyPositionInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventDutyPositionNestedInput = {
+    create?: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput> | UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput[] | UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput[]
+    connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput | UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput[]
+    upsert?: UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventDutyPositionInput[]
+    createMany?: UnitEventDutyAssignmentCreateManyEventDutyPositionInputEnvelope
+    set?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    disconnect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    delete?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+    update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventDutyPositionInput[]
+    updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventDutyPositionInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventDutyPositionInput[]
+    deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
+  export type UnitEventCreateNestedOneWithoutDutyAssignmentsInput = {
+    create?: XOR<UnitEventCreateWithoutDutyAssignmentsInput, UnitEventUncheckedCreateWithoutDutyAssignmentsInput>
+    connectOrCreate?: UnitEventCreateOrConnectWithoutDutyAssignmentsInput
+    connect?: UnitEventWhereUniqueInput
+  }
+
+  export type UnitEventDutyPositionCreateNestedOneWithoutAssignmentsInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedCreateWithoutAssignmentsInput>
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutAssignmentsInput
+    connect?: UnitEventDutyPositionWhereUniqueInput
+  }
+
+  export type MemberCreateNestedOneWithoutUnitEventDutyAssignmentsInput = {
+    create?: XOR<MemberCreateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUnitEventDutyAssignmentsInput
+    connect?: MemberWhereUniqueInput
+  }
+
+  export type UnitEventUpdateOneRequiredWithoutDutyAssignmentsNestedInput = {
+    create?: XOR<UnitEventCreateWithoutDutyAssignmentsInput, UnitEventUncheckedCreateWithoutDutyAssignmentsInput>
+    connectOrCreate?: UnitEventCreateOrConnectWithoutDutyAssignmentsInput
+    upsert?: UnitEventUpsertWithoutDutyAssignmentsInput
+    connect?: UnitEventWhereUniqueInput
+    update?: XOR<XOR<UnitEventUpdateToOneWithWhereWithoutDutyAssignmentsInput, UnitEventUpdateWithoutDutyAssignmentsInput>, UnitEventUncheckedUpdateWithoutDutyAssignmentsInput>
+  }
+
+  export type UnitEventDutyPositionUpdateOneWithoutAssignmentsNestedInput = {
+    create?: XOR<UnitEventDutyPositionCreateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedCreateWithoutAssignmentsInput>
+    connectOrCreate?: UnitEventDutyPositionCreateOrConnectWithoutAssignmentsInput
+    upsert?: UnitEventDutyPositionUpsertWithoutAssignmentsInput
+    disconnect?: UnitEventDutyPositionWhereInput | boolean
+    delete?: UnitEventDutyPositionWhereInput | boolean
+    connect?: UnitEventDutyPositionWhereUniqueInput
+    update?: XOR<XOR<UnitEventDutyPositionUpdateToOneWithWhereWithoutAssignmentsInput, UnitEventDutyPositionUpdateWithoutAssignmentsInput>, UnitEventDutyPositionUncheckedUpdateWithoutAssignmentsInput>
+  }
+
+  export type MemberUpdateOneRequiredWithoutUnitEventDutyAssignmentsNestedInput = {
+    create?: XOR<MemberCreateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutUnitEventDutyAssignmentsInput
+    upsert?: MemberUpsertWithoutUnitEventDutyAssignmentsInput
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutUnitEventDutyAssignmentsInput, MemberUpdateWithoutUnitEventDutyAssignmentsInput>, MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -71578,6 +78304,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBadgeInput = {
@@ -71621,6 +78348,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBadgeInput = {
@@ -72029,6 +78757,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutCheckinsInput = {
@@ -72072,6 +78801,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutCheckinsInput = {
@@ -72247,6 +78977,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutCheckinsInput = {
@@ -72290,6 +79021,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutDivisionInput = {
@@ -72333,6 +79065,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDivisionInput = {
@@ -72376,6 +79109,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDivisionInput = {
@@ -73515,6 +80249,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UnitEventDutyAssignmentCreateWithoutMemberInput = {
+    id?: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: UnitEventCreateNestedOneWithoutDutyAssignmentsInput
+    eventDutyPosition?: UnitEventDutyPositionCreateNestedOneWithoutAssignmentsInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput = {
+    id?: string
+    eventId: string
+    eventDutyPositionId?: string | null
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    create: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput>
+  }
+
+  export type UnitEventDutyAssignmentCreateManyMemberInputEnvelope = {
+    data: UnitEventDutyAssignmentCreateManyMemberInput | UnitEventDutyAssignmentCreateManyMemberInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RankUpsertWithoutMembersInput = {
     update: XOR<RankUpdateWithoutMembersInput, RankUncheckedUpdateWithoutMembersInput>
     create: XOR<RankCreateWithoutMembersInput, RankUncheckedCreateWithoutMembersInput>
@@ -73999,6 +80769,39 @@ export namespace Prisma {
     data: XOR<MissedCheckoutUpdateManyMutationInput, MissedCheckoutUncheckedUpdateManyWithoutMemberInput>
   }
 
+  export type UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutMemberInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    update: XOR<UnitEventDutyAssignmentUpdateWithoutMemberInput, UnitEventDutyAssignmentUncheckedUpdateWithoutMemberInput>
+    create: XOR<UnitEventDutyAssignmentCreateWithoutMemberInput, UnitEventDutyAssignmentUncheckedCreateWithoutMemberInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    data: XOR<UnitEventDutyAssignmentUpdateWithoutMemberInput, UnitEventDutyAssignmentUncheckedUpdateWithoutMemberInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput = {
+    where: UnitEventDutyAssignmentScalarWhereInput
+    data: XOR<UnitEventDutyAssignmentUpdateManyMutationInput, UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberInput>
+  }
+
+  export type UnitEventDutyAssignmentScalarWhereInput = {
+    AND?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+    OR?: UnitEventDutyAssignmentScalarWhereInput[]
+    NOT?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+    id?: UuidFilter<"UnitEventDutyAssignment"> | string
+    eventId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    eventDutyPositionId?: UuidNullableFilter<"UnitEventDutyAssignment"> | string | null
+    memberId?: UuidFilter<"UnitEventDutyAssignment"> | string
+    status?: StringFilter<"UnitEventDutyAssignment"> | string
+    isVolunteer?: BoolFilter<"UnitEventDutyAssignment"> | boolean
+    confirmedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    releasedAt?: DateTimeNullableFilter<"UnitEventDutyAssignment"> | Date | string | null
+    notes?: StringNullableFilter<"UnitEventDutyAssignment"> | string | null
+    createdAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
+  }
+
   export type MemberTagCreateWithoutTagInput = {
     id?: string
     createdAt?: Date | string | null
@@ -74143,6 +80946,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTagsInput = {
@@ -74186,6 +80990,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTagsInput = {
@@ -74274,6 +81079,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTagsInput = {
@@ -74317,6 +81123,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type TagUpsertWithoutMemberTagsInput = {
@@ -74639,6 +81446,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutVisitorsInput = {
@@ -74682,6 +81490,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutVisitorsInput = {
@@ -74921,6 +81730,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutVisitorsInput = {
@@ -74964,6 +81774,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type BadgeUpsertWithoutVisitorsInput = {
@@ -75156,6 +81967,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBmqEnrollmentsInput = {
@@ -75199,6 +82011,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBmqEnrollmentsInput = {
@@ -75295,6 +82108,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBmqEnrollmentsInput = {
@@ -75338,6 +82152,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserCreateWithoutReport_audit_logInput = {
@@ -75521,6 +82336,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsAssignmentsInput = {
@@ -75564,6 +82380,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsAssignmentsInput = {
@@ -75612,6 +82429,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsTransfersInput = {
@@ -75655,6 +82473,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsTransfersInput = {
@@ -75781,6 +82600,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsAssignmentsInput = {
@@ -75824,6 +82644,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutDdsTransfersInput = {
@@ -75878,6 +82699,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsTransfersInput = {
@@ -75921,6 +82743,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutDdsAssignmentsInput = {
@@ -76037,6 +82860,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberStatusRefInput = {
@@ -76080,6 +82904,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberStatusRefInput = {
@@ -76149,6 +82974,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTypeRefInput = {
@@ -76192,6 +83018,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTypeRefInput = {
@@ -76396,6 +83223,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutRankRefInput = {
@@ -76439,6 +83267,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutRankRefInput = {
@@ -77035,6 +83864,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutQualificationsInput = {
@@ -77078,6 +83908,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutQualificationsInput = {
@@ -77300,6 +84131,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutQualificationsInput = {
@@ -77343,6 +84175,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type QualificationTypeUpsertWithoutMemberQualificationsInput = {
@@ -78268,6 +85101,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutScheduleAssignmentsInput = {
@@ -78311,6 +85145,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutScheduleAssignmentsInput = {
@@ -78442,6 +85277,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutScheduleAssignmentsInput = {
@@ -78485,6 +85321,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutLockupHoldingInput = {
@@ -78528,6 +85365,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupHoldingInput = {
@@ -78571,6 +85409,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupHoldingInput = {
@@ -78619,6 +85458,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupSecuredInput = {
@@ -78662,6 +85502,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupSecuredInput = {
@@ -78778,6 +85619,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupHoldingInput = {
@@ -78821,6 +85663,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupSecuredInput = {
@@ -78875,6 +85718,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupSecuredInput = {
@@ -78918,6 +85762,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type LockupTransferUpsertWithWhereUniqueWithoutLockupStatusInput = {
@@ -79043,6 +85888,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersFromInput = {
@@ -79086,6 +85932,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersFromInput = {
@@ -79134,6 +85981,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersToInput = {
@@ -79177,6 +86025,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersToInput = {
@@ -79275,6 +86124,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersFromInput = {
@@ -79318,6 +86168,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupTransfersToInput = {
@@ -79372,6 +86223,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersToInput = {
@@ -79415,6 +86267,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type LockupStatusCreateWithoutExecutionInput = {
@@ -79491,6 +86344,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupExecutionsInput = {
@@ -79534,6 +86388,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupExecutionsInput = {
@@ -79632,6 +86487,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupExecutionsInput = {
@@ -79675,6 +86531,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutMissedCheckoutsInput = {
@@ -79718,6 +86575,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMissedCheckoutsInput = {
@@ -79761,6 +86619,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMissedCheckoutsInput = {
@@ -79887,6 +86746,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMissedCheckoutsInput = {
@@ -79930,6 +86790,7 @@ export namespace Prisma {
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutMissedCheckoutsResolvedInput = {
@@ -80003,6 +86864,782 @@ export namespace Prisma {
     qualificationsRevoked?: MemberQualificationUncheckedUpdateManyWithoutRevokedByAdminNestedInput
     schedulesCreated?: WeeklyScheduleUncheckedUpdateManyWithoutCreatedByAdminNestedInput
     schedulesPublished?: WeeklyScheduleUncheckedUpdateManyWithoutPublishedByAdminNestedInput
+  }
+
+  export type UnitEventCreateWithoutEventTypeInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyPositions?: UnitEventDutyPositionCreateNestedManyWithoutEventInput
+    dutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventUncheckedCreateWithoutEventTypeInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedCreateNestedManyWithoutEventInput
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventCreateOrConnectWithoutEventTypeInput = {
+    where: UnitEventWhereUniqueInput
+    create: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput>
+  }
+
+  export type UnitEventCreateManyEventTypeInputEnvelope = {
+    data: UnitEventCreateManyEventTypeInput | UnitEventCreateManyEventTypeInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UnitEventUpsertWithWhereUniqueWithoutEventTypeInput = {
+    where: UnitEventWhereUniqueInput
+    update: XOR<UnitEventUpdateWithoutEventTypeInput, UnitEventUncheckedUpdateWithoutEventTypeInput>
+    create: XOR<UnitEventCreateWithoutEventTypeInput, UnitEventUncheckedCreateWithoutEventTypeInput>
+  }
+
+  export type UnitEventUpdateWithWhereUniqueWithoutEventTypeInput = {
+    where: UnitEventWhereUniqueInput
+    data: XOR<UnitEventUpdateWithoutEventTypeInput, UnitEventUncheckedUpdateWithoutEventTypeInput>
+  }
+
+  export type UnitEventUpdateManyWithWhereWithoutEventTypeInput = {
+    where: UnitEventScalarWhereInput
+    data: XOR<UnitEventUpdateManyMutationInput, UnitEventUncheckedUpdateManyWithoutEventTypeInput>
+  }
+
+  export type UnitEventScalarWhereInput = {
+    AND?: UnitEventScalarWhereInput | UnitEventScalarWhereInput[]
+    OR?: UnitEventScalarWhereInput[]
+    NOT?: UnitEventScalarWhereInput | UnitEventScalarWhereInput[]
+    id?: UuidFilter<"UnitEvent"> | string
+    title?: StringFilter<"UnitEvent"> | string
+    eventTypeId?: UuidNullableFilter<"UnitEvent"> | string | null
+    eventDate?: DateTimeFilter<"UnitEvent"> | Date | string
+    startTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"UnitEvent"> | Date | string | null
+    location?: StringNullableFilter<"UnitEvent"> | string | null
+    description?: StringNullableFilter<"UnitEvent"> | string | null
+    organizer?: StringNullableFilter<"UnitEvent"> | string | null
+    requiresDutyWatch?: BoolFilter<"UnitEvent"> | boolean
+    status?: StringFilter<"UnitEvent"> | string
+    metadata?: JsonNullableFilter<"UnitEvent">
+    notes?: StringNullableFilter<"UnitEvent"> | string | null
+    createdBy?: UuidNullableFilter<"UnitEvent"> | string | null
+    createdAt?: DateTimeFilter<"UnitEvent"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEvent"> | Date | string
+  }
+
+  export type UnitEventTypeCreateWithoutUnitEventsInput = {
+    id?: string
+    name: string
+    category: string
+    defaultDurationMinutes?: number
+    requiresDutyWatch?: boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventTypeUncheckedCreateWithoutUnitEventsInput = {
+    id?: string
+    name: string
+    category: string
+    defaultDurationMinutes?: number
+    requiresDutyWatch?: boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventTypeCreateOrConnectWithoutUnitEventsInput = {
+    where: UnitEventTypeWhereUniqueInput
+    create: XOR<UnitEventTypeCreateWithoutUnitEventsInput, UnitEventTypeUncheckedCreateWithoutUnitEventsInput>
+  }
+
+  export type UnitEventDutyPositionCreateWithoutEventInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignments?: UnitEventDutyAssignmentCreateNestedManyWithoutEventDutyPositionInput
+  }
+
+  export type UnitEventDutyPositionUncheckedCreateWithoutEventInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventDutyPositionInput
+  }
+
+  export type UnitEventDutyPositionCreateOrConnectWithoutEventInput = {
+    where: UnitEventDutyPositionWhereUniqueInput
+    create: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput>
+  }
+
+  export type UnitEventDutyPositionCreateManyEventInputEnvelope = {
+    data: UnitEventDutyPositionCreateManyEventInput | UnitEventDutyPositionCreateManyEventInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UnitEventDutyAssignmentCreateWithoutEventInput = {
+    id?: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventDutyPosition?: UnitEventDutyPositionCreateNestedOneWithoutAssignmentsInput
+    member: MemberCreateNestedOneWithoutUnitEventDutyAssignmentsInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateWithoutEventInput = {
+    id?: string
+    eventDutyPositionId?: string | null
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateOrConnectWithoutEventInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    create: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput>
+  }
+
+  export type UnitEventDutyAssignmentCreateManyEventInputEnvelope = {
+    data: UnitEventDutyAssignmentCreateManyEventInput | UnitEventDutyAssignmentCreateManyEventInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UnitEventTypeUpsertWithoutUnitEventsInput = {
+    update: XOR<UnitEventTypeUpdateWithoutUnitEventsInput, UnitEventTypeUncheckedUpdateWithoutUnitEventsInput>
+    create: XOR<UnitEventTypeCreateWithoutUnitEventsInput, UnitEventTypeUncheckedCreateWithoutUnitEventsInput>
+    where?: UnitEventTypeWhereInput
+  }
+
+  export type UnitEventTypeUpdateToOneWithWhereWithoutUnitEventsInput = {
+    where?: UnitEventTypeWhereInput
+    data: XOR<UnitEventTypeUpdateWithoutUnitEventsInput, UnitEventTypeUncheckedUpdateWithoutUnitEventsInput>
+  }
+
+  export type UnitEventTypeUpdateWithoutUnitEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventTypeUncheckedUpdateWithoutUnitEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    defaultDurationMinutes?: IntFieldUpdateOperationsInput | number
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    defaultMetadata?: NullableJsonNullValueInput | InputJsonValue
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyPositionUpsertWithWhereUniqueWithoutEventInput = {
+    where: UnitEventDutyPositionWhereUniqueInput
+    update: XOR<UnitEventDutyPositionUpdateWithoutEventInput, UnitEventDutyPositionUncheckedUpdateWithoutEventInput>
+    create: XOR<UnitEventDutyPositionCreateWithoutEventInput, UnitEventDutyPositionUncheckedCreateWithoutEventInput>
+  }
+
+  export type UnitEventDutyPositionUpdateWithWhereUniqueWithoutEventInput = {
+    where: UnitEventDutyPositionWhereUniqueInput
+    data: XOR<UnitEventDutyPositionUpdateWithoutEventInput, UnitEventDutyPositionUncheckedUpdateWithoutEventInput>
+  }
+
+  export type UnitEventDutyPositionUpdateManyWithWhereWithoutEventInput = {
+    where: UnitEventDutyPositionScalarWhereInput
+    data: XOR<UnitEventDutyPositionUpdateManyMutationInput, UnitEventDutyPositionUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type UnitEventDutyPositionScalarWhereInput = {
+    AND?: UnitEventDutyPositionScalarWhereInput | UnitEventDutyPositionScalarWhereInput[]
+    OR?: UnitEventDutyPositionScalarWhereInput[]
+    NOT?: UnitEventDutyPositionScalarWhereInput | UnitEventDutyPositionScalarWhereInput[]
+    id?: UuidFilter<"UnitEventDutyPosition"> | string
+    eventId?: UuidFilter<"UnitEventDutyPosition"> | string
+    code?: StringFilter<"UnitEventDutyPosition"> | string
+    name?: StringFilter<"UnitEventDutyPosition"> | string
+    description?: StringNullableFilter<"UnitEventDutyPosition"> | string | null
+    maxSlots?: IntFilter<"UnitEventDutyPosition"> | number
+    isStandard?: BoolFilter<"UnitEventDutyPosition"> | boolean
+    displayOrder?: IntFilter<"UnitEventDutyPosition"> | number
+    createdAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitEventDutyPosition"> | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    update: XOR<UnitEventDutyAssignmentUpdateWithoutEventInput, UnitEventDutyAssignmentUncheckedUpdateWithoutEventInput>
+    create: XOR<UnitEventDutyAssignmentCreateWithoutEventInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    data: XOR<UnitEventDutyAssignmentUpdateWithoutEventInput, UnitEventDutyAssignmentUncheckedUpdateWithoutEventInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventInput = {
+    where: UnitEventDutyAssignmentScalarWhereInput
+    data: XOR<UnitEventDutyAssignmentUpdateManyMutationInput, UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type UnitEventCreateWithoutDutyPositionsInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventType?: UnitEventTypeCreateNestedOneWithoutUnitEventsInput
+    dutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventUncheckedCreateWithoutDutyPositionsInput = {
+    id?: string
+    title: string
+    eventTypeId?: string | null
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventCreateOrConnectWithoutDutyPositionsInput = {
+    where: UnitEventWhereUniqueInput
+    create: XOR<UnitEventCreateWithoutDutyPositionsInput, UnitEventUncheckedCreateWithoutDutyPositionsInput>
+  }
+
+  export type UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput = {
+    id?: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: UnitEventCreateNestedOneWithoutDutyAssignmentsInput
+    member: MemberCreateNestedOneWithoutUnitEventDutyAssignmentsInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput = {
+    id?: string
+    eventId: string
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateOrConnectWithoutEventDutyPositionInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    create: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput>
+  }
+
+  export type UnitEventDutyAssignmentCreateManyEventDutyPositionInputEnvelope = {
+    data: UnitEventDutyAssignmentCreateManyEventDutyPositionInput | UnitEventDutyAssignmentCreateManyEventDutyPositionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UnitEventUpsertWithoutDutyPositionsInput = {
+    update: XOR<UnitEventUpdateWithoutDutyPositionsInput, UnitEventUncheckedUpdateWithoutDutyPositionsInput>
+    create: XOR<UnitEventCreateWithoutDutyPositionsInput, UnitEventUncheckedCreateWithoutDutyPositionsInput>
+    where?: UnitEventWhereInput
+  }
+
+  export type UnitEventUpdateToOneWithWhereWithoutDutyPositionsInput = {
+    where?: UnitEventWhereInput
+    data: XOR<UnitEventUpdateWithoutDutyPositionsInput, UnitEventUncheckedUpdateWithoutDutyPositionsInput>
+  }
+
+  export type UnitEventUpdateWithoutDutyPositionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventType?: UnitEventTypeUpdateOneWithoutUnitEventsNestedInput
+    dutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventUncheckedUpdateWithoutDutyPositionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventDutyAssignmentUpsertWithWhereUniqueWithoutEventDutyPositionInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    update: XOR<UnitEventDutyAssignmentUpdateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedUpdateWithoutEventDutyPositionInput>
+    create: XOR<UnitEventDutyAssignmentCreateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedCreateWithoutEventDutyPositionInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutEventDutyPositionInput = {
+    where: UnitEventDutyAssignmentWhereUniqueInput
+    data: XOR<UnitEventDutyAssignmentUpdateWithoutEventDutyPositionInput, UnitEventDutyAssignmentUncheckedUpdateWithoutEventDutyPositionInput>
+  }
+
+  export type UnitEventDutyAssignmentUpdateManyWithWhereWithoutEventDutyPositionInput = {
+    where: UnitEventDutyAssignmentScalarWhereInput
+    data: XOR<UnitEventDutyAssignmentUpdateManyMutationInput, UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventDutyPositionInput>
+  }
+
+  export type UnitEventCreateWithoutDutyAssignmentsInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventType?: UnitEventTypeCreateNestedOneWithoutUnitEventsInput
+    dutyPositions?: UnitEventDutyPositionCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventUncheckedCreateWithoutDutyAssignmentsInput = {
+    id?: string
+    title: string
+    eventTypeId?: string | null
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type UnitEventCreateOrConnectWithoutDutyAssignmentsInput = {
+    where: UnitEventWhereUniqueInput
+    create: XOR<UnitEventCreateWithoutDutyAssignmentsInput, UnitEventUncheckedCreateWithoutDutyAssignmentsInput>
+  }
+
+  export type UnitEventDutyPositionCreateWithoutAssignmentsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: UnitEventCreateNestedOneWithoutDutyPositionsInput
+  }
+
+  export type UnitEventDutyPositionUncheckedCreateWithoutAssignmentsInput = {
+    id?: string
+    eventId: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyPositionCreateOrConnectWithoutAssignmentsInput = {
+    where: UnitEventDutyPositionWhereUniqueInput
+    create: XOR<UnitEventDutyPositionCreateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedCreateWithoutAssignmentsInput>
+  }
+
+  export type MemberCreateWithoutUnitEventDutyAssignmentsInput = {
+    id?: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput = {
+    id?: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutUnitEventDutyAssignmentsInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput>
+  }
+
+  export type UnitEventUpsertWithoutDutyAssignmentsInput = {
+    update: XOR<UnitEventUpdateWithoutDutyAssignmentsInput, UnitEventUncheckedUpdateWithoutDutyAssignmentsInput>
+    create: XOR<UnitEventCreateWithoutDutyAssignmentsInput, UnitEventUncheckedCreateWithoutDutyAssignmentsInput>
+    where?: UnitEventWhereInput
+  }
+
+  export type UnitEventUpdateToOneWithWhereWithoutDutyAssignmentsInput = {
+    where?: UnitEventWhereInput
+    data: XOR<UnitEventUpdateWithoutDutyAssignmentsInput, UnitEventUncheckedUpdateWithoutDutyAssignmentsInput>
+  }
+
+  export type UnitEventUpdateWithoutDutyAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventType?: UnitEventTypeUpdateOneWithoutUnitEventsNestedInput
+    dutyPositions?: UnitEventDutyPositionUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventUncheckedUpdateWithoutDutyAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventDutyPositionUpsertWithoutAssignmentsInput = {
+    update: XOR<UnitEventDutyPositionUpdateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedUpdateWithoutAssignmentsInput>
+    create: XOR<UnitEventDutyPositionCreateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedCreateWithoutAssignmentsInput>
+    where?: UnitEventDutyPositionWhereInput
+  }
+
+  export type UnitEventDutyPositionUpdateToOneWithWhereWithoutAssignmentsInput = {
+    where?: UnitEventDutyPositionWhereInput
+    data: XOR<UnitEventDutyPositionUpdateWithoutAssignmentsInput, UnitEventDutyPositionUncheckedUpdateWithoutAssignmentsInput>
+  }
+
+  export type UnitEventDutyPositionUpdateWithoutAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: UnitEventUpdateOneRequiredWithoutDutyPositionsNestedInput
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateWithoutAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberUpsertWithoutUnitEventDutyAssignmentsInput = {
+    update: XOR<MemberUpdateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput>
+    create: XOR<MemberCreateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutUnitEventDutyAssignmentsInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutUnitEventDutyAssignmentsInput, MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput>
+  }
+
+  export type MemberUpdateWithoutUnitEventDutyAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AuditLogCreateManyAdminUserInput = {
@@ -81035,6 +88672,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBadgeInput = {
@@ -81078,6 +88716,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutBadgeInput = {
@@ -81233,6 +88872,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDivisionInput = {
@@ -81276,6 +88916,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutDivisionInput = {
@@ -81641,6 +89282,19 @@ export namespace Prisma {
     lockupExecutionId?: string | null
     notes?: string | null
     createdAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateManyMemberInput = {
+    id?: string
+    eventId: string
+    eventDutyPositionId?: string | null
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type BmqEnrollmentUpdateWithoutMemberInput = {
@@ -82149,6 +89803,45 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UnitEventDutyAssignmentUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: UnitEventUpdateOneRequiredWithoutDutyAssignmentsNestedInput
+    eventDutyPosition?: UnitEventDutyPositionUpdateOneWithoutAssignmentsNestedInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MemberTagCreateManyTagInput = {
     id?: string
     memberId: string
@@ -82321,6 +90014,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberStatusRefInput = {
@@ -82364,6 +90058,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberStatusRefInput = {
@@ -82465,6 +90160,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTypeRefInput = {
@@ -82508,6 +90204,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberTypeRefInput = {
@@ -82747,6 +90444,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutRankRefInput = {
@@ -82790,6 +90488,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutRankRefInput = {
@@ -83243,6 +90942,236 @@ export namespace Prisma {
     reason?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventCreateManyEventTypeInput = {
+    id?: string
+    title: string
+    eventDate: Date | string
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    location?: string | null
+    description?: string | null
+    organizer?: string | null
+    requiresDutyWatch?: boolean
+    status?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventUpdateWithoutEventTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositions?: UnitEventDutyPositionUpdateManyWithoutEventNestedInput
+    dutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventUncheckedUpdateWithoutEventTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositions?: UnitEventDutyPositionUncheckedUpdateManyWithoutEventNestedInput
+    dutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type UnitEventUncheckedUpdateManyWithoutEventTypeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    eventDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    organizer?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresDutyWatch?: BoolFieldUpdateOperationsInput | boolean
+    status?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyPositionCreateManyEventInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    isStandard?: boolean
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateManyEventInput = {
+    id?: string
+    eventDutyPositionId?: string | null
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyPositionUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: UnitEventDutyAssignmentUpdateManyWithoutEventDutyPositionNestedInput
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventDutyPositionNestedInput
+  }
+
+  export type UnitEventDutyPositionUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    isStandard?: BoolFieldUpdateOperationsInput | boolean
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDutyPosition?: UnitEventDutyPositionUpdateOneWithoutAssignmentsNestedInput
+    member?: MemberUpdateOneRequiredWithoutUnitEventDutyAssignmentsNestedInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventDutyPositionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentCreateManyEventDutyPositionInput = {
+    id?: string
+    eventId: string
+    memberId: string
+    status?: string
+    isVolunteer?: boolean
+    confirmedAt?: Date | string | null
+    releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UnitEventDutyAssignmentUpdateWithoutEventDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: UnitEventUpdateOneRequiredWithoutDutyAssignmentsNestedInput
+    member?: MemberUpdateOneRequiredWithoutUnitEventDutyAssignmentsNestedInput
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateWithoutEventDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UnitEventDutyAssignmentUncheckedUpdateManyWithoutEventDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    isVolunteer?: BoolFieldUpdateOperationsInput | boolean
+    confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

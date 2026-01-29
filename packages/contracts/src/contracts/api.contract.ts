@@ -20,6 +20,7 @@ import { databaseExplorerContract } from './database-explorer.contract.js'
 import { rankContract } from './rank.contract.js'
 import { qualificationContract } from './qualification.contract.js'
 import { scheduleContract } from './schedule.contract.js'
+import { unitEventContract } from './unit-event.contract.js'
 import { lockupContract } from './lockup.contract.js'
 
 const c = initContract()
@@ -53,6 +54,7 @@ export const apiContract = c.router(
     ranks: rankContract,
     qualifications: qualificationContract,
     schedules: scheduleContract,
+    unitEvents: unitEventContract,
     lockup: lockupContract,
   },
   {
