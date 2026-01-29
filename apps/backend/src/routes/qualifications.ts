@@ -3,9 +3,12 @@ import { qualificationContract } from '@sentinel/contracts'
 import type {
   MemberIdParam,
   QualificationIdParam,
+  QualificationTypeIdParam,
   GrantQualificationInput,
   RevokeQualificationInput,
   LockupEligibilityQuery,
+  CreateQualificationType,
+  UpdateQualificationType,
 } from '@sentinel/contracts'
 import { QualificationService } from '../services/qualification-service.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -24,6 +27,8 @@ function toQualificationTypeResponse(type: {
   description: string | null
   canReceiveLockup: boolean
   displayOrder: number
+  tagId: string | null
+  tag: { id: string; name: string; chipVariant: string; chipColor: string } | null
   createdAt: Date
   updatedAt: Date
 }) {
@@ -34,6 +39,15 @@ function toQualificationTypeResponse(type: {
     description: type.description,
     canReceiveLockup: type.canReceiveLockup,
     displayOrder: type.displayOrder,
+    tagId: type.tagId,
+    tag: type.tag
+      ? {
+          id: type.tag.id,
+          name: type.tag.name,
+          chipVariant: type.tag.chipVariant,
+          chipColor: type.tag.chipColor,
+        }
+      : null,
     createdAt: type.createdAt.toISOString(),
     updatedAt: type.updatedAt.toISOString(),
   }
@@ -63,6 +77,8 @@ function toMemberQualificationResponse(qual: {
     description: string | null
     canReceiveLockup: boolean
     displayOrder: number
+    tagId: string | null
+    tag: { id: string; name: string; chipVariant: string; chipColor: string } | null
     createdAt: Date
     updatedAt: Date
   }
@@ -108,6 +124,165 @@ export const qualificationsRouter = s.router(qualificationContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch qualification types',
+        },
+      }
+    }
+  },
+
+  /**
+   * Create a new qualification type
+   */
+  createQualificationType: async ({ body }: { body: CreateQualificationType }) => {
+    try {
+      const qualificationType = await qualificationService.createType({
+        code: body.code,
+        name: body.name,
+        description: body.description,
+        canReceiveLockup: body.canReceiveLockup,
+        displayOrder: body.displayOrder,
+        tagId: body.tagId,
+      })
+
+      return {
+        status: 201 as const,
+        body: {
+          qualificationType: toQualificationTypeResponse(qualificationType),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          return {
+            status: 409 as const,
+            body: {
+              error: 'CONFLICT',
+              message: error.message,
+            },
+          }
+        }
+
+        if (error.message.includes('Tag not found')) {
+          return {
+            status: 400 as const,
+            body: {
+              error: 'BAD_REQUEST',
+              message: error.message,
+            },
+          }
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create qualification type',
+        },
+      }
+    }
+  },
+
+  /**
+   * Update a qualification type
+   */
+  updateQualificationType: async ({
+    params,
+    body,
+  }: {
+    params: QualificationTypeIdParam
+    body: UpdateQualificationType
+  }) => {
+    try {
+      const qualificationType = await qualificationService.updateType(params.id, {
+        code: body.code,
+        name: body.name,
+        description: body.description,
+        canReceiveLockup: body.canReceiveLockup,
+        displayOrder: body.displayOrder,
+        tagId: body.tagId,
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          qualificationType: toQualificationTypeResponse(qualificationType),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return {
+            status: 404 as const,
+            body: {
+              error: 'NOT_FOUND',
+              message: error.message,
+            },
+          }
+        }
+
+        if (error.message.includes('already exists')) {
+          return {
+            status: 409 as const,
+            body: {
+              error: 'CONFLICT',
+              message: error.message,
+            },
+          }
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to update qualification type',
+        },
+      }
+    }
+  },
+
+  /**
+   * Delete a qualification type
+   */
+  deleteQualificationType: async ({ params }: { params: QualificationTypeIdParam }) => {
+    try {
+      await qualificationService.deleteType(params.id)
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: 'Qualification type deleted successfully',
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return {
+            status: 404 as const,
+            body: {
+              error: 'NOT_FOUND',
+              message: error.message,
+            },
+          }
+        }
+
+        if (error.message.includes('Cannot delete')) {
+          return {
+            status: 409 as const,
+            body: {
+              error: 'CONFLICT',
+              message: error.message,
+            },
+          }
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to delete qualification type',
         },
       }
     }

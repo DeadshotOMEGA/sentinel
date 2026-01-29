@@ -5,6 +5,8 @@ import type {
   MemberQualificationWithDetails,
   GrantQualificationInput,
   LockupEligibleMember,
+  CreateQualificationTypeInput,
+  UpdateQualificationTypeInput,
 } from '../repositories/qualification-repository.js'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
@@ -40,6 +42,100 @@ export class QualificationService {
    */
   async getLockupEligibleTypes(): Promise<QualificationType[]> {
     return this.repository.findLockupEligibleTypes()
+  }
+
+  /**
+   * Get a qualification type by ID
+   */
+  async getTypeById(id: string): Promise<QualificationType | null> {
+    return this.repository.findTypeById(id)
+  }
+
+  /**
+   * Create a new qualification type
+   *
+   * @throws Error if code already exists
+   * @throws Error if tag not found (when tagId provided)
+   */
+  async createType(input: CreateQualificationTypeInput): Promise<QualificationType> {
+    // Check if code already exists
+    const existing = await this.repository.findTypeByCode(input.code)
+    if (existing) {
+      throw new Error(`Qualification type code "${input.code}" already exists`)
+    }
+
+    // Validate tag exists if provided
+    if (input.tagId) {
+      const tag = await this.prisma.tag.findUnique({
+        where: { id: input.tagId },
+        select: { id: true },
+      })
+      if (!tag) {
+        throw new Error(`Tag not found: ${input.tagId}`)
+      }
+    }
+
+    return this.repository.createType(input)
+  }
+
+  /**
+   * Update a qualification type
+   *
+   * @throws Error if qualification type not found
+   * @throws Error if code already exists (when changing code)
+   * @throws Error if tag not found (when tagId provided)
+   */
+  async updateType(id: string, input: UpdateQualificationTypeInput): Promise<QualificationType> {
+    // Verify qualification type exists
+    const existing = await this.repository.findTypeById(id)
+    if (!existing) {
+      throw new Error(`Qualification type not found: ${id}`)
+    }
+
+    // If updating code, check for conflicts
+    if (input.code && input.code !== existing.code) {
+      const conflict = await this.repository.findTypeByCode(input.code)
+      if (conflict) {
+        throw new Error(`Qualification type code "${input.code}" already exists`)
+      }
+    }
+
+    // Validate tag exists if provided (and not explicitly null)
+    if (input.tagId !== undefined && input.tagId !== null) {
+      const tag = await this.prisma.tag.findUnique({
+        where: { id: input.tagId },
+        select: { id: true },
+      })
+      if (!tag) {
+        throw new Error(`Tag not found: ${input.tagId}`)
+      }
+    }
+
+    return this.repository.updateType(id, input)
+  }
+
+  /**
+   * Delete a qualification type
+   *
+   * @throws Error if qualification type not found
+   * @throws Error if qualification type is in use by members
+   */
+  async deleteType(id: string): Promise<void> {
+    // Verify qualification type exists
+    const existing = await this.repository.findTypeById(id)
+    if (!existing) {
+      throw new Error(`Qualification type not found: ${id}`)
+    }
+
+    // Check if in use
+    const usageCount = await this.repository.countMembersByType(id)
+    if (usageCount > 0) {
+      throw new Error(
+        `Cannot delete qualification type "${existing.name}". It is assigned to ${usageCount} member(s).`
+      )
+    }
+
+    await this.repository.deleteType(id)
   }
 
   // ============================================================================

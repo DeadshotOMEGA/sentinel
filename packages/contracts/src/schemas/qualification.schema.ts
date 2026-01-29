@@ -5,6 +5,16 @@ import * as v from 'valibot'
 // ============================================================================
 
 /**
+ * Tag info embedded in qualification type response
+ */
+export const QualificationTypeTagSchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  chipVariant: v.string(),
+  chipColor: v.string(),
+})
+
+/**
  * Qualification type response schema
  */
 export const QualificationTypeResponseSchema = v.object({
@@ -14,6 +24,8 @@ export const QualificationTypeResponseSchema = v.object({
   description: v.nullable(v.string()),
   canReceiveLockup: v.boolean(),
   displayOrder: v.number(),
+  tagId: v.nullable(v.string()),
+  tag: v.nullable(QualificationTypeTagSchema),
   createdAt: v.string(),
   updatedAt: v.string(),
 })
@@ -23,6 +35,75 @@ export const QualificationTypeResponseSchema = v.object({
  */
 export const QualificationTypeListResponseSchema = v.object({
   data: v.array(QualificationTypeResponseSchema),
+})
+
+/**
+ * Single qualification type response (for create/update)
+ */
+export const SingleQualificationTypeResponseSchema = v.object({
+  qualificationType: QualificationTypeResponseSchema,
+})
+
+/**
+ * Qualification type ID path param
+ */
+export const QualificationTypeIdParamSchema = v.object({
+  id: v.pipe(v.string('Qualification type ID is required'), v.uuid('Invalid qualification type ID format')),
+})
+
+/**
+ * Code validation pattern - lowercase alphanumeric with underscores only
+ */
+const QualificationCodePattern = /^[A-Z0-9_]+$/
+
+/**
+ * Create qualification type input schema
+ */
+export const CreateQualificationTypeSchema = v.object({
+  code: v.pipe(
+    v.string('Code is required'),
+    v.minLength(1, 'Code cannot be empty'),
+    v.maxLength(50, 'Code must be at most 50 characters'),
+    v.regex(QualificationCodePattern, 'Code must be uppercase alphanumeric with underscores only')
+  ),
+  name: v.pipe(
+    v.string('Name is required'),
+    v.minLength(1, 'Name cannot be empty'),
+    v.maxLength(100, 'Name must be at most 100 characters')
+  ),
+  description: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters')))
+  ),
+  canReceiveLockup: v.optional(v.boolean()),
+  displayOrder: v.optional(v.number()),
+  tagId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid tag ID format')))),
+})
+
+/**
+ * Update qualification type input schema (all fields optional)
+ */
+export const UpdateQualificationTypeSchema = v.object({
+  code: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Code cannot be empty'),
+      v.maxLength(50, 'Code must be at most 50 characters'),
+      v.regex(QualificationCodePattern, 'Code must be uppercase alphanumeric with underscores only')
+    )
+  ),
+  name: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Name cannot be empty'),
+      v.maxLength(100, 'Name must be at most 100 characters')
+    )
+  ),
+  description: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters')))
+  ),
+  canReceiveLockup: v.optional(v.boolean()),
+  displayOrder: v.optional(v.number()),
+  tagId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid tag ID format')))),
 })
 
 // ============================================================================
@@ -198,3 +279,7 @@ export type LockupEligibleMembersResponse = v.InferOutput<
 export type LockupEligibilityQuery = v.InferOutput<typeof LockupEligibilityQuerySchema>
 export type MemberIdParam = v.InferOutput<typeof MemberIdParamSchema>
 export type QualificationIdParam = v.InferOutput<typeof QualificationIdParamSchema>
+export type QualificationTypeIdParam = v.InferOutput<typeof QualificationTypeIdParamSchema>
+export type CreateQualificationType = v.InferOutput<typeof CreateQualificationTypeSchema>
+export type UpdateQualificationType = v.InferOutput<typeof UpdateQualificationTypeSchema>
+export type SingleQualificationTypeResponse = v.InferOutput<typeof SingleQualificationTypeResponseSchema>

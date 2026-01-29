@@ -1,6 +1,10 @@
 import { initContract } from '@ts-rest/core'
 import {
   QualificationTypeListResponseSchema,
+  SingleQualificationTypeResponseSchema,
+  QualificationTypeIdParamSchema,
+  CreateQualificationTypeSchema,
+  UpdateQualificationTypeSchema,
   MemberQualificationListResponseSchema,
   MemberQualificationResponseSchema,
   GrantQualificationInputSchema,
@@ -40,6 +44,63 @@ export const qualificationContract = c.router({
     summary: 'List all qualification types',
     description:
       'Get all available qualification types (DDS, SWK, Building Authorized, etc.) with their lockup eligibility status',
+  },
+
+  /**
+   * Create a new qualification type
+   */
+  createQualificationType: {
+    method: 'POST',
+    path: '/api/qualifications/types',
+    body: CreateQualificationTypeSchema,
+    responses: {
+      201: SingleQualificationTypeResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create qualification type',
+    description: 'Create a new qualification type with optional tag linking for visual styling',
+  },
+
+  /**
+   * Update a qualification type
+   */
+  updateQualificationType: {
+    method: 'PATCH',
+    path: '/api/qualifications/types/:id',
+    pathParams: QualificationTypeIdParamSchema,
+    body: UpdateQualificationTypeSchema,
+    responses: {
+      200: SingleQualificationTypeResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Update qualification type',
+    description: 'Update a qualification type including linking/unlinking a tag',
+  },
+
+  /**
+   * Delete a qualification type
+   */
+  deleteQualificationType: {
+    method: 'DELETE',
+    path: '/api/qualifications/types/:id',
+    pathParams: QualificationTypeIdParamSchema,
+    body: null,
+    responses: {
+      200: SuccessResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Delete qualification type',
+    description: 'Delete a qualification type. Cannot delete if members have this qualification.',
   },
 
   // ============================================================================

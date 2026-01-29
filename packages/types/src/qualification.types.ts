@@ -9,6 +9,16 @@
 // Qualification Type (Reference/Enum Table)
 // ============================================================================
 
+/**
+ * Subset of Tag fields included in QualificationType responses
+ */
+export interface QualificationTypeTag {
+  id: string
+  name: string
+  chipVariant: string
+  chipColor: string
+}
+
 export interface QualificationType {
   id: string
   code: string
@@ -16,6 +26,8 @@ export interface QualificationType {
   description: string | null
   canReceiveLockup: boolean
   displayOrder: number
+  tagId: string | null
+  tag: QualificationTypeTag | null
   createdAt: Date
   updatedAt: Date
 }
@@ -35,6 +47,16 @@ export interface CreateQualificationTypeInput {
   description?: string | null
   canReceiveLockup?: boolean
   displayOrder?: number
+  tagId?: string | null
+}
+
+export interface UpdateQualificationTypeInput {
+  code?: string
+  name?: string
+  description?: string | null
+  canReceiveLockup?: boolean
+  displayOrder?: number
+  tagId?: string | null
 }
 
 // ============================================================================

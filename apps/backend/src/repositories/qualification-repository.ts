@@ -2,6 +2,16 @@ import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
 /**
+ * Tag info embedded in qualification type
+ */
+export interface QualificationTypeTag {
+  id: string
+  name: string
+  chipVariant: string
+  chipColor: string
+}
+
+/**
  * Qualification Type entity from database
  */
 export interface QualificationType {
@@ -11,6 +21,8 @@ export interface QualificationType {
   description: string | null
   canReceiveLockup: boolean
   displayOrder: number
+  tagId: string | null
+  tag: QualificationTypeTag | null
   createdAt: Date
   updatedAt: Date
 }
@@ -74,6 +86,30 @@ export interface GrantQualificationInput {
 }
 
 /**
+ * Input for creating a qualification type
+ */
+export interface CreateQualificationTypeInput {
+  code: string
+  name: string
+  description?: string | null
+  canReceiveLockup?: boolean
+  displayOrder?: number
+  tagId?: string | null
+}
+
+/**
+ * Input for updating a qualification type
+ */
+export interface UpdateQualificationTypeInput {
+  code?: string
+  name?: string
+  description?: string | null
+  canReceiveLockup?: boolean
+  displayOrder?: number
+  tagId?: string | null
+}
+
+/**
  * Lockup eligible member info
  */
 export interface LockupEligibleMember {
@@ -109,6 +145,16 @@ export class QualificationRepository {
   async findAllTypes(): Promise<QualificationType[]> {
     const types = await this.prisma.qualificationType.findMany({
       orderBy: { displayOrder: 'asc' },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
     })
     return types
   }
@@ -119,6 +165,16 @@ export class QualificationRepository {
   async findTypeById(id: string): Promise<QualificationType | null> {
     return this.prisma.qualificationType.findUnique({
       where: { id },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
     })
   }
 
@@ -128,6 +184,16 @@ export class QualificationRepository {
   async findTypeByCode(code: string): Promise<QualificationType | null> {
     return this.prisma.qualificationType.findUnique({
       where: { code },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
     })
   }
 
@@ -138,8 +204,91 @@ export class QualificationRepository {
     const types = await this.prisma.qualificationType.findMany({
       where: { canReceiveLockup: true },
       orderBy: { displayOrder: 'asc' },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
     })
     return types
+  }
+
+  /**
+   * Create a new qualification type
+   */
+  async createType(input: CreateQualificationTypeInput): Promise<QualificationType> {
+    const qualificationType = await this.prisma.qualificationType.create({
+      data: {
+        code: input.code,
+        name: input.name,
+        description: input.description,
+        canReceiveLockup: input.canReceiveLockup ?? true,
+        displayOrder: input.displayOrder ?? 0,
+        tagId: input.tagId,
+      },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
+    })
+    return qualificationType
+  }
+
+  /**
+   * Update a qualification type
+   */
+  async updateType(id: string, input: UpdateQualificationTypeInput): Promise<QualificationType> {
+    const qualificationType = await this.prisma.qualificationType.update({
+      where: { id },
+      data: {
+        code: input.code,
+        name: input.name,
+        description: input.description,
+        canReceiveLockup: input.canReceiveLockup,
+        displayOrder: input.displayOrder,
+        tagId: input.tagId,
+      },
+      include: {
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            chipVariant: true,
+            chipColor: true,
+          },
+        },
+      },
+    })
+    return qualificationType
+  }
+
+  /**
+   * Delete a qualification type
+   */
+  async deleteType(id: string): Promise<void> {
+    await this.prisma.qualificationType.delete({
+      where: { id },
+    })
+  }
+
+  /**
+   * Count members with a specific qualification type
+   */
+  async countMembersByType(qualificationTypeId: string): Promise<number> {
+    return this.prisma.memberQualification.count({
+      where: { qualificationTypeId },
+    })
   }
 
   // ============================================================================
@@ -153,7 +302,18 @@ export class QualificationRepository {
     const qualifications = await this.prisma.memberQualification.findMany({
       where: { memberId },
       include: {
-        qualificationType: true,
+        qualificationType: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                chipVariant: true,
+                chipColor: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ qualificationType: { displayOrder: 'asc' } }],
     })
@@ -171,7 +331,18 @@ export class QualificationRepository {
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       include: {
-        qualificationType: true,
+        qualificationType: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                chipVariant: true,
+                chipColor: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ qualificationType: { displayOrder: 'asc' } }],
     })
@@ -185,7 +356,18 @@ export class QualificationRepository {
     const qualification = await this.prisma.memberQualification.findUnique({
       where: { id },
       include: {
-        qualificationType: true,
+        qualificationType: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                chipVariant: true,
+                chipColor: true,
+              },
+            },
+          },
+        },
         member: {
           select: {
             id: true,
@@ -258,7 +440,18 @@ export class QualificationRepository {
         status: 'active',
       },
       include: {
-        qualificationType: true,
+        qualificationType: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                chipVariant: true,
+                chipColor: true,
+              },
+            },
+          },
+        },
       },
     })
     return qualification
@@ -281,7 +474,18 @@ export class QualificationRepository {
         revokeReason,
       },
       include: {
-        qualificationType: true,
+        qualificationType: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                chipVariant: true,
+                chipColor: true,
+              },
+            },
+          },
+        },
       },
     })
     return qualification
