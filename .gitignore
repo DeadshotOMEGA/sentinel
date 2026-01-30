@@ -243,3 +243,6 @@ apps/*/tests/**/*.js.map
 # Test databases
 test-db/
 *.test.db
+
+# Screenshots (temporary/local testing)
+screenshots/
