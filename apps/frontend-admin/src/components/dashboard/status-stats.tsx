@@ -1,6 +1,6 @@
 'use client'
 
-import { Users, CheckCircle2, DoorOpen, Building2, Lock, Unlock, Loader2, ShieldX, ShieldEllipsis, ShieldAlert, ShieldCheck, Clock } from 'lucide-react'
+import { Users, CheckCircle2, DoorOpen, Building2, Lock, Unlock, Loader2, ShieldX, ShieldEllipsis, ShieldAlert, ShieldCheck, Clock, KeyRound, KeySquare } from 'lucide-react'
 import { usePresence } from '@/hooks/use-presence'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useLockupStatus } from '@/hooks/use-lockup'
@@ -21,7 +21,7 @@ function PresenceStat() {
 
   if (isError) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-title">Currently Present</div>
         <div className="stat-value text-error text-3xl">--</div>
         <div className="stat-desc text-error">Failed to load</div>
@@ -31,7 +31,7 @@ function PresenceStat() {
 
   if (isLoading) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-title">Currently Present</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
@@ -42,7 +42,7 @@ function PresenceStat() {
   const totalPresent = data?.totalPresent ?? 0
 
   return (
-    <div className="stat w-flex-50">
+    <div className="stat bg-base-200 w-flex-50">
       <div className="stat-title">Currently Present</div>
       <div className="stat-value text-success text-3xl">{totalPresent}</div>
       <div className="stat-desc">{totalPresent === 1 ? 'member' : 'members'} on site</div>
@@ -56,21 +56,21 @@ function DdsStat() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'accepted':
-        return <span className="badge badge-success badge-sm">Accepted</span>
+        return <span className="badge badge-soft badge-success badge-sm">Accepted</span>
       case 'pending':
-        return <span className="badge badge-warning badge-sm">Pending</span>
+        return <span className="badge badge-soft badge-warning badge-sm">Pending</span>
       case 'transferred':
-        return <span className="badge badge-outline badge-sm">Transferred</span>
+        return <span className="badge badge-soft badge-outline badge-info badge-sm">Transferred</span>
       case 'released':
-        return <span className="badge badge-sm">Released</span>
+        return <span className="badge badge-soft badge-error badge-sm">Released</span>
       default:
-        return <span className="badge badge-ghost badge-sm">{status}</span>
+        return <span className="badge badge-soft badge-primary badge-sm">{status}</span>
     }
   }
 
   if (isLoading) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-figure text-secondary">
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
@@ -83,7 +83,7 @@ function DdsStat() {
 
   if (!ddsStatus?.assignment) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-figure text-error">
           <ShieldAlert size={32} strokeWidth={2} />
         </div>
@@ -95,13 +95,13 @@ function DdsStat() {
   }
 
   return (
-    <div className="stat w-flex-50">
+    <div className="stat bg-base-200 w-flex-50">
       <div className="stat-figure text-success">
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Daily Duty Staff</div>
       <div className="stat-value text-success text-3xl">{ddsStatus.assignment.member.name}</div>
-      <div className="stat-desc flex items-center gap-1">
+      <div className="stat-desc flex text-sm font-semibold items-center gap-1">
         {getStatusBadge(ddsStatus.assignment.status)}
         <span>{new Date(ddsStatus.assignment.assignedDate).toLocaleDateString()}</span>
       </div>
@@ -126,7 +126,7 @@ function BuildingStat() {
 
   if (isLoading) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-title">Building Status</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
@@ -144,12 +144,12 @@ function BuildingStat() {
     if (lockupStatus?.currentHolder && lockupStatus.buildingStatus !== 'secured') {
       return `Held by ${formatMemberName(lockupStatus.currentHolder)}${lockupStatus.acquiredAt ? ` since ${formatTime(lockupStatus.acquiredAt)}` : ''}`
     }
-    return null
+    return 'No lockup in progress'
   }
 
   if (display.label === "Secured") {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-figure text-error">
           <StatusIcon size={32} strokeWidth={2} />
         </div>
@@ -161,13 +161,78 @@ function BuildingStat() {
   }
 
   return (
-    <div className="stat w-flex-50">
+    <div className="stat bg-base-200 w-flex-50">
       <div className="stat-figure text-success">
         <StatusIcon size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Building Status</div>
       <div className="stat-value text-success text-3xl">{display.label}</div>
       <div className="stat-desc">{getDesc()}</div>
+    </div>
+  )
+}
+
+function LockupHolderStat() {
+  const { data: lockupStatus, isLoading } = useLockupStatus()
+
+  if (isLoading) {
+    return (
+      <div className="stat bg-base-200 w-flex-50">
+        <div className="stat-figure text-secondary">
+          <KeyRound size={32} strokeWidth={2} />
+        </div>
+        <div className="stat-title">Lockup Holder</div>
+        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
+        <div className="stat-desc">Loading...</div>
+      </div>
+    )
+  }
+
+  // Building is secured — lockup complete for the day
+  if (lockupStatus?.buildingStatus === 'secured') {
+    return (
+      <div className="stat bg-base-200 w-flex-50">
+        <div className="stat-figure text-success">
+          <KeySquare size={32} strokeWidth={2} />
+        </div>
+        <div className="stat-title">Lockup Holder</div>
+        <div className="stat-value text-success text-2xl">Complete</div>
+        <div className="stat-desc">
+          {lockupStatus.securedBy
+            ? `Secured by ${formatMemberName(lockupStatus.securedBy)}${lockupStatus.securedAt ? ` at ${formatTime(lockupStatus.securedAt)}` : ''}`
+            : 'Building secured'}
+        </div>
+      </div>
+    )
+  }
+
+  // No one holds lockup
+  if (!lockupStatus?.currentHolder) {
+    return (
+      <div className="stat bg-base-200 w-flex-50">
+        <div className="stat-figure text-warning">
+          <KeyRound size={32} strokeWidth={2} />
+        </div>
+        <div className="stat-title">Lockup Holder</div>
+        <div className="stat-value text-warning text-2xl">No One</div>
+        <div className="stat-desc">No one holds lockup</div>
+      </div>
+    )
+  }
+
+  // Someone holds lockup
+  return (
+    <div className="stat bg-base-200 w-flex-50">
+      <div className="stat-figure text-info">
+        <KeyRound size={32} strokeWidth={2} />
+      </div>
+      <div className="stat-title">Lockup Holder</div>
+      <div className="stat-value text-info text-2xl">
+        {formatMemberName(lockupStatus.currentHolder)}
+      </div>
+      <div className="stat-desc">
+        {lockupStatus.acquiredAt ? `Since ${formatTime(lockupStatus.acquiredAt)}` : 'Currently responsible'}
+      </div>
     </div>
   )
 }
@@ -182,7 +247,7 @@ function DutyWatchStat() {
 
   if (isLoading) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-figure text-secondary">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -203,7 +268,7 @@ function DutyWatchStat() {
 
   if (team.length === 0) {
     return (
-      <div className="stat w-flex-50">
+      <div className="stat bg-base-200 w-flex-50">
         <div className="stat-figure text-warning">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -215,7 +280,7 @@ function DutyWatchStat() {
   }
 
   return (
-    <div className="stat w-flex-50">
+    <div className="stat bg-base-200 w-flex-50">
       <div className="stat-figure text-secondary">
         <Users size={32} strokeWidth={2} />
       </div>
@@ -244,6 +309,7 @@ export function StatusStats() {
       <DdsStat />
       <DutyWatchStat />
       <BuildingStat />
+      <LockupHolderStat />
     </div>
   )
 }

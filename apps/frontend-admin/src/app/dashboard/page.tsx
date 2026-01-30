@@ -1,7 +1,7 @@
 import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
 import { QuickActionButtons } from '@/components/dashboard/quick-action-buttons'
 import { StatusStats } from '@/components/dashboard/status-stats'
-import { CheckinsFeedWidget } from '@/components/dashboard/checkins-feed-widget'
+import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
 
 export default function DashboardPage() {
   return (
@@ -15,8 +15,8 @@ export default function DashboardPage() {
       {/* Status Stats */}
       <div className="mt-6"><StatusStats /></div>
 
-      {/* Main Content Check-in Feed */}
-      <div className="mt-6"><CheckinsFeedWidget /></div>
+      {/* Presence Card Grid */}
+      <div className="mt-6"><PersonCardGrid /></div>
 
     </>
   )
