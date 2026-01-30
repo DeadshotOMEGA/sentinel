@@ -148,14 +148,38 @@ export const devRouter = s.router(devContract, {
         })),
       })
 
-      // TODO: Broadcast presence update via WebSocket when websocket service is available
-      // const stats = await checkinRepository.getPresenceStats()
-      // broadcastPresenceUpdate(stats)
+      // Reset active DDS assignments back to 'pending' so they can re-accept on next check-in
+      const ddsResult = await prisma.ddsAssignment.updateMany({
+        where: {
+          status: { in: ['active', 'accepted'] },
+        },
+        data: {
+          status: 'pending',
+          acceptedAt: null,
+        },
+      })
+
+      // Reset today's lockup status (clear holder, reset building to open)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const lockupResult = await prisma.lockupStatus.updateMany({
+        where: {
+          date: today,
+          isActive: true,
+        },
+        data: {
+          currentHolderId: null,
+          acquiredAt: null,
+          buildingStatus: 'open',
+          securedAt: null,
+          securedBy: null,
+        },
+      })
 
       return {
         status: 200 as const,
         body: {
-          message: `Cleared ${actuallyPresent.length} check-in${actuallyPresent.length !== 1 ? 's' : ''}`,
+          message: `Cleared ${actuallyPresent.length} check-in${actuallyPresent.length !== 1 ? 's' : ''}, reset ${ddsResult.count} DDS assignment${ddsResult.count !== 1 ? 's' : ''}, reset ${lockupResult.count} lockup status`,
           clearedCount: actuallyPresent.length,
         },
       }

@@ -20,6 +20,7 @@ interface PresentMember {
   firstName: string
   lastName: string
   rank: string
+  rankSortOrder: number
   division: string
   divisionId: string
   memberType: string
@@ -99,6 +100,7 @@ interface PresentPerson {
   type: 'member' | 'visitor'
   name: string
   rank?: string
+  rankSortOrder?: number
   division?: string
   divisionId?: string
   memberType?: string
@@ -189,6 +191,7 @@ export class PresenceService {
         type: 'member' as const,
         name: `${m.firstName} ${m.lastName}`,
         rank: m.rank,
+        rankSortOrder: m.rankSortOrder,
         division: m.division,
         divisionId: m.divisionId,
         memberType: m.memberType,

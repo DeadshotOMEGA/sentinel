@@ -7,6 +7,19 @@ import { logger } from '../lib/logger.js'
  */
 export async function authenticateSocket(socket: Socket, next: (err?: Error) => void) {
   try {
+    // In development, bypass auth and assign dev user context
+    if (process.env.NODE_ENV !== 'production') {
+      socket.data.userId = 'dev-user'
+      socket.data.sessionId = 'dev-session'
+      socket.data.role = 'admin'
+
+      logger.debug('WebSocket auth bypassed (development mode)', {
+        socketId: socket.id,
+      })
+
+      return next()
+    }
+
     const token = socket.handshake.auth.token || socket.handshake.headers.authorization
 
     if (!token) {

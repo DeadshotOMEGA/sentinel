@@ -127,13 +127,17 @@ export class QualificationService {
       throw new Error(`Qualification type not found: ${id}`)
     }
 
-    // Check if in use
+    // Check if actively in use
     const usageCount = await this.repository.countMembersByType(id)
     if (usageCount > 0) {
       throw new Error(
-        `Cannot delete qualification type "${existing.name}". It is assigned to ${usageCount} member(s).`
+        `Cannot delete qualification type "${existing.name}". It is assigned to ${usageCount} active member(s).`
       )
     }
+
+    // Clean up revoked/expired member qualification records before deleting the type
+    // (database onDelete: Restrict would block deletion otherwise)
+    await this.repository.deleteInactiveMemberQualificationsByType(id)
 
     await this.repository.deleteType(id)
   }

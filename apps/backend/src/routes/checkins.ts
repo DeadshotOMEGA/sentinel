@@ -8,11 +8,15 @@ import type {
   IdParam,
 } from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { PresenceService } from '../services/presence-service.js'
+import { LockupService } from '../services/lockup-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { broadcastCheckin } from '../websocket/broadcast.js'
 
 const s = initServer()
 
 const checkinRepo = new CheckinRepository(getPrismaClient())
+const presenceService = new PresenceService(getPrismaClient())
 
 /**
  * Checkins route implementation using ts-rest
@@ -144,6 +148,52 @@ export const checkinsRouter = s.router(checkinContract, {
   },
 
   /**
+   * Get all present people (members + visitors)
+   */
+  getPresentPeople: async () => {
+    try {
+      const people = await presenceService.getAllPresentPeople()
+
+      return {
+        status: 200 as const,
+        body: {
+          people: people.map((p) => ({
+            id: p.id,
+            type: p.type,
+            name: p.name,
+            rank: p.rank,
+            rankSortOrder: p.rankSortOrder,
+            division: p.division,
+            divisionId: p.divisionId,
+            memberType: p.memberType,
+            tags: p.tags,
+            organization: p.organization,
+            visitType: p.visitType,
+            visitReason: p.visitReason,
+            hostMemberId: p.hostMemberId,
+            hostName: p.hostName,
+            eventId: p.eventId,
+            eventName: p.eventName,
+            checkInTime: p.checkInTime.toISOString(),
+            kioskId: p.kioskId,
+            kioskName: p.kioskName,
+            alerts: p.alerts,
+          })),
+          total: people.length,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch present people',
+        },
+      }
+    }
+  },
+
+  /**
    * Get single checkin by ID
    */
   getCheckinById: async ({ params }: { params: IdParam }) => {
@@ -201,6 +251,27 @@ export const checkinsRouter = s.router(checkinContract, {
    */
   createCheckin: async ({ body }: { body: CreateCheckinInput }) => {
     try {
+      // Block checkout if member holds lockup responsibility
+      if (body.direction === 'out' && body.memberId) {
+        const lockupService = new LockupService(getPrismaClient())
+        const checkoutOptions = await lockupService.getCheckoutOptions(body.memberId)
+
+        if (!checkoutOptions.canCheckout) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'LOCKUP_HELD',
+              message: checkoutOptions.blockReason ?? 'You must transfer or execute lockup before checking out',
+              details: {
+                holdsLockup: checkoutOptions.holdsLockup,
+                availableOptions: checkoutOptions.availableOptions,
+                eligibleRecipients: checkoutOptions.eligibleRecipients ?? [],
+              },
+            },
+          }
+        }
+      }
+
       const checkin = await checkinRepo.create({
         memberId: body.memberId,
         badgeId: body.badgeId,
@@ -217,6 +288,19 @@ export const checkinsRouter = s.router(checkinContract, {
       if (!checkinWithMember) {
         throw new Error('Failed to fetch created checkin')
       }
+
+      // Broadcast checkin event for real-time updates
+      broadcastCheckin({
+        id: checkinWithMember.id,
+        memberId: checkinWithMember.memberId ?? null,
+        memberName: checkinWithMember.member
+          ? `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`
+          : undefined,
+        rank: checkinWithMember.member?.rank,
+        direction: checkinWithMember.direction as 'in' | 'out',
+        timestamp: checkinWithMember.timestamp.toISOString(),
+        kioskId: checkinWithMember.kioskId,
+      })
 
       return {
         status: 201 as const,

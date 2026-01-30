@@ -146,7 +146,7 @@ export class ScheduleService {
   /**
    * Get schedules for a specific week
    */
-  async getSchedulesByWeek(date: Date): Promise<WeeklyScheduleEntity[]> {
+  async getSchedulesByWeek(date: Date): Promise<WeeklyScheduleWithDetails[]> {
     // Use ensureMonday instead of getOperationalWeek to avoid the 3 AM
     // day-shift logic. The input is an explicit date (e.g. "2026-01-26"),
     // not a live timestamp, so the operational-date adjustment would

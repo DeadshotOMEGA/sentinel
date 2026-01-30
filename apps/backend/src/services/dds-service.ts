@@ -183,19 +183,35 @@ export class DdsService {
       },
     })
 
-    if (existingDds) {
-      throw new ConflictError('A DDS has already been assigned for today')
+    if (existingDds && existingDds.status === 'active') {
+      throw new ConflictError('A DDS has already been accepted for today')
     }
 
-    const assignment = await this.prisma.ddsAssignment.create({
-      data: {
-        memberId,
-        assignedDate: today,
-        acceptedAt: new Date(),
-        status: 'active',
-      },
-      include: memberInclude,
-    })
+    // If a pending assignment exists for this member, activate it instead of creating a new one
+    let assignment
+    if (existingDds && existingDds.memberId === memberId && existingDds.status === 'pending') {
+      assignment = await this.prisma.ddsAssignment.update({
+        where: { id: existingDds.id },
+        data: {
+          acceptedAt: new Date(),
+          status: 'active',
+        },
+        include: memberInclude,
+      })
+    } else if (existingDds) {
+      // Pending assignment for a different member
+      throw new ConflictError('A DDS has already been assigned for today')
+    } else {
+      assignment = await this.prisma.ddsAssignment.create({
+        data: {
+          memberId,
+          assignedDate: today,
+          acceptedAt: new Date(),
+          status: 'active',
+        },
+        include: memberInclude,
+      })
+    }
 
     await this.prisma.responsibilityAuditLog.create({
       data: {
@@ -207,16 +223,25 @@ export class DdsService {
       },
     })
 
-    // Auto-transfer lockup responsibility to new DDS holder
+    // Auto-assign lockup responsibility to new DDS holder
     try {
-      await this.lockupService.transferLockup(
-        memberId,
-        'dds_handoff',
-        'Auto-transferred on DDS acceptance'
-      )
+      const lockupStatus = await this.lockupService.getCurrentStatus()
+      if (lockupStatus.currentHolderId) {
+        // Transfer from current holder to DDS
+        await this.lockupService.transferLockup(
+          memberId,
+          'dds_handoff',
+          'Auto-transferred on DDS acceptance'
+        )
+      } else {
+        // No one holds lockup — DDS acquires it directly
+        await this.lockupService.acquireLockup(
+          memberId,
+          'Auto-acquired on DDS acceptance'
+        )
+      }
     } catch (error) {
-      // Silently fail if no current lockup holder or other validation error
-      serviceLogger.error('Failed to auto-transfer lockup', { error: error instanceof Error ? error.message : String(error) })
+      serviceLogger.error('Failed to auto-assign lockup on DDS acceptance', { memberId, error: error instanceof Error ? error.message : String(error) })
     }
 
     const result = this.transformAssignment(assignment)

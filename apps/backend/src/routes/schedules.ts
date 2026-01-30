@@ -352,7 +352,7 @@ export const schedulesRouter = s.router(scheduleContract, {
       return {
         status: 200 as const,
         body: {
-          data: schedules.map(scheduleToApiFormat),
+          data: schedules.map(scheduleWithDetailsToApiFormat),
         },
       }
     } catch (error) {
