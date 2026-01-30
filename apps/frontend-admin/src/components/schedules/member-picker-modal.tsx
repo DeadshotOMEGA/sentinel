@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, User, Check } from 'lucide-react'
+import { Search, User } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useLockupEligibleMembers } from '@/hooks/use-qualifications'
+import { useMembers } from '@/hooks/use-members'
 
 interface MemberPickerModalProps {
   open: boolean
@@ -43,36 +43,22 @@ export function MemberPickerModal({
   excludeMemberIds = [],
 }: MemberPickerModalProps) {
   const [search, setSearch] = useState('')
-  const { data: eligibleMembers, isLoading } = useLockupEligibleMembers()
+  const { data: membersData, isLoading } = useMembers({
+    status: 'active',
+    qualificationCode: filterQualification,
+    limit: 100,
+    search: search || undefined,
+  })
 
   const filteredMembers = useMemo(() => {
-    if (!eligibleMembers?.data) return []
+    if (!membersData?.members) return []
 
-    return eligibleMembers.data.filter((member) => {
+    return membersData.members.filter((member) => {
       // Exclude already assigned members
       if (excludeMemberIds.includes(member.id)) return false
-
-      // Filter by qualification if specified
-      if (filterQualification) {
-        const hasQual = member.qualifications.some(
-          (q) => q.code === filterQualification
-        )
-        if (!hasQual) return false
-      }
-
-      // Search filter
-      if (search) {
-        const searchLower = search.toLowerCase()
-        const fullName = `${member.rank} ${member.firstName} ${member.lastName}`.toLowerCase()
-        const serviceNum = member.serviceNumber.toLowerCase()
-        if (!fullName.includes(searchLower) && !serviceNum.includes(searchLower)) {
-          return false
-        }
-      }
-
       return true
     })
-  }, [eligibleMembers?.data, excludeMemberIds, filterQualification, search])
+  }, [membersData?.members, excludeMemberIds])
 
   const handleSelect = (member: SelectedMember) => {
     onSelect(member)
@@ -98,7 +84,7 @@ export function MemberPickerModal({
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[400px] border rounded-md">
+        <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center h-full text-base-content/60">
               Loading members...
@@ -109,37 +95,62 @@ export function MemberPickerModal({
               <p>No eligible members found</p>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredMembers.map((member) => (
-                <button
-                  key={member.id}
-                  onClick={() => handleSelect(member)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-base-200/50 transition-colors text-left"
-                >
-                  <div>
-                    <div className="font-medium">
-                      {member.rank} {member.firstName} {member.lastName}
+            <ul className="list bg-base-100 rounded-box">
+              {filteredMembers.map((member) => {
+                const quals = member.qualifications ?? []
+                return (
+                  <li
+                    key={member.id}
+                    className="list-row cursor-pointer hover:bg-base-200/50 transition-colors"
+                    onClick={() => handleSelect({
+                      id: member.id,
+                      firstName: member.firstName,
+                      lastName: member.lastName,
+                      rank: member.rank,
+                      serviceNumber: member.serviceNumber,
+                      qualifications: quals,
+                    })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleSelect({
+                          id: member.id,
+                          firstName: member.firstName,
+                          lastName: member.lastName,
+                          rank: member.rank,
+                          serviceNumber: member.serviceNumber,
+                          qualifications: quals,
+                        })
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-center size-10 rounded-box bg-base-300 text-xs font-semibold uppercase">
+                      {member.firstName[0]}{member.lastName[0]}
                     </div>
-                    <div className="text-sm text-base-content/60">
-                      {member.serviceNumber}
+                    <div>
+                      <div className="font-medium">{member.rank} {member.firstName} {member.lastName}</div>
+                      <div className="text-xs uppercase font-semibold opacity-60">{member.serviceNumber}</div>
                     </div>
-                    <div className="flex gap-1 mt-1">
-                      {member.qualifications.slice(0, 3).map((qual) => (
-                        <Badge key={qual.code} variant="outline" className="text-xs">
-                          {qual.code}
-                        </Badge>
-                      ))}
-                      {member.qualifications.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{member.qualifications.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <Check className="h-4 w-4 text-base-content/60 opacity-0 group-hover:opacity-100" />
-                </button>
-              ))}
-            </div>
+                    {quals.length > 0 && (
+                      <div className="flex gap-1 flex-wrap">
+                        {quals.slice(0, 3).map((qual) => (
+                          <Badge key={qual.code} variant="outline" className="text-xs">
+                            {qual.code}
+                          </Badge>
+                        ))}
+                        {quals.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{quals.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
           )}
         </div>
 

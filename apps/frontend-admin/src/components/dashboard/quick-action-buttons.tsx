@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { UserPlus, Users, FileText, Lock } from 'lucide-react'
+import { UserPlus, Users, FileText, Lock, Radio } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
+import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 
 export function QuickActionButtons() {
   const user = useAuthStore((state) => state.user)
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
+  const isDevMode = process.env.NODE_ENV === 'development'
 
   // Check user role for permissions
   const canManualCheckin = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
@@ -57,17 +60,19 @@ export function QuickActionButtons() {
         <Lock className="h-4 w-4" />
         Execute Lockup
       </button>
-      <div className="divider divider-primary"></div>
-      <button className="btn btn-neutral">Neutral</button>
-      <button className="btn btn-primary">Primary</button>
-      <button className="btn btn-secondary">Secondary</button>
-      <button className="btn btn-accent">Accent</button>
-      <button className="btn btn-info">Info</button>
-      <button className="btn btn-success">Success</button>
-      <button className="btn btn-warning">Warning</button>
-      <button className="btn btn-error">Error</button>
-
+      {isDevMode && (
+        <button
+          className="btn btn-accent"
+          onClick={() => setIsScanModalOpen(true)}
+        >
+          <Radio className="h-4 w-4" />
+          Simulate Scan
+        </button>
+      )}
       <ManualCheckinModal open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen} />
+      {isDevMode && (
+        <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
+      )}
     </div>
   )
 }

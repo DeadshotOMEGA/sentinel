@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useCreateCheckin } from '@/hooks/use-checkins'
 import { useMembers } from '@/hooks/use-members'
 import { useCheckoutOptions } from '@/hooks/use-lockup'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Search, X } from 'lucide-react'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import type { CreateCheckinInput } from '@sentinel/contracts'
 
@@ -21,7 +21,20 @@ interface FormData {
 
 export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const { data: membersData } = useMembers({ limit: 100 })
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [memberSearch, setMemberSearch] = useState('')
+  const [selectedMemberInfo, setSelectedMemberInfo] = useState<{
+    id: string
+    rank: string
+    firstName: string
+    lastName: string
+    serviceNumber: string
+  } | null>(null)
+  const showMemberList = !selectedMemberInfo
+  const { data: membersData } = useMembers({
+    limit: 100,
+    search: showMemberList && memberSearch ? memberSearch : undefined,
+  })
   const createCheckin = useCreateCheckin()
   const [showLockupOptions, setShowLockupOptions] = useState(false)
   const [pendingCheckout, setPendingCheckout] = useState<FormData | null>(null)
@@ -46,9 +59,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
     selectedDirection === 'out' && selectedMemberId ? selectedMemberId : ''
   )
 
-  const selectedMember = membersData?.members.find((m) => m.id === selectedMemberId)
-  const memberName = selectedMember
-    ? `${selectedMember.rank} ${selectedMember.firstName} ${selectedMember.lastName}`
+  const memberName = selectedMemberInfo
+    ? `${selectedMemberInfo.rank} ${selectedMemberInfo.firstName} ${selectedMemberInfo.lastName}`
     : ''
 
   const holdsLockup = checkoutOptions?.holdsLockup ?? false
@@ -76,6 +88,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   useEffect(() => {
     if (!open) {
       setPendingCheckout(null)
+      setMemberSearch('')
+      setSelectedMemberInfo(null)
     }
   }, [open])
 
@@ -95,6 +109,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
       }
       await createCheckin.mutateAsync(checkinData)
       reset()
+      setMemberSearch('')
+      setSelectedMemberInfo(null)
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to create manual check-in:', error)
@@ -117,6 +133,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
     }
     setPendingCheckout(null)
     reset()
+    setMemberSearch('')
+    setSelectedMemberInfo(null)
     onOpenChange(false)
   }
 
@@ -140,21 +158,76 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
               <legend className="fieldset-legend">
                 Member <span className="text-error">*</span>
               </legend>
-              <select
-                className="select select-neutral"
-                value={selectedMemberId}
-                onChange={(e) => setValue('memberId', e.target.value, { shouldValidate: true })}
-                disabled={isFormBusy}
-              >
-                <option value="" disabled>
-                  Select member
-                </option>
-                {membersData?.members.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.rank} {member.lastName}, {member.firstName} ({member.serviceNumber.slice(-3)})
-                  </option>
-                ))}
-              </select>
+              <div>
+                {selectedMemberInfo ? (
+                  <div className="input input-neutral flex items-center gap-2">
+                    <span className="flex-1 truncate">
+                      {selectedMemberInfo.rank} {selectedMemberInfo.lastName}, {selectedMemberInfo.firstName} ({selectedMemberInfo.serviceNumber.slice(-3)})
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs btn-circle"
+                      onClick={() => {
+                        setValue('memberId', '', { shouldValidate: true })
+                        setSelectedMemberInfo(null)
+                        setMemberSearch('')
+                        setTimeout(() => searchInputRef.current?.focus(), 0)
+                      }}
+                      disabled={isFormBusy}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60 pointer-events-none" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        className="input input-neutral w-full pl-10"
+                        placeholder="Search by name or service number..."
+                        value={memberSearch}
+                        onChange={(e) => setMemberSearch(e.target.value)}
+                        disabled={isFormBusy}
+                      />
+                    </div>
+                    <ul className="menu bg-base-200 rounded-box mt-2 w-full max-h-48 overflow-y-auto">
+                      {membersData?.members.length === 0 ? (
+                        <li className="disabled">
+                          <span className="text-base-content/60">No members found</span>
+                        </li>
+                      ) : (
+                        membersData?.members.map((member) => (
+                          <li key={member.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setValue('memberId', member.id, { shouldValidate: true })
+                                setSelectedMemberInfo({
+                                  id: member.id,
+                                  rank: member.rank,
+                                  firstName: member.firstName,
+                                  lastName: member.lastName,
+                                  serviceNumber: member.serviceNumber,
+                                })
+                                setMemberSearch('')
+                              }}
+                            >
+                              <span className="font-medium">
+                                {member.rank} {member.lastName}, {member.firstName}
+                              </span>
+                              <span className="text-xs opacity-60">
+                                {member.serviceNumber.slice(-3)}
+                              </span>
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </>
+                )}
+              </div>
               {errors.memberId && (
                 <span className="label text-error">{errors.memberId.message}</span>
               )}

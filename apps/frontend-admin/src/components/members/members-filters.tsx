@@ -139,7 +139,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             }
           >
             <option value="all">All Qualifications</option>
-            {qualificationTypes?.data.map((type) => (
+            {qualificationTypes?.map((type) => (
               <option key={type.id} value={type.code}>
                 {type.name}
               </option>

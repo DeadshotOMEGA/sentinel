@@ -49,7 +49,7 @@ export function QualificationTypeTable({ title, description }: QualificationType
       await deleteMutation.mutateAsync(deletingItem.id)
       setDeletingItem(null)
     } catch {
-      // Error is handled by the mutation
+      // Error is displayed inline in the dialog via deleteMutation.error
     }
   }
 
@@ -183,7 +183,15 @@ export function QualificationTypeTable({ title, description }: QualificationType
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
+      <AlertDialog
+        open={!!deletingItem}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingItem(null)
+            deleteMutation.reset()
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {deletingItem?.name}?</AlertDialogTitle>
@@ -197,6 +205,11 @@ export function QualificationTypeTable({ title, description }: QualificationType
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {deleteMutation.error && (
+            <div className="rounded-lg bg-error/10 border border-error/20 p-3 text-sm text-error">
+              {deleteMutation.error.message}
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction

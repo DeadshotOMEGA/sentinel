@@ -100,7 +100,7 @@ export function MemberQualificationsModal({
   }
 
   // Get qualification types not already granted to member
-  const availableTypes = qualTypes?.data?.filter(
+  const availableTypes = qualTypes?.filter(
     (type) =>
       !qualifications?.data?.some(
         (q) => q.qualificationType.id === type.id && q.status === 'active'
@@ -179,7 +179,7 @@ export function MemberQualificationsModal({
                 <Plus className="h-4 w-4 mr-2" />
                 Grant Qualification
               </Button>
-              {!availableTypes?.length && qualTypes?.data?.length && (
+              {!availableTypes?.length && qualTypes?.length && (
                 <p className="text-xs text-base-content/60 mt-2">
                   Member has all available qualifications
                 </p>

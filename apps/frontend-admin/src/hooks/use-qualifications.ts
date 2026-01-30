@@ -16,7 +16,7 @@ export function useQualificationTypes() {
       if (response.status !== 200) {
         throw new Error('Failed to fetch qualification types')
       }
-      return response.body
+      return response.body.data
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - qualification types rarely change
   })

@@ -31,12 +31,14 @@ interface DutyWatchCardProps {
 }
 
 // Duty Watch positions in display order
+// `code` matches the DutyPosition.code in the database
+// `qualificationCode` matches the QualificationType.code used for member filtering
 const DUTY_WATCH_POSITIONS = [
-  { code: 'SWK', name: 'Senior Watchkeeper', required: true },
-  { code: 'DSWK', name: 'Deputy Senior Watchkeeper', required: true },
-  { code: 'QM', name: 'Quartermaster', required: true },
-  { code: 'BM', name: "Bos'n Mate", required: true },
-  { code: 'APS', name: 'Access Point Sentry', required: false },
+  { code: 'SWK', qualificationCode: 'SWK', name: 'Senior Watchkeeper', required: true, maxSlots: 1 },
+  { code: 'DSWK', qualificationCode: 'DSWK', name: 'Deputy Senior Watchkeeper', required: true, maxSlots: 1 },
+  { code: 'QM', qualificationCode: 'QM', name: 'Quartermaster', required: true, maxSlots: 1 },
+  { code: 'BM', qualificationCode: 'BM', name: "Bos'n Mate", required: true, maxSlots: 1 },
+  { code: 'APS', qualificationCode: 'APS', name: 'Access Point Sentry', required: true, maxSlots: 2 },
 ]
 
 interface PositionSlotProps {
@@ -103,11 +105,23 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
   const dutyWatchSchedule = schedules?.data?.find((s) => s.dutyRole.code === 'DUTY_WATCH')
   const { data: positions } = useDutyRolePositions(dutyWatchRole?.id || '')
 
-  // Mock assignments for now - in real implementation, fetch schedule with assignments
-  const assignments: Record<
-    string,
-    { id: string; member: { id: string; firstName: string; lastName: string; rank: string } }
-  > = {}
+  // Build assignments map from schedule data, keyed by position code (supports multiple per position)
+  type AssignmentEntry = { id: string; member: { id: string; firstName: string; lastName: string; rank: string } }
+  const assignmentsByPosition: Record<string, AssignmentEntry[]> = {}
+  if (dutyWatchSchedule?.assignments) {
+    for (const assignment of dutyWatchSchedule.assignments) {
+      if (assignment.dutyPosition) {
+        const code = assignment.dutyPosition.code
+        if (!assignmentsByPosition[code]) {
+          assignmentsByPosition[code] = []
+        }
+        assignmentsByPosition[code].push({
+          id: assignment.id,
+          member: assignment.member,
+        })
+      }
+    }
+  }
 
   const handleAssignPosition = (positionCode: string) => {
     setSelectedPosition(positionCode)
@@ -176,10 +190,11 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
     }
   }
 
-  const assignedMemberIds = Object.values(assignments).map((a) => a.member.id)
-  const missingRequired = DUTY_WATCH_POSITIONS.filter(
-    (p) => p.required && !assignments[p.code]
-  ).length
+  const assignedMemberIds = dutyWatchSchedule?.assignments?.map((a) => a.memberId) ?? []
+  const missingRequired = DUTY_WATCH_POSITIONS.filter((p) => p.required).reduce(
+    (count, p) => count + Math.max(0, p.maxSlots - (assignmentsByPosition[p.code]?.length ?? 0)),
+    0
+  )
 
   if (isLoading) {
     return (
@@ -222,19 +237,31 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {DUTY_WATCH_POSITIONS.map((position) => (
-            <PositionSlot
-              key={position.code}
-              position={position}
-              assignment={assignments[position.code] || null}
-              onAssign={() => handleAssignPosition(position.code)}
-              onRemove={() => {
-                const assignment = assignments[position.code]
-                if (assignment) setRemoveAssignmentId(assignment.id)
-              }}
-              disabled={createAssignment.isPending || deleteAssignment.isPending}
-            />
-          ))}
+          {DUTY_WATCH_POSITIONS.flatMap((position) => {
+            const positionAssignments = assignmentsByPosition[position.code] ?? []
+            const filledSlots = positionAssignments.map((assignment, idx) => (
+              <PositionSlot
+                key={`${position.code}-${idx}`}
+                position={position}
+                assignment={assignment}
+                onAssign={() => handleAssignPosition(position.code)}
+                onRemove={() => setRemoveAssignmentId(assignment.id)}
+                disabled={createAssignment.isPending || deleteAssignment.isPending}
+              />
+            ))
+            const emptySlotCount = position.maxSlots - positionAssignments.length
+            const emptySlots = Array.from({ length: emptySlotCount }, (_, idx) => (
+              <PositionSlot
+                key={`${position.code}-empty-${idx}`}
+                position={position}
+                assignment={null}
+                onAssign={() => handleAssignPosition(position.code)}
+                onRemove={() => {}}
+                disabled={createAssignment.isPending || deleteAssignment.isPending}
+              />
+            ))
+            return [...filledSlots, ...emptySlots]
+          })}
         </div>
 
         {dutyWatchSchedule && dutyWatchSchedule.status === 'draft' && (
@@ -267,7 +294,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
         title={`Assign ${selectedPosition}`}
         description="Select a qualified member for this position"
         filterQualification={
-          selectedPosition === 'SWK' || selectedPosition === 'DSWK' ? selectedPosition : undefined
+          DUTY_WATCH_POSITIONS.find((p) => p.code === selectedPosition)?.qualificationCode
         }
         excludeMemberIds={assignedMemberIds}
       />
