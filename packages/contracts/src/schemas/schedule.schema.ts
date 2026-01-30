@@ -173,6 +173,13 @@ export const WeeklyScheduleListResponseSchema = v.object({
 })
 
 /**
+ * List of weekly schedules with assignments
+ */
+export const WeeklyScheduleWithAssignmentsListResponseSchema = v.object({
+  data: v.array(WeeklyScheduleWithAssignmentsResponseSchema),
+})
+
+/**
  * Create schedule input
  */
 export const CreateScheduleInputSchema = v.object({
@@ -353,6 +360,7 @@ export type WeeklyScheduleWithAssignmentsResponse = v.InferOutput<
   typeof WeeklyScheduleWithAssignmentsResponseSchema
 >
 export type WeeklyScheduleListResponse = v.InferOutput<typeof WeeklyScheduleListResponseSchema>
+export type WeeklyScheduleWithAssignmentsListResponse = v.InferOutput<typeof WeeklyScheduleWithAssignmentsListResponseSchema>
 export type CreateScheduleInput = v.InferOutput<typeof CreateScheduleInputSchema>
 export type UpdateScheduleInput = v.InferOutput<typeof UpdateScheduleInputSchema>
 export type CreateAssignmentInput = v.InferOutput<typeof CreateAssignmentInputSchema>

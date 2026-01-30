@@ -5,6 +5,7 @@ import {
   DutyPositionListResponseSchema,
   WeeklyScheduleWithAssignmentsResponseSchema,
   WeeklyScheduleListResponseSchema,
+  WeeklyScheduleWithAssignmentsListResponseSchema,
   ScheduleAssignmentResponseSchema,
   CreateScheduleInputSchema,
   UpdateScheduleInputSchema,
@@ -124,13 +125,13 @@ export const scheduleContract = c.router({
     path: '/api/schedules/week/:date',
     pathParams: DateParamSchema,
     responses: {
-      200: WeeklyScheduleListResponseSchema,
+      200: WeeklyScheduleWithAssignmentsListResponseSchema,
       400: ErrorResponseSchema,
       401: ErrorResponseSchema,
       500: ErrorResponseSchema,
     },
     summary: 'Get schedules by week',
-    description: 'Get all schedules for the week containing the specified date',
+    description: 'Get all schedules for the week containing the specified date, including assignments',
   },
 
   /**

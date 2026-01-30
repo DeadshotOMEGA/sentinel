@@ -7,6 +7,7 @@ import {
   CheckinListQuerySchema,
   CheckinListResponseSchema,
   PresenceStatusResponseSchema,
+  PresentPeopleResponseSchema,
   ErrorResponseSchema,
   IdParamSchema,
   SuccessResponseSchema,
@@ -56,6 +57,22 @@ export const checkinContract = c.router({
   },
 
   /**
+   * Get all present people (members + visitors)
+   * NOTE: Must be before getCheckinById to avoid :id matching 'presence'
+   */
+  getPresentPeople: {
+    method: 'GET',
+    path: '/api/checkins/presence/people',
+    responses: {
+      200: PresentPeopleResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get present people',
+    description: 'Get all currently present members and visitors for dashboard display',
+  },
+
+  /**
    * Get single checkin by ID
    * NOTE: Must be after specific paths like /presence
    */
@@ -85,11 +102,12 @@ export const checkinContract = c.router({
       201: CheckinWithMemberResponseSchema,
       400: ErrorResponseSchema,
       401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
       404: ErrorResponseSchema,
       500: ErrorResponseSchema,
     },
     summary: 'Create new checkin',
-    description: 'Record a new checkin for a member',
+    description: 'Record a new checkin for a member. Checkout (direction=out) is blocked if the member holds lockup responsibility.',
   },
 
   /**
