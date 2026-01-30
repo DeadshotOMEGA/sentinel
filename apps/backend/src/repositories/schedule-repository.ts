@@ -315,10 +315,10 @@ export class ScheduleRepository {
   /**
    * Get schedules for a specific week
    */
-  async findSchedulesByWeekStart(weekStartDate: Date): Promise<WeeklyScheduleEntity[]> {
+  async findSchedulesByWeekStart(weekStartDate: Date): Promise<WeeklyScheduleWithDetails[]> {
     const schedules = await this.prisma.weeklySchedule.findMany({
       where: { weekStartDate },
-      include: scheduleInclude,
+      include: getScheduleFullInclude(),
       orderBy: { dutyRole: { displayOrder: 'asc' } },
     })
     return schedules

@@ -38,6 +38,7 @@ export interface PresentMember {
   firstName: string
   lastName: string
   rank: string
+  rankSortOrder: number
   division: string
   divisionId: string | null
   memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
@@ -642,6 +643,7 @@ export class CheckinRepository {
         first_name: string
         last_name: string
         rank: string
+        rank_sort_order: number
         mess: string | null
         division_id: string
         division_name: string
@@ -667,7 +669,7 @@ export class CheckinRepository {
             json_build_object(
               'id', t.id,
               'name', t.name,
-              'color', t.color
+              'color', t.chip_color
             ) ORDER BY t.name
           ) as tags
         FROM member_tags mt
@@ -679,6 +681,7 @@ export class CheckinRepository {
         m.first_name,
         m.last_name,
         m.rank,
+        COALESCE(r.display_order, 0) as rank_sort_order,
         m.mess,
         m.division_id,
         d.name as division_name,
@@ -689,6 +692,7 @@ export class CheckinRepository {
       FROM members m
       INNER JOIN divisions d ON m.division_id = d.id
       INNER JOIN latest_checkins lc ON m.id = lc.member_id
+      LEFT JOIN ranks r ON m.rank_id = r.id
       LEFT JOIN member_tags_agg mta ON m.id = mta.member_id
       WHERE m.status = 'active' AND lc.direction = 'in'
       ORDER BY lc.timestamp DESC
@@ -699,6 +703,7 @@ export class CheckinRepository {
       firstName: row.first_name,
       lastName: row.last_name,
       rank: row.rank,
+      rankSortOrder: Number(row.rank_sort_order),
       division: row.division_name,
       divisionId: row.division_id,
       memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',

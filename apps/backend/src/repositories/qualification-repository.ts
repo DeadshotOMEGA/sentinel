@@ -283,11 +283,23 @@ export class QualificationRepository {
   }
 
   /**
-   * Count members with a specific qualification type
+   * Count members with a specific qualification type (active only)
    */
   async countMembersByType(qualificationTypeId: string): Promise<number> {
     return this.prisma.memberQualification.count({
-      where: { qualificationTypeId },
+      where: { qualificationTypeId, status: 'active' },
+    })
+  }
+
+  /**
+   * Delete all non-active (revoked/expired) member qualifications for a type
+   */
+  async deleteInactiveMemberQualificationsByType(qualificationTypeId: string): Promise<void> {
+    await this.prisma.memberQualification.deleteMany({
+      where: {
+        qualificationTypeId,
+        status: { not: 'active' },
+      },
     })
   }
 
@@ -430,6 +442,49 @@ export class QualificationRepository {
    * Grant a qualification to a member
    */
   async grant(input: GrantQualificationInput): Promise<MemberQualificationWithType> {
+    const includeClause = {
+      qualificationType: {
+        include: {
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              chipVariant: true,
+              chipColor: true,
+            },
+          },
+        },
+      },
+    }
+
+    // Check for existing revoked/expired record (unique constraint on memberId + qualificationTypeId)
+    const existing = await this.prisma.memberQualification.findUnique({
+      where: {
+        memberId_qualificationTypeId: {
+          memberId: input.memberId,
+          qualificationTypeId: input.qualificationTypeId,
+        },
+      },
+    })
+
+    if (existing) {
+      // Re-activate the existing record
+      const qualification = await this.prisma.memberQualification.update({
+        where: { id: existing.id },
+        data: {
+          status: 'active',
+          grantedBy: input.grantedBy,
+          expiresAt: input.expiresAt,
+          notes: input.notes,
+          revokedAt: null,
+          revokedBy: null,
+          revokeReason: null,
+        },
+        include: includeClause,
+      })
+      return qualification
+    }
+
     const qualification = await this.prisma.memberQualification.create({
       data: {
         memberId: input.memberId,
@@ -439,20 +494,7 @@ export class QualificationRepository {
         notes: input.notes,
         status: 'active',
       },
-      include: {
-        qualificationType: {
-          include: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                chipVariant: true,
-                chipColor: true,
-              },
-            },
-          },
-        },
-      },
+      include: includeClause,
     })
     return qualification
   }
