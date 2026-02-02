@@ -195,6 +195,68 @@ export const devRouter = s.router(devContract, {
   },
 
   /**
+   * POST /api/dev/building-status - Set building lockup status
+   */
+  setBuildingStatus: async ({ body }) => {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          status: 403 as const,
+          body: {
+            error: 'FORBIDDEN',
+            message: 'Dev routes are disabled in production',
+          },
+        }
+      }
+
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      // Upsert today's lockup status
+      const existing = await prisma.lockupStatus.findFirst({
+        where: { date: today, isActive: true },
+      })
+
+      if (existing) {
+        await prisma.lockupStatus.update({
+          where: { id: existing.id },
+          data: {
+            buildingStatus: body.buildingStatus,
+            ...(body.buildingStatus === 'secured'
+              ? { securedAt: new Date() }
+              : { securedAt: null, securedBy: null }),
+          },
+        })
+      } else {
+        await prisma.lockupStatus.create({
+          data: {
+            date: today,
+            buildingStatus: body.buildingStatus,
+            isActive: true,
+            ...(body.buildingStatus === 'secured' ? { securedAt: new Date() } : {}),
+          },
+        })
+      }
+
+      return {
+        status: 200 as const,
+        body: {
+          message: `Building status set to '${body.buildingStatus}'`,
+          buildingStatus: body.buildingStatus,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to set building status',
+        },
+      }
+    }
+  },
+
+  /**
    * POST /api/dev/mock-scan - Simulate RFID badge scan
    */
   mockScan: async ({ body }) => {
