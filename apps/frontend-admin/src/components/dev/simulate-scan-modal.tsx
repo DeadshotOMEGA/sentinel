@@ -24,6 +24,7 @@ import { useDevMembers, useMockScan, useClearAllCheckins } from '@/hooks/use-dev
 import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
+import { DevToolsPanel } from '@/components/dev/dev-tools-panel'
 import { apiClient } from '@/lib/api-client'
 import type { MockScanResponse, DevMember, CheckoutOptionsResponse } from '@sentinel/contracts'
 
@@ -227,6 +228,9 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                   </button>
                 </div>
               )}
+
+              {/* Dev Tools Panel */}
+              <DevToolsPanel />
 
               {/* Member List */}
               <div className="overflow-y-auto flex-1 min-h-0 -mx-6">

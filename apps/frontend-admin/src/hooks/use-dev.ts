@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { MockScanRequest } from '@sentinel/contracts'
+import type { MockScanRequest, SetBuildingStatusRequest } from '@sentinel/contracts'
 
 /**
  * Fetch all members with badge info and presence status (dev only)
@@ -43,6 +43,28 @@ export function useMockScan() {
       queryClient.invalidateQueries({ queryKey: ['recent-checkins'] })
       queryClient.invalidateQueries({ queryKey: ['dev-members'] })
       queryClient.invalidateQueries({ queryKey: ['duty-watch'] })
+    },
+  })
+}
+
+/**
+ * Set building lockup status (dev only)
+ */
+export function useSetBuildingStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: SetBuildingStatusRequest) => {
+      const response = await apiClient.dev.setBuildingStatus({
+        body: data,
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to set building status')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
     },
   })
 }
