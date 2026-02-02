@@ -2,10 +2,11 @@ import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
+import { broadcastPresenceUpdate } from '../websocket/broadcast.js'
+import { serviceLogger } from '../lib/logger.js'
 import type { CheckinDirection } from '@sentinel/types'
 
 // TODO Phase 3: Add Redis caching
-// TODO Phase 3: Add WebSocket broadcasting
 // TODO Phase 3: Add alert system integration
 
 interface PresenceStats {
@@ -233,11 +234,19 @@ export class PresenceService {
    * Fetches latest stats and broadcasts them via WebSocket
    */
   async broadcastStatsUpdate(): Promise<void> {
-    // TODO Phase 3: Implement WebSocket broadcasting
-    // const stats = await this.getStats()
-    // broadcastPresenceUpdate(stats)
-    // logger.info('Presence stats broadcast', { stats })
-    throw new Error('WebSocket broadcasting not yet implemented (Phase 3)')
+    const stats = await this.checkinRepo.getPresenceStats()
+    broadcastPresenceUpdate({
+      totalPresent: stats.present,
+      totalMembers: stats.totalMembers,
+      byDivision: stats.byDivision.map((d) => ({
+        divisionId: d.division.id,
+        divisionName: d.division.name,
+        present: d.present,
+        total: d.total,
+      })),
+      lastUpdated: new Date().toISOString(),
+    })
+    serviceLogger.info('Presence stats broadcast', { totalPresent: stats.present, totalMembers: stats.totalMembers })
   }
 
   /**
@@ -245,10 +254,8 @@ export class PresenceService {
    * Forces fresh calculation on next stats request
    */
   async invalidateCache(): Promise<void> {
-    // TODO Phase 3: Implement Redis caching
-    // await redis.del('presence:stats')
-    // logger.info('Presence cache invalidated')
-    throw new Error('Redis caching not yet implemented (Phase 3)')
+    // No-op: Redis caching not yet implemented (Phase 3)
+    // When Redis is added, this will invalidate the presence:stats cache key
   }
 
   /**

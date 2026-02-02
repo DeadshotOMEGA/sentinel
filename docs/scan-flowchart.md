@@ -10,26 +10,28 @@ flowchart TD
     LOOKUP -->|Yes| DIR{Direction?}
 
     %% ─── CHECK-IN FLOW ───
-    DIR -->|IN| CREATE_IN[Create check-in record\ndirection = 'in']
-    CREATE_IN --> INVALIDATE_CACHE[Invalidate presence cache]
-    INVALIDATE_CACHE --> INSERT_DB[(INSERT into checkins table)]
+    DIR -->|IN| IS_DDS{Is this member\ntoday's DDS?}
+
+    IS_DDS -->|No| CREATE_IN[Create check-in record\ndirection = 'in']
+    IS_DDS -->|Yes| BLDG_SECURED{Building currently\nsecured?}
+
+    BLDG_SECURED -->|No| CREATE_IN
+    BLDG_SECURED -->|Yes| DDS_ACCEPT[[DDS Acceptance Flow]]
+    DDS_ACCEPT --> CREATE_IN
+
+    CREATE_IN --> INSERT_DB[(INSERT into checkins table)]
     INSERT_DB --> WS_CHECKIN[/Broadcast checkin:new\nvia WebSocket/]
-    WS_CHECKIN --> IS_DDS{Is this member\ntoday's DDS?}
-
-    IS_DDS -->|No| DONE_IN([Check-in Complete])
-    IS_DDS -->|Yes| FIRST_TODAY{First check-in\nof the day?}
-
-    FIRST_TODAY -->|No| DONE_IN
-    FIRST_TODAY -->|Yes| DDS_ACCEPT[[DDS Acceptance Flow]]
+    WS_CHECKIN --> WS_PRESENCE_IN[/Broadcast presence:update\nvia WebSocket/]
+    WS_PRESENCE_IN --> DONE_IN([Check-in Complete])
 
     %% ─── CHECK-OUT FLOW ───
     DIR -->|OUT| HOLDS_LOCKUP{Member holds\nlockup responsibility?}
 
     HOLDS_LOCKUP -->|No| CREATE_OUT[Create check-in record\ndirection = 'out']
-    CREATE_OUT --> INVALIDATE_CACHE_OUT[Invalidate presence cache]
-    INVALIDATE_CACHE_OUT --> INSERT_DB_OUT[(INSERT into checkins table)]
+    CREATE_OUT --> INSERT_DB_OUT[(INSERT into checkins table)]
     INSERT_DB_OUT --> WS_CHECKOUT[/Broadcast checkin:new\ndirection = 'out'/]
-    WS_CHECKOUT --> DONE_OUT([Check-out Complete])
+    WS_CHECKOUT --> WS_PRESENCE_OUT[/Broadcast presence:update\nvia WebSocket/]
+    WS_PRESENCE_OUT --> DONE_OUT([Check-out Complete])
 
     HOLDS_LOCKUP -->|Yes| BLOCK_OUT[Return 403\nLOCKUP_HELD]
     BLOCK_OUT --> SHOW_OPTIONS[Return available options:\n- Transfer lockup\n- Execute lockup\n+ eligible recipients list]
@@ -43,7 +45,7 @@ flowchart TD
 
     class ERR_MEMBER,BLOCK_OUT error
     class DONE_IN,DONE_OUT success
-    class WS_CHECKIN,WS_CHECKOUT ws
+    class WS_CHECKIN,WS_CHECKOUT,WS_PRESENCE_IN,WS_PRESENCE_OUT ws
     class INSERT_DB,INSERT_DB_OUT db
     class DDS_ACCEPT subprocess
 ```
@@ -105,7 +107,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([Who is today's DDS?]) --> CHECK_TABLE{Check dds_assignments\nfor today's date\nstatus = pending | active}
+    START([Who is today's DDS?]) --> CHECK_TABLE{Check dds_assignments\nfor today's date\nstatus = pending or active}
 
     CHECK_TABLE -->|Found| RETURN_ASSIGNMENT([Return DDS assignment])
 
