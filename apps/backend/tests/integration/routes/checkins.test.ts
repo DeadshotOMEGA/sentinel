@@ -6,6 +6,8 @@ import { CheckinRepository } from '../../../src/repositories/checkin-repository.
 import { MemberRepository } from '../../../src/repositories/member-repository.js'
 import { DivisionRepository } from '../../../src/repositories/division-repository.js'
 import { BadgeRepository } from '../../../src/repositories/badge-repository.js'
+import { LockupRepository } from '../../../src/repositories/lockup-repository.js'
+import { AdminUserRepository } from '../../../src/repositories/admin-user-repository.js'
 
 describe('Checkins Routes Integration Tests', () => {
   const testDb = new TestDatabase()
@@ -37,6 +39,15 @@ describe('Checkins Routes Integration Tests', () => {
 
   beforeEach(async () => {
     await testDb.reset()
+
+    // Seed ranks (required for member creation)
+    await testDb.prisma!.rank.createMany({
+      data: [
+        { code: 'AB', name: 'Able Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 2 },
+        { code: 'LS', name: 'Leading Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 3 },
+      ],
+      skipDuplicates: true,
+    })
 
     // Create test division
     const division = await divisionRepo.create({
@@ -306,6 +317,192 @@ describe('Checkins Routes Integration Tests', () => {
         .expect(404)
 
       expect(response.body).toHaveProperty('error')
+    })
+
+    describe('DDS check-in gating', () => {
+      let adminUserRepo: AdminUserRepository
+      let lockupRepo: LockupRepository
+      let testAdminId: string
+      let testMember2Id: string
+
+      beforeAll(() => {
+        adminUserRepo = new AdminUserRepository(testDb.prisma!)
+        lockupRepo = new LockupRepository(testDb.prisma!)
+      })
+
+      async function seedDdsAndLockup(options: {
+        ddsMemberId: string
+        ddsStatus?: string
+        buildingStatus: 'secured' | 'open' | 'locking_up'
+      }) {
+        const admin = await adminUserRepo.create({
+          username: 'testadmin',
+          displayName: 'Test Admin',
+          role: 'admin',
+          passwordHash: 'testhash123',
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@test.com',
+        })
+        testAdminId = admin.id
+
+        const today = new Date()
+        const assignedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+        await testDb.prisma!.ddsAssignment.create({
+          data: {
+            memberId: options.ddsMemberId,
+            assignedDate,
+            status: options.ddsStatus ?? 'pending',
+            assignedBy: testAdminId,
+          },
+        })
+
+        await lockupRepo.createStatus({
+          date: assignedDate,
+          buildingStatus: options.buildingStatus,
+        })
+      }
+
+      it('should trigger DDS acceptance when DDS member checks in and building is secured', async () => {
+        await seedDdsAndLockup({
+          ddsMemberId: testMemberId,
+          ddsStatus: 'pending',
+          buildingStatus: 'secured',
+        })
+
+        const response = await request(app)
+          .post('/api/checkins')
+          .send({
+            memberId: testMemberId,
+            badgeId: testBadgeId,
+            direction: 'in',
+            kioskId: 'KIOSK1',
+          })
+          .expect(201)
+
+        expect(response.body.memberId).toBe(testMemberId)
+
+        // Verify DDS assignment was accepted
+        const dds = await testDb.prisma!.ddsAssignment.findFirst({
+          where: { memberId: testMemberId },
+          orderBy: { createdAt: 'desc' },
+        })
+        expect(dds?.status).toBe('active')
+        expect(dds?.acceptedAt).not.toBeNull()
+      })
+
+      it('should skip DDS acceptance when building is open', async () => {
+        await seedDdsAndLockup({
+          ddsMemberId: testMemberId,
+          ddsStatus: 'pending',
+          buildingStatus: 'open',
+        })
+
+        const response = await request(app)
+          .post('/api/checkins')
+          .send({
+            memberId: testMemberId,
+            badgeId: testBadgeId,
+            direction: 'in',
+            kioskId: 'KIOSK1',
+          })
+          .expect(201)
+
+        expect(response.body.memberId).toBe(testMemberId)
+
+        // Verify DDS assignment stays pending
+        const dds = await testDb.prisma!.ddsAssignment.findFirst({
+          where: { memberId: testMemberId },
+          orderBy: { createdAt: 'desc' },
+        })
+        expect(dds?.status).toBe('pending')
+        expect(dds?.acceptedAt).toBeNull()
+      })
+
+      it('should not trigger DDS for non-DDS member check-in', async () => {
+        // Create second member
+        const member2 = await memberRepo.create({
+          serviceNumber: 'SN0002',
+          rank: 'LS',
+          firstName: 'Jane',
+          lastName: 'Smith',
+          divisionId: (await divisionRepo.findAll())[0]!.id,
+          memberType: 'reserve',
+        })
+        testMember2Id = member2.id
+
+        // DDS is assigned to member2, but testMember checks in
+        await seedDdsAndLockup({
+          ddsMemberId: testMember2Id,
+          ddsStatus: 'pending',
+          buildingStatus: 'secured',
+        })
+
+        const response = await request(app)
+          .post('/api/checkins')
+          .send({
+            memberId: testMemberId,
+            badgeId: testBadgeId,
+            direction: 'in',
+            kioskId: 'KIOSK1',
+          })
+          .expect(201)
+
+        expect(response.body.memberId).toBe(testMemberId)
+
+        // DDS assignment for member2 should remain pending
+        const dds = await testDb.prisma!.ddsAssignment.findFirst({
+          where: { memberId: testMember2Id },
+          orderBy: { createdAt: 'desc' },
+        })
+        expect(dds?.status).toBe('pending')
+      })
+
+      it('should succeed even when DDS is already active (ConflictError absorbed)', async () => {
+        await seedDdsAndLockup({
+          ddsMemberId: testMemberId,
+          ddsStatus: 'active',
+          buildingStatus: 'secured',
+        })
+
+        const response = await request(app)
+          .post('/api/checkins')
+          .send({
+            memberId: testMemberId,
+            badgeId: testBadgeId,
+            direction: 'in',
+            kioskId: 'KIOSK1',
+          })
+          .expect(201)
+
+        expect(response.body.memberId).toBe(testMemberId)
+      })
+
+      it('should skip DDS gating for check-out direction', async () => {
+        await seedDdsAndLockup({
+          ddsMemberId: testMemberId,
+          ddsStatus: 'pending',
+          buildingStatus: 'secured',
+        })
+
+        const response = await request(app)
+          .post('/api/checkins')
+          .send({
+            memberId: testMemberId,
+            badgeId: testBadgeId,
+            direction: 'out',
+            kioskId: 'KIOSK1',
+          })
+          .expect(201)
+
+        // DDS should remain pending (check-out doesn't trigger DDS acceptance)
+        const dds = await testDb.prisma!.ddsAssignment.findFirst({
+          where: { memberId: testMemberId },
+          orderBy: { createdAt: 'desc' },
+        })
+        expect(dds?.status).toBe('pending')
+      })
     })
   })
 
