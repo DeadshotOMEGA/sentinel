@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph "Sign-in (INSERT/UPDATE)"
+        V1[(visitors<br/>INSERT new row)]
+        B1[(badges<br/>UPDATE assignedToId)]
+    end
+
+    subgraph "Sign-out (UPDATE)"
+        V2[(visitors<br/>SET checkOutTime)]
+        B2[(badges<br/>CLEAR assignedToId)]
+    end
+
+    subgraph "WebSocket Broadcasts"
+        WS1[/visitor:signin/]
+        WS2[/visitor:signout/]
+        WS3[/presence:update/]
+    end
+
+    V1 --> WS1
+    V2 --> WS2
+    WS1 --> WS3
+    WS2 --> WS3
+
+    classDef db fill:#fef,stroke:#a0a,color:#606
+    classDef ws fill:#eef,stroke:#00c,color:#006
+
+    class V1,B1,V2,B2 db
+    class WS1,WS2,WS3 ws

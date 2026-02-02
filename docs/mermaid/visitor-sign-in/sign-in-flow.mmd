@@ -1,0 +1,44 @@
+flowchart TD
+    START[Admin opens Visitor Sign-in Form] --> FILL[Admin enters visitor details:<br/>- Name, Organization<br/>- Visit Type, Visit Reason<br/>- Host Member, Event link]
+
+    FILL --> BADGE_Q{Assign temporary<br/>badge?}
+
+    %% ─── WITH BADGE ───
+    BADGE_Q -->|Yes| SCAN_BADGE[Scan/select temporary badge]
+    SCAN_BADGE --> BADGE_AVAIL{Badge available?<br/>assignmentType = 'temporary'<br/>status = 'active'<br/>Not assigned to active visitor}
+
+    BADGE_AVAIL -->|No| BADGE_ERR[Show error:<br/>Badge unavailable or<br/>already assigned]
+    BADGE_ERR --> BADGE_Q
+
+    BADGE_AVAIL -->|Yes| SUBMIT
+
+    %% ─── WITHOUT BADGE ───
+    BADGE_Q -->|No| SUBMIT[Submit sign-in form]
+
+    %% ─── DATABASE WRITES ───
+    SUBMIT --> INSERT_VISITOR[(INSERT into visitors table<br/>checkInTime = now<br/>checkOutTime = NULL<br/>checkInMethod = admin_manual<br/>createdByAdmin = admin.id)]
+
+    INSERT_VISITOR --> HAS_BADGE{Temporary badge<br/>assigned?}
+
+    HAS_BADGE -->|Yes| UPDATE_BADGE[(UPDATE badges table<br/>assignedToId = visitor.id<br/>lastUsed = now)]
+    HAS_BADGE -->|No| BROADCAST
+
+    UPDATE_BADGE --> BROADCAST
+
+    %% ─── REAL-TIME UPDATES ───
+    BROADCAST --> WS_VISITOR[/Broadcast visitor:signin<br/>via WebSocket/]
+    WS_VISITOR --> WS_PRESENCE[/Broadcast presence:update<br/>via WebSocket/]
+    WS_PRESENCE --> DONE([Visitor Sign-in Complete<br/>Admin sees confirmation])
+
+    %% ─── STYLES ───
+    classDef error fill:#fee,stroke:#c00,color:#900
+    classDef success fill:#efe,stroke:#0a0,color:#060
+    classDef ws fill:#eef,stroke:#00c,color:#006
+    classDef db fill:#fef,stroke:#a0a,color:#606
+    classDef form fill:#ffe,stroke:#aa0,color:#660
+
+    class BADGE_ERR error
+    class DONE success
+    class WS_VISITOR,WS_PRESENCE ws
+    class INSERT_VISITOR,UPDATE_BADGE db
+    class START,FILL,SCAN_BADGE,SUBMIT form

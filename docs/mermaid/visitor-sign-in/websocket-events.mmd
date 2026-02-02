@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph "Events Emitted"
+        C[checkin:new] --> CR[checkins room]
+        D[dds:update] --> DR[dds room]
+        P[presence:update] --> PR[presence room]
+        VS[visitor:signin] --> VR[visitors room]
+        VO[visitor:signout] --> VR
+    end
+
+    subgraph "Triggers"
+        T1[Member check-in/out] -->|always| C
+        T2[DDS state change] -->|on change| D
+        T3[Any presence change] -->|on change| P
+        T4[Visitor signs in] -->|always| VS
+        T5[Visitor signs out] -->|always| VO
+    end
+
+    classDef event fill:#eef,stroke:#00c,color:#006
+    class C,D,P,VS,VO event
