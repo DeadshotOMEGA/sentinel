@@ -1,16 +1,16 @@
 'use client'
 
 import { Clock, ArrowDownCircle, ArrowUpCircle, PanelLeftClose } from 'lucide-react'
-import { useRecentCheckins } from '@/hooks/use-checkins'
-import type { CheckinWithMemberResponse } from '@sentinel/contracts'
+import { useRecentActivity } from '@/hooks/use-checkins'
+import type { RecentActivityItem } from '@sentinel/contracts'
 
 interface AppSidebarProps {
   drawerId: string
 }
 
 export function AppSidebar({ drawerId }: AppSidebarProps) {
-  const { data, isLoading, isError } = useRecentCheckins()
-  const checkins = data?.checkins ?? []
+  const { data, isLoading, isError } = useRecentActivity()
+  const activities = data?.activities ?? []
 
   return (
     <div className="flex min-h-full w-80 flex-col bg-base-200 p-4">
@@ -34,7 +34,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
       {/* Error State */}
       {isError && (
         <div className="alert alert-error">
-          <span className="text-sm">Failed to load check-ins</span>
+          <span className="text-sm">Failed to load recent activity</span>
         </div>
       )}
 
@@ -47,32 +47,36 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
         </div>
       )}
 
-      {/* Checkins List */}
-      {!isLoading && !isError && checkins.length > 0 && (
+      {/* Activity List */}
+      {!isLoading && !isError && activities.length > 0 && (
         <ul className="menu menu-sm w-full flex-1 gap-1 overflow-y-auto p-0">
-          {checkins.map((checkin: CheckinWithMemberResponse) => {
-            const isCheckIn = checkin.direction === 'in'
+          {activities.map((item: RecentActivityItem) => {
+            const isCheckIn = item.direction === 'in'
+            const isVisitor = item.type === 'visitor'
             const Icon = isCheckIn ? ArrowDownCircle : ArrowUpCircle
 
             return (
-              <li key={checkin.id}>
+              <li key={`${item.type}-${item.id}`}>
                 <div className="flex items-start gap-2 rounded-lg bg-base-100 p-3">
                   <Icon
                     className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-warning'}`}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">
-                      {checkin.member
-                        ? `${checkin.member.firstName} ${checkin.member.lastName}`
-                        : 'Unknown Member'}
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-medium">
+                        {item.rank ? `${item.rank} ` : ''}{item.name}
+                      </span>
+                      {isVisitor && (
+                        <span className="badge badge-info badge-xs shrink-0">Visitor</span>
+                      )}
                     </div>
                     <div
                       className={`text-xs ${isCheckIn ? 'text-success' : 'text-warning'}`}
                     >
-                      {isCheckIn ? 'Checked in' : 'Checked out'}
+                      {isCheckIn ? 'Signed in' : 'Signed out'}
                     </div>
                     <div className="mt-0.5 text-xs text-base-content/60">
-                      {new Date(checkin.timestamp).toLocaleTimeString([], {
+                      {new Date(item.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -86,7 +90,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
       )}
 
       {/* Empty State */}
-      {!isLoading && !isError && checkins.length === 0 && (
+      {!isLoading && !isError && activities.length === 0 && (
         <div className="flex flex-1 flex-col items-center justify-center text-base-content/60">
           <Clock className="mb-2 h-12 w-12 opacity-20" />
           <p className="text-sm">No recent activity</p>

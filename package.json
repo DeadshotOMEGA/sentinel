@@ -21,6 +21,7 @@
     "prisma:generate": "pnpm --filter @sentinel/database prisma:generate",
     "prisma:migrate": "pnpm --filter @sentinel/database prisma:migrate",
     "prisma:studio": "pnpm --filter @sentinel/database prisma:studio",
+    "mermaid:svg": "bash scripts/mermaid-to-svg.sh",
     "prepare": "husky"
   },
   "devDependencies": {
