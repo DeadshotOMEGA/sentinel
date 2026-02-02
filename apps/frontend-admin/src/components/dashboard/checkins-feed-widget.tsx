@@ -1,11 +1,11 @@
 'use client'
 
-import { Clock, ArrowDownCircle, ArrowUpCircle, UsersRound } from 'lucide-react'
-import { useRecentCheckins } from '@/hooks/use-checkins'
-import type { CheckinWithMemberResponse } from '@sentinel/contracts'
+import { Clock, ArrowDownCircle, ArrowUpCircle, UsersRound, User } from 'lucide-react'
+import { useRecentActivity } from '@/hooks/use-checkins'
+import type { RecentActivityItem } from '@sentinel/contracts'
 
 export function CheckinsFeedWidget() {
-  const { data, isLoading, isError } = useRecentCheckins()
+  const { data, isLoading, isError } = useRecentActivity()
 
   if (isError) {
     return (
@@ -34,42 +34,44 @@ export function CheckinsFeedWidget() {
     )
   }
 
-  const checkins = data?.checkins ?? []
+  const activities = data?.activities ?? []
 
   return (
     <div className="bg-base-100 p-6 rounded-lg shadow-lg">
       <div className="flex items-center gap-2 mb-4">
         <UsersRound size={32} strokeWidth={1} />
-        <h2 className="text-lg font-semibold">Presence</h2>
+        <h2 className="text-lg font-semibold">Recent Activity</h2>
       </div>
 
-      {checkins.length > 0 ? (
+      {activities.length > 0 ? (
         <div className="space-y-2 max-h-64 overflow-y-auto">
-          {checkins.slice(0, 10).map((checkin: CheckinWithMemberResponse) => {
-            const isCheckIn = checkin.direction === 'in'
+          {activities.slice(0, 15).map((item: RecentActivityItem) => {
+            const isCheckIn = item.direction === 'in'
+            const isVisitor = item.type === 'visitor'
             const Icon = isCheckIn ? ArrowDownCircle : ArrowUpCircle
             const colorClass = isCheckIn ? 'text-success' : 'text-warning'
 
             return (
               <div
-                key={checkin.id}
+                key={`${item.type}-${item.id}`}
                 className="flex items-center justify-between p-2 bg-base-200/50 rounded text-sm hover:bg-base-200 transition-colors"
               >
-                <div className="flex items-center gap-2 flex-1">
-                  <Icon className={`h-4 w-4 ${colorClass}`} />
-                  <div>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Icon className={`h-4 w-4 shrink-0 ${colorClass}`} />
+                  <div className="min-w-0">
                     <span className="font-medium">
-                      {checkin.member
-                        ? `${checkin.member.firstName} ${checkin.member.lastName}`
-                        : 'Unknown Member'}
+                      {item.rank ? `${item.rank} ` : ''}{item.name}
                     </span>
                     <span className={`ml-1 ${colorClass}`}>
-                      {isCheckIn ? 'checked in' : 'checked out'}
+                      {isCheckIn ? 'signed in' : 'signed out'}
                     </span>
+                    {isVisitor && (
+                      <span className="badge badge-info badge-xs ml-1.5 align-middle">Visitor</span>
+                    )}
                   </div>
                 </div>
-                <span className="text-base-content/60 text-xs">
-                  {new Date(checkin.timestamp).toLocaleTimeString([], {
+                <span className="text-base-content/60 text-xs shrink-0">
+                  {new Date(item.timestamp).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}

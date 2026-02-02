@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import { UsersRound, Search } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
+import { useCheckoutVisitor } from '@/hooks/use-visitors'
+import { useAuthStore } from '@/store/auth-store'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
 
@@ -10,8 +12,19 @@ type FilterType = 'all' | 'member' | 'visitor'
 
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
+  const checkoutVisitor = useCheckoutVisitor()
+  const user = useAuthStore((state) => state.user)
+  const canCheckout = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
+
+  const handleCheckoutVisitor = async (visitorId: string) => {
+    try {
+      await checkoutVisitor.mutateAsync(visitorId)
+    } catch (error) {
+      console.error('Failed to sign out visitor:', error)
+    }
+  }
 
   const filteredPeople = useMemo(() => {
     if (!data?.people) return []
@@ -130,7 +143,11 @@ export function PersonCardGrid() {
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 300px))' }}
         >
           {filteredPeople.map((person: PresentPerson) => (
-            <PersonCard key={`${person.type}-${person.id}`} person={person} />
+            <PersonCard
+              key={`${person.type}-${person.id}`}
+              person={person}
+              onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
+            />
           ))}
         </div>
       ) : (

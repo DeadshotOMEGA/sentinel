@@ -78,6 +78,48 @@ export function useRecentCheckins() {
   return query
 }
 
+export function useRecentActivity() {
+  const query = useQuery({
+    queryKey: ['recent-activity'],
+    queryFn: async () => {
+      const response = await apiClient.checkins.getRecentActivity({
+        query: {
+          limit: '20',
+        },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch recent activity')
+      }
+      return response.body
+    },
+    refetchInterval: 30000,
+  })
+
+  useEffect(() => {
+    websocketManager.connect()
+    websocketManager.subscribe('checkins')
+    websocketManager.subscribe('visitors')
+
+    const handleUpdate = () => {
+      query.refetch()
+    }
+
+    websocketManager.on('checkin:new', handleUpdate)
+    websocketManager.on('visitor:signin', handleUpdate)
+    websocketManager.on('visitor:signout', handleUpdate)
+
+    return () => {
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.off('visitor:signin', handleUpdate)
+      websocketManager.off('visitor:signout', handleUpdate)
+      websocketManager.unsubscribe('checkins')
+      websocketManager.unsubscribe('visitors')
+    }
+  }, [query])
+
+  return query
+}
+
 export function useCreateCheckin() {
   const queryClient = useQueryClient()
 

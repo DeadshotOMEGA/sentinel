@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, User, Building2 } from 'lucide-react'
+import { Clock, User, Building2, LogOut } from 'lucide-react'
 import type { PresentPerson } from '@sentinel/contracts'
 
 function formatRelativeTime(isoString: string): string {
@@ -18,9 +18,10 @@ function formatRelativeTime(isoString: string): string {
 
 interface PersonCardProps {
   person: PresentPerson
+  onCheckoutVisitor?: (id: string) => void
 }
 
-export function PersonCard({ person }: PersonCardProps) {
+export function PersonCard({ person, onCheckoutVisitor }: PersonCardProps) {
   const isMember = person.type === 'member'
 
   return (
@@ -93,9 +94,21 @@ export function PersonCard({ person }: PersonCardProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-1 text-xs text-base-content/50 mt-auto pt-1 border-t border-base-200">
-          <Clock size={10} />
-          <span>{formatRelativeTime(person.checkInTime)}</span>
+        <div className="flex items-center justify-between gap-1 text-xs text-base-content/50 mt-auto pt-1 border-t border-base-200">
+          <div className="flex items-center gap-1">
+            <Clock size={10} />
+            <span>{formatRelativeTime(person.checkInTime)}</span>
+          </div>
+          {!isMember && onCheckoutVisitor && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs text-error gap-1"
+              onClick={() => onCheckoutVisitor(person.id)}
+            >
+              <LogOut size={10} />
+              Sign Out
+            </button>
+          )}
         </div>
       </div>
     </div>

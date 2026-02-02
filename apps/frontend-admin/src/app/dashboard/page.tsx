@@ -17,7 +17,6 @@ export default function DashboardPage() {
 
       {/* Presence Card Grid */}
       <div className="mt-6"><PersonCardGrid /></div>
-
     </>
   )
 }

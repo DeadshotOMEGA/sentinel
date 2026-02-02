@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { UserPlus, Users, FileText, Lock, Radio } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
+import { VisitorSigninModal } from '@/components/visitors/visitor-signin-modal'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 
 export function QuickActionButtons() {
   const user = useAuthStore((state) => state.user)
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
+  const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false)
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
   const isDevMode = process.env.NODE_ENV === 'development'
 
@@ -29,10 +31,8 @@ export function QuickActionButtons() {
 
       <button
         className="btn btn-primary"
-        onClick={() => {
-          // TODO: Navigate to visitor sign-in
-          console.log('Visitor sign-in clicked')
-        }}
+        disabled={!canManualCheckin}
+        onClick={() => setIsVisitorModalOpen(true)}
       >
         <Users className="h-4 w-4" />
         Visitor Sign-in
@@ -70,6 +70,7 @@ export function QuickActionButtons() {
         </button>
       )}
       <ManualCheckinModal open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen} />
+      <VisitorSigninModal open={isVisitorModalOpen} onOpenChange={setIsVisitorModalOpen} />
       {isDevMode && (
         <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
       )}
