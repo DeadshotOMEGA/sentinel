@@ -22,6 +22,7 @@ import { qualificationContract } from './qualification.contract.js'
 import { scheduleContract } from './schedule.contract.js'
 import { unitEventContract } from './unit-event.contract.js'
 import { lockupContract } from './lockup.contract.js'
+import { visitorContract } from './visitor.contract.js'
 
 const c = initContract()
 
@@ -56,6 +57,7 @@ export const apiContract = c.router(
     schedules: scheduleContract,
     unitEvents: unitEventContract,
     lockup: lockupContract,
+    visitors: visitorContract,
   },
   {
     pathPrefix: '',

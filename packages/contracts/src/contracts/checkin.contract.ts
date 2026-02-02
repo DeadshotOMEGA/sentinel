@@ -8,6 +8,8 @@ import {
   CheckinListResponseSchema,
   PresenceStatusResponseSchema,
   PresentPeopleResponseSchema,
+  RecentActivityResponseSchema,
+  RecentActivityQuerySchema,
   ErrorResponseSchema,
   IdParamSchema,
   SuccessResponseSchema,
@@ -70,6 +72,23 @@ export const checkinContract = c.router({
     },
     summary: 'Get present people',
     description: 'Get all currently present members and visitors for dashboard display',
+  },
+
+  /**
+   * Get recent activity (checkins + visitor sign-ins)
+   * NOTE: Must be before getCheckinById to avoid :id matching 'activity'
+   */
+  getRecentActivity: {
+    method: 'GET',
+    path: '/api/checkins/activity',
+    query: RecentActivityQuerySchema,
+    responses: {
+      200: RecentActivityResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get recent activity',
+    description: 'Get combined recent check-ins and visitor sign-ins for the activity feed',
   },
 
   /**

@@ -5,6 +5,7 @@ import type {
   CreateCheckinInput,
   BulkCreateCheckinsInput,
   UpdateCheckinInput,
+  RecentActivityQuery,
   IdParam,
 } from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
@@ -190,6 +191,32 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch present people',
+        },
+      }
+    }
+  },
+
+  /**
+   * Get recent activity (checkins + visitor sign-ins)
+   */
+  getRecentActivity: async ({ query }: { query: RecentActivityQuery }) => {
+    try {
+      const limit = query.limit ? Number(query.limit) : 20
+      const activities = await presenceService.getRecentActivity(limit)
+
+      return {
+        status: 200 as const,
+        body: {
+          activities,
+          total: activities.length,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch recent activity',
         },
       }
     }

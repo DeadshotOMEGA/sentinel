@@ -188,6 +188,44 @@ export const PresentPeopleResponseSchema = v.object({
 })
 
 /**
+ * Recent activity item schema (unified checkin + visitor events)
+ */
+export const RecentActivityItemSchema = v.object({
+  type: v.picklist(['checkin', 'visitor']),
+  id: v.string(),
+  timestamp: v.string(),
+  direction: v.picklist(['in', 'out']),
+  name: v.string(),
+  rank: v.optional(v.string()),
+  division: v.optional(v.string()),
+  kioskId: v.optional(v.string()),
+  kioskName: v.optional(v.string()),
+  organization: v.optional(v.string()),
+  visitType: v.optional(v.string()),
+  visitReason: v.optional(v.string()),
+  hostName: v.optional(v.string()),
+  eventId: v.optional(v.string()),
+  eventName: v.optional(v.string()),
+})
+
+/**
+ * Recent activity response schema
+ */
+export const RecentActivityResponseSchema = v.object({
+  activities: v.array(RecentActivityItemSchema),
+  total: v.number(),
+})
+
+/**
+ * Recent activity query schema
+ */
+export const RecentActivityQuerySchema = v.object({
+  limit: v.optional(
+    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))
+  ),
+})
+
+/**
  * Type exports
  */
 export type CreateCheckinInput = v.InferOutput<typeof CreateCheckinSchema>
@@ -200,3 +238,6 @@ export type CheckinListResponse = v.InferOutput<typeof CheckinListResponseSchema
 export type PresenceStatusResponse = v.InferOutput<typeof PresenceStatusResponseSchema>
 export type PresentPerson = v.InferOutput<typeof PresentPersonSchema>
 export type PresentPeopleResponse = v.InferOutput<typeof PresentPeopleResponseSchema>
+export type RecentActivityItem = v.InferOutput<typeof RecentActivityItemSchema>
+export type RecentActivityResponse = v.InferOutput<typeof RecentActivityResponseSchema>
+export type RecentActivityQuery = v.InferOutput<typeof RecentActivityQuerySchema>
