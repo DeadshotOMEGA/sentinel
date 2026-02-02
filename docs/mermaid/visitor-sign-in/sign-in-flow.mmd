@@ -1,13 +1,22 @@
 flowchart TD
-    START[Admin opens Visitor Sign-in Form] --> FILL[Admin enters visitor details:<br/>- Name, Organization<br/>- Visit Type, Visit Reason<br/>- Host Member, Event link]
+    START{Sign-in method?}
 
-    FILL --> BADGE_Q{Assign temporary<br/>badge?}
+    %% ─── ADMIN MANUAL ───
+    START -->|Admin panel| ADMIN_FILL[Admin enters visitor details:<br/>- Name, Organization<br/>- Visit Type, Visit Reason<br/>- Host Member, Event link]
+    ADMIN_FILL --> BADGE_Q
+
+    %% ─── KIOSK SELF-SERVICE ───
+    START -->|Kiosk self-service| KIOSK_FILL[Visitor enters own details:<br/>- Name, Organization<br/>- Visit Reason<br/>- Host Member from list]
+    KIOSK_FILL --> BADGE_Q
+
+    %% ─── BADGE ASSIGNMENT ───
+    BADGE_Q{Assign temporary<br/>badge?}
 
     %% ─── WITH BADGE ───
     BADGE_Q -->|Yes| SCAN_BADGE[Scan/select temporary badge]
     SCAN_BADGE --> BADGE_AVAIL{Badge available?<br/>assignmentType = 'temporary'<br/>status = 'active'<br/>Not assigned to active visitor}
 
-    BADGE_AVAIL -->|No| BADGE_ERR[Show error:<br/>Badge unavailable or<br/>already assigned]
+    BADGE_AVAIL -->|No| BADGE_ERR[/Show error:<br/>Badge unavailable or<br/>already assigned/]
     BADGE_ERR --> BADGE_Q
 
     BADGE_AVAIL -->|Yes| SUBMIT
@@ -16,19 +25,24 @@ flowchart TD
     BADGE_Q -->|No| SUBMIT[Submit sign-in form]
 
     %% ─── DATABASE WRITES ───
-    SUBMIT --> INSERT_VISITOR[(INSERT into visitors table<br/>checkInTime = now<br/>checkOutTime = NULL<br/>checkInMethod = admin_manual<br/>createdByAdmin = admin.id)]
+    SUBMIT --> INSERT_VISITOR[(INSERT into visitors table<br/>checkInTime = now<br/>checkOutTime = NULL<br/>checkInMethod = admin_manual | kiosk_self<br/>createdByAdmin = admin.id | NULL)]
 
     INSERT_VISITOR --> HAS_BADGE{Temporary badge<br/>assigned?}
 
     HAS_BADGE -->|Yes| UPDATE_BADGE[(UPDATE badges table<br/>assignedToId = visitor.id<br/>lastUsed = now)]
     HAS_BADGE -->|No| BROADCAST
 
-    UPDATE_BADGE --> BROADCAST
+    UPDATE_BADGE --> WS_BADGE_ASSIGN[/Broadcast visitor:badgeAssigned<br/>via WebSocket/]
+    WS_BADGE_ASSIGN --> BROADCAST
 
     %% ─── REAL-TIME UPDATES ───
     BROADCAST --> WS_VISITOR[/Broadcast visitor:signin<br/>via WebSocket/]
     WS_VISITOR --> WS_PRESENCE[/Broadcast presence:update<br/>via WebSocket/]
-    WS_PRESENCE --> DONE([Visitor Sign-in Complete<br/>Admin sees confirmation])
+    WS_PRESENCE --> DONE([Visitor Sign-in Complete<br/>Confirmation displayed])
+
+    %% ─── LINKS ───
+    click WS_VISITOR "../websocket-events.svg" _blank
+    click INSERT_VISITOR "tables-updated.svg" _blank
 
     %% ─── STYLES ───
     classDef error fill:#fee,stroke:#c00,color:#900
@@ -39,6 +53,6 @@ flowchart TD
 
     class BADGE_ERR error
     class DONE success
-    class WS_VISITOR,WS_PRESENCE ws
+    class WS_VISITOR,WS_PRESENCE,WS_BADGE_ASSIGN ws
     class INSERT_VISITOR,UPDATE_BADGE db
-    class START,FILL,SCAN_BADGE,SUBMIT form
+    class ADMIN_FILL,KIOSK_FILL,SCAN_BADGE,SUBMIT form

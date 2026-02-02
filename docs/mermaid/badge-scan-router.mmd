@@ -1,25 +1,32 @@
 flowchart TD
     SCAN[Badge Scanned at Kiosk] --> LOOKUP_BADGE{Badge found<br/>by serial number?}
 
-    LOOKUP_BADGE -->|No| ERR_BADGE[Return 404<br/>Badge Not Found]
+    LOOKUP_BADGE -->|No| ERR_BADGE[/Return 404<br/>Badge Not Found/]
 
     LOOKUP_BADGE -->|Yes| BADGE_TYPE{Badge<br/>assignmentType?}
 
     %% ─── MEMBER BADGE ───
     BADGE_TYPE -->|member| LOOKUP_MEMBER{Member found<br/>assigned to badge?}
-    LOOKUP_MEMBER -->|No| ERR_MEMBER[Return 404<br/>Member Not Found]
+    LOOKUP_MEMBER -->|No| ERR_MEMBER[/Return 404<br/>Member Not Found/]
     LOOKUP_MEMBER -->|Yes| MEMBER_FLOW[[Existing Member<br/>Check-in/out Flow<br/>direction toggle]]
+
+    %% ─── UNKNOWN BADGE TYPE ───
+    BADGE_TYPE -->|other| ERR_TYPE[/Return 400<br/>Unknown badge<br/>assignmentType/]
 
     %% ─── TEMPORARY BADGE ───
     BADGE_TYPE -->|temporary| ACTIVE_VISITOR{Active visitor<br/>with this badge?<br/>checkOutTime IS NULL}
 
     ACTIVE_VISITOR -->|Yes| VISITOR_CHECKOUT[[Visitor Sign-out Flow<br/>checkOutTime = now<br/>release badge]]
-    ACTIVE_VISITOR -->|No| ERR_UNASSIGNED[Return 400<br/>Temporary badge<br/>not assigned to<br/>active visitor]
+    ACTIVE_VISITOR -->|No| ERR_UNASSIGNED[/Return 400<br/>Temporary badge<br/>not assigned to<br/>active visitor/]
+
+    %% ─── LINKS ───
+    click MEMBER_FLOW "scan-system/main-scan-flow.svg" _blank
+    click VISITOR_CHECKOUT "visitor-sign-in/sign-out-flow.svg" _blank
 
     %% ─── STYLES ───
     classDef error fill:#fee,stroke:#c00,color:#900
     classDef success fill:#efe,stroke:#0a0,color:#060
     classDef subprocess fill:#ffe,stroke:#aa0,color:#660
 
-    class ERR_BADGE,ERR_MEMBER,ERR_UNASSIGNED error
+    class ERR_BADGE,ERR_MEMBER,ERR_UNASSIGNED,ERR_TYPE error
     class MEMBER_FLOW,VISITOR_CHECKOUT subprocess

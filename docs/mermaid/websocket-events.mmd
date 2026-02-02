@@ -5,15 +5,19 @@ flowchart LR
         P[presence:update] --> PR[presence room]
         VS[visitor:signin] --> VR[visitors room]
         VO[visitor:signout] --> VR
+        VBA[visitor:badgeAssigned] --> VR
+        VBR[visitor:badgeReleased] --> VR
     end
 
     subgraph "Triggers"
-        T1[Member check-in/out] -->|always| C
-        T2[DDS state change] -->|on change| D
-        T3[Any presence change] -->|on change| P
+        T1[Any check-in/out] -->|always| C
+        T2[DDS accepted/assigned/<br/>transferred/released] -->|on change| D
+        T3[Presence count changes] -->|on change| P
         T4[Visitor signs in] -->|always| VS
         T5[Visitor signs out] -->|always| VO
+        T6[Temp badge assigned to visitor] -->|on assign| VBA
+        T7[Temp badge released from visitor] -->|on release| VBR
     end
 
     classDef event fill:#eef,stroke:#00c,color:#006
-    class C,D,P,VS,VO event
+    class C,D,P,VS,VO,VBA,VBR event

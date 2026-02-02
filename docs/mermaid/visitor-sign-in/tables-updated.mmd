@@ -1,22 +1,24 @@
 flowchart LR
     subgraph "Sign-in (INSERT/UPDATE)"
-        V1[(visitors<br/>INSERT new row)]
-        B1[(badges<br/>UPDATE assignedToId)]
+        V1[(visitors<br/>INSERT new row)] --> B1[(badges<br/>UPDATE assignedToId<br/>lastUsed = now)]
     end
 
     subgraph "Sign-out (UPDATE)"
-        V2[(visitors<br/>SET checkOutTime)]
-        B2[(badges<br/>CLEAR assignedToId)]
+        V2[(visitors<br/>SET checkOutTime<br/>SET checkOutMethod)] --> B2[(badges<br/>CLEAR assignedToId<br/>lastUsed = now)]
     end
 
     subgraph "WebSocket Broadcasts"
         WS1[/visitor:signin/]
+        WS_BA[/visitor:badgeAssigned/]
         WS2[/visitor:signout/]
+        WS_BR[/visitor:badgeReleased/]
         WS3[/presence:update/]
     end
 
     V1 --> WS1
+    B1 --> WS_BA
     V2 --> WS2
+    B2 --> WS_BR
     WS1 --> WS3
     WS2 --> WS3
 
@@ -24,4 +26,4 @@ flowchart LR
     classDef ws fill:#eef,stroke:#00c,color:#006
 
     class V1,B1,V2,B2 db
-    class WS1,WS2,WS3 ws
+    class WS1,WS2,WS3,WS_BA,WS_BR ws

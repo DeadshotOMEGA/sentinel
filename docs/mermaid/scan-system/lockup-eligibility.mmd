@@ -1,0 +1,23 @@
+flowchart TD
+    START([Can member receive lockup?]) --> QUERY{Has active<br/>member_qualification?}
+
+    QUERY -->|No qualifications| INELIGIBLE([Not eligible])
+
+    QUERY -->|Has qualifications| EXPIRED{Qualification<br/>expired?}
+
+    EXPIRED -->|Yes, all expired| INELIGIBLE
+    EXPIRED -->|No, has valid one| TYPE_CHECK{Qualification type has<br/>canReceiveLockup = true?}
+
+    TYPE_CHECK -->|No| INELIGIBLE
+    TYPE_CHECK -->|Yes| ELIGIBLE([Eligible for lockup])
+
+    ELIGIBLE_TYPES[Qualifying types:<br/>- DDS_QUALIFIED<br/>- SWK_QUALIFIED<br/>- BUILDING_AUTHORIZED] -.-> TYPE_CHECK
+
+    %% ─── STYLES ───
+    classDef success fill:#efe,stroke:#0a0,color:#060
+    classDef none fill:#fee,stroke:#c00,color:#900
+    classDef info fill:#f5f5ff,stroke:#99c,color:#669
+
+    class ELIGIBLE success
+    class INELIGIBLE none
+    class ELIGIBLE_TYPES info

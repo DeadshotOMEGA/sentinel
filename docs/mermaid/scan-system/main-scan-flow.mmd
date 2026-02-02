@@ -1,0 +1,52 @@
+flowchart TD
+    SCAN[Badge Scanned at Kiosk] --> LOOKUP{Member found<br/>by badge ID?}
+
+    LOOKUP -->|No| ERR_MEMBER[/Return 404<br/>Member Not Found/]
+    LOOKUP -->|Yes| DIR{Direction?}
+
+    %% ─── CHECK-IN FLOW ───
+    DIR -->|IN| IS_DDS{Is this member<br/>today's DDS?}
+
+    IS_DDS -->|No| CREATE_IN[Create check-in record<br/>direction = 'in']
+    IS_DDS -->|Yes| BLDG_SECURED{Building currently<br/>secured?}
+
+    BLDG_SECURED -->|No| CREATE_IN
+    BLDG_SECURED -->|Yes| DDS_ACCEPT[[DDS Acceptance Flow]]
+    DDS_ACCEPT --> CREATE_IN
+
+    CREATE_IN --> INSERT_DB[(INSERT into checkins table)]
+    INSERT_DB --> WS_CHECKIN[/Broadcast checkin:new<br/>via WebSocket/]
+    WS_CHECKIN --> WS_PRESENCE_IN[/Broadcast presence:update<br/>via WebSocket/]
+    WS_PRESENCE_IN --> DONE_IN([Check-in Complete])
+
+    %% ─── CHECK-OUT FLOW ───
+    DIR -->|OUT| HOLDS_LOCKUP{Member holds<br/>lockup responsibility?}
+
+    HOLDS_LOCKUP -->|No| CREATE_OUT[Create check-in record<br/>direction = 'out']
+    CREATE_OUT --> INSERT_DB_OUT[(INSERT into checkins table)]
+    INSERT_DB_OUT --> WS_CHECKOUT[/Broadcast checkin:new<br/>direction = 'out'/]
+    WS_CHECKOUT --> WS_PRESENCE_OUT[/Broadcast presence:update<br/>via WebSocket/]
+    WS_PRESENCE_OUT --> DONE_OUT([Check-out Complete])
+
+    HOLDS_LOCKUP -->|Yes| BLOCK_OUT[/Return 403<br/>LOCKUP_HELD/]
+    BLOCK_OUT --> SHOW_OPTIONS[/Return available options:<br/>- Transfer lockup<br/>- Execute lockup<br/>+ eligible recipients list/]
+
+    %% ─── LINKS ───
+    click DDS_ACCEPT "dds-acceptance-flow.svg" _blank
+    click IS_DDS "dds-determination-flow.svg" _blank
+    click HOLDS_LOCKUP "lockup-eligibility.svg" _blank
+    click WS_CHECKIN "../websocket-events.svg" _blank
+    click WS_CHECKOUT "../websocket-events.svg" _blank
+
+    %% ─── STYLES ───
+    classDef error fill:#fee,stroke:#c00,color:#900
+    classDef success fill:#efe,stroke:#0a0,color:#060
+    classDef ws fill:#eef,stroke:#00c,color:#006
+    classDef db fill:#fef,stroke:#a0a,color:#606
+    classDef subprocess fill:#ffe,stroke:#aa0,color:#660
+
+    class ERR_MEMBER,BLOCK_OUT error
+    class DONE_IN,DONE_OUT success
+    class WS_CHECKIN,WS_CHECKOUT,WS_PRESENCE_IN,WS_PRESENCE_OUT ws
+    class INSERT_DB,INSERT_DB_OUT db
+    class DDS_ACCEPT subprocess
