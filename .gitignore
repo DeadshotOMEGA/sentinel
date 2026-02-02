@@ -134,6 +134,9 @@ htmlcov/
 # Plans (temporary)
 .claude/plans/
 
+# External skills (installed from other projects)
+.claude/skills/infographic-*/
+
 # ===================================
 # IDEs & Editors
 # ===================================
