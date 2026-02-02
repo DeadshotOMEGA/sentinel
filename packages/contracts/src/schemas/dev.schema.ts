@@ -89,6 +89,25 @@ export const MockScanResponseSchema = v.object({
 export type MockScanResponse = v.InferOutput<typeof MockScanResponseSchema>
 
 /**
+ * Set building status request
+ */
+export const SetBuildingStatusRequestSchema = v.object({
+  buildingStatus: v.picklist(['secured', 'open', 'locking_up']),
+})
+
+export type SetBuildingStatusRequest = v.InferOutput<typeof SetBuildingStatusRequestSchema>
+
+/**
+ * Set building status response
+ */
+export const SetBuildingStatusResponseSchema = v.object({
+  message: v.string(),
+  buildingStatus: v.picklist(['secured', 'open', 'locking_up']),
+})
+
+export type SetBuildingStatusResponse = v.InferOutput<typeof SetBuildingStatusResponseSchema>
+
+/**
  * Error response schema
  */
 export const DevErrorResponseSchema = v.object({

@@ -4,6 +4,8 @@ import {
   ClearCheckinsResponseSchema,
   MockScanRequestSchema,
   MockScanResponseSchema,
+  SetBuildingStatusRequestSchema,
+  SetBuildingStatusResponseSchema,
   DevErrorResponseSchema,
 } from '../schemas/dev.schema.js'
 
@@ -62,6 +64,25 @@ export const devContract = c.router(
      * POST /api/dev/mock-scan
      * Simulate RFID badge scan for testing
      */
+    /**
+     * POST /api/dev/building-status
+     * Set building lockup status for testing
+     */
+    setBuildingStatus: {
+      method: 'POST',
+      path: '/api/dev/building-status',
+      body: SetBuildingStatusRequestSchema,
+      responses: {
+        200: SetBuildingStatusResponseSchema,
+        401: DevErrorResponseSchema,
+        403: DevErrorResponseSchema,
+        500: DevErrorResponseSchema,
+      },
+      summary: 'Set building status',
+      description:
+        "Set the building lockup status (secured, open, locking_up) for testing. Creates today's lockup status if it doesn't exist. Disabled in production.",
+    },
+
     mockScan: {
       method: 'POST',
       path: '/api/dev/mock-scan',
