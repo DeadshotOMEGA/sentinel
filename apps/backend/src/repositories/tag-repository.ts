@@ -186,13 +186,33 @@ export class TagRepository {
   }
 
   /**
-   * Get the count of members with a tag
+   * Get the count of members with a tag (direct assignments + qualification-based)
+   *
+   * Counts:
+   * 1. Direct tag assignments (member_tag table)
+   * 2. Members with active qualifications where the qualification type is linked to this tag
    */
   async getUsageCount(id: string): Promise<number> {
-    const count = await this.prisma.memberTag.count({
+    // Count direct tag assignments
+    const directCount = await this.prisma.memberTag.count({
       where: { tagId: id },
     })
-    return count
+
+    // Count members with active qualifications linked to this tag
+    // Use raw query to avoid double-counting members who have both direct tag and qualification
+    const qualificationCount = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(DISTINCT mq.member_id) as count
+      FROM member_qualifications mq
+      JOIN qualification_types qt ON qt.id = mq.qualification_type_id
+      WHERE qt.tag_id = ${id}::uuid
+        AND mq.status = 'active'
+        AND mq.member_id NOT IN (
+          SELECT mt.member_id FROM member_tags mt WHERE mt.tag_id = ${id}::uuid
+        )
+    `
+
+    const qualCount = Number(qualificationCount[0]?.count ?? 0)
+    return directCount + qualCount
   }
 
   /**
