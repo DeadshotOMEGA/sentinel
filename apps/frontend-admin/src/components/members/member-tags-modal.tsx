@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { useMemberTags, useTags, useAssignTag, useRemoveTag } from '@/hooks/use-member-tags'
+import { useQualificationTypes } from '@/hooks/use-qualifications'
 import type { MemberResponse } from '@sentinel/contracts'
 
 interface MemberTagsModalProps {
@@ -37,6 +38,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
 
   const { data: memberTags, isLoading: loadingMemberTags } = useMemberTags(member?.id || '')
   const { data: allTags } = useTags()
+  const { data: qualificationTypes } = useQualificationTypes()
   const assignTag = useAssignTag()
   const removeTag = useRemoveTag()
 
@@ -69,9 +71,14 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
     }
   }
 
-  // Get tags not already assigned to member
+  // Get tags not already assigned to member and not linked to qualifications
   const assignedTagIds = new Set(memberTags?.map((mt) => mt.tagId) ?? [])
-  const availableTags = allTags?.filter((tag) => !assignedTagIds.has(tag.id))
+  const qualificationTagIds = new Set(
+    qualificationTypes?.filter((qt) => qt.tagId).map((qt) => qt.tagId) ?? []
+  )
+  const availableTags = allTags?.filter(
+    (tag) => !assignedTagIds.has(tag.id) && !qualificationTagIds.has(tag.id)
+  )
 
   if (!member) return null
 
@@ -142,7 +149,15 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
       </Dialog>
 
       {/* Assign Tag Dialog */}
-      <AlertDialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+      <AlertDialog
+        open={isAssignDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAssignTagId('')
+          }
+          setIsAssignDialogOpen(open)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Assign Tag</AlertDialogTitle>
@@ -192,7 +207,14 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              onClick={() => {
+                setAssignTagId('')
+                setIsAssignDialogOpen(false)
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleAssign} disabled={!assignTagId || assignTag.isPending}>
               {assignTag.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Assign
