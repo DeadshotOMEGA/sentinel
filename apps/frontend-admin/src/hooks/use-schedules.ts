@@ -216,6 +216,26 @@ export function usePublishSchedule() {
   })
 }
 
+export function useRevertToDraft() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.schedules.revertToDraft({
+        params: { id },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to revert schedule to draft')
+      }
+      return response.body
+    },
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['schedules'] })
+      queryClient.invalidateQueries({ queryKey: ['schedule', id] })
+    },
+  })
+}
+
 export function useDeleteSchedule() {
   const queryClient = useQueryClient()
 

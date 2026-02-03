@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, Plus, X, Check, Loader2 } from 'lucide-react'
+import { Users, Plus, X, Check, Loader2, Pencil } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import {
   useCreateAssignment,
   useDeleteAssignment,
   usePublishSchedule,
+  useRevertToDraft,
   useDutyRoles,
   useDutyRolePositions,
 } from '@/hooks/use-schedules'
@@ -99,6 +100,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
   const createAssignment = useCreateAssignment()
   const deleteAssignment = useDeleteAssignment()
   const publishSchedule = usePublishSchedule()
+  const revertToDraft = useRevertToDraft()
 
   // Find Duty Watch role and schedule
   const dutyWatchRole = dutyRoles?.data?.find((r) => r.code === 'DUTY_WATCH')
@@ -190,6 +192,15 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
     }
   }
 
+  const handleEdit = async () => {
+    if (!dutyWatchSchedule) return
+    try {
+      await revertToDraft.mutateAsync(dutyWatchSchedule.id)
+    } catch (error) {
+      console.error('Failed to revert schedule to draft:', error)
+    }
+  }
+
   const assignedMemberIds = dutyWatchSchedule?.assignments?.map((a) => a.memberId) ?? []
   const missingRequired = DUTY_WATCH_POSITIONS.filter((p) => p.required).reduce(
     (count, p) => count + Math.max(0, p.maxSlots - (assignmentsByPosition[p.code]?.length ?? 0)),
@@ -276,6 +287,23 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
                 <Check className="h-4 w-4 mr-2" />
               )}
               Publish Schedule
+            </Button>
+          </div>
+        )}
+
+        {dutyWatchSchedule && dutyWatchSchedule.status === 'published' && (
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={handleEdit}
+              disabled={revertToDraft.isPending}
+            >
+              {revertToDraft.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Pencil className="h-4 w-4 mr-2" />
+              )}
+              Edit Schedule
             </Button>
           </div>
         )}

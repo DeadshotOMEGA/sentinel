@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Plus, Check, Loader2, AlertCircle, X } from 'lucide-react'
+import { User, Plus, Check, Loader2, AlertCircle, X, Pencil } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,7 @@ import {
   useCreateAssignment,
   useDeleteAssignment,
   usePublishSchedule,
+  useRevertToDraft,
   useDutyRoles,
 } from '@/hooks/use-schedules'
 
@@ -45,6 +46,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
   const createAssignment = useCreateAssignment()
   const deleteAssignment = useDeleteAssignment()
   const publishSchedule = usePublishSchedule()
+  const revertToDraft = useRevertToDraft()
 
   // Find DDS duty role and schedule
   const ddsRole = dutyRoles?.data?.find((r) => r.code === 'DDS')
@@ -116,6 +118,15 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
       await publishSchedule.mutateAsync(ddsSchedule.id)
     } catch (error) {
       console.error('Failed to publish schedule:', error)
+    }
+  }
+
+  const handleEdit = async () => {
+    if (!ddsSchedule) return
+    try {
+      await revertToDraft.mutateAsync(ddsSchedule.id)
+    } catch (error) {
+      console.error('Failed to revert schedule to draft:', error)
     }
   }
 
@@ -200,6 +211,16 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
                       <Check className="h-4 w-4 mr-1" />
                     )}
                     Publish
+                  </Button>
+                )}
+                {ddsSchedule.status === 'published' && (
+                  <Button variant="outline" size="sm" onClick={handleEdit} disabled={revertToDraft.isPending}>
+                    {revertToDraft.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Pencil className="h-4 w-4 mr-1" />
+                    )}
+                    Edit
                   </Button>
                 )}
               </div>
