@@ -74,10 +74,21 @@ export const ResponsibilityAuditLogSchema = v.object({
 })
 
 /**
+ * Next DDS member schema (simplified)
+ */
+export const NextDdsMemberSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+})
+
+/**
  * Get current DDS response schema
  */
 export const GetCurrentDdsResponseSchema = v.object({
   assignment: v.nullable(DdsAssignmentResponseSchema),
+  nextDds: v.nullable(NextDdsMemberSchema),
 })
 
 /**
@@ -118,6 +129,7 @@ export type AssignDdsInput = v.InferOutput<typeof AssignDdsSchema>
 export type TransferDdsInput = v.InferOutput<typeof TransferDdsSchema>
 export type ReleaseDdsInput = v.InferOutput<typeof ReleaseDdsSchema>
 export type ResponsibilityAuditLog = v.InferOutput<typeof ResponsibilityAuditLogSchema>
+export type NextDdsMember = v.InferOutput<typeof NextDdsMemberSchema>
 export type GetCurrentDdsResponse = v.InferOutput<typeof GetCurrentDdsResponseSchema>
 export type DdsOperationResponse = v.InferOutput<typeof DdsOperationResponseSchema>
 export type CheckDdsExistsResponse = v.InferOutput<typeof CheckDdsExistsResponseSchema>

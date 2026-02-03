@@ -4,6 +4,7 @@ import { Prisma } from '@sentinel/database'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
 import { LockupService } from './lockup-service.js'
 import { ScheduleService } from './schedule-service.js'
+import { StatHolidayService } from './stat-holiday-service.js'
 
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
@@ -75,11 +76,13 @@ export class DdsService {
   private prisma: PrismaClient
   private lockupService: LockupService
   private scheduleService: ScheduleService
+  private statHolidayService: StatHolidayService
 
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
     this.lockupService = new LockupService(this.prisma)
     this.scheduleService = new ScheduleService(this.prisma)
+    this.statHolidayService = new StatHolidayService(this.prisma)
   }
 
   private transformAssignment(
@@ -471,6 +474,63 @@ export class DdsService {
       assignment: null,
       timestamp: new Date().toISOString(),
     })
+  }
+
+  /**
+   * Get next week's DDS from the schedule
+   */
+  async getNextWeekDds(): Promise<{
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+  } | null> {
+    // Get next Monday (start of next week)
+    const today = new Date()
+    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, ...
+    const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek
+    const nextMonday = new Date(today)
+    nextMonday.setDate(today.getDate() + daysUntilNextMonday)
+    nextMonday.setHours(0, 0, 0, 0)
+
+    const result = await this.scheduleService.getDdsByWeek(nextMonday)
+
+    if (!result.dds) {
+      return null
+    }
+
+    return {
+      id: result.dds.member.id,
+      firstName: result.dds.member.firstName,
+      lastName: result.dds.member.lastName,
+      rank: result.dds.member.rank,
+    }
+  }
+
+  /**
+   * Check if today is the first operational day of the week (handover day)
+   *
+   * This accounts for statutory holidays - if Monday is a holiday,
+   * handover happens on Tuesday instead.
+   */
+  async isHandoverDay(): Promise<boolean> {
+    const today = getTodayDate()
+    return this.statHolidayService.isFirstOperationalDayOfWeek(today)
+  }
+
+  /**
+   * Get the first operational day of the current week
+   *
+   * This is the day when DDS handover should occur, accounting for holidays.
+   */
+  async getFirstOperationalDayOfCurrentWeek(): Promise<Date> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, ...
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+
+    return this.statHolidayService.getFirstOperationalDay(monday)
   }
 
   /**

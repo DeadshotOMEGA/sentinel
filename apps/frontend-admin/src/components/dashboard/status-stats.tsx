@@ -53,19 +53,9 @@ function PresenceStat() {
 function DdsStat() {
   const { data: ddsStatus, isLoading } = useDdsStatus()
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return <span className="badge badge-soft badge-success badge-sm">Accepted</span>
-      case 'pending':
-        return <span className="badge badge-soft badge-warning badge-sm">Pending</span>
-      case 'transferred':
-        return <span className="badge badge-soft badge-outline badge-info badge-sm">Transferred</span>
-      case 'released':
-        return <span className="badge badge-soft badge-error badge-sm">Released</span>
-      default:
-        return <span className="badge badge-soft badge-primary badge-sm">{status}</span>
-    }
+  const formatNextDds = (nextDds: { rank: string; lastName: string; firstName: string } | null) => {
+    if (!nextDds) return null
+    return `${nextDds.rank} ${nextDds.lastName}, ${nextDds.firstName}`
   }
 
   if (isLoading) {
@@ -74,7 +64,7 @@ function DdsStat() {
         <div className="stat-figure text-secondary">
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
-        <div className="stat-title">Daily Duty Staff</div>
+        <div className="stat-title">Duty Day Staff</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
       </div>
@@ -87,9 +77,13 @@ function DdsStat() {
         <div className="stat-figure text-error">
           <ShieldAlert size={32} strokeWidth={2} />
         </div>
-        <div className="stat-title">Daily Duty Staff</div>
+        <div className="stat-title">Duty Day Staff</div>
         <div className="stat-value text-error text-3xl">Unassigned</div>
-        <div className="stat-desc">No DDS for today</div>
+        <div className="stat-desc">
+          {ddsStatus?.nextDds
+            ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}`
+            : 'No DDS for today'}
+        </div>
       </div>
     )
   }
@@ -99,11 +93,12 @@ function DdsStat() {
       <div className="stat-figure text-success">
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
-      <div className="stat-title">Daily Duty Staff</div>
+      <div className="stat-title">Duty Day Staff</div>
       <div className="stat-value text-success text-3xl">{ddsStatus.assignment.member.name}</div>
-      <div className="stat-desc flex text-sm font-semibold items-center gap-1">
-        {getStatusBadge(ddsStatus.assignment.status)}
-        <span>{new Date(ddsStatus.assignment.assignedDate).toLocaleDateString()}</span>
+      <div className="stat-desc">
+        {ddsStatus.nextDds
+          ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}`
+          : 'On duty today'}
       </div>
     </div>
   )
@@ -188,22 +183,9 @@ function LockupHolderStat() {
     )
   }
 
-  // Building is secured — lockup complete for the day
+  // Building is secured — hide this stat entirely
   if (lockupStatus?.buildingStatus === 'secured') {
-    return (
-      <div className="stat bg-base-200 w-flex-50">
-        <div className="stat-figure text-success">
-          <KeySquare size={32} strokeWidth={2} />
-        </div>
-        <div className="stat-title">Lockup Holder</div>
-        <div className="stat-value text-success text-2xl">Complete</div>
-        <div className="stat-desc">
-          {lockupStatus.securedBy
-            ? `Secured by ${formatMemberName(lockupStatus.securedBy)}${lockupStatus.securedAt ? ` at ${formatTime(lockupStatus.securedAt)}` : ''}`
-            : 'Building secured'}
-        </div>
-      </div>
-    )
+    return null
   }
 
   // No one holds lockup

@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon'
+
 import type {
   Checkin,
   CheckinWithMember,
@@ -10,6 +12,7 @@ import type {
 } from '@sentinel/types'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
+import { DEFAULT_TIMEZONE, OPERATIONAL_DAY_START_HOUR } from '../utils/operational-date.js'
 
 // TODO: Implement Redis caching when infrastructure is ready
 // import { redis } from '../redis';
@@ -858,6 +861,14 @@ export class CheckinRepository {
    * Get recent activity (checkins + visitors) for display
    */
   async getRecentActivity(limit: number = 10): Promise<RecentActivityItem[]> {
+    // Calculate the operational day cutoff (3am today in local timezone)
+    // Activity before this cutoff belongs to a previous operational day
+    const now = DateTime.now().setZone(DEFAULT_TIMEZONE)
+    const cutoff = now.hour < OPERATIONAL_DAY_START_HOUR
+      ? now.minus({ days: 1 }).set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+      : now.set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+    const cutoffDate = cutoff.toJSDate()
+
     // Use raw query for UNION (not supported in Prisma)
     const rows = await this.prisma.$queryRaw<
       Array<{
@@ -896,6 +907,7 @@ export class CheckinRepository {
         FROM checkins c
         JOIN members m ON c.member_id = m.id
         LEFT JOIN divisions d ON m.division_id = d.id
+        WHERE c.timestamp >= ${cutoffDate}
         ORDER BY c.timestamp DESC
         LIMIT ${limit}
       )
@@ -919,7 +931,7 @@ export class CheckinRepository {
         FROM visitors v
         LEFT JOIN members hm ON v.host_member_id = hm.id
         LEFT JOIN events e ON v.event_id = e.id
-        WHERE v.check_in_time > NOW() - INTERVAL '24 hours'
+        WHERE v.check_in_time >= ${cutoffDate}
         ORDER BY v.check_in_time DESC
         LIMIT ${limit}
       )

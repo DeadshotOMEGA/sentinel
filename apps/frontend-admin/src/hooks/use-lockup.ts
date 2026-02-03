@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { websocketManager } from '@/lib/websocket'
-import type { TransferLockupInput, ExecuteLockupInput } from '@sentinel/contracts'
+import type { TransferLockupInput, ExecuteLockupInput, OpenBuildingInput } from '@sentinel/contracts'
 
 export function useLockupStatus() {
   const query = useQuery({
@@ -141,6 +141,47 @@ export function useExecuteLockup() {
       queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
       queryClient.invalidateQueries({ queryKey: ['checkout-options'] })
       queryClient.invalidateQueries({ queryKey: ['lockup-present'] })
+      queryClient.invalidateQueries({ queryKey: ['presence'] })
+      queryClient.invalidateQueries({ queryKey: ['checkins'] })
+    },
+  })
+}
+
+/**
+ * Get members eligible to open the building
+ */
+export function useEligibleOpeners() {
+  return useQuery({
+    queryKey: ['eligible-openers'],
+    queryFn: async () => {
+      const response = await apiClient.lockup.getEligibleOpeners()
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch eligible openers')
+      }
+      return response.body.openers
+    },
+  })
+}
+
+/**
+ * Open building (transition from secured to open)
+ */
+export function useOpenBuilding() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ memberId, data }: { memberId: string; data?: OpenBuildingInput }) => {
+      const response = await apiClient.lockup.openBuilding({
+        params: { id: memberId },
+        body: data ?? {},
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to open building')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
     },

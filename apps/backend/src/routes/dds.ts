@@ -77,25 +77,20 @@ function toApiFormat(assignment: DdsAssignmentData) {
  */
 export const ddsRouter = s.router(ddsContract, {
   /**
-   * Get today's DDS assignment
+   * Get today's DDS assignment and next week's DDS
    */
   getCurrentDds: async () => {
     try {
-      const assignment = await ddsService.getCurrentDds()
-
-      if (!assignment) {
-        return {
-          status: 200 as const,
-          body: {
-            assignment: null,
-          },
-        }
-      }
+      const [assignment, nextDds] = await Promise.all([
+        ddsService.getCurrentDds(),
+        ddsService.getNextWeekDds(),
+      ])
 
       return {
         status: 200 as const,
         body: {
-          assignment: toApiFormat(assignment),
+          assignment: assignment ? toApiFormat(assignment) : null,
+          nextDds,
         },
       }
     } catch (error) {
@@ -326,11 +321,13 @@ export const ddsRouter = s.router(ddsContract, {
       const adminId = 'system'
 
       await ddsService.releaseDds(adminId, body.notes)
+      const nextDds = await ddsService.getNextWeekDds()
 
       return {
         status: 200 as const,
         body: {
           assignment: null,
+          nextDds,
         },
       }
     } catch (error) {
