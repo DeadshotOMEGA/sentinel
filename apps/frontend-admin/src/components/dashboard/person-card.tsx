@@ -1,6 +1,8 @@
 'use client'
 
+import { memo } from 'react'
 import { Clock, User, Building2, LogOut } from 'lucide-react'
+import { Chip, type ChipColor, type ChipVariant } from '@/components/ui/chip'
 import type { PresentPerson } from '@sentinel/contracts'
 
 function formatRelativeTime(isoString: string): string {
@@ -16,60 +18,154 @@ function formatRelativeTime(isoString: string): string {
   return `${Math.floor(diffHrs / 24)}d ago`
 }
 
+// Position color mapping for duty watch roles
+const POSITION_COLORS: Record<string, string> = {
+  SWK: 'bg-primary text-primary-content',
+  DSWK: 'bg-info text-info-content',
+  QM: 'bg-secondary text-secondary-content',
+  BM: 'bg-accent text-accent-content',
+  APS: 'bg-neutral text-neutral-content',
+}
+
+// Map chipColor to avatar background/text classes
+const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = {
+  default: 'bg-zinc-200 text-zinc-800',
+  primary: 'bg-primary text-primary-content',
+  secondary: 'bg-secondary text-secondary-content',
+  success: 'bg-emerald-500 text-white',
+  warning: 'bg-amber-500 text-white',
+  danger: 'bg-red-500 text-white',
+  blue: 'bg-blue-500 text-white',
+  green: 'bg-green-500 text-white',
+  pink: 'bg-pink-500 text-white',
+  purple: 'bg-purple-500 text-white',
+  red: 'bg-red-500 text-white',
+  yellow: 'bg-yellow-500 text-white',
+  cyan: 'bg-cyan-500 text-white',
+  zinc: 'bg-zinc-500 text-white',
+}
+
+interface PersonAvatarProps {
+  person: PresentPerson
+  dutyPosition?: string | null
+}
+
+function PersonAvatar({ person, dutyPosition }: PersonAvatarProps) {
+  // Priority 1: Duty position
+  if (dutyPosition) {
+    const colorClass = POSITION_COLORS[dutyPosition] || 'bg-base-300 text-base-content'
+    return (
+      <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
+        <div className={`w-10 rounded-full ${colorClass}`}>
+          <span className="text-xs font-bold">{dutyPosition}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Priority 2: First tag (for members)
+  if (person.type === 'member' && person.tags?.[0]) {
+    const tag = person.tags[0]
+    const abbrev = tag.name.match(/[A-Z]/g)?.join('') || tag.name.slice(0, 2).toUpperCase()
+    const colorClass = tag.chipColor
+      ? CHIP_COLOR_AVATAR_CLASSES[tag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
+      : CHIP_COLOR_AVATAR_CLASSES.default
+    return (
+      <div className="avatar avatar-placeholder" aria-label={`Tagged as ${tag.name}`}>
+        <div className={`w-10 rounded-full ${colorClass}`}>
+          <span className="text-xs font-bold">{abbrev}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Priority 3: Default initials (for members without tags)
+  const initials = person.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+  return (
+    <div className="avatar avatar-placeholder" aria-label={person.name}>
+      <div className="w-10 rounded-full bg-base-300 text-base-content">
+        <span className="text-xs font-bold">{initials}</span>
+      </div>
+    </div>
+  )
+}
+
 interface PersonCardProps {
   person: PresentPerson
+  dutyPosition?: string | null
   onCheckoutVisitor?: (id: string) => void
 }
 
-export function PersonCard({ person, onCheckoutVisitor }: PersonCardProps) {
+export const PersonCard = memo(function PersonCard({
+  person,
+  dutyPosition,
+  onCheckoutVisitor,
+}: PersonCardProps) {
   const isMember = person.type === 'member'
 
+  // Card border color: subtle indicator for member vs visitor
+  const cardBorderClass = isMember
+    ? 'border-success/30 hover:border-success/50'
+    : 'border-info/30 hover:border-info/50'
+
   return (
-    <div className="card bg-base-100 shadow-sm border border-base-300 hover:shadow-md transition-shadow">
-      <div className="card-body p-4 gap-2">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            {isMember ? (
-              <>
-                <h3 className="font-bold text-sm truncate">
-                  {person.rank} {person.name.split(' ').pop()}
-                </h3>
+    <div className={`card card-elevated rounded-xl border ${cardBorderClass}`}>
+      <div className="card-body p-4 gap-3">
+        {/* Header - different layout for member vs visitor */}
+        {isMember ? (
+          <div className="flex items-start gap-3">
+            <PersonAvatar person={person} dutyPosition={dutyPosition} />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-sm truncate">
+                {person.rank} {person.name.split(' ').pop()}
+              </h3>
+              <p className="text-xs text-base-content/60 truncate">
+                {person.name.split(' ').slice(0, -1).join(' ')}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-sm truncate">{person.name}</h3>
+              {person.organization && (
                 <p className="text-xs text-base-content/60 truncate">
-                  {person.name.split(' ').slice(0, -1).join(' ')}
+                  {person.organization}
                 </p>
-              </>
-            ) : (
-              <>
-                <h3 className="font-bold text-sm truncate">{person.name}</h3>
-                {person.organization && (
-                  <p className="text-xs text-base-content/60 truncate">
-                    {person.organization}
-                  </p>
-                )}
-              </>
+              )}
+            </div>
+            {person.visitType && (
+              <Chip
+                size="sm"
+                variant={(person.visitType.chipVariant as ChipVariant) || 'faded'}
+                color={(person.visitType.chipColor as ChipColor) || 'default'}
+                className="chip-enhanced shrink-0"
+              >
+                {person.visitType.name}
+              </Chip>
             )}
           </div>
-          <div className={`badge badge-sm shrink-0 ${isMember ? 'badge-success' : 'badge-info'}`}>
-            {isMember ? 'Member' : 'Visitor'}
-          </div>
-        </div>
+        )}
 
         {/* Body - tags for members, visit info for visitors */}
         <div className="min-h-[1.5rem]">
           {isMember ? (
-            <div className="flex flex-wrap gap-1">
-              {person.division && (
-                <span className="badge badge-outline badge-xs">{person.division}</span>
-              )}
+            <div className="flex flex-wrap gap-1.5">
               {person.tags?.map((tag) => (
-                <span
+                <Chip
                   key={tag.id}
-                  className="badge badge-xs"
-                  style={{ backgroundColor: tag.color, color: '#fff' }}
+                  size="sm"
+                  variant="faded"
+                  color={(tag.chipColor as ChipColor) || 'default'}
+                  className="chip-enhanced"
                 >
                   {tag.name}
-                </span>
+                </Chip>
               ))}
             </div>
           ) : (
@@ -113,4 +209,4 @@ export function PersonCard({ person, onCheckoutVisitor }: PersonCardProps) {
       </div>
     </div>
   )
-}
+})
