@@ -137,6 +137,9 @@ htmlcov/
 # External skills (installed from other projects)
 .claude/skills/infographic-*/
 
+# Claude Code plugins (embedded git repos)
+claude-mermaid/
+
 # ===================================
 # IDEs & Editors
 # ===================================
