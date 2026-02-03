@@ -2,6 +2,12 @@
 
 export type BadgeAssignmentType = 'member' | 'visitor' | 'event' | 'unassigned'
 
+export interface BadgeStatusSummary {
+  name: string
+  chipVariant: string
+  chipColor: string
+}
+
 export interface Badge {
   id: string
   serialNumber: string
@@ -9,6 +15,7 @@ export interface Badge {
   assignedToId?: string
   status: string
   badgeStatusId?: string
+  badgeStatusSummary?: BadgeStatusSummary
   lastUsed?: Date
   createdAt: Date
   updatedAt: Date
