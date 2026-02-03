@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto+Slab:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto+Slab:wght@100..900&display=swap');
 
 @import 'tailwindcss';
 
@@ -43,7 +43,293 @@
 
 /* Custom Tailwind theme extensions */
 @theme {
+  --font-display: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, monospace;
   --font-serif: 'Roboto Slab', ui-serif, Georgia, serif;
+}
+
+/* ========================================
+   DASHBOARD ANIMATIONS
+   Naval Operations Center aesthetic
+   ======================================== */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    box-shadow: 0 0 8px 2px currentColor;
+  }
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-status-pulse {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* ========================================
+   GRID UTILITIES
+   ======================================== */
+
+@utility grid-auto-fit-cards {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+}
+
+/* ========================================
+   CARD ENHANCEMENTS
+   Elevated card styling for dashboard
+   ======================================== */
+
+.card-elevated {
+  background: linear-gradient(180deg, oklch(100% 0 0) 0%, oklch(99% 0 0) 100%);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.04),
+    0 4px 6px -1px rgb(0 0 0 / 0.05),
+    0 0 0 1px rgb(0 0 0 / 0.03);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-elevated:hover {
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.07),
+    0 10px 15px -3px rgb(0 0 0 / 0.08),
+    0 0 0 1px rgb(0 0 0 / 0.04);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   STATUS INDICATOR STYLES
+   Military-precision status display
+   ======================================== */
+
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+.status-success::before {
+  background: oklch(69% 0.17 162.48);
+}
+
+.status-warning::before {
+  background: oklch(79% 0.184 86.047);
+}
+
+.status-error::before {
+  background: oklch(63% 0.237 25.331);
+}
+
+.status-info::before {
+  background: oklch(74% 0.16 232.661);
+}
+
+/* ========================================
+   SKELETON LOADING ENHANCEMENT
+   Refined shimmer effect
+   ======================================== */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(95% 0 0) 0%,
+    oklch(98% 0 0) 50%,
+    oklch(95% 0 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ========================================
+   STATS PANEL STYLING
+   Command center display aesthetic
+   ======================================== */
+
+.stats-panel {
+  background: linear-gradient(135deg, oklch(99% 0 0) 0%, oklch(97% 0 0) 100%);
+  border: 1px solid oklch(92% 0 0);
+}
+
+.stats-panel .stat {
+  border-color: oklch(94% 0 0);
+}
+
+.stats-panel .stat-value {
+  letter-spacing: -0.025em;
+}
+
+/* ========================================
+   AVATAR ENHANCEMENTS
+   Refined avatar presentation
+   ======================================== */
+
+.avatar-enhanced {
+  box-shadow:
+    0 0 0 2px oklch(100% 0 0),
+    0 2px 4px -1px rgb(0 0 0 / 0.1);
+}
+
+.avatar-enhanced:hover {
+  box-shadow:
+    0 0 0 2px oklch(100% 0 0),
+    0 4px 8px -2px rgb(0 0 0 / 0.15);
+}
+
+/* ========================================
+   CHIP/TAG ENHANCEMENTS
+   Refined badge presentation
+   ======================================== */
+
+.chip-enhanced {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition: all 0.15s ease;
+}
+
+.chip-enhanced:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+}
+
+/* ========================================
+   BUTTON ENHANCEMENTS
+   Action button refinements
+   ======================================== */
+
+.btn-action {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ========================================
+   ALERT BAR STYLING
+   Security alert presentation
+   ======================================== */
+
+.alert-security {
+  background: linear-gradient(90deg, oklch(63% 0.237 25.331 / 0.08) 0%, oklch(63% 0.237 25.331 / 0.04) 100%);
+  border: 1px solid oklch(63% 0.237 25.331 / 0.2);
+  border-left: 4px solid oklch(63% 0.237 25.331);
+}
+
+/* ========================================
+   PRESENCE GRID STYLING
+   Personnel card grid refinements
+   ======================================== */
+
+.presence-section {
+  background: linear-gradient(180deg, oklch(100% 0 0) 0%, oklch(99% 0 0) 100%);
+  border: 1px solid oklch(94% 0 0);
+}
+
+.presence-section-header {
+  border-bottom: 1px solid oklch(94% 0 0);
+  background: oklch(99% 0 0);
+}
+
+/* ========================================
+   REDUCED MOTION
+   Accessibility compliance
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-fade-in,
+  .animate-slide-in-left,
+  .animate-pulse-glow,
+  .animate-status-pulse {
+    animation: none;
+    opacity: 1;
+  }
+
+  .skeleton-shimmer {
+    animation: none;
+  }
+
+  .card-elevated:hover,
+  .chip-enhanced:hover {
+    transform: none;
+  }
 }
