@@ -417,6 +417,22 @@ export class ScheduleRepository {
   }
 
   /**
+   * Revert a published schedule back to draft
+   */
+  async revertToDraft(id: string): Promise<WeeklyScheduleWithDetails> {
+    const schedule = await this.prisma.weeklySchedule.update({
+      where: { id },
+      data: {
+        status: 'draft',
+        publishedAt: null,
+        publishedBy: null,
+      },
+      include: getScheduleFullInclude(),
+    })
+    return schedule
+  }
+
+  /**
    * Delete a schedule (only draft schedules)
    */
   async deleteSchedule(id: string): Promise<void> {

@@ -263,6 +263,33 @@ export class ScheduleService {
   }
 
   /**
+   * Revert a published schedule back to draft for editing
+   */
+  async revertToDraft(id: string): Promise<WeeklyScheduleWithDetails> {
+    const schedule = await this.repository.findScheduleById(id)
+    if (!schedule) {
+      throw new NotFoundError('Schedule', id)
+    }
+
+    if (schedule.status !== 'published') {
+      throw new ValidationError(`Can only revert published schedules to draft, current status is '${schedule.status}'`)
+    }
+
+    const reverted = await this.repository.revertToDraft(id)
+
+    broadcastScheduleUpdate({
+      action: 'updated',
+      scheduleId: reverted.id,
+      dutyRoleCode: reverted.dutyRole.code,
+      weekStartDate: reverted.weekStartDate.toISOString().substring(0, 10),
+      status: reverted.status,
+      timestamp: new Date().toISOString(),
+    })
+
+    return reverted
+  }
+
+  /**
    * Delete a draft schedule
    */
   async deleteSchedule(id: string): Promise<void> {

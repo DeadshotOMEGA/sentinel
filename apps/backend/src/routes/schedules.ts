@@ -515,6 +515,42 @@ export const schedulesRouter = s.router(scheduleContract, {
     }
   },
 
+  revertToDraft: async ({ params }: { params: ScheduleIdParam }) => {
+    try {
+      const schedule = await scheduleService.revertToDraft(params.id)
+      return {
+        status: 200 as const,
+        body: scheduleWithDetailsToApiFormat(schedule),
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (error instanceof Error && error.message.includes('Can only revert')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to revert schedule to draft',
+        },
+      }
+    }
+  },
+
   deleteSchedule: async ({ params }: { params: ScheduleIdParam }) => {
     try {
       await scheduleService.deleteSchedule(params.id)
