@@ -247,3 +247,25 @@ export function useDeleteEnum(enumType: EnumType) {
     },
   })
 }
+
+/**
+ * Hook for reordering tags
+ */
+export function useReorderTags() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (tagIds: string[]) => {
+      const response = await apiClient.enums.tags.reorderTags({ body: { tagIds } })
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string }
+        throw new Error(errorBody.message || 'Failed to reorder tags')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enums', 'tags'] })
+      queryClient.invalidateQueries({ queryKey: ['tags'] })
+    },
+  })
+}

@@ -206,6 +206,16 @@ export const SingleTagResponseSchema = v.object({
 })
 
 /**
+ * Reorder tags input schema
+ */
+export const ReorderTagsSchema = v.object({
+  tagIds: v.pipe(
+    v.array(v.pipe(v.string(), v.uuid('Invalid tag ID format'))),
+    v.minLength(1, 'At least one tag ID is required')
+  ),
+})
+
+/**
  * Type exports
  */
 export type CreateEnum = v.InferOutput<typeof CreateEnumSchema>
@@ -224,3 +234,4 @@ export type UpdateTag = v.InferOutput<typeof UpdateTagSchema>
 export type TagResponse = v.InferOutput<typeof TagResponseSchema>
 export type TagListResponse = v.InferOutput<typeof TagListResponseSchema>
 export type SingleTagResponse = v.InferOutput<typeof SingleTagResponseSchema>
+export type ReorderTags = v.InferOutput<typeof ReorderTagsSchema>

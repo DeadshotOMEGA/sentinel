@@ -14,6 +14,7 @@ import {
   UpdateTagSchema,
   TagListResponseSchema,
   SingleTagResponseSchema,
+  ReorderTagsSchema,
 } from '../schemas/enum.schema.js'
 import {
   ErrorResponseSchema,
@@ -312,6 +313,24 @@ export const tagsContract = c.router({
     },
     summary: 'Create tag',
     description: 'Create a new tag (admin only)',
+  },
+
+  /**
+   * Reorder tags - must be before :id routes
+   */
+  reorderTags: {
+    method: 'PUT',
+    path: '/api/enums/tags/reorder',
+    body: ReorderTagsSchema,
+    responses: {
+      200: SuccessResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Reorder tags',
+    description:
+      'Update the display order of tags. Provide an array of tag IDs in the desired order.',
   },
 
   updateTag: {

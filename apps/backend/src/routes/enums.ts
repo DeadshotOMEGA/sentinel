@@ -857,6 +857,30 @@ export const tagsRouter = s.router(tagsContract, {
   },
 
   /**
+   * Reorder tags
+   */
+  reorderTags: async ({ body }) => {
+    try {
+      await tagRepo.reorder(body.tagIds)
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: 'Tags reordered successfully',
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to reorder tags',
+        },
+      }
+    }
+  },
+
+  /**
    * Update tag
    */
   updateTag: async ({ params, body }) => {

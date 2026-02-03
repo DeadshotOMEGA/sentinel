@@ -22,10 +22,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, Plus, Loader2 } from 'lucide-react'
+import { Pencil, Trash2, Plus, Loader2, ChevronUp, ChevronDown } from 'lucide-react'
 import {
   useEnumList,
   useDeleteEnum,
+  useReorderTags,
   type EnumType,
   type EnumItem,
 } from '@/hooks/use-enum-management'
@@ -45,6 +46,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
   const isTagType = enumType === 'tags'
   const { data: items, isLoading, error } = useEnumList(enumType)
   const deleteEnum = useDeleteEnum(enumType)
+  const reorderTags = useReorderTags()
 
   const handleDelete = async () => {
     if (!deletingItem) return
@@ -54,6 +56,22 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
     } catch {
       // Error is handled by the mutation
     }
+  }
+
+  const handleMoveUp = async (index: number) => {
+    if (!items || index === 0) return
+    const newOrder = [...items]
+    const [item] = newOrder.splice(index, 1)
+    newOrder.splice(index - 1, 0, item!)
+    await reorderTags.mutateAsync(newOrder.map((i) => i.id))
+  }
+
+  const handleMoveDown = async (index: number) => {
+    if (!items || index === items.length - 1) return
+    const newOrder = [...items]
+    const [item] = newOrder.splice(index, 1)
+    newOrder.splice(index + 1, 0, item!)
+    await reorderTags.mutateAsync(newOrder.map((i) => i.id))
   }
 
   if (isLoading) {
@@ -73,7 +91,9 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
   }
 
   // Determine number of columns based on enum type
-  const columnCount = isTagType ? 5 : 6 // Tags don't have Code column
+  // Tags: Order, Name, Preview, Description, Usage, Actions = 6
+  // Others: Code, Name, Preview, Description, Usage, Actions = 6
+  const columnCount = 6
 
   return (
     <div className="space-y-4">
@@ -92,6 +112,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              {isTagType && <TableHead className="w-[80px]">Order</TableHead>}
               {!isTagType && <TableHead>Code</TableHead>}
               <TableHead>Name</TableHead>
               <TableHead>Preview</TableHead>
@@ -102,8 +123,32 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
           </TableHeader>
           <TableBody>
             {items && items.length > 0 ? (
-              items.map((item) => (
+              items.map((item, index) => (
                 <TableRow key={item.id}>
+                  {isTagType && (
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleMoveUp(index)}
+                          disabled={index === 0 || reorderTags.isPending}
+                          className="h-7 w-7"
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleMoveDown(index)}
+                          disabled={index === items.length - 1 || reorderTags.isPending}
+                          className="h-7 w-7"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                   {!isTagType && 'code' in item && (
                     <TableCell className="font-mono text-sm">{item.code}</TableCell>
                   )}
