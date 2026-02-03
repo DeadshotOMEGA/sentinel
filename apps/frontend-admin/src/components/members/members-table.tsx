@@ -17,8 +17,10 @@ import { MemberFormModal } from './member-form-modal'
 import { DeleteMemberDialog } from './delete-member-dialog'
 import { BulkEditMemberModal } from './bulk-edit-member-modal'
 import { MemberQualificationsModal } from './member-qualifications-modal'
+import { MemberTagsModal } from './member-tags-modal'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Table,
@@ -38,7 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, X, Shield } from 'lucide-react'
+import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, X, Shield, Tag } from 'lucide-react'
 // import { useAuthStore } from '@/store/auth-store' // Re-enable when auth is implemented
 import { cn } from '@/lib/utils'
 import type { MemberResponse } from '@sentinel/contracts'
@@ -73,6 +75,7 @@ export function MembersTable({ filters }: MembersTableProps) {
   const [editingMember, setEditingMember] = useState<MemberResponse | null>(null)
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
   const [qualificationsMember, setQualificationsMember] = useState<MemberResponse | null>(null)
+  const [tagsMember, setTagsMember] = useState<MemberResponse | null>(null)
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
@@ -266,7 +269,8 @@ export function MembersTable({ filters }: MembersTableProps) {
         },
         enableSorting: true,
       }),
-      columnHelper.accessor('badgeId', {
+      columnHelper.display({
+        id: 'badge',
         header: ({ column }) => (
           <Button
             variant="ghost"
@@ -285,27 +289,68 @@ export function MembersTable({ filters }: MembersTableProps) {
           </Button>
         ),
         cell: (info) => {
-          const badgeId = info.getValue()
-          if (!badgeId) return <span className="text-base-content/60">No Badge</span>
-          return <span className="font-mono text-sm">{badgeId.slice(0, 8)}...</span>
+          const member = info.row.original
+          if (!member.badgeId) return <span className="text-base-content/60">—</span>
+          const badgeStatus = member.badgeStatus
+          if (badgeStatus) {
+            return (
+              <Chip
+                variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
+                color={(badgeStatus.chipColor as ChipColor) || 'default'}
+                size="sm"
+              >
+                {badgeStatus.name}
+              </Chip>
+            )
+          }
+          // Fallback if no badge status but badge is assigned
+          return (
+            <Chip variant="solid" color="success" size="sm">
+              Assigned
+            </Chip>
+          )
         },
         enableSorting: true,
       }),
       columnHelper.display({
         id: 'qualifications',
-        header: 'Quals',
+        header: 'Quals / Tags',
         cell: (info) => {
           const member = info.row.original
-          const quals = member.qualifications
-          if (!quals || quals.length === 0) {
+          const quals = member.qualifications ?? []
+          const tags = member.tags ?? []
+
+          // Get tag IDs that are already linked to qualifications
+          const qualTagIds = new Set(quals.map((q) => q.tagId).filter(Boolean))
+
+          // Filter out tags that are already represented by a qualification
+          const additionalTags = tags.filter((t) => !qualTagIds.has(t.id))
+
+          if (quals.length === 0 && additionalTags.length === 0) {
             return <span className="text-base-content/60">—</span>
           }
+
           return (
             <div className="flex flex-wrap gap-1">
               {quals.map((q) => (
-                <Badge key={q.code} variant="secondary" className="text-xs">
+                <Chip
+                  key={`qual-${q.code}`}
+                  variant={(q.chipVariant as ChipVariant) || 'solid'}
+                  color={(q.chipColor as ChipColor) || 'default'}
+                  size="sm"
+                >
                   {q.code}
-                </Badge>
+                </Chip>
+              ))}
+              {additionalTags.map((t) => (
+                <Chip
+                  key={`tag-${t.id}`}
+                  variant={(t.chipVariant as ChipVariant) || 'solid'}
+                  color={(t.chipColor as ChipColor) || 'default'}
+                  size="sm"
+                >
+                  {t.name}
+                </Chip>
               ))}
             </div>
           )
@@ -330,6 +375,14 @@ export function MembersTable({ filters }: MembersTableProps) {
                   title="Manage qualifications"
                 >
                   <Shield className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setTagsMember(member)}
+                  title="Manage tags"
+                >
+                  <Tag className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)}>
                   <Pencil className="h-4 w-4" />
@@ -551,6 +604,13 @@ export function MembersTable({ filters }: MembersTableProps) {
         open={!!qualificationsMember}
         onOpenChange={(open) => !open && setQualificationsMember(null)}
         member={qualificationsMember}
+      />
+
+      {/* Tags Modal */}
+      <MemberTagsModal
+        open={!!tagsMember}
+        onOpenChange={(open) => !open && setTagsMember(null)}
+        member={tagsMember}
       />
     </>
   )
