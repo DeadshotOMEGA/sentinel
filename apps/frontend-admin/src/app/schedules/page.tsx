@@ -88,25 +88,6 @@ export default function SchedulesPage() {
       <div id="schedule-view-panel" role="tabpanel">
         {activeView === 'week' && (
           <>
-            {/* Info Alert */}
-            <Alert className="mb-6">
-              <Info className="h-4 w-4" />
-              <AlertTitle>How Schedules Work</AlertTitle>
-              <AlertDescription>
-                <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                  <li>
-                    <strong>DDS</strong> is assigned weekly and holds lockup responsibility Mon-Wed-Fri
-                  </li>
-                  <li>
-                    <strong>Duty Watch</strong> team operates on Tuesday &amp; Thursday evenings
-                  </li>
-                  <li>
-                    Draft schedules can be edited. Published schedules are locked.
-                  </li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-
             {/* 2-Week Side-by-Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Current Week */}
