@@ -3,14 +3,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EnumTable } from '@/components/settings/enum-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
+import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BadgeCheck, UserCheck, Building, Tag, Award } from 'lucide-react'
+import { Users, BadgeCheck, UserCheck, Building, Tag, Award, Calendar } from 'lucide-react'
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
         <Tabs defaultValue="member-types" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6 lg:w-[900px]">
+          <TabsList className="grid w-full grid-cols-7 lg:w-[1050px]">
             <TabsTrigger value="member-types" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Member Types</span>
@@ -34,6 +35,10 @@ export default function SettingsPage() {
             <TabsTrigger value="tags" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Tags</span>
+            </TabsTrigger>
+            <TabsTrigger value="stat-holidays" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Stat Holidays</span>
             </TabsTrigger>
           </TabsList>
 
@@ -103,6 +108,17 @@ export default function SettingsPage() {
                   enumType="tags"
                   title="Tags"
                   description="Labels for organizing and filtering members"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="stat-holidays">
+            <Card>
+              <CardContent>
+                <StatHolidayTable
+                  title="Statutory Holidays"
+                  description="Holidays that affect DDS handover timing and operational days"
                 />
               </CardContent>
             </Card>

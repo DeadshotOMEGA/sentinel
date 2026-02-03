@@ -531,6 +531,16 @@ exports.Prisma.AlertConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.StatHolidayScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  name: 'name',
+  province: 'province',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.QualificationTypeScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -782,6 +792,7 @@ exports.Prisma.ModelName = {
   Verification: 'Verification',
   Setting: 'Setting',
   AlertConfig: 'AlertConfig',
+  StatHoliday: 'StatHoliday',
   QualificationType: 'QualificationType',
   MemberQualification: 'MemberQualification',
   DutyRole: 'DutyRole',

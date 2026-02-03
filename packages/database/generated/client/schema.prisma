@@ -683,6 +683,24 @@ model AlertConfig {
 }
 
 // ============================================================================
+// STATUTORY HOLIDAYS
+// ============================================================================
+
+model StatHoliday {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date      DateTime @unique @db.Date
+  name      String   @db.VarChar(100)
+  province  String?  @db.VarChar(20) // null = federal, otherwise province code (ON, BC, etc.)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([date], map: "idx_stat_holidays_date")
+  @@index([isActive], map: "idx_stat_holidays_active")
+  @@map("stat_holidays")
+}
+
+// ============================================================================
 // DUTY ROLES & LOCKUP SYSTEM
 // ============================================================================
 

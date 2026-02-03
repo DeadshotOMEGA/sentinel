@@ -180,6 +180,11 @@ export type Setting = $Result.DefaultSelection<Prisma.$SettingPayload>
  */
 export type AlertConfig = $Result.DefaultSelection<Prisma.$AlertConfigPayload>
 /**
+ * Model StatHoliday
+ * 
+ */
+export type StatHoliday = $Result.DefaultSelection<Prisma.$StatHolidayPayload>
+/**
  * Model QualificationType
  * 
  */
@@ -696,6 +701,16 @@ export class PrismaClient<
     * ```
     */
   get alertConfig(): Prisma.AlertConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.statHoliday`: Exposes CRUD operations for the **StatHoliday** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more StatHolidays
+    * const statHolidays = await prisma.statHoliday.findMany()
+    * ```
+    */
+  get statHoliday(): Prisma.StatHolidayDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.qualificationType`: Exposes CRUD operations for the **QualificationType** model.
@@ -1303,6 +1318,7 @@ export namespace Prisma {
     Verification: 'Verification',
     Setting: 'Setting',
     AlertConfig: 'AlertConfig',
+    StatHoliday: 'StatHoliday',
     QualificationType: 'QualificationType',
     MemberQualification: 'MemberQualification',
     DutyRole: 'DutyRole',
@@ -1332,7 +1348,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3778,6 +3794,80 @@ export namespace Prisma {
           }
         }
       }
+      StatHoliday: {
+        payload: Prisma.$StatHolidayPayload<ExtArgs>
+        fields: Prisma.StatHolidayFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.StatHolidayFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.StatHolidayFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          findFirst: {
+            args: Prisma.StatHolidayFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.StatHolidayFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          findMany: {
+            args: Prisma.StatHolidayFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>[]
+          }
+          create: {
+            args: Prisma.StatHolidayCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          createMany: {
+            args: Prisma.StatHolidayCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.StatHolidayCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>[]
+          }
+          delete: {
+            args: Prisma.StatHolidayDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          update: {
+            args: Prisma.StatHolidayUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          deleteMany: {
+            args: Prisma.StatHolidayDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.StatHolidayUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.StatHolidayUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>[]
+          }
+          upsert: {
+            args: Prisma.StatHolidayUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StatHolidayPayload>
+          }
+          aggregate: {
+            args: Prisma.StatHolidayAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStatHoliday>
+          }
+          groupBy: {
+            args: Prisma.StatHolidayGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StatHolidayGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.StatHolidayCountArgs<ExtArgs>
+            result: $Utils.Optional<StatHolidayCountAggregateOutputType> | number
+          }
+        }
+      }
       QualificationType: {
         payload: Prisma.$QualificationTypePayload<ExtArgs>
         fields: Prisma.QualificationTypeFieldRefs
@@ -4955,6 +5045,7 @@ export namespace Prisma {
     verification?: VerificationOmit
     setting?: SettingOmit
     alertConfig?: AlertConfigOmit
+    statHoliday?: StatHolidayOmit
     qualificationType?: QualificationTypeOmit
     memberQualification?: MemberQualificationOmit
     dutyRole?: DutyRoleOmit
@@ -44559,6 +44650,1036 @@ export namespace Prisma {
 
 
   /**
+   * Model StatHoliday
+   */
+
+  export type AggregateStatHoliday = {
+    _count: StatHolidayCountAggregateOutputType | null
+    _min: StatHolidayMinAggregateOutputType | null
+    _max: StatHolidayMaxAggregateOutputType | null
+  }
+
+  export type StatHolidayMinAggregateOutputType = {
+    id: string | null
+    date: Date | null
+    name: string | null
+    province: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type StatHolidayMaxAggregateOutputType = {
+    id: string | null
+    date: Date | null
+    name: string | null
+    province: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type StatHolidayCountAggregateOutputType = {
+    id: number
+    date: number
+    name: number
+    province: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type StatHolidayMinAggregateInputType = {
+    id?: true
+    date?: true
+    name?: true
+    province?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type StatHolidayMaxAggregateInputType = {
+    id?: true
+    date?: true
+    name?: true
+    province?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type StatHolidayCountAggregateInputType = {
+    id?: true
+    date?: true
+    name?: true
+    province?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type StatHolidayAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StatHoliday to aggregate.
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StatHolidays to fetch.
+     */
+    orderBy?: StatHolidayOrderByWithRelationInput | StatHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: StatHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StatHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StatHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned StatHolidays
+    **/
+    _count?: true | StatHolidayCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StatHolidayMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StatHolidayMaxAggregateInputType
+  }
+
+  export type GetStatHolidayAggregateType<T extends StatHolidayAggregateArgs> = {
+        [P in keyof T & keyof AggregateStatHoliday]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStatHoliday[P]>
+      : GetScalarType<T[P], AggregateStatHoliday[P]>
+  }
+
+
+
+
+  export type StatHolidayGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StatHolidayWhereInput
+    orderBy?: StatHolidayOrderByWithAggregationInput | StatHolidayOrderByWithAggregationInput[]
+    by: StatHolidayScalarFieldEnum[] | StatHolidayScalarFieldEnum
+    having?: StatHolidayScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StatHolidayCountAggregateInputType | true
+    _min?: StatHolidayMinAggregateInputType
+    _max?: StatHolidayMaxAggregateInputType
+  }
+
+  export type StatHolidayGroupByOutputType = {
+    id: string
+    date: Date
+    name: string
+    province: string | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: StatHolidayCountAggregateOutputType | null
+    _min: StatHolidayMinAggregateOutputType | null
+    _max: StatHolidayMaxAggregateOutputType | null
+  }
+
+  type GetStatHolidayGroupByPayload<T extends StatHolidayGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StatHolidayGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StatHolidayGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StatHolidayGroupByOutputType[P]>
+            : GetScalarType<T[P], StatHolidayGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type StatHolidaySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    date?: boolean
+    name?: boolean
+    province?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["statHoliday"]>
+
+  export type StatHolidaySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    date?: boolean
+    name?: boolean
+    province?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["statHoliday"]>
+
+  export type StatHolidaySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    date?: boolean
+    name?: boolean
+    province?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["statHoliday"]>
+
+  export type StatHolidaySelectScalar = {
+    id?: boolean
+    date?: boolean
+    name?: boolean
+    province?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type StatHolidayOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "name" | "province" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["statHoliday"]>
+
+  export type $StatHolidayPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "StatHoliday"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      date: Date
+      name: string
+      province: string | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["statHoliday"]>
+    composites: {}
+  }
+
+  type StatHolidayGetPayload<S extends boolean | null | undefined | StatHolidayDefaultArgs> = $Result.GetResult<Prisma.$StatHolidayPayload, S>
+
+  type StatHolidayCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<StatHolidayFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: StatHolidayCountAggregateInputType | true
+    }
+
+  export interface StatHolidayDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['StatHoliday'], meta: { name: 'StatHoliday' } }
+    /**
+     * Find zero or one StatHoliday that matches the filter.
+     * @param {StatHolidayFindUniqueArgs} args - Arguments to find a StatHoliday
+     * @example
+     * // Get one StatHoliday
+     * const statHoliday = await prisma.statHoliday.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends StatHolidayFindUniqueArgs>(args: SelectSubset<T, StatHolidayFindUniqueArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one StatHoliday that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {StatHolidayFindUniqueOrThrowArgs} args - Arguments to find a StatHoliday
+     * @example
+     * // Get one StatHoliday
+     * const statHoliday = await prisma.statHoliday.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends StatHolidayFindUniqueOrThrowArgs>(args: SelectSubset<T, StatHolidayFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StatHoliday that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayFindFirstArgs} args - Arguments to find a StatHoliday
+     * @example
+     * // Get one StatHoliday
+     * const statHoliday = await prisma.statHoliday.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends StatHolidayFindFirstArgs>(args?: SelectSubset<T, StatHolidayFindFirstArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first StatHoliday that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayFindFirstOrThrowArgs} args - Arguments to find a StatHoliday
+     * @example
+     * // Get one StatHoliday
+     * const statHoliday = await prisma.statHoliday.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends StatHolidayFindFirstOrThrowArgs>(args?: SelectSubset<T, StatHolidayFindFirstOrThrowArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more StatHolidays that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all StatHolidays
+     * const statHolidays = await prisma.statHoliday.findMany()
+     * 
+     * // Get first 10 StatHolidays
+     * const statHolidays = await prisma.statHoliday.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const statHolidayWithIdOnly = await prisma.statHoliday.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends StatHolidayFindManyArgs>(args?: SelectSubset<T, StatHolidayFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a StatHoliday.
+     * @param {StatHolidayCreateArgs} args - Arguments to create a StatHoliday.
+     * @example
+     * // Create one StatHoliday
+     * const StatHoliday = await prisma.statHoliday.create({
+     *   data: {
+     *     // ... data to create a StatHoliday
+     *   }
+     * })
+     * 
+     */
+    create<T extends StatHolidayCreateArgs>(args: SelectSubset<T, StatHolidayCreateArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many StatHolidays.
+     * @param {StatHolidayCreateManyArgs} args - Arguments to create many StatHolidays.
+     * @example
+     * // Create many StatHolidays
+     * const statHoliday = await prisma.statHoliday.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends StatHolidayCreateManyArgs>(args?: SelectSubset<T, StatHolidayCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many StatHolidays and returns the data saved in the database.
+     * @param {StatHolidayCreateManyAndReturnArgs} args - Arguments to create many StatHolidays.
+     * @example
+     * // Create many StatHolidays
+     * const statHoliday = await prisma.statHoliday.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many StatHolidays and only return the `id`
+     * const statHolidayWithIdOnly = await prisma.statHoliday.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends StatHolidayCreateManyAndReturnArgs>(args?: SelectSubset<T, StatHolidayCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a StatHoliday.
+     * @param {StatHolidayDeleteArgs} args - Arguments to delete one StatHoliday.
+     * @example
+     * // Delete one StatHoliday
+     * const StatHoliday = await prisma.statHoliday.delete({
+     *   where: {
+     *     // ... filter to delete one StatHoliday
+     *   }
+     * })
+     * 
+     */
+    delete<T extends StatHolidayDeleteArgs>(args: SelectSubset<T, StatHolidayDeleteArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one StatHoliday.
+     * @param {StatHolidayUpdateArgs} args - Arguments to update one StatHoliday.
+     * @example
+     * // Update one StatHoliday
+     * const statHoliday = await prisma.statHoliday.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends StatHolidayUpdateArgs>(args: SelectSubset<T, StatHolidayUpdateArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more StatHolidays.
+     * @param {StatHolidayDeleteManyArgs} args - Arguments to filter StatHolidays to delete.
+     * @example
+     * // Delete a few StatHolidays
+     * const { count } = await prisma.statHoliday.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends StatHolidayDeleteManyArgs>(args?: SelectSubset<T, StatHolidayDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StatHolidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many StatHolidays
+     * const statHoliday = await prisma.statHoliday.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends StatHolidayUpdateManyArgs>(args: SelectSubset<T, StatHolidayUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more StatHolidays and returns the data updated in the database.
+     * @param {StatHolidayUpdateManyAndReturnArgs} args - Arguments to update many StatHolidays.
+     * @example
+     * // Update many StatHolidays
+     * const statHoliday = await prisma.statHoliday.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more StatHolidays and only return the `id`
+     * const statHolidayWithIdOnly = await prisma.statHoliday.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends StatHolidayUpdateManyAndReturnArgs>(args: SelectSubset<T, StatHolidayUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one StatHoliday.
+     * @param {StatHolidayUpsertArgs} args - Arguments to update or create a StatHoliday.
+     * @example
+     * // Update or create a StatHoliday
+     * const statHoliday = await prisma.statHoliday.upsert({
+     *   create: {
+     *     // ... data to create a StatHoliday
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the StatHoliday we want to update
+     *   }
+     * })
+     */
+    upsert<T extends StatHolidayUpsertArgs>(args: SelectSubset<T, StatHolidayUpsertArgs<ExtArgs>>): Prisma__StatHolidayClient<$Result.GetResult<Prisma.$StatHolidayPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of StatHolidays.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayCountArgs} args - Arguments to filter StatHolidays to count.
+     * @example
+     * // Count the number of StatHolidays
+     * const count = await prisma.statHoliday.count({
+     *   where: {
+     *     // ... the filter for the StatHolidays we want to count
+     *   }
+     * })
+    **/
+    count<T extends StatHolidayCountArgs>(
+      args?: Subset<T, StatHolidayCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StatHolidayCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a StatHoliday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StatHolidayAggregateArgs>(args: Subset<T, StatHolidayAggregateArgs>): Prisma.PrismaPromise<GetStatHolidayAggregateType<T>>
+
+    /**
+     * Group by StatHoliday.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StatHolidayGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends StatHolidayGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: StatHolidayGroupByArgs['orderBy'] }
+        : { orderBy?: StatHolidayGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, StatHolidayGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStatHolidayGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the StatHoliday model
+   */
+  readonly fields: StatHolidayFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for StatHoliday.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__StatHolidayClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the StatHoliday model
+   */
+  interface StatHolidayFieldRefs {
+    readonly id: FieldRef<"StatHoliday", 'String'>
+    readonly date: FieldRef<"StatHoliday", 'DateTime'>
+    readonly name: FieldRef<"StatHoliday", 'String'>
+    readonly province: FieldRef<"StatHoliday", 'String'>
+    readonly isActive: FieldRef<"StatHoliday", 'Boolean'>
+    readonly createdAt: FieldRef<"StatHoliday", 'DateTime'>
+    readonly updatedAt: FieldRef<"StatHoliday", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * StatHoliday findUnique
+   */
+  export type StatHolidayFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which StatHoliday to fetch.
+     */
+    where: StatHolidayWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday findUniqueOrThrow
+   */
+  export type StatHolidayFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which StatHoliday to fetch.
+     */
+    where: StatHolidayWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday findFirst
+   */
+  export type StatHolidayFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which StatHoliday to fetch.
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StatHolidays to fetch.
+     */
+    orderBy?: StatHolidayOrderByWithRelationInput | StatHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StatHolidays.
+     */
+    cursor?: StatHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StatHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StatHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StatHolidays.
+     */
+    distinct?: StatHolidayScalarFieldEnum | StatHolidayScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday findFirstOrThrow
+   */
+  export type StatHolidayFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which StatHoliday to fetch.
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StatHolidays to fetch.
+     */
+    orderBy?: StatHolidayOrderByWithRelationInput | StatHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for StatHolidays.
+     */
+    cursor?: StatHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StatHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StatHolidays.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of StatHolidays.
+     */
+    distinct?: StatHolidayScalarFieldEnum | StatHolidayScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday findMany
+   */
+  export type StatHolidayFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter, which StatHolidays to fetch.
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of StatHolidays to fetch.
+     */
+    orderBy?: StatHolidayOrderByWithRelationInput | StatHolidayOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing StatHolidays.
+     */
+    cursor?: StatHolidayWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` StatHolidays from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` StatHolidays.
+     */
+    skip?: number
+    distinct?: StatHolidayScalarFieldEnum | StatHolidayScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday create
+   */
+  export type StatHolidayCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * The data needed to create a StatHoliday.
+     */
+    data: XOR<StatHolidayCreateInput, StatHolidayUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday createMany
+   */
+  export type StatHolidayCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many StatHolidays.
+     */
+    data: StatHolidayCreateManyInput | StatHolidayCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * StatHoliday createManyAndReturn
+   */
+  export type StatHolidayCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * The data used to create many StatHolidays.
+     */
+    data: StatHolidayCreateManyInput | StatHolidayCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * StatHoliday update
+   */
+  export type StatHolidayUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * The data needed to update a StatHoliday.
+     */
+    data: XOR<StatHolidayUpdateInput, StatHolidayUncheckedUpdateInput>
+    /**
+     * Choose, which StatHoliday to update.
+     */
+    where: StatHolidayWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday updateMany
+   */
+  export type StatHolidayUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update StatHolidays.
+     */
+    data: XOR<StatHolidayUpdateManyMutationInput, StatHolidayUncheckedUpdateManyInput>
+    /**
+     * Filter which StatHolidays to update
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * Limit how many StatHolidays to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * StatHoliday updateManyAndReturn
+   */
+  export type StatHolidayUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * The data used to update StatHolidays.
+     */
+    data: XOR<StatHolidayUpdateManyMutationInput, StatHolidayUncheckedUpdateManyInput>
+    /**
+     * Filter which StatHolidays to update
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * Limit how many StatHolidays to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * StatHoliday upsert
+   */
+  export type StatHolidayUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * The filter to search for the StatHoliday to update in case it exists.
+     */
+    where: StatHolidayWhereUniqueInput
+    /**
+     * In case the StatHoliday found by the `where` argument doesn't exist, create a new StatHoliday with this data.
+     */
+    create: XOR<StatHolidayCreateInput, StatHolidayUncheckedCreateInput>
+    /**
+     * In case the StatHoliday was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<StatHolidayUpdateInput, StatHolidayUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday delete
+   */
+  export type StatHolidayDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+    /**
+     * Filter which StatHoliday to delete.
+     */
+    where: StatHolidayWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * StatHoliday deleteMany
+   */
+  export type StatHolidayDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which StatHolidays to delete
+     */
+    where?: StatHolidayWhereInput
+    /**
+     * Limit how many StatHolidays to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * StatHoliday without action
+   */
+  export type StatHolidayDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the StatHoliday
+     */
+    select?: StatHolidaySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the StatHoliday
+     */
+    omit?: StatHolidayOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model QualificationType
    */
 
@@ -61789,6 +62910,19 @@ export namespace Prisma {
   export type AlertConfigScalarFieldEnum = (typeof AlertConfigScalarFieldEnum)[keyof typeof AlertConfigScalarFieldEnum]
 
 
+  export const StatHolidayScalarFieldEnum: {
+    id: 'id',
+    date: 'date',
+    name: 'name',
+    province: 'province',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type StatHolidayScalarFieldEnum = (typeof StatHolidayScalarFieldEnum)[keyof typeof StatHolidayScalarFieldEnum]
+
+
   export const QualificationTypeScalarFieldEnum: {
     id: 'id',
     code: 'code',
@@ -64834,6 +65968,68 @@ export namespace Prisma {
     key?: StringWithAggregatesFilter<"AlertConfig"> | string
     config?: JsonWithAggregatesFilter<"AlertConfig">
     updatedAt?: DateTimeWithAggregatesFilter<"AlertConfig"> | Date | string
+  }
+
+  export type StatHolidayWhereInput = {
+    AND?: StatHolidayWhereInput | StatHolidayWhereInput[]
+    OR?: StatHolidayWhereInput[]
+    NOT?: StatHolidayWhereInput | StatHolidayWhereInput[]
+    id?: UuidFilter<"StatHoliday"> | string
+    date?: DateTimeFilter<"StatHoliday"> | Date | string
+    name?: StringFilter<"StatHoliday"> | string
+    province?: StringNullableFilter<"StatHoliday"> | string | null
+    isActive?: BoolFilter<"StatHoliday"> | boolean
+    createdAt?: DateTimeFilter<"StatHoliday"> | Date | string
+    updatedAt?: DateTimeFilter<"StatHoliday"> | Date | string
+  }
+
+  export type StatHolidayOrderByWithRelationInput = {
+    id?: SortOrder
+    date?: SortOrder
+    name?: SortOrder
+    province?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StatHolidayWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    date?: Date | string
+    AND?: StatHolidayWhereInput | StatHolidayWhereInput[]
+    OR?: StatHolidayWhereInput[]
+    NOT?: StatHolidayWhereInput | StatHolidayWhereInput[]
+    name?: StringFilter<"StatHoliday"> | string
+    province?: StringNullableFilter<"StatHoliday"> | string | null
+    isActive?: BoolFilter<"StatHoliday"> | boolean
+    createdAt?: DateTimeFilter<"StatHoliday"> | Date | string
+    updatedAt?: DateTimeFilter<"StatHoliday"> | Date | string
+  }, "id" | "date">
+
+  export type StatHolidayOrderByWithAggregationInput = {
+    id?: SortOrder
+    date?: SortOrder
+    name?: SortOrder
+    province?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: StatHolidayCountOrderByAggregateInput
+    _max?: StatHolidayMaxOrderByAggregateInput
+    _min?: StatHolidayMinOrderByAggregateInput
+  }
+
+  export type StatHolidayScalarWhereWithAggregatesInput = {
+    AND?: StatHolidayScalarWhereWithAggregatesInput | StatHolidayScalarWhereWithAggregatesInput[]
+    OR?: StatHolidayScalarWhereWithAggregatesInput[]
+    NOT?: StatHolidayScalarWhereWithAggregatesInput | StatHolidayScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"StatHoliday"> | string
+    date?: DateTimeWithAggregatesFilter<"StatHoliday"> | Date | string
+    name?: StringWithAggregatesFilter<"StatHoliday"> | string
+    province?: StringNullableWithAggregatesFilter<"StatHoliday"> | string | null
+    isActive?: BoolWithAggregatesFilter<"StatHoliday"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"StatHoliday"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"StatHoliday"> | Date | string
   }
 
   export type QualificationTypeWhereInput = {
@@ -69060,6 +70256,76 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type StatHolidayCreateInput = {
+    id?: string
+    date: Date | string
+    name: string
+    province?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StatHolidayUncheckedCreateInput = {
+    id?: string
+    date: Date | string
+    name: string
+    province?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StatHolidayUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StatHolidayUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StatHolidayCreateManyInput = {
+    id?: string
+    date: Date | string
+    name: string
+    province?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type StatHolidayUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type StatHolidayUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    province?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type QualificationTypeCreateInput = {
     id?: string
     code: string
@@ -72346,6 +73612,36 @@ export namespace Prisma {
 
   export type AlertConfigMinOrderByAggregateInput = {
     key?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StatHolidayCountOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    name?: SortOrder
+    province?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StatHolidayMaxOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    name?: SortOrder
+    province?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type StatHolidayMinOrderByAggregateInput = {
+    id?: SortOrder
+    date?: SortOrder
+    name?: SortOrder
+    province?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
