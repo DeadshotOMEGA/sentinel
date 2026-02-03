@@ -84,6 +84,28 @@ export const UpdateMemberSchema = v.object({
 export const MemberQualificationSummarySchema = v.object({
   code: v.string(),
   name: v.string(),
+  chipVariant: v.optional(v.string()),
+  chipColor: v.optional(v.string()),
+  tagId: v.optional(v.nullable(v.string())),
+})
+
+/**
+ * Member tag summary for list views
+ */
+export const MemberTagSummarySchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  chipVariant: v.string(),
+  chipColor: v.string(),
+})
+
+/**
+ * Badge status summary for member list views
+ */
+export const BadgeStatusSummarySchema = v.object({
+  name: v.string(),
+  chipVariant: v.string(),
+  chipColor: v.string(),
 })
 
 /**
@@ -100,9 +122,11 @@ export const MemberResponseSchema = v.object({
   phoneNumber: v.nullable(v.string()),
   divisionId: v.string(),
   badgeId: v.nullable(v.string()),
+  badgeStatus: v.optional(BadgeStatusSummarySchema),
   memberTypeId: v.nullable(v.string()),
   memberStatusId: v.nullable(v.string()),
   qualifications: v.optional(v.array(MemberQualificationSummarySchema)),
+  tags: v.optional(v.array(MemberTagSummarySchema)),
   missedCheckoutCount: v.optional(v.number()),
   lastMissedCheckout: v.optional(v.nullable(v.string())),
   createdAt: v.string(),

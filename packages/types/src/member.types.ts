@@ -48,6 +48,9 @@ export interface Division {
 export interface QualificationSummary {
   code: string
   name: string
+  chipVariant?: string | null
+  chipColor?: string | null
+  tagId?: string | null
 }
 
 export interface MemberWithDivision extends Member {

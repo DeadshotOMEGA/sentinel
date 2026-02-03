@@ -81,6 +81,13 @@ function toMemberWithDivision(
       lastUsed: Date | null
       createdAt: Date | null
       updatedAt: Date | null
+      badgeStatusRef?: {
+        id: string
+        code: string
+        name: string
+        chipVariant: string
+        chipColor: string
+      } | null
     } | null
     rankRef?: {
       id: string
@@ -110,6 +117,11 @@ function toMemberWithDivision(
       qualificationType: {
         code: string
         name: string
+        tagId: string | null
+        tag?: {
+          chipVariant: string
+          chipColor: string
+        } | null
       }
     }>
   }
@@ -142,6 +154,13 @@ function toMemberWithDivision(
         lastUsed: prismaMember.badge.lastUsed ?? undefined,
         createdAt: prismaMember.badge.createdAt ?? new Date(),
         updatedAt: prismaMember.badge.updatedAt ?? new Date(),
+        badgeStatusSummary: prismaMember.badge.badgeStatusRef
+          ? {
+              name: prismaMember.badge.badgeStatusRef.name,
+              chipVariant: prismaMember.badge.badgeStatusRef.chipVariant,
+              chipColor: prismaMember.badge.badgeStatusRef.chipColor,
+            }
+          : undefined,
       },
     })
   }
@@ -185,6 +204,9 @@ function toMemberWithDivision(
       qualifications: prismaMember.qualifications.map((q) => ({
         code: q.qualificationType.code,
         name: q.qualificationType.name,
+        chipVariant: q.qualificationType.tag?.chipVariant ?? null,
+        chipColor: q.qualificationType.tag?.chipColor ?? null,
+        tagId: q.qualificationType.tagId ?? null,
       })),
     })
   }
@@ -311,7 +333,11 @@ export class MemberRepository {
       where,
       include: {
         division: true,
-        badge: true,
+        badge: {
+            include: {
+              badgeStatusRef: true,
+            },
+          },
         rankRef: true,
         memberTags: {
           include: {
@@ -477,7 +503,11 @@ export class MemberRepository {
         where,
         include: {
           division: true,
-          badge: true,
+          badge: {
+            include: {
+              badgeStatusRef: true,
+            },
+          },
           rankRef: true,
           memberTags: {
             include: {
@@ -487,7 +517,11 @@ export class MemberRepository {
           qualifications: {
             where: { status: 'active' },
             include: {
-              qualificationType: true,
+              qualificationType: {
+                include: {
+                  tag: true,
+                },
+              },
             },
           },
         },
@@ -516,7 +550,11 @@ export class MemberRepository {
       where: { id },
       include: {
         division: true,
-        badge: true,
+        badge: {
+            include: {
+              badgeStatusRef: true,
+            },
+          },
         memberTags: {
           include: {
             tag: true,
@@ -738,7 +776,11 @@ export class MemberRepository {
       },
       include: {
         division: true,
-        badge: true,
+        badge: {
+            include: {
+              badgeStatusRef: true,
+            },
+          },
         memberTags: {
           include: {
             tag: true,
@@ -785,7 +827,11 @@ export class MemberRepository {
       },
       include: {
         division: true,
-        badge: true,
+        badge: {
+            include: {
+              badgeStatusRef: true,
+            },
+          },
         memberTags: {
           include: {
             tag: true,

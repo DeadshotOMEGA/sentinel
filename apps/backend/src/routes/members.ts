@@ -56,11 +56,27 @@ export const membersRouter = s.router(memberContract, {
             phoneNumber: member.mobilePhone || member.homePhone || null,
             divisionId: member.divisionId,
             badgeId: member.badgeId || null,
+            badgeStatus: member.badge?.badgeStatusSummary
+              ? {
+                  name: member.badge.badgeStatusSummary.name,
+                  chipVariant: member.badge.badgeStatusSummary.chipVariant,
+                  chipColor: member.badge.badgeStatusSummary.chipColor,
+                }
+              : undefined,
             memberTypeId: member.memberTypeId || null,
             memberStatusId: member.memberStatusId || null,
             qualifications: member.qualifications?.map((q) => ({
               code: q.code,
               name: q.name,
+              chipVariant: q.chipVariant ?? undefined,
+              chipColor: q.chipColor ?? undefined,
+              tagId: q.tagId ?? undefined,
+            })),
+            tags: member.tags?.map((t) => ({
+              id: t.id,
+              name: t.name,
+              chipVariant: t.chipVariant ?? 'solid',
+              chipColor: t.chipColor ?? 'default',
             })),
             missedCheckoutCount: member.missedCheckoutCount ?? 0,
             lastMissedCheckout: member.lastMissedCheckout?.toISOString() ?? null,
