@@ -665,19 +665,32 @@ export class CheckinRepository {
         FROM checkins
         ORDER BY member_id, timestamp DESC
       ),
+      -- Combine direct tag assignments with qualification-based tags
+      all_member_tags AS (
+        -- Direct tag assignments
+        SELECT mt.member_id, mt.tag_id
+        FROM member_tags mt
+        UNION
+        -- Tags from active qualifications
+        SELECT mq.member_id, qt.tag_id
+        FROM member_qualifications mq
+        JOIN qualification_types qt ON qt.id = mq.qualification_type_id
+        WHERE mq.status = 'active' AND qt.tag_id IS NOT NULL
+      ),
       member_tags_agg AS (
         SELECT
-          mt.member_id,
+          amt.member_id,
           json_agg(
             json_build_object(
               'id', t.id,
               'name', t.name,
-              'color', t.chip_color
+              'chipVariant', t.chip_variant,
+              'chipColor', t.chip_color
             ) ORDER BY t.name
           ) as tags
-        FROM member_tags mt
-        INNER JOIN tags t ON mt.tag_id = t.id
-        GROUP BY mt.member_id
+        FROM all_member_tags amt
+        INNER JOIN tags t ON amt.tag_id = t.id
+        GROUP BY amt.member_id
       )
       SELECT
         m.id,

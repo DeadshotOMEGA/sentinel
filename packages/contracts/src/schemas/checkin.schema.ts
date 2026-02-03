@@ -154,12 +154,20 @@ export const PresentPersonSchema = v.object({
       v.object({
         id: v.string(),
         name: v.string(),
-        color: v.string(),
+        chipVariant: v.optional(v.string()),
+        chipColor: v.optional(v.string()),
       })
     )
   ),
   organization: v.optional(v.string()),
-  visitType: v.optional(v.string()),
+  visitType: v.optional(
+    v.object({
+      id: v.string(),
+      name: v.string(),
+      chipVariant: v.optional(v.string()),
+      chipColor: v.optional(v.string()),
+    })
+  ),
   visitReason: v.optional(v.string()),
   hostMemberId: v.optional(v.string()),
   hostName: v.optional(v.string()),

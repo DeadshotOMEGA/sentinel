@@ -105,7 +105,7 @@ export class VisitorRepository {
    * Find active visitors with relations (host member, event)
    */
   async findActiveWithRelations(): Promise<
-    Array<Visitor & { hostName?: string; eventName?: string }>
+    Array<Visitor & { hostName?: string; eventName?: string; visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string } }>
   > {
     const visitors = await this.prisma.visitor.findMany({
       where: {
@@ -118,6 +118,7 @@ export class VisitorRepository {
         event: true,
         hostMember: true,
         badge: true,
+        visitTypeRef: true,
       },
     })
 
@@ -362,8 +363,9 @@ export class VisitorRepository {
     visitor: PrismaVisitor & {
       hostMember?: { firstName: string; lastName: string; rank: string } | null
       event?: { name: string } | null
+      visitTypeRef?: { id: string; name: string; chipVariant?: string | null; chipColor?: string | null } | null
     }
-  ): Visitor & { hostName?: string; eventName?: string } {
+  ): Visitor & { hostName?: string; eventName?: string; visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string } } {
     const base = this.toVisitorType(visitor)
     return {
       ...base,
@@ -371,6 +373,14 @@ export class VisitorRepository {
         ? `${visitor.hostMember.rank} ${visitor.hostMember.firstName} ${visitor.hostMember.lastName}`
         : undefined,
       eventName: visitor.event?.name ?? undefined,
+      visitTypeInfo: visitor.visitTypeRef
+        ? {
+            id: visitor.visitTypeRef.id,
+            name: visitor.visitTypeRef.name,
+            chipVariant: visitor.visitTypeRef.chipVariant ?? undefined,
+            chipColor: visitor.visitTypeRef.chipColor ?? undefined,
+          }
+        : undefined,
     }
   }
 }

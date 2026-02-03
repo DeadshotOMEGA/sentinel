@@ -28,7 +28,7 @@ interface PresentMember {
   mess: string | null
   checkedInAt: string
   kioskId?: string
-  tags: Array<{ id: string; name: string; color: string }>
+  tags: Array<{ id: string; name: string; chipVariant?: string; chipColor?: string }>
 }
 
 interface MemberPresenceItem {
@@ -105,9 +105,9 @@ interface PresentPerson {
   division?: string
   divisionId?: string
   memberType?: string
-  tags?: Array<{ id: string; name: string; color: string }>
+  tags?: Array<{ id: string; name: string; chipVariant?: string; chipColor?: string }>
   organization?: string
-  visitType?: string
+  visitType?: { id: string; name: string; chipVariant?: string; chipColor?: string }
   visitReason?: string
   hostMemberId?: string
   hostName?: string
@@ -213,7 +213,7 @@ export class PresenceService {
         type: 'visitor' as const,
         name: v.name,
         organization: v.organization,
-        visitType: v.visitType,
+        visitType: v.visitTypeInfo ?? { id: '', name: v.visitType, chipVariant: undefined, chipColor: undefined },
         visitReason: v.visitReason,
         hostMemberId: v.hostMemberId,
         hostName: v.hostName,

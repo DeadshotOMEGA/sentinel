@@ -210,6 +210,25 @@ export const scheduleContract = c.router({
   },
 
   /**
+   * Revert a published schedule back to draft
+   */
+  revertToDraft: {
+    method: 'POST',
+    path: '/api/schedules/:id/revert-to-draft',
+    pathParams: ScheduleIdParamSchema,
+    body: c.type<undefined>(),
+    responses: {
+      200: WeeklyScheduleWithAssignmentsResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Revert schedule to draft',
+    description: 'Revert a published schedule back to draft status for editing (admin only)',
+  },
+
+  /**
    * Delete a draft schedule
    */
   deleteSchedule: {
