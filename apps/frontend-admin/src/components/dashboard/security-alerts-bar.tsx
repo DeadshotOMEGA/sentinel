@@ -15,33 +15,39 @@ export function SecurityAlertsBar() {
   const alerts = data.alerts
 
   return (
-    <div role="alert" className="alert alert-error mb-4">
-      <AlertCircle className="h-5 w-5 shrink-0" />
+    <div role="alert" className="alert-security rounded-xl mb-4 p-4 flex items-start gap-3 animate-slide-in-left">
+      <div className="p-2 rounded-lg bg-error/15 shrink-0">
+        <AlertCircle className="h-5 w-5 text-error" />
+      </div>
 
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold">Security Alerts</h3>
-          <span className="badge badge-error badge-sm">{alerts.length}</span>
+          <h3 className="font-display font-bold text-error-content">Security Alerts</h3>
+          <span className="badge badge-error badge-sm font-mono">{alerts.length}</span>
         </div>
 
         <div className="space-y-2">
-          {alerts.slice(0, 3).map((alert: SecurityAlertResponse) => (
-            <div key={alert.id} className="flex items-center justify-between text-sm">
+          {alerts.slice(0, 3).map((alert: SecurityAlertResponse, index: number) => (
+            <div
+              key={alert.id}
+              className="flex items-center justify-between text-sm py-2 border-b border-error/10 last:border-b-0 animate-fade-in-up"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className={`badge badge-sm ${
-                    alert.severity === 'critical' ? 'badge-error' : 'badge-ghost'
+                    alert.severity === 'critical' ? 'badge-error animate-status-pulse' : 'badge-ghost'
                   }`}
                 >
                   {alert.alertType}
                 </span>
-                <span>{alert.message}</span>
-                <span className="text-xs text-error-content/60">
+                <span className="text-error-content/90">{alert.message}</span>
+                <span className="text-xs text-error-content/50 font-mono">
                   {new Date(alert.createdAt).toLocaleTimeString()}
                 </span>
               </div>
               <button
-                className="btn btn-ghost btn-xs"
+                className="btn btn-ghost btn-xs hover:btn-error hover:btn-outline transition-colors"
                 onClick={() => {
                   // TODO: Implement acknowledge alert
                   console.log('Acknowledge alert:', alert.id)
@@ -54,12 +60,12 @@ export function SecurityAlertsBar() {
         </div>
 
         {alerts.length > 3 && (
-          <p className="text-xs text-error-content/60">+{alerts.length - 3} more alerts</p>
+          <p className="text-xs text-error-content/60 font-medium">+{alerts.length - 3} more alerts</p>
         )}
       </div>
 
       <button
-        className="btn btn-ghost btn-sm btn-square"
+        className="btn btn-ghost btn-sm btn-square hover:bg-error/10 hover:text-error transition-colors"
         onClick={() => {
           // TODO: Implement dismiss all
           console.log('Dismiss all alerts')

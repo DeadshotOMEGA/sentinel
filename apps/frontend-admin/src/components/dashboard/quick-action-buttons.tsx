@@ -85,9 +85,9 @@ export function QuickActionButtons() {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="flex flex-wrap gap-3">
       <button
-        className="btn btn-primary"
+        className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
         disabled={!canManualCheckin}
         onClick={() => setIsCheckinModalOpen(true)}
       >
@@ -96,7 +96,7 @@ export function QuickActionButtons() {
       </button>
 
       <button
-        className="btn btn-primary"
+        className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
         disabled={!canManualCheckin}
         onClick={() => setIsVisitorModalOpen(true)}
       >
@@ -105,7 +105,7 @@ export function QuickActionButtons() {
       </button>
 
       <button
-        className="btn btn-primary"
+        className="btn btn-outline btn-primary hover:shadow-md transition-all duration-200"
         onClick={() => {
           // TODO: Navigate to reports
           console.log('Reports clicked')
@@ -117,7 +117,7 @@ export function QuickActionButtons() {
 
       {isSecured ? (
         <button
-          className="btn btn-success"
+          className="btn btn-success btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
           disabled={!isAdmin}
           onClick={() => setIsOpenBuildingConfirmOpen(true)}
         >
@@ -126,7 +126,7 @@ export function QuickActionButtons() {
         </button>
       ) : (
         <button
-          className="btn btn-secondary"
+          className="btn btn-secondary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
           disabled={!isAdmin || isOpenNoHolder}
           onClick={() => setIsLockupModalOpen(true)}
         >
@@ -137,7 +137,7 @@ export function QuickActionButtons() {
 
       {isDevMode && (
         <button
-          className="btn btn-accent"
+          className="btn btn-outline btn-accent hover:shadow-md transition-all duration-200"
           onClick={() => setIsScanModalOpen(true)}
         >
           <Radio className="h-4 w-4" />

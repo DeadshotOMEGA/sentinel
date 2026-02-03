@@ -1,7 +1,6 @@
 'use client'
 
-import { Users, CheckCircle2, DoorOpen, Building2, Lock, Unlock, Loader2, ShieldX, ShieldEllipsis, ShieldAlert, ShieldCheck, Clock, KeyRound, KeySquare } from 'lucide-react'
-import { usePresence } from '@/hooks/use-presence'
+import { Users, Lock, Unlock, Loader2, ShieldEllipsis, ShieldAlert, ShieldCheck, Clock, KeyRound } from 'lucide-react'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useLockupStatus } from '@/hooks/use-lockup'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
@@ -16,36 +15,28 @@ function formatMemberName(member: { rank: string; firstName: string; lastName: s
   return `${member.rank} ${member.lastName}`
 }
 
-function PresenceStat() {
-  const { data, isLoading, isError } = usePresence()
+// Accent border color mapping (Tailwind requires static classes)
+const ACCENT_BORDER_CLASSES: Record<string, string> = {
+  error: 'border-l-4 border-l-error',
+  warning: 'border-l-4 border-l-warning',
+  success: 'border-l-4 border-l-success',
+  info: 'border-l-4 border-l-info',
+}
 
-  if (isError) {
-    return (
-      <div className="stat bg-base-200 w-flex-50">
-        <div className="stat-title">Currently Present</div>
-        <div className="stat-value text-error text-3xl">--</div>
-        <div className="stat-desc text-error">Failed to load</div>
-      </div>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="stat bg-base-200 w-flex-50">
-        <div className="stat-title">Currently Present</div>
-        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
-        <div className="stat-desc">Loading...</div>
-      </div>
-    )
-  }
-
-  const totalPresent = data?.totalPresent ?? 0
-
+// Shared stat container with hover state
+function StatContainer({
+  children,
+  accentColor,
+}: {
+  children: React.ReactNode
+  accentColor?: 'error' | 'warning' | 'success' | 'info'
+}) {
+  const borderClass = accentColor ? ACCENT_BORDER_CLASSES[accentColor] : ''
   return (
-    <div className="stat bg-base-200 w-flex-50">
-      <div className="stat-title">Currently Present</div>
-      <div className="stat-value text-success text-3xl">{totalPresent}</div>
-      <div className="stat-desc">{totalPresent === 1 ? 'member' : 'members'} on site</div>
+    <div
+      className={`stat bg-gradient-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass}`}
+    >
+      {children}
     </div>
   )
 }
@@ -60,47 +51,47 @@ function DdsStat() {
 
   if (isLoading) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer>
         <div className="stat-figure text-secondary">
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Day Staff</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
-      </div>
+      </StatContainer>
     )
   }
 
   if (!ddsStatus?.assignment) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer accentColor="warning">
         <div className="stat-figure text-error">
           <ShieldAlert size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Day Staff</div>
-        <div className="stat-value text-error text-3xl">Unassigned</div>
+        <div className="stat-value font-display text-error text-3xl">Unassigned</div>
         <div className="stat-desc">
           {ddsStatus?.nextDds
             ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}`
             : 'No DDS for today'}
         </div>
-      </div>
+      </StatContainer>
     )
   }
 
   return (
-    <div className="stat bg-base-200 w-flex-50">
+    <StatContainer>
       <div className="stat-figure text-success">
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Day Staff</div>
-      <div className="stat-value text-success text-3xl">{ddsStatus.assignment.member.name}</div>
+      <div className="stat-value font-display text-success text-3xl">{ddsStatus.assignment.member.name}</div>
       <div className="stat-desc">
         {ddsStatus.nextDds
           ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}`
           : 'On duty today'}
       </div>
-    </div>
+    </StatContainer>
   )
 }
 
@@ -121,11 +112,11 @@ function BuildingStat() {
 
   if (isLoading) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer>
         <div className="stat-title">Building Status</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
-      </div>
+      </StatContainer>
     )
   }
 
@@ -144,26 +135,26 @@ function BuildingStat() {
 
   if (display.label === "Secured") {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer accentColor="error">
         <div className="stat-figure text-error">
           <StatusIcon size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Building Status</div>
-        <div className="stat-value text-error text-3xl">{display.label}</div>
+        <div className="stat-value font-display text-error text-3xl">{display.label}</div>
         <div className="stat-desc">{getDesc()}</div>
-      </div>
+      </StatContainer>
     )
   }
 
   return (
-    <div className="stat bg-base-200 w-flex-50">
+    <StatContainer>
       <div className="stat-figure text-success">
         <StatusIcon size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Building Status</div>
-      <div className="stat-value text-success text-3xl">{display.label}</div>
+      <div className="stat-value font-display text-success text-3xl">{display.label}</div>
       <div className="stat-desc">{getDesc()}</div>
-    </div>
+    </StatContainer>
   )
 }
 
@@ -172,14 +163,14 @@ function LockupHolderStat() {
 
   if (isLoading) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer>
         <div className="stat-figure text-secondary">
           <KeyRound size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Lockup Holder</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
-      </div>
+      </StatContainer>
     )
   }
 
@@ -191,31 +182,31 @@ function LockupHolderStat() {
   // No one holds lockup
   if (!lockupStatus?.currentHolder) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer accentColor="warning">
         <div className="stat-figure text-warning">
           <KeyRound size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Lockup Holder</div>
-        <div className="stat-value text-warning text-2xl">No One</div>
+        <div className="stat-value font-display text-warning text-2xl">No One</div>
         <div className="stat-desc">No one holds lockup</div>
-      </div>
+      </StatContainer>
     )
   }
 
   // Someone holds lockup
   return (
-    <div className="stat bg-base-200 w-flex-50">
+    <StatContainer>
       <div className="stat-figure text-info">
         <KeyRound size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Lockup Holder</div>
-      <div className="stat-value text-info text-2xl">
+      <div className="stat-value font-display text-info text-2xl">
         {formatMemberName(lockupStatus.currentHolder)}
       </div>
       <div className="stat-desc">
         {lockupStatus.acquiredAt ? `Since ${formatTime(lockupStatus.acquiredAt)}` : 'Currently responsible'}
       </div>
-    </div>
+    </StatContainer>
   )
 }
 
@@ -229,14 +220,14 @@ function DutyWatchStat() {
 
   if (isLoading) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer>
         <div className="stat-figure text-secondary">
           <Users size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
         <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
         <div className="stat-desc">Loading...</div>
-      </div>
+      </StatContainer>
     )
   }
 
@@ -250,24 +241,24 @@ function DutyWatchStat() {
 
   if (team.length === 0) {
     return (
-      <div className="stat bg-base-200 w-flex-50">
+      <StatContainer accentColor="warning">
         <div className="stat-figure text-warning">
           <Users size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
-        <div className="stat-value text-warning text-lg">Unassigned</div>
+        <div className="stat-value font-display text-warning text-lg">Unassigned</div>
         <div className="stat-desc">No team assigned</div>
-      </div>
+      </StatContainer>
     )
   }
 
   return (
-    <div className="stat bg-base-200 w-flex-50">
+    <StatContainer accentColor={allCheckedIn ? undefined : 'warning'}>
       <div className="stat-figure text-secondary">
         <Users size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Watch Tonight</div>
-      <div className={`stat-value ${allCheckedIn ? 'text-success' : 'text-warning'}`}>
+      <div className={`stat-value font-display ${allCheckedIn ? 'text-success' : 'text-warning'}`}>
         {checkedInCount}/{team.length}
       </div>
       <div className="stat-desc flex items-center gap-1">
@@ -280,14 +271,13 @@ function DutyWatchStat() {
           </>
         )}
       </div>
-    </div>
+    </StatContainer>
   )
 }
 
 export function StatusStats() {
   return (
-    <div className="stats stats-vertical lg:stats-horizontal shadow w-fit bg-base-100">
-      <PresenceStat />
+    <div className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel rounded-xl animate-fade-in">
       <DdsStat />
       <DutyWatchStat />
       <BuildingStat />
