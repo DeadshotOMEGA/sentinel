@@ -25,6 +25,8 @@ export * from './database-explorer.contract.js'
 export * from './qualification.contract.js'
 export * from './schedule.contract.js'
 export * from './unit-event.contract.js'
+export * from './stat-holiday.contract.js'
+export * from './tag.contract.js'
 
 // Main API contract
 export * from './api.contract.js'

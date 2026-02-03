@@ -218,6 +218,101 @@ export class TagRepository {
       }
     })
   }
+
+  // ============================================================================
+  // Member Tag Management
+  // ============================================================================
+
+  /**
+   * Get all tags assigned to a member
+   */
+  async getMemberTags(memberId: string): Promise<
+    Array<{
+      id: string
+      tagId: string
+      memberId: string
+      tag: Tag
+      createdAt: Date
+    }>
+  > {
+    const memberTags = await this.prisma.memberTag.findMany({
+      where: { memberId },
+      include: { tag: true },
+      orderBy: { tag: { displayOrder: 'asc' } },
+    })
+
+    return memberTags.map((mt) => ({
+      id: mt.id,
+      tagId: mt.tagId,
+      memberId: mt.memberId,
+      tag: toTag(mt.tag as unknown as PrismaTagRow),
+      createdAt: mt.createdAt ?? new Date(),
+    }))
+  }
+
+  /**
+   * Assign a tag to a member
+   */
+  async assignTagToMember(
+    memberId: string,
+    tagId: string
+  ): Promise<{
+    id: string
+    tagId: string
+    memberId: string
+    tag: Tag
+    createdAt: Date
+  }> {
+    // Check if tag exists
+    const tag = await this.findById(tagId)
+    if (!tag) {
+      throw new Error(`Tag not found: ${tagId}`)
+    }
+
+    // Check if already assigned
+    const existing = await this.prisma.memberTag.findUnique({
+      where: {
+        memberId_tagId: { memberId, tagId },
+      },
+    })
+    if (existing) {
+      throw new Error(`Tag already assigned to member`)
+    }
+
+    const memberTag = await this.prisma.memberTag.create({
+      data: { memberId, tagId },
+      include: { tag: true },
+    })
+
+    return {
+      id: memberTag.id,
+      tagId: memberTag.tagId,
+      memberId: memberTag.memberId,
+      tag: toTag(memberTag.tag as unknown as PrismaTagRow),
+      createdAt: memberTag.createdAt ?? new Date(),
+    }
+  }
+
+  /**
+   * Remove a tag from a member
+   */
+  async removeTagFromMember(memberId: string, tagId: string): Promise<void> {
+    const existing = await this.prisma.memberTag.findUnique({
+      where: {
+        memberId_tagId: { memberId, tagId },
+      },
+    })
+
+    if (!existing) {
+      throw new Error(`Tag not assigned to member`)
+    }
+
+    await this.prisma.memberTag.delete({
+      where: {
+        memberId_tagId: { memberId, tagId },
+      },
+    })
+  }
 }
 
 export const tagRepository = new TagRepository()
