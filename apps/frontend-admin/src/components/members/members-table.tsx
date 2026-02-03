@@ -167,6 +167,7 @@ export function MembersTable({ filters }: MembersTableProps) {
           </Button>
         ),
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        size: 80,
       }),
       columnHelper.accessor('rank', {
         header: ({ column }) => (
@@ -194,6 +195,7 @@ export function MembersTable({ filters }: MembersTableProps) {
           const orderB = rankOrderMap.get(rankB) ?? 0
           return orderA - orderB
         },
+        size: 70,
       }),
       columnHelper.display({
         id: 'name',
@@ -245,72 +247,96 @@ export function MembersTable({ filters }: MembersTableProps) {
       }),
       columnHelper.accessor('memberStatusId', {
         header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Status
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
+          <div className="flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+              Status
+              {column.getIsSorted() === 'asc' ? (
+                <ArrowUp className="ml-2 h-4 w-4" />
+              ) : column.getIsSorted() === 'desc' ? (
+                <ArrowDown className="ml-2 h-4 w-4" />
+              ) : (
+                <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+              )}
+            </Button>
+          </div>
         ),
         cell: (info): React.ReactNode => {
           const statusId = info.getValue() as string | null | undefined
-          if (!statusId) return <span className="text-base-content/60">N/A</span>
+          if (!statusId)
+            return (
+              <div className="flex justify-center">
+                <span className="text-base-content/60">N/A</span>
+              </div>
+            )
           const statusName = memberStatusMap.get(statusId)
-          return <Badge variant="default">{String(statusName ?? 'Unknown')}</Badge>
+          return (
+            <div className="flex justify-center">
+              <Badge variant="default">{String(statusName ?? 'Unknown')}</Badge>
+            </div>
+          )
         },
         enableSorting: true,
+        size: 70,
       }),
       columnHelper.display({
         id: 'badge',
         header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Badge
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
+          <div className="flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+              Badge
+              {column.getIsSorted() === 'asc' ? (
+                <ArrowUp className="ml-2 h-4 w-4" />
+              ) : column.getIsSorted() === 'desc' ? (
+                <ArrowDown className="ml-2 h-4 w-4" />
+              ) : (
+                <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+              )}
+            </Button>
+          </div>
         ),
         cell: (info) => {
           const member = info.row.original
-          if (!member.badgeId) return <span className="text-base-content/60">—</span>
+          if (!member.badgeId)
+            return (
+              <div className="flex justify-center">
+                <span className="text-base-content/60">—</span>
+              </div>
+            )
           const badgeStatus = member.badgeStatus
           if (badgeStatus) {
             return (
-              <Chip
-                variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
-                color={(badgeStatus.chipColor as ChipColor) || 'default'}
-                size="sm"
-              >
-                {badgeStatus.name}
-              </Chip>
+              <div className="flex justify-center">
+                <Chip
+                  variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
+                  color={(badgeStatus.chipColor as ChipColor) || 'default'}
+                  size="sm"
+                >
+                  {badgeStatus.name}
+                </Chip>
+              </div>
             )
           }
           // Fallback if no badge status but badge is assigned
           return (
-            <Chip variant="solid" color="success" size="sm">
-              Assigned
-            </Chip>
+            <div className="flex justify-center">
+              <Chip variant="solid" color="success" size="sm">
+                Assigned
+              </Chip>
+            </div>
           )
         },
         enableSorting: true,
+        size: 90,
       }),
       columnHelper.display({
         id: 'qualifications',
@@ -363,11 +389,11 @@ export function MembersTable({ filters }: MembersTableProps) {
       cols.push(
         columnHelper.display({
           id: 'actions',
-          header: 'Actions',
+          header: () => <span className="block text-center">Actions</span>,
           cell: (info) => {
             const member = info.row.original
             return (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -394,6 +420,7 @@ export function MembersTable({ filters }: MembersTableProps) {
             )
           },
           enableSorting: false,
+          size: 120,
         })
       )
     }
@@ -495,12 +522,15 @@ export function MembersTable({ filters }: MembersTableProps) {
           )}
         </div>
 
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} style={{ width: header.getSize() }}>
+                  <TableHead
+                    key={header.id}
+                    style={{ width: header.column.columnDef.size }}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -518,7 +548,10 @@ export function MembersTable({ filters }: MembersTableProps) {
                   className={row.getIsSelected() ? 'bg-base-200/50' : ''}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      style={{ width: cell.column.columnDef.size }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
