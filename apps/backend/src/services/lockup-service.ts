@@ -12,7 +12,7 @@ import { QualificationService } from './qualification-service.js'
 import { PresenceService } from './presence-service.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { getOperationalDate } from '../utils/operational-date.js'
-import { broadcastLockupExecution, broadcastLockupTransfer } from '../websocket/broadcast.js'
+import { broadcastLockupExecution, broadcastLockupTransfer, broadcastLockupStatusUpdate } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
 
 // ============================================================================
@@ -275,6 +275,107 @@ export class LockupService {
         },
       })
     }
+
+    return updatedStatus
+  }
+
+  // ============================================================================
+  // Eligible Openers Methods
+  // ============================================================================
+
+  /**
+   * Get members eligible to open the building
+   *
+   * Returns members who have lockup qualification and are currently checked in
+   */
+  async getEligibleOpeners(): Promise<
+    Array<{
+      id: string
+      firstName: string
+      lastName: string
+      rank: string
+      serviceNumber: string
+    }>
+  > {
+    const eligibleMembers = await this.qualificationService.getLockupEligibleMembers(true)
+    return eligibleMembers.map((m) => ({
+      id: m.id,
+      firstName: m.firstName,
+      lastName: m.lastName,
+      rank: m.rank,
+      serviceNumber: m.serviceNumber,
+    }))
+  }
+
+  // ============================================================================
+  // Open Building Methods
+  // ============================================================================
+
+  /**
+   * Open building — transition from secured to open
+   *
+   * The member becomes the lockup holder for the day.
+   *
+   * @throws ValidationError if building is not secured or member not qualified
+   * @throws NotFoundError if member not found
+   */
+  async openBuilding(memberId: string, note?: string): Promise<LockupStatusEntity> {
+    const status = await this.getCurrentStatus()
+
+    // Building must be secured to open
+    if (status.buildingStatus !== 'secured') {
+      throw new ValidationError('Building must be in secured state to open')
+    }
+
+    // Verify member exists
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { id: true, firstName: true, lastName: true, rank: true },
+    })
+
+    if (!member) {
+      throw new NotFoundError('Member', memberId)
+    }
+
+    // Verify member has lockup qualification
+    const canReceive = await this.qualificationService.canMemberReceiveLockup(memberId)
+    if (!canReceive) {
+      throw new ValidationError('Member is not qualified to open building')
+    }
+
+    // Verify member is checked in
+    const isCheckedIn = await this.presenceService.isMemberPresent(memberId)
+    if (!isCheckedIn) {
+      throw new ValidationError('Member must be checked in to open building')
+    }
+
+    // Mark building as open with member as holder
+    const updatedStatus = await this.lockupRepo.markOpen(status.id, memberId)
+
+    // Create audit record
+    await this.prisma.responsibilityAuditLog.create({
+      data: {
+        memberId,
+        tagName: 'Lockup',
+        action: 'building_opened',
+        performedBy: memberId,
+        performedByType: 'member',
+        notes: note ?? `Building opened by ${member.rank} ${member.firstName} ${member.lastName}`,
+      },
+    })
+
+    // Broadcast status change
+    broadcastLockupStatusUpdate({
+      date: updatedStatus.date.toISOString().split('T')[0] ?? '',
+      buildingStatus: 'open',
+      currentHolder: {
+        id: member.id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        rank: member.rank,
+      },
+      timestamp: new Date().toISOString(),
+    })
 
     return updatedStatus
   }

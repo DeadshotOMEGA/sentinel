@@ -14,6 +14,9 @@ import {
   LockupHistoryQuerySchema,
   LockupHistoryResponseSchema,
   SuccessResponseSchema,
+  OpenBuildingSchema,
+  OpenBuildingResponseSchema,
+  EligibleOpenersResponseSchema,
 } from '../schemas/index.js'
 
 const c = initContract()
@@ -100,6 +103,39 @@ export const lockupContract = c.router({
     },
     summary: 'Acquire lockup responsibility',
     description: 'Acquire lockup when no one currently holds it (requires qualification)',
+  },
+
+  /**
+   * Get members eligible to open the building
+   */
+  getEligibleOpeners: {
+    method: 'GET',
+    path: '/api/lockup/eligible-openers',
+    responses: {
+      200: EligibleOpenersResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get eligible openers',
+    description: 'Get members who are qualified and checked in, eligible to open the building',
+  },
+
+  /**
+   * Open building (transition from secured to open)
+   */
+  openBuilding: {
+    method: 'POST',
+    path: '/api/lockup/open/:id',
+    pathParams: IdParamSchema,
+    body: OpenBuildingSchema,
+    responses: {
+      200: OpenBuildingResponseSchema,
+      400: ErrorResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Open building',
+    description: 'Transition building from secured to open state (requires lockup qualification)',
   },
 
   // ============================================================================

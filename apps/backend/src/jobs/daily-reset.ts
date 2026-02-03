@@ -1,9 +1,17 @@
+import { DateTime } from 'luxon'
+
 import { prisma } from '@sentinel/database'
 import { logger } from '../lib/logger.js'
 import { AlertService } from '../services/alert-service.js'
 import { LockupService } from '../services/lockup-service.js'
 import { PresenceService } from '../services/presence-service.js'
-import { getOperationalDate, getOperationalDateISO, getOperationalWeek } from '../utils/operational-date.js'
+import {
+  DEFAULT_TIMEZONE,
+  OPERATIONAL_DAY_START_HOUR,
+  getOperationalDate,
+  getOperationalDateISO,
+  getOperationalWeek,
+} from '../utils/operational-date.js'
 import { broadcastLockupTransfer, broadcastCheckin } from '../websocket/broadcast.js'
 
 /**
@@ -197,7 +205,7 @@ export async function runDailyReset(): Promise<void> {
       const newStatus = await prisma.lockupStatus.create({
         data: {
           date: todayDate,
-          buildingStatus: 'open',
+          buildingStatus: 'secured',
           currentHolderId: initialHolderId,
           acquiredAt: initialHolderId ? new Date() : null,
         },
@@ -241,4 +249,37 @@ export async function runDailyReset(): Promise<void> {
     })
     throw error
   }
+}
+
+/**
+ * Check if the daily reset was missed (e.g., server was down at 3am)
+ * and run a catch-up reset if needed.
+ *
+ * Uses the presence of a LockupStatus record for today's operational date
+ * as the indicator — Step 4 of runDailyReset() creates this record.
+ */
+export async function checkMissedDailyReset(): Promise<void> {
+  const todayDate = getOperationalDate()
+  const operationalDate = getOperationalDateISO()
+  const jobLogger = logger.child({ job: 'daily-reset-catchup', operationalDate })
+
+  // Only run catch-up if we're past the rollover hour
+  const now = DateTime.now().setZone(DEFAULT_TIMEZONE)
+  if (now.hour < OPERATIONAL_DAY_START_HOUR) {
+    jobLogger.info('Before rollover hour, skipping catch-up')
+    return
+  }
+
+  const existingStatus = await prisma.lockupStatus.findFirst({
+    where: { date: todayDate },
+  })
+
+  if (existingStatus) {
+    jobLogger.info('Daily reset already completed for today')
+    return
+  }
+
+  jobLogger.warn('Missed daily reset detected — running catch-up')
+  await runDailyReset()
+  jobLogger.info('Catch-up daily reset completed')
 }

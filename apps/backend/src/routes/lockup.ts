@@ -217,6 +217,91 @@ export const lockupRouter = s.router(lockupContract, {
     }
   },
 
+  /**
+   * Get members eligible to open the building
+   */
+  getEligibleOpeners: async () => {
+    try {
+      const openers = await lockupService.getEligibleOpeners()
+      return {
+        status: 200 as const,
+        body: { openers },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to get eligible openers',
+        },
+      }
+    }
+  },
+
+  /**
+   * Open building (transition from secured to open)
+   */
+  openBuilding: async ({ params, body }) => {
+    try {
+      const status = await lockupService.openBuilding(params.id, body.note)
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: 'Building opened successfully',
+          status: {
+            date: status.date.toISOString().split('T')[0] ?? '',
+            buildingStatus: status.buildingStatus,
+            currentHolder: status.currentHolder,
+            acquiredAt: status.acquiredAt?.toISOString() ?? null,
+            securedAt: status.securedAt?.toISOString() ?? null,
+            securedBy: status.securedByMember ?? null,
+            isActive: status.isActive,
+          },
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return {
+            status: 404 as const,
+            body: {
+              error: 'NOT_FOUND',
+              message: error.message,
+            },
+          }
+        }
+        if (error.message.includes('not qualified')) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'NOT_QUALIFIED',
+              message: error.message,
+            },
+          }
+        }
+        if (error.message.includes('must be') || error.message.includes('secured state')) {
+          return {
+            status: 400 as const,
+            body: {
+              error: 'INVALID_STATE',
+              message: error.message,
+            },
+          }
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to open building',
+        },
+      }
+    }
+  },
+
   // ============================================================================
   // Checkout Options Endpoint
   // ============================================================================

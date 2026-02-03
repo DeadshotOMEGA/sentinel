@@ -1,6 +1,6 @@
 import Bree from 'bree'
 import { logger } from '../lib/logger.js'
-import { runDailyReset } from './daily-reset.js'
+import { checkMissedDailyReset, runDailyReset } from './daily-reset.js'
 import { runDutyWatchAlerts } from './duty-watch-alerts.js'
 import { runLockupAlerts } from './lockup-alerts.js'
 
@@ -119,6 +119,17 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
         cron: typeof j === 'string' ? null : j.cron,
       })),
     })
+
+    // Check for missed daily reset on startup
+    try {
+      await checkMissedDailyReset()
+    } catch (catchUpError) {
+      logger.error('Failed to run missed daily reset catch-up', {
+        error: catchUpError instanceof Error ? catchUpError.message : 'Unknown error',
+        stack: catchUpError instanceof Error ? catchUpError.stack : undefined,
+      })
+      // Non-fatal: scheduler continues even if catch-up fails
+    }
   } catch (error) {
     logger.error('Failed to start job scheduler', {
       error: error instanceof Error ? error.message : 'Unknown error',

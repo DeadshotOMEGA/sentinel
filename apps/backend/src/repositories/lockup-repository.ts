@@ -162,7 +162,7 @@ export class LockupRepository {
         date: input.date,
         currentHolderId: input.currentHolderId,
         acquiredAt: input.currentHolderId ? new Date() : null,
-        buildingStatus: input.buildingStatus ?? 'open',
+        buildingStatus: input.buildingStatus ?? 'secured',
         isActive: true,
       },
       include: {
@@ -181,7 +181,7 @@ export class LockupRepository {
     const existing = await this.findStatusByDate(date)
     if (existing) return existing
 
-    return this.createStatus({ date, buildingStatus: 'open' })
+    return this.createStatus({ date, buildingStatus: 'secured' })
   }
 
   /**
@@ -216,6 +216,27 @@ export class LockupRepository {
         securedBy: securedById,
         currentHolderId: null,
         isActive: false,
+      },
+      include: {
+        currentHolder: { select: memberSelect },
+        securedByMember: { select: memberSelect },
+      },
+    })
+
+    return this.mapStatusEntity(status)
+  }
+
+  /**
+   * Mark building as open (transition from secured)
+   */
+  async markOpen(statusId: string, holderId: string): Promise<LockupStatusEntity> {
+    const status = await this.prisma.lockupStatus.update({
+      where: { id: statusId },
+      data: {
+        buildingStatus: 'open',
+        currentHolderId: holderId,
+        acquiredAt: new Date(),
+        isActive: true,
       },
       include: {
         currentHolder: { select: memberSelect },

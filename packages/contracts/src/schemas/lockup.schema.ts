@@ -261,6 +261,40 @@ export const ExecuteLockupResponseSchema = v.object({
 })
 
 /**
+ * Open building request schema
+ */
+export const OpenBuildingSchema = v.object({
+  note: v.optional(v.string()),
+})
+
+/**
+ * Eligible opener for building open
+ */
+export const EligibleOpenerSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+  serviceNumber: v.string(),
+})
+
+/**
+ * Eligible openers response schema
+ */
+export const EligibleOpenersResponseSchema = v.object({
+  openers: v.array(EligibleOpenerSchema),
+})
+
+/**
+ * Open building response schema
+ */
+export const OpenBuildingResponseSchema = v.object({
+  success: v.boolean(),
+  message: v.string(),
+  status: LockupStatusResponseSchema,
+})
+
+/**
  * Check lockup authorization response schema
  */
 export const CheckLockupAuthResponseSchema = v.object({
@@ -291,4 +325,8 @@ export type PresentVisitorForLockup = v.InferOutput<typeof PresentVisitorForLock
 export type LockupPresentDataResponse = v.InferOutput<typeof LockupPresentDataResponseSchema>
 export type ExecuteLockupInput = v.InferOutput<typeof ExecuteLockupSchema>
 export type ExecuteLockupResponse = v.InferOutput<typeof ExecuteLockupResponseSchema>
+export type OpenBuildingInput = v.InferOutput<typeof OpenBuildingSchema>
+export type OpenBuildingResponse = v.InferOutput<typeof OpenBuildingResponseSchema>
+export type EligibleOpener = v.InferOutput<typeof EligibleOpenerSchema>
+export type EligibleOpenersResponse = v.InferOutput<typeof EligibleOpenersResponseSchema>
 export type CheckLockupAuthResponse = v.InferOutput<typeof CheckLockupAuthResponseSchema>
