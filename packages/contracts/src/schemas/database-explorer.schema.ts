@@ -17,10 +17,18 @@ export const ALLOWED_TABLES = [
   'Event',
   'EventAttendee',
   'EventCheckin',
-  // Training
+  'MissedCheckout',
+  // Unit Events
+  'UnitEventType',
+  'UnitEvent',
+  'UnitEventDutyPosition',
+  'UnitEventDutyAssignment',
+  // Training / Qualifications
   'BmqCourse',
   'BmqEnrollment',
   'TrainingYear',
+  'QualificationType',
+  'MemberQualification',
   // Audit
   'AuditLog',
   'SecurityAlert',
@@ -37,8 +45,16 @@ export const ALLOWED_TABLES = [
   'Setting',
   'AlertConfig',
   'ReportSetting',
-  // DDS
+  'StatHoliday',
+  // DDS / Scheduling
   'DdsAssignment',
+  'DutyRole',
+  'DutyPosition',
+  'WeeklySchedule',
+  'ScheduleAssignment',
+  'LockupStatus',
+  'LockupTransfer',
+  'LockupExecution',
 ] as const
 
 /**
@@ -46,12 +62,22 @@ export const ALLOWED_TABLES = [
  */
 export const TABLE_CATEGORIES: Record<string, readonly string[]> = {
   Core: ['AdminUser', 'Member', 'Badge', 'Division', 'Rank'],
-  Attendance: ['Checkin', 'Visitor', 'Event', 'EventAttendee', 'EventCheckin'],
-  Training: ['BmqCourse', 'BmqEnrollment', 'TrainingYear'],
+  Attendance: ['Checkin', 'Visitor', 'Event', 'EventAttendee', 'EventCheckin', 'MissedCheckout'],
+  'Unit Events': ['UnitEventType', 'UnitEvent', 'UnitEventDutyPosition', 'UnitEventDutyAssignment'],
+  Training: ['BmqCourse', 'BmqEnrollment', 'TrainingYear', 'QualificationType', 'MemberQualification'],
   Audit: ['AuditLog', 'SecurityAlert', 'ResponsibilityAuditLog'],
   Enums: ['MemberStatus', 'MemberType', 'VisitType', 'BadgeStatus', 'Tag', 'MemberTag', 'ListItem'],
-  Config: ['Setting', 'AlertConfig', 'ReportSetting'],
-  DDS: ['DdsAssignment'],
+  Config: ['Setting', 'AlertConfig', 'ReportSetting', 'StatHoliday'],
+  DDS: [
+    'DdsAssignment',
+    'DutyRole',
+    'DutyPosition',
+    'WeeklySchedule',
+    'ScheduleAssignment',
+    'LockupStatus',
+    'LockupTransfer',
+    'LockupExecution',
+  ],
 }
 
 /**

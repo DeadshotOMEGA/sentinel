@@ -19,6 +19,7 @@ interface TableSidebarProps {
 const CATEGORY_META: Record<string, { icon: string; color: string }> = {
   Core: { icon: '🏢', color: 'text-blue-500' },
   Attendance: { icon: '📋', color: 'text-green-500' },
+  'Unit Events': { icon: '📅', color: 'text-indigo-500' },
   Training: { icon: '📚', color: 'text-purple-500' },
   Audit: { icon: '🔍', color: 'text-orange-500' },
   Enums: { icon: '📝', color: 'text-cyan-500' },
