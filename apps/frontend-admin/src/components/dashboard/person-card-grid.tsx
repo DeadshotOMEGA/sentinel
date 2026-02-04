@@ -105,6 +105,13 @@ export function PersonCardGrid() {
     if (filteredPeople.length > 0) hasAnimated.current = true
   }, [filteredPeople.length])
 
+  // Force re-render every 60s to keep relative timestamps fresh
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   if (isError) {
     return (
       <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
@@ -227,7 +234,7 @@ export function PersonCardGrid() {
 
 function SkeletonGrid() {
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap gap-4" role="status" aria-label="Loading">
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex w-52 flex-col gap-4">
           <div className="flex items-center gap-4">

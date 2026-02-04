@@ -70,7 +70,11 @@ function DdsStat() {
         </div>
         <div className="stat-title">Duty Day Staff</div>
         <div className="stat-value">
-          <span className="loading loading-dots loading-md"></span>
+          <span
+            className="loading loading-dots loading-md"
+            role="status"
+            aria-label="Loading"
+          ></span>
         </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
@@ -134,7 +138,11 @@ function BuildingStat({
       <StatContainer>
         <div className="stat-title">Building Status</div>
         <div className="stat-value">
-          <span className="loading loading-dots loading-md"></span>
+          <span
+            className="loading loading-dots loading-md"
+            role="status"
+            aria-label="Loading"
+          ></span>
         </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
@@ -194,7 +202,11 @@ function LockupHolderStat({
         </div>
         <div className="stat-title">Lockup Holder</div>
         <div className="stat-value">
-          <span className="loading loading-dots loading-md"></span>
+          <span
+            className="loading loading-dots loading-md"
+            role="status"
+            aria-label="Loading"
+          ></span>
         </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
@@ -255,7 +267,11 @@ function DutyWatchStat() {
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
         <div className="stat-value">
-          <span className="loading loading-dots loading-md"></span>
+          <span
+            className="loading loading-dots loading-md"
+            role="status"
+            aria-label="Loading"
+          ></span>
         </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>

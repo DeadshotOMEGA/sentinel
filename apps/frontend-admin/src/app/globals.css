@@ -276,17 +276,6 @@
 }
 
 /* ========================================
-   ALERT BAR STYLING
-   Security alert presentation
-   ======================================== */
-
-.alert-security {
-  background: linear-gradient(90deg, oklch(63% 0.237 25.331 / 0.08) 0%, oklch(63% 0.237 25.331 / 0.04) 100%);
-  border: 1px solid oklch(63% 0.237 25.331 / 0.2);
-  border-left: 4px solid oklch(63% 0.237 25.331);
-}
-
-/* ========================================
    PRESENCE GRID STYLING
    Personnel card grid refinements
    ======================================== */
