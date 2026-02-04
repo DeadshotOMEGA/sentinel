@@ -9,6 +9,7 @@ import type {
   IdParam,
 } from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { PresenceService } from '../services/presence-service.js'
 import { LockupService } from '../services/lockup-service.js'
 import { DdsService } from '../services/dds-service.js'
@@ -19,6 +20,7 @@ import { serviceLogger } from '../lib/logger.js'
 const s = initServer()
 
 const checkinRepo = new CheckinRepository(getPrismaClient())
+const visitorRepo = new VisitorRepository(getPrismaClient())
 const presenceService = new PresenceService(getPrismaClient())
 
 /**
@@ -44,36 +46,166 @@ export const checkinsRouter = s.router(checkinContract, {
         }
       }
 
-      const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
+      // If filtering by memberId, only show member checkins (no visitors)
+      if (query.memberId) {
+        const result = await checkinRepo.findPaginatedWithMembers({ page, limit }, filters)
+        const totalPages = Math.ceil(result.total / limit)
 
-      const totalPages = Math.ceil(result.total / limit)
+        return {
+          status: 200 as const,
+          body: {
+            checkins: result.checkins.map((checkin) => ({
+              id: checkin.id,
+              memberId: checkin.memberId ?? null,
+              badgeId: checkin.badgeId ?? null,
+              direction: checkin.direction,
+              timestamp: checkin.timestamp.toISOString(),
+              kioskId: checkin.kioskId,
+              synced: checkin.synced ?? null,
+              flaggedForReview: null,
+              flagReason: null,
+              method: checkin.method ?? null,
+              type: 'member' as const,
+              member: checkin.member
+                ? {
+                    id: checkin.member.id,
+                    serviceNumber: checkin.member.serviceNumber,
+                    rank: checkin.member.rank,
+                    firstName: checkin.member.firstName,
+                    lastName: checkin.member.lastName,
+                    divisionId: checkin.member.divisionId,
+                  }
+                : null,
+            })),
+            total: result.total,
+            page,
+            limit,
+            totalPages,
+          },
+        }
+      }
+
+      // Unified query: members + visitors merged and sorted by timestamp
+      const visitorFilters: Record<string, unknown> = {}
+      if (query.kioskId) visitorFilters.kioskId = query.kioskId
+      if (query.startDate && query.endDate) {
+        visitorFilters.dateRange = {
+          start: new Date(query.startDate),
+          end: new Date(query.endDate),
+        }
+      }
+
+      const [memberResult, visitors] = await Promise.all([
+        checkinRepo.findPaginatedWithMembers({ page: 1, limit: 10000 }, filters),
+        visitorRepo.findAll(visitorFilters as { dateRange?: { start: Date; end: Date }; visitType?: string; hostMemberId?: string }),
+      ])
+
+      // Unified checkin entry type for merging members and visitors
+      interface UnifiedCheckinEntry {
+        id: string
+        memberId: string | null
+        badgeId: string | null
+        direction: string
+        timestamp: string
+        kioskId: string
+        synced: boolean | null
+        flaggedForReview: null
+        flagReason: null
+        method: string | null
+        type: 'member' | 'visitor'
+        visitorName?: string
+        visitorOrganization?: string
+        member: {
+          id: string
+          serviceNumber: string
+          rank: string
+          firstName: string
+          lastName: string
+          divisionId: string
+        } | null
+      }
+
+      // Convert member checkins to unified format
+      const memberEntries: UnifiedCheckinEntry[] = memberResult.checkins.map((checkin) => ({
+        id: checkin.id,
+        memberId: checkin.memberId ?? null,
+        badgeId: checkin.badgeId ?? null,
+        direction: checkin.direction,
+        timestamp: checkin.timestamp.toISOString(),
+        kioskId: checkin.kioskId,
+        synced: checkin.synced ?? null,
+        flaggedForReview: null as null,
+        flagReason: null as null,
+        method: checkin.method ?? null,
+        type: 'member' as const,
+        member: checkin.member
+          ? {
+              id: checkin.member.id,
+              serviceNumber: checkin.member.serviceNumber,
+              rank: checkin.member.rank,
+              firstName: checkin.member.firstName,
+              lastName: checkin.member.lastName,
+              divisionId: checkin.member.divisionId,
+            }
+          : null,
+      }))
+
+      // Convert visitors to unified entries (each visitor produces 1-2 rows)
+      const visitorEntries: UnifiedCheckinEntry[] = []
+      for (const v of visitors) {
+        // Check-in entry
+        visitorEntries.push({
+          id: `v-in-${v.id}`,
+          memberId: null,
+          badgeId: null,
+          direction: 'in',
+          timestamp: v.checkInTime.toISOString(),
+          kioskId: v.kioskId,
+          synced: null,
+          flaggedForReview: null,
+          flagReason: null,
+          method: v.checkInMethod ?? null,
+          type: 'visitor' as const,
+          visitorName: v.name,
+          visitorOrganization: v.organization,
+          member: null,
+        })
+
+        // Check-out entry (only if checked out)
+        if (v.checkOutTime) {
+          visitorEntries.push({
+            id: `v-out-${v.id}`,
+            memberId: null,
+            badgeId: null,
+            direction: 'out',
+            timestamp: v.checkOutTime.toISOString(),
+            kioskId: v.kioskId,
+            synced: null,
+            flaggedForReview: null,
+            flagReason: null,
+            method: v.checkInMethod ?? null,
+            type: 'visitor' as const,
+            visitorName: v.name,
+            visitorOrganization: v.organization,
+            member: null,
+          })
+        }
+      }
+
+      // Merge and sort by timestamp descending
+      const allEntries = [...memberEntries, ...visitorEntries]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+      const total = allEntries.length
+      const totalPages = Math.ceil(total / limit)
+      const startIndex = (page - 1) * limit
+      const paginatedEntries = allEntries.slice(startIndex, startIndex + limit)
 
       return {
         status: 200 as const,
         body: {
-          checkins: result.checkins.map((checkin) => ({
-            id: checkin.id,
-            memberId: checkin.memberId ?? null,
-            badgeId: checkin.badgeId ?? null,
-            direction: checkin.direction,
-            timestamp: checkin.timestamp.toISOString(),
-            kioskId: checkin.kioskId,
-            synced: checkin.synced ?? null,
-            flaggedForReview: null,
-            flagReason: null,
-            method: checkin.method ?? null,
-            member: checkin.member
-              ? {
-                  id: checkin.member.id,
-                  serviceNumber: checkin.member.serviceNumber,
-                  rank: checkin.member.rank,
-                  firstName: checkin.member.firstName,
-                  lastName: checkin.member.lastName,
-                  divisionId: checkin.member.divisionId,
-                }
-              : null,
-          })),
-          total: result.total,
+          checkins: paginatedEntries,
+          total,
           page,
           limit,
           totalPages,

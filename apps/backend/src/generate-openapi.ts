@@ -88,7 +88,7 @@ const openApiDocument = generateOpenApi(
       { name: 'visitors', description: 'Visitor sign-in and tracking' },
       { name: 'tags', description: 'Responsibility tag management' },
       { name: 'security-alerts', description: 'Security alert system' },
-      { name: 'dds', description: 'Daily Duty Staff management' },
+      { name: 'dds', description: 'Duty Day Staff management' },
       { name: 'lockup', description: 'Building lockup operations' },
       { name: 'visit-types', description: 'Visit type enumeration and lookup' },
       {

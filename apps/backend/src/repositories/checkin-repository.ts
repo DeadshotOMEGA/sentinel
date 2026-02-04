@@ -930,7 +930,7 @@ export class CheckinRepository {
           'visitor' as type,
           v.id,
           v.check_in_time as timestamp,
-          CASE WHEN v.check_out_time IS NULL THEN 'in' ELSE 'out' END as direction,
+          'in' as direction,
           v.name,
           NULL as rank,
           NULL as division,
@@ -946,6 +946,31 @@ export class CheckinRepository {
         LEFT JOIN events e ON v.event_id = e.id
         WHERE v.check_in_time >= ${cutoffDate}
         ORDER BY v.check_in_time DESC
+        LIMIT ${limit}
+      )
+      UNION ALL
+      (
+        SELECT
+          'visitor' as type,
+          v.id,
+          v.check_out_time as timestamp,
+          'out' as direction,
+          v.name,
+          NULL as rank,
+          NULL as division,
+          v.kiosk_id,
+          v.organization,
+          v.visit_type,
+          v.visit_reason,
+          CASE WHEN hm.id IS NOT NULL THEN hm.rank || ' ' || hm.first_name || ' ' || hm.last_name ELSE NULL END as host_name,
+          v.event_id,
+          e.name as event_name
+        FROM visitors v
+        LEFT JOIN members hm ON v.host_member_id = hm.id
+        LEFT JOIN events e ON v.event_id = e.id
+        WHERE v.check_out_time IS NOT NULL
+          AND v.check_out_time >= ${cutoffDate}
+        ORDER BY v.check_out_time DESC
         LIMIT ${limit}
       )
       ORDER BY timestamp DESC
