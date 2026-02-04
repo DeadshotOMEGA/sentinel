@@ -249,6 +249,7 @@ apps/*/tests/**/*.js.map
 # Test databases
 test-db/
 *.test.db
+nominal-roll.csv
 
 # Screenshots (temporary/local testing)
 screenshots/
