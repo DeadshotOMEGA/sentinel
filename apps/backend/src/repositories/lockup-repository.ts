@@ -193,7 +193,6 @@ export class LockupRepository {
       data: {
         currentHolderId: holderId,
         acquiredAt: holderId ? new Date() : null,
-        buildingStatus: holderId ? 'open' : 'secured',
       },
       include: {
         currentHolder: { select: memberSelect },
