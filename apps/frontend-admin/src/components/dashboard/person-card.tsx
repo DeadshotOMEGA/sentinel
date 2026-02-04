@@ -2,7 +2,7 @@
 
 import { memo } from 'react'
 import { Clock, User, Building2, LogOut } from 'lucide-react'
-import { Chip, type ChipColor, type ChipVariant } from '@/components/ui/chip'
+import { Chip, fadedColorClasses, type ChipColor, type ChipVariant } from '@/components/ui/chip'
 import type { PresentPerson } from '@sentinel/contracts'
 
 function formatRelativeTime(isoString: string): string {
@@ -27,23 +27,8 @@ const POSITION_COLORS: Record<string, string> = {
   APS: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
 }
 
-// Map chipColor to avatar classes (faded style — border + 10% bg + colored text)
-const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = {
-  default: 'border border-zinc-500 bg-zinc-500/10 text-zinc-500 dark:border-zinc-400 dark:bg-zinc-400/20 dark:text-zinc-400',
-  primary: 'border border-primary bg-primary/10 text-primary dark:border-primary dark:bg-primary/20 dark:text-primary',
-  secondary: 'border border-secondary bg-secondary/10 text-secondary dark:border-secondary dark:bg-secondary/20 dark:text-secondary',
-  success: 'border border-emerald-500 bg-emerald-500/10 text-emerald-500 dark:border-emerald-400 dark:bg-emerald-400/20 dark:text-emerald-400',
-  warning: 'border border-amber-500 bg-amber-500/10 text-amber-500 dark:border-amber-400 dark:bg-amber-400/20 dark:text-amber-400',
-  danger: 'border border-red-500 bg-red-500/10 text-red-500 dark:border-red-400 dark:bg-red-400/20 dark:text-red-400',
-  blue: 'border border-blue-500 bg-blue-500/10 text-blue-500 dark:border-blue-400 dark:bg-blue-400/20 dark:text-blue-400',
-  green: 'border border-green-500 bg-green-500/10 text-green-500 dark:border-green-400 dark:bg-green-400/20 dark:text-green-400',
-  pink: 'border border-pink-500 bg-pink-500/10 text-pink-500 dark:border-pink-400 dark:bg-pink-400/20 dark:text-pink-400',
-  purple: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-  red: 'border border-red-500 bg-red-500/10 text-red-500 dark:border-red-400 dark:bg-red-400/20 dark:text-red-400',
-  yellow: 'border border-yellow-500 bg-yellow-500/10 text-yellow-500 dark:border-yellow-400 dark:bg-yellow-400/20 dark:text-yellow-400',
-  cyan: 'border border-cyan-500 bg-cyan-500/10 text-cyan-500 dark:border-cyan-400 dark:bg-cyan-400/20 dark:text-cyan-400',
-  zinc: 'border border-zinc-500 bg-zinc-500/10 text-zinc-500 dark:border-zinc-400 dark:bg-zinc-400/20 dark:text-zinc-400',
-}
+// Reuse faded color classes from Chip component for avatar styling
+const CHIP_COLOR_AVATAR_CLASSES = fadedColorClasses
 
 // Tags that represent active responsibilities (shown only when person holds the role)
 const RESPONSIBILITY_TAG_NAMES = ['DDS']
@@ -57,7 +42,9 @@ interface PersonAvatarProps {
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   // Priority 1: Duty position
   if (dutyPosition) {
-    const colorClass = POSITION_COLORS[dutyPosition] || 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400'
+    const colorClass =
+      POSITION_COLORS[dutyPosition] ||
+      'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400'
     return (
       <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
         <div className={`w-10 rounded-full ${colorClass}`}>
@@ -84,9 +71,12 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
 
   // Priority 3: First non-responsibility, non-positional tag (for members)
   if (person.type === 'member') {
-    const displayTag = person.tags?.find((t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional)
+    const displayTag = person.tags?.find(
+      (t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional
+    )
     if (displayTag) {
-      const abbrev = displayTag.name.match(/[A-Z]/g)?.join('') || displayTag.name.slice(0, 2).toUpperCase()
+      const abbrev =
+        displayTag.name.match(/[A-Z]/g)?.join('') || displayTag.name.slice(0, 2).toUpperCase()
       const colorClass = displayTag.chipColor
         ? CHIP_COLOR_AVATAR_CLASSES[displayTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
         : CHIP_COLOR_AVATAR_CLASSES.default
@@ -163,9 +153,7 @@ export const PersonCard = memo(function PersonCard({
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-sm truncate">{person.name}</h3>
               {person.organization && (
-                <p className="text-xs text-base-content/60 truncate">
-                  {person.organization}
-                </p>
+                <p className="text-xs text-base-content/60 truncate">{person.organization}</p>
               )}
             </div>
             {person.visitType && (

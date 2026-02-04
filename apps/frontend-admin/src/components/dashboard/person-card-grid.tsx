@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react'
 import { UsersRound, Search } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
@@ -40,13 +40,16 @@ export function PersonCardGrid() {
     startTransition(() => setFilter(newFilter))
   }
 
-  const handleCheckoutVisitor = async (visitorId: string) => {
-    try {
-      await checkoutVisitor.mutateAsync(visitorId)
-    } catch (error) {
-      console.error('Failed to sign out visitor:', error)
-    }
-  }
+  const handleCheckoutVisitor = useCallback(
+    async (visitorId: string) => {
+      try {
+        await checkoutVisitor.mutateAsync(visitorId)
+      } catch (error) {
+        console.error('Failed to sign out visitor:', error)
+      }
+    },
+    [checkoutVisitor]
+  )
 
   const filteredPeople = useMemo(() => {
     if (!data?.people) return []
@@ -87,8 +90,20 @@ export function PersonCardGrid() {
     return people
   }, [data?.people, filter, search])
 
-  const memberCount = data?.people?.filter((p) => p.type === 'member').length ?? 0
-  const visitorCount = data?.people?.filter((p) => p.type === 'visitor').length ?? 0
+  const memberCount = useMemo(
+    () => data?.people?.filter((p) => p.type === 'member').length ?? 0,
+    [data?.people]
+  )
+  const visitorCount = useMemo(
+    () => data?.people?.filter((p) => p.type === 'visitor').length ?? 0,
+    [data?.people]
+  )
+
+  // Track whether initial animation has played to prevent replay on data updates
+  const hasAnimated = useRef(false)
+  useEffect(() => {
+    if (filteredPeople.length > 0) hasAnimated.current = true
+  }, [filteredPeople.length])
 
   if (isError) {
     return (
@@ -176,11 +191,15 @@ export function PersonCardGrid() {
             {filteredPeople.map((person: PresentPerson, index: number) => (
               <div
                 key={`${person.type}-${person.id}`}
-                className="animate-fade-in-up"
-                style={{
-                  animationDelay: `${Math.min(index, 12) * 50}ms`,
-                  animationFillMode: 'backwards',
-                }}
+                className={hasAnimated.current ? '' : 'animate-fade-in-up'}
+                style={
+                  hasAnimated.current
+                    ? undefined
+                    : {
+                        animationDelay: `${Math.min(index, 12) * 50}ms`,
+                        animationFillMode: 'backwards',
+                      }
+                }
               >
                 <PersonCard
                   person={person}

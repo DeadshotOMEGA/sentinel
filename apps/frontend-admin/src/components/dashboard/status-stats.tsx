@@ -110,9 +110,13 @@ function DdsStat() {
   )
 }
 
-function BuildingStat() {
-  const { data: lockupStatus, isLoading } = useLockupStatus()
-
+function BuildingStat({
+  lockupStatus,
+  isLoading,
+}: {
+  lockupStatus: ReturnType<typeof useLockupStatus>['data']
+  isLoading: boolean
+}) {
   const getStatusDisplay = (status: string | undefined) => {
     switch (status) {
       case 'secured':
@@ -175,9 +179,13 @@ function BuildingStat() {
   )
 }
 
-function LockupHolderStat() {
-  const { data: lockupStatus, isLoading } = useLockupStatus()
-
+function LockupHolderStat({
+  lockupStatus,
+  isLoading,
+}: {
+  lockupStatus: ReturnType<typeof useLockupStatus>['data']
+  isLoading: boolean
+}) {
   if (isLoading) {
     return (
       <StatContainer>
@@ -299,6 +307,8 @@ function DutyWatchStat() {
 }
 
 export function StatusStats() {
+  const { data: lockupStatus, isLoading: lockupLoading } = useLockupStatus()
+
   return (
     <div
       className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel rounded-xl animate-fade-in"
@@ -306,8 +316,8 @@ export function StatusStats() {
     >
       <DdsStat />
       <DutyWatchStat />
-      <BuildingStat />
-      <LockupHolderStat />
+      <BuildingStat lockupStatus={lockupStatus} isLoading={lockupLoading} />
+      <LockupHolderStat lockupStatus={lockupStatus} isLoading={lockupLoading} />
     </div>
   )
 }

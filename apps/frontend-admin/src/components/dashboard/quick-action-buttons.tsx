@@ -110,9 +110,9 @@ export function QuickActionButtons() {
 
       <button
         className="btn btn-outline btn-primary hover:shadow-md transition-all duration-200"
+        disabled
         onClick={() => {
           // TODO: Navigate to reports
-          console.log('Reports clicked')
         }}
       >
         <FileText className="h-4 w-4" />

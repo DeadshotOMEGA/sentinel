@@ -53,9 +53,9 @@ export function SecurityAlertsBar() {
               </div>
               <button
                 className="btn btn-ghost btn-xs hover:btn-error hover:btn-outline transition-colors"
+                disabled
                 onClick={() => {
                   // TODO: Implement acknowledge alert
-                  console.log('Acknowledge alert:', alert.id)
                 }}
               >
                 Acknowledge
@@ -74,9 +74,9 @@ export function SecurityAlertsBar() {
       <button
         aria-label="Dismiss all security alerts"
         className="btn btn-ghost btn-sm btn-square hover:bg-error/10 hover:text-error transition-colors"
+        disabled
         onClick={() => {
           // TODO: Implement dismiss all
-          console.log('Dismiss all alerts')
         }}
       >
         <X className="h-4 w-4" />
