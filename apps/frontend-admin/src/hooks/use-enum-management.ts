@@ -15,6 +15,7 @@ export interface EnumItem {
   chipVariant?: string | null
   chipColor?: string | null
   displayOrder?: number  // Only for tags
+  isPositional?: boolean  // Only for tags
   usageCount?: number
   createdAt: string
   updatedAt: string
@@ -28,6 +29,7 @@ export interface CreateEnumInput {
   chipVariant?: string
   chipColor?: string
   displayOrder?: number
+  isPositional?: boolean
 }
 
 export interface UpdateEnumInput {
@@ -38,6 +40,7 @@ export interface UpdateEnumInput {
   chipVariant?: string
   chipColor?: string
   displayOrder?: number
+  isPositional?: boolean
 }
 
 /**

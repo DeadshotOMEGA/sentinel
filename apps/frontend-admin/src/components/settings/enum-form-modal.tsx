@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { Loader2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   useCreateEnum,
   useUpdateEnum,
@@ -97,6 +98,7 @@ export function EnumFormModal({
       color: '',
       chipVariant: 'solid',
       chipColor: 'default',
+      isPositional: false,
     },
   })
 
@@ -114,6 +116,7 @@ export function EnumFormModal({
         color: item.color || '',
         chipVariant: (item.chipVariant as ChipVariant) || 'solid',
         chipColor: (item.chipColor as ChipColor) || 'default',
+        isPositional: item.isPositional || false,
       })
     } else if (open && mode === 'create') {
       form.reset({
@@ -123,6 +126,7 @@ export function EnumFormModal({
         color: '',
         chipVariant: 'solid',
         chipColor: 'default',
+        isPositional: false,
       })
     }
   }, [open, item, mode, form])
@@ -137,6 +141,7 @@ export function EnumFormModal({
         color: data.color || undefined,
         chipVariant: data.chipVariant || 'solid',
         chipColor: data.chipColor || 'default',
+        isPositional: isTagType ? data.isPositional : undefined,
       }
 
       if (mode === 'edit' && item) {
@@ -288,6 +293,30 @@ export function EnumFormModal({
                 </Chip>
               </div>
             </div>
+
+            {/* Positional toggle - only for tags */}
+            {isTagType && (
+              <FormField
+                control={form.control}
+                name="isPositional"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3 space-y-0 pt-2 border-t">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value || false}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel>Positional tag</FormLabel>
+                      <FormDescription>
+                        Positional tags display as chips only and never appear in the avatar
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             {error && (
               <div className="text-sm text-error">
