@@ -5,6 +5,7 @@ import { UsersRound, Search } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
+import { useDdsStatus } from '@/hooks/use-dds'
 import { useAuthStore } from '@/store/auth-store'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
@@ -14,6 +15,7 @@ type FilterType = 'all' | 'member' | 'visitor'
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
   const { data: dutyWatch } = useTonightDutyWatch()
+  const { data: ddsStatus } = useDdsStatus()
   const checkoutVisitor = useCheckoutVisitor()
   const user = useAuthStore((state) => state.user)
   const canCheckout = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
@@ -30,6 +32,9 @@ export function PersonCardGrid() {
         .map((m) => [m.member.id, m.position.code])
     )
   }, [dutyWatch?.team])
+
+  // Current DDS member ID (only when assignment is active/pending)
+  const ddsMemberId = ddsStatus?.assignment?.memberId ?? null
 
   const handleFilterChange = (newFilter: FilterType) => {
     startTransition(() => setFilter(newFilter))
@@ -110,9 +115,9 @@ export function PersonCardGrid() {
   }
 
   return (
-    <div className="presence-section p-6 rounded-xl shadow-lg animate-fade-in">
+    <div className="presence-section p-4 rounded-xl shadow-lg animate-fade-in">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-5 pb-4 presence-section-header -mx-6 px-6 -mt-6 pt-5 rounded-t-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3 rounded-t-xl">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <UsersRound size={24} strokeWidth={1.5} className="text-primary" />
@@ -120,45 +125,45 @@ export function PersonCardGrid() {
           <h2 className="text-lg font-display font-semibold tracking-tight">Presence</h2>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="input input-bordered input-sm pl-8 w-48"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* Filters + Search */}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            <button
+              className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => handleFilterChange('all')}
+            >
+              All ({data?.total ?? 0})
+            </button>
+            <button
+              className={`btn btn-xs ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
+              onClick={() => handleFilterChange('member')}
+            >
+              Members ({memberCount})
+            </button>
+            <button
+              className={`btn btn-xs ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
+              onClick={() => handleFilterChange('visitor')}
+            >
+              Visitors ({visitorCount})
+            </button>
+          </div>
+          <div className="relative">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="input input-bordered input-sm pl-8 w-48"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-4">
-        <button
-          className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
-          onClick={() => handleFilterChange('all')}
-        >
-          All ({data?.total ?? 0})
-        </button>
-        <button
-          className={`btn btn-xs ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
-          onClick={() => handleFilterChange('member')}
-        >
-          Members ({memberCount})
-        </button>
-        <button
-          className={`btn btn-xs ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
-          onClick={() => handleFilterChange('visitor')}
-        >
-          Visitors ({visitorCount})
-        </button>
       </div>
 
       {/* Grid or empty state */}
       {filteredPeople.length > 0 ? (
         <div
-          className={`grid gap-4 grid-auto-fit-cards transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
+          className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
         >
           {filteredPeople.map((person: PresentPerson, index: number) => (
             <div
@@ -172,6 +177,7 @@ export function PersonCardGrid() {
               <PersonCard
                 person={person}
                 dutyPosition={dutyPositionMap.get(person.id)}
+                isDds={person.type === 'member' && person.id === ddsMemberId}
                 onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
               />
             </div>

@@ -28,7 +28,7 @@ export function DdsStatusWidget() {
           <div className="btn btn-square btn-primary btn-soft btn-sm no-animation">
             <CheckCircle2 className="h-5 w-5" />
           </div>
-          <h2 className="card-title text-lg">Daily Duty Staff</h2>
+          <h2 className="card-title text-lg">Duty Day Staff</h2>
         </div>
 
         {isLoading ? (

@@ -254,7 +254,7 @@ function DutyWatchStat() {
 
   return (
     <StatContainer accentColor={allCheckedIn ? undefined : 'warning'}>
-      <div className="stat-figure text-secondary">
+      <div className={`stat-figure ${allCheckedIn ? 'text-success' : 'text-warning'}`}>
         <Users size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Watch Tonight</div>
@@ -263,7 +263,7 @@ function DutyWatchStat() {
       </div>
       <div className="stat-desc flex items-center gap-1">
         {allCheckedIn ? (
-          <span className="badge badge-success badge-sm">All Present</span>
+          <span>All checked in</span>
         ) : (
           <>
             <Clock size={12} />
