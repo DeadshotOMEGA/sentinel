@@ -1,12 +1,15 @@
 #!/usr/bin/env tsx
+import 'dotenv/config'
 import { PrismaClient } from '../generated/client/index.js'
-import { adapter } from '../prisma/prisma.config.js'
+import { adapter } from '../src/adapter.js'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+type CountResult = { count: bigint }[]
 
 async function runMigration() {
   const prisma = new PrismaClient({ adapter })
@@ -35,14 +38,14 @@ async function runMigration() {
     console.log('✓ Seed completed successfully')
 
     // Verify counts
-    const totalCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM ranks`
-    const activeCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM ranks WHERE is_active = true`
-    const deprecatedCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM ranks WHERE is_active = false`
+    const totalCount = await prisma.$queryRaw<CountResult>`SELECT COUNT(*) as count FROM ranks`
+    const activeCount = await prisma.$queryRaw<CountResult>`SELECT COUNT(*) as count FROM ranks WHERE is_active = true`
+    const deprecatedCount = await prisma.$queryRaw<CountResult>`SELECT COUNT(*) as count FROM ranks WHERE is_active = false`
 
     console.log('\nVerification:')
-    console.log(`  Total ranks: ${(totalCount as any)[0].count}`)
-    console.log(`  Active ranks: ${(activeCount as any)[0].count}`)
-    console.log(`  Deprecated ranks: ${(deprecatedCount as any)[0].count}`)
+    console.log(`  Total ranks: ${totalCount[0].count}`)
+    console.log(`  Active ranks: ${activeCount[0].count}`)
+    console.log(`  Deprecated ranks: ${deprecatedCount[0].count}`)
   } catch (error) {
     console.error('Migration failed:', error)
     throw error

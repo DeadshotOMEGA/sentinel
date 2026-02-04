@@ -167,6 +167,7 @@ export const CreateTagSchema = v.object({
   chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
   chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
   displayOrder: v.optional(v.number()),
+  isPositional: v.optional(v.boolean()),
 })
 
 export const UpdateTagSchema = v.object({
@@ -183,6 +184,7 @@ export const UpdateTagSchema = v.object({
   chipVariant: v.optional(v.picklist(ChipVariants, 'Invalid chip variant')),
   chipColor: v.optional(v.picklist(ChipColors, 'Invalid chip color')),
   displayOrder: v.optional(v.number()),
+  isPositional: v.optional(v.boolean()),
 })
 
 export const TagResponseSchema = v.object({
@@ -192,6 +194,7 @@ export const TagResponseSchema = v.object({
   chipVariant: v.optional(v.string()),
   chipColor: v.optional(v.string()),
   displayOrder: v.optional(v.number()),
+  isPositional: v.optional(v.boolean()),
   usageCount: v.optional(v.number()),
   createdAt: v.string(),
   updatedAt: v.string(),

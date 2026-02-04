@@ -61,6 +61,7 @@ function toTagResponse(item: Tag, usageCount?: number): TagResponse {
     chipVariant: item.chipVariant ?? 'solid',
     chipColor: item.chipColor ?? 'default',
     displayOrder: item.displayOrder,
+    isPositional: item.isPositional,
     usageCount,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
@@ -837,6 +838,7 @@ export const tagsRouter = s.router(tagsContract, {
         chipVariant: body.chipVariant,
         chipColor: body.chipColor,
         displayOrder: body.displayOrder,
+        isPositional: body.isPositional,
       })
 
       return {
@@ -917,6 +919,7 @@ export const tagsRouter = s.router(tagsContract, {
         chipVariant: body.chipVariant,
         chipColor: body.chipColor,
         displayOrder: body.displayOrder,
+        isPositional: body.isPositional,
       })
 
       return {

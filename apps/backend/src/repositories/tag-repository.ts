@@ -12,6 +12,7 @@ interface PrismaTagRow {
   displayOrder: number
   chipVariant: string
   chipColor: string
+  isPositional: boolean
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -27,6 +28,7 @@ function toTag(t: PrismaTagRow): Tag {
     displayOrder: t.displayOrder,
     chipVariant: t.chipVariant,
     chipColor: t.chipColor,
+    isPositional: t.isPositional,
     createdAt: t.createdAt ?? new Date(),
     updatedAt: t.updatedAt ?? new Date(),
   }
@@ -46,6 +48,7 @@ export class TagRepository {
     const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
       SELECT id, name, description, display_order as "displayOrder",
              chip_variant as "chipVariant", chip_color as "chipColor",
+             is_positional as "isPositional",
              created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       ORDER BY display_order, name
@@ -61,6 +64,7 @@ export class TagRepository {
     const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
       SELECT id, name, description, display_order as "displayOrder",
              chip_variant as "chipVariant", chip_color as "chipColor",
+             is_positional as "isPositional",
              created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       WHERE id = ${id}::uuid
@@ -80,6 +84,7 @@ export class TagRepository {
     const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
       SELECT id, name, description, display_order as "displayOrder",
              chip_variant as "chipVariant", chip_color as "chipColor",
+             is_positional as "isPositional",
              created_at as "createdAt", updated_at as "updatedAt"
       FROM tags
       WHERE name = ${name}
@@ -107,12 +112,14 @@ export class TagRepository {
 
     const chipVariant = data.chipVariant ?? 'solid'
     const chipColor = data.chipColor ?? 'default'
+    const isPositional = data.isPositional ?? false
 
     const rows = await this.prisma.$queryRaw<PrismaTagRow[]>`
-      INSERT INTO tags (name, description, display_order, chip_variant, chip_color)
-      VALUES (${data.name}, ${data.description ?? null}, ${displayOrder}, ${chipVariant}, ${chipColor})
+      INSERT INTO tags (name, description, display_order, chip_variant, chip_color, is_positional)
+      VALUES (${data.name}, ${data.description ?? null}, ${displayOrder}, ${chipVariant}, ${chipColor}, ${isPositional})
       RETURNING id, name, description, display_order as "displayOrder",
                 chip_variant as "chipVariant", chip_color as "chipColor",
+                is_positional as "isPositional",
                 created_at as "createdAt", updated_at as "updatedAt"
     `
 
@@ -148,10 +155,15 @@ export class TagRepository {
         display_order = COALESCE(${data.displayOrder ?? null}, display_order),
         chip_variant = COALESCE(${data.chipVariant ?? null}, chip_variant),
         chip_color = COALESCE(${data.chipColor ?? null}, chip_color),
+        is_positional = CASE
+          WHEN ${data.isPositional !== undefined} THEN ${data.isPositional ?? false}
+          ELSE is_positional
+        END,
         updated_at = NOW()
       WHERE id = ${id}::uuid
       RETURNING id, name, description, display_order as "displayOrder",
                 chip_variant as "chipVariant", chip_color as "chipColor",
+                is_positional as "isPositional",
                 created_at as "createdAt", updated_at as "updatedAt"
     `
 

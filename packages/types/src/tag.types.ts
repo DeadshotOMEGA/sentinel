@@ -7,6 +7,7 @@ export interface Tag {
   displayOrder: number
   chipVariant?: string
   chipColor?: string
+  isPositional: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -17,6 +18,7 @@ export interface CreateTagInput {
   displayOrder?: number
   chipVariant?: string
   chipColor?: string
+  isPositional?: boolean
 }
 
 export interface UpdateTagInput {
@@ -25,4 +27,5 @@ export interface UpdateTagInput {
   displayOrder?: number
   chipVariant?: string
   chipColor?: string
+  isPositional?: boolean
 }
