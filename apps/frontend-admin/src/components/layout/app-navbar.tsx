@@ -65,19 +65,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end">
-        <span className="badge">
+        <span className="badge badge-outline badge-xl">
           <span className={cn('status', dot)} />
           {label}
         </span>
-        <button className="btn btn-ghost btn-circle">
-          <Search size={28} strokeWidth={1} />
-        </button>
-        <button className="btn btn-ghost btn-circle">
-          <div className="indicator">
-            <Bell size={28} strokeWidth={1} />
-            <span className="badge badge-xs badge-secondary indicator-item"></span>
-          </div>
-        </button>
       </div>
     </div>
   )
