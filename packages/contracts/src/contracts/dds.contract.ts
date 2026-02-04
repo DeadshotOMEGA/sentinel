@@ -15,7 +15,7 @@ import {
 const c = initContract()
 
 /**
- * DDS (Daily Duty Staff) API contract
+ * DDS (Duty Day Staff) API contract
  *
  * Defines all DDS-related endpoints with request/response schemas
  */
@@ -63,7 +63,8 @@ export const ddsContract = c.router({
       500: ErrorResponseSchema,
     },
     summary: 'Get DDS audit log',
-    description: 'Get audit log entries for DDS responsibility (accepts, assignments, transfers, releases)',
+    description:
+      'Get audit log entries for DDS responsibility (accepts, assignments, transfers, releases)',
   },
 
   /**

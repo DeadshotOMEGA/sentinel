@@ -80,6 +80,9 @@ export const CheckinWithMemberResponseSchema = v.object({
   flaggedForReview: v.nullable(v.boolean()),
   flagReason: v.nullable(v.string()),
   method: v.nullable(v.string()),
+  type: v.optional(v.picklist(['member', 'visitor'])),
+  visitorName: v.optional(v.string()),
+  visitorOrganization: v.optional(v.string()),
   member: v.nullable(
     v.object({
       id: v.string(),
@@ -106,7 +109,12 @@ export const CheckinListQuerySchema = v.object({
   kioskId: v.optional(v.string()),
   startDate: v.optional(v.pipe(v.string(), v.isoTimestamp())),
   endDate: v.optional(v.pipe(v.string(), v.isoTimestamp())),
-  flaggedOnly: v.optional(v.pipe(v.string(), v.transform((val) => val === 'true'))),
+  flaggedOnly: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => val === 'true')
+    )
+  ),
 })
 
 /**
