@@ -446,6 +446,83 @@ export class CheckinRepository {
   }
 
   /**
+   * Find all checkins with member details (no pagination limit enforced)
+   * Used for unified queries that merge members + visitors before paginating
+   */
+  async findAllWithMembers(
+    filters?: CheckinFilters
+  ): Promise<{ checkins: CheckinWithMember[]; total: number }> {
+    const where = this.buildWhereClause(filters)
+
+    const [total, checkins] = await Promise.all([
+      this.prisma.checkin.count({ where }),
+      this.prisma.checkin.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        include: {
+          member: {
+            include: {
+              division: true,
+            },
+          },
+        },
+      }),
+    ])
+
+    return {
+      checkins: checkins
+        .filter((c) => c.member !== null)
+        .map((c) => {
+          const division = c.member!.division
+          return {
+            ...this.toCheckin(c),
+            member: {
+              id: c.member!.id,
+              serviceNumber: c.member!.serviceNumber,
+              rank: c.member!.rank,
+              firstName: c.member!.firstName,
+              lastName: c.member!.lastName,
+              divisionId: c.member!.divisionId ?? '',
+              email: c.member!.email || undefined,
+              mobilePhone: c.member!.mobilePhone || undefined,
+              memberType: c.member!.memberType as MemberType,
+              status: c.member!.status as MemberStatus,
+              employeeNumber: c.member!.employeeNumber || undefined,
+              initials: c.member!.initials || undefined,
+              mess: c.member!.mess || undefined,
+              moc: c.member!.moc || undefined,
+              classDetails: c.member!.classDetails || undefined,
+              homePhone: c.member!.homePhone || undefined,
+              badgeId: c.member!.badgeId || undefined,
+              notes: c.member!.notes || undefined,
+              createdAt: c.member!.createdAt || new Date(),
+              updatedAt: c.member!.updatedAt || new Date(),
+              division: division
+                ? {
+                    id: division.id,
+                    name: division.name,
+                    code: division.code,
+                    description: division.description || undefined,
+                    createdAt: division.createdAt,
+                    updatedAt: division.updatedAt,
+                  }
+                : {
+                    id: '',
+                    name: 'Unassigned',
+                    code: 'UNASSIGNED',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                  },
+              memberTypeId: c.member!.memberTypeId || undefined,
+              memberStatusId: c.member!.memberStatusId || undefined,
+            },
+          }
+        }),
+      total,
+    }
+  }
+
+  /**
    * Find paginated checkins with member details
    */
   async findPaginatedWithMembers(

@@ -96,7 +96,7 @@ export const checkinsRouter = s.router(checkinContract, {
       }
 
       const [memberResult, visitors] = await Promise.all([
-        checkinRepo.findPaginatedWithMembers({ page: 1, limit: 10000 }, filters),
+        checkinRepo.findAllWithMembers(filters),
         visitorRepo.findAll(visitorFilters as { dateRange?: { start: Date; end: Date }; visitType?: string; hostMemberId?: string }),
       ])
 
