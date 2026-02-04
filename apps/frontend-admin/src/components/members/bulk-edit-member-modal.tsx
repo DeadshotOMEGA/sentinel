@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
 interface BulkEditMemberModalProps {
@@ -40,6 +41,7 @@ export function BulkEditMemberModal({
   const [memberTypeId, setMemberTypeId] = useState(NO_CHANGE)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
     // Build update data only for changed fields
@@ -57,28 +59,39 @@ export function BulkEditMemberModal({
 
     setIsSubmitting(true)
     setProgress(0)
+    setError(null)
 
-    try {
-      // Update members sequentially with delay to avoid rate limiting
-      for (let i = 0; i < memberIds.length; i++) {
-        await updateMember.mutateAsync({
+    // Update members sequentially with delay to avoid rate limiting
+    const results: PromiseSettledResult<unknown>[] = []
+    for (let i = 0; i < memberIds.length; i++) {
+      const result = await Promise.allSettled([
+        updateMember.mutateAsync({
           id: memberIds[i],
           data: updateData,
-        })
-        setProgress(Math.round(((i + 1) / memberIds.length) * 100))
-        // Small delay to avoid rate limiting (100ms between requests)
-        if (i < memberIds.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 100))
-        }
+        }),
+      ])
+      results.push(result[0])
+      setProgress(Math.round(((i + 1) / memberIds.length) * 100))
+      // Small delay to avoid rate limiting (100ms between requests)
+      if (i < memberIds.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
+    }
+
+    const failedCount = results.filter((r) => r.status === 'rejected').length
+    const succeededCount = results.filter((r) => r.status === 'fulfilled').length
+
+    if (failedCount === 0) {
       onSuccess?.()
       onOpenChange(false)
-    } catch (error) {
-      console.error('Failed to update members:', error)
-    } finally {
-      setIsSubmitting(false)
-      setProgress(0)
+    } else {
+      setError(
+        `${succeededCount} of ${memberIds.length} members updated successfully. ${failedCount} failed.`
+      )
     }
+
+    setIsSubmitting(false)
+    setProgress(0)
   }
 
   const handleOpenChange = (open: boolean) => {
@@ -88,6 +101,7 @@ export function BulkEditMemberModal({
       setDivisionId(NO_CHANGE)
       setMemberStatusId(NO_CHANGE)
       setMemberTypeId(NO_CHANGE)
+      setError(null)
     }
     onOpenChange(open)
   }
@@ -193,6 +207,12 @@ export function BulkEditMemberModal({
               </div>
               <p className="text-sm text-base-content/60 text-center">Updating... {progress}%</p>
             </div>
+          )}
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
         </div>
 
