@@ -17,7 +17,7 @@ interface CheckinsQueryParams {
 }
 
 export function useCheckins(params: CheckinsQueryParams = {}) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['checkins', params],
     queryFn: async () => {
       const response = await apiClient.checkins.getCheckins({
@@ -37,6 +37,30 @@ export function useCheckins(params: CheckinsQueryParams = {}) {
       return response.body
     },
   })
+
+  useEffect(() => {
+    websocketManager.connect()
+    websocketManager.subscribe('checkins')
+    websocketManager.subscribe('visitors')
+
+    const handleUpdate = () => {
+      query.refetch()
+    }
+
+    websocketManager.on('checkin:new', handleUpdate)
+    websocketManager.on('visitor:signin', handleUpdate)
+    websocketManager.on('visitor:signout', handleUpdate)
+
+    return () => {
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.off('visitor:signin', handleUpdate)
+      websocketManager.off('visitor:signout', handleUpdate)
+      websocketManager.unsubscribe('checkins')
+      websocketManager.unsubscribe('visitors')
+    }
+  }, [query])
+
+  return query
 }
 
 export function useRecentCheckins() {

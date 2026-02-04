@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp, User, Users } from 'lucide-react'
 import type { CheckinWithMemberResponse } from '@sentinel/contracts'
 
 interface CheckinsTableProps {
@@ -61,10 +61,39 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         },
       }),
       columnHelper.display({
-        id: 'memberName',
-        header: 'Member',
+        id: 'type',
+        header: 'Type',
         cell: (info) => {
-          const member = info.row.original.member
+          const row = info.row.original
+          const isVisitor = row.type === 'visitor'
+          return (
+            <Badge variant={isVisitor ? 'secondary' : 'outline'} className="flex items-center gap-1 w-fit">
+              {isVisitor ? (
+                <Users className="h-3 w-3" />
+              ) : (
+                <User className="h-3 w-3" />
+              )}
+              {isVisitor ? 'Visitor' : 'Member'}
+            </Badge>
+          )
+        },
+      }),
+      columnHelper.display({
+        id: 'personName',
+        header: 'Name',
+        cell: (info) => {
+          const row = info.row.original
+          if (row.type === 'visitor') {
+            return (
+              <div className="text-sm">
+                <div className="font-medium">{row.visitorName ?? 'Unknown Visitor'}</div>
+                {row.visitorOrganization && (
+                  <div className="text-base-content/60">{row.visitorOrganization}</div>
+                )}
+              </div>
+            )
+          }
+          const member = row.member
           if (!member) return <span className="text-base-content/60">Unknown</span>
           return (
             <div className="text-sm">

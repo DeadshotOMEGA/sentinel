@@ -37,14 +37,14 @@ export function CheckinsFeedWidget() {
   const activities = data?.activities ?? []
 
   return (
-    <div className="bg-base-100 p-6 rounded-lg shadow-lg">
+    <div className="bg-base-100 p-6 rounded-lg shadow-lg w-[290px]">
       <div className="flex items-center gap-2 mb-4">
         <UsersRound size={32} strokeWidth={1} />
         <h2 className="text-lg font-semibold">Recent Activity</h2>
       </div>
 
       {activities.length > 0 ? (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {activities.slice(0, 15).map((item: RecentActivityItem) => {
             const isCheckIn = item.direction === 'in'
             const isVisitor = item.type === 'visitor'
