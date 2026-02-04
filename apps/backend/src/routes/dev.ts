@@ -2,6 +2,7 @@ import { initServer } from '@ts-rest/express'
 import { devContract } from '@sentinel/contracts'
 import type { MockScanRequest } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
+import { LockupService } from '../services/lockup-service.js'
 
 const s = initServer()
 const prisma = getPrismaClient()
@@ -341,6 +342,22 @@ export const devRouter = s.router(devContract, {
       // Determine direction (toggle between in/out)
       const lastCheckin = member.checkins[0]
       const direction: 'in' | 'out' = !lastCheckin || lastCheckin.direction === 'out' ? 'in' : 'out'
+
+      // Block checkout if member holds lockup responsibility
+      if (direction === 'out') {
+        const lockupService = new LockupService(getPrismaClient())
+        const checkoutOptions = await lockupService.getCheckoutOptions(member.id)
+
+        if (!checkoutOptions.canCheckout) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'LOCKUP_HELD',
+              message: `${member.firstName} ${member.lastName} holds lockup and must transfer or execute before checking out`,
+            },
+          }
+        }
+      }
 
       // Create checkin record
       const timestamp = config.timestamp ? new Date(config.timestamp) : new Date()
