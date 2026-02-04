@@ -269,6 +269,7 @@ exports.Prisma.TagScalarFieldEnum = {
   displayOrder: 'displayOrder',
   chipVariant: 'chipVariant',
   chipColor: 'chipColor',
+  isPositional: 'isPositional',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

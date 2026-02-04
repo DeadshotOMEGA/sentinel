@@ -1,30 +1,5 @@
-import dotenv from 'dotenv'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { defineConfig, env } from 'prisma/config'
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Load .env from the database package directory (works regardless of cwd)
-dotenv.config({ path: path.join(__dirname, '../.env') })
-
-// Export Prisma 7 configuration for migrations
-export default defineConfig({
-  schema: 'schema.prisma',
-  migrations: {
-    path: 'migrations',
-  },
-  datasource: {
-    url: env('DATABASE_URL'),
-  },
-})
-
-// ==========================================
-// Runtime Adapter Configuration
-// ==========================================
 
 let pool: Pool | null = null
 let adapterInstance: PrismaPg | null = null

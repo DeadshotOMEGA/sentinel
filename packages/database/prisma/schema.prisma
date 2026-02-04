@@ -259,6 +259,7 @@ model Tag {
   displayOrder       Int                 @default(0) @map("display_order")
   chipVariant        String              @default("solid") @map("chip_variant") @db.VarChar(20)
   chipColor          String              @default("default") @map("chip_color") @db.VarChar(20)
+  isPositional       Boolean             @default(false) @map("is_positional")
   createdAt          DateTime?           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime?           @default(now()) @map("updated_at") @db.Timestamptz(6)
   memberTags         MemberTag[]

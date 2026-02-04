@@ -17977,6 +17977,7 @@ export namespace Prisma {
     displayOrder: number | null
     chipVariant: string | null
     chipColor: string | null
+    isPositional: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17988,6 +17989,7 @@ export namespace Prisma {
     displayOrder: number | null
     chipVariant: string | null
     chipColor: string | null
+    isPositional: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17999,6 +18001,7 @@ export namespace Prisma {
     displayOrder: number
     chipVariant: number
     chipColor: number
+    isPositional: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -18020,6 +18023,7 @@ export namespace Prisma {
     displayOrder?: true
     chipVariant?: true
     chipColor?: true
+    isPositional?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18031,6 +18035,7 @@ export namespace Prisma {
     displayOrder?: true
     chipVariant?: true
     chipColor?: true
+    isPositional?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18042,6 +18047,7 @@ export namespace Prisma {
     displayOrder?: true
     chipVariant?: true
     chipColor?: true
+    isPositional?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -18140,6 +18146,7 @@ export namespace Prisma {
     displayOrder: number
     chipVariant: string
     chipColor: string
+    isPositional: boolean
     createdAt: Date | null
     updatedAt: Date | null
     _count: TagCountAggregateOutputType | null
@@ -18170,6 +18177,7 @@ export namespace Prisma {
     displayOrder?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isPositional?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     memberTags?: boolean | Tag$memberTagsArgs<ExtArgs>
@@ -18184,6 +18192,7 @@ export namespace Prisma {
     displayOrder?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isPositional?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["tag"]>
@@ -18195,6 +18204,7 @@ export namespace Prisma {
     displayOrder?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isPositional?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["tag"]>
@@ -18206,11 +18216,12 @@ export namespace Prisma {
     displayOrder?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isPositional?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TagOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "displayOrder" | "chipVariant" | "chipColor" | "createdAt" | "updatedAt", ExtArgs["result"]["tag"]>
+  export type TagOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "displayOrder" | "chipVariant" | "chipColor" | "isPositional" | "createdAt" | "updatedAt", ExtArgs["result"]["tag"]>
   export type TagInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberTags?: boolean | Tag$memberTagsArgs<ExtArgs>
     qualificationTypes?: boolean | Tag$qualificationTypesArgs<ExtArgs>
@@ -18232,6 +18243,7 @@ export namespace Prisma {
       displayOrder: number
       chipVariant: string
       chipColor: string
+      isPositional: boolean
       createdAt: Date | null
       updatedAt: Date | null
     }, ExtArgs["result"]["tag"]>
@@ -18665,6 +18677,7 @@ export namespace Prisma {
     readonly displayOrder: FieldRef<"Tag", 'Int'>
     readonly chipVariant: FieldRef<"Tag", 'String'>
     readonly chipColor: FieldRef<"Tag", 'String'>
+    readonly isPositional: FieldRef<"Tag", 'Boolean'>
     readonly createdAt: FieldRef<"Tag", 'DateTime'>
     readonly updatedAt: FieldRef<"Tag", 'DateTime'>
   }
@@ -62576,6 +62589,7 @@ export namespace Prisma {
     displayOrder: 'displayOrder',
     chipVariant: 'chipVariant',
     chipColor: 'chipColor',
+    isPositional: 'isPositional',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -64248,6 +64262,7 @@ export namespace Prisma {
     displayOrder?: IntFilter<"Tag"> | number
     chipVariant?: StringFilter<"Tag"> | string
     chipColor?: StringFilter<"Tag"> | string
+    isPositional?: BoolFilter<"Tag"> | boolean
     createdAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     memberTags?: MemberTagListRelationFilter
@@ -64261,6 +64276,7 @@ export namespace Prisma {
     displayOrder?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isPositional?: SortOrder
     createdAt?: SortOrderInput | SortOrder
     updatedAt?: SortOrderInput | SortOrder
     memberTags?: MemberTagOrderByRelationAggregateInput
@@ -64277,6 +64293,7 @@ export namespace Prisma {
     displayOrder?: IntFilter<"Tag"> | number
     chipVariant?: StringFilter<"Tag"> | string
     chipColor?: StringFilter<"Tag"> | string
+    isPositional?: BoolFilter<"Tag"> | boolean
     createdAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"Tag"> | Date | string | null
     memberTags?: MemberTagListRelationFilter
@@ -64290,6 +64307,7 @@ export namespace Prisma {
     displayOrder?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isPositional?: SortOrder
     createdAt?: SortOrderInput | SortOrder
     updatedAt?: SortOrderInput | SortOrder
     _count?: TagCountOrderByAggregateInput
@@ -64309,6 +64327,7 @@ export namespace Prisma {
     displayOrder?: IntWithAggregatesFilter<"Tag"> | number
     chipVariant?: StringWithAggregatesFilter<"Tag"> | string
     chipColor?: StringWithAggregatesFilter<"Tag"> | string
+    isPositional?: BoolWithAggregatesFilter<"Tag"> | boolean
     createdAt?: DateTimeNullableWithAggregatesFilter<"Tag"> | Date | string | null
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Tag"> | Date | string | null
   }
@@ -68356,6 +68375,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagCreateNestedManyWithoutTagInput
@@ -68369,6 +68389,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutTagInput
@@ -68382,6 +68403,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUpdateManyWithoutTagNestedInput
@@ -68395,6 +68417,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUncheckedUpdateManyWithoutTagNestedInput
@@ -68408,6 +68431,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -68419,6 +68443,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -68430,6 +68455,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -72610,6 +72636,7 @@ export namespace Prisma {
     displayOrder?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isPositional?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -72625,6 +72652,7 @@ export namespace Prisma {
     displayOrder?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isPositional?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -72636,6 +72664,7 @@ export namespace Prisma {
     displayOrder?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isPositional?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -82301,6 +82330,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     qualificationTypes?: QualificationTypeCreateNestedManyWithoutTagInput
@@ -82313,6 +82343,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     qualificationTypes?: QualificationTypeUncheckedCreateNestedManyWithoutTagInput
@@ -82440,6 +82471,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     qualificationTypes?: QualificationTypeUpdateManyWithoutTagNestedInput
@@ -82452,6 +82484,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     qualificationTypes?: QualificationTypeUncheckedUpdateManyWithoutTagNestedInput
@@ -85046,6 +85079,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagCreateNestedManyWithoutTagInput
@@ -85058,6 +85092,7 @@ export namespace Prisma {
     displayOrder?: number
     chipVariant?: string
     chipColor?: string
+    isPositional?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutTagInput
@@ -85102,6 +85137,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUpdateManyWithoutTagNestedInput
@@ -85114,6 +85150,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isPositional?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     memberTags?: MemberTagUncheckedUpdateManyWithoutTagNestedInput
