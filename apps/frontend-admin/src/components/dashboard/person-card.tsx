@@ -28,7 +28,7 @@ const POSITION_COLORS: Record<string, string> = {
 }
 
 // Reuse faded color classes from Chip component for avatar styling
-const CHIP_COLOR_AVATAR_CLASSES = fadedColorClasses
+const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
 
 // Tags that represent active responsibilities (shown only when person holds the role)
 const RESPONSIBILITY_TAG_NAMES = ['DDS']
