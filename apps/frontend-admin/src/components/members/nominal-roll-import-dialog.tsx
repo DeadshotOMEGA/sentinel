@@ -1,6 +1,5 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { useImportPreview, useExecuteImport } from '@/hooks/use-members'
 import type { PreviewImportResponse } from '@sentinel/contracts'
@@ -63,12 +62,17 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
   const importPreview = useImportPreview()
   const executeImport = useExecuteImport()
 
-  const handleFileChange = (e: React.ChangeEvent<any>): void => {
+  const handleFileChange = (
+    // eslint-disable-next-line no-undef -- HTMLInputElement is a browser global
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const reader = new (window as any).FileReader()
-    reader.onload = (event: any) => {
+    // eslint-disable-next-line no-undef -- FileReader and ProgressEvent are browser globals
+    const reader = new FileReader()
+    // eslint-disable-next-line no-undef -- FileReader and ProgressEvent are browser globals
+    reader.onload = (event: ProgressEvent<FileReader>) => {
       const text = event.target?.result as string
       setCsvText(text)
     }
