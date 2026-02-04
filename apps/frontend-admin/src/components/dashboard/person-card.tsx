@@ -82,9 +82,9 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     )
   }
 
-  // Priority 3: First non-responsibility tag (for members)
+  // Priority 3: First non-responsibility, non-positional tag (for members)
   if (person.type === 'member') {
-    const displayTag = person.tags?.find((t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name))
+    const displayTag = person.tags?.find((t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional)
     if (displayTag) {
       const abbrev = displayTag.name.match(/[A-Z]/g)?.join('') || displayTag.name.slice(0, 2).toUpperCase()
       const colorClass = displayTag.chipColor
@@ -130,6 +130,12 @@ export const PersonCard = memo(function PersonCard({
   onCheckoutVisitor,
 }: PersonCardProps) {
   const isMember = person.type === 'member'
+
+  // Determine which tag the avatar is displaying (if any) to avoid showing it as a chip too
+  const avatarTagId =
+    isMember && !dutyPosition && !isDds
+      ? person.tags?.find((t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional)?.id
+      : undefined
 
   // Card border color: subtle indicator for member vs visitor
   const cardBorderClass = isMember
@@ -179,17 +185,19 @@ export const PersonCard = memo(function PersonCard({
         <div className="min-h-[1.25rem]">
           {isMember ? (
             <div className="flex flex-wrap gap-1">
-              {person.tags?.map((tag) => (
-                <Chip
-                  key={tag.id}
-                  size="sm"
-                  variant="faded"
-                  color={(tag.chipColor as ChipColor) || 'default'}
-                  className="chip-enhanced"
-                >
-                  {tag.name}
-                </Chip>
-              ))}
+              {person.tags
+                ?.filter((tag) => tag.source !== 'qualification' && tag.id !== avatarTagId)
+                .map((tag) => (
+                  <Chip
+                    key={tag.id}
+                    size="sm"
+                    variant="faded"
+                    color={(tag.chipColor as ChipColor) || 'default'}
+                    className="chip-enhanced"
+                  >
+                    {tag.name}
+                  </Chip>
+                ))}
             </div>
           ) : (
             <div className="flex flex-col gap-0.5 text-xs text-base-content/70">

@@ -21,7 +21,7 @@ interface LockupOptionsModalProps {
   memberId: string
   memberName: string
   checkoutOptions: CheckoutOptionsResponse
-  onCheckoutComplete: () => void
+  onCheckoutComplete: (action: 'transfer' | 'execute') => void
 }
 
 export function LockupOptionsModal({
@@ -41,13 +41,13 @@ export function LockupOptionsModal({
   const handleExecuteComplete = () => {
     setShowExecuteModal(false)
     onOpenChange(false)
-    onCheckoutComplete()
+    onCheckoutComplete('execute')
   }
 
   const handleTransferComplete = () => {
     setShowTransferModal(false)
     onOpenChange(false)
-    onCheckoutComplete()
+    onCheckoutComplete('transfer')
   }
 
   return (

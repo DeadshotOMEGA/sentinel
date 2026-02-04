@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { useDevMembers, useMockScan, useClearAllCheckins } from '@/hooks/use-dev'
+import { useDevMembers, useMockScan, useClearAllCheckins, LockupHeldError } from '@/hooks/use-dev'
 import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
@@ -41,6 +41,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   const [scanResult, setScanResult] = useState<MockScanResponse | null>(null)
   const [showLockupOptions, setShowLockupOptions] = useState(false)
   const [ddsHandled, setDdsHandled] = useState(false)
+  const [lockupBlockedMember, setLockupBlockedMember] = useState<DevMember | null>(null)
 
   const { data: membersData, isLoading: loadingMembers } = useDevMembers()
   const mockScan = useMockScan()
@@ -50,7 +51,9 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   const presentCount = membersData?.members.filter((m) => m.isPresent).length ?? 0
 
   // Checkout options for the scanned member (only when checking out)
-  const scannedMemberId = scanResult?.direction === 'out' ? scanResult.member.id : ''
+  const scannedMemberId = scanResult?.direction === 'out'
+    ? scanResult.member.id
+    : lockupBlockedMember?.id ?? ''
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } =
     useCheckoutOptions(scannedMemberId)
 
@@ -68,6 +71,8 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dds-status'] })
+      queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
+      queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
     },
   })
 
@@ -112,6 +117,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     setScanResult(null)
     setShowLockupOptions(false)
     setDdsHandled(false)
+    setLockupBlockedMember(null)
   }, [])
 
   const handleClose = () => {
@@ -130,7 +136,13 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
       setScanResult(result)
       setStep('kiosk-result')
     } catch (error) {
-      console.error('Mock scan failed:', error)
+      if (error instanceof LockupHeldError) {
+        // Backend blocked checkout — member holds lockup
+        // Show lockup options modal (triggered by effect once checkoutOptions loads)
+        setLockupBlockedMember(member)
+      } else {
+        console.error('Mock scan failed:', error)
+      }
     }
   }
 
@@ -155,20 +167,28 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   // When checkout options load and member holds lockup, show lockup modal
   useEffect(() => {
     if (
-      scanResult?.direction === 'out' &&
       checkoutOptions?.holdsLockup &&
-      !checkoutOptions.canCheckout
+      !checkoutOptions.canCheckout &&
+      (lockupBlockedMember || scanResult?.direction === 'out')
     ) {
       setShowLockupOptions(true)
     }
-  }, [scanResult, checkoutOptions])
+  }, [scanResult, checkoutOptions, lockupBlockedMember])
 
-  const handleLockupComplete = () => {
+  const handleLockupComplete = (action: 'transfer' | 'execute') => {
+    const member = lockupBlockedMember
     setShowLockupOptions(false)
-    // Show checkout confirmation briefly, then return to list
-    setTimeout(() => {
-      resetAndClose()
-    }, 2000)
+    setLockupBlockedMember(null)
+
+    if (member && action === 'transfer') {
+      // After transfer, member still needs checkout — re-scan to create the record
+      handleScan(member)
+    } else {
+      // After execute, member was already checked out by bulk checkout
+      setTimeout(() => {
+        resetAndClose()
+      }, 2000)
+    }
   }
 
   const formatTimestamp = (ts: string) => {
@@ -333,12 +353,21 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
       </Dialog>
 
       {/* Lockup Options Modal (renders on top) */}
-      {scanResult && checkoutOptions && (
+      {(scanResult || lockupBlockedMember) && checkoutOptions && (
         <LockupOptionsModal
           open={showLockupOptions}
-          onOpenChange={setShowLockupOptions}
-          memberId={scanResult.member.id}
-          memberName={`${scanResult.member.rank} ${scanResult.member.firstName} ${scanResult.member.lastName}`}
+          onOpenChange={(open) => {
+            setShowLockupOptions(open)
+            if (!open) setLockupBlockedMember(null)
+          }}
+          memberId={scanResult?.member.id ?? lockupBlockedMember?.id ?? ''}
+          memberName={
+            scanResult
+              ? `${scanResult.member.rank} ${scanResult.member.firstName} ${scanResult.member.lastName}`
+              : lockupBlockedMember
+                ? `${lockupBlockedMember.rank} ${lockupBlockedMember.firstName} ${lockupBlockedMember.lastName}`
+                : ''
+          }
           checkoutOptions={checkoutOptions}
           onCheckoutComplete={handleLockupComplete}
         />

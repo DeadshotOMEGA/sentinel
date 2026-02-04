@@ -117,8 +117,9 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
     }
   }
 
-  const handleLockupComplete = async () => {
-    if (pendingCheckout) {
+  const handleLockupComplete = async (action: 'transfer' | 'execute') => {
+    if (pendingCheckout && action === 'transfer') {
+      // After transfer, member still needs checkout — create the record
       try {
         const checkinData: CreateCheckinInput = {
           memberId: pendingCheckout.memberId,
@@ -131,6 +132,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
         console.error('Failed to complete checkout after lockup:', error)
       }
     }
+    // After execute, member was already checked out by bulk checkout — no action needed
     setPendingCheckout(null)
     reset()
     setMemberSearch('')

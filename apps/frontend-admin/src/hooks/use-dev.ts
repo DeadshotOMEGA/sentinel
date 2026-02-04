@@ -4,6 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import type { MockScanRequest, SetBuildingStatusRequest } from '@sentinel/contracts'
 
+export class LockupHeldError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LockupHeldError'
+  }
+}
+
 /**
  * Fetch all members with badge info and presence status (dev only)
  */
@@ -31,6 +38,9 @@ export function useMockScan() {
       const response = await apiClient.dev.mockScan({
         body: data,
       })
+      if (response.status === 403 && 'error' in response.body && response.body.error === 'LOCKUP_HELD') {
+        throw new LockupHeldError(response.body.message)
+      }
       if (response.status !== 200) {
         throw new Error('Failed to simulate scan')
       }
@@ -43,6 +53,7 @@ export function useMockScan() {
       queryClient.invalidateQueries({ queryKey: ['recent-checkins'] })
       queryClient.invalidateQueries({ queryKey: ['dev-members'] })
       queryClient.invalidateQueries({ queryKey: ['duty-watch'] })
+      queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
     },
   })
 }
