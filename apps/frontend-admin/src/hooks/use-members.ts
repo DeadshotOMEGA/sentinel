@@ -21,7 +21,7 @@ export function useMembers(params: MembersQueryParams = {}) {
       const response = await apiClient.members.getMembers({
         query: {
           page: params.page?.toString() ?? '1',
-          limit: params.limit?.toString() ?? '25',
+          limit: params.limit?.toString() ?? '50',
           divisionId: params.divisionId,
           rank: params.rank,
           status: params.status,
