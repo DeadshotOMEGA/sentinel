@@ -1,3 +1,4 @@
+/* global process */
 'use client'
 
 import { useState, useMemo } from 'react'
@@ -60,7 +61,10 @@ export function QuickActionButtons() {
   const handleOpenBuilding = () => {
     if (!selectedMember) return
     openBuildingMutation.mutate(
-      { memberId: selectedMember.id, data: openBuildingNote ? { note: openBuildingNote } : undefined },
+      {
+        memberId: selectedMember.id,
+        data: openBuildingNote ? { note: openBuildingNote } : undefined,
+      },
       {
         onSuccess: () => {
           setIsOpenBuildingConfirmOpen(false)
@@ -137,7 +141,7 @@ export function QuickActionButtons() {
 
       {isDevMode && (
         <button
-          className="btn btn-outline btn-accent hover:shadow-md transition-all duration-200"
+          className="btn btn-outline btn-accent hover:shadow-md transition-all duration-200 ml-auto"
           onClick={() => setIsScanModalOpen(true)}
         >
           <Radio className="h-4 w-4" />
@@ -156,14 +160,18 @@ export function QuickActionButtons() {
           onComplete={() => setIsLockupModalOpen(false)}
         />
       )}
-      {isDevMode && (
-        <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
-      )}
+      {isDevMode && <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />}
 
       {/* Open Building confirmation dialog */}
-      <dialog className={`modal ${isOpenBuildingConfirmOpen ? 'modal-open' : ''}`}>
+      <dialog
+        className={`modal ${isOpenBuildingConfirmOpen ? 'modal-open' : ''}`}
+        aria-labelledby="open-building-title"
+        aria-modal="true"
+      >
         <div className="modal-box">
-          <h3 className="font-bold text-lg">Open Building</h3>
+          <h3 id="open-building-title" className="font-bold text-lg">
+            Open Building
+          </h3>
           <p className="py-4">
             Select who is opening the building. They will become the lockup holder for today.
           </p>
@@ -224,9 +232,7 @@ export function QuickActionButtons() {
                           <div className="font-medium">
                             {member.rank} {member.firstName} {member.lastName}
                           </div>
-                          <div className="text-sm text-base-content/60">
-                            {member.serviceNumber}
-                          </div>
+                          <div className="text-sm text-base-content/60">{member.serviceNumber}</div>
                         </button>
                       ))
                     )}
@@ -246,9 +252,7 @@ export function QuickActionButtons() {
                         <div className="font-medium">
                           {member.rank} {member.firstName} {member.lastName}
                         </div>
-                        <div className="text-sm text-base-content/60">
-                          {member.serviceNumber}
-                        </div>
+                        <div className="text-sm text-base-content/60">{member.serviceNumber}</div>
                       </button>
                     ))}
                   </div>

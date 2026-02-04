@@ -130,28 +130,35 @@ export function PersonCardGrid() {
           <div className="flex gap-1">
             <button
               className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              aria-pressed={filter === 'all'}
               onClick={() => handleFilterChange('all')}
             >
               All ({data?.total ?? 0})
             </button>
             <button
               className={`btn btn-xs ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
+              aria-pressed={filter === 'member'}
               onClick={() => handleFilterChange('member')}
             >
               Members ({memberCount})
             </button>
             <button
               className={`btn btn-xs ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
+              aria-pressed={filter === 'visitor'}
               onClick={() => handleFilterChange('visitor')}
             >
               Visitors ({visitorCount})
             </button>
           </div>
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40" />
+            <Search
+              size={14}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40"
+            />
             <input
               type="text"
               placeholder="Search..."
+              aria-label="Search people"
               className="input input-bordered input-sm pl-8 w-48"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -161,31 +168,40 @@ export function PersonCardGrid() {
       </div>
 
       {/* Grid or empty state */}
-      {filteredPeople.length > 0 ? (
-        <div
-          className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
-        >
-          {filteredPeople.map((person: PresentPerson, index: number) => (
-            <div
-              key={`${person.type}-${person.id}`}
-              className="animate-fade-in-up"
-              style={{
-                animationDelay: `${Math.min(index, 12) * 50}ms`,
-                animationFillMode: 'backwards',
-              }}
-            >
-              <PersonCard
-                person={person}
-                dutyPosition={dutyPositionMap.get(person.id)}
-                isDds={person.type === 'member' && person.id === ddsMemberId}
-                onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <SkeletonGrid />
-      )}
+      <div aria-live="polite" aria-atomic="false">
+        {filteredPeople.length > 0 ? (
+          <div
+            className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
+          >
+            {filteredPeople.map((person: PresentPerson, index: number) => (
+              <div
+                key={`${person.type}-${person.id}`}
+                className="animate-fade-in-up"
+                style={{
+                  animationDelay: `${Math.min(index, 12) * 50}ms`,
+                  animationFillMode: 'backwards',
+                }}
+              >
+                <PersonCard
+                  person={person}
+                  dutyPosition={dutyPositionMap.get(person.id)}
+                  isDds={person.type === 'member' && person.id === ddsMemberId}
+                  onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-base-content/50">
+            <UsersRound size={32} strokeWidth={1} className="mb-2" />
+            <p className="text-sm">
+              {search.trim() || filter !== 'all'
+                ? 'No people match your filters'
+                : 'No one is currently checked in'}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

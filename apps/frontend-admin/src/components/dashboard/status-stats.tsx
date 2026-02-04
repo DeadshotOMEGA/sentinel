@@ -1,6 +1,17 @@
 'use client'
 
-import { Users, Lock, Unlock, Loader2, ShieldEllipsis, ShieldAlert, ShieldCheck, Clock, KeyRound } from 'lucide-react'
+import type { ReactNode } from 'react'
+import {
+  Users,
+  Lock,
+  Unlock,
+  Loader2,
+  ShieldEllipsis,
+  ShieldAlert,
+  ShieldCheck,
+  Clock,
+  KeyRound,
+} from 'lucide-react'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useLockupStatus } from '@/hooks/use-lockup'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
@@ -10,7 +21,9 @@ function formatTime(dateStr: string | null): string {
   return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function formatMemberName(member: { rank: string; firstName: string; lastName: string } | null): string {
+function formatMemberName(
+  member: { rank: string; firstName: string; lastName: string } | null
+): string {
   if (!member) return 'Unknown'
   return `${member.rank} ${member.lastName}`
 }
@@ -28,7 +41,7 @@ function StatContainer({
   children,
   accentColor,
 }: {
-  children: React.ReactNode
+  children: ReactNode
   accentColor?: 'error' | 'warning' | 'success' | 'info'
 }) {
   const borderClass = accentColor ? ACCENT_BORDER_CLASSES[accentColor] : ''
@@ -56,7 +69,9 @@ function DdsStat() {
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Day Staff</div>
-        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
+        <div className="stat-value">
+          <span className="loading loading-dots loading-md"></span>
+        </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
     )
@@ -85,11 +100,11 @@ function DdsStat() {
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Day Staff</div>
-      <div className="stat-value font-display text-success text-3xl">{ddsStatus.assignment.member.name}</div>
+      <div className="stat-value font-display text-success text-3xl">
+        {ddsStatus.assignment.member.name}
+      </div>
       <div className="stat-desc">
-        {ddsStatus.nextDds
-          ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}`
-          : 'On duty today'}
+        {ddsStatus.nextDds ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}` : 'On duty today'}
       </div>
     </StatContainer>
   )
@@ -114,7 +129,9 @@ function BuildingStat() {
     return (
       <StatContainer>
         <div className="stat-title">Building Status</div>
-        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
+        <div className="stat-value">
+          <span className="loading loading-dots loading-md"></span>
+        </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
     )
@@ -133,7 +150,7 @@ function BuildingStat() {
     return 'No lockup in progress'
   }
 
-  if (display.label === "Secured") {
+  if (display.label === 'Secured') {
     return (
       <StatContainer accentColor="error">
         <div className="stat-figure text-error">
@@ -168,7 +185,9 @@ function LockupHolderStat() {
           <KeyRound size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Lockup Holder</div>
-        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
+        <div className="stat-value">
+          <span className="loading loading-dots loading-md"></span>
+        </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
     )
@@ -204,7 +223,9 @@ function LockupHolderStat() {
         {formatMemberName(lockupStatus.currentHolder)}
       </div>
       <div className="stat-desc">
-        {lockupStatus.acquiredAt ? `Since ${formatTime(lockupStatus.acquiredAt)}` : 'Currently responsible'}
+        {lockupStatus.acquiredAt
+          ? `Since ${formatTime(lockupStatus.acquiredAt)}`
+          : 'Currently responsible'}
       </div>
     </StatContainer>
   )
@@ -225,7 +246,9 @@ function DutyWatchStat() {
           <Users size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
-        <div className="stat-value"><span className="loading loading-dots loading-md"></span></div>
+        <div className="stat-value">
+          <span className="loading loading-dots loading-md"></span>
+        </div>
         <div className="stat-desc">Loading...</div>
       </StatContainer>
     )
@@ -277,7 +300,10 @@ function DutyWatchStat() {
 
 export function StatusStats() {
   return (
-    <div className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel rounded-xl animate-fade-in">
+    <div
+      className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel rounded-xl animate-fade-in"
+      aria-live="polite"
+    >
       <DdsStat />
       <DutyWatchStat />
       <BuildingStat />

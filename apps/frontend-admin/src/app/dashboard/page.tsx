@@ -5,7 +5,9 @@ import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
 
 export default function DashboardPage() {
   return (
-    <>
+    <main>
+      <h1 className="sr-only">Dashboard</h1>
+
       {/* Security Alerts Bar - only shows if there are active alerts */}
       <SecurityAlertsBar />
 
@@ -13,10 +15,14 @@ export default function DashboardPage() {
       <QuickActionButtons />
 
       {/* Status Stats */}
-      <div className="mt-6"><StatusStats /></div>
+      <div className="mt-6">
+        <StatusStats />
+      </div>
 
       {/* Presence Card Grid */}
-      <div className="mt-6"><PersonCardGrid /></div>
-    </>
+      <div className="mt-6">
+        <PersonCardGrid />
+      </div>
+    </main>
   )
 }

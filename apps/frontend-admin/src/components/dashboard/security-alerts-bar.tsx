@@ -15,7 +15,10 @@ export function SecurityAlertsBar() {
   const alerts = data.alerts
 
   return (
-    <div role="alert" className="alert-security rounded-xl mb-4 p-4 flex items-start gap-3 animate-slide-in-left">
+    <div
+      role="alert"
+      className="alert-security rounded-xl mb-4 p-4 flex items-start gap-3 animate-slide-in-left"
+    >
       <div className="p-2 rounded-lg bg-error/15 shrink-0">
         <AlertCircle className="h-5 w-5 text-error" />
       </div>
@@ -36,7 +39,9 @@ export function SecurityAlertsBar() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className={`badge badge-sm ${
-                    alert.severity === 'critical' ? 'badge-error animate-status-pulse' : 'badge-ghost'
+                    alert.severity === 'critical'
+                      ? 'badge-error animate-status-pulse'
+                      : 'badge-ghost'
                   }`}
                 >
                   {alert.alertType}
@@ -60,11 +65,14 @@ export function SecurityAlertsBar() {
         </div>
 
         {alerts.length > 3 && (
-          <p className="text-xs text-error-content/60 font-medium">+{alerts.length - 3} more alerts</p>
+          <p className="text-xs text-error-content/60 font-medium">
+            +{alerts.length - 3} more alerts
+          </p>
         )}
       </div>
 
       <button
+        aria-label="Dismiss all security alerts"
         className="btn btn-ghost btn-sm btn-square hover:bg-error/10 hover:text-error transition-colors"
         onClick={() => {
           // TODO: Implement dismiss all
