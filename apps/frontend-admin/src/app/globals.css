@@ -294,15 +294,35 @@
 .presence-section {
   background: linear-gradient(180deg, oklch(100% 0 0) 0%, oklch(99% 0 0) 100%);
   border: 1px solid oklch(94% 0 0);
+  container-type: inline-size;
 }
 
-/* Person card grid: 6 cols with sidebar, 7 cols without */
-.drawer.drawer-open .presence-card-grid {
-  grid-template-columns: repeat(6, 1fr);
+/* Person card grid: container-query-based columns
+   Self-contained — no dependency on drawer/layout ancestor classes.
+   With 290px sidebar on 1920px screen: container ≈ 1550px → 6 cols
+   Without sidebar on 1920px screen: container ≈ 1840px → 7 cols */
+.presence-card-grid {
+  grid-template-columns: repeat(2, 1fr);
 }
 
-.drawer:not(.drawer-open) .presence-card-grid {
-  grid-template-columns: repeat(7, 1fr);
+@container (min-width: 640px) {
+  .presence-card-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@container (min-width: 900px) {
+  .presence-card-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@container (min-width: 1100px) {
+  .presence-card-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+@container (min-width: 1350px) {
+  .presence-card-grid { grid-template-columns: repeat(6, 1fr); }
+}
+
+@container (min-width: 1650px) {
+  .presence-card-grid { grid-template-columns: repeat(7, 1fr); }
 }
 
 .presence-section-header {
