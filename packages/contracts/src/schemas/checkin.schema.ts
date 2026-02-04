@@ -164,6 +164,8 @@ export const PresentPersonSchema = v.object({
         name: v.string(),
         chipVariant: v.optional(v.string()),
         chipColor: v.optional(v.string()),
+        isPositional: v.optional(v.boolean()),
+        source: v.optional(v.picklist(['direct', 'qualification'])),
       })
     )
   ),

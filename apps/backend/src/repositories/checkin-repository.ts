@@ -745,11 +745,11 @@ export class CheckinRepository {
       -- Combine direct tag assignments with qualification-based tags
       all_member_tags AS (
         -- Direct tag assignments
-        SELECT mt.member_id, mt.tag_id
+        SELECT mt.member_id, mt.tag_id, 'direct' AS source
         FROM member_tags mt
         UNION
         -- Tags from active qualifications
-        SELECT mq.member_id, qt.tag_id
+        SELECT mq.member_id, qt.tag_id, 'qualification' AS source
         FROM member_qualifications mq
         JOIN qualification_types qt ON qt.id = mq.qualification_type_id
         WHERE mq.status = 'active' AND qt.tag_id IS NOT NULL
@@ -762,7 +762,9 @@ export class CheckinRepository {
               'id', t.id,
               'name', t.name,
               'chipVariant', t.chip_variant,
-              'chipColor', t.chip_color
+              'chipColor', t.chip_color,
+              'isPositional', t.is_positional,
+              'source', amt.source
             ) ORDER BY t.name
           ) as tags
         FROM all_member_tags amt
