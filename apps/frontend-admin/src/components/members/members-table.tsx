@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -16,6 +16,8 @@ import { useEnums } from '@/hooks/use-enums'
 import { MemberFormModal } from './member-form-modal'
 import { DeleteMemberDialog } from './delete-member-dialog'
 import { BulkEditMemberModal } from './bulk-edit-member-modal'
+import { BulkGrantQualificationModal } from './bulk-grant-qualification-modal'
+import { BulkAssignTagModal } from './bulk-assign-tag-modal'
 import { MemberQualificationsModal } from './member-qualifications-modal'
 import { MemberTagsModal } from './member-tags-modal'
 import { Button } from '@/components/ui/button'
@@ -40,8 +42,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, X, Shield, Tag } from 'lucide-react'
-// import { useAuthStore } from '@/store/auth-store' // Re-enable when auth is implemented
+import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useAuthStore } from '@/store/auth-store'
+import { SortableHeader } from './sortable-header'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 import type { MemberResponse } from '@sentinel/contracts'
 
@@ -53,23 +57,37 @@ interface MembersTableProps {
     search?: string
     qualificationCode?: string
   }
+  page: number
+  limit: number
+  onPageChange: (page: number) => void
+  onLimitChange: (limit: number) => void
 }
 
 const columnHelper = createColumnHelper<MemberResponse>()
 
-export function MembersTable({ filters }: MembersTableProps) {
-  // Fetch all members (no pagination)
-  const { data, isLoading, isError } = useMembers({ ...filters, page: 1, limit: 250 })
+export function MembersTable({
+  filters,
+  page,
+  limit,
+  onPageChange,
+  onLimitChange,
+}: MembersTableProps) {
+  const { data, isLoading, isError } = useMembers({ ...filters, page, limit })
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
   const deleteMember = useDeleteMember()
-  // const user = useAuthStore((state) => state.user) // Re-enable when auth is implemented
+  const user = useAuthStore((state) => state.user)
 
   // Selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   // Sorting state
   const [sorting, setSorting] = useState<SortingState>([])
+
+  // Clear selection when page changes
+  useEffect(() => {
+    setRowSelection({})
+  }, [page])
 
   // Modal states
   const [editingMember, setEditingMember] = useState<MemberResponse | null>(null)
@@ -78,11 +96,13 @@ export function MembersTable({ filters }: MembersTableProps) {
   const [tagsMember, setTagsMember] = useState<MemberResponse | null>(null)
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
+  const [showBulkGrantQualDialog, setShowBulkGrantQualDialog] = useState(false)
+  const [showBulkAssignTagDialog, setShowBulkAssignTagDialog] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
 
   // Check if user can edit/delete
-  // TODO: Re-enable when auth is implemented: user?.role && ['developer', 'admin'].includes(user.role)
-  const canEdit = true
+  const canEdit = user?.role != null && ['developer', 'admin'].includes(user.role)
 
   // Create lookup maps for IDs to names
   const divisionMap = useMemo(() => {
@@ -113,15 +133,32 @@ export function MembersTable({ filters }: MembersTableProps) {
   // Handle bulk delete
   const handleBulkDelete = async () => {
     setIsBulkDeleting(true)
-    try {
-      await Promise.all(selectedMemberIds.map((id) => deleteMember.mutateAsync(id)))
+    setBulkDeleteError(null)
+
+    const results = await Promise.allSettled(
+      selectedMemberIds.map((id) => deleteMember.mutateAsync(id))
+    )
+
+    const failedCount = results.filter((r) => r.status === 'rejected').length
+    const succeededCount = results.filter((r) => r.status === 'fulfilled').length
+
+    if (failedCount === 0) {
       setRowSelection({})
       setShowBulkDeleteDialog(false)
-    } catch (error) {
-      console.error('Failed to delete members:', error)
-    } finally {
-      setIsBulkDeleting(false)
+    } else {
+      // Keep only failed rows selected
+      const failedIds = selectedMemberIds.filter((_, i) => results[i].status === 'rejected')
+      const newSelection: RowSelectionState = {}
+      for (const id of failedIds) {
+        newSelection[id] = true
+      }
+      setRowSelection(newSelection)
+      setBulkDeleteError(
+        `${failedCount} of ${selectedMemberIds.length} deletions failed. ${succeededCount} succeeded.`
+      )
     }
+
+    setIsBulkDeleting(false)
   }
 
   // Define columns
@@ -149,44 +186,12 @@ export function MembersTable({ filters }: MembersTableProps) {
         size: 40,
       }),
       columnHelper.accessor('serviceNumber', {
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Service #
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Service #" />,
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
         size: 80,
       }),
       columnHelper.accessor('rank', {
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Rank
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Rank" />,
         cell: (info) => info.getValue(),
         sortingFn: (rowA, rowB) => {
           const rankA = rowA.original.rank
@@ -199,23 +204,7 @@ export function MembersTable({ filters }: MembersTableProps) {
       }),
       columnHelper.display({
         id: 'name',
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Name
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Name" />,
         cell: (info) => {
           const member = info.row.original
           const toTitleCase = (str: string) =>
@@ -225,45 +214,13 @@ export function MembersTable({ filters }: MembersTableProps) {
         enableSorting: true,
       }),
       columnHelper.accessor('divisionId', {
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Division
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </Button>
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Division" />,
         cell: (info) => divisionMap.get(info.getValue()) ?? 'N/A',
         enableSorting: true,
       }),
       columnHelper.accessor('memberStatusId', {
         header: ({ column }) => (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Status
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-              )}
-            </Button>
-          </div>
+          <SortableHeader column={column} label="Status" className="flex justify-center" />
         ),
         cell: (info): React.ReactNode => {
           const statusId = info.getValue() as string | null | undefined
@@ -286,23 +243,7 @@ export function MembersTable({ filters }: MembersTableProps) {
       columnHelper.display({
         id: 'badge',
         header: ({ column }) => (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              Badge
-              {column.getIsSorted() === 'asc' ? (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              ) : column.getIsSorted() === 'desc' ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-              )}
-            </Button>
-          </div>
+          <SortableHeader column={column} label="Badge" className="flex justify-center" />
         ),
         cell: (info) => {
           const member = info.row.original
@@ -426,7 +367,7 @@ export function MembersTable({ filters }: MembersTableProps) {
     }
 
     return cols
-  }, [canEdit, divisionMap, memberStatusMap])
+  }, [canEdit, divisionMap, memberStatusMap, rankOrderMap])
 
   const table = useReactTable({
     data: data?.members ?? [],
@@ -514,6 +455,14 @@ export function MembersTable({ filters }: MembersTableProps) {
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit {selectedCount > 1 ? `(${selectedCount})` : ''}
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowBulkGrantQualDialog(true)}>
+                <Shield className="h-4 w-4 mr-2" />
+                Quals
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowBulkAssignTagDialog(true)}>
+                <Tag className="h-4 w-4 mr-2" />
+                Tags
+              </Button>
               <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteDialog(true)}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete {selectedCount > 1 ? `(${selectedCount})` : ''}
@@ -527,10 +476,7 @@ export function MembersTable({ filters }: MembersTableProps) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.column.columnDef.size }}
-                  >
+                  <TableHead key={header.id} style={{ width: header.column.columnDef.size }}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -548,10 +494,7 @@ export function MembersTable({ filters }: MembersTableProps) {
                   className={row.getIsSelected() ? 'bg-base-200/50' : ''}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{ width: cell.column.columnDef.size }}
-                    >
+                    <TableCell key={cell.id} style={{ width: cell.column.columnDef.size }}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -570,11 +513,44 @@ export function MembersTable({ filters }: MembersTableProps) {
           </TableBody>
         </Table>
 
-        {/* Footer with total count */}
-        <div className="flex items-center justify-end px-4 py-3 border-t">
-          <span className="text-sm text-base-content/60">
-            {data?.total ?? 0} {(data?.total ?? 0) === 1 ? 'member' : 'members'}
-          </span>
+        {/* Pagination footer */}
+        <div className="flex items-center justify-between px-4 py-3 border-t">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-base-content/60">Rows per page</span>
+            <select
+              className="select select-sm"
+              value={limit}
+              onChange={(e) => onLimitChange(Number(e.target.value))}
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-base-content/60">
+              Page {page} of {data?.totalPages ?? 1} ({data?.total ?? 0}{' '}
+              {(data?.total ?? 0) === 1 ? 'member' : 'members'})
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(page - 1)}
+                disabled={page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(page + 1)}
+                disabled={page >= (data?.totalPages ?? 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -585,7 +561,6 @@ export function MembersTable({ filters }: MembersTableProps) {
           onOpenChange={(open) => {
             if (!open) {
               setEditingMember(null)
-              setRowSelection({})
             }
           }}
           mode="edit"
@@ -602,7 +577,13 @@ export function MembersTable({ filters }: MembersTableProps) {
       )}
 
       {/* Bulk Delete Confirmation Dialog */}
-      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+      <AlertDialog
+        open={showBulkDeleteDialog}
+        onOpenChange={(open) => {
+          if (open) setBulkDeleteError(null)
+          setShowBulkDeleteDialog(open)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {selectedCount} members?</AlertDialogTitle>
@@ -611,6 +592,11 @@ export function MembersTable({ filters }: MembersTableProps) {
               remove their data from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {bulkDeleteError && (
+            <Alert variant="destructive">
+              <AlertDescription>{bulkDeleteError}</AlertDescription>
+            </Alert>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBulkDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
@@ -628,6 +614,22 @@ export function MembersTable({ filters }: MembersTableProps) {
       <BulkEditMemberModal
         open={showBulkEditDialog}
         onOpenChange={setShowBulkEditDialog}
+        memberIds={selectedMemberIds}
+        onSuccess={() => setRowSelection({})}
+      />
+
+      {/* Bulk Grant Qualification Modal */}
+      <BulkGrantQualificationModal
+        open={showBulkGrantQualDialog}
+        onOpenChange={setShowBulkGrantQualDialog}
+        memberIds={selectedMemberIds}
+        onSuccess={() => setRowSelection({})}
+      />
+
+      {/* Bulk Assign Tag Modal */}
+      <BulkAssignTagModal
+        open={showBulkAssignTagDialog}
+        onOpenChange={setShowBulkAssignTagDialog}
         memberIds={selectedMemberIds}
         onSuccess={() => setRowSelection({})}
       />
