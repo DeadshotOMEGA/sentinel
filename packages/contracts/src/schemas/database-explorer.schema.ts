@@ -33,6 +33,7 @@ export const ALLOWED_TABLES = [
   'AuditLog',
   'SecurityAlert',
   'ResponsibilityAuditLog',
+  'report_audit_log',
   // Enums
   'MemberStatus',
   'MemberType',
@@ -64,8 +65,14 @@ export const TABLE_CATEGORIES: Record<string, readonly string[]> = {
   Core: ['AdminUser', 'Member', 'Badge', 'Division', 'Rank'],
   Attendance: ['Checkin', 'Visitor', 'Event', 'EventAttendee', 'EventCheckin', 'MissedCheckout'],
   'Unit Events': ['UnitEventType', 'UnitEvent', 'UnitEventDutyPosition', 'UnitEventDutyAssignment'],
-  Training: ['BmqCourse', 'BmqEnrollment', 'TrainingYear', 'QualificationType', 'MemberQualification'],
-  Audit: ['AuditLog', 'SecurityAlert', 'ResponsibilityAuditLog'],
+  Training: [
+    'BmqCourse',
+    'BmqEnrollment',
+    'TrainingYear',
+    'QualificationType',
+    'MemberQualification',
+  ],
+  Audit: ['AuditLog', 'SecurityAlert', 'ResponsibilityAuditLog', 'report_audit_log'],
   Enums: ['MemberStatus', 'MemberType', 'VisitType', 'BadgeStatus', 'Tag', 'MemberTag', 'ListItem'],
   Config: ['Setting', 'AlertConfig', 'ReportSetting', 'StatHoliday'],
   DDS: [
