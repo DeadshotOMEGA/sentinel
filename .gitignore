@@ -133,6 +133,8 @@ htmlcov/
 
 # Plans (temporary)
 .claude/plans/
+docs/plans/
+docs/reviews/
 
 # External skills (installed from other projects)
 .claude/skills/infographic-*/
