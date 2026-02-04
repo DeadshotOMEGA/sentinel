@@ -13,7 +13,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
   const activities = data?.activities ?? []
 
   return (
-    <div className="flex min-h-full w-80 flex-col bg-base-200 p-4">
+    <div className="flex min-h-full w-[290px] flex-col bg-base-200 p-4">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
 
       {/* Activity List */}
       {!isLoading && !isError && activities.length > 0 && (
-        <ul className="menu menu-sm w-full flex-1 gap-1 overflow-y-auto p-0">
+        <ul className="menu menu-sm w-full flex-1 gap-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden p-0">
           {activities.map((item: RecentActivityItem) => {
             const isCheckIn = item.direction === 'in'
             const isVisitor = item.type === 'visitor'

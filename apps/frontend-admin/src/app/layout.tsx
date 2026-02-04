@@ -40,7 +40,7 @@ export default function RootLayout({
             </div>
 
             {/* Sidebar */}
-            <div className="drawer-side z-40">
+            <div className="drawer-side z-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <label
                 htmlFor={DRAWER_ID}
                 aria-label="close sidebar"

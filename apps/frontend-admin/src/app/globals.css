@@ -133,14 +133,6 @@
 }
 
 /* ========================================
-   GRID UTILITIES
-   ======================================== */
-
-@utility grid-auto-fit-cards {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
-}
-
-/* ========================================
    CARD ENHANCEMENTS
    Elevated card styling for dashboard
    ======================================== */
@@ -302,6 +294,15 @@
 .presence-section {
   background: linear-gradient(180deg, oklch(100% 0 0) 0%, oklch(99% 0 0) 100%);
   border: 1px solid oklch(94% 0 0);
+}
+
+/* Person card grid: 6 cols with sidebar, 7 cols without */
+.drawer.drawer-open .presence-card-grid {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.drawer:not(.drawer-open) .presence-card-grid {
+  grid-template-columns: repeat(7, 1fr);
 }
 
 .presence-section-header {
