@@ -38,13 +38,15 @@ export function useCheckins(params: CheckinsQueryParams = {}) {
     },
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     websocketManager.connect()
     websocketManager.subscribe('checkins')
     websocketManager.subscribe('visitors')
 
     const handleUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('checkin:new', handleUpdate)
@@ -58,7 +60,7 @@ export function useCheckins(params: CheckinsQueryParams = {}) {
       websocketManager.unsubscribe('checkins')
       websocketManager.unsubscribe('visitors')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }
@@ -80,13 +82,15 @@ export function useRecentCheckins() {
     refetchInterval: 30000, // Refetch every 30 seconds as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     // Connect WebSocket and subscribe to check-in updates
     websocketManager.connect()
     websocketManager.subscribe('checkins')
 
     const handleCheckinUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('checkins:in', handleCheckinUpdate)
@@ -97,7 +101,7 @@ export function useRecentCheckins() {
       websocketManager.off('checkins:out', handleCheckinUpdate)
       websocketManager.unsubscribe('checkins')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }
@@ -119,13 +123,15 @@ export function useRecentActivity() {
     refetchInterval: 30000,
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     websocketManager.connect()
     websocketManager.subscribe('checkins')
     websocketManager.subscribe('visitors')
 
     const handleUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('checkin:new', handleUpdate)
@@ -139,7 +145,7 @@ export function useRecentActivity() {
       websocketManager.unsubscribe('checkins')
       websocketManager.unsubscribe('visitors')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

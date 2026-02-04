@@ -18,13 +18,15 @@ export function useDdsStatus() {
     refetchInterval: 300000, // Refetch every 5 minutes as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     // Connect WebSocket and subscribe to DDS updates
     websocketManager.connect()
     websocketManager.subscribe('dds')
 
     const handleDdsUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('dds:updated', handleDdsUpdate)
@@ -33,7 +35,7 @@ export function useDdsStatus() {
       websocketManager.off('dds:updated', handleDdsUpdate)
       websocketManager.unsubscribe('dds')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

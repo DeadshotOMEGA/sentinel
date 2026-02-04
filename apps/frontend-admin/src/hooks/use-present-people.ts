@@ -18,6 +18,8 @@ export function usePresentPeople() {
     refetchInterval: 30000,
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     websocketManager.connect()
     websocketManager.subscribe('checkins')
@@ -25,7 +27,7 @@ export function usePresentPeople() {
     websocketManager.subscribe('visitors')
 
     const handleUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     // Backend emits 'checkin:new' for all checkin events (broadcast.ts:78)
@@ -43,7 +45,7 @@ export function usePresentPeople() {
       websocketManager.unsubscribe('presence')
       websocketManager.unsubscribe('visitors')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

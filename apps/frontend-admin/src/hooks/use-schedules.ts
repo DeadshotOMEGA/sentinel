@@ -263,7 +263,13 @@ export function useCreateAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ scheduleId, data }: { scheduleId: string; data: CreateAssignmentInput }) => {
+    mutationFn: async ({
+      scheduleId,
+      data,
+    }: {
+      scheduleId: string
+      data: CreateAssignmentInput
+    }) => {
       const response = await apiClient.schedules.createAssignment({
         params: { id: scheduleId },
         body: data,
@@ -313,7 +319,13 @@ export function useDeleteAssignment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ scheduleId, assignmentId }: { scheduleId: string; assignmentId: string }) => {
+    mutationFn: async ({
+      scheduleId,
+      assignmentId,
+    }: {
+      scheduleId: string
+      assignmentId: string
+    }) => {
       const response = await apiClient.schedules.deleteAssignment({
         params: { id: scheduleId, assignmentId },
       })
@@ -392,6 +404,8 @@ export function useTonightDutyWatch() {
     refetchInterval: 60000, // Refetch every minute as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     // Connect WebSocket and subscribe to presence updates
     // When team members check in/out, refresh the duty watch data
@@ -400,7 +414,7 @@ export function useTonightDutyWatch() {
     websocketManager.subscribe('schedules')
 
     const handleUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('presence:update', handleUpdate)
@@ -412,7 +426,7 @@ export function useTonightDutyWatch() {
       websocketManager.unsubscribe('presence')
       websocketManager.unsubscribe('schedules')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

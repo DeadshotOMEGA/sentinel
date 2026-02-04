@@ -18,13 +18,15 @@ export function useSecurityAlerts() {
     refetchInterval: 60000, // Refetch every minute as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     // Connect WebSocket and subscribe to alerts updates
     websocketManager.connect()
     websocketManager.subscribe('alerts')
 
     const handleAlertUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('alerts:new', handleAlertUpdate)
@@ -35,7 +37,7 @@ export function useSecurityAlerts() {
       websocketManager.off('alerts:acknowledged', handleAlertUpdate)
       websocketManager.unsubscribe('alerts')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

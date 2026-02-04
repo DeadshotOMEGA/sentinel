@@ -4,7 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { websocketManager } from '@/lib/websocket'
-import type { TransferLockupInput, ExecuteLockupInput, OpenBuildingInput } from '@sentinel/contracts'
+import type {
+  TransferLockupInput,
+  ExecuteLockupInput,
+  OpenBuildingInput,
+} from '@sentinel/contracts'
 
 export function useLockupStatus() {
   const query = useQuery({
@@ -19,12 +23,14 @@ export function useLockupStatus() {
     refetchInterval: 60000, // Refetch every minute as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     websocketManager.connect()
     websocketManager.subscribe('lockup')
 
     const handleLockupUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('lockup:statusChanged', handleLockupUpdate)
@@ -37,7 +43,7 @@ export function useLockupStatus() {
       websocketManager.off('lockup:executed', handleLockupUpdate)
       websocketManager.unsubscribe('lockup')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }

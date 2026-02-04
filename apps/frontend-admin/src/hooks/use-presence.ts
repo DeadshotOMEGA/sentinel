@@ -18,13 +18,15 @@ export function usePresence() {
     refetchInterval: 30000, // Refetch every 30 seconds as fallback
   })
 
+  const { refetch } = query
+
   useEffect(() => {
     // Connect WebSocket and subscribe to presence updates
     websocketManager.connect()
     websocketManager.subscribe('presence')
 
     const handlePresenceUpdate = () => {
-      query.refetch()
+      refetch()
     }
 
     websocketManager.on('presence:update', handlePresenceUpdate)
@@ -33,7 +35,7 @@ export function usePresence() {
       websocketManager.off('presence:update', handlePresenceUpdate)
       websocketManager.unsubscribe('presence')
     }
-  }, [query])
+  }, [refetch])
 
   return query
 }
