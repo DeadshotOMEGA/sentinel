@@ -83,17 +83,13 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
   }
 
   if (error) {
-    return (
-      <div className="text-center py-8 text-error">
-        Failed to load {title.toLowerCase()}
-      </div>
-    )
+    return <div className="text-center py-8 text-error">Failed to load {title.toLowerCase()}</div>
   }
 
   // Determine number of columns based on enum type
-  // Tags: Order, Name, Preview, Description, Usage, Actions = 6
+  // Tags: Order, Name, Preview, Positional, Description, Usage, Actions = 7
   // Others: Code, Name, Preview, Description, Usage, Actions = 6
-  const columnCount = 6
+  const columnCount = isTagType ? 7 : 6
 
   return (
     <div className="space-y-4">
@@ -116,6 +112,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
               {!isTagType && <TableHead>Code</TableHead>}
               <TableHead>Name</TableHead>
               <TableHead>Preview</TableHead>
+              {isTagType && <TableHead>Positional</TableHead>}
               <TableHead>Description</TableHead>
               <TableHead className="text-right">Usage</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
@@ -162,21 +159,28 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                       {item.name}
                     </Chip>
                   </TableCell>
+                  {isTagType && (
+                    <TableCell>
+                      {item.isPositional ? (
+                        <Badge variant="secondary">Positional</Badge>
+                      ) : (
+                        <span className="text-base-content/40">-</span>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell className="text-base-content/60 max-w-[200px] truncate">
                     {item.description || '-'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Badge variant={item.usageCount && item.usageCount > 0 ? 'secondary' : 'outline'}>
+                    <Badge
+                      variant={item.usageCount && item.usageCount > 0 ? 'secondary' : 'outline'}
+                    >
                       {item.usageCount ?? 0}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingItem(item)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
