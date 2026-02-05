@@ -44,7 +44,7 @@ function DatabasePageContent() {
 
   // Update URL when state changes
   useEffect(() => {
-    const params = new URLSearchParams()
+    const params = new globalThis.URLSearchParams()
     if (selectedTable) params.set('table', selectedTable)
     if (page !== 1) params.set('page', page.toString())
     if (limit !== 25) params.set('limit', limit.toString())
@@ -73,42 +73,42 @@ function DatabasePageContent() {
 
   return (
     <div className="flex flex-1 -m-4 lg:-m-6">
-        {/* Sidebar */}
-        <TableSidebar
-          tables={tableListData?.tables ?? []}
-          selectedTable={selectedTable}
-          onSelectTable={handleSelectTable}
-          isLoading={isLoadingTables}
-        />
+      {/* Sidebar */}
+      <TableSidebar
+        tables={tableListData?.tables ?? []}
+        selectedTable={selectedTable}
+        onSelectTable={handleSelectTable}
+        isLoading={isLoadingTables}
+      />
 
-        {/* Main content */}
-        <main className="flex-1 p-6 overflow-hidden">
-          {selectedTable ? (
-            <DatabaseTable
-              data={tableData}
-              isLoading={isLoadingData}
-              isError={isDataError}
-              page={page}
-              limit={limit}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onPageChange={setPage}
-              onLimitChange={setLimit}
-              onSortChange={handleSortChange}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center bg-base-100 rounded-lg border">
-              <div className="text-center space-y-4">
-                <Database className="h-16 w-16 mx-auto text-base-content/60" />
-                <h2 className="text-xl font-medium">Database Explorer</h2>
-                <p className="text-base-content/60 max-w-sm">
-                  Select a table from the sidebar to view its data. This is a read-only view
-                  for exploring the database structure and contents.
-                </p>
-              </div>
+      {/* Main content */}
+      <main className="flex-1 p-6 overflow-hidden">
+        {selectedTable ? (
+          <DatabaseTable
+            data={tableData}
+            isLoading={isLoadingData}
+            isError={isDataError}
+            page={page}
+            limit={limit}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            onSortChange={handleSortChange}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-base-100 border">
+            <div className="text-center space-y-4">
+              <Database className="h-16 w-16 mx-auto text-base-content/60" />
+              <h2 className="text-xl font-medium">Database Explorer</h2>
+              <p className="text-base-content/60 max-w-sm">
+                Select a table from the sidebar to view its data. This is a read-only view for
+                exploring the database structure and contents.
+              </p>
             </div>
-          )}
-        </main>
+          </div>
+        )}
+      </main>
     </div>
   )
 }
