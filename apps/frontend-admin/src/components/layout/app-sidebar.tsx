@@ -13,7 +13,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
   const activities = data?.activities ?? []
 
   return (
-    <div className="flex min-h-full w-[290px] flex-col bg-base-200 p-4">
+    <div className="flex min-h-full w-72.5 flex-col bg-base-300 p-4">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
       {isLoading && (
         <div className="flex flex-col gap-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="skeleton h-16 w-full rounded-lg" />
+            <div key={i} className="skeleton h-16 w-full" />
           ))}
         </div>
       )}
@@ -57,24 +57,25 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
 
             return (
               <li key={`${item.type}-${item.id}`}>
-                <div className="flex items-start gap-2 rounded-lg bg-base-100 p-3">
+                <div className="flex items-start gap-2 bg-base-100 p-3 rounded-none">
                   <Icon
                     className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-warning'}`}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate text-sm font-medium">
-                        {item.rank ? `${item.rank} ` : ''}{item.name}
+                        {item.rank ? `${item.rank} ` : ''}
+                        {item.name}
                       </span>
                       {isVisitor && (
                         <span className="badge badge-info badge-xs shrink-0">Visitor</span>
                       )}
                     </div>
-                    <div
-                      className={`text-xs ${isCheckIn ? 'text-success' : 'text-warning'}`}
+                    <span
+                      className={`badge badge-xs ${isCheckIn ? 'badge-success' : 'badge-error'}`}
                     >
                       {isCheckIn ? 'Signed in' : 'Signed out'}
-                    </div>
+                    </span>
                     <div className="mt-0.5 text-xs text-base-content/60">
                       {new Date(item.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',
