@@ -161,7 +161,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                   </TableCell>
                   {isTagType && (
                     <TableCell>
-                      {item.isPositional ? (
+                      {'isPositional' in item && item.isPositional ? (
                         <Badge variant="secondary">Positional</Badge>
                       ) : (
                         <span className="text-base-content/40">-</span>
