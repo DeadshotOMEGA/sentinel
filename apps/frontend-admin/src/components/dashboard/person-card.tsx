@@ -18,14 +18,8 @@ function formatRelativeTime(isoString: string): string {
   return `${Math.floor(diffHrs / 24)}d ago`
 }
 
-// Position color mapping for duty watch roles (faded style — purple)
-const POSITION_COLORS: Record<string, string> = {
-  SWK: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-  DSWK: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-  QM: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-  BM: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-  APS: 'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400',
-}
+// Position color mapping for duty watch roles (uses DaisyUI secondary)
+const POSITION_COLOR = 'border border-secondary bg-secondary/10 text-secondary'
 
 // Reuse faded color classes from Chip component for avatar styling
 const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
@@ -42,12 +36,9 @@ interface PersonAvatarProps {
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   // Priority 1: Duty position
   if (dutyPosition) {
-    const colorClass =
-      POSITION_COLORS[dutyPosition] ||
-      'border border-purple-500 bg-purple-500/10 text-purple-500 dark:border-purple-400 dark:bg-purple-400/20 dark:text-purple-400'
     return (
       <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
-        <div className={`w-10 rounded-full ${colorClass}`}>
+        <div className={`w-10 rounded-full ${POSITION_COLOR}`}>
           <span className="text-xs font-bold">{dutyPosition}</span>
         </div>
       </div>
@@ -59,7 +50,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     const ddsTag = person.tags?.find((t) => t.name === 'DDS')
     const colorClass = ddsTag?.chipColor
       ? CHIP_COLOR_AVATAR_CLASSES[ddsTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
-      : 'border border-red-500 bg-red-500/10 text-red-500 dark:border-red-400 dark:bg-red-400/20 dark:text-red-400'
+      : 'border border-error bg-error/10 text-error'
     return (
       <div className="avatar avatar-placeholder" aria-label="Duty Day Staff">
         <div className={`w-10 rounded-full ${colorClass}`}>
@@ -99,7 +90,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     .toUpperCase()
   return (
     <div className="avatar avatar-placeholder" aria-label={person.name}>
-      <div className="w-10 rounded-full border border-zinc-400 bg-zinc-400/10 text-zinc-500 dark:border-zinc-500 dark:bg-zinc-500/20 dark:text-zinc-400">
+      <div className="w-10 rounded-full border border-base-300 bg-base-200 text-base-content/60">
         <span className="text-xs font-bold">{initials}</span>
       </div>
     </div>
@@ -133,7 +124,7 @@ export const PersonCard = memo(function PersonCard({
     : 'border-info/30 hover:border-info/50'
 
   return (
-    <div className={`card card-elevated rounded-xl border ${cardBorderClass}`}>
+    <div className={`card card-elevated border ${cardBorderClass}`}>
       <div className="card-body p-3 gap-2">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (

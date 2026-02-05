@@ -20,7 +20,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-theme="sentinel" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+      <body className="bg-base-300" suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
           <div className={`drawer ${isDrawerOpen ? 'drawer-open' : ''}`}>
             <input
@@ -34,18 +34,12 @@ export default function RootLayout({
             {/* Main Content */}
             <div className="drawer-content flex flex-col">
               <AppNavbar drawerId={DRAWER_ID} isDrawerOpen={isDrawerOpen} />
-              <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-                {children}
-              </main>
+              <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
             </div>
 
             {/* Sidebar */}
             <div className="drawer-side z-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <label
-                htmlFor={DRAWER_ID}
-                aria-label="close sidebar"
-                className="drawer-overlay"
-              />
+              <label htmlFor={DRAWER_ID} aria-label="close sidebar" className="drawer-overlay" />
               <AppSidebar drawerId={DRAWER_ID} />
             </div>
           </div>

@@ -29,10 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Pencil, Trash2, Plus, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react'
-import {
-  useStatHolidays,
-  useDeleteStatHoliday,
-} from '@/hooks/use-stat-holidays'
+import { useStatHolidays, useDeleteStatHoliday } from '@/hooks/use-stat-holidays'
 import { StatHolidayFormModal } from './stat-holiday-form-modal'
 import type { StatHoliday } from '@sentinel/contracts'
 
@@ -73,11 +70,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
   }
 
   if (error) {
-    return (
-      <div className="text-center py-8 text-error">
-        Failed to load statutory holidays
-      </div>
-    )
+    return <div className="text-center py-8 text-error">Failed to load statutory holidays</div>
   }
 
   const holidays = data?.holidays ?? []
@@ -113,7 +106,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
         </div>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -128,9 +121,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             {holidays.length > 0 ? (
               holidays.map((holiday) => (
                 <TableRow key={holiday.id}>
-                  <TableCell className="font-mono text-sm">
-                    {formatDate(holiday.date)}
-                  </TableCell>
+                  <TableCell className="font-mono text-sm">{formatDate(holiday.date)}</TableCell>
                   <TableCell className="font-medium">{holiday.name}</TableCell>
                   <TableCell>
                     {holiday.province ? (
@@ -154,18 +145,10 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingItem(holiday)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(holiday)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingItem(holiday)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingItem(holiday)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -175,7 +158,8 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-base-content/60">
-                  No statutory holidays found for {selectedYear}. Click &quot;Add Holiday&quot; to create one.
+                  No statutory holidays found for {selectedYear}. Click &quot;Add Holiday&quot; to
+                  create one.
                 </TableCell>
               </TableRow>
             )}

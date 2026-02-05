@@ -62,11 +62,7 @@ export function QualificationTypeTable({ title, description }: QualificationType
   }
 
   if (error) {
-    return (
-      <div className="text-center py-8 text-error">
-        Failed to load qualification types
-      </div>
-    )
+    return <div className="text-center py-8 text-error">Failed to load qualification types</div>
   }
 
   return (
@@ -82,7 +78,7 @@ export function QualificationTypeTable({ title, description }: QualificationType
         </Button>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -140,18 +136,10 @@ export function QualificationTypeTable({ title, description }: QualificationType
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingItem(item)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingItem(item)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingItem(item)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

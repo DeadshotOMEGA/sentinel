@@ -17,9 +17,9 @@ export function SecurityAlertsBar() {
   return (
     <div
       role="alert"
-      className="alert alert-error rounded-xl mb-4 p-4 flex items-start gap-3 animate-slide-in-left"
+      className="alert alert-error mb-4 p-4 flex items-start gap-3 animate-slide-in-left"
     >
-      <div className="p-2 rounded-lg bg-error/15 shrink-0">
+      <div className="p-2 bg-error/15 shrink-0">
         <AlertCircle className="h-5 w-5 text-error" />
       </div>
 

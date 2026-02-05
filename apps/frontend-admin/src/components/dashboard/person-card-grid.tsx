@@ -114,7 +114,7 @@ export function PersonCardGrid() {
 
   if (isError) {
     return (
-      <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
+      <div className="bg-base-100 p-6 border shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <UsersRound size={32} strokeWidth={1} className="text-error" />
           <h2 className="text-lg font-display font-semibold">Presence</h2>
@@ -126,7 +126,7 @@ export function PersonCardGrid() {
 
   if (isLoading) {
     return (
-      <div className="bg-base-100 p-6 rounded-lg shadow-lg">
+      <div className="bg-base-100 p-6 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
           <UsersRound size={32} strokeWidth={1} />
           <h2 className="text-lg font-display font-semibold">Presence</h2>
@@ -137,11 +137,11 @@ export function PersonCardGrid() {
   }
 
   return (
-    <div className="presence-section p-4 rounded-xl shadow-lg animate-fade-in">
+    <div className="presence-section p-4 shadow-lg animate-fade-in">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3 rounded-t-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
+          <div className="p-2 bg-primary/10">
             <UsersRound size={24} strokeWidth={1.5} className="text-primary" />
           </div>
           <h2 className="text-lg font-display font-semibold tracking-tight">Presence</h2>

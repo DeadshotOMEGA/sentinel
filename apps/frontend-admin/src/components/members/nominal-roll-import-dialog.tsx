@@ -235,14 +235,14 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
           <div className="space-y-4">
             {/* Divisions to Create Section */}
             {preview.divisionsToCreate && preview.divisionsToCreate.length > 0 && (
-              <Card className="p-4 border-purple-500">
+              <Card className="p-4 border-secondary">
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('divisions')}
                 >
                   <div className="flex items-center gap-2">
-                    <FolderPlus className="h-5 w-5 text-purple-600" />
-                    <h3 className="font-semibold text-purple-600">
+                    <FolderPlus className="h-5 w-5 text-secondary" />
+                    <h3 className="font-semibold text-secondary">
                       New Divisions: {preview.divisionsToCreate.length}
                     </h3>
                   </div>
@@ -391,14 +391,12 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
 
             {/* Members to Add */}
             {preview.toAdd.length > 0 && (
-              <Card className="p-4 border-green-500">
+              <Card className="p-4 border-success">
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toAdd')}
                 >
-                  <Badge variant="default" className="bg-green-600">
-                    To Add: {preview.toAdd.length}
-                  </Badge>
+                  <Badge className="badge-success">To Add: {preview.toAdd.length}</Badge>
                   {expandedSections.toAdd ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -441,14 +439,12 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
 
             {/* Members to Update */}
             {preview.toUpdate.length > 0 && (
-              <Card className="p-4 border-blue-500">
+              <Card className="p-4 border-info">
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toUpdate')}
                 >
-                  <Badge variant="default" className="bg-blue-600">
-                    To Update: {preview.toUpdate.length}
-                  </Badge>
+                  <Badge className="badge-info">To Update: {preview.toUpdate.length}</Badge>
                   {expandedSections.toUpdate ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -500,14 +496,12 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
 
             {/* Members to Review (Not in CSV) */}
             {preview.toReview.length > 0 && (
-              <Card className="p-4 border-yellow-500">
+              <Card className="p-4 border-warning">
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toReview')}
                 >
-                  <Badge variant="default" className="bg-yellow-600">
-                    Not in CSV: {preview.toReview.length}
-                  </Badge>
+                  <Badge className="badge-warning">Not in CSV: {preview.toReview.length}</Badge>
                   {expandedSections.toReview ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (

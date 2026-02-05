@@ -1,13 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto+Slab:wght@100..900&display=swap');
 
+@import '../styles/tokens.css';
+
 @import 'tailwindcss';
 
 @plugin "daisyui" {
   themes: sentinel --default, emerald, business --prefersdark;
 }
 
+
 @plugin "daisyui/theme" {
-  name: "sentinel";
+  name: "Sentinel";
   default: true;
   prefersdark: false;
   color-scheme: "light";
@@ -15,31 +18,33 @@
   --color-base-200: oklch(98% 0 0);
   --color-base-300: oklch(95% 0 0);
   --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: hsl(210 100% 50%);
-  --color-primary-content: oklch(93% 0.034 272.788);
-  --color-secondary: hsl(30 100% 50%);
-  --color-secondary-content: oklch(94% 0.028 342.258);
-  --color-accent: hsl(270 70% 60%);
-  --color-accent-content: oklch(94% 0.028 342.258);
-  --color-neutral: hsl(220 9% 46%);
-  --color-neutral-content: oklch(92% 0.004 286.32);
-  --color-info: oklch(74% 0.16 232.661);
-  --color-info-content: oklch(29% 0.066 243.157);
+  --color-primary: oklch(62% 0.214 259.815);
+  --color-primary-content: oklch(93% 0.032 255.585);
+  --color-secondary: oklch(70% 0.213 47.604);
+  --color-secondary-content: oklch(95% 0.038 75.164);
+  --color-accent: oklch(62% 0.265 303.9);
+  --color-accent-content: oklch(94% 0.033 307.174);
+  --color-neutral: oklch(37% 0.013 285.805);
+  --color-neutral-content: oklch(96% 0.001 286.375);
+  --color-info: oklch(71% 0.143 215.221);
+  --color-info-content: oklch(30% 0.056 229.695);
   --color-success: oklch(69% 0.17 162.48);
-  --color-success-content: oklch(37% 0.077 168.94);
-  --color-warning: oklch(79% 0.184 86.047);
-  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-success-content: oklch(26% 0.051 172.552);
+  --color-warning: oklch(85% 0.199 91.936);
+  --color-warning-content: oklch(28% 0.066 53.813);
   --color-error: oklch(63% 0.237 25.331);
-  --color-error-content: oklch(27% 0.105 12.094);
+  --color-error-content: oklch(25% 0.092 26.042);
   --radius-selector: 2rem;
-  --radius-field: 0.25rem;
-  --radius-box: 1rem;
+  --radius-field: 2rem;
+  --radius-box: 0rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
-  --border: 1px;
+  --border: 2px;
   --depth: 1;
-  --noise: 1;
+  --noise: 0;
 }
+
+
 
 /* Custom Tailwind theme extensions */
 @theme {

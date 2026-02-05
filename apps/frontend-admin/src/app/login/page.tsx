@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-100">
-      <div className="bg-base-100 p-8 rounded-lg shadow-md w-96 border">
+      <div className="bg-base-100 p-8 shadow-md w-96 border">
         <h1 className="text-2xl font-bold mb-6 text-center">HMCS Chippawa - Sentinel</h1>
 
         {step === 'badge' ? (

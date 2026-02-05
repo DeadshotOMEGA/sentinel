@@ -104,7 +104,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
         </Button>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border">
         <Table>
           <TableHeader>
             <TableRow>

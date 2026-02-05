@@ -327,7 +327,7 @@ export function StatusStats() {
 
   return (
     <div
-      className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel rounded-xl animate-fade-in"
+      className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel animate-fade-in"
       aria-live="polite"
     >
       <DdsStat />

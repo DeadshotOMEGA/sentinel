@@ -60,7 +60,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
     filters.divisionId || filters.direction || filters.startDate || filters.endDate
 
   return (
-    <div className="bg-base-100 p-4 rounded-lg border shadow-sm mb-6">
+    <div className="bg-base-100 p-4 border shadow-sm mb-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Start Date */}
         <fieldset className="fieldset">

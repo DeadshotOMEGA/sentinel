@@ -92,20 +92,14 @@ export function DatabaseTable({
             >
               {col.name}
               <Icon className="h-3.5 w-3.5" />
-              {col.isPrimaryKey && (
-                <span className="text-xs text-primary ml-1">(PK)</span>
-              )}
-              {col.isForeignKey && (
-                <span className="text-xs text-base-content/60 ml-1">(FK)</span>
-              )}
+              {col.isPrimaryKey && <span className="text-xs text-primary ml-1">(PK)</span>}
+              {col.isForeignKey && <span className="text-xs text-base-content/60 ml-1">(FK)</span>}
             </button>
           )
         },
         cell: (info) => {
           const value = info.getValue()
-          return getCellRenderer(col.name, col.type, value, (v) =>
-            handleJsonClick(v, col.name)
-          )
+          return getCellRenderer(col.name, col.type, value, (v) => handleJsonClick(v, col.name))
         },
       })
     })
@@ -121,7 +115,7 @@ export function DatabaseTable({
 
   if (isError) {
     return (
-      <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
+      <div className="bg-base-100 p-6 border shadow-sm">
         <p className="text-sm text-error">Failed to load table data</p>
       </div>
     )
@@ -129,7 +123,7 @@ export function DatabaseTable({
 
   if (isLoading) {
     return (
-      <div className="bg-base-100 rounded-lg border shadow-sm">
+      <div className="bg-base-100 border shadow-sm">
         <div className="animate-pulse p-6 space-y-4">
           <div className="h-10 bg-base-200 rounded"></div>
           <div className="h-12 bg-base-200 rounded"></div>
@@ -143,7 +137,7 @@ export function DatabaseTable({
 
   if (!data) {
     return (
-      <div className="bg-base-100 p-6 rounded-lg border shadow-sm flex items-center justify-center text-base-content/60">
+      <div className="bg-base-100 p-6 border shadow-sm flex items-center justify-center text-base-content/60">
         Select a table from the sidebar
       </div>
     )
@@ -151,18 +145,14 @@ export function DatabaseTable({
 
   return (
     <>
-      <div className="bg-base-100 rounded-lg border shadow-sm flex flex-col h-full">
+      <div className="bg-base-100 border shadow-sm flex flex-col h-full">
         {/* Table header info */}
         <div className="px-4 py-3 border-b flex items-center justify-between bg-base-200/30">
           <div>
             <h3 className="font-semibold">{data.table}</h3>
-            <p className="text-sm text-base-content/60">
-              {data.total.toLocaleString()} total rows
-            </p>
+            <p className="text-sm text-base-content/60">{data.total.toLocaleString()} total rows</p>
           </div>
-          <div className="text-sm text-base-content/60">
-            {data.columns.length} columns
-          </div>
+          <div className="text-sm text-base-content/60">{data.columns.length} columns</div>
         </div>
 
         {/* Table */}

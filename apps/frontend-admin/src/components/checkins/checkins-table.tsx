@@ -67,12 +67,11 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           const row = info.row.original
           const isVisitor = row.type === 'visitor'
           return (
-            <Badge variant={isVisitor ? 'secondary' : 'outline'} className="flex items-center gap-1 w-fit">
-              {isVisitor ? (
-                <Users className="h-3 w-3" />
-              ) : (
-                <User className="h-3 w-3" />
-              )}
+            <Badge
+              variant={isVisitor ? 'secondary' : 'outline'}
+              className="flex items-center gap-1 w-fit"
+            >
+              {isVisitor ? <Users className="h-3 w-3" /> : <User className="h-3 w-3" />}
               {isVisitor ? 'Visitor' : 'Member'}
             </Badge>
           )
@@ -165,7 +164,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
 
   if (isError) {
     return (
-      <div className="bg-base-100 p-6 rounded-lg border shadow-sm">
+      <div className="bg-base-100 p-6 border shadow-sm">
         <p className="text-sm text-error">Failed to load check-ins</p>
       </div>
     )
@@ -173,7 +172,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-base-100 rounded-lg border shadow-sm">
+      <div className="bg-base-100 border shadow-sm">
         <div className="animate-pulse p-6 space-y-4">
           <div className="h-10 bg-base-200 rounded"></div>
           <div className="h-12 bg-base-200 rounded"></div>
@@ -185,7 +184,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
   }
 
   return (
-    <div className="bg-base-100 rounded-lg border shadow-sm">
+    <div className="bg-base-100 border shadow-sm">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

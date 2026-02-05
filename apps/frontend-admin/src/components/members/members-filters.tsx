@@ -55,7 +55,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
     filters.qualificationCode
 
   return (
-    <div className="p-4 rounded-lg border-none mb-6">
+    <div className="p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         {/* Search */}
         <fieldset className="fieldset md:col-span-2">
@@ -99,7 +99,9 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             id="rank"
             className="select"
             value={filters.rank ?? 'all'}
-            onChange={(e) => onFilterChange({ rank: e.target.value === 'all' ? undefined : e.target.value })}
+            onChange={(e) =>
+              onFilterChange({ rank: e.target.value === 'all' ? undefined : e.target.value })
+            }
           >
             <option value="all">All Ranks</option>
             {enums?.ranks.map((rank: string) => (
@@ -135,7 +137,9 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             className="select"
             value={filters.qualificationCode ?? 'all'}
             onChange={(e) =>
-              onFilterChange({ qualificationCode: e.target.value === 'all' ? undefined : e.target.value })
+              onFilterChange({
+                qualificationCode: e.target.value === 'all' ? undefined : e.target.value,
+              })
             }
           >
             <option value="all">All Qualifications</option>
