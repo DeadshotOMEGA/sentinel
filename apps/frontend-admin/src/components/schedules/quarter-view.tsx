@@ -173,7 +173,7 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
                         onClick={() => onWeekClick?.(weekStartStr)}
                       >
                         <td className="text-xs">{format(weekStart, 'MMM d')}</td>
-                        <td className="text-xs truncate max-w-[100px]">
+                        <td className="text-xs truncate max-w-25">
                           {ddsSchedule?.assignments?.[0] ? (
                             <span className="badge badge-primary badge-xs">
                               {ddsSchedule.assignments[0].member.rank}{' '}
