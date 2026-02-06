@@ -59,7 +59,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
               <li key={`${item.type}-${item.id}`}>
                 <div className="flex items-start gap-2 bg-base-100 p-3 rounded-none">
                   <Icon
-                    className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-warning'}`}
+                    className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-error'}`}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
@@ -68,14 +68,10 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
                         {item.name}
                       </span>
                       {isVisitor && (
-                        <span className="badge badge-info badge-xs shrink-0">Visitor</span>
+                        <span className="badge badge-info badge-sm shrink-0">Visitor</span>
                       )}
                     </div>
-                    <span
-                      className={`badge badge-xs ${isCheckIn ? 'badge-success' : 'badge-error'}`}
-                    >
-                      {isCheckIn ? 'Signed in' : 'Signed out'}
-                    </span>
+
                     <div className="mt-0.5 text-xs text-base-content/60">
                       {new Date(item.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',
