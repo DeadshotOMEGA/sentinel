@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { useMembers } from '@/hooks/use-members'
 
 interface MemberPickerModalProps {
@@ -102,14 +102,16 @@ export function MemberPickerModal({
                   <li
                     key={member.id}
                     className="list-row cursor-pointer hover:bg-base-200/50 transition-colors"
-                    onClick={() => handleSelect({
-                      id: member.id,
-                      firstName: member.firstName,
-                      lastName: member.lastName,
-                      rank: member.rank,
-                      serviceNumber: member.serviceNumber,
-                      qualifications: quals,
-                    })}
+                    onClick={() =>
+                      handleSelect({
+                        id: member.id,
+                        firstName: member.firstName,
+                        lastName: member.lastName,
+                        rank: member.rank,
+                        serviceNumber: member.serviceNumber,
+                        qualifications: quals,
+                      })
+                    }
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -127,23 +129,28 @@ export function MemberPickerModal({
                     }}
                   >
                     <div className="flex items-center justify-center size-10 rounded-box bg-base-300 text-xs font-semibold uppercase">
-                      {member.firstName[0]}{member.lastName[0]}
+                      {member.firstName[0]}
+                      {member.lastName[0]}
                     </div>
                     <div>
-                      <div className="font-medium">{member.rank} {member.firstName} {member.lastName}</div>
-                      <div className="text-xs uppercase font-semibold opacity-60">{member.serviceNumber}</div>
+                      <div className="font-medium">
+                        {member.rank} {member.firstName} {member.lastName}
+                      </div>
+                      <div className="text-xs uppercase font-semibold opacity-60">
+                        {member.serviceNumber}
+                      </div>
                     </div>
                     {quals.length > 0 && (
                       <div className="flex gap-1 flex-wrap">
                         {quals.slice(0, 3).map((qual) => (
-                          <Badge key={qual.code} variant="outline" className="text-xs">
+                          <Chip key={qual.code} variant="bordered" color="default" size="sm">
                             {qual.code}
-                          </Badge>
+                          </Chip>
                         ))}
                         {quals.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Chip variant="bordered" color="default" size="sm">
                             +{quals.length - 3}
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                     )}
