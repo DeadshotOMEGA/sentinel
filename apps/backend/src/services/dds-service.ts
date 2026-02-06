@@ -23,7 +23,8 @@ interface DdsAssignmentWithMember {
   updatedAt: Date
   member: {
     id: string
-    name: string
+    firstName: string
+    lastName: string
     rank: string
     division: string | null
   }
@@ -102,7 +103,8 @@ export class DdsService {
       updatedAt: dbResult.updatedAt,
       member: {
         id: dbResult.member.id,
-        name: `${dbResult.member.firstName} ${dbResult.member.lastName}`,
+        firstName: dbResult.member.firstName,
+        lastName: dbResult.member.lastName,
         rank: dbResult.member.rank,
         division: dbResult.member.division?.name ?? null,
       },
@@ -154,7 +156,8 @@ export class DdsService {
       updatedAt: today,
       member: {
         id: dds.member.id,
-        name: `${dds.member.firstName} ${dds.member.lastName}`,
+        firstName: dds.member.firstName,
+        lastName: dds.member.lastName,
         rank: dds.member.rank,
         division: null,
       },
@@ -255,7 +258,7 @@ export class DdsService {
       assignment: {
         id: result.id,
         memberId: result.memberId,
-        memberName: result.member.name,
+        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
         rank: result.member.rank,
         status: result.status,
       },
@@ -329,7 +332,7 @@ export class DdsService {
       assignment: {
         id: result.id,
         memberId: result.memberId,
-        memberName: result.member.name,
+        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
         rank: result.member.rank,
         status: result.status,
       },
@@ -418,7 +421,7 @@ export class DdsService {
       assignment: {
         id: result.id,
         memberId: result.memberId,
-        memberName: result.member.name,
+        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
         rank: result.member.rank,
         status: result.status,
       },

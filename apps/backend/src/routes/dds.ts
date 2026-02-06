@@ -26,7 +26,7 @@ interface DdsAssignmentData {
   notes: string | null
   createdAt: Date | string
   updatedAt: Date | string
-  member: { id: string; name: string; rank: string; division: string | null }
+  member: { id: string; firstName: string; lastName: string; rank: string; division: string | null }
   assignedByAdminName: string | null
 }
 

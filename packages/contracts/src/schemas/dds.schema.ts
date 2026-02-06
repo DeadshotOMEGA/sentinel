@@ -10,7 +10,8 @@ export const DdsStatusEnum = v.picklist(['pending', 'active', 'transferred', 're
  */
 export const DdsMemberSchema = v.object({
   id: v.string(),
-  name: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
   rank: v.string(),
   division: v.nullable(v.string()),
 })
