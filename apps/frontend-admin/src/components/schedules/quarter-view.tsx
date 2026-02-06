@@ -1,19 +1,12 @@
 'use client'
 
 import { useMemo } from 'react'
-import {
-  addMonths,
-  format,
-  startOfMonth,
-  endOfMonth,
-  eachWeekOfInterval,
-  startOfWeek,
-  addDays,
-} from 'date-fns'
+import { addMonths, format, endOfMonth, eachWeekOfInterval, startOfWeek, addDays } from 'date-fns'
 import { useSchedulesByDateRange } from '@/hooks/use-schedules'
+import { useSchedulesByWeekGrouping } from '@/hooks/schedules'
 import { useUnitEvents } from '@/hooks/use-events'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
+import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { cn } from '@/lib/utils'
 
 /**
@@ -36,26 +29,6 @@ interface QuarterViewProps {
   onWeekClick?: (weekStartDate: string) => void
 }
 
-interface ScheduleData {
-  id: string
-  weekStartDate: string
-  status: string
-  dutyRole: {
-    id: string
-    code: string
-    name: string
-  }
-  assignments?: Array<{
-    id: string
-    member: {
-      id: string
-      rank: string
-      firstName: string
-      lastName: string
-    }
-  }>
-}
-
 interface EventData {
   id: string
   eventDate: string
@@ -76,28 +49,24 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
   const endStr = format(gridEnd, 'yyyy-MM-dd')
 
   // Fetch schedules and events for entire quarter
-  const { data: schedulesData, isLoading: schedulesLoading } = useSchedulesByDateRange(
-    startStr,
-    endStr
-  )
-  const { data: eventsData, isLoading: eventsLoading } = useUnitEvents({
+  const {
+    data: schedulesData,
+    isLoading: schedulesLoading,
+    isError: schedulesError,
+    error: schedError,
+  } = useSchedulesByDateRange(startStr, endStr)
+  const {
+    data: eventsData,
+    isLoading: eventsLoading,
+    isError: eventsError,
+    error: evtError,
+  } = useUnitEvents({
     startDate: startStr,
     endDate: endStr,
   })
 
   // Group schedules by week
-  const schedulesByWeek = useMemo(() => {
-    const map = new Map<string, ScheduleData[]>()
-    const schedules = (schedulesData?.data ?? []) as ScheduleData[]
-    for (const schedule of schedules) {
-      const weekKey = schedule.weekStartDate
-      if (!map.has(weekKey)) {
-        map.set(weekKey, [])
-      }
-      map.get(weekKey)!.push(schedule)
-    }
-    return map
-  }, [schedulesData])
+  const schedulesByWeek = useSchedulesByWeekGrouping(schedulesData)
 
   // Group events by week
   const eventsByWeek = useMemo(() => {
@@ -111,6 +80,24 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
     }
     return map
   }, [eventsData])
+
+  if (schedulesError || eventsError) {
+    const errMsg = schedError?.message ?? evtError?.message ?? 'Unknown error'
+    return (
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle>Quarter View</AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>Failed to load schedule</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">{errMsg}</p>
+        </AppCardContent>
+      </AppCard>
+    )
+  }
 
   if (schedulesLoading || eventsLoading) {
     return (
@@ -136,11 +123,11 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
         )
 
         return (
-          <Card key={monthLabel}>
-            <CardHeader>
-              <CardTitle className="text-base">{monthLabel}</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <AppCard key={monthLabel}>
+            <AppCardHeader>
+              <AppCardTitle className="text-base">{monthLabel}</AppCardTitle>
+            </AppCardHeader>
+            <AppCardContent>
               <table className="table table-xs w-full">
                 <thead>
                   <tr>
@@ -226,8 +213,8 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
                   })}
                 </tbody>
               </table>
-            </CardContent>
-          </Card>
+            </AppCardContent>
+          </AppCard>
         )
       })}
     </div>

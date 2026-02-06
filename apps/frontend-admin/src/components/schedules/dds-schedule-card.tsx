@@ -1,10 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { User, Plus, Check, Loader2, AlertCircle, X, Pencil } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AppCard,
+  AppCardContent,
+  AppCardDescription,
+  AppCardHeader,
+  AppCardTitle,
+  AppCardAction,
+} from '@/components/ui/AppCard'
+import { AppBadge } from '@/components/ui/AppBadge'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,18 +37,36 @@ import {
 
 interface DdsScheduleCardProps {
   weekStartDate: string
+  /** Pre-fetched schedules data (from WeekColumn). If provided, skips internal fetch. */
+  schedules?: ReturnType<typeof useSchedulesByWeek>['data']
+  /** Pre-fetched duty roles data (from WeekColumn). If provided, skips internal fetch. */
+  dutyRoles?: ReturnType<typeof useDutyRoles>['data']
+  /** External loading state when data is passed from parent */
+  isLoading?: boolean
 }
 
 function formatMemberName(member: { rank: string; firstName: string; lastName: string }): string {
   return `${member.rank} ${member.firstName} ${member.lastName}`
 }
 
-export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
+export function DdsScheduleCard({
+  weekStartDate,
+  schedules: externalSchedules,
+  dutyRoles: externalDutyRoles,
+  isLoading: externalLoading,
+}: DdsScheduleCardProps) {
   const [isMemberPickerOpen, setIsMemberPickerOpen] = useState(false)
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
 
-  const { data: dutyRoles } = useDutyRoles()
-  const { data: schedules, isLoading } = useSchedulesByWeek(weekStartDate)
+  // Use passed data if available, otherwise fetch internally
+  const internalDutyRoles = useDutyRoles()
+  const internalSchedules = useSchedulesByWeek(weekStartDate)
+
+  const dutyRoles = externalDutyRoles ?? internalDutyRoles.data
+  const schedules = externalSchedules ?? internalSchedules.data
+  const isLoading = externalLoading ?? internalSchedules.isLoading
+  const isError = !externalSchedules && internalSchedules.isError
+  const error = !externalSchedules ? internalSchedules.error : null
 
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
@@ -77,8 +103,10 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           scheduleId: newSchedule.id,
           data: { memberId: member.id },
         })
+        toast.success(`Assigned ${member.firstName} ${member.lastName} as DDS`)
       } catch (error) {
-        console.error('Failed to assign DDS:', error)
+        const message = error instanceof Error ? error.message : 'Failed to assign DDS'
+        toast.error(message)
       }
     } else {
       try {
@@ -93,8 +121,10 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           scheduleId: ddsSchedule.id,
           data: { memberId: member.id },
         })
+        toast.success(`Assigned ${member.firstName} ${member.lastName} as DDS`)
       } catch (error) {
-        console.error('Failed to assign DDS:', error)
+        const message = error instanceof Error ? error.message : 'Failed to assign DDS'
+        toast.error(message)
       }
     }
   }
@@ -106,8 +136,10 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
         scheduleId: ddsSchedule.id,
         assignmentId: currentAssignment.id,
       })
+      toast.success('DDS assignment removed')
     } catch (error) {
-      console.error('Failed to remove DDS assignment:', error)
+      const message = error instanceof Error ? error.message : 'Failed to remove assignment'
+      toast.error(message)
     }
     setIsRemoveDialogOpen(false)
   }
@@ -116,8 +148,10 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
     if (!ddsSchedule) return
     try {
       await publishSchedule.mutateAsync(ddsSchedule.id)
+      toast.success('Schedule published')
     } catch (error) {
-      console.error('Failed to publish schedule:', error)
+      const message = error instanceof Error ? error.message : 'Failed to publish schedule'
+      toast.error(message)
     }
   }
 
@@ -125,46 +159,79 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
     if (!ddsSchedule) return
     try {
       await revertToDraft.mutateAsync(ddsSchedule.id)
+      toast.success('Schedule reverted to draft')
     } catch (error) {
-      console.error('Failed to revert schedule to draft:', error)
+      const message = error instanceof Error ? error.message : 'Failed to revert schedule'
+      toast.error(message)
     }
+  }
+
+  if (isError) {
+    return (
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            DDS (Duty Day Staff)
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>Failed to load schedule</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">{error?.message}</p>
+        </AppCardContent>
+      </AppCard>
+    )
   }
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <AppCard>
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
             DDS (Duty Day Staff)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center h-24">
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent className="flex items-center justify-center h-24">
           <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
-        </CardContent>
-      </Card>
+        </AppCardContent>
+      </AppCard>
     )
   }
 
+  const cardStatus =
+    ddsSchedule?.status === 'published'
+      ? ('success' as const)
+      : ddsSchedule
+        ? ('warning' as const)
+        : undefined
+
   return (
-    <Card>
-      <CardHeader>
+    <AppCard status={cardStatus}>
+      <AppCardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <AppCardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
               DDS (Duty Day Staff)
-            </CardTitle>
-            <CardDescription>Assigned for the week. Responsible for daily lockup.</CardDescription>
+            </AppCardTitle>
+            <AppCardDescription>
+              Assigned for the week. Responsible for daily lockup.
+            </AppCardDescription>
           </div>
           {ddsSchedule && (
-            <Badge variant={ddsSchedule.status === 'published' ? 'default' : 'secondary'}>
-              {ddsSchedule.status}
-            </Badge>
+            <AppCardAction>
+              <AppBadge status={ddsSchedule.status === 'published' ? 'success' : 'warning'}>
+                {ddsSchedule.status}
+              </AppBadge>
+            </AppCardAction>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
+      </AppCardHeader>
+      <AppCardContent>
         {!ddsSchedule || !currentAssignment ? (
           <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
             <AlertCircle className="h-8 w-8 text-base-content/60 mb-2" />
@@ -194,11 +261,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
                     <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
                       Change
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsRemoveDialogOpen(true)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setIsRemoveDialogOpen(true)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </>
@@ -214,7 +277,12 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
                   </Button>
                 )}
                 {ddsSchedule.status === 'published' && (
-                  <Button variant="outline" size="sm" onClick={handleEdit} disabled={revertToDraft.isPending}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEdit}
+                    disabled={revertToDraft.isPending}
+                  >
                     {revertToDraft.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -227,7 +295,7 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
             </div>
           </div>
         )}
-      </CardContent>
+      </AppCardContent>
 
       <MemberPickerModal
         open={isMemberPickerOpen}
@@ -243,7 +311,9 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove DDS Assignment?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove {currentAssignment ? formatMemberName(currentAssignment.member) : 'the current DDS'} from this week&apos;s schedule.
+              This will remove{' '}
+              {currentAssignment ? formatMemberName(currentAssignment.member) : 'the current DDS'}{' '}
+              from this week&apos;s schedule.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -252,6 +322,6 @@ export function DdsScheduleCard({ weekStartDate }: DdsScheduleCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </AppCard>
   )
 }
