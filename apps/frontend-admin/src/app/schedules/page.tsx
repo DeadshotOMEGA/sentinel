@@ -3,34 +3,15 @@
 import { useState, useMemo } from 'react'
 import { addDays, startOfMonth } from 'date-fns'
 import { WeekPicker } from '@/components/schedules/week-picker'
-import { DdsScheduleCard } from '@/components/schedules/dds-schedule-card'
-import { DutyWatchCard } from '@/components/schedules/duty-watch-card'
+import { WeekColumn } from '@/components/schedules/week-column'
 import { ScheduleViewTabs, type ScheduleView } from '@/components/schedules/schedule-view-tabs'
 import { MonthPicker } from '@/components/schedules/month-picker'
 import { QuarterPicker } from '@/components/schedules/quarter-picker'
 import { MonthCalendarView } from '@/components/schedules/month-calendar-view'
 import { QuarterView } from '@/components/schedules/quarter-view'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CalendarDays, Info } from 'lucide-react'
-
-function getMonday(date: Date): Date {
-  const d = new Date(date)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  d.setDate(diff)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
-function formatDateISO(date: Date): string {
-  return date.toISOString().substring(0, 10)
-}
-
-function getQuarterStart(date: Date): Date {
-  const month = date.getMonth()
-  const quarterMonth = month - (month % 3)
-  return new Date(date.getFullYear(), quarterMonth, 1)
-}
+import { ScheduleErrorBoundary } from '@/components/schedules/error-boundary'
+import { CalendarDays } from 'lucide-react'
+import { getMonday, formatDateISO, getQuarterStart, parseDateString } from '@/lib/date-utils'
 
 export default function SchedulesPage() {
   const [activeView, setActiveView] = useState<ScheduleView>('week')
@@ -42,7 +23,7 @@ export default function SchedulesPage() {
 
   // Second week for 2-week side-by-side
   const nextWeekStartDate = useMemo(() => {
-    const current = new Date(weekStartDate + 'T00:00:00')
+    const current = parseDateString(weekStartDate)
     return formatDateISO(addDays(current, 7))
   }, [weekStartDate])
 
@@ -66,9 +47,7 @@ export default function SchedulesPage() {
             <CalendarDays className="h-6 w-6" />
             Schedules
           </h1>
-          <p className="text-base-content/60">
-            Manage DDS and Duty Watch assignments
-          </p>
+          <p className="text-base-content/60">Manage DDS and Duty Watch assignments</p>
         </div>
         <div className="flex items-center gap-4">
           <ScheduleViewTabs activeView={activeView} onViewChange={setActiveView} />
@@ -86,52 +65,25 @@ export default function SchedulesPage() {
 
       {/* View Content */}
       <div id="schedule-view-panel" role="tabpanel">
-        {activeView === 'week' && (
-          <>
-            {/* 2-Week Side-by-Side */}
+        <ScheduleErrorBoundary>
+          {activeView === 'week' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Current Week */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold">
-                  Week of {new Date(weekStartDate + 'T00:00:00').toLocaleDateString('en-CA', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </h2>
-                <DdsScheduleCard weekStartDate={weekStartDate} />
-                <DutyWatchCard weekStartDate={weekStartDate} />
-              </div>
-
-              {/* Next Week */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold">
-                  Week of {new Date(nextWeekStartDate + 'T00:00:00').toLocaleDateString('en-CA', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </h2>
-                <DdsScheduleCard weekStartDate={nextWeekStartDate} />
-                <DutyWatchCard weekStartDate={nextWeekStartDate} />
-              </div>
+              <WeekColumn weekStartDate={weekStartDate} />
+              <WeekColumn weekStartDate={nextWeekStartDate} />
             </div>
-          </>
-        )}
+          )}
 
-        {activeView === 'month' && (
-          <MonthCalendarView
-            currentMonth={currentMonth}
-            onWeekClick={handleWeekClickFromCalendar}
-          />
-        )}
+          {activeView === 'month' && (
+            <MonthCalendarView
+              currentMonth={currentMonth}
+              onWeekClick={handleWeekClickFromCalendar}
+            />
+          )}
 
-        {activeView === 'quarter' && (
-          <QuarterView
-            quarterStart={quarterStart}
-            onWeekClick={handleWeekClickFromCalendar}
-          />
-        )}
+          {activeView === 'quarter' && (
+            <QuarterView quarterStart={quarterStart} onWeekClick={handleWeekClickFromCalendar} />
+          )}
+        </ScheduleErrorBoundary>
       </div>
     </div>
   )

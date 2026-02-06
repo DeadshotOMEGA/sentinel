@@ -1,7 +1,9 @@
 'use client'
 
+import { addDays } from 'date-fns'
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getMonday, formatDateISO, parseDateString } from '@/lib/date-utils'
 
 interface WeekPickerProps {
   weekStartDate: string // YYYY-MM-DD format
@@ -9,9 +11,8 @@ interface WeekPickerProps {
 }
 
 function formatWeekLabel(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
-  const endDate = new Date(date)
-  endDate.setDate(endDate.getDate() + 6)
+  const date = parseDateString(dateStr)
+  const endDate = addDays(date, 6)
 
   const startMonth = date.toLocaleDateString('en-US', { month: 'short' })
   const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' })
@@ -25,33 +26,18 @@ function formatWeekLabel(dateStr: string): string {
   return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`
 }
 
-function getMonday(date: Date): Date {
-  const d = new Date(date)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  d.setDate(diff)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
-function formatDateISO(date: Date): string {
-  return date.toISOString().substring(0, 10)
-}
-
 export function WeekPicker({ weekStartDate, onWeekChange }: WeekPickerProps) {
   const currentMonday = getMonday(new Date())
   const isCurrentWeek = weekStartDate === formatDateISO(currentMonday)
 
   const handlePreviousWeek = () => {
-    const date = new Date(weekStartDate + 'T00:00:00')
-    date.setDate(date.getDate() - 7)
-    onWeekChange(formatDateISO(date))
+    const date = parseDateString(weekStartDate)
+    onWeekChange(formatDateISO(addDays(date, -7)))
   }
 
   const handleNextWeek = () => {
-    const date = new Date(weekStartDate + 'T00:00:00')
-    date.setDate(date.getDate() + 7)
-    onWeekChange(formatDateISO(date))
+    const date = parseDateString(weekStartDate)
+    onWeekChange(formatDateISO(addDays(date, 7)))
   }
 
   const handleToday = () => {
