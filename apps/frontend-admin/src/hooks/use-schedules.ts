@@ -12,6 +12,19 @@ import type {
 } from '@sentinel/contracts'
 
 // ============================================================================
+// Query Key Factory
+// ============================================================================
+
+export const scheduleKeys = {
+  all: ['schedules'] as const,
+  weeks: () => [...scheduleKeys.all, 'week'] as const,
+  week: (date: string) => [...scheduleKeys.weeks(), date] as const,
+  ranges: () => [...scheduleKeys.all, 'range'] as const,
+  current: () => [...scheduleKeys.all, 'current'] as const,
+  detail: (id: string) => ['schedule', id] as const,
+}
+
+// ============================================================================
 // Duty Roles
 // ============================================================================
 
@@ -74,7 +87,7 @@ interface ScheduleListParams {
 
 export function useSchedules(params: ScheduleListParams = {}) {
   return useQuery({
-    queryKey: ['schedules', params],
+    queryKey: [...scheduleKeys.all, params],
     queryFn: async () => {
       const response = await apiClient.schedules.listSchedules({
         query: {
@@ -93,7 +106,7 @@ export function useSchedules(params: ScheduleListParams = {}) {
 
 export function useSchedulesByDateRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ['schedules', 'range', startDate, endDate],
+    queryKey: [...scheduleKeys.ranges(), startDate, endDate],
     queryFn: async () => {
       const response = await apiClient.schedules.listSchedules({
         query: {
@@ -112,7 +125,7 @@ export function useSchedulesByDateRange(startDate: string, endDate: string) {
 
 export function useCurrentSchedules() {
   return useQuery({
-    queryKey: ['schedules', 'current'],
+    queryKey: scheduleKeys.current(),
     queryFn: async () => {
       const response = await apiClient.schedules.getCurrentSchedules()
       if (response.status !== 200) {
@@ -125,7 +138,7 @@ export function useCurrentSchedules() {
 
 export function useSchedulesByWeek(date: string) {
   return useQuery({
-    queryKey: ['schedules', 'week', date],
+    queryKey: scheduleKeys.week(date),
     queryFn: async () => {
       const response = await apiClient.schedules.getSchedulesByWeek({
         params: { date },
@@ -141,7 +154,7 @@ export function useSchedulesByWeek(date: string) {
 
 export function useSchedule(id: string) {
   return useQuery({
-    queryKey: ['schedule', id],
+    queryKey: scheduleKeys.detail(id),
     queryFn: async () => {
       const response = await apiClient.schedules.getSchedule({
         params: { id },
@@ -170,7 +183,7 @@ export function useCreateSchedule() {
       return response.body
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
     },
   })
 }
@@ -190,8 +203,8 @@ export function useUpdateSchedule() {
       return response.body
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', variables.id] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.id) })
     },
   })
 }
@@ -210,8 +223,8 @@ export function usePublishSchedule() {
       return response.body
     },
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', id] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(id) })
     },
   })
 }
@@ -230,8 +243,8 @@ export function useRevertToDraft() {
       return response.body
     },
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', id] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(id) })
     },
   })
 }
@@ -250,7 +263,7 @@ export function useDeleteSchedule() {
       return response.body
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
     },
   })
 }
@@ -280,8 +293,8 @@ export function useCreateAssignment() {
       return response.body
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', variables.scheduleId] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
     },
   })
 }
@@ -309,8 +322,8 @@ export function useUpdateAssignment() {
       return response.body
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', variables.scheduleId] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
     },
   })
 }
@@ -335,8 +348,8 @@ export function useDeleteAssignment() {
       return response.body
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', variables.scheduleId] })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
     },
   })
 }
