@@ -25,4 +25,9 @@ if [ ! -z "$PORT_3001_PID" ]; then
   kill -9 $PORT_3001_PID 2>/dev/null || true
 fi
 
+# Brief delay to ensure ports are fully released
+if [ ! -z "$PORT_3000_PID" ] || [ ! -z "$PORT_3001_PID" ]; then
+  sleep 0.5
+fi
+
 echo "✓ Ports cleaned"
