@@ -25,7 +25,7 @@ function formatMemberName(
   member: { rank: string; firstName: string; lastName: string } | null
 ): string {
   if (!member) return 'Unknown'
-  return `${member.rank} ${member.lastName}`
+  return `${member.rank} ${member.lastName} ${member.firstName.charAt(0)}`
 }
 
 // Accent border color mapping (Tailwind requires static classes)
@@ -47,7 +47,7 @@ function StatContainer({
   const borderClass = accentColor ? ACCENT_BORDER_CLASSES[accentColor] : ''
   return (
     <div
-      className={`stat bg-gradient-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass}`}
+      className={`stat bg-linear-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass}`}
     >
       {children}
     </div>
@@ -65,7 +65,7 @@ function DdsStat() {
   if (isLoading) {
     return (
       <StatContainer>
-        <div className="stat-figure text-secondary">
+        <div className="stat-figure text-primary">
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Day Staff</div>
@@ -100,12 +100,12 @@ function DdsStat() {
 
   return (
     <StatContainer>
-      <div className="stat-figure text-success">
+      <div className="stat-figure text-primary">
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Day Staff</div>
-      <div className="stat-value font-display text-success text-3xl">
-        {ddsStatus.assignment.member.name}
+      <div className="stat-value font-display text-primary text-3xl">
+        {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName} {ddsStatus.assignment.member.firstName.charAt(0)}
       </div>
       <div className="stat-desc">
         {ddsStatus.nextDds ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}` : 'On duty today'}
@@ -124,7 +124,7 @@ function BuildingStat({
   const getStatusDisplay = (status: string | undefined) => {
     switch (status) {
       case 'secured':
-        return { label: 'Secured', color: 'text-success', Icon: Lock }
+        return { label: 'Secured', color: 'text-primary', Icon: Lock }
       case 'locking_up':
         return { label: 'Locking Up', color: 'text-warning', Icon: Loader2 }
       case 'open':
@@ -177,11 +177,11 @@ function BuildingStat({
 
   return (
     <StatContainer>
-      <div className="stat-figure text-success">
+      <div className="stat-figure text-primary">
         <StatusIcon size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Building Status</div>
-      <div className="stat-value font-display text-success text-3xl">{display.label}</div>
+      <div className="stat-value font-display text-primary text-3xl">{display.label}</div>
       <div className="stat-desc">{getDesc()}</div>
     </StatContainer>
   )
@@ -197,7 +197,7 @@ function LockupHolderStat({
   if (isLoading) {
     return (
       <StatContainer>
-        <div className="stat-figure text-secondary">
+        <div className="stat-figure text-primary">
           <KeyRound size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Lockup Holder</div>
@@ -235,11 +235,11 @@ function LockupHolderStat({
   // Someone holds lockup
   return (
     <StatContainer>
-      <div className="stat-figure text-info">
+      <div className="stat-figure text-primary">
         <KeyRound size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Lockup Holder</div>
-      <div className="stat-value font-display text-info text-2xl">
+      <div className="stat-value font-display text-primary text-2xl">
         {formatMemberName(lockupStatus.currentHolder)}
       </div>
       <div className="stat-desc">
@@ -262,7 +262,7 @@ function DutyWatchStat() {
   if (isLoading) {
     return (
       <StatContainer>
-        <div className="stat-figure text-secondary">
+        <div className="stat-figure text-primary">
           <Users size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
@@ -301,11 +301,11 @@ function DutyWatchStat() {
 
   return (
     <StatContainer accentColor={allCheckedIn ? undefined : 'warning'}>
-      <div className={`stat-figure ${allCheckedIn ? 'text-success' : 'text-warning'}`}>
+      <div className={`stat-figure ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
         <Users size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Watch Tonight</div>
-      <div className={`stat-value font-display ${allCheckedIn ? 'text-success' : 'text-warning'}`}>
+      <div className={`stat-value font-display ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
         {checkedInCount}/{team.length}
       </div>
       <div className="stat-desc flex items-center gap-1">
