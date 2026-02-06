@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Toaster } from 'sonner'
 import { queryClient } from '@/lib/query-client'
 import { AppNavbar } from '@/components/layout/app-navbar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
@@ -22,7 +23,7 @@ export default function RootLayout({
     <html lang="en" data-theme="sentinel" suppressHydrationWarning>
       <body className="bg-base-300" suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
-          <div className={`drawer ${isDrawerOpen ? 'drawer-open' : ''}`}>
+          <div className={`drawer min-h-screen ${isDrawerOpen ? 'drawer-open' : ''}`}>
             <input
               id={DRAWER_ID}
               type="checkbox"
@@ -43,6 +44,7 @@ export default function RootLayout({
               <AppSidebar drawerId={DRAWER_ID} />
             </div>
           </div>
+          <Toaster position="top-right" richColors />
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </body>
