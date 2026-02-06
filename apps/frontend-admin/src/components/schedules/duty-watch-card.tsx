@@ -1,10 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { Users, Plus, X, Check, Loader2, Pencil } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useMemo } from 'react'
+import { toast } from 'sonner'
+import { Users, Plus, X, Check, Loader2, Pencil, AlertCircle } from 'lucide-react'
+import {
+  AppCard,
+  AppCardContent,
+  AppCardDescription,
+  AppCardHeader,
+  AppCardTitle,
+  AppCardAction,
+} from '@/components/ui/AppCard'
+import { AppBadge } from '@/components/ui/AppBadge'
+import { Chip } from '@/components/ui/chip'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,18 +38,13 @@ import {
 
 interface DutyWatchCardProps {
   weekStartDate: string
+  /** Pre-fetched schedules data (from WeekColumn). If provided, skips internal fetch. */
+  schedules?: ReturnType<typeof useSchedulesByWeek>['data']
+  /** Pre-fetched duty roles data (from WeekColumn). If provided, skips internal fetch. */
+  dutyRoles?: ReturnType<typeof useDutyRoles>['data']
+  /** External loading state when data is passed from parent */
+  isLoading?: boolean
 }
-
-// Duty Watch positions in display order
-// `code` matches the DutyPosition.code in the database
-// `qualificationCode` matches the QualificationType.code used for member filtering
-const DUTY_WATCH_POSITIONS = [
-  { code: 'SWK', qualificationCode: 'SWK', name: 'Senior Watchkeeper', required: true, maxSlots: 1 },
-  { code: 'DSWK', qualificationCode: 'DSWK', name: 'Deputy Senior Watchkeeper', required: true, maxSlots: 1 },
-  { code: 'QM', qualificationCode: 'QM', name: 'Quartermaster', required: true, maxSlots: 1 },
-  { code: 'BM', qualificationCode: 'BM', name: "Bos'n Mate", required: true, maxSlots: 1 },
-  { code: 'APS', qualificationCode: 'APS', name: 'Access Point Sentry', required: true, maxSlots: 2 },
-]
 
 interface PositionSlotProps {
   position: { code: string; name: string; required: boolean }
@@ -57,9 +61,14 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
   return (
     <div className="flex items-center justify-between p-3 bg-base-200/50 rounded-lg border">
       <div className="flex items-center gap-3">
-        <Badge variant={assignment ? 'default' : 'outline'} className="w-16 justify-center">
+        <Chip
+          variant="flat"
+          color={assignment ? 'primary' : 'default'}
+          size="sm"
+          className="w-16 justify-center"
+        >
           {position.code}
-        </Badge>
+        </Chip>
         <div>
           <p className="font-medium text-sm">
             {assignment
@@ -88,13 +97,25 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
   )
 }
 
-export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
+export function DutyWatchCard({
+  weekStartDate,
+  schedules: externalSchedules,
+  dutyRoles: externalDutyRoles,
+  isLoading: externalLoading,
+}: DutyWatchCardProps) {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null)
   const [isMemberPickerOpen, setIsMemberPickerOpen] = useState(false)
   const [removeAssignmentId, setRemoveAssignmentId] = useState<string | null>(null)
 
-  const { data: dutyRoles } = useDutyRoles()
-  const { data: schedules, isLoading } = useSchedulesByWeek(weekStartDate)
+  // Use passed data if available, otherwise fetch internally
+  const internalDutyRoles = useDutyRoles()
+  const internalSchedules = useSchedulesByWeek(weekStartDate)
+
+  const dutyRoles = externalDutyRoles ?? internalDutyRoles.data
+  const schedules = externalSchedules ?? internalSchedules.data
+  const isLoading = externalLoading ?? internalSchedules.isLoading
+  const isError = !externalSchedules && internalSchedules.isError
+  const error = !externalSchedules ? internalSchedules.error : null
 
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
@@ -105,10 +126,29 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
   // Find Duty Watch role and schedule
   const dutyWatchRole = dutyRoles?.data?.find((r) => r.code === 'DUTY_WATCH')
   const dutyWatchSchedule = schedules?.data?.find((s) => s.dutyRole.code === 'DUTY_WATCH')
-  const { data: positions } = useDutyRolePositions(dutyWatchRole?.id || '')
+  const { data: positions, isLoading: positionsLoading } = useDutyRolePositions(
+    dutyWatchRole?.id || ''
+  )
+
+  // Derive positions list from API data, sorted by displayOrder
+  const positionsList = useMemo(() => {
+    if (!positions?.data) return []
+    return [...positions.data]
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((p) => ({
+        code: p.code,
+        qualificationCode: p.code,
+        name: p.name,
+        required: true,
+        maxSlots: p.maxSlots,
+      }))
+  }, [positions?.data])
 
   // Build assignments map from schedule data, keyed by position code (supports multiple per position)
-  type AssignmentEntry = { id: string; member: { id: string; firstName: string; lastName: string; rank: string } }
+  type AssignmentEntry = {
+    id: string
+    member: { id: string; firstName: string; lastName: string; rank: string }
+  }
   const assignmentsByPosition: Record<string, AssignmentEntry[]> = {}
   if (dutyWatchSchedule?.assignments) {
     for (const assignment of dutyWatchSchedule.assignments) {
@@ -161,8 +201,10 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
           dutyPositionId: position?.id || null,
         },
       })
+      toast.success(`Assigned ${member.rank} ${member.lastName} to ${selectedPosition}`)
     } catch (error) {
-      console.error('Failed to assign member:', error)
+      const message = error instanceof Error ? error.message : 'Failed to assign member'
+      toast.error(message)
     }
 
     setSelectedPosition(null)
@@ -176,8 +218,10 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
         scheduleId: dutyWatchSchedule.id,
         assignmentId: removeAssignmentId,
       })
+      toast.success('Assignment removed')
     } catch (error) {
-      console.error('Failed to remove assignment:', error)
+      const message = error instanceof Error ? error.message : 'Failed to remove assignment'
+      toast.error(message)
     }
 
     setRemoveAssignmentId(null)
@@ -187,8 +231,10 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
     if (!dutyWatchSchedule) return
     try {
       await publishSchedule.mutateAsync(dutyWatchSchedule.id)
+      toast.success('Duty Watch schedule published')
     } catch (error) {
-      console.error('Failed to publish schedule:', error)
+      const message = error instanceof Error ? error.message : 'Failed to publish schedule'
+      toast.error(message)
     }
   }
 
@@ -196,59 +242,94 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
     if (!dutyWatchSchedule) return
     try {
       await revertToDraft.mutateAsync(dutyWatchSchedule.id)
+      toast.success('Schedule reverted to draft')
     } catch (error) {
-      console.error('Failed to revert schedule to draft:', error)
+      const message = error instanceof Error ? error.message : 'Failed to revert schedule'
+      toast.error(message)
     }
   }
 
   const assignedMemberIds = dutyWatchSchedule?.assignments?.map((a) => a.memberId) ?? []
-  const missingRequired = DUTY_WATCH_POSITIONS.filter((p) => p.required).reduce(
-    (count, p) => count + Math.max(0, p.maxSlots - (assignmentsByPosition[p.code]?.length ?? 0)),
-    0
-  )
+  const missingRequired = positionsList
+    .filter((p) => p.required)
+    .reduce(
+      (count, p) => count + Math.max(0, p.maxSlots - (assignmentsByPosition[p.code]?.length ?? 0)),
+      0
+    )
 
-  if (isLoading) {
+  if (isError) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             Duty Watch Team
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center h-32">
-          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
-        </CardContent>
-      </Card>
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>Failed to load schedule</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">{error?.message}</p>
+        </AppCardContent>
+      </AppCard>
     )
   }
 
+  if (isLoading || positionsLoading) {
+    return (
+      <AppCard>
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Duty Watch Team
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent className="flex items-center justify-center h-32">
+          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+        </AppCardContent>
+      </AppCard>
+    )
+  }
+
+  const cardStatus =
+    dutyWatchSchedule?.status === 'published'
+      ? ('success' as const)
+      : dutyWatchSchedule
+        ? ('warning' as const)
+        : undefined
+
   return (
-    <Card>
-      <CardHeader>
+    <AppCard status={cardStatus}>
+      <AppCardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <AppCardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               Duty Watch Team
-            </CardTitle>
-            <CardDescription>
+            </AppCardTitle>
+            <AppCardDescription>
               Tuesday &amp; Thursday evening watch. Responsible for lockup on those nights.
-            </CardDescription>
+            </AppCardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            {dutyWatchSchedule && (
-              <Badge variant={dutyWatchSchedule.status === 'published' ? 'default' : 'secondary'}>
-                {dutyWatchSchedule.status}
-              </Badge>
-            )}
-            {missingRequired > 0 && <Badge variant="destructive">{missingRequired} required</Badge>}
-          </div>
+          <AppCardAction>
+            <div className="flex items-center gap-2">
+              {dutyWatchSchedule && (
+                <AppBadge status={dutyWatchSchedule.status === 'published' ? 'success' : 'warning'}>
+                  {dutyWatchSchedule.status}
+                </AppBadge>
+              )}
+              {missingRequired > 0 && (
+                <AppBadge status="error">{missingRequired} required</AppBadge>
+              )}
+            </div>
+          </AppCardAction>
         </div>
-      </CardHeader>
-      <CardContent>
+      </AppCardHeader>
+      <AppCardContent>
         <div className="space-y-2">
-          {DUTY_WATCH_POSITIONS.flatMap((position) => {
+          {positionsList.flatMap((position) => {
             const positionAssignments = assignmentsByPosition[position.code] ?? []
             const filledSlots = positionAssignments.map((assignment, idx) => (
               <PositionSlot
@@ -293,11 +374,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
 
         {dutyWatchSchedule && dutyWatchSchedule.status === 'published' && (
           <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={handleEdit}
-              disabled={revertToDraft.isPending}
-            >
+            <Button variant="outline" onClick={handleEdit} disabled={revertToDraft.isPending}>
               {revertToDraft.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
@@ -313,7 +390,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
             Assign members to positions to create the Duty Watch schedule
           </div>
         )}
-      </CardContent>
+      </AppCardContent>
 
       <MemberPickerModal
         open={isMemberPickerOpen}
@@ -322,7 +399,7 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
         title={`Assign ${selectedPosition}`}
         description="Select a qualified member for this position"
         filterQualification={
-          DUTY_WATCH_POSITIONS.find((p) => p.code === selectedPosition)?.qualificationCode
+          positionsList.find((p) => p.code === selectedPosition)?.qualificationCode
         }
         excludeMemberIds={assignedMemberIds}
       />
@@ -342,6 +419,6 @@ export function DutyWatchCard({ weekStartDate }: DutyWatchCardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </AppCard>
   )
 }
