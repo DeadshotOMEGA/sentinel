@@ -10,6 +10,7 @@ import {
 import { useCheckins } from '@/hooks/use-checkins'
 
 import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp, User, Users } from 'lucide-react'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
 import type { CheckinWithMemberResponse } from '@sentinel/contracts'
 
 interface CheckinsTableProps {
@@ -147,12 +148,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
   if (isLoading) {
     return (
       <div className="bg-base-100 border shadow-sm">
-        <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-        </div>
+        <TableSkeleton rows={5} />
       </div>
     )
   }

@@ -23,6 +23,8 @@ import { MemberTagsModal } from './member-tags-modal'
 
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { SortableHeader } from './sortable-header'
 import { cn } from '@/lib/utils'
@@ -388,12 +390,7 @@ export function MembersTable({
   if (isLoading) {
     return (
       <div className="bg-base-100 rounded-none border shadow-none">
-        <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-        </div>
+        <TableSkeleton rows={8} />
       </div>
     )
   }
@@ -506,11 +503,8 @@ export function MembersTable({
                 ))
               ) : (
                 <tr className="hover">
-                  <td
-                    colSpan={columns.length}
-                    className="whitespace-nowrap h-24 text-center text-base-content/60"
-                  >
-                    No members found
+                  <td colSpan={columns.length} className="whitespace-nowrap">
+                    <EmptyState icon={Users} title="No members found" />
                   </td>
                 </tr>
               )}

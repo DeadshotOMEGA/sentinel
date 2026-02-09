@@ -10,6 +10,7 @@ import {
 import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { getCellRenderer } from './cell-renderers'
 import { JsonViewerModal } from './json-viewer-modal'
+import { TableSkeleton } from '@/components/ui/loading-skeleton'
 import { cn } from '@/lib/utils'
 import type { TableDataResponse, ColumnMetadata } from '@sentinel/contracts'
 
@@ -108,13 +109,7 @@ export function DatabaseTable({
   if (isLoading) {
     return (
       <div className="bg-base-100 border shadow-sm">
-        <div className="animate-pulse p-6 space-y-4">
-          <div className="h-10 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-          <div className="h-12 bg-base-200 rounded"></div>
-        </div>
+        <TableSkeleton rows={5} />
       </div>
     )
   }

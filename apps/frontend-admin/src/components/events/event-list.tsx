@@ -2,10 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Loader2, Eye, CheckCircle, XCircle } from 'lucide-react'
+import { Loader2, Eye, CheckCircle, XCircle, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
+import { EmptyState } from '@/components/ui/empty-state'
 
 import type { UnitEventCategory, UnitEventStatus } from '@sentinel/contracts'
 
@@ -65,10 +66,17 @@ export function EventList() {
     })
   }, [events])
 
+  const eventTypeMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const t of eventTypes) {
+      map.set(t.id, t.name)
+    }
+    return map
+  }, [eventTypes])
+
   const getEventTypeName = (eventTypeId: string | null) => {
     if (!eventTypeId) return 'N/A'
-    const eventType = eventTypes.find((t) => t.id === eventTypeId)
-    return eventType?.name ?? 'Unknown'
+    return eventTypeMap.get(eventTypeId) ?? 'Unknown'
   }
 
   const handleClearFilters = () => {
@@ -161,9 +169,7 @@ export function EventList() {
             <span className="sr-only">Loading events...</span>
           </div>
         ) : sortedEvents.length === 0 ? (
-          <div className="text-center py-12 text-base-content/60" role="status" aria-live="polite">
-            <p>No events found</p>
-          </div>
+          <EmptyState icon={Calendar} title="No events found" />
         ) : (
           <table className="table table-zebra w-full" role="table">
             <thead>

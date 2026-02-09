@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Database, ChevronRight, ChevronDown } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/ui/empty-state'
 import type { TableInfo, TableName } from '@sentinel/contracts'
 import { TABLE_CATEGORIES } from '@sentinel/contracts'
 
@@ -110,7 +111,7 @@ export function TableSidebar({
             Loading tables...
           </div>
         ) : Object.keys(filteredGroups).length === 0 ? (
-          <div className="text-center py-8 text-base-content/60 text-sm">No tables found</div>
+          <EmptyState title="No tables found" className="py-8" />
         ) : (
           Object.entries(filteredGroups).map(([category, categoryTables]) => {
             const isCollapsed = collapsedCategories.has(category)
