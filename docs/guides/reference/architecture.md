@@ -3,7 +3,7 @@ type: reference
 title: 'Sentinel Architecture Reference'
 status: published
 created: 2026-01-20
-last_updated: 2026-01-22
+last_updated: 2026-02-05
 ai:
   priority: medium
   context_load: on-demand
@@ -31,24 +31,28 @@ Complete technical architecture and technology stack for the Sentinel RFID Atten
 
 ## Technology Stack
 
-| Component             | Technology     | Version     | Notes                                        |
-| --------------------- | -------------- | ----------- | -------------------------------------------- |
-| **Runtime**           | Node.js        | 24.x        | NOT Bun (HeroUI incompatibility)             |
-| **Package Manager**   | pnpm           | 10.x        | Workspace support                            |
-| **Backend Framework** | Express        | 4.x         | REST API server                              |
-| **Database ORM**      | Prisma         | 7.x         | Schema management, migrations                |
-| **Query Builder**     | Kysely         | Latest      | Type-safe SQL queries                        |
-| **Authentication**    | better-auth    | 1.4.x       | Sessions, API keys, RBAC                     |
-| **API Contracts**     | ts-rest        | 3.53.0-rc.1 | Standard Schema support (Zod 4, Valibot 1.x) |
-| **Validation**        | Valibot        | 1.2.x       | Schema validation                            |
-| **Real-time**         | Socket.IO      | 4.x         | Attendance events, kiosk updates             |
-| **Testing Framework** | Vitest         | 4.x         | Unit + integration tests                     |
-| **Test Containers**   | Testcontainers | 11.x        | Real database for tests                      |
-| **API Testing**       | Supertest      | 7.x         | HTTP endpoint testing                        |
-| **Metrics**           | prom-client    | 15.x        | Prometheus metrics collection                |
-| **API Documentation** | Swagger UI     | 5.x         | Interactive API docs                         |
-| **API Reference**     | ReDoc          | 2.x         | Clean API reference                          |
-| **Frontend**          | TBD            | -           | Avoiding HeroUI                              |
+| Component              | Technology     | Version     | Notes                                        |
+| ---------------------- | -------------- | ----------- | -------------------------------------------- |
+| **Runtime**            | Node.js        | 24.x        | NOT Bun (HeroUI incompatibility)             |
+| **Package Manager**    | pnpm           | 10.x        | Workspace support                            |
+| **Backend Framework**  | Express        | 4.x         | REST API server                              |
+| **Database ORM**       | Prisma         | 7.x         | Schema management, migrations                |
+| **Query Builder**      | Kysely         | Latest      | Type-safe SQL queries                        |
+| **Authentication**     | better-auth    | 1.4.x       | Sessions, API keys, RBAC                     |
+| **API Contracts**      | ts-rest        | 3.53.0-rc.1 | Standard Schema support (Zod 4, Valibot 1.x) |
+| **Validation**         | Valibot        | 1.2.x       | Schema validation                            |
+| **Real-time**          | Socket.IO      | 4.x         | Attendance events, kiosk updates             |
+| **Testing Framework**  | Vitest         | 4.x         | Unit + integration tests                     |
+| **Test Containers**    | Testcontainers | 11.x        | Real database for tests                      |
+| **API Testing**        | Supertest      | 7.x         | HTTP endpoint testing                        |
+| **Metrics**            | prom-client    | 15.x        | Prometheus metrics collection                |
+| **API Documentation**  | Swagger UI     | 5.x         | Interactive API docs                         |
+| **API Reference**      | ReDoc          | 2.x         | Clean API reference                          |
+| **Frontend Framework** | Next.js        | 16.x        | App Router, React Server Components          |
+| **Frontend UI**        | React          | 19.x        | With DaisyUI v5 component library            |
+| **Frontend Animation** | Motion         | 12.x        | Direction-aware page transitions             |
+| **State Management**   | TanStack Query | 5.x         | Server state + Zustand for client            |
+| **API Client**         | ts-rest        | 3.53.x      | Type-safe client from shared contracts       |
 
 ## Key Architectural Features
 

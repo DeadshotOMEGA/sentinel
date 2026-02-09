@@ -51,6 +51,18 @@ margin-top: var(--space-8);
 
 ## Color Usage Rules
 
+### Base Colors
+
+Extended base scale for surface hierarchy:
+
+| Class         | Use Case                              |
+| ------------- | ------------------------------------- |
+| `bg-base-100` | Primary background (white)            |
+| `bg-base-200` | Subtle background, card surfaces      |
+| `bg-base-300` | Borders, dividers, input backgrounds  |
+| `bg-base-400` | Disabled backgrounds, heavier borders |
+| `bg-base-500` | Muted elements, separator lines       |
+
 ### Semantic Colors (Status-Only)
 
 ```tsx
@@ -61,6 +73,33 @@ margin-top: var(--space-8);
 // INCORRECT: Decorative use
 <div className="bg-success">...</div>  // Don't use for decoration
 ```
+
+### Fadded Variants (Soft Backgrounds)
+
+Use fadded colors for subtle, low-emphasis status backgrounds. Every semantic color has a `-fadded` and `-fadded-content` pair:
+
+```tsx
+// CORRECT: Soft status background
+<div className="bg-success-fadded text-success-fadded-content p-3 rounded-lg">
+  All systems operational
+</div>
+
+// CORRECT: Warning banner
+<div className="bg-warning-fadded text-warning-fadded-content p-2">
+  Approaching deadline
+</div>
+
+// CORRECT: Selected/active row
+<tr className="bg-primary-fadded text-primary-fadded-content">...</tr>
+
+// INCORRECT: Mixing fadded bg with non-fadded content text
+<div className="bg-success-fadded text-success">...</div>  // Use fadded-content
+```
+
+**When to use**:
+
+- Full color (`bg-primary`): Buttons, badges, strong emphasis
+- Fadded (`bg-primary-fadded`): Backgrounds, banners, subtle highlights, table tinting, selected states
 
 ### Brand/Decorative Colors
 
@@ -131,6 +170,16 @@ margin-top: var(--space-8);
 | `--duration-fast`   | 150ms | Micro-interactions, hovers |
 | `--duration-normal` | 200ms | Standard transitions       |
 | `--duration-slow`   | 300ms | Page transitions, modals   |
+
+### Motion Library Mapping
+
+| Token               | CSS Value | Motion Config        |
+| ------------------- | --------- | -------------------- |
+| `--duration-fast`   | 150ms     | `{ duration: 0.15 }` |
+| `--duration-normal` | 200ms     | `{ duration: 0.2 }`  |
+| `--duration-slow`   | 300ms     | `{ duration: 0.3 }`  |
+
+Use `AnimatePresence mode="wait"` for page-level transitions. Use CSS keyframes for simpler entry animations.
 
 ## Anti-Patterns
 

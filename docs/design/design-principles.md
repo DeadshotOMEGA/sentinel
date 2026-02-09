@@ -18,6 +18,8 @@ Sentinel's visual language draws from naval operations centers: dense, professio
 - Page transitions use subtle fades (200-300ms)
 - Hover states provide feedback without distraction
 - `prefers-reduced-motion` disables all non-essential animation
+- Use Motion (Framer Motion) for JavaScript-driven transitions (view transitions, AnimatePresence)
+- CSS keyframes for simple entry animations; Motion for stateful/direction-aware transitions
 
 ### Professional Aesthetic
 
@@ -45,6 +47,17 @@ Colors communicate meaning. Never use semantic colors for decoration.
 - **Error**: Member absent, sync failed, validation error
 - **Info**: Informational badges, help text, secondary links
 - **Neutral**: Default states, disabled controls, inactive items
+
+### Fadded Variants
+
+Every semantic color has a **fadded** pair (`*-fadded` + `*-fadded-content`) for soft, low-emphasis backgrounds:
+
+- Full color (`bg-success`): Buttons, badges, strong emphasis
+- Fadded (`bg-success-fadded` + `text-success-fadded-content`): Banners, table row tinting, selected states, subtle highlights
+
+### Extended Base Scale
+
+Base colors extend beyond DaisyUI defaults with `base-400` and `base-500` for deeper surface hierarchy (disabled states, heavy borders, muted separators).
 
 ## Elevation Hierarchy
 
