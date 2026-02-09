@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { CalendarClock, Plus } from 'lucide-react'
 import { EventList } from '@/components/events/event-list'
 import { EventFormModal } from '@/components/events/event-form-modal'
-import { Button } from '@/components/ui/button'
-
 export default function EventsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
@@ -22,20 +20,22 @@ export default function EventsPage() {
             Manage training exercises, ceremonies, and operational events
           </p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)} aria-label="Create new event">
+        <button
+          type="button"
+          className="btn btn-primary btn-md"
+          onClick={() => setIsCreateModalOpen(true)}
+          aria-label="Create new event"
+        >
           <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
           Create Event
-        </Button>
+        </button>
       </div>
 
       {/* Event List */}
       <EventList />
 
       {/* Create Event Modal */}
-      <EventFormModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-      />
+      <EventFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
     </div>
   )
 }

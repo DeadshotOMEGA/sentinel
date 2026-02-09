@@ -13,9 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-
 import { Loader2 } from 'lucide-react'
 import type { MemberResponse, CreateMemberInput } from '@sentinel/contracts'
 
@@ -141,7 +138,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
               <legend className="fieldset-legend">
                 Service Number <span className="text-error">*</span>
               </legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="serviceNumber"
                 {...register('serviceNumber', { required: 'Service number is required' })}
                 placeholder="e.g., V123456"
@@ -162,7 +160,9 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 value={selectedRank}
                 onChange={(e) => setValue('rank', e.target.value, { shouldValidate: true })}
               >
-                <option value="" disabled>Select rank</option>
+                <option value="" disabled>
+                  Select rank
+                </option>
                 {enums?.ranks.map((rank: string) => (
                   <option key={rank} value={rank}>
                     {rank}
@@ -177,7 +177,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
               <legend className="fieldset-legend">
                 First Name <span className="text-error">*</span>
               </legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="firstName"
                 {...register('firstName', { required: 'First name is required' })}
                 placeholder="John"
@@ -192,7 +193,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
               <legend className="fieldset-legend">
                 Last Name <span className="text-error">*</span>
               </legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="lastName"
                 {...register('lastName', { required: 'Last name is required' })}
                 placeholder="Doe"
@@ -205,7 +207,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             {/* Middle Initial */}
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Middle Initial</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="middleInitial"
                 {...register('middleInitial')}
                 placeholder="M"
@@ -224,7 +227,9 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 value={selectedDivisionId}
                 onChange={(e) => setValue('divisionId', e.target.value, { shouldValidate: true })}
               >
-                <option value="" disabled>Select division</option>
+                <option value="" disabled>
+                  Select division
+                </option>
                 {divisions?.divisions.map((division) => (
                   <option key={division.id} value={division.id}>
                     {division.name}
@@ -239,7 +244,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             {/* Email */}
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Email</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="email"
                 type="email"
                 {...register('email')}
@@ -250,7 +256,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             {/* Phone Number */}
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Phone Number</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="phoneNumber"
                 type="tel"
                 {...register('phoneNumber')}
@@ -260,18 +267,18 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
           </div>
 
           <DialogFooter>
-            <Button
+            <button
               type="button"
-              variant="outline"
+              className="btn btn-outline btn-md"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
               Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            </button>
+            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {mode === 'create' ? 'Create Member' : 'Save Changes'}
-            </Button>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

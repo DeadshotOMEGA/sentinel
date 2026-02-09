@@ -8,23 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useCheckins } from '@/hooks/use-checkins'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp, User, Users } from 'lucide-react'
 import type { CheckinWithMemberResponse } from '@sentinel/contracts'
 
@@ -67,13 +51,12 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           const row = info.row.original
           const isVisitor = row.type === 'visitor'
           return (
-            <Badge
-              variant={isVisitor ? 'secondary' : 'outline'}
-              className="flex items-center gap-1 w-fit"
+            <span
+              className={`badge ${isVisitor ? 'badge-secondary' : 'badge-outline'} flex items-center gap-1 w-fit`}
             >
               {isVisitor ? <Users className="h-3 w-3" /> : <User className="h-3 w-3" />}
               {isVisitor ? 'Visitor' : 'Member'}
-            </Badge>
+            </span>
           )
         },
       }),
@@ -109,9 +92,8 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         cell: (info) => {
           const direction = info.getValue()
           return (
-            <Badge
-              variant={direction === 'in' ? 'default' : 'secondary'}
-              className="flex items-center gap-1 w-fit"
+            <span
+              className={`badge ${direction === 'in' ? 'badge-primary' : 'badge-secondary'} flex items-center gap-1 w-fit`}
             >
               {direction === 'in' ? (
                 <ArrowDown className="h-3 w-3" />
@@ -119,7 +101,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
                 <ArrowUp className="h-3 w-3" />
               )}
               {direction.toUpperCase()}
-            </Badge>
+            </span>
           )
         },
       }),
@@ -127,11 +109,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         header: 'Method',
         cell: (info) => {
           const method = info.getValue()
-          return (
-            <Badge variant="outline" className="capitalize">
-              {method ?? 'badge'}
-            </Badge>
-          )
+          return <span className="badge badge-outline capitalize">{method ?? 'badge'}</span>
         },
       }),
       columnHelper.accessor('kioskId', {
@@ -143,11 +121,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         cell: (info) => {
           const flagged = info.getValue()
           if (!flagged) return <span className="text-base-content/60">Normal</span>
-          return (
-            <Badge variant="destructive" className="text-xs">
-              Flagged
-            </Badge>
-          )
+          return <span className="badge badge-error text-xs">Flagged</span>
         },
       }),
     ],
@@ -185,55 +159,59 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
 
   return (
     <div className="bg-base-100 border shadow-sm">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+      <div className="relative w-full overflow-x-auto">
+        <table className="table">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id} className="hover">
+                {headerGroup.headers.map((header) => (
+                  <th key={header.id} className="text-base-content font-medium whitespace-nowrap">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
                 ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-base-content/60">
-                No check-ins found
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="hover">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="whitespace-nowrap">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr className="hover">
+                <td
+                  colSpan={columns.length}
+                  className="whitespace-nowrap h-24 text-center text-base-content/60"
+                >
+                  No check-ins found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination Controls */}
       <div className="flex items-center justify-between px-4 py-4 border-t">
         <div className="flex items-center gap-2">
           <span className="text-sm text-base-content/60">Rows per page</span>
-          <Select value={filters.limit.toString()} onValueChange={(_value) => onPageChange(1)}>
-            <SelectTrigger className="w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
+          <select
+            className="select select-bordered w-20"
+            value={filters.limit.toString()}
+            onChange={() => onPageChange(1)}
+          >
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
         </div>
 
         <div className="flex items-center gap-4">
@@ -242,22 +220,20 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           </span>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              className="btn btn-outline btn-sm"
               onClick={() => onPageChange(filters.page - 1)}
               disabled={filters.page === 1}
             >
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              className="btn btn-outline btn-sm"
               onClick={() => onPageChange(filters.page + 1)}
               disabled={filters.page >= (data?.totalPages ?? 1)}
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </div>
       </div>

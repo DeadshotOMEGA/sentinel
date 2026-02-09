@@ -1,16 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,14 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Pencil, Trash2, Plus, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react'
+import { Pencil, Trash2, Plus, Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { useStatHolidays, useDeleteStatHoliday } from '@/hooks/use-stat-holidays'
 import { StatHolidayFormModal } from './stat-holiday-form-modal'
 import type { StatHoliday } from '@sentinel/contracts'
@@ -83,88 +67,98 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Select
+          <select
+            className="select select-bordered w-[120px]"
             value={selectedYear.toString()}
-            onValueChange={(value) => setSelectedYear(parseInt(value))}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
           >
-            <SelectTrigger className="w-[120px]">
-              <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+            {yearOptions.map((year) => (
+              <option key={year} value={year.toString()}>
+                {year}
+              </option>
+            ))}
+          </select>
+          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Holiday
-          </Button>
+          </button>
         </div>
       </div>
 
       <div className="border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Province</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {holidays.length > 0 ? (
-              holidays.map((holiday) => (
-                <TableRow key={holiday.id}>
-                  <TableCell className="font-mono text-sm">{formatDate(holiday.date)}</TableCell>
-                  <TableCell className="font-medium">{holiday.name}</TableCell>
-                  <TableCell>
-                    {holiday.province ? (
-                      <Badge variant="outline">{holiday.province}</Badge>
-                    ) : (
-                      <Badge variant="secondary">Federal</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {holiday.isActive ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1">
-                        <XCircle className="h-3 w-3" />
-                        Inactive
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(holiday)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeletingItem(holiday)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-base-content/60">
-                  No statutory holidays found for {selectedYear}. Click &quot;Add Holiday&quot; to
-                  create one.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <div className="relative w-full overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr className="hover">
+                <th className="text-base-content font-medium whitespace-nowrap">Date</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Name</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Province</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Status</th>
+                <th className="text-base-content font-medium whitespace-nowrap w-[100px]">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {holidays.length > 0 ? (
+                holidays.map((holiday) => (
+                  <tr key={holiday.id} className="hover">
+                    <td className="whitespace-nowrap font-mono text-sm">
+                      {formatDate(holiday.date)}
+                    </td>
+                    <td className="whitespace-nowrap font-medium">{holiday.name}</td>
+                    <td className="whitespace-nowrap">
+                      {holiday.province ? (
+                        <span className="badge badge-outline">{holiday.province}</span>
+                      ) : (
+                        <span className="badge badge-secondary">Federal</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {holiday.isActive ? (
+                        <span className="badge badge-secondary gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="badge badge-outline gap-1">
+                          <XCircle className="h-3 w-3" />
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setEditingItem(holiday)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setDeletingItem(holiday)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="hover">
+                  <td
+                    colSpan={5}
+                    className="whitespace-nowrap text-center py-8 text-base-content/60"
+                  >
+                    No statutory holidays found for {selectedYear}. Click &quot;Add Holiday&quot; to
+                    create one.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}

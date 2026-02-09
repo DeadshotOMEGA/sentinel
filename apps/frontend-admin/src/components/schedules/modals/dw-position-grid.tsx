@@ -1,7 +1,7 @@
 'use client'
 
 import { Plus, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+
 import { Chip } from '@/components/ui/chip'
 
 interface PositionDef {
@@ -74,14 +74,13 @@ export function DwPositionGrid({
               </div>
             </div>
             {canEdit && onRemove && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                className="btn btn-ghost btn-sm"
                 onClick={() => onRemove(slot.id)}
                 disabled={isRemoving}
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             )}
           </div>
         ))
@@ -104,14 +103,13 @@ export function DwPositionGrid({
               </div>
             </div>
             {canEdit && onAssign && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                className="btn btn-ghost btn-sm"
                 onClick={() => onAssign(position.code)}
                 disabled={isAssigning}
               >
                 <Plus className="h-4 w-4" />
-              </Button>
+              </button>
             )}
           </div>
         ))

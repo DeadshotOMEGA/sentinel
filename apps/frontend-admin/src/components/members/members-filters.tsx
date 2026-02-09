@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
@@ -55,19 +54,19 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
     filters.qualificationCode
 
   return (
-    <div className="p-4 mb-6">
+    <div className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
         {/* Search */}
         <fieldset className="fieldset md:col-span-2">
           <legend className="fieldset-legend">Search</legend>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
-            <Input
+            <input
+              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-9"
               id="search"
               placeholder="Search by name or service number..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9"
             />
           </div>
         </fieldset>
@@ -154,10 +153,10 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <Button variant="outline" size="sm" onClick={handleClearFilters} className="w-full">
+            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters}>
               <X className="h-4 w-4 mr-2" />
               Clear Filters
-            </Button>
+            </button>
           </div>
         )}
       </div>

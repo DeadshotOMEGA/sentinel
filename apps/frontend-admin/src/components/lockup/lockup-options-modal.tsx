@@ -9,8 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ExecuteLockupModal } from './execute-lockup-modal'
 import { TransferLockupModal } from './transfer-lockup-modal'
 import type { CheckoutOptionsResponse } from '@sentinel/contracts'
@@ -88,9 +86,9 @@ export function LockupOptionsModal({
             {/* Options */}
             <div className="space-y-3">
               {canExecuteLockup && (
-                <Button
-                  variant="default"
-                  className="w-full justify-start h-auto py-4"
+                <button
+                  type="button"
+                  className="btn btn-primary btn-md w-full justify-start h-auto py-4"
                   onClick={() => setShowExecuteModal(true)}
                 >
                   <Lock className="h-5 w-5 mr-3" />
@@ -100,13 +98,13 @@ export function LockupOptionsModal({
                       Check out all remaining people and secure the building
                     </p>
                   </div>
-                </Button>
+                </button>
               )}
 
               {canTransferLockup && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-auto py-4"
+                <button
+                  type="button"
+                  className="btn btn-outline btn-md w-full justify-start h-auto py-4"
                   onClick={() => setShowTransferModal(true)}
                 >
                   <ArrowRightLeft className="h-5 w-5 mr-3" />
@@ -117,21 +115,21 @@ export function LockupOptionsModal({
                     </p>
                   </div>
                   {checkoutOptions.eligibleRecipients && (
-                    <Badge variant="secondary" className="ml-auto">
+                    <span className="badge badge-secondary ml-auto">
                       {checkoutOptions.eligibleRecipients.length} available
-                    </Badge>
+                    </span>
                   )}
-                </Button>
+                </button>
               )}
 
-              <Button
-                variant="ghost"
-                className="w-full"
+              <button
+                type="button"
+                className="btn btn-ghost btn-md w-full"
                 onClick={() => onOpenChange(false)}
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         </DialogContent>

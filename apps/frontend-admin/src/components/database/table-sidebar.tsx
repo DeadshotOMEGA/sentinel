@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Search, Database, ChevronRight, ChevronDown } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+
 import { cn } from '@/lib/utils'
 import type { TableInfo, TableName } from '@sentinel/contracts'
 import { TABLE_CATEGORIES } from '@sentinel/contracts'
@@ -94,11 +93,11 @@ export function TableSidebar({
       <div className="p-3 border-b">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-base-content/60" />
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-8 h-9"
             placeholder="Search tables..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-9"
           />
         </div>
       </div>
@@ -131,9 +130,9 @@ export function TableSidebar({
                   )}
                   <span>{meta.icon}</span>
                   <span>{category}</span>
-                  <Badge variant="secondary" className="ml-auto text-xs">
+                  <span className="badge badge-secondary ml-auto text-xs">
                     {categoryTables.length}
-                  </Badge>
+                  </span>
                 </button>
 
                 {/* Tables in category */}
@@ -151,9 +150,9 @@ export function TableSidebar({
                         )}
                       >
                         <span className="truncate">{table.name}</span>
-                        <Badge variant="outline" className="text-xs font-mono ml-2 shrink-0">
+                        <span className="badge badge-outline text-xs font-mono ml-2 shrink-0">
                           {formatRowCount(table.rowCount)}
-                        </Badge>
+                        </span>
                       </button>
                     ))}
                   </div>

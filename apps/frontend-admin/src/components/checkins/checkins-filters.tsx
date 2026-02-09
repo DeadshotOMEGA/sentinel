@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+
 import { useDivisions } from '@/hooks/use-divisions'
 import { X } from 'lucide-react'
 
@@ -60,12 +59,13 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
     filters.divisionId || filters.direction || filters.startDate || filters.endDate
 
   return (
-    <div className="bg-base-100 p-4 border shadow-sm mb-6">
+    <div className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Start Date */}
         <fieldset className="fieldset">
           <legend className="fieldset-legend">Start Date</legend>
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="startDate"
             type="date"
             value={startDateInput}
@@ -76,7 +76,8 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
         {/* End Date */}
         <fieldset className="fieldset">
           <legend className="fieldset-legend">End Date</legend>
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="endDate"
             type="date"
             value={endDateInput}
@@ -124,10 +125,10 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <Button variant="outline" size="sm" onClick={handleClearFilters} className="w-full">
+            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters}>
               <X className="h-4 w-4 mr-2" />
               Clear Filters
-            </Button>
+            </button>
           </div>
         )}
       </div>

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { CheckinsTable } from '@/components/checkins/checkins-table'
 import { CheckinsFilters } from '@/components/checkins/checkins-filters'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
-import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 
@@ -37,10 +36,14 @@ export default function CheckinsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Check-ins</h1>
         {canCreateManualCheckin && (
-          <Button onClick={() => setIsManualCheckinModalOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-primary btn-md"
+            onClick={() => setIsManualCheckinModalOpen(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Manual Check-in
-          </Button>
+          </button>
         )}
       </div>
 

@@ -19,9 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import {
   useMemberQualifications,
   useQualificationTypes,
@@ -141,12 +138,11 @@ export function MemberQualificationsModal({
                     className="flex items-center justify-between p-3 bg-base-200/50 rounded-lg border"
                   >
                     <div className="flex items-center gap-3">
-                      <Badge
-                        variant={qual.status === 'active' ? 'default' : 'secondary'}
-                        className="w-16 justify-center"
+                      <span
+                        className={`badge ${qual.status === 'active' ? 'badge-primary' : 'badge-secondary'} w-16 justify-center`}
                       >
                         {qual.qualificationType.code}
-                      </Badge>
+                      </span>
                       <div>
                         <p className="font-medium text-sm">{qual.qualificationType.name}</p>
                         <div className="flex items-center gap-2 text-xs text-base-content/60">
@@ -164,21 +160,32 @@ export function MemberQualificationsModal({
                       </div>
                     </div>
                     {qual.status === 'active' && (
-                      <Button variant="ghost" size="sm" onClick={() => setRevokeQualId(qual.id)}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setRevokeQualId(qual.id)}
+                      >
                         <X className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
-                    {qual.status !== 'active' && <Badge variant="outline">{qual.status}</Badge>}
+                    {qual.status !== 'active' && (
+                      <span className="badge badge-outline">{qual.status}</span>
+                    )}
                   </div>
                 ))}
               </div>
             )}
 
             <div className="pt-4 border-t">
-              <Button onClick={() => setIsGrantDialogOpen(true)} disabled={!availableTypes?.length}>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
+                onClick={() => setIsGrantDialogOpen(true)}
+                disabled={!availableTypes?.length}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Grant Qualification
-              </Button>
+              </button>
               {!availableTypes?.length && qualTypes?.length && (
                 <p className="text-xs text-base-content/60 mt-2">
                   Member has all available qualifications
@@ -204,7 +211,7 @@ export function MemberQualificationsModal({
                   </div>
                 )}
                 {(member.missedCheckoutCount ?? 0) > 3 && (
-                  <Badge variant="destructive">Attention Required</Badge>
+                  <span className="badge badge-error">Attention Required</span>
                 )}
               </div>
             </div>
@@ -230,10 +237,13 @@ export function MemberQualificationsModal({
                 value={grantTypeId}
                 onChange={(e) => setGrantTypeId(e.target.value)}
               >
-                <option value="" disabled>Select qualification...</option>
+                <option value="" disabled>
+                  Select qualification...
+                </option>
                 {availableTypes?.map((type) => (
                   <option key={type.id} value={type.id}>
-                    {type.code} - {type.name}{type.canReceiveLockup ? ' (Lockup)' : ''}
+                    {type.code} - {type.name}
+                    {type.canReceiveLockup ? ' (Lockup)' : ''}
                   </option>
                 ))}
               </select>
@@ -241,7 +251,8 @@ export function MemberQualificationsModal({
 
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Expiration Date (Optional)</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 type="date"
                 value={grantExpiration}
                 onChange={(e) => setGrantExpiration(e.target.value)}
@@ -250,7 +261,8 @@ export function MemberQualificationsModal({
 
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Notes (Optional)</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 value={grantNotes}
                 onChange={(e) => setGrantNotes(e.target.value)}
                 placeholder="Additional notes..."
@@ -284,7 +296,8 @@ export function MemberQualificationsModal({
           <div className="py-4">
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Reason (Optional)</legend>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 value={revokeReason}
                 onChange={(e) => setRevokeReason(e.target.value)}
                 placeholder="Reason for revocation..."

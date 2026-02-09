@@ -1,16 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import {
   AlertDialog,
@@ -72,89 +63,102 @@ export function QualificationTypeTable({ title, description }: QualificationType
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add New
-        </Button>
+        </button>
       </div>
 
       <div className="border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Lockup</TableHead>
-              <TableHead>Linked Tag</TableHead>
-              <TableHead>Preview</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items && items.length > 0 ? (
-              items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-mono text-sm">{item.code}</TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>
-                    {item.canReceiveLockup ? (
-                      <Badge variant="secondary" className="gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Yes
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1">
-                        <XCircle className="h-3 w-3" />
-                        No
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {item.tag ? (
-                      <Badge variant="outline" className="gap-1">
-                        <Link2 className="h-3 w-3" />
-                        {item.tag.name}
-                      </Badge>
-                    ) : (
-                      <span className="text-base-content/60 text-sm">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {item.tag ? (
-                      <Chip
-                        variant={(item.tag.chipVariant as ChipVariant) || 'solid'}
-                        color={(item.tag.chipColor as ChipColor) || 'default'}
-                        size="sm"
-                      >
-                        {item.name}
-                      </Chip>
-                    ) : (
-                      <Chip variant="solid" color="default" size="sm">
-                        {item.name}
-                      </Chip>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeletingItem(item)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-base-content/60">
-                  No qualification types found. Click &quot;Add New&quot; to create one.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <div className="relative w-full overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr className="hover">
+                <th className="text-base-content font-medium whitespace-nowrap">Code</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Name</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Lockup</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Linked Tag</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Preview</th>
+                <th className="text-base-content font-medium whitespace-nowrap w-[100px]">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items && items.length > 0 ? (
+                items.map((item) => (
+                  <tr key={item.id} className="hover">
+                    <td className="whitespace-nowrap font-mono text-sm">{item.code}</td>
+                    <td className="whitespace-nowrap font-medium">{item.name}</td>
+                    <td className="whitespace-nowrap">
+                      {item.canReceiveLockup ? (
+                        <span className="badge badge-secondary gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="badge badge-outline gap-1">
+                          <XCircle className="h-3 w-3" />
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {item.tag ? (
+                        <span className="badge badge-outline gap-1">
+                          <Link2 className="h-3 w-3" />
+                          {item.tag.name}
+                        </span>
+                      ) : (
+                        <span className="text-base-content/60 text-sm">-</span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {item.tag ? (
+                        <Chip
+                          variant={(item.tag.chipVariant as ChipVariant) || 'solid'}
+                          color={(item.tag.chipColor as ChipColor) || 'default'}
+                          size="sm"
+                        >
+                          {item.name}
+                        </Chip>
+                      ) : (
+                        <Chip variant="solid" color="default" size="sm">
+                          {item.name}
+                        </Chip>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setEditingItem(item)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setDeletingItem(item)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="hover">
+                  <td
+                    colSpan={6}
+                    className="whitespace-nowrap text-center py-8 text-base-content/60"
+                  >
+                    No qualification types found. Click &quot;Add New&quot; to create one.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}

@@ -10,15 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  useCreateUnitEvent,
-  useUpdateUnitEvent,
-  useEventTypes,
-} from '@/hooks/use-events'
+import { useCreateUnitEvent, useUpdateUnitEvent, useEventTypes } from '@/hooks/use-events'
 import type {
   UnitEventWithDetailsResponse,
   CreateUnitEventInput,
@@ -161,7 +154,8 @@ export function EventFormModal({
                 <legend className="fieldset-legend">
                   Title <span className="text-error">*</span>
                 </legend>
-                <Input
+                <input
+                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -193,7 +187,8 @@ export function EventFormModal({
                   <legend className="fieldset-legend">
                     Date <span className="text-error">*</span>
                   </legend>
-                  <Input
+                  <input
+                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     id="event-date"
                     type="date"
                     value={eventDate}
@@ -205,7 +200,8 @@ export function EventFormModal({
 
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Start Time</legend>
-                  <Input
+                  <input
+                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     id="start-time"
                     type="time"
                     value={startTime}
@@ -215,7 +211,8 @@ export function EventFormModal({
 
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">End Time</legend>
-                  <Input
+                  <input
+                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     id="end-time"
                     type="time"
                     value={endTime}
@@ -240,7 +237,8 @@ export function EventFormModal({
               <div className="collapse-content space-y-4">
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Location</legend>
-                  <Input
+                  <input
+                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
@@ -261,7 +259,8 @@ export function EventFormModal({
 
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Organizer</legend>
-                  <Input
+                  <input
+                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     id="organizer"
                     value={organizer}
                     onChange={(e) => setOrganizer(e.target.value)}
@@ -288,18 +287,18 @@ export function EventFormModal({
                   <Checkbox
                     id="requires-duty-watch"
                     checked={requiresDutyWatch}
-                    onCheckedChange={(checked) =>
-                      setRequiresDutyWatch(checked as boolean)
-                    }
+                    onCheckedChange={(checked) => setRequiresDutyWatch(checked as boolean)}
                   />
                   <div>
-                    <Label htmlFor="requires-duty-watch" className="cursor-pointer">
+                    <label
+                      htmlFor="requires-duty-watch"
+                      className="flex items-center gap-2 text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50 cursor-pointer"
+                    >
                       Requires Duty Watch
-                    </Label>
+                    </label>
                     {requiresDutyWatch && (
                       <p className="text-xs text-base-content/60 mt-1">
-                        Standard duty positions will be automatically created for this
-                        event.
+                        Standard duty positions will be automatically created for this event.
                       </p>
                     )}
                   </div>
@@ -347,18 +346,18 @@ export function EventFormModal({
           </div>
 
           <DialogFooter>
-            <Button
+            <button
               type="button"
-              variant="ghost"
+              className="btn btn-ghost btn-md"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
               Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            </button>
+            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {isEditMode ? 'Update Event' : 'Create Event'}
-            </Button>
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

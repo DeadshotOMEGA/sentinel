@@ -1,30 +1,28 @@
-'use client';
+'use client'
 
-import type { FormEvent } from 'react';
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-
+import type { FormEvent } from 'react'
+import { useState } from 'react'
 interface PinInputProps {
-  onSubmit: (pin: string) => void;
-  onBack: () => void;
+  onSubmit: (pin: string) => void
+  onBack: () => void
 }
 
 export function PinInput({ onSubmit, onBack }: PinInputProps) {
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState('')
 
   const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (pin.length >= 4) {
-      onSubmit(pin);
+      onSubmit(pin)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Enter Your PIN</legend>
-        <Input
+        <input
+          className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
           id="pin"
           type="password"
           placeholder="****"
@@ -35,13 +33,13 @@ export function PinInput({ onSubmit, onBack }: PinInputProps) {
         />
       </fieldset>
       <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onBack} className="flex-1">
+        <button type="button" className="btn btn-outline btn-md flex-1" onClick={onBack}>
           Back
-        </Button>
-        <Button type="submit" disabled={pin.length < 4} className="flex-1">
+        </button>
+        <button type="submit" className="btn btn-primary btn-md flex-1" disabled={pin.length < 4}>
           Sign In
-        </Button>
+        </button>
       </div>
     </form>
-  );
+  )
 }

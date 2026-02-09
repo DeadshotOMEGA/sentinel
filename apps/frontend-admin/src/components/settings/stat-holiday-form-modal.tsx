@@ -19,21 +19,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
-import {
-  useCreateStatHoliday,
-  useUpdateStatHoliday,
-} from '@/hooks/use-stat-holidays'
+import { useCreateStatHoliday, useUpdateStatHoliday } from '@/hooks/use-stat-holidays'
 import type { StatHoliday, CreateStatHolidayInput } from '@sentinel/contracts'
 
 interface StatHolidayFormModalProps {
@@ -160,7 +148,11 @@ export function StatHolidayFormModal({
                 <FormItem>
                   <FormLabel>Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      type="date"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>The date of the statutory holiday</FormDescription>
                   <FormMessage />
@@ -179,7 +171,11 @@ export function StatHolidayFormModal({
                 <FormItem>
                   <FormLabel>Holiday Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Canada Day, Remembrance Day" {...field} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="e.g., Canada Day, Remembrance Day"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>The name of the statutory holiday</FormDescription>
                   <FormMessage />
@@ -193,20 +189,22 @@ export function StatHolidayFormModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Province/Territory</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select province" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+                  <FormControl>
+                    <select
+                      className="select select-bordered w-full"
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Select province
+                      </option>
                       {PROVINCE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value || 'federal'} value={option.value}>
+                        <option key={option.value || 'federal'} value={option.value}>
                           {option.label}
-                        </SelectItem>
+                        </option>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </select>
+                  </FormControl>
                   <FormDescription>
                     Leave as Federal for holidays that apply to all provinces
                   </FormDescription>
@@ -240,15 +238,15 @@ export function StatHolidayFormModal({
             )}
 
             <DialogFooter>
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn btn-outline btn-md"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
                 Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
+              </button>
+              <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -259,7 +257,7 @@ export function StatHolidayFormModal({
                 ) : (
                   'Add Holiday'
                 )}
-              </Button>
+              </button>
             </DialogFooter>
           </form>
         </Form>

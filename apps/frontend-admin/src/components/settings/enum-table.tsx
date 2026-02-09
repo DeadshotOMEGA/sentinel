@@ -1,16 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import {
   AlertDialog,
@@ -98,112 +89,127 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add New
-        </Button>
+        </button>
       </div>
 
       <div className="border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {isTagType && <TableHead className="w-[80px]">Order</TableHead>}
-              {!isTagType && <TableHead>Code</TableHead>}
-              <TableHead>Name</TableHead>
-              <TableHead>Preview</TableHead>
-              {isTagType && <TableHead>Positional</TableHead>}
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Usage</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items && items.length > 0 ? (
-              items.map((item, index) => (
-                <TableRow key={item.id}>
-                  {isTagType && (
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleMoveUp(index)}
-                          disabled={index === 0 || reorderTags.isPending}
-                          className="h-7 w-7"
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleMoveDown(index)}
-                          disabled={index === items.length - 1 || reorderTags.isPending}
-                          className="h-7 w-7"
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  )}
-                  {!isTagType && 'code' in item && (
-                    <TableCell className="font-mono text-sm">{item.code}</TableCell>
-                  )}
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>
-                    <Chip
-                      variant={(item.chipVariant as ChipVariant) || 'solid'}
-                      color={(item.chipColor as ChipColor) || 'default'}
-                      size="sm"
-                    >
-                      {item.name}
-                    </Chip>
-                  </TableCell>
-                  {isTagType && (
-                    <TableCell>
-                      {'isPositional' in item && item.isPositional ? (
-                        <Badge variant="secondary">Positional</Badge>
-                      ) : (
-                        <span className="text-base-content/40">-</span>
-                      )}
-                    </TableCell>
-                  )}
-                  <TableCell className="text-base-content/60 max-w-[200px] truncate">
-                    {item.description || '-'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant={item.usageCount && item.usageCount > 0 ? 'secondary' : 'outline'}
-                    >
-                      {item.usageCount ?? 0}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeletingItem(item)}
-                        disabled={item.usageCount !== undefined && item.usageCount > 0}
+        <div className="relative w-full overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr className="hover">
+                {isTagType && (
+                  <th className="text-base-content font-medium whitespace-nowrap w-[80px]">
+                    Order
+                  </th>
+                )}
+                {!isTagType && (
+                  <th className="text-base-content font-medium whitespace-nowrap">Code</th>
+                )}
+                <th className="text-base-content font-medium whitespace-nowrap">Name</th>
+                <th className="text-base-content font-medium whitespace-nowrap">Preview</th>
+                {isTagType && (
+                  <th className="text-base-content font-medium whitespace-nowrap">Positional</th>
+                )}
+                <th className="text-base-content font-medium whitespace-nowrap">Description</th>
+                <th className="text-base-content font-medium whitespace-nowrap text-right">
+                  Usage
+                </th>
+                <th className="text-base-content font-medium whitespace-nowrap w-[100px]">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items && items.length > 0 ? (
+                items.map((item, index) => (
+                  <tr key={item.id} className="hover">
+                    {isTagType && (
+                      <td className="whitespace-nowrap">
+                        <div className="flex items-center gap-1">
+                          <button
+                            className="btn btn-ghost btn-square btn-md h-7 w-7"
+                            onClick={() => handleMoveUp(index)}
+                            disabled={index === 0 || reorderTags.isPending}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-square btn-md h-7 w-7"
+                            onClick={() => handleMoveDown(index)}
+                            disabled={index === items.length - 1 || reorderTags.isPending}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                    {!isTagType && 'code' in item && (
+                      <td className="whitespace-nowrap font-mono text-sm">{item.code}</td>
+                    )}
+                    <td className="whitespace-nowrap font-medium">{item.name}</td>
+                    <td className="whitespace-nowrap">
+                      <Chip
+                        variant={(item.chipVariant as ChipVariant) || 'solid'}
+                        color={(item.chipColor as ChipColor) || 'default'}
+                        size="sm"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columnCount} className="text-center py-8 text-base-content/60">
-                  No {title.toLowerCase()} found. Click "Add New" to create one.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                        {item.name}
+                      </Chip>
+                    </td>
+                    {isTagType && (
+                      <td className="whitespace-nowrap">
+                        {'isPositional' in item && item.isPositional ? (
+                          <span className="badge badge-secondary">Positional</span>
+                        ) : (
+                          <span className="text-base-content/40">-</span>
+                        )}
+                      </td>
+                    )}
+                    <td className="whitespace-nowrap text-base-content/60 max-w-[200px] truncate">
+                      {item.description || '-'}
+                    </td>
+                    <td className="whitespace-nowrap text-right">
+                      <span
+                        className={`badge ${item.usageCount && item.usageCount > 0 ? 'badge-secondary' : 'badge-outline'}`}
+                      >
+                        {item.usageCount ?? 0}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setEditingItem(item)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-square btn-md"
+                          onClick={() => setDeletingItem(item)}
+                          disabled={item.usageCount !== undefined && item.usageCount > 0}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="hover">
+                  <td
+                    colSpan={columnCount}
+                    className="whitespace-nowrap text-center py-8 text-base-content/60"
+                  >
+                    No {title.toLowerCase()} found. Click &quot;Add New&quot; to create one.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}

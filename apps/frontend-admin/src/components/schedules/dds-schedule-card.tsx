@@ -12,7 +12,7 @@ import {
   AppCardAction,
 } from '@/components/ui/AppCard'
 import { AppBadge } from '@/components/ui/AppBadge'
-import { Button } from '@/components/ui/button'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +46,7 @@ interface DdsScheduleCardProps {
 }
 
 function formatMemberName(member: { rank: string; firstName: string; lastName: string }): string {
-  return `${member.rank} ${member.firstName} ${member.lastName}`
+  return `${member.rank} ${member.lastName}, ${member.firstName}`
 }
 
 export function DdsScheduleCard({
@@ -103,7 +103,7 @@ export function DdsScheduleCard({
           scheduleId: newSchedule.id,
           data: { memberId: member.id },
         })
-        toast.success(`Assigned ${member.firstName} ${member.lastName} as DDS`)
+        toast.success(`Assigned ${member.rank} ${member.lastName}, ${member.firstName} as DDS`)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to assign DDS'
         toast.error(message)
@@ -121,7 +121,7 @@ export function DdsScheduleCard({
           scheduleId: ddsSchedule.id,
           data: { memberId: member.id },
         })
-        toast.success(`Assigned ${member.firstName} ${member.lastName} as DDS`)
+        toast.success(`Assigned ${member.rank} ${member.lastName}, ${member.firstName} as DDS`)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to assign DDS'
         toast.error(message)
@@ -202,12 +202,7 @@ export function DdsScheduleCard({
     )
   }
 
-  const cardStatus =
-    ddsSchedule?.status === 'published'
-      ? ('success' as const)
-      : ddsSchedule
-        ? ('warning' as const)
-        : undefined
+  const cardStatus = ddsSchedule?.status === 'draft' ? ('warning' as const) : undefined
 
   return (
     <AppCard status={cardStatus}>
@@ -225,7 +220,7 @@ export function DdsScheduleCard({
           {ddsSchedule && (
             <AppCardAction>
               <AppBadge status={ddsSchedule.status === 'published' ? 'success' : 'warning'}>
-                {ddsSchedule.status}
+                {ddsSchedule.status === 'published' ? 'Published' : 'Draft'}
               </AppBadge>
             </AppCardAction>
           )}
@@ -236,10 +231,10 @@ export function DdsScheduleCard({
           <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
             <AlertCircle className="h-8 w-8 text-base-content/60 mb-2" />
             <p className="text-base-content/60 mb-4">No DDS assigned for this week</p>
-            <Button onClick={() => setIsMemberPickerOpen(true)}>
+            <button className="btn btn-primary btn-md" onClick={() => setIsMemberPickerOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Assign DDS
-            </Button>
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -258,28 +253,37 @@ export function DdsScheduleCard({
               <div className="flex items-center gap-2">
                 {ddsSchedule.status === 'draft' && (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setIsMemberPickerOpen(true)}
+                    >
                       Change
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setIsRemoveDialogOpen(true)}>
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setIsRemoveDialogOpen(true)}
+                    >
                       <X className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </>
                 )}
                 {ddsSchedule.status === 'draft' && (
-                  <Button size="sm" onClick={handlePublish} disabled={publishSchedule.isPending}>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={handlePublish}
+                    disabled={publishSchedule.isPending}
+                  >
                     {publishSchedule.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Check className="h-4 w-4 mr-1" />
                     )}
                     Publish
-                  </Button>
+                  </button>
                 )}
                 {ddsSchedule.status === 'published' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
+                    className="btn btn-outline btn-sm"
                     onClick={handleEdit}
                     disabled={revertToDraft.isPending}
                   >
@@ -289,7 +293,7 @@ export function DdsScheduleCard({
                       <Pencil className="h-4 w-4 mr-1" />
                     )}
                     Edit
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>

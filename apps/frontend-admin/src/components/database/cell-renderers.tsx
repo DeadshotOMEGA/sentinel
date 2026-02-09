@@ -2,9 +2,6 @@
 
 import { useState, type ReactElement } from 'react'
 import { Check, X, Copy, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-
 interface CellRendererProps {
   value: unknown
   onJsonClick?: (value: unknown) => void
@@ -31,15 +28,14 @@ export function UuidCell({ value }: CellRendererProps) {
   return (
     <div className="flex items-center gap-1 font-mono text-xs">
       <span className="text-base-content/60">{truncated}...</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-5 w-5"
+      <button
+        type="button"
+        className="btn btn-ghost btn-square btn-md h-5 w-5"
         onClick={handleCopy}
         title="Copy full UUID"
       >
         {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-      </Button>
+      </button>
     </div>
   )
 }
@@ -80,14 +76,13 @@ export function JsonCell({ value, onJsonClick }: CellRendererProps) {
   const preview = isArray ? `[${(value as unknown[]).length}]` : '{...}'
 
   return (
-    <Badge
-      variant="secondary"
-      className="cursor-pointer gap-1 font-mono text-xs"
+    <span
+      className="badge badge-secondary cursor-pointer gap-1 font-mono text-xs"
       onClick={() => onJsonClick?.(value)}
     >
       {preview}
       <ChevronRight className="h-3 w-3" />
-    </Badge>
+    </span>
   )
 }
 

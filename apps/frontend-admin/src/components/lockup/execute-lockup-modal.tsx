@@ -10,9 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { usePresentForLockup, useExecuteLockup } from '@/hooks/use-lockup'
 
 interface ExecuteLockupModalProps {
@@ -115,9 +112,7 @@ export function ExecuteLockupModal({
                           <span>
                             {m.rank} {m.lastName}
                           </span>
-                          <Badge variant="outline" className="text-xs">
-                            {m.division}
-                          </Badge>
+                          <span className="badge badge-outline text-xs">{m.division}</span>
                         </div>
                       ))}
                       {memberCount > 5 && (
@@ -143,7 +138,8 @@ export function ExecuteLockupModal({
               {/* Note Field */}
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">Note (optional)</legend>
-                <Input
+                <input
+                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -153,14 +149,19 @@ export function ExecuteLockupModal({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>
+              <button type="button" className="btn btn-outline btn-md" onClick={handleClose}>
                 Cancel
-              </Button>
-              <Button onClick={handleExecute} disabled={executeLockup.isPending}>
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
+                onClick={handleExecute}
+                disabled={executeLockup.isPending}
+              >
                 {executeLockup.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Lock className="h-4 w-4 mr-2" />
                 Confirm Lock Up
-              </Button>
+              </button>
             </DialogFooter>
           </>
         ) : (
@@ -182,9 +183,9 @@ export function ExecuteLockupModal({
             </div>
 
             <DialogFooter>
-              <Button onClick={handleClose} className="w-full">
+              <button type="button" className="btn btn-primary btn-md w-full" onClick={handleClose}>
                 Done
-              </Button>
+              </button>
             </DialogFooter>
           </>
         )}

@@ -2,8 +2,7 @@
 
 import { type FormEvent, useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+
 import { useCreateEventPosition } from '@/hooks/use-events'
 
 interface EventPositionFormProps {
@@ -43,16 +42,14 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full space-y-3 p-4 bg-base-200 rounded-lg"
-    >
+    <form onSubmit={handleSubmit} className="w-full space-y-3 p-4 bg-base-200 rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <fieldset className="fieldset">
           <legend className="fieldset-legend">
             Code <span className="text-error">*</span>
           </legend>
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="position-code"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -67,7 +64,8 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
           <legend className="fieldset-legend">
             Name <span className="text-error">*</span>
           </legend>
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="position-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -80,25 +78,22 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
+          className="btn btn-ghost btn-sm"
           onClick={onClose}
           disabled={createPositionMutation.isPending}
         >
           Cancel
-        </Button>
-        <Button
+        </button>
+        <button
           type="submit"
-          size="sm"
+          className="btn btn-primary btn-sm"
           disabled={createPositionMutation.isPending}
         >
-          {createPositionMutation.isPending && (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          )}
+          {createPositionMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           Add Position
-        </Button>
+        </button>
       </div>
     </form>
   )

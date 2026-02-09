@@ -19,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { useMemberTags, useTags, useAssignTag, useRemoveTag } from '@/hooks/use-member-tags'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
@@ -125,19 +124,28 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
                         <span className="text-sm text-base-content/60">{mt.tag.description}</span>
                       )}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setRemoveTagId(mt.tagId)}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setRemoveTagId(mt.tagId)}
+                    >
                       <X className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 ))}
               </div>
             )}
 
             <div className="pt-4 border-t">
-              <Button onClick={() => setIsAssignDialogOpen(true)} disabled={!availableTags?.length}>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
+                onClick={() => setIsAssignDialogOpen(true)}
+                disabled={!availableTags?.length}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Assign Tag
-              </Button>
+              </button>
               {!availableTags?.length && allTags?.length && (
                 <p className="text-xs text-base-content/60 mt-2">
                   Member has all available tags assigned
@@ -215,7 +223,10 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleAssign} disabled={!assignTagId || assignTag.isPending}>
+            <AlertDialogAction
+              onClick={handleAssign}
+              disabled={!assignTagId || assignTag.isPending}
+            >
               {assignTag.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Assign
             </AlertDialogAction>

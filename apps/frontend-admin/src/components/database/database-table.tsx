@@ -7,22 +7,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { getCellRenderer } from './cell-renderers'
 import { JsonViewerModal } from './json-viewer-modal'
@@ -157,66 +141,67 @@ export function DatabaseTable({
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <Table>
-            <TableHeader className="sticky top-0 bg-base-100 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="bg-base-100">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length > 0 ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
+          <div className="relative w-full overflow-x-auto">
+            <table className="table">
+              <thead className="sticky top-0 bg-base-100 z-10">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id} className="hover">
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="text-base-content font-medium whitespace-nowrap bg-base-100"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-base-content/60"
-                  >
-                    No data in this table
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="hover">
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="whitespace-nowrap">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="hover">
+                    <td
+                      colSpan={columns.length}
+                      className="whitespace-nowrap h-24 text-center text-base-content/60"
+                    >
+                      No data in this table
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between px-4 py-4 border-t">
           <div className="flex items-center gap-2">
             <span className="text-sm text-base-content/60">Rows per page</span>
-            <Select
+            <select
+              className="select select-bordered w-20"
               value={limit.toString()}
-              onValueChange={(value) => {
-                onLimitChange(parseInt(value, 10))
+              onChange={(e) => {
+                onLimitChange(parseInt(e.target.value, 10))
                 onPageChange(1)
               }}
             >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
           </div>
 
           <div className="flex items-center gap-4">
@@ -225,22 +210,20 @@ export function DatabaseTable({
             </span>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
+                className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= data.totalPages}
               >
                 <ChevronRight className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>

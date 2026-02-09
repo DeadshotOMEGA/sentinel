@@ -1,8 +1,7 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
-import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/auth-store'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,27 +9,27 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { User, LogOut } from 'lucide-react';
+} from '@/components/ui/dropdown-menu'
+import { User, LogOut } from 'lucide-react'
 
 export function UserMenu() {
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const router = useRouter()
+  const { user, logout } = useAuthStore()
 
   const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
+    logout()
+    router.push('/login')
+  }
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <button type="button" className="btn btn-ghost btn-sm">
           <User className="h-4 w-4 mr-2" />
           {user.name}
-        </Button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>
@@ -45,5 +44,5 @@ export function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

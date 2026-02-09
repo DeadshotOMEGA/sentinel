@@ -9,8 +9,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-
 interface JsonViewerModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -46,7 +44,7 @@ export function JsonViewerModal({
           </pre>
         </div>
         <DialogFooter showCloseButton>
-          <Button variant="outline" onClick={handleCopy}>
+          <button type="button" className="btn btn-outline btn-md" onClick={handleCopy}>
             {copied ? (
               <>
                 <Check className="h-4 w-4 mr-2 text-green-500" />
@@ -58,7 +56,7 @@ export function JsonViewerModal({
                 Copy JSON
               </>
             )}
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

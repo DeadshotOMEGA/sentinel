@@ -10,9 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
 interface BulkGrantQualificationModalProps {
@@ -136,7 +133,8 @@ export function BulkGrantQualificationModal({
           {/* Notes */}
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Notes (optional)</legend>
-            <Input
+            <input
+              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
               id="bulk-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -158,20 +156,30 @@ export function BulkGrantQualificationModal({
           )}
 
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div role="alert" className="alert alert-error">
+              <div className="text-sm">{error}</div>
+            </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
+          <button
+            type="button"
+            className="btn btn-outline btn-md"
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting}
+          >
             Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !qualificationTypeId}>
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-md"
+            onClick={handleSubmit}
+            disabled={isSubmitting || !qualificationTypeId}
+          >
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Grant to {memberIds.length} Members
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

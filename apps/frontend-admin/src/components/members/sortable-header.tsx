@@ -1,6 +1,5 @@
 import type { Column } from '@tanstack/react-table'
 import type { MemberResponse } from '@sentinel/contracts'
-import { Button } from '@/components/ui/button'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 
 interface SortableHeaderProps {
@@ -12,10 +11,9 @@ interface SortableHeaderProps {
 export function SortableHeader({ column, label, className }: SortableHeaderProps) {
   return (
     <div className={className}>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 h-8"
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm -ml-3 h-8"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
         {label}
@@ -26,7 +24,7 @@ export function SortableHeader({ column, label, className }: SortableHeaderProps
         ) : (
           <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
         )}
-      </Button>
+      </button>
     </div>
   )
 }

@@ -9,8 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+
 import { Chip } from '@/components/ui/chip'
 import { useMembers } from '@/hooks/use-members'
 
@@ -76,11 +75,11 @@ export function MemberPickerModal({
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
-          <Input
+          <input
+            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-10"
             placeholder="Search by name or service number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
           />
         </div>
 
@@ -162,9 +161,9 @@ export function MemberPickerModal({
         </div>
 
         <div className="flex justify-end">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <button className="btn btn-ghost btn-md" onClick={() => onOpenChange(false)}>
             Cancel
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>

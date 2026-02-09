@@ -21,9 +21,7 @@ import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventDutyWatchCard } from '@/components/events/event-duty-watch-card'
 import { EventFormModal } from '@/components/events/event-form-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
@@ -32,7 +30,11 @@ interface EventDetailPageProps {
 // Status transition mapping: which actions are available for each status
 const STATUS_TRANSITIONS: Record<
   string,
-  { next?: string; label?: string; actions?: Array<{ status: string; label: string; variant?: string }> }
+  {
+    next?: string
+    label?: string
+    actions?: Array<{ status: string; label: string; variant?: string }>
+  }
 > = {
   draft: {
     next: 'planned',
@@ -106,7 +108,11 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]" role="status" aria-live="polite">
+      <div
+        className="flex items-center justify-center min-h-[400px]"
+        role="status"
+        aria-live="polite"
+      >
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" aria-hidden="true" />
           <p className="text-base-content/60">Loading event details...</p>
@@ -127,12 +133,12 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Events
         </Link>
-        <Alert variant="destructive">
+        <div role="alert" className="alert alert-error">
           <AlertCircle className="h-4 w-4" aria-hidden="true" />
-          <AlertDescription>
+          <div className="text-sm">
             {isError ? 'Failed to load event details. Please try again.' : 'Event not found.'}
-          </AlertDescription>
-        </Alert>
+          </div>
+        </div>
       </div>
     )
   }
@@ -160,11 +166,11 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           <h1 className="text-2xl font-bold mb-2">{event.title}</h1>
           <div className="flex items-center gap-2">
             <EventStatusBadge status={event.status} />
-            {event.eventType && (
-              <span className="badge badge-outline">{event.eventType.name}</span>
-            )}
+            {event.eventType && <span className="badge badge-outline">{event.eventType.name}</span>}
             {event.eventType?.category && (
-              <span className="badge badge-ghost">{event.eventType.category.replace('_', ' ')}</span>
+              <span className="badge badge-ghost">
+                {event.eventType.category.replace('_', ' ')}
+              </span>
             )}
           </div>
         </div>
@@ -172,20 +178,20 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         {/* Action buttons */}
         <div className="flex items-center gap-2">
           {canEdit && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
               onClick={() => setIsEditModalOpen(true)}
               aria-label="Edit event"
             >
               <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
               Edit
-            </Button>
+            </button>
           )}
           {canDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
+            <button
+              type="button"
+              className="btn btn-error btn-sm"
               onClick={handleDelete}
               disabled={deleteEvent.isPending}
               aria-label="Delete event"
@@ -195,7 +201,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               ) : (
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               )}
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -204,7 +210,9 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
       {(transitions.next || (transitions.actions && transitions.actions.length > 0)) && (
         <div className="flex items-center gap-2">
           {transitions.next && transitions.label && (
-            <Button
+            <button
+              type="button"
+              className="btn btn-primary btn-md"
               onClick={() => handleStatusChange(transitions.next as UnitEventStatus)}
               disabled={updateStatus.isPending}
               aria-label={transitions.label}
@@ -213,19 +221,28 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                 <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
               ) : null}
               {transitions.label}
-            </Button>
+            </button>
           )}
-          {transitions.actions?.map((action) => (
-            <Button
-              key={action.status}
-              variant={(action.variant as 'ghost' | 'outline' | 'default') || 'outline'}
-              onClick={() => handleStatusChange(action.status as UnitEventStatus)}
-              disabled={updateStatus.isPending}
-              aria-label={action.label}
-            >
-              {action.label}
-            </Button>
-          ))}
+          {transitions.actions?.map((action) => {
+            const variantClass =
+              action.variant === 'ghost'
+                ? 'btn-ghost'
+                : action.variant === 'default'
+                  ? 'btn-primary'
+                  : 'btn-outline'
+            return (
+              <button
+                key={action.status}
+                type="button"
+                className={`btn ${variantClass} btn-md`}
+                onClick={() => handleStatusChange(action.status as UnitEventStatus)}
+                disabled={updateStatus.isPending}
+                aria-label={action.label}
+              >
+                {action.label}
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -250,7 +267,10 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Date */}
                 <div className="flex items-start gap-3">
-                  <CalendarClock className="h-5 w-5 text-base-content/60 mt-0.5" aria-hidden="true" />
+                  <CalendarClock
+                    className="h-5 w-5 text-base-content/60 mt-0.5"
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="text-sm text-base-content/60">Date</p>
                     <p className="font-medium">
@@ -324,12 +344,14 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                 <div className="mt-6">
                   <p className="text-sm text-base-content/60 mb-2">Additional Information</p>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {Object.entries(event.metadata as Record<string, unknown>).map(([key, value]) => (
-                      <div key={key} className="flex justify-between text-sm">
-                        <span className="text-base-content/60">{key}:</span>
-                        <span className="font-medium">{String(value)}</span>
-                      </div>
-                    ))}
+                    {Object.entries(event.metadata as Record<string, unknown>).map(
+                      ([key, value]) => (
+                        <div key={key} className="flex justify-between text-sm">
+                          <span className="text-base-content/60">{key}:</span>
+                          <span className="font-medium">{String(value)}</span>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               )}
@@ -349,11 +371,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
       </Tabs>
 
       {/* Edit Modal */}
-      <EventFormModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        event={event}
-      />
+      <EventFormModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} event={event} />
     </div>
   )
 }

@@ -3,6 +3,9 @@
 import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Users, Plus, X, Check, Loader2, Pencil, AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useQualificationTypes } from '@/hooks/use-qualifications'
+import type { ChipVariant, ChipColor } from '@/components/ui/chip'
 import {
   AppCard,
   AppCardContent,
@@ -13,7 +16,7 @@ import {
 } from '@/components/ui/AppCard'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
-import { Button } from '@/components/ui/button'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,18 +55,33 @@ interface PositionSlotProps {
     id: string
     member: { id: string; firstName: string; lastName: string; rank: string }
   } | null
+  chipVariant?: ChipVariant
+  chipColor?: ChipColor
   onAssign: () => void
   onRemove: () => void
   disabled?: boolean
 }
 
-function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: PositionSlotProps) {
+function PositionSlot({
+  position,
+  assignment,
+  chipVariant,
+  chipColor,
+  onAssign,
+  onRemove,
+  disabled,
+}: PositionSlotProps) {
   return (
-    <div className="flex items-center justify-between p-2 bg-base-200/50 rounded-lg border">
+    <div
+      className={cn(
+        'flex items-center justify-between p-2 rounded-lg',
+        assignment ? 'bg-base-200/50 border' : 'border-2 border-dashed'
+      )}
+    >
       <div className="flex items-center gap-3">
         <Chip
-          variant="flat"
-          color={assignment ? 'primary' : 'default'}
+          variant={chipVariant || 'flat'}
+          color={chipColor || 'default'}
           size="sm"
           className="w-16 justify-center"
         >
@@ -72,7 +90,7 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
         <div>
           <p className="font-medium text-sm">
             {assignment
-              ? `${assignment.member.rank} ${assignment.member.firstName} ${assignment.member.lastName}`
+              ? `${assignment.member.rank} ${assignment.member.lastName}, ${assignment.member.firstName}`
               : position.name}
           </p>
           {!assignment && (
@@ -82,17 +100,23 @@ function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: Po
           )}
         </div>
       </div>
-      <div>
-        {assignment ? (
-          <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled}>
-            <X className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button variant="ghost" size="sm" onClick={onAssign} disabled={disabled}>
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      {assignment ? (
+        <button
+          className="btn btn-circle btn-sm btn-error btn-outline"
+          onClick={onRemove}
+          disabled={disabled}
+        >
+          <X className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          className="btn btn-circle btn-sm btn-success btn-outline"
+          onClick={onAssign}
+          disabled={disabled}
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      )}
     </div>
   )
 }
@@ -116,6 +140,23 @@ export function DutyWatchCard({
   const isLoading = externalLoading ?? internalSchedules.isLoading
   const isError = !externalSchedules && internalSchedules.isError
   const error = !externalSchedules ? internalSchedules.error : null
+
+  // Fetch qualification types for chip styling lookup
+  const { data: qualificationTypes } = useQualificationTypes()
+  const qualChipStyleByCode = useMemo(() => {
+    const map = new Map<string, { variant: ChipVariant; color: ChipColor }>()
+    if (qualificationTypes) {
+      for (const qt of qualificationTypes) {
+        if (qt.tag) {
+          map.set(qt.code, {
+            variant: (qt.tag.chipVariant as ChipVariant) || 'solid',
+            color: (qt.tag.chipColor as ChipColor) || 'default',
+          })
+        }
+      }
+    }
+    return map
+  }, [qualificationTypes])
 
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
@@ -201,7 +242,9 @@ export function DutyWatchCard({
           dutyPositionId: position?.id || null,
         },
       })
-      toast.success(`Assigned ${member.rank} ${member.lastName} to ${selectedPosition}`)
+      toast.success(
+        `Assigned ${member.rank} ${member.lastName}, ${member.firstName} to ${selectedPosition}`
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to assign member'
       toast.error(message)
@@ -293,12 +336,7 @@ export function DutyWatchCard({
     )
   }
 
-  const cardStatus =
-    dutyWatchSchedule?.status === 'published'
-      ? ('success' as const)
-      : dutyWatchSchedule
-        ? ('warning' as const)
-        : undefined
+  const cardStatus = dutyWatchSchedule?.status === 'draft' ? ('warning' as const) : undefined
 
   return (
     <AppCard status={cardStatus}>
@@ -317,11 +355,11 @@ export function DutyWatchCard({
             <div className="flex items-center gap-2">
               {dutyWatchSchedule && (
                 <AppBadge status={dutyWatchSchedule.status === 'published' ? 'success' : 'warning'}>
-                  {dutyWatchSchedule.status}
+                  {dutyWatchSchedule.status === 'published' ? 'Published' : 'Draft'}
                 </AppBadge>
               )}
               {missingRequired > 0 && (
-                <AppBadge status="error">{missingRequired} required</AppBadge>
+                <AppBadge status="error">{missingRequired} REQUIRED</AppBadge>
               )}
             </div>
           </AppCardAction>
@@ -331,11 +369,14 @@ export function DutyWatchCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {positionsList.flatMap((position) => {
             const positionAssignments = assignmentsByPosition[position.code] ?? []
+            const chipStyle = qualChipStyleByCode.get(position.code)
             const filledSlots = positionAssignments.map((assignment, idx) => (
               <PositionSlot
                 key={`${position.code}-${idx}`}
                 position={position}
                 assignment={assignment}
+                chipVariant={chipStyle?.variant}
+                chipColor={chipStyle?.color}
                 onAssign={() => handleAssignPosition(position.code)}
                 onRemove={() => setRemoveAssignmentId(assignment.id)}
                 disabled={createAssignment.isPending || deleteAssignment.isPending}
@@ -347,6 +388,8 @@ export function DutyWatchCard({
                 key={`${position.code}-empty-${idx}`}
                 position={position}
                 assignment={null}
+                chipVariant={chipStyle?.variant}
+                chipColor={chipStyle?.color}
                 onAssign={() => handleAssignPosition(position.code)}
                 onRemove={() => {}}
                 disabled={createAssignment.isPending || deleteAssignment.isPending}
@@ -358,7 +401,8 @@ export function DutyWatchCard({
 
         {dutyWatchSchedule && dutyWatchSchedule.status === 'draft' && (
           <div className="mt-4 flex justify-end">
-            <Button
+            <button
+              className="btn btn-primary btn-md"
               onClick={handlePublish}
               disabled={publishSchedule.isPending || missingRequired > 0}
             >
@@ -368,20 +412,24 @@ export function DutyWatchCard({
                 <Check className="h-4 w-4 mr-2" />
               )}
               Publish Schedule
-            </Button>
+            </button>
           </div>
         )}
 
         {dutyWatchSchedule && dutyWatchSchedule.status === 'published' && (
           <div className="mt-4 flex justify-end">
-            <Button variant="outline" onClick={handleEdit} disabled={revertToDraft.isPending}>
+            <button
+              className="btn btn-outline btn-md"
+              onClick={handleEdit}
+              disabled={revertToDraft.isPending}
+            >
               {revertToDraft.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <Pencil className="h-4 w-4 mr-2" />
               )}
               Edit Schedule
-            </Button>
+            </button>
           </div>
         )}
 

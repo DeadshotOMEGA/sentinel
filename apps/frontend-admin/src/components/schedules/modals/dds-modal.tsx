@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+
 import { AppBadge } from '@/components/ui/AppBadge'
 import {
   AlertDialog,
@@ -158,10 +158,13 @@ export function DdsModal() {
           {!ddsSchedule || !currentAssignment ? (
             <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
               <p className="text-base-content/60 mb-4">No DDS assigned for this week</p>
-              <Button onClick={() => setIsMemberPickerOpen(true)}>
+              <button
+                className="btn btn-primary btn-md"
+                onClick={() => setIsMemberPickerOpen(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Assign DDS
-              </Button>
+              </button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -190,26 +193,35 @@ export function DdsModal() {
               <div className="flex justify-end gap-2">
                 {ddsSchedule.status === 'draft' && (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => setIsMemberPickerOpen(true)}>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setIsMemberPickerOpen(true)}
+                    >
                       Change
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setIsRemoveDialogOpen(true)}>
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setIsRemoveDialogOpen(true)}
+                    >
                       <X className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" onClick={handlePublish} disabled={publishSchedule.isPending}>
+                    </button>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={handlePublish}
+                      disabled={publishSchedule.isPending}
+                    >
                       {publishSchedule.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Check className="h-4 w-4 mr-1" />
                       )}
                       Publish
-                    </Button>
+                    </button>
                   </>
                 )}
                 {ddsSchedule.status === 'published' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
+                    className="btn btn-outline btn-sm"
                     onClick={handleEdit}
                     disabled={revertToDraft.isPending}
                   >
@@ -219,7 +231,7 @@ export function DdsModal() {
                       <Pencil className="h-4 w-4 mr-1" />
                     )}
                     Edit
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>

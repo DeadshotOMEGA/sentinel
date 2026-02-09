@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-
 interface BadgeScanInputProps {
   onScan: (serial: string) => void
 }
@@ -30,7 +27,8 @@ export function BadgeScanInput({ onScan }: BadgeScanInputProps) {
     <div className="space-y-4">
       <fieldset className="fieldset">
         <legend className="fieldset-legend">Scan Your Badge</legend>
-        <Input
+        <input
+          className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
           id="badge"
           type="text"
           placeholder="Badge serial number"
@@ -38,13 +36,16 @@ export function BadgeScanInput({ onScan }: BadgeScanInputProps) {
           onChange={(e) => setSerial(e.target.value)}
           autoFocus
         />
-        <span className="label">
-          Place your badge on the reader or enter manually
-        </span>
+        <span className="label">Place your badge on the reader or enter manually</span>
       </fieldset>
-      <Button className="w-full" onClick={() => serial && onScan(serial)} disabled={!serial}>
+      <button
+        type="button"
+        className="btn btn-primary btn-md w-full"
+        onClick={() => serial && onScan(serial)}
+        disabled={!serial}
+      >
         Continue
-      </Button>
+      </button>
     </div>
   )
 }

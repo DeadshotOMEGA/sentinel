@@ -1,7 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { AlertCircle, RefreshCw } from 'lucide-react'
 import { AppCard, AppCardHeader, AppCardTitle, AppCardContent } from '@/components/ui/AppCard'
-import { Button } from '@/components/ui/button'
 
 interface Props {
   children: ReactNode
@@ -40,10 +39,10 @@ export class ScheduleErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-base-content/60 mb-4">
               {this.state.error?.message ?? 'An unexpected error occurred while loading schedules.'}
             </p>
-            <Button variant="outline" size="sm" onClick={this.handleRetry}>
+            <button className="btn btn-outline btn-sm" onClick={this.handleRetry}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
-            </Button>
+            </button>
           </AppCardContent>
         </AppCard>
       )

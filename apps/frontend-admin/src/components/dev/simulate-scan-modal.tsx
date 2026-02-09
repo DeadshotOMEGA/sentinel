@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  Search,
-  Radio,
-  Loader2,
-  CheckCircle,
-  LogIn,
-  LogOut,
-  Shield,
-  Trash2,
-} from 'lucide-react'
+import { Search, Radio, Loader2, CheckCircle, LogIn, LogOut, Shield, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -19,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { useDevMembers, useMockScan, useClearAllCheckins, LockupHeldError } from '@/hooks/use-dev'
 import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { useDdsStatus } from '@/hooks/use-dds'
@@ -51,9 +41,8 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   const presentCount = membersData?.members.filter((m) => m.isPresent).length ?? 0
 
   // Checkout options for the scanned member (only when checking out)
-  const scannedMemberId = scanResult?.direction === 'out'
-    ? scanResult.member.id
-    : lockupBlockedMember?.id ?? ''
+  const scannedMemberId =
+    scanResult?.direction === 'out' ? scanResult.member.id : (lockupBlockedMember?.id ?? '')
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } =
     useCheckoutOptions(scannedMemberId)
 
@@ -230,9 +219,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
               {/* Present count + Clear All */}
               {presentCount > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-base-content/60">
-                    {presentCount} currently checked in
-                  </span>
+                  <span className="text-base-content/60">{presentCount} currently checked in</span>
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs text-error"
@@ -445,19 +432,22 @@ function KioskPreview({
             <Shield className="h-8 w-8 text-info" />
           </div>
           <p className="text-lg font-medium">{fullName}</p>
-          <p className="text-base-content/60 mt-2">
-            You are assigned as Duty Staff today
-          </p>
+          <p className="text-base-content/60 mt-2">You are assigned as Duty Staff today</p>
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onSkipDds}>
+          <button type="button" className="btn btn-outline btn-md flex-1" onClick={onSkipDds}>
             Skip
-          </Button>
-          <Button className="flex-1" onClick={onAcceptDds} disabled={acceptingDds}>
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-md flex-1"
+            onClick={onAcceptDds}
+            disabled={acceptingDds}
+          >
             {acceptingDds && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Accept DDS
-          </Button>
+          </button>
         </div>
       </>
     )
@@ -467,9 +457,7 @@ function KioskPreview({
   return (
     <>
       <DialogHeader>
-        <DialogTitle
-          className={`flex items-center gap-2 ${isIn ? 'text-success' : 'text-info'}`}
-        >
+        <DialogTitle className={`flex items-center gap-2 ${isIn ? 'text-success' : 'text-info'}`}>
           <CheckCircle className="h-5 w-5" />
           {isIn ? 'Checked In' : 'Checked Out'}
         </DialogTitle>
@@ -493,14 +481,12 @@ function KioskPreview({
         <p className="text-base-content/60 mt-1">
           Checked {isIn ? 'IN' : 'OUT'} at {formatTimestamp(timestamp)}
         </p>
-        {ddsHandled && (
-          <p className="text-sm text-success mt-2">DDS accepted</p>
-        )}
+        {ddsHandled && <p className="text-sm text-success mt-2">DDS accepted</p>}
       </div>
 
-      <Button variant="outline" className="w-full" onClick={onBack}>
+      <button type="button" className="btn btn-outline btn-md w-full" onClick={onBack}>
         Scan Another
-      </Button>
+      </button>
     </>
   )
 }

@@ -95,6 +95,29 @@ export function useRevokeQualification() {
 }
 
 // ============================================================================
+// Auto-Qualification Sync
+// ============================================================================
+
+export function useSyncAllAutoQualifications() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.qualifications.syncAllAutoQualifications()
+      if (response.status !== 200) {
+        throw new Error('Failed to sync auto-qualifications')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['member-qualifications'] })
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+      queryClient.invalidateQueries({ queryKey: ['lockup-eligible'] })
+    },
+  })
+}
+
+// ============================================================================
 // Lockup Eligibility
 // ============================================================================
 

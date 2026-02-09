@@ -2,21 +2,10 @@
 
 import { useState } from 'react'
 import { Plus, X, User } from 'lucide-react'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { MemberPickerModal } from '@/components/schedules/member-picker-modal'
 import { EventPositionForm } from './event-position-form'
-import {
-  useCreateEventAssignment,
-  useDeleteEventAssignment,
-} from '@/hooks/use-events'
+import { useCreateEventAssignment, useDeleteEventAssignment } from '@/hooks/use-events'
 import type {
   UnitEventDutyPositionResponse,
   UnitEventDutyAssignmentResponse,
@@ -42,14 +31,10 @@ export function EventDutyWatchCard({
   const createAssignmentMutation = useCreateEventAssignment()
   const deleteAssignmentMutation = useDeleteEventAssignment()
 
-  const sortedPositions = [...positions].sort(
-    (a, b) => a.displayOrder - b.displayOrder
-  )
+  const sortedPositions = [...positions].sort((a, b) => a.displayOrder - b.displayOrder)
 
   const getAssignmentForPosition = (positionId: string) => {
-    return assignments.find(
-      (assignment) => assignment.eventDutyPositionId === positionId
-    )
+    return assignments.find((assignment) => assignment.eventDutyPositionId === positionId)
   }
 
   const assignedMemberIds = assignments.map((a) => a.memberId)
@@ -106,11 +91,7 @@ export function EventDutyWatchCard({
 
         <CardContent>
           {sortedPositions.length === 0 ? (
-            <div
-              className="text-center py-8 text-base-content/60"
-              role="status"
-              aria-live="polite"
-            >
+            <div className="text-center py-8 text-base-content/60" role="status" aria-live="polite">
               <p>No duty positions defined for this event</p>
             </div>
           ) : (
@@ -129,15 +110,11 @@ export function EventDutyWatchCard({
                           {position.code} - {position.name}
                         </span>
                         {position.isStandard && (
-                          <Badge variant="outline" className="text-xs">
-                            Standard
-                          </Badge>
+                          <span className="badge badge-outline text-xs">Standard</span>
                         )}
                       </div>
                       {position.description && (
-                        <p className="text-sm text-base-content/60 mt-1">
-                          {position.description}
-                        </p>
+                        <p className="text-sm text-base-content/60 mt-1">{position.description}</p>
                       )}
 
                       {assignment ? (
@@ -147,48 +124,43 @@ export function EventDutyWatchCard({
                             {assignment.member.rank} {assignment.member.firstName}{' '}
                             {assignment.member.lastName}
                           </span>
-                          <Badge
-                            variant="outline"
-                            className="text-xs"
+                          <span
+                            className="badge badge-outline text-xs"
                             aria-label={`Status: ${assignment.status}`}
                           >
                             {assignment.status}
-                          </Badge>
+                          </span>
                         </div>
                       ) : (
                         <div className="mt-2">
-                          <span className="text-sm text-base-content/60">
-                            Unassigned
-                          </span>
+                          <span className="text-sm text-base-content/60">Unassigned</span>
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {assignment ? (
-                        isEditable && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => handleRemoveAssignment(assignment.id)}
-                            disabled={deleteAssignmentMutation.isPending}
-                            aria-label="Remove assignment"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )
-                      ) : (
-                        isEditable && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAssignMember(position.id)}
-                            aria-label={`Assign member to ${position.name}`}
-                          >
-                            Assign
-                          </Button>
-                        )
-                      )}
+                      {assignment
+                        ? isEditable && (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-square btn-sm"
+                              onClick={() => handleRemoveAssignment(assignment.id)}
+                              disabled={deleteAssignmentMutation.isPending}
+                              aria-label="Remove assignment"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )
+                        : isEditable && (
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              onClick={() => handleAssignMember(position.id)}
+                              aria-label={`Assign member to ${position.name}`}
+                            >
+                              Assign
+                            </button>
+                          )}
                     </div>
                   </div>
                 )
@@ -200,20 +172,16 @@ export function EventDutyWatchCard({
         {isEditable && (
           <CardFooter>
             {showAddPosition ? (
-              <EventPositionForm
-                eventId={eventId}
-                onClose={() => setShowAddPosition(false)}
-              />
+              <EventPositionForm eventId={eventId} onClose={() => setShowAddPosition(false)} />
             ) : (
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
+                className="btn btn-outline btn-sm w-full"
                 onClick={() => setShowAddPosition(true)}
-                className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Custom Position
-              </Button>
+              </button>
             )}
           </CardFooter>
         )}

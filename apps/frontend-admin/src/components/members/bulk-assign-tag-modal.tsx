@@ -11,8 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Loader2 } from 'lucide-react'
 
@@ -149,20 +147,30 @@ export function BulkAssignTagModal({
           )}
 
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div role="alert" className="alert alert-error">
+              <div className="text-sm">{error}</div>
+            </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
+          <button
+            type="button"
+            className="btn btn-outline btn-md"
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting}
+          >
             Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !tagId}>
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-md"
+            onClick={handleSubmit}
+            disabled={isSubmitting || !tagId}
+          >
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Assign to {memberIds.length} Members
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

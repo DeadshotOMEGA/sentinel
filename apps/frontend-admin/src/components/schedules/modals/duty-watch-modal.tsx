@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+
 import { AppBadge } from '@/components/ui/AppBadge'
 import {
   AlertDialog,
@@ -481,37 +481,34 @@ export function DutyWatchModal() {
                         if (isAlreadyOverridden) return null
                         return (
                           <div key={`override-actions-${slot.id}`} className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <button
+                              className="btn btn-outline btn-sm"
                               onClick={() => handleRemoveForNight(slot.member.id, pos.id)}
                               disabled={createDwOverride.isPending}
                               title={`Remove ${slot.member.lastName} for this night`}
                             >
                               Remove {slot.member.lastName}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            </button>
+                            <button
+                              className="btn btn-outline btn-sm"
                               onClick={() => handleReplaceForNight(slot.member.id, pos.code)}
                               disabled={createDwOverride.isPending}
                               title={`Replace ${slot.member.lastName} for this night`}
                             >
                               Replace {slot.member.lastName}
-                            </Button>
+                            </button>
                           </div>
                         )
                       })
                     })}
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
+                      className="btn btn-outline btn-sm"
                       onClick={() => handleAssignPosition(positionsList[0]?.code ?? '')}
                       disabled={createDwOverride.isPending}
                     >
                       <Plus className="h-3 w-3 mr-1" />
                       Add Extra
-                    </Button>
+                    </button>
                   </div>
                 )}
               </>
@@ -521,27 +518,35 @@ export function DutyWatchModal() {
           {/* Actions */}
           {isDraft && (
             <div className="mt-4 flex justify-end">
-              <Button onClick={handlePublish} disabled={publishSchedule.isPending}>
+              <button
+                className="btn btn-primary btn-md"
+                onClick={handlePublish}
+                disabled={publishSchedule.isPending}
+              >
                 {publishSchedule.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <Check className="h-4 w-4 mr-2" />
                 )}
                 Publish Schedule
-              </Button>
+              </button>
             </div>
           )}
 
           {isPublished && (
             <div className="mt-4 flex justify-end">
-              <Button variant="outline" onClick={handleEdit} disabled={revertToDraft.isPending}>
+              <button
+                className="btn btn-outline btn-md"
+                onClick={handleEdit}
+                disabled={revertToDraft.isPending}
+              >
                 {revertToDraft.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <Pencil className="h-4 w-4 mr-2" />
                 )}
                 Edit Schedule
-              </Button>
+              </button>
             </div>
           )}
 

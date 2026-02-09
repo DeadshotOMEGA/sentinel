@@ -2,7 +2,6 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addMonths, subMonths, startOfMonth } from 'date-fns'
-import { Button } from '@/components/ui/button'
 
 /**
  * Month navigation component with prev/next controls and today button.
@@ -38,15 +37,14 @@ export function MonthPicker({ currentMonth, onMonthChange }: MonthPickerProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="icon"
+      <button
+        type="button"
+        className="btn btn-outline btn-square btn-md"
         onClick={handlePrevious}
         aria-label="Previous month"
-        type="button"
       >
         <ChevronLeft className="h-4 w-4" />
-      </Button>
+      </button>
 
       <div className="min-w-[180px] text-center">
         <h2 className="text-lg font-semibold" aria-live="polite">
@@ -54,19 +52,18 @@ export function MonthPicker({ currentMonth, onMonthChange }: MonthPickerProps) {
         </h2>
       </div>
 
-      <Button
-        variant="outline"
-        size="icon"
+      <button
+        type="button"
+        className="btn btn-outline btn-square btn-md"
         onClick={handleNext}
         aria-label="Next month"
-        type="button"
       >
         <ChevronRight className="h-4 w-4" />
-      </Button>
+      </button>
 
-      <Button variant="ghost" size="sm" onClick={handleToday} type="button">
+      <button type="button" className="btn btn-ghost btn-sm" onClick={handleToday}>
         Today
-      </Button>
+      </button>
     </div>
   )
 }

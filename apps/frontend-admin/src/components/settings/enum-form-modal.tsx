@@ -19,8 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { Loader2 } from 'lucide-react'
@@ -46,7 +44,7 @@ const ENUM_TYPE_LABELS: Record<EnumType, string> = {
   'member-statuses': 'Member Status',
   'member-types': 'Member Type',
   'badge-statuses': 'Badge Status',
-  'tags': 'Tag',
+  tags: 'Tag',
 }
 
 const CHIP_VARIANTS: { value: ChipVariant; label: string }[] = [
@@ -59,7 +57,7 @@ const CHIP_VARIANTS: { value: ChipVariant; label: string }[] = [
   { value: 'dot', label: 'Dot' },
 ]
 
-const CHIP_COLORS: { value: ChipColor; label: string }[] = [
+const _CHIP_COLORS: { value: ChipColor; label: string }[] = [
   // Semantic colors
   { value: 'default', label: 'Default' },
   { value: 'primary', label: 'Primary' },
@@ -78,13 +76,7 @@ const CHIP_COLORS: { value: ChipColor; label: string }[] = [
   { value: 'zinc', label: 'Zinc' },
 ]
 
-export function EnumFormModal({
-  enumType,
-  open,
-  onOpenChange,
-  item,
-  mode,
-}: EnumFormModalProps) {
+export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: EnumFormModalProps) {
   const label = ENUM_TYPE_LABELS[enumType]
   const isTagType = enumType === 'tags'
   const createEnum = useCreateEnum(enumType)
@@ -162,9 +154,7 @@ export function EnumFormModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'edit' ? `Edit ${label}` : `Create ${label}`}
-          </DialogTitle>
+          <DialogTitle>{mode === 'edit' ? `Edit ${label}` : `Create ${label}`}</DialogTitle>
           <DialogDescription>
             {mode === 'edit'
               ? `Update the details for this ${label.toLowerCase()}.`
@@ -190,7 +180,8 @@ export function EnumFormModal({
                   <FormItem>
                     <FormLabel>Code</FormLabel>
                     <FormControl>
-                      <Input
+                      <input
+                        className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="e.g., active, pending_review"
                         {...field}
                         disabled={mode === 'edit'} // Code cannot be changed after creation
@@ -213,11 +204,13 @@ export function EnumFormModal({
                 <FormItem>
                   <FormLabel>Display Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Active, Pending Review" {...field} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="e.g., Active, Pending Review"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormDescription>
-                    Human-readable name shown in the UI
-                  </FormDescription>
+                  <FormDescription>Human-readable name shown in the UI</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -230,7 +223,11 @@ export function EnumFormModal({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Optional description" {...field} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="Optional description"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -285,10 +282,7 @@ export function EnumFormModal({
               {/* Live Preview */}
               <div className="flex items-center gap-3 p-3 bg-base-200/50 rounded-lg">
                 <span className="text-sm text-base-content/60">Preview:</span>
-                <Chip
-                  variant={watchedVariant || 'solid'}
-                  color={watchedColor || 'default'}
-                >
+                <Chip variant={watchedVariant || 'solid'} color={watchedColor || 'default'}>
                   {watchedName || 'Sample'}
                 </Chip>
               </div>
@@ -302,10 +296,7 @@ export function EnumFormModal({
                 render={({ field }) => (
                   <FormItem className="flex items-center gap-3 space-y-0 pt-2 border-t">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value || false}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value || false} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div>
                       <FormLabel>Positional tag</FormLabel>
@@ -318,22 +309,18 @@ export function EnumFormModal({
               />
             )}
 
-            {error && (
-              <div className="text-sm text-error">
-                {error.message}
-              </div>
-            )}
+            {error && <div className="text-sm text-error">{error.message}</div>}
 
             <DialogFooter>
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn btn-outline btn-md"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
                 Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
+              </button>
+              <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -344,7 +331,7 @@ export function EnumFormModal({
                 ) : (
                   'Create'
                 )}
-              </Button>
+              </button>
             </DialogFooter>
           </form>
         </Form>

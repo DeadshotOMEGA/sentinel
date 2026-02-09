@@ -2,7 +2,6 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addMonths, subMonths, getQuarter } from 'date-fns'
-import { Button } from '@/components/ui/button'
 
 /**
  * Quarter navigation component for viewing 3-month periods.
@@ -39,15 +38,14 @@ export function QuarterPicker({ quarterStart, onQuarterChange }: QuarterPickerPr
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="icon"
+      <button
+        type="button"
+        className="btn btn-outline btn-square btn-md"
         onClick={handlePrevious}
         aria-label="Previous quarter"
-        type="button"
       >
         <ChevronLeft className="h-4 w-4" />
-      </Button>
+      </button>
 
       <div className="min-w-[180px] text-center">
         <h2 className="text-lg font-semibold" aria-live="polite">
@@ -56,15 +54,14 @@ export function QuarterPicker({ quarterStart, onQuarterChange }: QuarterPickerPr
         </h2>
       </div>
 
-      <Button
-        variant="outline"
-        size="icon"
+      <button
+        type="button"
+        className="btn btn-outline btn-square btn-md"
         onClick={handleNext}
         aria-label="Next quarter"
-        type="button"
       >
         <ChevronRight className="h-4 w-4" />
-      </Button>
+      </button>
     </div>
   )
 }

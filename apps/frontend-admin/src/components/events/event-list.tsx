@@ -6,8 +6,7 @@ import { Loader2, Eye, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+
 import type { UnitEventCategory, UnitEventStatus } from '@sentinel/contracts'
 
 const categories: Array<{ value: UnitEventCategory; label: string }> = [
@@ -80,13 +79,9 @@ export function EventList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="p-0">
       {/* Filters */}
-      <div
-        className="bg-base-100 p-4 rounded-lg border border-base-300"
-        role="search"
-        aria-label="Event filters"
-      >
+      <div className="p-4" role="search" aria-label="Event filters">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Category</legend>
@@ -124,7 +119,8 @@ export function EventList() {
 
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Start Date</legend>
-            <Input
+            <input
+              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
               id="start-date"
               type="date"
               value={startDate}
@@ -135,7 +131,8 @@ export function EventList() {
 
           <fieldset className="fieldset">
             <legend className="fieldset-legend">End Date</legend>
-            <Input
+            <input
+              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
               id="end-date"
               type="date"
               value={endDate}
@@ -146,36 +143,25 @@ export function EventList() {
         </div>
 
         <div className="flex justify-end mt-4">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            className="btn btn-ghost btn-sm"
             onClick={handleClearFilters}
-            disabled={
-              !categoryFilter && !statusFilter && !startDate && !endDate
-            }
+            disabled={!categoryFilter && !statusFilter && !startDate && !endDate}
           >
             Clear Filters
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto bg-base-100 border shadow-sm">
         {isLoading ? (
-          <div
-            className="flex items-center justify-center py-12"
-            role="status"
-            aria-live="polite"
-          >
+          <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
             <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
             <span className="sr-only">Loading events...</span>
           </div>
         ) : sortedEvents.length === 0 ? (
-          <div
-            className="text-center py-12 text-base-content/60"
-            role="status"
-            aria-live="polite"
-          >
+          <div className="text-center py-12 text-base-content/60" role="status" aria-live="polite">
             <p>No events found</p>
           </div>
         ) : (
@@ -218,13 +204,12 @@ export function EventList() {
                   </td>
                   <td className="text-right">
                     <Link href={`/events/${event.id}`} passHref>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
+                      <button
+                        className="btn btn-ghost btn-square btn-sm"
                         aria-label={`View ${event.title}`}
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </Link>
                   </td>
                 </tr>

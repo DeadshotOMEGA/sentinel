@@ -11,18 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+
 import { Card } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Loader2,
   CheckCircle2,
@@ -201,9 +191,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
           <DialogTitle>Import Nominal Roll</DialogTitle>
           <DialogDescription>
             Import members from Nominal Roll CSV file
-            <Badge variant="outline" className="ml-2">
-              Step {step} of 3
-            </Badge>
+            <span className="badge badge-outline ml-2">Step {step} of 3</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -214,7 +202,8 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
               <label htmlFor="csv-file" className="text-sm font-medium">
                 Select CSV File
               </label>
-              <Input
+              <input
+                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 id="csv-file"
                 type="file"
                 accept=".csv"
@@ -266,24 +255,34 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                         Create these divisions automatically during import
                       </label>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Code</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead className="text-right">Members</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.divisionsToCreate.map((div) => (
-                          <TableRow key={div.code}>
-                            <TableCell className="font-mono font-medium">{div.code}</TableCell>
-                            <TableCell>{div.name}</TableCell>
-                            <TableCell className="text-right">{div.memberCount}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="relative w-full overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr className="hover">
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Code
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Name
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap text-right">
+                              Members
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.divisionsToCreate.map((div) => (
+                            <tr key={div.code} className="hover">
+                              <td className="whitespace-nowrap font-mono font-medium">
+                                {div.code}
+                              </td>
+                              <td className="whitespace-nowrap">{div.name}</td>
+                              <td className="whitespace-nowrap text-right">{div.memberCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     {!createDivisions && (
                       <p className="text-sm text-warning mt-3">
                         ⚠ Import will skip members in these divisions. Check the box above to create
@@ -326,59 +325,69 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                         Select rows to exclude from import, or fix the CSV and re-upload:
                       </p>
                     )}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          {excludableErrors.length > 0 && (
-                            <TableHead className="w-12">Exclude</TableHead>
-                          )}
-                          <TableHead className="w-16">Row</TableHead>
-                          <TableHead>Member</TableHead>
-                          <TableHead>Field</TableHead>
-                          <TableHead>Error</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.errors.map((error, idx) => {
-                          const context = error.context
-                          const memberDisplay = context
-                            ? [context.rank, context.firstName, context.lastName]
-                                .filter(Boolean)
-                                .join(' ') || '(unknown)'
-                            : '(unknown)'
-                          const isExcluded = excludedErrorRows.has(error.row)
+                    <div className="relative w-full overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr className="hover">
+                            {excludableErrors.length > 0 && (
+                              <th className="text-base-content font-medium whitespace-nowrap w-12">
+                                Exclude
+                              </th>
+                            )}
+                            <th className="text-base-content font-medium whitespace-nowrap w-16">
+                              Row
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Member
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Field
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Error
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.errors.map((error, idx) => {
+                            const context = error.context
+                            const memberDisplay = context
+                              ? [context.rank, context.firstName, context.lastName]
+                                  .filter(Boolean)
+                                  .join(' ') || '(unknown)'
+                              : '(unknown)'
+                            const isExcluded = excludedErrorRows.has(error.row)
 
-                          return (
-                            <TableRow
-                              key={idx}
-                              className={isExcluded ? 'opacity-50 line-through' : ''}
-                            >
-                              {excludableErrors.length > 0 && (
-                                <TableCell>
-                                  {error.excludable && (
-                                    <input
-                                      type="checkbox"
-                                      checked={isExcluded}
-                                      onChange={() => toggleExcludeRow(error.row)}
-                                      className="h-4 w-4"
-                                      title="Exclude this row from import"
-                                    />
-                                  )}
-                                </TableCell>
-                              )}
-                              <TableCell className="font-mono">{error.row}</TableCell>
-                              <TableCell className="font-medium">{memberDisplay}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="text-xs">
-                                  {error.field}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-error">{error.message}</TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
+                            return (
+                              <tr
+                                key={idx}
+                                className={`hover ${isExcluded ? 'opacity-50 line-through' : ''}`}
+                              >
+                                {excludableErrors.length > 0 && (
+                                  <td className="whitespace-nowrap">
+                                    {error.excludable && (
+                                      <input
+                                        type="checkbox"
+                                        checked={isExcluded}
+                                        onChange={() => toggleExcludeRow(error.row)}
+                                        className="h-4 w-4"
+                                        title="Exclude this row from import"
+                                      />
+                                    )}
+                                  </td>
+                                )}
+                                <td className="whitespace-nowrap font-mono">{error.row}</td>
+                                <td className="whitespace-nowrap font-medium">{memberDisplay}</td>
+                                <td className="whitespace-nowrap">
+                                  <span className="badge badge-outline text-xs">{error.field}</span>
+                                </td>
+                                <td className="whitespace-nowrap text-error">{error.message}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                     {allExcludableErrorsSelected && excludableErrors.length > 0 && (
                       <p className="text-sm text-success mt-3">
                         ✓ All errors will be excluded. You can proceed with the import.
@@ -396,7 +405,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toAdd')}
                 >
-                  <Badge className="badge-success">To Add: {preview.toAdd.length}</Badge>
+                  <span className="badge badge-success">To Add: {preview.toAdd.length}</span>
                   {expandedSections.toAdd ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -405,28 +414,38 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 </div>
                 {expandedSections.toAdd && (
                   <div className="mt-4 max-h-60 overflow-y-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Service #</TableHead>
-                          <TableHead>Rank</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Division</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toAdd.slice(0, 10).map((member, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell>{member.serviceNumber}</TableCell>
-                            <TableCell>{member.rank}</TableCell>
-                            <TableCell>
-                              {member.firstName} {member.lastName}
-                            </TableCell>
-                            <TableCell>{member.department}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="relative w-full overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr className="hover">
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Service #
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Rank
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Name
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Division
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.toAdd.slice(0, 10).map((member, idx) => (
+                            <tr key={idx} className="hover">
+                              <td className="whitespace-nowrap">{member.serviceNumber}</td>
+                              <td className="whitespace-nowrap">{member.rank}</td>
+                              <td className="whitespace-nowrap">
+                                {member.firstName} {member.lastName}
+                              </td>
+                              <td className="whitespace-nowrap">{member.department}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     {preview.toAdd.length > 10 && (
                       <p className="text-sm text-base-content/60 mt-2 text-center">
                         ... and {preview.toAdd.length - 10} more
@@ -444,7 +463,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toUpdate')}
                 >
-                  <Badge className="badge-info">To Update: {preview.toUpdate.length}</Badge>
+                  <span className="badge badge-info">To Update: {preview.toUpdate.length}</span>
                   {expandedSections.toUpdate ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -453,37 +472,45 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 </div>
                 {expandedSections.toUpdate && (
                   <div className="mt-4 max-h-60 overflow-y-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Service #</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Changes</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toUpdate.slice(0, 10).map((update, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell>{update.current.serviceNumber}</TableCell>
-                            <TableCell>
-                              {update.current.firstName} {update.current.lastName}
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              <ul className="list-disc list-inside">
-                                {update.changes.slice(0, 3).map((change, i) => (
-                                  <li key={i}>{change}</li>
-                                ))}
-                              </ul>
-                              {update.changes.length > 3 && (
-                                <span className="text-base-content/60">
-                                  ... and {update.changes.length - 3} more
-                                </span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="relative w-full overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr className="hover">
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Service #
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Name
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Changes
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.toUpdate.slice(0, 10).map((update, idx) => (
+                            <tr key={idx} className="hover">
+                              <td className="whitespace-nowrap">{update.current.serviceNumber}</td>
+                              <td className="whitespace-nowrap">
+                                {update.current.firstName} {update.current.lastName}
+                              </td>
+                              <td className="whitespace-nowrap text-xs">
+                                <ul className="list-disc list-inside">
+                                  {update.changes.slice(0, 3).map((change, i) => (
+                                    <li key={i}>{change}</li>
+                                  ))}
+                                </ul>
+                                {update.changes.length > 3 && (
+                                  <span className="text-base-content/60">
+                                    ... and {update.changes.length - 3} more
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     {preview.toUpdate.length > 10 && (
                       <p className="text-sm text-base-content/60 mt-2 text-center">
                         ... and {preview.toUpdate.length - 10} more
@@ -501,7 +528,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleSection('toReview')}
                 >
-                  <Badge className="badge-warning">Not in CSV: {preview.toReview.length}</Badge>
+                  <span className="badge badge-warning">Not in CSV: {preview.toReview.length}</span>
                   {expandedSections.toReview ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -513,35 +540,45 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                     <p className="text-sm text-base-content/60 mb-2">
                       Select members to deactivate (not found in CSV):
                     </p>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12">Deactivate</TableHead>
-                          <TableHead>Service #</TableHead>
-                          <TableHead>Rank</TableHead>
-                          <TableHead>Name</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {preview.toReview.map((member) => (
-                          <TableRow key={member.id}>
-                            <TableCell>
-                              <input
-                                type="checkbox"
-                                checked={selectedDeactivateIds.has(member.id)}
-                                onChange={() => toggleDeactivate(member.id)}
-                                className="h-4 w-4"
-                              />
-                            </TableCell>
-                            <TableCell>{member.serviceNumber}</TableCell>
-                            <TableCell>{member.rank}</TableCell>
-                            <TableCell>
-                              {member.firstName} {member.lastName}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <div className="relative w-full overflow-x-auto">
+                      <table className="table">
+                        <thead>
+                          <tr className="hover">
+                            <th className="text-base-content font-medium whitespace-nowrap w-12">
+                              Deactivate
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Service #
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Rank
+                            </th>
+                            <th className="text-base-content font-medium whitespace-nowrap">
+                              Name
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preview.toReview.map((member) => (
+                            <tr key={member.id} className="hover">
+                              <td className="whitespace-nowrap">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDeactivateIds.has(member.id)}
+                                  onChange={() => toggleDeactivate(member.id)}
+                                  className="h-4 w-4"
+                                />
+                              </td>
+                              <td className="whitespace-nowrap">{member.serviceNumber}</td>
+                              <td className="whitespace-nowrap">{member.rank}</td>
+                              <td className="whitespace-nowrap">
+                                {member.firstName} {member.lastName}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </Card>
@@ -586,36 +623,46 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
         <DialogFooter>
           {step === 1 && (
             <>
-              <Button variant="outline" onClick={handleClose}>
+              <button className="btn btn-outline btn-md" onClick={handleClose}>
                 Cancel
-              </Button>
-              <Button onClick={handlePreview} disabled={!csvText || importPreview.isPending}>
+              </button>
+              <button
+                className="btn btn-primary btn-md"
+                onClick={handlePreview}
+                disabled={!csvText || importPreview.isPending}
+              >
                 {importPreview.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Next
-              </Button>
+              </button>
             </>
           )}
 
           {step === 2 && (
             <>
-              <Button variant="outline" onClick={() => setStep(1)}>
+              <button className="btn btn-outline btn-md" onClick={() => setStep(1)}>
                 Back
-              </Button>
-              <Button onClick={handleExecute} disabled={!canProceed || executeImport.isPending}>
+              </button>
+              <button
+                className="btn btn-primary btn-md"
+                onClick={handleExecute}
+                disabled={!canProceed || executeImport.isPending}
+              >
                 {executeImport.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {excludedErrorRows.size > 0
                   ? `Execute Import (Excluding ${excludedErrorRows.size} Row${excludedErrorRows.size > 1 ? 's' : ''})`
                   : 'Execute Import'}
-              </Button>
+              </button>
             </>
           )}
 
           {step === 3 && (
             <>
-              <Button variant="outline" onClick={handleImportAnother}>
+              <button className="btn btn-outline btn-md" onClick={handleImportAnother}>
                 Import Another
-              </Button>
-              <Button onClick={handleClose}>Done</Button>
+              </button>
+              <button className="btn btn-primary btn-md" onClick={handleClose}>
+                Done
+              </button>
             </>
           )}
         </DialogFooter>

@@ -6,8 +6,10 @@ import { MembersTable } from '@/components/members/members-table'
 import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
 import { NominalRollImportDialog } from '@/components/members/nominal-roll-import-dialog'
-import { Button } from '@/components/ui/button'
-import { Plus, Upload, Loader2 } from 'lucide-react'
+
+import { Plus, Upload, Loader2, RefreshCw } from 'lucide-react'
+import { useSyncAllAutoQualifications } from '@/hooks/use-qualifications'
+import { toast } from 'sonner'
 
 function MembersPageContent() {
   const router = useRouter()
@@ -15,10 +17,11 @@ function MembersPageContent() {
 
   // Get initial state from URL
   const initialPage = parseInt(searchParams.get('page') || '1', 10)
-  const initialLimit = parseInt(searchParams.get('limit') || '50', 10)
+  const initialLimit = parseInt(searchParams.get('limit') || '200', 10)
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const syncAutoQuals = useSyncAllAutoQualifications()
   const [page, setPage] = useState(initialPage)
   const [limit, setLimit] = useState(initialLimit)
   const [filters, setFilters] = useState({
@@ -34,7 +37,7 @@ function MembersPageContent() {
     // eslint-disable-next-line no-undef -- URLSearchParams is a browser global
     const params = new URLSearchParams()
     if (page !== 1) params.set('page', page.toString())
-    if (limit !== 50) params.set('limit', limit.toString())
+    if (limit !== 200) params.set('limit', limit.toString())
     if (filters.divisionId) params.set('divisionId', filters.divisionId)
     if (filters.rank) params.set('rank', filters.rank)
     if (filters.status) params.set('status', filters.status)
@@ -67,14 +70,36 @@ function MembersPageContent() {
     <>
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+          <button
+            className="btn btn-outline btn-md"
+            onClick={() => {
+              syncAutoQuals.mutate(undefined, {
+                onSuccess: (data) => {
+                  toast.success(
+                    `Sync complete: ${data.granted} granted, ${data.revoked} revoked, ${data.unchanged} unchanged` +
+                      (data.errors.length > 0 ? `, ${data.errors.length} errors` : '')
+                  )
+                },
+                onError: () => {
+                  toast.error('Failed to sync auto-qualifications')
+                },
+              })
+            }}
+            disabled={syncAutoQuals.isPending}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${syncAutoQuals.isPending ? 'animate-spin' : ''}`}
+            />
+            Sync Qualifications
+          </button>
+          <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
-          </Button>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+          </button>
+          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Member
-          </Button>
+          </button>
         </div>
       </div>
 

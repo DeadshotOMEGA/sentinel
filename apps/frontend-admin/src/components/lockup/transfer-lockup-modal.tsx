@@ -10,9 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useTransferLockup } from '@/hooks/use-lockup'
 import type { EligibleRecipient } from '@sentinel/contracts'
@@ -28,7 +25,7 @@ interface TransferLockupModalProps {
 export function TransferLockupModal({
   open,
   onOpenChange,
-  memberId,
+  memberId: _memberId,
   eligibleRecipients,
   onComplete,
 }: TransferLockupModalProps) {
@@ -109,21 +106,15 @@ export function TransferLockupModal({
                         </div>
                         <div>
                           <p className="font-medium">{formatName(recipient)}</p>
-                          <p className="text-xs text-base-content/60">
-                            {recipient.serviceNumber}
-                          </p>
+                          <p className="text-xs text-base-content/60">{recipient.serviceNumber}</p>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1 justify-end">
                         {recipient.qualifications.map((q) => (
-                          <Badge
-                            key={q.code}
-                            variant="secondary"
-                            className="text-xs"
-                          >
+                          <span key={q.code} className="badge badge-secondary text-xs">
                             <Shield className="h-3 w-3 mr-1" />
                             {q.code}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
                     </button>
@@ -133,15 +124,17 @@ export function TransferLockupModal({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>
+              <button type="button" className="btn btn-outline btn-md" onClick={handleClose}>
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
                 onClick={() => setStep('confirm')}
                 disabled={!selectedRecipient}
               >
                 Continue
-              </Button>
+              </button>
             </DialogFooter>
           </>
         )}
@@ -153,23 +146,19 @@ export function TransferLockupModal({
                 <ArrowRightLeft className="h-5 w-5" />
                 Confirm Transfer
               </DialogTitle>
-              <DialogDescription>
-                Verify transfer details before confirming
-              </DialogDescription>
+              <DialogDescription>Verify transfer details before confirming</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               {/* Transfer Summary */}
               <div className="p-4 bg-base-200/50 rounded-lg border">
-                <p className="text-sm text-base-content/60 mb-2">
-                  Transferring lockup to:
-                </p>
+                <p className="text-sm text-base-content/60 mb-2">Transferring lockup to:</p>
                 <p className="text-lg font-semibold">{formatName(selectedRecipient)}</p>
                 <div className="flex gap-1 mt-2">
                   {selectedRecipient.qualifications.map((q) => (
-                    <Badge key={q.code} variant="outline" className="text-xs">
+                    <span key={q.code} className="badge badge-outline text-xs">
                       {q.code}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </div>
@@ -177,7 +166,8 @@ export function TransferLockupModal({
               {/* Notes Field */}
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">Notes (optional)</legend>
-                <Input
+                <input
+                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   id="transfer-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -187,18 +177,22 @@ export function TransferLockupModal({
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setStep('select')}>
+              <button
+                type="button"
+                className="btn btn-outline btn-md"
+                onClick={() => setStep('select')}
+              >
                 Back
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-md"
                 onClick={handleTransfer}
                 disabled={transferLockup.isPending}
               >
-                {transferLockup.isPending && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
+                {transferLockup.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Confirm Transfer
-              </Button>
+              </button>
             </DialogFooter>
           </>
         )}
@@ -210,9 +204,7 @@ export function TransferLockupModal({
                 <CheckCircle className="h-5 w-5" />
                 Transfer Complete
               </DialogTitle>
-              <DialogDescription>
-                Lockup responsibility has been transferred
-              </DialogDescription>
+              <DialogDescription>Lockup responsibility has been transferred</DialogDescription>
             </DialogHeader>
 
             <div className="py-6 text-center">
@@ -226,9 +218,9 @@ export function TransferLockupModal({
             </div>
 
             <DialogFooter>
-              <Button onClick={handleClose} className="w-full">
+              <button type="button" className="btn btn-primary btn-md w-full" onClick={handleClose}>
                 Done
-              </Button>
+              </button>
             </DialogFooter>
           </>
         )}

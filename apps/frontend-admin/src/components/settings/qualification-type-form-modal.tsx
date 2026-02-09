@@ -19,8 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2 } from 'lucide-react'
@@ -141,7 +139,8 @@ export function QualificationTypeFormModal({
                 <FormItem>
                   <FormLabel>Code</FormLabel>
                   <FormControl>
-                    <Input
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="e.g., DDS, SWK, BUILDING_AUTH"
                       {...field}
                       onChange={(e) => field.onChange(e.target.value.toUpperCase())}
@@ -164,7 +163,11 @@ export function QualificationTypeFormModal({
                 <FormItem>
                   <FormLabel>Display Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., DDS Qualified, SWK Qualified" {...field} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="e.g., DDS Qualified, SWK Qualified"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>Human-readable name shown in the UI</FormDescription>
                   <FormMessage />
@@ -179,7 +182,12 @@ export function QualificationTypeFormModal({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Optional description" {...field} value={field.value || ''} />
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      placeholder="Optional description"
+                      {...field}
+                      value={field.value || ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -211,7 +219,8 @@ export function QualificationTypeFormModal({
                 <FormItem>
                   <FormLabel>Display Order</FormLabel>
                   <FormControl>
-                    <Input
+                    <input
+                      className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       type="number"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
@@ -236,7 +245,9 @@ export function QualificationTypeFormModal({
                     <select
                       className="select"
                       value={field.value || 'none'}
-                      onChange={(e) => field.onChange(e.target.value === 'none' ? null : e.target.value)}
+                      onChange={(e) =>
+                        field.onChange(e.target.value === 'none' ? null : e.target.value)
+                      }
                       disabled={tagsLoading}
                     >
                       <option value="none">No tag (default styling)</option>
@@ -274,15 +285,15 @@ export function QualificationTypeFormModal({
             {error && <div className="text-sm text-error">{error.message}</div>}
 
             <DialogFooter>
-              <Button
+              <button
                 type="button"
-                variant="outline"
+                className="btn btn-outline btn-md"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
                 Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
+              </button>
+              <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -293,7 +304,7 @@ export function QualificationTypeFormModal({
                 ) : (
                   'Create'
                 )}
-              </Button>
+              </button>
             </DialogFooter>
           </form>
         </Form>

@@ -20,18 +20,9 @@ import { BulkGrantQualificationModal } from './bulk-grant-qualification-modal'
 import { BulkAssignTagModal } from './bulk-assign-tag-modal'
 import { MemberQualificationsModal } from './member-qualifications-modal'
 import { MemberTagsModal } from './member-tags-modal'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +36,6 @@ import {
 import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { SortableHeader } from './sortable-header'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 import type { MemberResponse } from '@sentinel/contracts'
 
@@ -233,7 +223,7 @@ export function MembersTable({
           const statusName = memberStatusMap.get(statusId)
           return (
             <div className="flex justify-center">
-              <Badge variant="default">{String(statusName ?? 'Unknown')}</Badge>
+              <span className="badge badge-primary">{String(statusName ?? 'Unknown')}</span>
             </div>
           )
         },
@@ -335,28 +325,29 @@ export function MembersTable({
             const member = info.row.original
             return (
               <div className="flex items-center justify-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  className="btn btn-ghost btn-sm"
                   onClick={() => setQualificationsMember(member)}
                   title="Manage qualifications"
                 >
                   <Shield className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                </button>
+                <button
+                  className="btn btn-ghost btn-sm"
                   onClick={() => setTagsMember(member)}
                   title="Manage tags"
                 >
                   <Tag className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)}>
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditingMember(member)}>
                   <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setDeletingMemberId(member.id)}>
+                </button>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setDeletingMemberId(member.id)}
+                >
                   <Trash2 className="h-4 w-4 text-error" />
-                </Button>
+                </button>
               </div>
             )
           },
@@ -423,95 +414,109 @@ export function MembersTable({
             <span className="text-sm font-medium">
               {selectedCount} {selectedCount === 1 ? 'member' : 'members'} selected
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              className="btn btn-ghost btn-sm text-base-content/60"
               onClick={() => setRowSelection({})}
-              className="text-base-content/60"
             >
               <X className="h-4 w-4 mr-1" />
               Clear selection
-            </Button>
+            </button>
           </div>
           {canEdit && (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                className="btn btn-outline btn-sm"
                 onClick={() => {
                   if (selectedCount === 1) {
-                    // Single edit - use regular form modal
                     const selectedId = selectedMemberIds[0]
                     if (selectedId && data?.members) {
                       const member = data.members.find((m) => m.id === selectedId)
                       if (member) setEditingMember(member)
                     }
                   } else {
-                    // Bulk edit - use bulk edit modal
                     setShowBulkEditDialog(true)
                   }
                 }}
               >
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit {selectedCount > 1 ? `(${selectedCount})` : ''}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowBulkGrantQualDialog(true)}>
+              </button>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => setShowBulkGrantQualDialog(true)}
+              >
                 <Shield className="h-4 w-4 mr-2" />
                 Quals
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowBulkAssignTagDialog(true)}>
+              </button>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => setShowBulkAssignTagDialog(true)}
+              >
                 <Tag className="h-4 w-4 mr-2" />
                 Tags
-              </Button>
-              <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteDialog(true)}>
+              </button>
+              <button
+                className="btn btn-error btn-sm"
+                onClick={() => setShowBulkDeleteDialog(true)}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete {selectedCount > 1 ? `(${selectedCount})` : ''}
-              </Button>
+              </button>
             </div>
           )}
         </div>
 
-        <Table className="table-fixed">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} style={{ width: header.column.columnDef.size }}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? 'selected' : undefined}
-                  className={row.getIsSelected() ? 'bg-base-200/50' : ''}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} style={{ width: cell.column.columnDef.size }}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+        <div className="relative w-full overflow-x-auto">
+          <table className="table table-fixed">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className="hover">
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="text-base-content font-medium whitespace-nowrap"
+                      style={{ width: header.column.columnDef.size }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
                   ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-base-content/60"
-                >
-                  No members found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className={cn('hover', row.getIsSelected() ? 'bg-base-200/50' : '')}
+                    data-state={row.getIsSelected() ? 'selected' : undefined}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="whitespace-nowrap"
+                        style={{ width: cell.column.columnDef.size }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr className="hover">
+                  <td
+                    colSpan={columns.length}
+                    className="whitespace-nowrap h-24 text-center text-base-content/60"
+                  >
+                    No members found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination footer */}
         <div className="flex items-center justify-between px-4 py-3 border-t">
@@ -525,6 +530,7 @@ export function MembersTable({
               <option value={25}>25</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
+              <option value={200}>200</option>
             </select>
           </div>
           <div className="flex items-center gap-4">
@@ -533,22 +539,20 @@ export function MembersTable({
               {(data?.total ?? 0) === 1 ? 'member' : 'members'})
             </span>
             <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page <= 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
+                className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= (data?.totalPages ?? 1)}
               >
                 <ChevronRight className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -593,9 +597,9 @@ export function MembersTable({
             </AlertDialogDescription>
           </AlertDialogHeader>
           {bulkDeleteError && (
-            <Alert variant="destructive">
-              <AlertDescription>{bulkDeleteError}</AlertDescription>
-            </Alert>
+            <div role="alert" className="alert alert-error">
+              <div className="text-sm">{bulkDeleteError}</div>
+            </div>
           )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBulkDeleting}>Cancel</AlertDialogCancel>
