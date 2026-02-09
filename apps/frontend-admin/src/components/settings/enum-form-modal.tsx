@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/form'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { ColorPicker } from '@/components/ui/color-picker'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   useCreateEnum,
@@ -323,7 +323,7 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
               <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <ButtonSpinner />
                     {mode === 'edit' ? 'Saving...' : 'Creating...'}
                   </>
                 ) : mode === 'edit' ? (

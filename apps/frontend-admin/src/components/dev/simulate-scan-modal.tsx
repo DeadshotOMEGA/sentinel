@@ -192,7 +192,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+        <DialogContent size="lg" className="max-h-[85vh] flex flex-col">
           {step === 'pick-member' && (
             <>
               <DialogHeader>

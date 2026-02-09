@@ -180,7 +180,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="full" className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Import Nominal Roll</DialogTitle>
           <DialogDescription>

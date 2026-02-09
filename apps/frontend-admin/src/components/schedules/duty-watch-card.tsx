@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
-import { Users, Plus, X, Check, Loader2, Pencil, AlertCircle } from 'lucide-react'
+import { Users, Plus, X, Check, Pencil, AlertCircle } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import { cn } from '@/lib/utils'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
 import type { ChipVariant, ChipColor } from '@/components/ui/chip'
@@ -330,7 +331,7 @@ export function DutyWatchCard({
           </AppCardTitle>
         </AppCardHeader>
         <AppCardContent className="flex items-center justify-center h-32">
-          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+          <LoadingSpinner size="md" />
         </AppCardContent>
       </AppCard>
     )
@@ -407,7 +408,7 @@ export function DutyWatchCard({
               disabled={publishSchedule.isPending || missingRequired > 0}
             >
               {publishSchedule.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <ButtonSpinner />
               ) : (
                 <Check className="h-4 w-4 mr-2" />
               )}
@@ -424,7 +425,7 @@ export function DutyWatchCard({
               disabled={revertToDraft.isPending}
             >
               {revertToDraft.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <ButtonSpinner />
               ) : (
                 <Pencil className="h-4 w-4 mr-2" />
               )}

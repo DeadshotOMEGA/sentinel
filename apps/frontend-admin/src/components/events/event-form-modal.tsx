@@ -1,7 +1,8 @@
 'use client'
 
 import { type FormEvent, useEffect, useState } from 'react'
-import { Loader2, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -136,7 +137,7 @@ export function EventFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEditMode ? 'Edit Event' : 'Create Event'}</DialogTitle>
@@ -355,7 +356,7 @@ export function EventFormModal({
               Cancel
             </button>
             <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isSubmitting && <ButtonSpinner />}
               {isEditMode ? 'Update Event' : 'Create Event'}
             </button>
           </DialogFooter>

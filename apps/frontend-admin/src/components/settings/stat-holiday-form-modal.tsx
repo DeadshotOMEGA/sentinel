@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { useCreateStatHoliday, useUpdateStatHoliday } from '@/hooks/use-stat-holidays'
 import type { StatHoliday, CreateStatHolidayInput } from '@sentinel/contracts'
 
@@ -249,7 +249,7 @@ export function StatHolidayFormModal({
               <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <ButtonSpinner />
                     {mode === 'edit' ? 'Saving...' : 'Creating...'}
                   </>
                 ) : mode === 'edit' ? (

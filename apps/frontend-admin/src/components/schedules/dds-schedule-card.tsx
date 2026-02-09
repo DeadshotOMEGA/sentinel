@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { User, Plus, Check, Loader2, AlertCircle, X, Pencil } from 'lucide-react'
+import { User, Plus, Check, AlertCircle, X, Pencil } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   AppCard,
   AppCardContent,
@@ -196,7 +197,7 @@ export function DdsScheduleCard({
           </AppCardTitle>
         </AppCardHeader>
         <AppCardContent className="flex items-center justify-center h-24">
-          <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+          <LoadingSpinner size="md" />
         </AppCardContent>
       </AppCard>
     )
@@ -274,7 +275,7 @@ export function DdsScheduleCard({
                     disabled={publishSchedule.isPending}
                   >
                     {publishSchedule.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <ButtonSpinner />
                     ) : (
                       <Check className="h-4 w-4 mr-1" />
                     )}
@@ -288,7 +289,7 @@ export function DdsScheduleCard({
                     disabled={revertToDraft.isPending}
                   >
                     {revertToDraft.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <ButtonSpinner />
                     ) : (
                       <Pencil className="h-4 w-4 mr-1" />
                     )}

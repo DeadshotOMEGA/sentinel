@@ -65,7 +65,7 @@ export function TransferLockupModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent size="lg">
         {step === 'select' && (
           <>
             <DialogHeader>

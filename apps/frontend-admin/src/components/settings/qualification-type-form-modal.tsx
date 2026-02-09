@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/form'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   useCreateQualificationType,
   useUpdateQualificationType,
@@ -296,7 +296,7 @@ export function QualificationTypeFormModal({
               <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
                 {isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <ButtonSpinner />
                     {mode === 'edit' ? 'Saving...' : 'Creating...'}
                   </>
                 ) : mode === 'edit' ? (

@@ -3,7 +3,8 @@
 import { useMemo } from 'react'
 import { format } from 'date-fns'
 import { useQueries } from '@tanstack/react-query'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { scheduleKeys } from '@/hooks/use-schedules'
 import { useUnitEvents } from '@/hooks/use-events'
 import { apiClient } from '@/lib/api-client'
@@ -131,7 +132,7 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
   if (schedulesLoading || eventsLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

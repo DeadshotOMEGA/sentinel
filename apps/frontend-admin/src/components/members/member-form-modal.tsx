@@ -123,7 +123,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{mode === 'create' ? 'Create New Member' : 'Edit Member'}</DialogTitle>
           <DialogDescription>

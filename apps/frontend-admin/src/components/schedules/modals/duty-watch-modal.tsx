@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { addDays, format } from 'date-fns'
-import { Users, Check, Loader2, Pencil, Plus } from 'lucide-react'
+import { Users, Check, Pencil, Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -373,7 +374,7 @@ export function DutyWatchModal() {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="max-w-2xl" showCloseButton={false}>
+        <DialogContent size="xl" showCloseButton={false}>
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -524,7 +525,7 @@ export function DutyWatchModal() {
                 disabled={publishSchedule.isPending}
               >
                 {publishSchedule.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <ButtonSpinner />
                 ) : (
                   <Check className="h-4 w-4 mr-2" />
                 )}
@@ -541,7 +542,7 @@ export function DutyWatchModal() {
                 disabled={revertToDraft.isPending}
               >
                 {revertToDraft.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <ButtonSpinner />
                 ) : (
                   <Pencil className="h-4 w-4 mr-2" />
                 )}

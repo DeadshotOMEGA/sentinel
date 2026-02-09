@@ -1,9 +1,10 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 import { useCreateEventPosition } from '@/hooks/use-events'
+import { toast } from 'sonner'
 
 interface EventPositionFormProps {
   eventId: string
@@ -20,7 +21,7 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
     e.preventDefault()
 
     if (!code.trim() || !name.trim()) {
-      window.alert('Code and Name are required')
+      toast.error('Code and Name are required')
       return
     }
 
@@ -91,7 +92,7 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
           className="btn btn-primary btn-sm"
           disabled={createPositionMutation.isPending}
         >
-          {createPositionMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+          {createPositionMutation.isPending && <ButtonSpinner />}
           Add Position
         </button>
       </div>

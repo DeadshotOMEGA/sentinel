@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Database, ChevronRight, ChevronDown } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { Chip } from '@/components/ui/chip'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { TableInfo, TableName } from '@sentinel/contracts'
 import { TABLE_CATEGORIES } from '@sentinel/contracts'
@@ -131,9 +132,9 @@ export function TableSidebar({
                   )}
                   <span>{meta.icon}</span>
                   <span>{category}</span>
-                  <span className="badge badge-secondary ml-auto text-xs">
+                  <Chip color="secondary" size="sm" className="ml-auto">
                     {categoryTables.length}
-                  </span>
+                  </Chip>
                 </button>
 
                 {/* Tables in category */}
@@ -151,9 +152,9 @@ export function TableSidebar({
                         )}
                       >
                         <span className="truncate">{table.name}</span>
-                        <span className="badge badge-outline text-xs font-mono ml-2 shrink-0">
+                        <Chip variant="bordered" size="sm" className="font-mono ml-2 shrink-0">
                           {formatRowCount(table.rowCount)}
-                        </span>
+                        </Chip>
                       </button>
                     ))}
                   </div>

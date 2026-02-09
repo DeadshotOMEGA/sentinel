@@ -12,7 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, Plus, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { Pencil, Trash2, Plus, CheckCircle, XCircle } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import { useStatHolidays, useDeleteStatHoliday } from '@/hooks/use-stat-holidays'
 import { StatHolidayFormModal } from './stat-holiday-form-modal'
 import type { StatHoliday } from '@sentinel/contracts'
@@ -48,7 +49,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -206,7 +207,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             >
               {deleteMutation.isPending ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <ButtonSpinner />
                   Deleting...
                 </>
               ) : (

@@ -13,7 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, Plus, Loader2, CheckCircle, XCircle, Link2 } from 'lucide-react'
+import { Pencil, Trash2, Plus, CheckCircle, XCircle, Link2 } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   useQualificationTypeList,
   useDeleteQualificationType,
@@ -47,7 +48,7 @@ export function QualificationTypeTable({ title, description }: QualificationType
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -211,7 +212,7 @@ export function QualificationTypeTable({ title, description }: QualificationType
             >
               {deleteMutation.isPending ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <ButtonSpinner />
                   Deleting...
                 </>
               ) : (

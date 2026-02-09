@@ -61,7 +61,7 @@ export function ExecuteLockupModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent size="lg">
         {step === 'confirm' ? (
           <>
             <DialogHeader>

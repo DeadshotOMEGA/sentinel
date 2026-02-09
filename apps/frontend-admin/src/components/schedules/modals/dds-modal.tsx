@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { User, Plus, Check, Loader2, Pencil, X } from 'lucide-react'
+import { User, Plus, Check, Pencil, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -144,7 +145,7 @@ export function DdsModal() {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="max-w-lg" showCloseButton={false}>
+        <DialogContent size="lg" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
@@ -211,7 +212,7 @@ export function DdsModal() {
                       disabled={publishSchedule.isPending}
                     >
                       {publishSchedule.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <ButtonSpinner />
                       ) : (
                         <Check className="h-4 w-4 mr-1" />
                       )}
@@ -226,7 +227,7 @@ export function DdsModal() {
                     disabled={revertToDraft.isPending}
                   >
                     {revertToDraft.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <ButtonSpinner />
                     ) : (
                       <Pencil className="h-4 w-4 mr-1" />
                     )}

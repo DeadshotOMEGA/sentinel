@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Loader2, Eye, CheckCircle, XCircle, Calendar } from 'lucide-react'
+import { Eye, CheckCircle, XCircle, Calendar } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
 import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
@@ -165,8 +166,7 @@ export function EventList() {
       <div className="overflow-x-auto bg-base-100 border shadow-sm">
         {isLoading ? (
           <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
-            <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
-            <span className="sr-only">Loading events...</span>
+            <LoadingSpinner size="lg" label="Loading events..." />
           </div>
         ) : sortedEvents.length === 0 ? (
           <EmptyState icon={Calendar} title="No events found" />

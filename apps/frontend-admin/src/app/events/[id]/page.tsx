@@ -7,12 +7,12 @@ import {
   MapPin,
   Clock,
   User,
-  Loader2,
   Edit,
   Trash2,
   FileText,
   AlertCircle,
 } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { UnitEventStatus } from '@sentinel/contracts'
@@ -20,8 +20,7 @@ import { useUnitEvent, useDeleteUnitEvent, useUpdateUnitEventStatus } from '@/ho
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventDutyWatchCard } from '@/components/events/event-duty-watch-card'
 import { EventFormModal } from '@/components/events/event-form-modal'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Chip } from '@/components/ui/chip'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
@@ -114,8 +113,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         aria-live="polite"
       >
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" aria-hidden="true" />
-          <p className="text-base-content/60">Loading event details...</p>
+          <LoadingSpinner size="lg" label="Loading event details..." />
         </div>
       </div>
     )
@@ -166,11 +164,11 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
           <h1 className="text-2xl font-bold mb-2">{event.title}</h1>
           <div className="flex items-center gap-2">
             <EventStatusBadge status={event.status} />
-            {event.eventType && <span className="badge badge-outline">{event.eventType.name}</span>}
+            {event.eventType && <Chip variant="bordered">{event.eventType.name}</Chip>}
             {event.eventType?.category && (
-              <span className="badge badge-ghost">
+              <Chip variant="light">
                 {event.eventType.category.replace('_', ' ')}
-              </span>
+              </Chip>
             )}
           </div>
         </div>
@@ -197,7 +195,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               aria-label="Delete event"
             >
               {deleteEvent.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                <ButtonSpinner />
               ) : (
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               )}
@@ -218,7 +216,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               aria-label={transitions.label}
             >
               {updateStatus.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
+                <ButtonSpinner />
               ) : null}
               {transitions.label}
             </button>

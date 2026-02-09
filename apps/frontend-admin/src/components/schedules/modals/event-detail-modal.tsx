@@ -31,7 +31,7 @@ export function EventDetailModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
-      <DialogContent className="max-w-lg" showCloseButton={false}>
+      <DialogContent size="lg" showCloseButton={false}>
         {isLoading ? (
           <div className="flex items-center justify-center h-32 text-base-content/60">
             Loading event details...
