@@ -13,6 +13,8 @@ import {
   LockupEligibilityQuerySchema,
   MemberIdParamSchema,
   QualificationIdParamSchema,
+  AutoQualSyncResultSchema,
+  MemberAutoQualSyncResultSchema,
   ErrorResponseSchema,
   SuccessResponseSchema,
 } from '../schemas/index.js'
@@ -164,6 +166,46 @@ export const qualificationContract = c.router({
     },
     summary: 'Revoke qualification from member',
     description: 'Revoke an existing qualification from a member with an optional reason',
+  },
+
+  // ============================================================================
+  // Auto-Qualification Sync
+  // ============================================================================
+
+  /**
+   * Bulk sync auto-qualifications for all active members
+   */
+  syncAllAutoQualifications: {
+    method: 'POST',
+    path: '/api/qualifications/auto-sync',
+    body: null,
+    responses: {
+      200: AutoQualSyncResultSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Bulk sync auto-qualifications',
+    description:
+      'Evaluate and apply automatic qualification rules (APS, BM, QM, DSWK) for all active members based on rank and division',
+  },
+
+  /**
+   * Sync auto-qualifications for a single member
+   */
+  syncMemberAutoQualifications: {
+    method: 'POST',
+    path: '/api/members/:memberId/qualifications/auto-sync',
+    pathParams: MemberIdParamSchema,
+    body: null,
+    responses: {
+      200: MemberAutoQualSyncResultSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Sync auto-qualifications for member',
+    description:
+      'Evaluate and apply automatic qualification rules (APS, BM, QM, DSWK) for a single member based on their rank and division',
   },
 
   // ============================================================================

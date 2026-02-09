@@ -18,6 +18,11 @@ import {
   DutyRoleIdParamSchema,
   CurrentDdsResponseSchema,
   DutyWatchTeamResponseSchema,
+  DwNightOverrideResponseSchema,
+  DwNightOverrideListResponseSchema,
+  CreateDwOverrideInputSchema,
+  DwOverrideParamsSchema,
+  DwOverrideQuerySchema,
   ErrorResponseSchema,
 } from '../schemas/index.js'
 
@@ -131,7 +136,8 @@ export const scheduleContract = c.router({
       500: ErrorResponseSchema,
     },
     summary: 'Get schedules by week',
-    description: 'Get all schedules for the week containing the specified date, including assignments',
+    description:
+      'Get all schedules for the week containing the specified date, including assignments',
   },
 
   /**
@@ -379,5 +385,68 @@ export const scheduleContract = c.router({
     },
     summary: 'Get tonight Duty Watch',
     description: "Get tonight's Duty Watch team (only active on Tuesday/Thursday)",
+  },
+
+  // ==========================================================================
+  // DW Night Overrides
+  // ==========================================================================
+
+  /**
+   * List overrides for a schedule
+   */
+  listDwOverrides: {
+    method: 'GET',
+    path: '/api/schedules/:id/overrides',
+    pathParams: ScheduleIdParamSchema,
+    query: DwOverrideQuerySchema,
+    responses: {
+      200: DwNightOverrideListResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'List DW overrides',
+    description:
+      'List duty watch night overrides for a schedule, optionally filtered by night date',
+  },
+
+  /**
+   * Create an override
+   */
+  createDwOverride: {
+    method: 'POST',
+    path: '/api/schedules/:id/overrides',
+    pathParams: ScheduleIdParamSchema,
+    body: CreateDwOverrideInputSchema,
+    responses: {
+      201: DwNightOverrideResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create DW override',
+    description:
+      'Create a duty watch night override (replace, add, or remove a member for one night)',
+  },
+
+  /**
+   * Delete an override
+   */
+  deleteDwOverride: {
+    method: 'DELETE',
+    path: '/api/schedules/:id/overrides/:overrideId',
+    pathParams: DwOverrideParamsSchema,
+    body: c.type<undefined>(),
+    responses: {
+      200: c.type<{ success: boolean; message: string }>(),
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Delete DW override',
+    description: 'Delete a duty watch night override (revert to base assignment)',
   },
 })

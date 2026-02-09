@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { DwNightOverrideResponseSchema } from './dw-override.schema.js'
 
 // ============================================================================
 // Duty Role Schemas
@@ -151,6 +152,7 @@ export const WeeklyScheduleResponseSchema = v.object({
 export const WeeklyScheduleWithAssignmentsResponseSchema = v.object({
   ...WeeklyScheduleResponseSchema.entries,
   assignments: v.array(ScheduleAssignmentResponseSchema),
+  nightOverrides: v.optional(v.array(DwNightOverrideResponseSchema)),
   createdByAdmin: v.nullable(
     v.object({
       id: v.string(),
@@ -360,7 +362,9 @@ export type WeeklyScheduleWithAssignmentsResponse = v.InferOutput<
   typeof WeeklyScheduleWithAssignmentsResponseSchema
 >
 export type WeeklyScheduleListResponse = v.InferOutput<typeof WeeklyScheduleListResponseSchema>
-export type WeeklyScheduleWithAssignmentsListResponse = v.InferOutput<typeof WeeklyScheduleWithAssignmentsListResponseSchema>
+export type WeeklyScheduleWithAssignmentsListResponse = v.InferOutput<
+  typeof WeeklyScheduleWithAssignmentsListResponseSchema
+>
 export type CreateScheduleInput = v.InferOutput<typeof CreateScheduleInputSchema>
 export type UpdateScheduleInput = v.InferOutput<typeof UpdateScheduleInputSchema>
 export type CreateAssignmentInput = v.InferOutput<typeof CreateAssignmentInputSchema>

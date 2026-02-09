@@ -23,6 +23,7 @@ export const QualificationTypeResponseSchema = v.object({
   name: v.string(),
   description: v.nullable(v.string()),
   canReceiveLockup: v.boolean(),
+  isAutomatic: v.boolean(),
   displayOrder: v.number(),
   tagId: v.nullable(v.string()),
   tag: v.nullable(QualificationTypeTagSchema),
@@ -48,7 +49,10 @@ export const SingleQualificationTypeResponseSchema = v.object({
  * Qualification type ID path param
  */
 export const QualificationTypeIdParamSchema = v.object({
-  id: v.pipe(v.string('Qualification type ID is required'), v.uuid('Invalid qualification type ID format')),
+  id: v.pipe(
+    v.string('Qualification type ID is required'),
+    v.uuid('Invalid qualification type ID format')
+  ),
 })
 
 /**
@@ -75,6 +79,7 @@ export const CreateQualificationTypeSchema = v.object({
     v.nullable(v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters')))
   ),
   canReceiveLockup: v.optional(v.boolean()),
+  isAutomatic: v.optional(v.boolean()),
   displayOrder: v.optional(v.number()),
   tagId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid tag ID format')))),
 })
@@ -102,6 +107,7 @@ export const UpdateQualificationTypeSchema = v.object({
     v.nullable(v.pipe(v.string(), v.maxLength(500, 'Description must be at most 500 characters')))
   ),
   canReceiveLockup: v.optional(v.boolean()),
+  isAutomatic: v.optional(v.boolean()),
   displayOrder: v.optional(v.number()),
   tagId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid tag ID format')))),
 })
@@ -255,9 +261,41 @@ export const QualificationIdParamSchema = v.object({
 })
 
 // ============================================================================
+// Auto-Qualification Sync Schemas
+// ============================================================================
+
+/**
+ * Result of a bulk auto-qualification sync
+ */
+export const AutoQualSyncResultSchema = v.object({
+  granted: v.number(),
+  revoked: v.number(),
+  unchanged: v.number(),
+  errors: v.array(
+    v.object({
+      memberId: v.string(),
+      memberName: v.string(),
+      error: v.string(),
+    })
+  ),
+})
+
+/**
+ * Result of syncing auto-qualifications for a single member
+ */
+export const MemberAutoQualSyncResultSchema = v.object({
+  memberId: v.string(),
+  granted: v.array(v.string()),
+  revoked: v.array(v.string()),
+  unchanged: v.array(v.string()),
+})
+
+// ============================================================================
 // Type Exports
 // ============================================================================
 
+export type AutoQualSyncResult = v.InferOutput<typeof AutoQualSyncResultSchema>
+export type MemberAutoQualSyncResult = v.InferOutput<typeof MemberAutoQualSyncResultSchema>
 export type QualificationTypeResponse = v.InferOutput<typeof QualificationTypeResponseSchema>
 export type QualificationTypeListResponse = v.InferOutput<
   typeof QualificationTypeListResponseSchema
@@ -282,4 +320,6 @@ export type QualificationIdParam = v.InferOutput<typeof QualificationIdParamSche
 export type QualificationTypeIdParam = v.InferOutput<typeof QualificationTypeIdParamSchema>
 export type CreateQualificationType = v.InferOutput<typeof CreateQualificationTypeSchema>
 export type UpdateQualificationType = v.InferOutput<typeof UpdateQualificationTypeSchema>
-export type SingleQualificationTypeResponse = v.InferOutput<typeof SingleQualificationTypeResponseSchema>
+export type SingleQualificationTypeResponse = v.InferOutput<
+  typeof SingleQualificationTypeResponseSchema
+>
