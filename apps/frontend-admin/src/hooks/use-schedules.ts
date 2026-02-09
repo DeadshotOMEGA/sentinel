@@ -9,6 +9,7 @@ import type {
   UpdateScheduleInput,
   CreateAssignmentInput,
   UpdateAssignmentInput,
+  CreateDwOverrideInput,
 } from '@sentinel/contracts'
 
 // ============================================================================
@@ -22,6 +23,9 @@ export const scheduleKeys = {
   ranges: () => [...scheduleKeys.all, 'range'] as const,
   current: () => [...scheduleKeys.all, 'current'] as const,
   detail: (id: string) => ['schedule', id] as const,
+  overrides: (scheduleId: string) => [...scheduleKeys.all, 'overrides', scheduleId] as const,
+  overridesByNight: (scheduleId: string, nightDate: string) =>
+    [...scheduleKeys.overrides(scheduleId), nightDate] as const,
 }
 
 // ============================================================================
@@ -400,6 +404,81 @@ export function useCurrentDutyWatch() {
         throw new Error('Failed to fetch current Duty Watch')
       }
       return response.body
+    },
+  })
+}
+
+// ============================================================================
+// DW Night Overrides
+// ============================================================================
+
+export function useDwOverrides(scheduleId: string, nightDate?: string) {
+  return useQuery({
+    queryKey: nightDate
+      ? scheduleKeys.overridesByNight(scheduleId, nightDate)
+      : scheduleKeys.overrides(scheduleId),
+    queryFn: async () => {
+      const response = await apiClient.schedules.listDwOverrides({
+        params: { id: scheduleId },
+        query: { nightDate },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch overrides')
+      }
+      return response.body
+    },
+    enabled: !!scheduleId,
+  })
+}
+
+export function useCreateDwOverride() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      scheduleId,
+      data,
+    }: {
+      scheduleId: string
+      data: CreateDwOverrideInput
+    }) => {
+      const response = await apiClient.schedules.createDwOverride({
+        params: { id: scheduleId },
+        body: data,
+      })
+      if (response.status !== 201) {
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(errorBody?.message || 'Failed to create override')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+    },
+  })
+}
+
+export function useDeleteDwOverride() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      scheduleId,
+      overrideId,
+    }: {
+      scheduleId: string
+      overrideId: string
+    }) => {
+      const response = await apiClient.schedules.deleteDwOverride({
+        params: { id: scheduleId, overrideId },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to delete override')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
     },
   })
 }
