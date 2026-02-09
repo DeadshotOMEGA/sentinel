@@ -10,6 +10,7 @@ import type { Member, MemberType, CreateMemberInput, UpdateMemberInput } from '@
 import { MemberRepository } from '../repositories/member-repository.js'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { MemberTypeRepository } from '../repositories/member-type-repository.js'
+import { AutoQualificationService } from './auto-qualification-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { toNameCase } from '../utils/name-case.js'
 
@@ -679,6 +680,14 @@ export class ImportService {
         await this.memberRepository.update(id, { status: 'inactive' })
         flaggedForReview++
       }
+    }
+
+    // Sync auto-qualifications for all members after import (non-blocking)
+    try {
+      const autoQualService = new AutoQualificationService(getPrismaClient())
+      await autoQualService.syncAll()
+    } catch {
+      // Non-blocking: don't fail import if auto-qual sync errors
     }
 
     return {

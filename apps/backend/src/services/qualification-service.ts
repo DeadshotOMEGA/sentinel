@@ -8,6 +8,7 @@ import type {
   CreateQualificationTypeInput,
   UpdateQualificationTypeInput,
 } from '../repositories/qualification-repository.js'
+import { AutoQualificationService } from './auto-qualification-service.js'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 
@@ -20,10 +21,12 @@ import { prisma as defaultPrisma } from '@sentinel/database'
 export class QualificationService {
   private repository: QualificationRepository
   private prisma: PrismaClientInstance
+  private autoQualService: AutoQualificationService
 
   constructor(prisma: PrismaClientInstance = defaultPrisma) {
     this.prisma = prisma
     this.repository = new QualificationRepository(prisma)
+    this.autoQualService = new AutoQualificationService(prisma)
   }
 
   // ============================================================================
@@ -214,7 +217,18 @@ export class QualificationService {
       notes,
     }
 
-    return this.repository.grant(input)
+    const result = await this.repository.grant(input)
+
+    // If SWK was granted, sync auto-quals to revoke DSWK if applicable
+    if (qualType.code === 'SWK') {
+      try {
+        await this.autoQualService.syncMember(memberId)
+      } catch {
+        // Non-blocking: log but don't fail the grant
+      }
+    }
+
+    return result
   }
 
   /**
@@ -238,7 +252,24 @@ export class QualificationService {
       throw new Error('Qualification is already revoked')
     }
 
-    return this.repository.revoke(qualificationId, revokedBy, revokeReason)
+    // Warn if revoking an auto-managed qualification
+    const qualTypeIsAutomatic = qual.qualificationType.isAutomatic
+    const effectiveReason = qualTypeIsAutomatic
+      ? `${revokeReason ?? ''}${revokeReason ? '. ' : ''}Note: This is an auto-managed qualification and may be re-granted on next sync.`.trim()
+      : revokeReason
+
+    const result = await this.repository.revoke(qualificationId, revokedBy, effectiveReason)
+
+    // If SWK was revoked, sync auto-quals to grant DSWK if eligible
+    if (qual.qualificationType.code === 'SWK') {
+      try {
+        await this.autoQualService.syncMember(qual.memberId)
+      } catch {
+        // Non-blocking: log but don't fail the revoke
+      }
+    }
+
+    return result
   }
 
   /**

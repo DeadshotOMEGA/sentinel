@@ -8,6 +8,7 @@ import {
   type WeeklyScheduleEntity,
   type WeeklyScheduleWithDetails,
   type ScheduleAssignmentEntity,
+  type DwNightOverrideEntity,
   type ScheduleListFilter,
 } from '../repositories/schedule-repository.js'
 import { PresenceService } from './presence-service.js'
@@ -559,6 +560,163 @@ export class ScheduleService {
    */
   async getTonightDutyWatch(): Promise<DutyWatchTeamResult> {
     return this.getCurrentDutyWatch()
+  }
+
+  // ==========================================================================
+  // DW Night Overrides
+  // ==========================================================================
+
+  /**
+   * List overrides for a schedule
+   */
+  async listDwOverrides(
+    scheduleId: string,
+    nightDate?: string
+  ): Promise<DwNightOverrideEntity[]> {
+    const schedule = await this.repository.findScheduleById(scheduleId)
+    if (!schedule) {
+      throw new NotFoundError('Schedule', scheduleId)
+    }
+
+    const nightDateObj = nightDate ? new Date(nightDate + 'T00:00:00Z') : undefined
+    return this.repository.findOverridesBySchedule(scheduleId, nightDateObj)
+  }
+
+  /**
+   * Create a DW night override with validation
+   */
+  async createDwOverride(
+    scheduleId: string,
+    input: {
+      nightDate: string
+      dutyPositionId: string
+      overrideType: string
+      memberId?: string | null
+      baseMemberId?: string | null
+      notes?: string | null
+    }
+  ): Promise<DwNightOverrideEntity> {
+    const schedule = await this.repository.findScheduleById(scheduleId)
+    if (!schedule) {
+      throw new NotFoundError('Schedule', scheduleId)
+    }
+
+    // Validate schedule is for DUTY_WATCH role
+    if (schedule.dutyRole.code !== 'DUTY_WATCH') {
+      throw new ValidationError('Overrides can only be created for DUTY_WATCH schedules')
+    }
+
+    // Validate schedule is draft or published
+    if (schedule.status !== 'draft' && schedule.status !== 'published') {
+      throw new ValidationError(
+        `Cannot create overrides for schedule with status '${schedule.status}'`
+      )
+    }
+
+    // Parse and validate night date
+    const nightDateObj = new Date(input.nightDate + 'T00:00:00Z')
+    const dayOfWeek = nightDateObj.getUTCDay() // 0=Sun, 1=Mon, 2=Tue, ..., 6=Sat
+
+    // Must be Tuesday (2) or Thursday (4)
+    if (dayOfWeek !== 2 && dayOfWeek !== 4) {
+      throw new ValidationError('Night date must be a Tuesday or Thursday')
+    }
+
+    // Validate nightDate falls within the schedule's week (Mon–Sun)
+    const weekStart = schedule.weekStartDate
+    const weekEnd = new Date(weekStart)
+    weekEnd.setDate(weekEnd.getDate() + 6) // Sunday
+    weekEnd.setUTCHours(23, 59, 59, 999)
+
+    if (nightDateObj < weekStart || nightDateObj > weekEnd) {
+      throw new ValidationError(
+        `Night date ${input.nightDate} is not within schedule week starting ${weekStart.toISOString().substring(0, 10)}`
+      )
+    }
+
+    // Validate duty position belongs to this role
+    const role = await this.repository.findDutyRoleById(schedule.dutyRoleId)
+    const position = role?.positions.find((p) => p.id === input.dutyPositionId)
+    if (!position) {
+      throw new NotFoundError('Duty Position', input.dutyPositionId)
+    }
+
+    // Type-specific validation
+    switch (input.overrideType) {
+      case 'replace':
+        if (!input.baseMemberId) {
+          throw new ValidationError('Replace override requires baseMemberId')
+        }
+        if (!input.memberId) {
+          throw new ValidationError('Replace override requires memberId')
+        }
+        break
+      case 'add':
+        if (!input.memberId) {
+          throw new ValidationError('Add override requires memberId')
+        }
+        break
+      case 'remove':
+        if (!input.baseMemberId) {
+          throw new ValidationError('Remove override requires baseMemberId')
+        }
+        break
+      default:
+        throw new ValidationError(`Invalid override type: ${input.overrideType}`)
+    }
+
+    const override = await this.repository.createOverride({
+      scheduleId,
+      nightDate: nightDateObj,
+      dutyPositionId: input.dutyPositionId,
+      overrideType: input.overrideType,
+      memberId: input.memberId,
+      baseMemberId: input.baseMemberId,
+      notes: input.notes,
+    })
+
+    broadcastScheduleUpdate({
+      action: 'updated',
+      scheduleId,
+      dutyRoleCode: schedule.dutyRole.code,
+      weekStartDate: schedule.weekStartDate.toISOString().substring(0, 10),
+      status: schedule.status,
+      timestamp: new Date().toISOString(),
+    })
+
+    return override
+  }
+
+  /**
+   * Delete a DW night override
+   */
+  async deleteDwOverride(scheduleId: string, overrideId: string): Promise<void> {
+    const schedule = await this.repository.findScheduleById(scheduleId)
+    if (!schedule) {
+      throw new NotFoundError('Schedule', scheduleId)
+    }
+
+    if (schedule.status !== 'draft' && schedule.status !== 'published') {
+      throw new ValidationError(
+        `Cannot delete overrides from schedule with status '${schedule.status}'`
+      )
+    }
+
+    const override = await this.repository.findOverrideById(overrideId)
+    if (!override || override.scheduleId !== scheduleId) {
+      throw new NotFoundError('Override', overrideId)
+    }
+
+    await this.repository.deleteOverride(overrideId)
+
+    broadcastScheduleUpdate({
+      action: 'updated',
+      scheduleId,
+      dutyRoleCode: schedule.dutyRole.code,
+      weekStartDate: schedule.weekStartDate.toISOString().substring(0, 10),
+      status: schedule.status,
+      timestamp: new Date().toISOString(),
+    })
   }
 
   // ==========================================================================
