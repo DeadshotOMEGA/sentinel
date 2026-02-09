@@ -93,10 +93,46 @@ export interface ScheduleAssignmentEntity {
 }
 
 /**
+ * DW night override entity from database
+ */
+export interface DwNightOverrideEntity {
+  id: string
+  scheduleId: string
+  nightDate: Date
+  dutyPositionId: string
+  overrideType: string
+  memberId: string | null
+  baseMemberId: string | null
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+  member: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    serviceNumber: string
+  } | null
+  baseMember: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    serviceNumber: string
+  } | null
+  dutyPosition: {
+    id: string
+    code: string
+    name: string
+  }
+}
+
+/**
  * Weekly schedule with full details
  */
 export interface WeeklyScheduleWithDetails extends WeeklyScheduleEntity {
   assignments: ScheduleAssignmentEntity[]
+  nightOverrides: DwNightOverrideEntity[]
   createdByAdmin: { id: string; displayName: string } | null
   publishedByAdmin: { id: string; displayName: string } | null
 }
@@ -127,6 +163,19 @@ export interface CreateAssignmentInput {
 export interface UpdateAssignmentInput {
   dutyPositionId?: string | null
   status?: string
+  notes?: string | null
+}
+
+/**
+ * Input for creating a DW night override
+ */
+export interface CreateOverrideInput {
+  scheduleId: string
+  nightDate: Date
+  dutyPositionId: string
+  overrideType: string
+  memberId?: string | null
+  baseMemberId?: string | null
   notes?: string | null
 }
 
@@ -181,6 +230,26 @@ const assignmentInclude = {
   },
 }
 
+const memberSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  rank: true,
+  serviceNumber: true,
+} as const
+
+const overrideInclude = {
+  member: { select: memberSelect },
+  baseMember: { select: memberSelect },
+  dutyPosition: {
+    select: {
+      id: true,
+      code: true,
+      name: true,
+    },
+  },
+}
+
 /**
  * Get full include object for schedule with all related data
  */
@@ -210,6 +279,13 @@ function getScheduleFullInclude() {
       orderBy: [
         { dutyPosition: { displayOrder: 'asc' as const } },
         { createdAt: 'asc' as const },
+      ],
+    },
+    nightOverrides: {
+      include: overrideInclude,
+      orderBy: [
+        { nightDate: 'asc' as const },
+        { dutyPosition: { displayOrder: 'asc' as const } },
       ],
     },
   }
@@ -552,6 +628,68 @@ export class ScheduleRepository {
         dutyPositionId,
         status: { not: 'released' },
       },
+    })
+  }
+
+  // ==========================================================================
+  // DW Night Overrides
+  // ==========================================================================
+
+  /**
+   * Find overrides for a schedule, optionally filtered by night date
+   */
+  async findOverridesBySchedule(
+    scheduleId: string,
+    nightDate?: Date
+  ): Promise<DwNightOverrideEntity[]> {
+    const where: Record<string, unknown> = { scheduleId }
+    if (nightDate) {
+      where.nightDate = nightDate
+    }
+    return this.prisma.dutyWatchNightOverride.findMany({
+      where,
+      include: overrideInclude,
+      orderBy: [
+        { nightDate: 'asc' },
+        { dutyPosition: { displayOrder: 'asc' } },
+      ],
+    })
+  }
+
+  /**
+   * Find a single override by ID
+   */
+  async findOverrideById(id: string): Promise<DwNightOverrideEntity | null> {
+    return this.prisma.dutyWatchNightOverride.findUnique({
+      where: { id },
+      include: overrideInclude,
+    })
+  }
+
+  /**
+   * Create a DW night override
+   */
+  async createOverride(input: CreateOverrideInput): Promise<DwNightOverrideEntity> {
+    return this.prisma.dutyWatchNightOverride.create({
+      data: {
+        scheduleId: input.scheduleId,
+        nightDate: input.nightDate,
+        dutyPositionId: input.dutyPositionId,
+        overrideType: input.overrideType,
+        memberId: input.memberId,
+        baseMemberId: input.baseMemberId,
+        notes: input.notes,
+      },
+      include: overrideInclude,
+    })
+  }
+
+  /**
+   * Delete a DW night override
+   */
+  async deleteOverride(id: string): Promise<void> {
+    await this.prisma.dutyWatchNightOverride.delete({
+      where: { id },
     })
   }
 

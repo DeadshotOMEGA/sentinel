@@ -20,6 +20,7 @@ export interface QualificationType {
   name: string
   description: string | null
   canReceiveLockup: boolean
+  isAutomatic: boolean
   displayOrder: number
   tagId: string | null
   tag: QualificationTypeTag | null
@@ -93,6 +94,7 @@ export interface CreateQualificationTypeInput {
   name: string
   description?: string | null
   canReceiveLockup?: boolean
+  isAutomatic?: boolean
   displayOrder?: number
   tagId?: string | null
 }
@@ -105,6 +107,7 @@ export interface UpdateQualificationTypeInput {
   name?: string
   description?: string | null
   canReceiveLockup?: boolean
+  isAutomatic?: boolean
   displayOrder?: number
   tagId?: string | null
 }
@@ -228,6 +231,7 @@ export class QualificationRepository {
         name: input.name,
         description: input.description,
         canReceiveLockup: input.canReceiveLockup ?? true,
+        isAutomatic: input.isAutomatic ?? false,
         displayOrder: input.displayOrder ?? 0,
         tagId: input.tagId,
       },
@@ -256,6 +260,7 @@ export class QualificationRepository {
         name: input.name,
         description: input.description,
         canReceiveLockup: input.canReceiveLockup,
+        isAutomatic: input.isAutomatic,
         displayOrder: input.displayOrder,
         tagId: input.tagId,
       },
@@ -422,7 +427,7 @@ export class QualificationRepository {
   }
 
   /**
-   * Check if a member can receive lockup (has any lockup-eligible qualification)
+   * Check if a member can receive lockup (has at least one lockup-eligible qualification)
    */
   async canMemberReceiveLockup(memberId: string): Promise<boolean> {
     const count = await this.prisma.memberQualification.count({
