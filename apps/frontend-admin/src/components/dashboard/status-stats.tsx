@@ -226,7 +226,7 @@ function LockupHolderStat({
           <KeyRound size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Lockup Holder</div>
-        <div className="stat-value font-display text-warning text-2xl">No One</div>
+        <div className="stat-value font-display text-warning text-3xl">No One</div>
         <div className="stat-desc">No one holds lockup</div>
       </StatContainer>
     )
@@ -239,7 +239,7 @@ function LockupHolderStat({
         <KeyRound size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Lockup Holder</div>
-      <div className="stat-value font-display text-primary text-2xl">
+      <div className="stat-value font-display text-primary text-3xl">
         {formatMemberName(lockupStatus.currentHolder)}
       </div>
       <div className="stat-desc">
@@ -293,7 +293,7 @@ function DutyWatchStat() {
           <Users size={32} strokeWidth={2} />
         </div>
         <div className="stat-title">Duty Watch Tonight</div>
-        <div className="stat-value font-display text-warning text-lg">Unassigned</div>
+        <div className="stat-value font-display text-warning text-3xl">Unassigned</div>
         <div className="stat-desc">No team assigned</div>
       </StatContainer>
     )
@@ -305,7 +305,7 @@ function DutyWatchStat() {
         <Users size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Watch Tonight</div>
-      <div className={`stat-value font-display ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
+      <div className={`stat-value font-display text-3xl ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
         {checkedInCount}/{team.length}
       </div>
       <div className="stat-desc flex items-center gap-1">
