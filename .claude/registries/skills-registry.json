@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_synced": "2026-02-05T22:23:01.785036",
+  "last_synced": "2026-02-09T10:30:23.791788",
   "skills": {
     "writing-commands": {
       "what": "Write slash command definitions for .claude/commands/. Use when creating or updating custom slash commands.",
