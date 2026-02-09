@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 interface BulkAssignTagModalProps {
   open: boolean
@@ -168,7 +168,7 @@ export function BulkAssignTagModal({
             onClick={handleSubmit}
             disabled={isSubmitting || !tagId}
           >
-            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isSubmitting && <ButtonSpinner />}
             Assign to {memberIds.length} Members
           </button>
         </DialogFooter>

@@ -7,7 +7,8 @@ import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
 import { NominalRollImportDialog } from '@/components/members/nominal-roll-import-dialog'
 
-import { Plus, Upload, Loader2, RefreshCw } from 'lucide-react'
+import { Plus, Upload, RefreshCw } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSyncAllAutoQualifications } from '@/hooks/use-qualifications'
 import { toast } from 'sonner'
 
@@ -124,7 +125,7 @@ export default function MembersPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
+          <LoadingSpinner size="lg" className="text-base-content/60" />
         </div>
       }
     >

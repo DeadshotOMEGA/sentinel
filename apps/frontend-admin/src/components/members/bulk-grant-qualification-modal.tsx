@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 interface BulkGrantQualificationModalProps {
   open: boolean
@@ -177,7 +177,7 @@ export function BulkGrantQualificationModal({
             onClick={handleSubmit}
             disabled={isSubmitting || !qualificationTypeId}
           >
-            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isSubmitting && <ButtonSpinner />}
             Grant to {memberIds.length} Members
           </button>
         </DialogFooter>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Building, Lock, Loader2, User, X } from 'lucide-react'
+import { Building, Lock, User, X } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSetBuildingStatus, useDevMembers } from '@/hooks/use-dev'
 import { useLockupStatus } from '@/hooks/use-lockup'
 import { apiClient } from '@/lib/api-client'
@@ -96,8 +97,9 @@ export function DevToolsPanel() {
               disabled={setBuildingStatus.isPending}
               onClick={() => setBuildingStatus.mutate({ buildingStatus: opt.value })}
             >
-              {setBuildingStatus.isPending && setBuildingStatus.variables?.buildingStatus === opt.value ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+              {setBuildingStatus.isPending &&
+              setBuildingStatus.variables?.buildingStatus === opt.value ? (
+                <LoadingSpinner size="xs" />
               ) : (
                 opt.label
               )}
@@ -116,9 +118,7 @@ export function DevToolsPanel() {
               {currentHolder.rank} {currentHolder.firstName} {currentHolder.lastName}
             </span>
           )}
-          {!currentHolder && (
-            <span className="ml-auto text-xs text-base-content/40">No One</span>
-          )}
+          {!currentHolder && <span className="ml-auto text-xs text-base-content/40">No One</span>}
         </div>
 
         {!showHolderPicker ? (
@@ -136,11 +136,7 @@ export function DevToolsPanel() {
                 disabled={clearHolder.isPending}
                 onClick={() => clearHolder.mutate()}
               >
-                {clearHolder.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <X className="h-3 w-3" />
-                )}
+                {clearHolder.isPending ? <LoadingSpinner size="xs" /> : <X className="h-3 w-3" />}
                 Clear (Reset All)
               </button>
             )}
@@ -188,9 +184,7 @@ export function DevToolsPanel() {
               )}
             </div>
             {acquireLockup.isError && (
-              <p className="text-xs text-error">
-                {acquireLockup.error.message}
-              </p>
+              <p className="text-xs text-error">{acquireLockup.error.message}</p>
             )}
           </div>
         )}

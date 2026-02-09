@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import type { MemberResponse, CreateMemberInput } from '@sentinel/contracts'
 
 interface MemberFormModalProps {
@@ -276,7 +276,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
               Cancel
             </button>
             <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting && <ButtonSpinner />}
               {mode === 'create' ? 'Create Member' : 'Save Changes'}
             </button>
           </DialogFooter>

@@ -5,7 +5,6 @@ import {
   Users,
   Lock,
   Unlock,
-  Loader2,
   ShieldEllipsis,
   ShieldAlert,
   ShieldCheck,
@@ -105,7 +104,8 @@ function DdsStat() {
       </div>
       <div className="stat-title">Duty Day Staff</div>
       <div className="stat-value font-display text-primary text-3xl">
-        {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName} {ddsStatus.assignment.member.firstName.charAt(0)}
+        {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName}{' '}
+        {ddsStatus.assignment.member.firstName.charAt(0)}
       </div>
       <div className="stat-desc">
         {ddsStatus.nextDds ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}` : 'On duty today'}
@@ -126,7 +126,7 @@ function BuildingStat({
       case 'secured':
         return { label: 'Secured', color: 'text-primary', Icon: Lock }
       case 'locking_up':
-        return { label: 'Locking Up', color: 'text-warning', Icon: Loader2 }
+        return { label: 'Locking Up', color: 'text-warning', Icon: Unlock }
       case 'open':
       default:
         return { label: 'Open', color: 'text-info', Icon: Unlock }
@@ -305,7 +305,9 @@ function DutyWatchStat() {
         <Users size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Watch Tonight</div>
-      <div className={`stat-value font-display text-3xl ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
+      <div
+        className={`stat-value font-display text-3xl ${allCheckedIn ? 'text-primary' : 'text-warning'}`}
+      >
         {checkedInCount}/{team.length}
       </div>
       <div className="stat-desc flex items-center gap-1">

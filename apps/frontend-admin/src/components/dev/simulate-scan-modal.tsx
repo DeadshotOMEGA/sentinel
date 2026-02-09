@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Radio, Loader2, CheckCircle, LogIn, LogOut, Shield, Trash2 } from 'lucide-react'
+import { Search, Radio, CheckCircle, LogIn, LogOut, Shield, Trash2 } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -227,7 +228,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                     onClick={() => clearAll.mutate()}
                   >
                     {clearAll.isPending ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <LoadingSpinner size="xs" />
                     ) : (
                       <Trash2 className="h-3.5 w-3.5" />
                     )}
@@ -243,7 +244,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
               <div className="overflow-y-auto flex-1 min-h-0 -mx-6">
                 {loadingMembers ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+                    <LoadingSpinner size="md" className="text-base-content/60" />
                   </div>
                 ) : filteredMembers?.length === 0 ? (
                   <div className="text-center py-8 text-base-content/60">
@@ -315,7 +316,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
               {/* Scanning indicator */}
               {mockScan.isPending && (
                 <div className="flex items-center gap-2 text-sm text-base-content/60 pt-2">
-                  <span className="loading loading-spinner loading-sm" />
+                  <LoadingSpinner size="sm" />
                   Scanning...
                 </div>
               )}
@@ -400,7 +401,7 @@ function KioskPreview({
   if (!isIn && loadingCheckout) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+        <LoadingSpinner size="md" className="text-base-content/60" />
       </div>
     )
   }
@@ -445,7 +446,7 @@ function KioskPreview({
             onClick={onAcceptDds}
             disabled={acceptingDds}
           >
-            {acceptingDds && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {acceptingDds && <ButtonSpinner />}
             Accept DDS
           </button>
         </div>

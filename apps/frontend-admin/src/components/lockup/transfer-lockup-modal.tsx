@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowRightLeft, Loader2, CheckCircle, User, Shield } from 'lucide-react'
+import { ArrowRightLeft, CheckCircle, User, Shield } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -190,7 +191,7 @@ export function TransferLockupModal({
                 onClick={handleTransfer}
                 disabled={transferLockup.isPending}
               >
-                {transferLockup.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {transferLockup.isPending && <ButtonSpinner />}
                 Confirm Transfer
               </button>
             </DialogFooter>

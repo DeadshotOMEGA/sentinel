@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 interface BulkEditMemberModalProps {
   open: boolean
@@ -229,7 +229,7 @@ export function BulkEditMemberModal({
             onClick={handleSubmit}
             disabled={isSubmitting || !hasChanges}
           >
-            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isSubmitting && <ButtonSpinner />}
             Update {memberIds.length} Members
           </button>
         </DialogFooter>

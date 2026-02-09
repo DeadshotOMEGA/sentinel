@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { TableSidebar } from '@/components/database/table-sidebar'
 import { DatabaseTable } from '@/components/database/database-table'
 import { useTableList, useTableData } from '@/hooks/use-database-explorer'
-import { Database, Loader2 } from 'lucide-react'
+import { Database } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import type { TableName } from '@sentinel/contracts'
 
 function DatabasePageContent() {
@@ -118,7 +119,7 @@ export default function DatabasePage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-base-content/60" />
+          <LoadingSpinner size="lg" className="text-base-content/60" />
         </div>
       }
     >

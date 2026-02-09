@@ -13,14 +13,8 @@ import {
 } from '@/components/ui/dialog'
 
 import { Card } from '@/components/ui/card'
-import {
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  FolderPlus,
-} from 'lucide-react'
+import { CheckCircle2, AlertCircle, ChevronDown, ChevronUp, FolderPlus } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 interface NominalRollImportDialogProps {
   open: boolean
@@ -631,7 +625,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 onClick={handlePreview}
                 disabled={!csvText || importPreview.isPending}
               >
-                {importPreview.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {importPreview.isPending && <ButtonSpinner />}
                 Next
               </button>
             </>
@@ -647,7 +641,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 onClick={handleExecute}
                 disabled={!canProceed || executeImport.isPending}
               >
-                {executeImport.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {executeImport.isPending && <ButtonSpinner />}
                 {excludedErrorRows.size > 0
                   ? `Execute Import (Excluding ${excludedErrorRows.size} Row${excludedErrorRows.size > 1 ? 's' : ''})`
                   : 'Execute Import'}

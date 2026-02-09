@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Lock, Loader2, User, Users, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Lock, User, Users, CheckCircle, AlertTriangle } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -77,7 +78,7 @@ export function ExecuteLockupModal({
               {/* Current Status */}
               {loadingPresent ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+                  <LoadingSpinner size="md" className="text-base-content/60" />
                 </div>
               ) : (
                 <>
@@ -158,7 +159,7 @@ export function ExecuteLockupModal({
                 onClick={handleExecute}
                 disabled={executeLockup.isPending}
               >
-                {executeLockup.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {executeLockup.isPending && <ButtonSpinner />}
                 <Lock className="h-4 w-4 mr-2" />
                 Confirm Lock Up
               </button>

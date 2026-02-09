@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Loader2 } from 'lucide-react'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 
 interface DeleteMemberDialogProps {
   memberId: string
@@ -51,7 +51,7 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
             disabled={deleteMember.isPending}
             className="bg-error hover:bg-error/90"
           >
-            {deleteMember.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {deleteMember.isPending && <ButtonSpinner />}
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

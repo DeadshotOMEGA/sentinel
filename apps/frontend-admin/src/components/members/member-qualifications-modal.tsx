@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Shield, Plus, X, Loader2, Calendar, AlertCircle, AlertTriangle } from 'lucide-react'
+import { Shield, Plus, X, Calendar, AlertCircle, AlertTriangle } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -123,7 +124,7 @@ export function MemberQualificationsModal({
           <div className="space-y-4">
             {loadingQuals ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+                <LoadingSpinner size="md" className="text-base-content/60" />
               </div>
             ) : qualifications?.data?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-base-content/60">
@@ -276,7 +277,7 @@ export function MemberQualificationsModal({
               onClick={handleGrant}
               disabled={!grantTypeId || grantQualification.isPending}
             >
-              {grantQualification.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {grantQualification.isPending && <ButtonSpinner />}
               Grant
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -312,7 +313,7 @@ export function MemberQualificationsModal({
               disabled={revokeQualification.isPending}
               className="bg-error text-error-content hover:bg-error/90"
             >
-              {revokeQualification.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {revokeQualification.isPending && <ButtonSpinner />}
               Revoke
             </AlertDialogAction>
           </AlertDialogFooter>

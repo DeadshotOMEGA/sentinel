@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Tag, Plus, X, Loader2, AlertCircle } from 'lucide-react'
+import { Tag, Plus, X, AlertCircle } from 'lucide-react'
+import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
   DialogContent,
@@ -98,7 +99,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
           <div className="space-y-4">
             {loadingMemberTags ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-base-content/60" />
+                <LoadingSpinner size="md" className="text-base-content/60" />
               </div>
             ) : memberTags?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-base-content/60">
@@ -227,7 +228,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
               onClick={handleAssign}
               disabled={!assignTagId || assignTag.isPending}
             >
-              {assignTag.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {assignTag.isPending && <ButtonSpinner />}
               Assign
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -251,7 +252,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
               disabled={removeTag.isPending}
               className="bg-error text-error-content hover:bg-error/90"
             >
-              {removeTag.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {removeTag.isPending && <ButtonSpinner />}
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>
