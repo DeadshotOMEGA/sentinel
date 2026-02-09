@@ -548,6 +548,7 @@ exports.Prisma.QualificationTypeScalarFieldEnum = {
   name: 'name',
   description: 'description',
   canReceiveLockup: 'canReceiveLockup',
+  isAutomatic: 'isAutomatic',
   displayOrder: 'displayOrder',
   tagId: 'tagId',
   createdAt: 'createdAt',
@@ -616,6 +617,19 @@ exports.Prisma.ScheduleAssignmentScalarFieldEnum = {
   status: 'status',
   confirmedAt: 'confirmedAt',
   releasedAt: 'releasedAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DutyWatchNightOverrideScalarFieldEnum = {
+  id: 'id',
+  scheduleId: 'scheduleId',
+  nightDate: 'nightDate',
+  dutyPositionId: 'dutyPositionId',
+  overrideType: 'overrideType',
+  memberId: 'memberId',
+  baseMemberId: 'baseMemberId',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -800,6 +814,7 @@ exports.Prisma.ModelName = {
   DutyPosition: 'DutyPosition',
   WeeklySchedule: 'WeeklySchedule',
   ScheduleAssignment: 'ScheduleAssignment',
+  DutyWatchNightOverride: 'DutyWatchNightOverride',
   LockupStatus: 'LockupStatus',
   LockupTransfer: 'LockupTransfer',
   LockupExecution: 'LockupExecution',

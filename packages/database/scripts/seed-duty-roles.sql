@@ -19,6 +19,18 @@ VALUES
   (gen_random_uuid(), 'ISA', 'ISA', 'Unit Security Authority responsibilities', false, 7, now(), now())
 ON CONFLICT (code) DO NOTHING;
 
+-- Mark existing types as manual (in case is_automatic column was added after initial seed)
+UPDATE qualification_types SET is_automatic = false WHERE is_automatic IS NULL;
+
+-- Duty Watch position qualifications (auto-granted based on rank/division)
+INSERT INTO qualification_types (id, code, name, description, can_receive_lockup, is_automatic, display_order, created_at, updated_at)
+VALUES
+  (gen_random_uuid(), 'APS', 'APS Qualified', 'Access Point Sentry (auto: S3 not in BMQ)', false, true, 10, now(), now()),
+  (gen_random_uuid(), 'BM', 'BM Qualified', 'Bosn Mate (auto: S2)', false, true, 11, now(), now()),
+  (gen_random_uuid(), 'QM', 'QM Qualified', 'Quartermaster (auto: S1)', false, true, 12, now(), now()),
+  (gen_random_uuid(), 'DSWK', 'DSWK Qualified', 'Deputy Senior Watchkeeper (auto: MS-Lt(N) without SWK)', false, true, 13, now(), now())
+ON CONFLICT (code) DO NOTHING;
+
 -- ============================================================================
 -- DUTY ROLES
 -- ============================================================================

@@ -215,6 +215,11 @@ export type WeeklySchedule = $Result.DefaultSelection<Prisma.$WeeklySchedulePayl
  */
 export type ScheduleAssignment = $Result.DefaultSelection<Prisma.$ScheduleAssignmentPayload>
 /**
+ * Model DutyWatchNightOverride
+ * 
+ */
+export type DutyWatchNightOverride = $Result.DefaultSelection<Prisma.$DutyWatchNightOverridePayload>
+/**
  * Model LockupStatus
  * 
  */
@@ -773,6 +778,16 @@ export class PrismaClient<
   get scheduleAssignment(): Prisma.ScheduleAssignmentDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.dutyWatchNightOverride`: Exposes CRUD operations for the **DutyWatchNightOverride** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DutyWatchNightOverrides
+    * const dutyWatchNightOverrides = await prisma.dutyWatchNightOverride.findMany()
+    * ```
+    */
+  get dutyWatchNightOverride(): Prisma.DutyWatchNightOverrideDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.lockupStatus`: Exposes CRUD operations for the **LockupStatus** model.
     * Example usage:
     * ```ts
@@ -1325,6 +1340,7 @@ export namespace Prisma {
     DutyPosition: 'DutyPosition',
     WeeklySchedule: 'WeeklySchedule',
     ScheduleAssignment: 'ScheduleAssignment',
+    DutyWatchNightOverride: 'DutyWatchNightOverride',
     LockupStatus: 'LockupStatus',
     LockupTransfer: 'LockupTransfer',
     LockupExecution: 'LockupExecution',
@@ -1348,7 +1364,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4312,6 +4328,80 @@ export namespace Prisma {
           }
         }
       }
+      DutyWatchNightOverride: {
+        payload: Prisma.$DutyWatchNightOverridePayload<ExtArgs>
+        fields: Prisma.DutyWatchNightOverrideFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DutyWatchNightOverrideFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DutyWatchNightOverrideFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          findFirst: {
+            args: Prisma.DutyWatchNightOverrideFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DutyWatchNightOverrideFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          findMany: {
+            args: Prisma.DutyWatchNightOverrideFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>[]
+          }
+          create: {
+            args: Prisma.DutyWatchNightOverrideCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          createMany: {
+            args: Prisma.DutyWatchNightOverrideCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DutyWatchNightOverrideCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>[]
+          }
+          delete: {
+            args: Prisma.DutyWatchNightOverrideDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          update: {
+            args: Prisma.DutyWatchNightOverrideUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          deleteMany: {
+            args: Prisma.DutyWatchNightOverrideDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DutyWatchNightOverrideUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DutyWatchNightOverrideUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>[]
+          }
+          upsert: {
+            args: Prisma.DutyWatchNightOverrideUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DutyWatchNightOverridePayload>
+          }
+          aggregate: {
+            args: Prisma.DutyWatchNightOverrideAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDutyWatchNightOverride>
+          }
+          groupBy: {
+            args: Prisma.DutyWatchNightOverrideGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DutyWatchNightOverrideGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DutyWatchNightOverrideCountArgs<ExtArgs>
+            result: $Utils.Optional<DutyWatchNightOverrideCountAggregateOutputType> | number
+          }
+        }
+      }
       LockupStatus: {
         payload: Prisma.$LockupStatusPayload<ExtArgs>
         fields: Prisma.LockupStatusFieldRefs
@@ -5052,6 +5142,7 @@ export namespace Prisma {
     dutyPosition?: DutyPositionOmit
     weeklySchedule?: WeeklyScheduleOmit
     scheduleAssignment?: ScheduleAssignmentOmit
+    dutyWatchNightOverride?: DutyWatchNightOverrideOmit
     lockupStatus?: LockupStatusOmit
     lockupTransfer?: LockupTransferOmit
     lockupExecution?: LockupExecutionOmit
@@ -5456,6 +5547,8 @@ export namespace Prisma {
     ddsTransfers: number
     qualifications: number
     scheduleAssignments: number
+    dwOverridesAsMember: number
+    dwOverridesAsBase: number
     lockupHolding: number
     lockupSecured: number
     lockupTransfersFrom: number
@@ -5474,6 +5567,8 @@ export namespace Prisma {
     ddsTransfers?: boolean | MemberCountOutputTypeCountDdsTransfersArgs
     qualifications?: boolean | MemberCountOutputTypeCountQualificationsArgs
     scheduleAssignments?: boolean | MemberCountOutputTypeCountScheduleAssignmentsArgs
+    dwOverridesAsMember?: boolean | MemberCountOutputTypeCountDwOverridesAsMemberArgs
+    dwOverridesAsBase?: boolean | MemberCountOutputTypeCountDwOverridesAsBaseArgs
     lockupHolding?: boolean | MemberCountOutputTypeCountLockupHoldingArgs
     lockupSecured?: boolean | MemberCountOutputTypeCountLockupSecuredArgs
     lockupTransfersFrom?: boolean | MemberCountOutputTypeCountLockupTransfersFromArgs
@@ -5548,6 +5643,20 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountScheduleAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ScheduleAssignmentWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountDwOverridesAsMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DutyWatchNightOverrideWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountDwOverridesAsBaseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DutyWatchNightOverrideWhereInput
   }
 
   /**
@@ -5952,10 +6061,12 @@ export namespace Prisma {
 
   export type DutyPositionCountOutputType = {
     assignments: number
+    nightOverrides: number
   }
 
   export type DutyPositionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignments?: boolean | DutyPositionCountOutputTypeCountAssignmentsArgs
+    nightOverrides?: boolean | DutyPositionCountOutputTypeCountNightOverridesArgs
   }
 
   // Custom InputTypes
@@ -5976,6 +6087,13 @@ export namespace Prisma {
     where?: ScheduleAssignmentWhereInput
   }
 
+  /**
+   * DutyPositionCountOutputType without action
+   */
+  export type DutyPositionCountOutputTypeCountNightOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DutyWatchNightOverrideWhereInput
+  }
+
 
   /**
    * Count Type WeeklyScheduleCountOutputType
@@ -5983,10 +6101,12 @@ export namespace Prisma {
 
   export type WeeklyScheduleCountOutputType = {
     assignments: number
+    nightOverrides: number
   }
 
   export type WeeklyScheduleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignments?: boolean | WeeklyScheduleCountOutputTypeCountAssignmentsArgs
+    nightOverrides?: boolean | WeeklyScheduleCountOutputTypeCountNightOverridesArgs
   }
 
   // Custom InputTypes
@@ -6005,6 +6125,13 @@ export namespace Prisma {
    */
   export type WeeklyScheduleCountOutputTypeCountAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ScheduleAssignmentWhereInput
+  }
+
+  /**
+   * WeeklyScheduleCountOutputType without action
+   */
+  export type WeeklyScheduleCountOutputTypeCountNightOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DutyWatchNightOverrideWhereInput
   }
 
 
@@ -16401,6 +16528,8 @@ export namespace Prisma {
     memberStatusRef?: boolean | Member$memberStatusRefArgs<ExtArgs>
     qualifications?: boolean | Member$qualificationsArgs<ExtArgs>
     scheduleAssignments?: boolean | Member$scheduleAssignmentsArgs<ExtArgs>
+    dwOverridesAsMember?: boolean | Member$dwOverridesAsMemberArgs<ExtArgs>
+    dwOverridesAsBase?: boolean | Member$dwOverridesAsBaseArgs<ExtArgs>
     lockupHolding?: boolean | Member$lockupHoldingArgs<ExtArgs>
     lockupSecured?: boolean | Member$lockupSecuredArgs<ExtArgs>
     lockupTransfersFrom?: boolean | Member$lockupTransfersFromArgs<ExtArgs>
@@ -16526,6 +16655,8 @@ export namespace Prisma {
     memberStatusRef?: boolean | Member$memberStatusRefArgs<ExtArgs>
     qualifications?: boolean | Member$qualificationsArgs<ExtArgs>
     scheduleAssignments?: boolean | Member$scheduleAssignmentsArgs<ExtArgs>
+    dwOverridesAsMember?: boolean | Member$dwOverridesAsMemberArgs<ExtArgs>
+    dwOverridesAsBase?: boolean | Member$dwOverridesAsBaseArgs<ExtArgs>
     lockupHolding?: boolean | Member$lockupHoldingArgs<ExtArgs>
     lockupSecured?: boolean | Member$lockupSecuredArgs<ExtArgs>
     lockupTransfersFrom?: boolean | Member$lockupTransfersFromArgs<ExtArgs>
@@ -16566,6 +16697,8 @@ export namespace Prisma {
       memberStatusRef: Prisma.$MemberStatusPayload<ExtArgs> | null
       qualifications: Prisma.$MemberQualificationPayload<ExtArgs>[]
       scheduleAssignments: Prisma.$ScheduleAssignmentPayload<ExtArgs>[]
+      dwOverridesAsMember: Prisma.$DutyWatchNightOverridePayload<ExtArgs>[]
+      dwOverridesAsBase: Prisma.$DutyWatchNightOverridePayload<ExtArgs>[]
       lockupHolding: Prisma.$LockupStatusPayload<ExtArgs>[]
       lockupSecured: Prisma.$LockupStatusPayload<ExtArgs>[]
       lockupTransfersFrom: Prisma.$LockupTransferPayload<ExtArgs>[]
@@ -17009,6 +17142,8 @@ export namespace Prisma {
     memberStatusRef<T extends Member$memberStatusRefArgs<ExtArgs> = {}>(args?: Subset<T, Member$memberStatusRefArgs<ExtArgs>>): Prisma__MemberStatusClient<$Result.GetResult<Prisma.$MemberStatusPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     qualifications<T extends Member$qualificationsArgs<ExtArgs> = {}>(args?: Subset<T, Member$qualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scheduleAssignments<T extends Member$scheduleAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$scheduleAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    dwOverridesAsMember<T extends Member$dwOverridesAsMemberArgs<ExtArgs> = {}>(args?: Subset<T, Member$dwOverridesAsMemberArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    dwOverridesAsBase<T extends Member$dwOverridesAsBaseArgs<ExtArgs> = {}>(args?: Subset<T, Member$dwOverridesAsBaseArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lockupHolding<T extends Member$lockupHoldingArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupHoldingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lockupSecured<T extends Member$lockupSecuredArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupSecuredArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lockupTransfersFrom<T extends Member$lockupTransfersFromArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupTransfersFromArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupTransferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -17761,6 +17896,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ScheduleAssignmentScalarFieldEnum | ScheduleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * Member.dwOverridesAsMember
+   */
+  export type Member$dwOverridesAsMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    where?: DutyWatchNightOverrideWhereInput
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
+  }
+
+  /**
+   * Member.dwOverridesAsBase
+   */
+  export type Member$dwOverridesAsBaseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    where?: DutyWatchNightOverrideWhereInput
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
   }
 
   /**
@@ -45718,6 +45901,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     canReceiveLockup: boolean | null
+    isAutomatic: boolean | null
     displayOrder: number | null
     tagId: string | null
     createdAt: Date | null
@@ -45730,6 +45914,7 @@ export namespace Prisma {
     name: string | null
     description: string | null
     canReceiveLockup: boolean | null
+    isAutomatic: boolean | null
     displayOrder: number | null
     tagId: string | null
     createdAt: Date | null
@@ -45742,6 +45927,7 @@ export namespace Prisma {
     name: number
     description: number
     canReceiveLockup: number
+    isAutomatic: number
     displayOrder: number
     tagId: number
     createdAt: number
@@ -45764,6 +45950,7 @@ export namespace Prisma {
     name?: true
     description?: true
     canReceiveLockup?: true
+    isAutomatic?: true
     displayOrder?: true
     tagId?: true
     createdAt?: true
@@ -45776,6 +45963,7 @@ export namespace Prisma {
     name?: true
     description?: true
     canReceiveLockup?: true
+    isAutomatic?: true
     displayOrder?: true
     tagId?: true
     createdAt?: true
@@ -45788,6 +45976,7 @@ export namespace Prisma {
     name?: true
     description?: true
     canReceiveLockup?: true
+    isAutomatic?: true
     displayOrder?: true
     tagId?: true
     createdAt?: true
@@ -45887,6 +46076,7 @@ export namespace Prisma {
     name: string
     description: string | null
     canReceiveLockup: boolean
+    isAutomatic: boolean
     displayOrder: number
     tagId: string | null
     createdAt: Date
@@ -45918,6 +46108,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: boolean
     tagId?: boolean
     createdAt?: boolean
@@ -45933,6 +46124,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: boolean
     tagId?: boolean
     createdAt?: boolean
@@ -45946,6 +46138,7 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: boolean
     tagId?: boolean
     createdAt?: boolean
@@ -45959,13 +46152,14 @@ export namespace Prisma {
     name?: boolean
     description?: boolean
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: boolean
     tagId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type QualificationTypeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "canReceiveLockup" | "displayOrder" | "tagId" | "createdAt" | "updatedAt", ExtArgs["result"]["qualificationType"]>
+  export type QualificationTypeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "canReceiveLockup" | "isAutomatic" | "displayOrder" | "tagId" | "createdAt" | "updatedAt", ExtArgs["result"]["qualificationType"]>
   export type QualificationTypeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberQualifications?: boolean | QualificationType$memberQualificationsArgs<ExtArgs>
     tag?: boolean | QualificationType$tagArgs<ExtArgs>
@@ -45990,6 +46184,7 @@ export namespace Prisma {
       name: string
       description: string | null
       canReceiveLockup: boolean
+      isAutomatic: boolean
       displayOrder: number
       tagId: string | null
       createdAt: Date
@@ -46424,6 +46619,7 @@ export namespace Prisma {
     readonly name: FieldRef<"QualificationType", 'String'>
     readonly description: FieldRef<"QualificationType", 'String'>
     readonly canReceiveLockup: FieldRef<"QualificationType", 'Boolean'>
+    readonly isAutomatic: FieldRef<"QualificationType", 'Boolean'>
     readonly displayOrder: FieldRef<"QualificationType", 'Int'>
     readonly tagId: FieldRef<"QualificationType", 'String'>
     readonly createdAt: FieldRef<"QualificationType", 'DateTime'>
@@ -49569,6 +49765,7 @@ export namespace Prisma {
     updatedAt?: boolean
     dutyRole?: boolean | DutyRoleDefaultArgs<ExtArgs>
     assignments?: boolean | DutyPosition$assignmentsArgs<ExtArgs>
+    nightOverrides?: boolean | DutyPosition$nightOverridesArgs<ExtArgs>
     _count?: boolean | DutyPositionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["dutyPosition"]>
 
@@ -49614,6 +49811,7 @@ export namespace Prisma {
   export type DutyPositionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     dutyRole?: boolean | DutyRoleDefaultArgs<ExtArgs>
     assignments?: boolean | DutyPosition$assignmentsArgs<ExtArgs>
+    nightOverrides?: boolean | DutyPosition$nightOverridesArgs<ExtArgs>
     _count?: boolean | DutyPositionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DutyPositionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -49628,6 +49826,7 @@ export namespace Prisma {
     objects: {
       dutyRole: Prisma.$DutyRolePayload<ExtArgs>
       assignments: Prisma.$ScheduleAssignmentPayload<ExtArgs>[]
+      nightOverrides: Prisma.$DutyWatchNightOverridePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -50035,6 +50234,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     dutyRole<T extends DutyRoleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DutyRoleDefaultArgs<ExtArgs>>): Prisma__DutyRoleClient<$Result.GetResult<Prisma.$DutyRolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     assignments<T extends DutyPosition$assignmentsArgs<ExtArgs> = {}>(args?: Subset<T, DutyPosition$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    nightOverrides<T extends DutyPosition$nightOverridesArgs<ExtArgs> = {}>(args?: Subset<T, DutyPosition$nightOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -50502,6 +50702,30 @@ export namespace Prisma {
   }
 
   /**
+   * DutyPosition.nightOverrides
+   */
+  export type DutyPosition$nightOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    where?: DutyWatchNightOverrideWhereInput
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
+  }
+
+  /**
    * DutyPosition without action
    */
   export type DutyPositionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -50728,6 +50952,7 @@ export namespace Prisma {
     createdByAdmin?: boolean | WeeklySchedule$createdByAdminArgs<ExtArgs>
     publishedByAdmin?: boolean | WeeklySchedule$publishedByAdminArgs<ExtArgs>
     assignments?: boolean | WeeklySchedule$assignmentsArgs<ExtArgs>
+    nightOverrides?: boolean | WeeklySchedule$nightOverridesArgs<ExtArgs>
     _count?: boolean | WeeklyScheduleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["weeklySchedule"]>
 
@@ -50782,6 +51007,7 @@ export namespace Prisma {
     createdByAdmin?: boolean | WeeklySchedule$createdByAdminArgs<ExtArgs>
     publishedByAdmin?: boolean | WeeklySchedule$publishedByAdminArgs<ExtArgs>
     assignments?: boolean | WeeklySchedule$assignmentsArgs<ExtArgs>
+    nightOverrides?: boolean | WeeklySchedule$nightOverridesArgs<ExtArgs>
     _count?: boolean | WeeklyScheduleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WeeklyScheduleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -50802,6 +51028,7 @@ export namespace Prisma {
       createdByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
       publishedByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
       assignments: Prisma.$ScheduleAssignmentPayload<ExtArgs>[]
+      nightOverrides: Prisma.$DutyWatchNightOverridePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -51212,6 +51439,7 @@ export namespace Prisma {
     createdByAdmin<T extends WeeklySchedule$createdByAdminArgs<ExtArgs> = {}>(args?: Subset<T, WeeklySchedule$createdByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     publishedByAdmin<T extends WeeklySchedule$publishedByAdminArgs<ExtArgs> = {}>(args?: Subset<T, WeeklySchedule$publishedByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     assignments<T extends WeeklySchedule$assignmentsArgs<ExtArgs> = {}>(args?: Subset<T, WeeklySchedule$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduleAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    nightOverrides<T extends WeeklySchedule$nightOverridesArgs<ExtArgs> = {}>(args?: Subset<T, WeeklySchedule$nightOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -51715,6 +51943,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ScheduleAssignmentScalarFieldEnum | ScheduleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WeeklySchedule.nightOverrides
+   */
+  export type WeeklySchedule$nightOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    where?: DutyWatchNightOverrideWhereInput
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
   }
 
   /**
@@ -52900,6 +53152,1200 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ScheduleAssignmentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DutyWatchNightOverride
+   */
+
+  export type AggregateDutyWatchNightOverride = {
+    _count: DutyWatchNightOverrideCountAggregateOutputType | null
+    _min: DutyWatchNightOverrideMinAggregateOutputType | null
+    _max: DutyWatchNightOverrideMaxAggregateOutputType | null
+  }
+
+  export type DutyWatchNightOverrideMinAggregateOutputType = {
+    id: string | null
+    scheduleId: string | null
+    nightDate: Date | null
+    dutyPositionId: string | null
+    overrideType: string | null
+    memberId: string | null
+    baseMemberId: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DutyWatchNightOverrideMaxAggregateOutputType = {
+    id: string | null
+    scheduleId: string | null
+    nightDate: Date | null
+    dutyPositionId: string | null
+    overrideType: string | null
+    memberId: string | null
+    baseMemberId: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type DutyWatchNightOverrideCountAggregateOutputType = {
+    id: number
+    scheduleId: number
+    nightDate: number
+    dutyPositionId: number
+    overrideType: number
+    memberId: number
+    baseMemberId: number
+    notes: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type DutyWatchNightOverrideMinAggregateInputType = {
+    id?: true
+    scheduleId?: true
+    nightDate?: true
+    dutyPositionId?: true
+    overrideType?: true
+    memberId?: true
+    baseMemberId?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DutyWatchNightOverrideMaxAggregateInputType = {
+    id?: true
+    scheduleId?: true
+    nightDate?: true
+    dutyPositionId?: true
+    overrideType?: true
+    memberId?: true
+    baseMemberId?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type DutyWatchNightOverrideCountAggregateInputType = {
+    id?: true
+    scheduleId?: true
+    nightDate?: true
+    dutyPositionId?: true
+    overrideType?: true
+    memberId?: true
+    baseMemberId?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type DutyWatchNightOverrideAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DutyWatchNightOverride to aggregate.
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DutyWatchNightOverrides to fetch.
+     */
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DutyWatchNightOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DutyWatchNightOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DutyWatchNightOverrides
+    **/
+    _count?: true | DutyWatchNightOverrideCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DutyWatchNightOverrideMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DutyWatchNightOverrideMaxAggregateInputType
+  }
+
+  export type GetDutyWatchNightOverrideAggregateType<T extends DutyWatchNightOverrideAggregateArgs> = {
+        [P in keyof T & keyof AggregateDutyWatchNightOverride]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDutyWatchNightOverride[P]>
+      : GetScalarType<T[P], AggregateDutyWatchNightOverride[P]>
+  }
+
+
+
+
+  export type DutyWatchNightOverrideGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DutyWatchNightOverrideWhereInput
+    orderBy?: DutyWatchNightOverrideOrderByWithAggregationInput | DutyWatchNightOverrideOrderByWithAggregationInput[]
+    by: DutyWatchNightOverrideScalarFieldEnum[] | DutyWatchNightOverrideScalarFieldEnum
+    having?: DutyWatchNightOverrideScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DutyWatchNightOverrideCountAggregateInputType | true
+    _min?: DutyWatchNightOverrideMinAggregateInputType
+    _max?: DutyWatchNightOverrideMaxAggregateInputType
+  }
+
+  export type DutyWatchNightOverrideGroupByOutputType = {
+    id: string
+    scheduleId: string
+    nightDate: Date
+    dutyPositionId: string
+    overrideType: string
+    memberId: string | null
+    baseMemberId: string | null
+    notes: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: DutyWatchNightOverrideCountAggregateOutputType | null
+    _min: DutyWatchNightOverrideMinAggregateOutputType | null
+    _max: DutyWatchNightOverrideMaxAggregateOutputType | null
+  }
+
+  type GetDutyWatchNightOverrideGroupByPayload<T extends DutyWatchNightOverrideGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DutyWatchNightOverrideGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DutyWatchNightOverrideGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DutyWatchNightOverrideGroupByOutputType[P]>
+            : GetScalarType<T[P], DutyWatchNightOverrideGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DutyWatchNightOverrideSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scheduleId?: boolean
+    nightDate?: boolean
+    dutyPositionId?: boolean
+    overrideType?: boolean
+    memberId?: boolean
+    baseMemberId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }, ExtArgs["result"]["dutyWatchNightOverride"]>
+
+  export type DutyWatchNightOverrideSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scheduleId?: boolean
+    nightDate?: boolean
+    dutyPositionId?: boolean
+    overrideType?: boolean
+    memberId?: boolean
+    baseMemberId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }, ExtArgs["result"]["dutyWatchNightOverride"]>
+
+  export type DutyWatchNightOverrideSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    scheduleId?: boolean
+    nightDate?: boolean
+    dutyPositionId?: boolean
+    overrideType?: boolean
+    memberId?: boolean
+    baseMemberId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }, ExtArgs["result"]["dutyWatchNightOverride"]>
+
+  export type DutyWatchNightOverrideSelectScalar = {
+    id?: boolean
+    scheduleId?: boolean
+    nightDate?: boolean
+    dutyPositionId?: boolean
+    overrideType?: boolean
+    memberId?: boolean
+    baseMemberId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type DutyWatchNightOverrideOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "scheduleId" | "nightDate" | "dutyPositionId" | "overrideType" | "memberId" | "baseMemberId" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["dutyWatchNightOverride"]>
+  export type DutyWatchNightOverrideInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }
+  export type DutyWatchNightOverrideIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }
+  export type DutyWatchNightOverrideIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    schedule?: boolean | WeeklyScheduleDefaultArgs<ExtArgs>
+    dutyPosition?: boolean | DutyPositionDefaultArgs<ExtArgs>
+    member?: boolean | DutyWatchNightOverride$memberArgs<ExtArgs>
+    baseMember?: boolean | DutyWatchNightOverride$baseMemberArgs<ExtArgs>
+  }
+
+  export type $DutyWatchNightOverridePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DutyWatchNightOverride"
+    objects: {
+      schedule: Prisma.$WeeklySchedulePayload<ExtArgs>
+      dutyPosition: Prisma.$DutyPositionPayload<ExtArgs>
+      member: Prisma.$MemberPayload<ExtArgs> | null
+      baseMember: Prisma.$MemberPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      scheduleId: string
+      nightDate: Date
+      dutyPositionId: string
+      overrideType: string
+      memberId: string | null
+      baseMemberId: string | null
+      notes: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["dutyWatchNightOverride"]>
+    composites: {}
+  }
+
+  type DutyWatchNightOverrideGetPayload<S extends boolean | null | undefined | DutyWatchNightOverrideDefaultArgs> = $Result.GetResult<Prisma.$DutyWatchNightOverridePayload, S>
+
+  type DutyWatchNightOverrideCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DutyWatchNightOverrideFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: DutyWatchNightOverrideCountAggregateInputType | true
+    }
+
+  export interface DutyWatchNightOverrideDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DutyWatchNightOverride'], meta: { name: 'DutyWatchNightOverride' } }
+    /**
+     * Find zero or one DutyWatchNightOverride that matches the filter.
+     * @param {DutyWatchNightOverrideFindUniqueArgs} args - Arguments to find a DutyWatchNightOverride
+     * @example
+     * // Get one DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DutyWatchNightOverrideFindUniqueArgs>(args: SelectSubset<T, DutyWatchNightOverrideFindUniqueArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DutyWatchNightOverride that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DutyWatchNightOverrideFindUniqueOrThrowArgs} args - Arguments to find a DutyWatchNightOverride
+     * @example
+     * // Get one DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DutyWatchNightOverrideFindUniqueOrThrowArgs>(args: SelectSubset<T, DutyWatchNightOverrideFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DutyWatchNightOverride that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideFindFirstArgs} args - Arguments to find a DutyWatchNightOverride
+     * @example
+     * // Get one DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DutyWatchNightOverrideFindFirstArgs>(args?: SelectSubset<T, DutyWatchNightOverrideFindFirstArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DutyWatchNightOverride that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideFindFirstOrThrowArgs} args - Arguments to find a DutyWatchNightOverride
+     * @example
+     * // Get one DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DutyWatchNightOverrideFindFirstOrThrowArgs>(args?: SelectSubset<T, DutyWatchNightOverrideFindFirstOrThrowArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DutyWatchNightOverrides that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DutyWatchNightOverrides
+     * const dutyWatchNightOverrides = await prisma.dutyWatchNightOverride.findMany()
+     * 
+     * // Get first 10 DutyWatchNightOverrides
+     * const dutyWatchNightOverrides = await prisma.dutyWatchNightOverride.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const dutyWatchNightOverrideWithIdOnly = await prisma.dutyWatchNightOverride.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DutyWatchNightOverrideFindManyArgs>(args?: SelectSubset<T, DutyWatchNightOverrideFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DutyWatchNightOverride.
+     * @param {DutyWatchNightOverrideCreateArgs} args - Arguments to create a DutyWatchNightOverride.
+     * @example
+     * // Create one DutyWatchNightOverride
+     * const DutyWatchNightOverride = await prisma.dutyWatchNightOverride.create({
+     *   data: {
+     *     // ... data to create a DutyWatchNightOverride
+     *   }
+     * })
+     * 
+     */
+    create<T extends DutyWatchNightOverrideCreateArgs>(args: SelectSubset<T, DutyWatchNightOverrideCreateArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DutyWatchNightOverrides.
+     * @param {DutyWatchNightOverrideCreateManyArgs} args - Arguments to create many DutyWatchNightOverrides.
+     * @example
+     * // Create many DutyWatchNightOverrides
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DutyWatchNightOverrideCreateManyArgs>(args?: SelectSubset<T, DutyWatchNightOverrideCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DutyWatchNightOverrides and returns the data saved in the database.
+     * @param {DutyWatchNightOverrideCreateManyAndReturnArgs} args - Arguments to create many DutyWatchNightOverrides.
+     * @example
+     * // Create many DutyWatchNightOverrides
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DutyWatchNightOverrides and only return the `id`
+     * const dutyWatchNightOverrideWithIdOnly = await prisma.dutyWatchNightOverride.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DutyWatchNightOverrideCreateManyAndReturnArgs>(args?: SelectSubset<T, DutyWatchNightOverrideCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DutyWatchNightOverride.
+     * @param {DutyWatchNightOverrideDeleteArgs} args - Arguments to delete one DutyWatchNightOverride.
+     * @example
+     * // Delete one DutyWatchNightOverride
+     * const DutyWatchNightOverride = await prisma.dutyWatchNightOverride.delete({
+     *   where: {
+     *     // ... filter to delete one DutyWatchNightOverride
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DutyWatchNightOverrideDeleteArgs>(args: SelectSubset<T, DutyWatchNightOverrideDeleteArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DutyWatchNightOverride.
+     * @param {DutyWatchNightOverrideUpdateArgs} args - Arguments to update one DutyWatchNightOverride.
+     * @example
+     * // Update one DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DutyWatchNightOverrideUpdateArgs>(args: SelectSubset<T, DutyWatchNightOverrideUpdateArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DutyWatchNightOverrides.
+     * @param {DutyWatchNightOverrideDeleteManyArgs} args - Arguments to filter DutyWatchNightOverrides to delete.
+     * @example
+     * // Delete a few DutyWatchNightOverrides
+     * const { count } = await prisma.dutyWatchNightOverride.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DutyWatchNightOverrideDeleteManyArgs>(args?: SelectSubset<T, DutyWatchNightOverrideDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DutyWatchNightOverrides.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DutyWatchNightOverrides
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DutyWatchNightOverrideUpdateManyArgs>(args: SelectSubset<T, DutyWatchNightOverrideUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DutyWatchNightOverrides and returns the data updated in the database.
+     * @param {DutyWatchNightOverrideUpdateManyAndReturnArgs} args - Arguments to update many DutyWatchNightOverrides.
+     * @example
+     * // Update many DutyWatchNightOverrides
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DutyWatchNightOverrides and only return the `id`
+     * const dutyWatchNightOverrideWithIdOnly = await prisma.dutyWatchNightOverride.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DutyWatchNightOverrideUpdateManyAndReturnArgs>(args: SelectSubset<T, DutyWatchNightOverrideUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DutyWatchNightOverride.
+     * @param {DutyWatchNightOverrideUpsertArgs} args - Arguments to update or create a DutyWatchNightOverride.
+     * @example
+     * // Update or create a DutyWatchNightOverride
+     * const dutyWatchNightOverride = await prisma.dutyWatchNightOverride.upsert({
+     *   create: {
+     *     // ... data to create a DutyWatchNightOverride
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DutyWatchNightOverride we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DutyWatchNightOverrideUpsertArgs>(args: SelectSubset<T, DutyWatchNightOverrideUpsertArgs<ExtArgs>>): Prisma__DutyWatchNightOverrideClient<$Result.GetResult<Prisma.$DutyWatchNightOverridePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DutyWatchNightOverrides.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideCountArgs} args - Arguments to filter DutyWatchNightOverrides to count.
+     * @example
+     * // Count the number of DutyWatchNightOverrides
+     * const count = await prisma.dutyWatchNightOverride.count({
+     *   where: {
+     *     // ... the filter for the DutyWatchNightOverrides we want to count
+     *   }
+     * })
+    **/
+    count<T extends DutyWatchNightOverrideCountArgs>(
+      args?: Subset<T, DutyWatchNightOverrideCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DutyWatchNightOverrideCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DutyWatchNightOverride.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DutyWatchNightOverrideAggregateArgs>(args: Subset<T, DutyWatchNightOverrideAggregateArgs>): Prisma.PrismaPromise<GetDutyWatchNightOverrideAggregateType<T>>
+
+    /**
+     * Group by DutyWatchNightOverride.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DutyWatchNightOverrideGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DutyWatchNightOverrideGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DutyWatchNightOverrideGroupByArgs['orderBy'] }
+        : { orderBy?: DutyWatchNightOverrideGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DutyWatchNightOverrideGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDutyWatchNightOverrideGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DutyWatchNightOverride model
+   */
+  readonly fields: DutyWatchNightOverrideFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DutyWatchNightOverride.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DutyWatchNightOverrideClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    schedule<T extends WeeklyScheduleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WeeklyScheduleDefaultArgs<ExtArgs>>): Prisma__WeeklyScheduleClient<$Result.GetResult<Prisma.$WeeklySchedulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    dutyPosition<T extends DutyPositionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DutyPositionDefaultArgs<ExtArgs>>): Prisma__DutyPositionClient<$Result.GetResult<Prisma.$DutyPositionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    member<T extends DutyWatchNightOverride$memberArgs<ExtArgs> = {}>(args?: Subset<T, DutyWatchNightOverride$memberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    baseMember<T extends DutyWatchNightOverride$baseMemberArgs<ExtArgs> = {}>(args?: Subset<T, DutyWatchNightOverride$baseMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DutyWatchNightOverride model
+   */
+  interface DutyWatchNightOverrideFieldRefs {
+    readonly id: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly scheduleId: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly nightDate: FieldRef<"DutyWatchNightOverride", 'DateTime'>
+    readonly dutyPositionId: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly overrideType: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly memberId: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly baseMemberId: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly notes: FieldRef<"DutyWatchNightOverride", 'String'>
+    readonly createdAt: FieldRef<"DutyWatchNightOverride", 'DateTime'>
+    readonly updatedAt: FieldRef<"DutyWatchNightOverride", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DutyWatchNightOverride findUnique
+   */
+  export type DutyWatchNightOverrideFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter, which DutyWatchNightOverride to fetch.
+     */
+    where: DutyWatchNightOverrideWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride findUniqueOrThrow
+   */
+  export type DutyWatchNightOverrideFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter, which DutyWatchNightOverride to fetch.
+     */
+    where: DutyWatchNightOverrideWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride findFirst
+   */
+  export type DutyWatchNightOverrideFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter, which DutyWatchNightOverride to fetch.
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DutyWatchNightOverrides to fetch.
+     */
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DutyWatchNightOverrides.
+     */
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DutyWatchNightOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DutyWatchNightOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DutyWatchNightOverrides.
+     */
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride findFirstOrThrow
+   */
+  export type DutyWatchNightOverrideFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter, which DutyWatchNightOverride to fetch.
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DutyWatchNightOverrides to fetch.
+     */
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DutyWatchNightOverrides.
+     */
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DutyWatchNightOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DutyWatchNightOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DutyWatchNightOverrides.
+     */
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride findMany
+   */
+  export type DutyWatchNightOverrideFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter, which DutyWatchNightOverrides to fetch.
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DutyWatchNightOverrides to fetch.
+     */
+    orderBy?: DutyWatchNightOverrideOrderByWithRelationInput | DutyWatchNightOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DutyWatchNightOverrides.
+     */
+    cursor?: DutyWatchNightOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DutyWatchNightOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DutyWatchNightOverrides.
+     */
+    skip?: number
+    distinct?: DutyWatchNightOverrideScalarFieldEnum | DutyWatchNightOverrideScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride create
+   */
+  export type DutyWatchNightOverrideCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DutyWatchNightOverride.
+     */
+    data: XOR<DutyWatchNightOverrideCreateInput, DutyWatchNightOverrideUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride createMany
+   */
+  export type DutyWatchNightOverrideCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DutyWatchNightOverrides.
+     */
+    data: DutyWatchNightOverrideCreateManyInput | DutyWatchNightOverrideCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DutyWatchNightOverride createManyAndReturn
+   */
+  export type DutyWatchNightOverrideCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * The data used to create many DutyWatchNightOverrides.
+     */
+    data: DutyWatchNightOverrideCreateManyInput | DutyWatchNightOverrideCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DutyWatchNightOverride update
+   */
+  export type DutyWatchNightOverrideUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DutyWatchNightOverride.
+     */
+    data: XOR<DutyWatchNightOverrideUpdateInput, DutyWatchNightOverrideUncheckedUpdateInput>
+    /**
+     * Choose, which DutyWatchNightOverride to update.
+     */
+    where: DutyWatchNightOverrideWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride updateMany
+   */
+  export type DutyWatchNightOverrideUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DutyWatchNightOverrides.
+     */
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyInput>
+    /**
+     * Filter which DutyWatchNightOverrides to update
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * Limit how many DutyWatchNightOverrides to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DutyWatchNightOverride updateManyAndReturn
+   */
+  export type DutyWatchNightOverrideUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * The data used to update DutyWatchNightOverrides.
+     */
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyInput>
+    /**
+     * Filter which DutyWatchNightOverrides to update
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * Limit how many DutyWatchNightOverrides to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DutyWatchNightOverride upsert
+   */
+  export type DutyWatchNightOverrideUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DutyWatchNightOverride to update in case it exists.
+     */
+    where: DutyWatchNightOverrideWhereUniqueInput
+    /**
+     * In case the DutyWatchNightOverride found by the `where` argument doesn't exist, create a new DutyWatchNightOverride with this data.
+     */
+    create: XOR<DutyWatchNightOverrideCreateInput, DutyWatchNightOverrideUncheckedCreateInput>
+    /**
+     * In case the DutyWatchNightOverride was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DutyWatchNightOverrideUpdateInput, DutyWatchNightOverrideUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride delete
+   */
+  export type DutyWatchNightOverrideDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
+    /**
+     * Filter which DutyWatchNightOverride to delete.
+     */
+    where: DutyWatchNightOverrideWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * DutyWatchNightOverride deleteMany
+   */
+  export type DutyWatchNightOverrideDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DutyWatchNightOverrides to delete
+     */
+    where?: DutyWatchNightOverrideWhereInput
+    /**
+     * Limit how many DutyWatchNightOverrides to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DutyWatchNightOverride.member
+   */
+  export type DutyWatchNightOverride$memberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Member
+     */
+    select?: MemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Member
+     */
+    omit?: MemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
+  }
+
+  /**
+   * DutyWatchNightOverride.baseMember
+   */
+  export type DutyWatchNightOverride$baseMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Member
+     */
+    select?: MemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Member
+     */
+    omit?: MemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
+  }
+
+  /**
+   * DutyWatchNightOverride without action
+   */
+  export type DutyWatchNightOverrideDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DutyWatchNightOverride
+     */
+    select?: DutyWatchNightOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DutyWatchNightOverride
+     */
+    omit?: DutyWatchNightOverrideOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DutyWatchNightOverrideInclude<ExtArgs> | null
   }
 
 
@@ -62943,6 +64389,7 @@ export namespace Prisma {
     name: 'name',
     description: 'description',
     canReceiveLockup: 'canReceiveLockup',
+    isAutomatic: 'isAutomatic',
     displayOrder: 'displayOrder',
     tagId: 'tagId',
     createdAt: 'createdAt',
@@ -63032,6 +64479,22 @@ export namespace Prisma {
   };
 
   export type ScheduleAssignmentScalarFieldEnum = (typeof ScheduleAssignmentScalarFieldEnum)[keyof typeof ScheduleAssignmentScalarFieldEnum]
+
+
+  export const DutyWatchNightOverrideScalarFieldEnum: {
+    id: 'id',
+    scheduleId: 'scheduleId',
+    nightDate: 'nightDate',
+    dutyPositionId: 'dutyPositionId',
+    overrideType: 'overrideType',
+    memberId: 'memberId',
+    baseMemberId: 'baseMemberId',
+    notes: 'notes',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type DutyWatchNightOverrideScalarFieldEnum = (typeof DutyWatchNightOverrideScalarFieldEnum)[keyof typeof DutyWatchNightOverrideScalarFieldEnum]
 
 
   export const LockupStatusScalarFieldEnum: {
@@ -64072,6 +65535,8 @@ export namespace Prisma {
     memberStatusRef?: XOR<MemberStatusNullableScalarRelationFilter, MemberStatusWhereInput> | null
     qualifications?: MemberQualificationListRelationFilter
     scheduleAssignments?: ScheduleAssignmentListRelationFilter
+    dwOverridesAsMember?: DutyWatchNightOverrideListRelationFilter
+    dwOverridesAsBase?: DutyWatchNightOverrideListRelationFilter
     lockupHolding?: LockupStatusListRelationFilter
     lockupSecured?: LockupStatusListRelationFilter
     lockupTransfersFrom?: LockupTransferListRelationFilter
@@ -64122,6 +65587,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusOrderByWithRelationInput
     qualifications?: MemberQualificationOrderByRelationAggregateInput
     scheduleAssignments?: ScheduleAssignmentOrderByRelationAggregateInput
+    dwOverridesAsMember?: DutyWatchNightOverrideOrderByRelationAggregateInput
+    dwOverridesAsBase?: DutyWatchNightOverrideOrderByRelationAggregateInput
     lockupHolding?: LockupStatusOrderByRelationAggregateInput
     lockupSecured?: LockupStatusOrderByRelationAggregateInput
     lockupTransfersFrom?: LockupTransferOrderByRelationAggregateInput
@@ -64175,6 +65642,8 @@ export namespace Prisma {
     memberStatusRef?: XOR<MemberStatusNullableScalarRelationFilter, MemberStatusWhereInput> | null
     qualifications?: MemberQualificationListRelationFilter
     scheduleAssignments?: ScheduleAssignmentListRelationFilter
+    dwOverridesAsMember?: DutyWatchNightOverrideListRelationFilter
+    dwOverridesAsBase?: DutyWatchNightOverrideListRelationFilter
     lockupHolding?: LockupStatusListRelationFilter
     lockupSecured?: LockupStatusListRelationFilter
     lockupTransfersFrom?: LockupTransferListRelationFilter
@@ -66060,6 +67529,7 @@ export namespace Prisma {
     name?: StringFilter<"QualificationType"> | string
     description?: StringNullableFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
+    isAutomatic?: BoolFilter<"QualificationType"> | boolean
     displayOrder?: IntFilter<"QualificationType"> | number
     tagId?: UuidNullableFilter<"QualificationType"> | string | null
     createdAt?: DateTimeFilter<"QualificationType"> | Date | string
@@ -66074,6 +67544,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     canReceiveLockup?: SortOrder
+    isAutomatic?: SortOrder
     displayOrder?: SortOrder
     tagId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -66091,6 +67562,7 @@ export namespace Prisma {
     name?: StringFilter<"QualificationType"> | string
     description?: StringNullableFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
+    isAutomatic?: BoolFilter<"QualificationType"> | boolean
     displayOrder?: IntFilter<"QualificationType"> | number
     tagId?: UuidNullableFilter<"QualificationType"> | string | null
     createdAt?: DateTimeFilter<"QualificationType"> | Date | string
@@ -66105,6 +67577,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrderInput | SortOrder
     canReceiveLockup?: SortOrder
+    isAutomatic?: SortOrder
     displayOrder?: SortOrder
     tagId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -66125,6 +67598,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"QualificationType"> | string
     description?: StringNullableWithAggregatesFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolWithAggregatesFilter<"QualificationType"> | boolean
+    isAutomatic?: BoolWithAggregatesFilter<"QualificationType"> | boolean
     displayOrder?: IntWithAggregatesFilter<"QualificationType"> | number
     tagId?: UuidNullableWithAggregatesFilter<"QualificationType"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"QualificationType"> | Date | string
@@ -66336,6 +67810,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"DutyPosition"> | Date | string
     dutyRole?: XOR<DutyRoleScalarRelationFilter, DutyRoleWhereInput>
     assignments?: ScheduleAssignmentListRelationFilter
+    nightOverrides?: DutyWatchNightOverrideListRelationFilter
   }
 
   export type DutyPositionOrderByWithRelationInput = {
@@ -66350,6 +67825,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     dutyRole?: DutyRoleOrderByWithRelationInput
     assignments?: ScheduleAssignmentOrderByRelationAggregateInput
+    nightOverrides?: DutyWatchNightOverrideOrderByRelationAggregateInput
   }
 
   export type DutyPositionWhereUniqueInput = Prisma.AtLeast<{
@@ -66368,6 +67844,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"DutyPosition"> | Date | string
     dutyRole?: XOR<DutyRoleScalarRelationFilter, DutyRoleWhereInput>
     assignments?: ScheduleAssignmentListRelationFilter
+    nightOverrides?: DutyWatchNightOverrideListRelationFilter
   }, "id" | "dutyRoleId_code">
 
   export type DutyPositionOrderByWithAggregationInput = {
@@ -66420,6 +67897,7 @@ export namespace Prisma {
     createdByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     publishedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     assignments?: ScheduleAssignmentListRelationFilter
+    nightOverrides?: DutyWatchNightOverrideListRelationFilter
   }
 
   export type WeeklyScheduleOrderByWithRelationInput = {
@@ -66437,6 +67915,7 @@ export namespace Prisma {
     createdByAdmin?: AdminUserOrderByWithRelationInput
     publishedByAdmin?: AdminUserOrderByWithRelationInput
     assignments?: ScheduleAssignmentOrderByRelationAggregateInput
+    nightOverrides?: DutyWatchNightOverrideOrderByRelationAggregateInput
   }
 
   export type WeeklyScheduleWhereUniqueInput = Prisma.AtLeast<{
@@ -66458,6 +67937,7 @@ export namespace Prisma {
     createdByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     publishedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     assignments?: ScheduleAssignmentListRelationFilter
+    nightOverrides?: DutyWatchNightOverrideListRelationFilter
   }, "id" | "dutyRoleId_weekStartDate">
 
   export type WeeklyScheduleOrderByWithAggregationInput = {
@@ -66576,6 +68056,96 @@ export namespace Prisma {
     notes?: StringNullableWithAggregatesFilter<"ScheduleAssignment"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ScheduleAssignment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ScheduleAssignment"> | Date | string
+  }
+
+  export type DutyWatchNightOverrideWhereInput = {
+    AND?: DutyWatchNightOverrideWhereInput | DutyWatchNightOverrideWhereInput[]
+    OR?: DutyWatchNightOverrideWhereInput[]
+    NOT?: DutyWatchNightOverrideWhereInput | DutyWatchNightOverrideWhereInput[]
+    id?: UuidFilter<"DutyWatchNightOverride"> | string
+    scheduleId?: UuidFilter<"DutyWatchNightOverride"> | string
+    nightDate?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    dutyPositionId?: UuidFilter<"DutyWatchNightOverride"> | string
+    overrideType?: StringFilter<"DutyWatchNightOverride"> | string
+    memberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    baseMemberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    notes?: StringNullableFilter<"DutyWatchNightOverride"> | string | null
+    createdAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    updatedAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    schedule?: XOR<WeeklyScheduleScalarRelationFilter, WeeklyScheduleWhereInput>
+    dutyPosition?: XOR<DutyPositionScalarRelationFilter, DutyPositionWhereInput>
+    member?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+    baseMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+  }
+
+  export type DutyWatchNightOverrideOrderByWithRelationInput = {
+    id?: SortOrder
+    scheduleId?: SortOrder
+    nightDate?: SortOrder
+    dutyPositionId?: SortOrder
+    overrideType?: SortOrder
+    memberId?: SortOrderInput | SortOrder
+    baseMemberId?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    schedule?: WeeklyScheduleOrderByWithRelationInput
+    dutyPosition?: DutyPositionOrderByWithRelationInput
+    member?: MemberOrderByWithRelationInput
+    baseMember?: MemberOrderByWithRelationInput
+  }
+
+  export type DutyWatchNightOverrideWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    scheduleId_nightDate_dutyPositionId_baseMemberId?: DutyWatchNightOverrideScheduleIdNightDateDutyPositionIdBaseMemberIdCompoundUniqueInput
+    AND?: DutyWatchNightOverrideWhereInput | DutyWatchNightOverrideWhereInput[]
+    OR?: DutyWatchNightOverrideWhereInput[]
+    NOT?: DutyWatchNightOverrideWhereInput | DutyWatchNightOverrideWhereInput[]
+    scheduleId?: UuidFilter<"DutyWatchNightOverride"> | string
+    nightDate?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    dutyPositionId?: UuidFilter<"DutyWatchNightOverride"> | string
+    overrideType?: StringFilter<"DutyWatchNightOverride"> | string
+    memberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    baseMemberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    notes?: StringNullableFilter<"DutyWatchNightOverride"> | string | null
+    createdAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    updatedAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    schedule?: XOR<WeeklyScheduleScalarRelationFilter, WeeklyScheduleWhereInput>
+    dutyPosition?: XOR<DutyPositionScalarRelationFilter, DutyPositionWhereInput>
+    member?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+    baseMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+  }, "id" | "scheduleId_nightDate_dutyPositionId_baseMemberId">
+
+  export type DutyWatchNightOverrideOrderByWithAggregationInput = {
+    id?: SortOrder
+    scheduleId?: SortOrder
+    nightDate?: SortOrder
+    dutyPositionId?: SortOrder
+    overrideType?: SortOrder
+    memberId?: SortOrderInput | SortOrder
+    baseMemberId?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: DutyWatchNightOverrideCountOrderByAggregateInput
+    _max?: DutyWatchNightOverrideMaxOrderByAggregateInput
+    _min?: DutyWatchNightOverrideMinOrderByAggregateInput
+  }
+
+  export type DutyWatchNightOverrideScalarWhereWithAggregatesInput = {
+    AND?: DutyWatchNightOverrideScalarWhereWithAggregatesInput | DutyWatchNightOverrideScalarWhereWithAggregatesInput[]
+    OR?: DutyWatchNightOverrideScalarWhereWithAggregatesInput[]
+    NOT?: DutyWatchNightOverrideScalarWhereWithAggregatesInput | DutyWatchNightOverrideScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"DutyWatchNightOverride"> | string
+    scheduleId?: UuidWithAggregatesFilter<"DutyWatchNightOverride"> | string
+    nightDate?: DateTimeWithAggregatesFilter<"DutyWatchNightOverride"> | Date | string
+    dutyPositionId?: UuidWithAggregatesFilter<"DutyWatchNightOverride"> | string
+    overrideType?: StringWithAggregatesFilter<"DutyWatchNightOverride"> | string
+    memberId?: UuidNullableWithAggregatesFilter<"DutyWatchNightOverride"> | string | null
+    baseMemberId?: UuidNullableWithAggregatesFilter<"DutyWatchNightOverride"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"DutyWatchNightOverride"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"DutyWatchNightOverride"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DutyWatchNightOverride"> | Date | string
   }
 
   export type LockupStatusWhereInput = {
@@ -68139,6 +69709,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -68184,6 +69756,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -68229,6 +69803,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -68274,6 +69850,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -70358,6 +71936,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -70371,6 +71950,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     tagId?: string | null
     createdAt?: Date | string
@@ -70384,6 +71964,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70397,6 +71978,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70410,6 +71992,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     tagId?: string | null
     createdAt?: Date | string
@@ -70422,6 +72005,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70433,6 +72017,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70657,6 +72242,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     dutyRole: DutyRoleCreateNestedOneWithoutPositionsInput
     assignments?: ScheduleAssignmentCreateNestedManyWithoutDutyPositionInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionUncheckedCreateInput = {
@@ -70670,6 +72256,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutDutyPositionInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionUpdateInput = {
@@ -70683,6 +72270,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dutyRole?: DutyRoleUpdateOneRequiredWithoutPositionsNestedInput
     assignments?: ScheduleAssignmentUpdateManyWithoutDutyPositionNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type DutyPositionUncheckedUpdateInput = {
@@ -70696,6 +72284,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutDutyPositionNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type DutyPositionCreateManyInput = {
@@ -70745,6 +72334,7 @@ export namespace Prisma {
     createdByAdmin?: AdminUserCreateNestedOneWithoutSchedulesCreatedInput
     publishedByAdmin?: AdminUserCreateNestedOneWithoutSchedulesPublishedInput
     assignments?: ScheduleAssignmentCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUncheckedCreateInput = {
@@ -70759,6 +72349,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUpdateInput = {
@@ -70773,6 +72364,7 @@ export namespace Prisma {
     createdByAdmin?: AdminUserUpdateOneWithoutSchedulesCreatedNestedInput
     publishedByAdmin?: AdminUserUpdateOneWithoutSchedulesPublishedNestedInput
     assignments?: ScheduleAssignmentUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateInput = {
@@ -70787,6 +72379,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleCreateManyInput = {
@@ -70908,6 +72501,93 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateInput = {
+    id?: string
+    nightDate: Date | string
+    overrideType: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    schedule: WeeklyScheduleCreateNestedOneWithoutNightOverridesInput
+    dutyPosition: DutyPositionCreateNestedOneWithoutNightOverridesInput
+    member?: MemberCreateNestedOneWithoutDwOverridesAsMemberInput
+    baseMember?: MemberCreateNestedOneWithoutDwOverridesAsBaseInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    schedule?: WeeklyScheduleUpdateOneRequiredWithoutNightOverridesNestedInput
+    dutyPosition?: DutyPositionUpdateOneRequiredWithoutNightOverridesNestedInput
+    member?: MemberUpdateOneWithoutDwOverridesAsMemberNestedInput
+    baseMember?: MemberUpdateOneWithoutDwOverridesAsBaseNestedInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateManyInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72453,6 +74133,12 @@ export namespace Prisma {
     none?: ScheduleAssignmentWhereInput
   }
 
+  export type DutyWatchNightOverrideListRelationFilter = {
+    every?: DutyWatchNightOverrideWhereInput
+    some?: DutyWatchNightOverrideWhereInput
+    none?: DutyWatchNightOverrideWhereInput
+  }
+
   export type LockupStatusListRelationFilter = {
     every?: LockupStatusWhereInput
     some?: LockupStatusWhereInput
@@ -72486,6 +74172,10 @@ export namespace Prisma {
   }
 
   export type ScheduleAssignmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DutyWatchNightOverrideOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -73685,6 +75375,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     canReceiveLockup?: SortOrder
+    isAutomatic?: SortOrder
     displayOrder?: SortOrder
     tagId?: SortOrder
     createdAt?: SortOrder
@@ -73701,6 +75392,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     canReceiveLockup?: SortOrder
+    isAutomatic?: SortOrder
     displayOrder?: SortOrder
     tagId?: SortOrder
     createdAt?: SortOrder
@@ -73713,6 +75405,7 @@ export namespace Prisma {
     name?: SortOrder
     description?: SortOrder
     canReceiveLockup?: SortOrder
+    isAutomatic?: SortOrder
     displayOrder?: SortOrder
     tagId?: SortOrder
     createdAt?: SortOrder
@@ -73990,6 +75683,57 @@ export namespace Prisma {
     status?: SortOrder
     confirmedAt?: SortOrder
     releasedAt?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DutyPositionScalarRelationFilter = {
+    is?: DutyPositionWhereInput
+    isNot?: DutyPositionWhereInput
+  }
+
+  export type DutyWatchNightOverrideScheduleIdNightDateDutyPositionIdBaseMemberIdCompoundUniqueInput = {
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    baseMemberId: string
+  }
+
+  export type DutyWatchNightOverrideCountOrderByAggregateInput = {
+    id?: SortOrder
+    scheduleId?: SortOrder
+    nightDate?: SortOrder
+    dutyPositionId?: SortOrder
+    overrideType?: SortOrder
+    memberId?: SortOrder
+    baseMemberId?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DutyWatchNightOverrideMaxOrderByAggregateInput = {
+    id?: SortOrder
+    scheduleId?: SortOrder
+    nightDate?: SortOrder
+    dutyPositionId?: SortOrder
+    overrideType?: SortOrder
+    memberId?: SortOrder
+    baseMemberId?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DutyWatchNightOverrideMinOrderByAggregateInput = {
+    id?: SortOrder
+    scheduleId?: SortOrder
+    nightDate?: SortOrder
+    dutyPositionId?: SortOrder
+    overrideType?: SortOrder
+    memberId?: SortOrder
+    baseMemberId?: SortOrder
     notes?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -75596,6 +77340,20 @@ export namespace Prisma {
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
   }
 
+  export type DutyWatchNightOverrideCreateNestedManyWithoutMemberInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput> | DutyWatchNightOverrideCreateWithoutMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyMemberInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+  }
+
+  export type DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput> | DutyWatchNightOverrideCreateWithoutBaseMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyBaseMemberInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+  }
+
   export type LockupStatusCreateNestedManyWithoutCurrentHolderInput = {
     create?: XOR<LockupStatusCreateWithoutCurrentHolderInput, LockupStatusUncheckedCreateWithoutCurrentHolderInput> | LockupStatusCreateWithoutCurrentHolderInput[] | LockupStatusUncheckedCreateWithoutCurrentHolderInput[]
     connectOrCreate?: LockupStatusCreateOrConnectWithoutCurrentHolderInput | LockupStatusCreateOrConnectWithoutCurrentHolderInput[]
@@ -75699,6 +77457,20 @@ export namespace Prisma {
     connectOrCreate?: ScheduleAssignmentCreateOrConnectWithoutMemberInput | ScheduleAssignmentCreateOrConnectWithoutMemberInput[]
     createMany?: ScheduleAssignmentCreateManyMemberInputEnvelope
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput> | DutyWatchNightOverrideCreateWithoutMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyMemberInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput> | DutyWatchNightOverrideCreateWithoutBaseMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyBaseMemberInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
   }
 
   export type LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput = {
@@ -75920,6 +77692,34 @@ export namespace Prisma {
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
   }
 
+  export type DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput> | DutyWatchNightOverrideCreateWithoutMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutMemberInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutMemberInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyMemberInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutMemberInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutMemberInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+  }
+
+  export type DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput> | DutyWatchNightOverrideCreateWithoutBaseMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutBaseMemberInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutBaseMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyBaseMemberInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutBaseMemberInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutBaseMemberInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutBaseMemberInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutBaseMemberInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+  }
+
   export type LockupStatusUpdateManyWithoutCurrentHolderNestedInput = {
     create?: XOR<LockupStatusCreateWithoutCurrentHolderInput, LockupStatusUncheckedCreateWithoutCurrentHolderInput> | LockupStatusCreateWithoutCurrentHolderInput[] | LockupStatusUncheckedCreateWithoutCurrentHolderInput[]
     connectOrCreate?: LockupStatusCreateOrConnectWithoutCurrentHolderInput | LockupStatusCreateOrConnectWithoutCurrentHolderInput[]
@@ -76128,6 +77928,34 @@ export namespace Prisma {
     update?: ScheduleAssignmentUpdateWithWhereUniqueWithoutMemberInput | ScheduleAssignmentUpdateWithWhereUniqueWithoutMemberInput[]
     updateMany?: ScheduleAssignmentUpdateManyWithWhereWithoutMemberInput | ScheduleAssignmentUpdateManyWithWhereWithoutMemberInput[]
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput> | DutyWatchNightOverrideCreateWithoutMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutMemberInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutMemberInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyMemberInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutMemberInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutMemberInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput> | DutyWatchNightOverrideCreateWithoutBaseMemberInput[] | DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput | DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutBaseMemberInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutBaseMemberInput[]
+    createMany?: DutyWatchNightOverrideCreateManyBaseMemberInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutBaseMemberInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutBaseMemberInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutBaseMemberInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutBaseMemberInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
   }
 
   export type LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput = {
@@ -77189,11 +79017,25 @@ export namespace Prisma {
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
   }
 
+  export type DutyWatchNightOverrideCreateNestedManyWithoutDutyPositionInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput> | DutyWatchNightOverrideCreateWithoutDutyPositionInput[] | DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput | DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput[]
+    createMany?: DutyWatchNightOverrideCreateManyDutyPositionInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+  }
+
   export type ScheduleAssignmentUncheckedCreateNestedManyWithoutDutyPositionInput = {
     create?: XOR<ScheduleAssignmentCreateWithoutDutyPositionInput, ScheduleAssignmentUncheckedCreateWithoutDutyPositionInput> | ScheduleAssignmentCreateWithoutDutyPositionInput[] | ScheduleAssignmentUncheckedCreateWithoutDutyPositionInput[]
     connectOrCreate?: ScheduleAssignmentCreateOrConnectWithoutDutyPositionInput | ScheduleAssignmentCreateOrConnectWithoutDutyPositionInput[]
     createMany?: ScheduleAssignmentCreateManyDutyPositionInputEnvelope
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateNestedManyWithoutDutyPositionInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput> | DutyWatchNightOverrideCreateWithoutDutyPositionInput[] | DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput | DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput[]
+    createMany?: DutyWatchNightOverrideCreateManyDutyPositionInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
   }
 
   export type DutyRoleUpdateOneRequiredWithoutPositionsNestedInput = {
@@ -77218,6 +79060,20 @@ export namespace Prisma {
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
   }
 
+  export type DutyWatchNightOverrideUpdateManyWithoutDutyPositionNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput> | DutyWatchNightOverrideCreateWithoutDutyPositionInput[] | DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput | DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutDutyPositionInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutDutyPositionInput[]
+    createMany?: DutyWatchNightOverrideCreateManyDutyPositionInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutDutyPositionInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutDutyPositionInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutDutyPositionInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutDutyPositionInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+  }
+
   export type ScheduleAssignmentUncheckedUpdateManyWithoutDutyPositionNestedInput = {
     create?: XOR<ScheduleAssignmentCreateWithoutDutyPositionInput, ScheduleAssignmentUncheckedCreateWithoutDutyPositionInput> | ScheduleAssignmentCreateWithoutDutyPositionInput[] | ScheduleAssignmentUncheckedCreateWithoutDutyPositionInput[]
     connectOrCreate?: ScheduleAssignmentCreateOrConnectWithoutDutyPositionInput | ScheduleAssignmentCreateOrConnectWithoutDutyPositionInput[]
@@ -77230,6 +79086,20 @@ export namespace Prisma {
     update?: ScheduleAssignmentUpdateWithWhereUniqueWithoutDutyPositionInput | ScheduleAssignmentUpdateWithWhereUniqueWithoutDutyPositionInput[]
     updateMany?: ScheduleAssignmentUpdateManyWithWhereWithoutDutyPositionInput | ScheduleAssignmentUpdateManyWithWhereWithoutDutyPositionInput[]
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput> | DutyWatchNightOverrideCreateWithoutDutyPositionInput[] | DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput | DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutDutyPositionInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutDutyPositionInput[]
+    createMany?: DutyWatchNightOverrideCreateManyDutyPositionInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutDutyPositionInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutDutyPositionInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutDutyPositionInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutDutyPositionInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
   }
 
   export type DutyRoleCreateNestedOneWithoutSchedulesInput = {
@@ -77257,11 +79127,25 @@ export namespace Prisma {
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
   }
 
+  export type DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput> | DutyWatchNightOverrideCreateWithoutScheduleInput[] | DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput | DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput[]
+    createMany?: DutyWatchNightOverrideCreateManyScheduleInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+  }
+
   export type ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput = {
     create?: XOR<ScheduleAssignmentCreateWithoutScheduleInput, ScheduleAssignmentUncheckedCreateWithoutScheduleInput> | ScheduleAssignmentCreateWithoutScheduleInput[] | ScheduleAssignmentUncheckedCreateWithoutScheduleInput[]
     connectOrCreate?: ScheduleAssignmentCreateOrConnectWithoutScheduleInput | ScheduleAssignmentCreateOrConnectWithoutScheduleInput[]
     createMany?: ScheduleAssignmentCreateManyScheduleInputEnvelope
     connect?: ScheduleAssignmentWhereUniqueInput | ScheduleAssignmentWhereUniqueInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput> | DutyWatchNightOverrideCreateWithoutScheduleInput[] | DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput | DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput[]
+    createMany?: DutyWatchNightOverrideCreateManyScheduleInputEnvelope
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
   }
 
   export type DutyRoleUpdateOneRequiredWithoutSchedulesNestedInput = {
@@ -77306,6 +79190,20 @@ export namespace Prisma {
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
   }
 
+  export type DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput> | DutyWatchNightOverrideCreateWithoutScheduleInput[] | DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput | DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutScheduleInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutScheduleInput[]
+    createMany?: DutyWatchNightOverrideCreateManyScheduleInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutScheduleInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutScheduleInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutScheduleInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutScheduleInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+  }
+
   export type ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput = {
     create?: XOR<ScheduleAssignmentCreateWithoutScheduleInput, ScheduleAssignmentUncheckedCreateWithoutScheduleInput> | ScheduleAssignmentCreateWithoutScheduleInput[] | ScheduleAssignmentUncheckedCreateWithoutScheduleInput[]
     connectOrCreate?: ScheduleAssignmentCreateOrConnectWithoutScheduleInput | ScheduleAssignmentCreateOrConnectWithoutScheduleInput[]
@@ -77318,6 +79216,20 @@ export namespace Prisma {
     update?: ScheduleAssignmentUpdateWithWhereUniqueWithoutScheduleInput | ScheduleAssignmentUpdateWithWhereUniqueWithoutScheduleInput[]
     updateMany?: ScheduleAssignmentUpdateManyWithWhereWithoutScheduleInput | ScheduleAssignmentUpdateManyWithWhereWithoutScheduleInput[]
     deleteMany?: ScheduleAssignmentScalarWhereInput | ScheduleAssignmentScalarWhereInput[]
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput = {
+    create?: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput> | DutyWatchNightOverrideCreateWithoutScheduleInput[] | DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput[]
+    connectOrCreate?: DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput | DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput[]
+    upsert?: DutyWatchNightOverrideUpsertWithWhereUniqueWithoutScheduleInput | DutyWatchNightOverrideUpsertWithWhereUniqueWithoutScheduleInput[]
+    createMany?: DutyWatchNightOverrideCreateManyScheduleInputEnvelope
+    set?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    disconnect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    delete?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    connect?: DutyWatchNightOverrideWhereUniqueInput | DutyWatchNightOverrideWhereUniqueInput[]
+    update?: DutyWatchNightOverrideUpdateWithWhereUniqueWithoutScheduleInput | DutyWatchNightOverrideUpdateWithWhereUniqueWithoutScheduleInput[]
+    updateMany?: DutyWatchNightOverrideUpdateManyWithWhereWithoutScheduleInput | DutyWatchNightOverrideUpdateManyWithWhereWithoutScheduleInput[]
+    deleteMany?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
   }
 
   export type WeeklyScheduleCreateNestedOneWithoutAssignmentsInput = {
@@ -77362,6 +79274,66 @@ export namespace Prisma {
     upsert?: MemberUpsertWithoutScheduleAssignmentsInput
     connect?: MemberWhereUniqueInput
     update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutScheduleAssignmentsInput, MemberUpdateWithoutScheduleAssignmentsInput>, MemberUncheckedUpdateWithoutScheduleAssignmentsInput>
+  }
+
+  export type WeeklyScheduleCreateNestedOneWithoutNightOverridesInput = {
+    create?: XOR<WeeklyScheduleCreateWithoutNightOverridesInput, WeeklyScheduleUncheckedCreateWithoutNightOverridesInput>
+    connectOrCreate?: WeeklyScheduleCreateOrConnectWithoutNightOverridesInput
+    connect?: WeeklyScheduleWhereUniqueInput
+  }
+
+  export type DutyPositionCreateNestedOneWithoutNightOverridesInput = {
+    create?: XOR<DutyPositionCreateWithoutNightOverridesInput, DutyPositionUncheckedCreateWithoutNightOverridesInput>
+    connectOrCreate?: DutyPositionCreateOrConnectWithoutNightOverridesInput
+    connect?: DutyPositionWhereUniqueInput
+  }
+
+  export type MemberCreateNestedOneWithoutDwOverridesAsMemberInput = {
+    create?: XOR<MemberCreateWithoutDwOverridesAsMemberInput, MemberUncheckedCreateWithoutDwOverridesAsMemberInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutDwOverridesAsMemberInput
+    connect?: MemberWhereUniqueInput
+  }
+
+  export type MemberCreateNestedOneWithoutDwOverridesAsBaseInput = {
+    create?: XOR<MemberCreateWithoutDwOverridesAsBaseInput, MemberUncheckedCreateWithoutDwOverridesAsBaseInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutDwOverridesAsBaseInput
+    connect?: MemberWhereUniqueInput
+  }
+
+  export type WeeklyScheduleUpdateOneRequiredWithoutNightOverridesNestedInput = {
+    create?: XOR<WeeklyScheduleCreateWithoutNightOverridesInput, WeeklyScheduleUncheckedCreateWithoutNightOverridesInput>
+    connectOrCreate?: WeeklyScheduleCreateOrConnectWithoutNightOverridesInput
+    upsert?: WeeklyScheduleUpsertWithoutNightOverridesInput
+    connect?: WeeklyScheduleWhereUniqueInput
+    update?: XOR<XOR<WeeklyScheduleUpdateToOneWithWhereWithoutNightOverridesInput, WeeklyScheduleUpdateWithoutNightOverridesInput>, WeeklyScheduleUncheckedUpdateWithoutNightOverridesInput>
+  }
+
+  export type DutyPositionUpdateOneRequiredWithoutNightOverridesNestedInput = {
+    create?: XOR<DutyPositionCreateWithoutNightOverridesInput, DutyPositionUncheckedCreateWithoutNightOverridesInput>
+    connectOrCreate?: DutyPositionCreateOrConnectWithoutNightOverridesInput
+    upsert?: DutyPositionUpsertWithoutNightOverridesInput
+    connect?: DutyPositionWhereUniqueInput
+    update?: XOR<XOR<DutyPositionUpdateToOneWithWhereWithoutNightOverridesInput, DutyPositionUpdateWithoutNightOverridesInput>, DutyPositionUncheckedUpdateWithoutNightOverridesInput>
+  }
+
+  export type MemberUpdateOneWithoutDwOverridesAsMemberNestedInput = {
+    create?: XOR<MemberCreateWithoutDwOverridesAsMemberInput, MemberUncheckedCreateWithoutDwOverridesAsMemberInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutDwOverridesAsMemberInput
+    upsert?: MemberUpsertWithoutDwOverridesAsMemberInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutDwOverridesAsMemberInput, MemberUpdateWithoutDwOverridesAsMemberInput>, MemberUncheckedUpdateWithoutDwOverridesAsMemberInput>
+  }
+
+  export type MemberUpdateOneWithoutDwOverridesAsBaseNestedInput = {
+    create?: XOR<MemberCreateWithoutDwOverridesAsBaseInput, MemberUncheckedCreateWithoutDwOverridesAsBaseInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutDwOverridesAsBaseInput
+    upsert?: MemberUpsertWithoutDwOverridesAsBaseInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutDwOverridesAsBaseInput, MemberUpdateWithoutDwOverridesAsBaseInput>, MemberUncheckedUpdateWithoutDwOverridesAsBaseInput>
   }
 
   export type MemberCreateNestedOneWithoutLockupHoldingInput = {
@@ -78713,6 +80685,7 @@ export namespace Prisma {
     dutyRole: DutyRoleCreateNestedOneWithoutSchedulesInput
     publishedByAdmin?: AdminUserCreateNestedOneWithoutSchedulesPublishedInput
     assignments?: ScheduleAssignmentCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUncheckedCreateWithoutCreatedByAdminInput = {
@@ -78726,6 +80699,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleCreateOrConnectWithoutCreatedByAdminInput = {
@@ -78749,6 +80723,7 @@ export namespace Prisma {
     dutyRole: DutyRoleCreateNestedOneWithoutSchedulesInput
     createdByAdmin?: AdminUserCreateNestedOneWithoutSchedulesCreatedInput
     assignments?: ScheduleAssignmentCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUncheckedCreateWithoutPublishedByAdminInput = {
@@ -78762,6 +80737,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleCreateOrConnectWithoutPublishedByAdminInput = {
@@ -79623,6 +81599,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -79667,6 +81645,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -80076,6 +82056,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -80120,6 +82102,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -80296,6 +82280,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -80340,6 +82326,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -80384,6 +82372,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -80428,6 +82418,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -81372,6 +83364,74 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DutyWatchNightOverrideCreateWithoutMemberInput = {
+    id?: string
+    nightDate: Date | string
+    overrideType: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    schedule: WeeklyScheduleCreateNestedOneWithoutNightOverridesInput
+    dutyPosition: DutyPositionCreateNestedOneWithoutNightOverridesInput
+    baseMember?: MemberCreateNestedOneWithoutDwOverridesAsBaseInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateWithoutMemberInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateOrConnectWithoutMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    create: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput>
+  }
+
+  export type DutyWatchNightOverrideCreateManyMemberInputEnvelope = {
+    data: DutyWatchNightOverrideCreateManyMemberInput | DutyWatchNightOverrideCreateManyMemberInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DutyWatchNightOverrideCreateWithoutBaseMemberInput = {
+    id?: string
+    nightDate: Date | string
+    overrideType: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    schedule: WeeklyScheduleCreateNestedOneWithoutNightOverridesInput
+    dutyPosition: DutyPositionCreateNestedOneWithoutNightOverridesInput
+    member?: MemberCreateNestedOneWithoutDwOverridesAsMemberInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateOrConnectWithoutBaseMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    create: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput>
+  }
+
+  export type DutyWatchNightOverrideCreateManyBaseMemberInputEnvelope = {
+    data: DutyWatchNightOverrideCreateManyBaseMemberInput | DutyWatchNightOverrideCreateManyBaseMemberInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LockupStatusCreateWithoutCurrentHolderInput = {
     id?: string
     date: Date | string
@@ -81953,6 +84013,54 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ScheduleAssignment"> | Date | string
   }
 
+  export type DutyWatchNightOverrideUpsertWithWhereUniqueWithoutMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    update: XOR<DutyWatchNightOverrideUpdateWithoutMemberInput, DutyWatchNightOverrideUncheckedUpdateWithoutMemberInput>
+    create: XOR<DutyWatchNightOverrideCreateWithoutMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutMemberInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateWithWhereUniqueWithoutMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    data: XOR<DutyWatchNightOverrideUpdateWithoutMemberInput, DutyWatchNightOverrideUncheckedUpdateWithoutMemberInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateManyWithWhereWithoutMemberInput = {
+    where: DutyWatchNightOverrideScalarWhereInput
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberInput>
+  }
+
+  export type DutyWatchNightOverrideScalarWhereInput = {
+    AND?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+    OR?: DutyWatchNightOverrideScalarWhereInput[]
+    NOT?: DutyWatchNightOverrideScalarWhereInput | DutyWatchNightOverrideScalarWhereInput[]
+    id?: UuidFilter<"DutyWatchNightOverride"> | string
+    scheduleId?: UuidFilter<"DutyWatchNightOverride"> | string
+    nightDate?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    dutyPositionId?: UuidFilter<"DutyWatchNightOverride"> | string
+    overrideType?: StringFilter<"DutyWatchNightOverride"> | string
+    memberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    baseMemberId?: UuidNullableFilter<"DutyWatchNightOverride"> | string | null
+    notes?: StringNullableFilter<"DutyWatchNightOverride"> | string | null
+    createdAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+    updatedAt?: DateTimeFilter<"DutyWatchNightOverride"> | Date | string
+  }
+
+  export type DutyWatchNightOverrideUpsertWithWhereUniqueWithoutBaseMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    update: XOR<DutyWatchNightOverrideUpdateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedUpdateWithoutBaseMemberInput>
+    create: XOR<DutyWatchNightOverrideCreateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedCreateWithoutBaseMemberInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateWithWhereUniqueWithoutBaseMemberInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    data: XOR<DutyWatchNightOverrideUpdateWithoutBaseMemberInput, DutyWatchNightOverrideUncheckedUpdateWithoutBaseMemberInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateManyWithWhereWithoutBaseMemberInput = {
+    where: DutyWatchNightOverrideScalarWhereInput
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberInput>
+  }
+
   export type LockupStatusUpsertWithWhereUniqueWithoutCurrentHolderInput = {
     where: LockupStatusWhereUniqueInput
     update: XOR<LockupStatusUpdateWithoutCurrentHolderInput, LockupStatusUncheckedUpdateWithoutCurrentHolderInput>
@@ -82155,6 +84263,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -82167,6 +84276,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -82224,6 +84334,7 @@ export namespace Prisma {
     name?: StringFilter<"QualificationType"> | string
     description?: StringNullableFilter<"QualificationType"> | string | null
     canReceiveLockup?: BoolFilter<"QualificationType"> | boolean
+    isAutomatic?: BoolFilter<"QualificationType"> | boolean
     displayOrder?: IntFilter<"QualificationType"> | number
     tagId?: UuidNullableFilter<"QualificationType"> | string | null
     createdAt?: DateTimeFilter<"QualificationType"> | Date | string
@@ -82265,6 +84376,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -82309,6 +84422,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -82400,6 +84515,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -82444,6 +84561,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -82769,6 +84888,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -82813,6 +84934,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -83053,6 +85176,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -83097,6 +85222,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -83290,6 +85417,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -83334,6 +85463,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -83431,6 +85562,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -83475,6 +85608,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -83659,6 +85794,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -83703,6 +85840,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -83752,6 +85891,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -83796,6 +85937,8 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -83923,6 +86066,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -83967,6 +86112,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -84022,6 +86169,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -84066,6 +86215,8 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -84183,6 +86334,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -84227,6 +86380,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -84297,6 +86452,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -84341,6 +86498,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -84546,6 +86705,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -84590,6 +86751,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -85191,6 +87354,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -85235,6 +87400,8 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -85255,6 +87422,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -85267,6 +87435,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     tagId?: string | null
     createdAt?: Date | string
@@ -85458,6 +87627,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -85502,6 +87673,8 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -85528,6 +87701,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85540,6 +87714,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     tagId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -85702,6 +87877,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentCreateNestedManyWithoutDutyPositionInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionUncheckedCreateWithoutDutyRoleInput = {
@@ -85714,6 +87890,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutDutyPositionInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionCreateOrConnectWithoutDutyRoleInput = {
@@ -85737,6 +87914,7 @@ export namespace Prisma {
     createdByAdmin?: AdminUserCreateNestedOneWithoutSchedulesCreatedInput
     publishedByAdmin?: AdminUserCreateNestedOneWithoutSchedulesPublishedInput
     assignments?: ScheduleAssignmentCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUncheckedCreateWithoutDutyRoleInput = {
@@ -85750,6 +87928,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleCreateOrConnectWithoutDutyRoleInput = {
@@ -85876,6 +88055,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DutyWatchNightOverrideCreateWithoutDutyPositionInput = {
+    id?: string
+    nightDate: Date | string
+    overrideType: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    schedule: WeeklyScheduleCreateNestedOneWithoutNightOverridesInput
+    member?: MemberCreateNestedOneWithoutDwOverridesAsMemberInput
+    baseMember?: MemberCreateNestedOneWithoutDwOverridesAsBaseInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateOrConnectWithoutDutyPositionInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    create: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput>
+  }
+
+  export type DutyWatchNightOverrideCreateManyDutyPositionInputEnvelope = {
+    data: DutyWatchNightOverrideCreateManyDutyPositionInput | DutyWatchNightOverrideCreateManyDutyPositionInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DutyRoleUpsertWithoutPositionsInput = {
     update: XOR<DutyRoleUpdateWithoutPositionsInput, DutyRoleUncheckedUpdateWithoutPositionsInput>
     create: XOR<DutyRoleCreateWithoutPositionsInput, DutyRoleUncheckedCreateWithoutPositionsInput>
@@ -85929,6 +88142,22 @@ export namespace Prisma {
   export type ScheduleAssignmentUpdateManyWithWhereWithoutDutyPositionInput = {
     where: ScheduleAssignmentScalarWhereInput
     data: XOR<ScheduleAssignmentUpdateManyMutationInput, ScheduleAssignmentUncheckedUpdateManyWithoutDutyPositionInput>
+  }
+
+  export type DutyWatchNightOverrideUpsertWithWhereUniqueWithoutDutyPositionInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    update: XOR<DutyWatchNightOverrideUpdateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedUpdateWithoutDutyPositionInput>
+    create: XOR<DutyWatchNightOverrideCreateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedCreateWithoutDutyPositionInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateWithWhereUniqueWithoutDutyPositionInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    data: XOR<DutyWatchNightOverrideUpdateWithoutDutyPositionInput, DutyWatchNightOverrideUncheckedUpdateWithoutDutyPositionInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateManyWithWhereWithoutDutyPositionInput = {
+    where: DutyWatchNightOverrideScalarWhereInput
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionInput>
   }
 
   export type DutyRoleCreateWithoutSchedulesInput = {
@@ -86129,6 +88358,40 @@ export namespace Prisma {
 
   export type ScheduleAssignmentCreateManyScheduleInputEnvelope = {
     data: ScheduleAssignmentCreateManyScheduleInput | ScheduleAssignmentCreateManyScheduleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DutyWatchNightOverrideCreateWithoutScheduleInput = {
+    id?: string
+    nightDate: Date | string
+    overrideType: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyPosition: DutyPositionCreateNestedOneWithoutNightOverridesInput
+    member?: MemberCreateNestedOneWithoutDwOverridesAsMemberInput
+    baseMember?: MemberCreateNestedOneWithoutDwOverridesAsBaseInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput = {
+    id?: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateOrConnectWithoutScheduleInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    create: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput>
+  }
+
+  export type DutyWatchNightOverrideCreateManyScheduleInputEnvelope = {
+    data: DutyWatchNightOverrideCreateManyScheduleInput | DutyWatchNightOverrideCreateManyScheduleInput[]
     skipDuplicates?: boolean
   }
 
@@ -86333,6 +88596,22 @@ export namespace Prisma {
     data: XOR<ScheduleAssignmentUpdateManyMutationInput, ScheduleAssignmentUncheckedUpdateManyWithoutScheduleInput>
   }
 
+  export type DutyWatchNightOverrideUpsertWithWhereUniqueWithoutScheduleInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    update: XOR<DutyWatchNightOverrideUpdateWithoutScheduleInput, DutyWatchNightOverrideUncheckedUpdateWithoutScheduleInput>
+    create: XOR<DutyWatchNightOverrideCreateWithoutScheduleInput, DutyWatchNightOverrideUncheckedCreateWithoutScheduleInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateWithWhereUniqueWithoutScheduleInput = {
+    where: DutyWatchNightOverrideWhereUniqueInput
+    data: XOR<DutyWatchNightOverrideUpdateWithoutScheduleInput, DutyWatchNightOverrideUncheckedUpdateWithoutScheduleInput>
+  }
+
+  export type DutyWatchNightOverrideUpdateManyWithWhereWithoutScheduleInput = {
+    where: DutyWatchNightOverrideScalarWhereInput
+    data: XOR<DutyWatchNightOverrideUpdateManyMutationInput, DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleInput>
+  }
+
   export type WeeklyScheduleCreateWithoutAssignmentsInput = {
     id?: string
     weekStartDate: Date | string
@@ -86344,6 +88623,7 @@ export namespace Prisma {
     dutyRole: DutyRoleCreateNestedOneWithoutSchedulesInput
     createdByAdmin?: AdminUserCreateNestedOneWithoutSchedulesCreatedInput
     publishedByAdmin?: AdminUserCreateNestedOneWithoutSchedulesPublishedInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleUncheckedCreateWithoutAssignmentsInput = {
@@ -86357,6 +88637,7 @@ export namespace Prisma {
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutScheduleInput
   }
 
   export type WeeklyScheduleCreateOrConnectWithoutAssignmentsInput = {
@@ -86374,6 +88655,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     dutyRole: DutyRoleCreateNestedOneWithoutPositionsInput
+    nightOverrides?: DutyWatchNightOverrideCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionUncheckedCreateWithoutAssignmentsInput = {
@@ -86386,6 +88668,7 @@ export namespace Prisma {
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    nightOverrides?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutDutyPositionInput
   }
 
   export type DutyPositionCreateOrConnectWithoutAssignmentsInput = {
@@ -86428,6 +88711,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -86472,6 +88757,8 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -86508,6 +88795,7 @@ export namespace Prisma {
     dutyRole?: DutyRoleUpdateOneRequiredWithoutSchedulesNestedInput
     createdByAdmin?: AdminUserUpdateOneWithoutSchedulesCreatedNestedInput
     publishedByAdmin?: AdminUserUpdateOneWithoutSchedulesPublishedNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateWithoutAssignmentsInput = {
@@ -86521,6 +88809,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput
   }
 
   export type DutyPositionUpsertWithoutAssignmentsInput = {
@@ -86544,6 +88833,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dutyRole?: DutyRoleUpdateOneRequiredWithoutPositionsNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type DutyPositionUncheckedUpdateWithoutAssignmentsInput = {
@@ -86556,6 +88846,7 @@ export namespace Prisma {
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type MemberUpsertWithoutScheduleAssignmentsInput = {
@@ -86604,6 +88895,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -86648,6 +88941,548 @@ export namespace Prisma {
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+  }
+
+  export type WeeklyScheduleCreateWithoutNightOverridesInput = {
+    id?: string
+    weekStartDate: Date | string
+    status?: string
+    publishedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyRole: DutyRoleCreateNestedOneWithoutSchedulesInput
+    createdByAdmin?: AdminUserCreateNestedOneWithoutSchedulesCreatedInput
+    publishedByAdmin?: AdminUserCreateNestedOneWithoutSchedulesPublishedInput
+    assignments?: ScheduleAssignmentCreateNestedManyWithoutScheduleInput
+  }
+
+  export type WeeklyScheduleUncheckedCreateWithoutNightOverridesInput = {
+    id?: string
+    dutyRoleId: string
+    weekStartDate: Date | string
+    status?: string
+    createdBy?: string | null
+    publishedAt?: Date | string | null
+    publishedBy?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutScheduleInput
+  }
+
+  export type WeeklyScheduleCreateOrConnectWithoutNightOverridesInput = {
+    where: WeeklyScheduleWhereUniqueInput
+    create: XOR<WeeklyScheduleCreateWithoutNightOverridesInput, WeeklyScheduleUncheckedCreateWithoutNightOverridesInput>
+  }
+
+  export type DutyPositionCreateWithoutNightOverridesInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dutyRole: DutyRoleCreateNestedOneWithoutPositionsInput
+    assignments?: ScheduleAssignmentCreateNestedManyWithoutDutyPositionInput
+  }
+
+  export type DutyPositionUncheckedCreateWithoutNightOverridesInput = {
+    id?: string
+    dutyRoleId: string
+    code: string
+    name: string
+    description?: string | null
+    maxSlots?: number
+    displayOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutDutyPositionInput
+  }
+
+  export type DutyPositionCreateOrConnectWithoutNightOverridesInput = {
+    where: DutyPositionWhereUniqueInput
+    create: XOR<DutyPositionCreateWithoutNightOverridesInput, DutyPositionUncheckedCreateWithoutNightOverridesInput>
+  }
+
+  export type MemberCreateWithoutDwOverridesAsMemberInput = {
+    id?: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutDwOverridesAsMemberInput = {
+    id?: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutDwOverridesAsMemberInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutDwOverridesAsMemberInput, MemberUncheckedCreateWithoutDwOverridesAsMemberInput>
+  }
+
+  export type MemberCreateWithoutDwOverridesAsBaseInput = {
+    id?: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutDwOverridesAsBaseInput = {
+    id?: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutDwOverridesAsBaseInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutDwOverridesAsBaseInput, MemberUncheckedCreateWithoutDwOverridesAsBaseInput>
+  }
+
+  export type WeeklyScheduleUpsertWithoutNightOverridesInput = {
+    update: XOR<WeeklyScheduleUpdateWithoutNightOverridesInput, WeeklyScheduleUncheckedUpdateWithoutNightOverridesInput>
+    create: XOR<WeeklyScheduleCreateWithoutNightOverridesInput, WeeklyScheduleUncheckedCreateWithoutNightOverridesInput>
+    where?: WeeklyScheduleWhereInput
+  }
+
+  export type WeeklyScheduleUpdateToOneWithWhereWithoutNightOverridesInput = {
+    where?: WeeklyScheduleWhereInput
+    data: XOR<WeeklyScheduleUpdateWithoutNightOverridesInput, WeeklyScheduleUncheckedUpdateWithoutNightOverridesInput>
+  }
+
+  export type WeeklyScheduleUpdateWithoutNightOverridesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    weekStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyRole?: DutyRoleUpdateOneRequiredWithoutSchedulesNestedInput
+    createdByAdmin?: AdminUserUpdateOneWithoutSchedulesCreatedNestedInput
+    publishedByAdmin?: AdminUserUpdateOneWithoutSchedulesPublishedNestedInput
+    assignments?: ScheduleAssignmentUpdateManyWithoutScheduleNestedInput
+  }
+
+  export type WeeklyScheduleUncheckedUpdateWithoutNightOverridesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dutyRoleId?: StringFieldUpdateOperationsInput | string
+    weekStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    publishedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput
+  }
+
+  export type DutyPositionUpsertWithoutNightOverridesInput = {
+    update: XOR<DutyPositionUpdateWithoutNightOverridesInput, DutyPositionUncheckedUpdateWithoutNightOverridesInput>
+    create: XOR<DutyPositionCreateWithoutNightOverridesInput, DutyPositionUncheckedCreateWithoutNightOverridesInput>
+    where?: DutyPositionWhereInput
+  }
+
+  export type DutyPositionUpdateToOneWithWhereWithoutNightOverridesInput = {
+    where?: DutyPositionWhereInput
+    data: XOR<DutyPositionUpdateWithoutNightOverridesInput, DutyPositionUncheckedUpdateWithoutNightOverridesInput>
+  }
+
+  export type DutyPositionUpdateWithoutNightOverridesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyRole?: DutyRoleUpdateOneRequiredWithoutPositionsNestedInput
+    assignments?: ScheduleAssignmentUpdateManyWithoutDutyPositionNestedInput
+  }
+
+  export type DutyPositionUncheckedUpdateWithoutNightOverridesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dutyRoleId?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxSlots?: IntFieldUpdateOperationsInput | number
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutDutyPositionNestedInput
+  }
+
+  export type MemberUpsertWithoutDwOverridesAsMemberInput = {
+    update: XOR<MemberUpdateWithoutDwOverridesAsMemberInput, MemberUncheckedUpdateWithoutDwOverridesAsMemberInput>
+    create: XOR<MemberCreateWithoutDwOverridesAsMemberInput, MemberUncheckedCreateWithoutDwOverridesAsMemberInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutDwOverridesAsMemberInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutDwOverridesAsMemberInput, MemberUncheckedUpdateWithoutDwOverridesAsMemberInput>
+  }
+
+  export type MemberUpdateWithoutDwOverridesAsMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutDwOverridesAsMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUpsertWithoutDwOverridesAsBaseInput = {
+    update: XOR<MemberUpdateWithoutDwOverridesAsBaseInput, MemberUncheckedUpdateWithoutDwOverridesAsBaseInput>
+    create: XOR<MemberCreateWithoutDwOverridesAsBaseInput, MemberUncheckedCreateWithoutDwOverridesAsBaseInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutDwOverridesAsBaseInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutDwOverridesAsBaseInput, MemberUncheckedUpdateWithoutDwOverridesAsBaseInput>
+  }
+
+  export type MemberUpdateWithoutDwOverridesAsBaseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutDwOverridesAsBaseInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -86693,6 +89528,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
@@ -86737,6 +89574,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
@@ -86786,6 +89625,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
@@ -86830,6 +89671,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
@@ -86947,6 +89790,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
@@ -86991,6 +89836,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
@@ -87046,6 +89893,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
@@ -87090,6 +89939,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
@@ -87216,6 +90067,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
@@ -87260,6 +90113,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
@@ -87309,6 +90164,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -87353,6 +90210,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -87452,6 +90311,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
@@ -87496,6 +90357,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
@@ -87551,6 +90414,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -87595,6 +90460,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -87672,6 +90539,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -87716,6 +90585,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -87815,6 +90686,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -87859,6 +90732,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -87903,6 +90778,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -87947,6 +90824,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -88074,6 +90953,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -88118,6 +90999,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -88731,6 +91614,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
     qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
@@ -88775,6 +91660,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
     scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
     lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
     lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
     lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
@@ -88923,6 +91810,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -88967,6 +91856,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -89662,6 +92553,7 @@ export namespace Prisma {
     dutyRole?: DutyRoleUpdateOneRequiredWithoutSchedulesNestedInput
     publishedByAdmin?: AdminUserUpdateOneWithoutSchedulesPublishedNestedInput
     assignments?: ScheduleAssignmentUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateWithoutCreatedByAdminInput = {
@@ -89675,6 +92567,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateManyWithoutCreatedByAdminInput = {
@@ -89700,6 +92593,7 @@ export namespace Prisma {
     dutyRole?: DutyRoleUpdateOneRequiredWithoutSchedulesNestedInput
     createdByAdmin?: AdminUserUpdateOneWithoutSchedulesCreatedNestedInput
     assignments?: ScheduleAssignmentUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateWithoutPublishedByAdminInput = {
@@ -89713,6 +92607,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateManyWithoutPublishedByAdminInput = {
@@ -89999,6 +92894,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -90043,6 +92940,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -90199,6 +93098,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -90243,6 +93144,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -90545,6 +93448,30 @@ export namespace Prisma {
     status?: string
     confirmedAt?: Date | string | null
     releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateManyMemberInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    baseMemberId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateManyBaseMemberInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -90927,6 +93854,78 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DutyWatchNightOverrideUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    schedule?: WeeklyScheduleUpdateOneRequiredWithoutNightOverridesNestedInput
+    dutyPosition?: DutyPositionUpdateOneRequiredWithoutNightOverridesNestedInput
+    baseMember?: MemberUpdateOneWithoutDwOverridesAsBaseNestedInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUpdateWithoutBaseMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    schedule?: WeeklyScheduleUpdateOneRequiredWithoutNightOverridesNestedInput
+    dutyPosition?: DutyPositionUpdateOneRequiredWithoutNightOverridesNestedInput
+    member?: MemberUpdateOneWithoutDwOverridesAsMemberNestedInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateWithoutBaseMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LockupStatusUpdateWithoutCurrentHolderInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91187,6 +94186,7 @@ export namespace Prisma {
     name: string
     description?: string | null
     canReceiveLockup?: boolean
+    isAutomatic?: boolean
     displayOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -91216,6 +94216,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91228,6 +94229,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91240,6 +94242,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     canReceiveLockup?: BoolFieldUpdateOperationsInput | boolean
+    isAutomatic?: BoolFieldUpdateOperationsInput | boolean
     displayOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91341,6 +94344,8 @@ export namespace Prisma {
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -91385,6 +94390,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -91487,6 +94494,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -91531,6 +94540,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -91771,6 +94782,8 @@ export namespace Prisma {
     memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
     qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
@@ -91815,6 +94828,8 @@ export namespace Prisma {
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
     scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
     lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
     lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
     lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
@@ -92078,6 +95093,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUpdateManyWithoutDutyPositionNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type DutyPositionUncheckedUpdateWithoutDutyRoleInput = {
@@ -92090,6 +95106,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutDutyPositionNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionNestedInput
   }
 
   export type DutyPositionUncheckedUpdateManyWithoutDutyRoleInput = {
@@ -92114,6 +95131,7 @@ export namespace Prisma {
     createdByAdmin?: AdminUserUpdateOneWithoutSchedulesCreatedNestedInput
     publishedByAdmin?: AdminUserUpdateOneWithoutSchedulesPublishedNestedInput
     assignments?: ScheduleAssignmentUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateWithoutDutyRoleInput = {
@@ -92127,6 +95145,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: ScheduleAssignmentUncheckedUpdateManyWithoutScheduleNestedInput
+    nightOverrides?: DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleNestedInput
   }
 
   export type WeeklyScheduleUncheckedUpdateManyWithoutDutyRoleInput = {
@@ -92148,6 +95167,18 @@ export namespace Prisma {
     status?: string
     confirmedAt?: Date | string | null
     releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateManyDutyPositionInput = {
+    id?: string
+    scheduleId: string
+    nightDate: Date | string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -92189,6 +95220,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DutyWatchNightOverrideUpdateWithoutDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    schedule?: WeeklyScheduleUpdateOneRequiredWithoutNightOverridesNestedInput
+    member?: MemberUpdateOneWithoutDwOverridesAsMemberNestedInput
+    baseMember?: MemberUpdateOneWithoutDwOverridesAsBaseNestedInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateWithoutDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutDutyPositionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scheduleId?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ScheduleAssignmentCreateManyScheduleInput = {
     id?: string
     dutyPositionId?: string | null
@@ -92196,6 +95263,18 @@ export namespace Prisma {
     status?: string
     confirmedAt?: Date | string | null
     releasedAt?: Date | string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DutyWatchNightOverrideCreateManyScheduleInput = {
+    id?: string
+    nightDate: Date | string
+    dutyPositionId: string
+    overrideType: string
+    memberId?: string | null
+    baseMemberId?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -92232,6 +95311,42 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     releasedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUpdateWithoutScheduleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPosition?: DutyPositionUpdateOneRequiredWithoutNightOverridesNestedInput
+    member?: MemberUpdateOneWithoutDwOverridesAsMemberNestedInput
+    baseMember?: MemberUpdateOneWithoutDwOverridesAsBaseNestedInput
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateWithoutScheduleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DutyWatchNightOverrideUncheckedUpdateManyWithoutScheduleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nightDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dutyPositionId?: StringFieldUpdateOperationsInput | string
+    overrideType?: StringFieldUpdateOperationsInput | string
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    baseMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

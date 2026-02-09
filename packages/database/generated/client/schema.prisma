@@ -230,6 +230,8 @@ model Member {
   memberStatusRef          MemberStatus?             @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   qualifications           MemberQualification[]
   scheduleAssignments      ScheduleAssignment[]
+  dwOverridesAsMember      DutyWatchNightOverride[]  @relation("OverrideMember")
+  dwOverridesAsBase        DutyWatchNightOverride[]  @relation("OverrideBaseMember")
   lockupHolding            LockupStatus[]            @relation("LockupCurrentHolder")
   lockupSecured            LockupStatus[]            @relation("LockupSecuredBy")
   lockupTransfersFrom      LockupTransfer[]          @relation("LockupTransferFrom")
@@ -711,6 +713,7 @@ model QualificationType {
   name                 String                @db.VarChar(100)
   description          String?
   canReceiveLockup     Boolean               @default(true) @map("can_receive_lockup")
+  isAutomatic          Boolean               @default(false) @map("is_automatic")
   displayOrder         Int                   @default(0) @map("display_order")
   tagId                String?               @map("tag_id") @db.Uuid
   createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamp(6)
@@ -770,17 +773,18 @@ model DutyRole {
 }
 
 model DutyPosition {
-  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  dutyRoleId   String               @map("duty_role_id") @db.Uuid
-  code         String               @db.VarChar(50)
-  name         String               @db.VarChar(100)
-  description  String?
-  maxSlots     Int                  @default(1) @map("max_slots")
-  displayOrder Int                  @default(0) @map("display_order")
-  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt    DateTime             @updatedAt @map("updated_at") @db.Timestamp(6)
-  dutyRole     DutyRole             @relation(fields: [dutyRoleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  assignments  ScheduleAssignment[]
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dutyRoleId     String                   @map("duty_role_id") @db.Uuid
+  code           String                   @db.VarChar(50)
+  name           String                   @db.VarChar(100)
+  description    String?
+  maxSlots       Int                      @default(1) @map("max_slots")
+  displayOrder   Int                      @default(0) @map("display_order")
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamp(6)
+  dutyRole       DutyRole                 @relation(fields: [dutyRoleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  assignments    ScheduleAssignment[]
+  nightOverrides DutyWatchNightOverride[]
 
   @@unique([dutyRoleId, code], map: "duty_position_role_code_unique")
   @@index([dutyRoleId], map: "idx_duty_positions_role")
@@ -788,20 +792,21 @@ model DutyPosition {
 }
 
 model WeeklySchedule {
-  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  dutyRoleId       String               @map("duty_role_id") @db.Uuid
-  weekStartDate    DateTime             @map("week_start_date") @db.Date // Always a Monday
-  status           String               @default("draft") @db.VarChar(20) // draft, published, active, archived
-  createdBy        String?              @map("created_by") @db.Uuid
-  publishedAt      DateTime?            @map("published_at") @db.Timestamp(6)
-  publishedBy      String?              @map("published_by") @db.Uuid
+  id               String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dutyRoleId       String                   @map("duty_role_id") @db.Uuid
+  weekStartDate    DateTime                 @map("week_start_date") @db.Date // Always a Monday
+  status           String                   @default("draft") @db.VarChar(20) // draft, published, active, archived
+  createdBy        String?                  @map("created_by") @db.Uuid
+  publishedAt      DateTime?                @map("published_at") @db.Timestamp(6)
+  publishedBy      String?                  @map("published_by") @db.Uuid
   notes            String?
-  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamp(6)
-  dutyRole         DutyRole             @relation(fields: [dutyRoleId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  createdByAdmin   AdminUser?           @relation("ScheduleCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  publishedByAdmin AdminUser?           @relation("SchedulePublishedBy", fields: [publishedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime                 @updatedAt @map("updated_at") @db.Timestamp(6)
+  dutyRole         DutyRole                 @relation(fields: [dutyRoleId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdByAdmin   AdminUser?               @relation("ScheduleCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  publishedByAdmin AdminUser?               @relation("SchedulePublishedBy", fields: [publishedBy], references: [id], onDelete: SetNull, onUpdate: NoAction)
   assignments      ScheduleAssignment[]
+  nightOverrides   DutyWatchNightOverride[]
 
   @@unique([dutyRoleId, weekStartDate], map: "weekly_schedule_role_week_unique")
   @@index([dutyRoleId], map: "idx_weekly_schedules_role")
@@ -829,6 +834,30 @@ model ScheduleAssignment {
   @@index([memberId], map: "idx_schedule_assignments_member")
   @@index([dutyPositionId], map: "idx_schedule_assignments_position")
   @@map("schedule_assignments")
+}
+
+model DutyWatchNightOverride {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scheduleId     String   @map("schedule_id") @db.Uuid
+  nightDate      DateTime @map("night_date") @db.Date
+  dutyPositionId String   @map("duty_position_id") @db.Uuid
+  overrideType   String   @map("override_type") @db.VarChar(20) // 'replace' | 'add' | 'remove'
+  memberId       String?  @map("member_id") @db.Uuid
+  baseMemberId   String?  @map("base_member_id") @db.Uuid
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  schedule     WeeklySchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  dutyPosition DutyPosition   @relation(fields: [dutyPositionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  member       Member?        @relation("OverrideMember", fields: [memberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  baseMember   Member?        @relation("OverrideBaseMember", fields: [baseMemberId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@unique([scheduleId, nightDate, dutyPositionId, baseMemberId], map: "dw_override_unique")
+  @@index([scheduleId], map: "idx_dw_overrides_schedule")
+  @@index([nightDate], map: "idx_dw_overrides_night_date")
+  @@index([memberId], map: "idx_dw_overrides_member")
+  @@map("dw_night_overrides")
 }
 
 model LockupStatus {
