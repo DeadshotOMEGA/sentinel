@@ -10,12 +10,14 @@ import type {
 } from '@sentinel/contracts'
 import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
+import { AutoQualificationService } from '../services/auto-qualification-service.js'
 import { importService } from '../services/import-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
 
 const memberRepo = new MemberRepository(getPrismaClient())
+const autoQualService = new AutoQualificationService(getPrismaClient())
 
 /**
  * Members route implementation using ts-rest
@@ -166,6 +168,13 @@ export const membersRouter = s.router(memberContract, {
         badgeId: body.badgeId,
       })
 
+      // Auto-sync qualifications for new member (non-blocking)
+      try {
+        await autoQualService.syncMember(member.id)
+      } catch {
+        // Non-blocking: don't fail create if sync errors
+      }
+
       return {
         status: 201 as const,
         body: {
@@ -225,6 +234,15 @@ export const membersRouter = s.router(memberContract, {
         memberTypeId: body.memberTypeId,
         memberStatusId: body.memberStatusId,
       })
+
+      // Auto-sync qualifications if rank or division changed (non-blocking)
+      if (body.rank !== undefined || body.divisionId !== undefined) {
+        try {
+          await autoQualService.syncMember(params.id)
+        } catch {
+          // Non-blocking: don't fail update if sync errors
+        }
+      }
 
       return {
         status: 200 as const,

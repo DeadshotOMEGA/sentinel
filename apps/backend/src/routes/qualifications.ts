@@ -11,11 +11,13 @@ import type {
   UpdateQualificationType,
 } from '@sentinel/contracts'
 import { QualificationService } from '../services/qualification-service.js'
+import { AutoQualificationService } from '../services/auto-qualification-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
 
 const qualificationService = new QualificationService(getPrismaClient())
+const autoQualService = new AutoQualificationService(getPrismaClient())
 
 /**
  * Convert qualification type to API response format
@@ -26,6 +28,7 @@ function toQualificationTypeResponse(type: {
   name: string
   description: string | null
   canReceiveLockup: boolean
+  isAutomatic: boolean
   displayOrder: number
   tagId: string | null
   tag: { id: string; name: string; chipVariant: string; chipColor: string } | null
@@ -38,6 +41,7 @@ function toQualificationTypeResponse(type: {
     name: type.name,
     description: type.description,
     canReceiveLockup: type.canReceiveLockup,
+    isAutomatic: type.isAutomatic,
     displayOrder: type.displayOrder,
     tagId: type.tagId,
     tag: type.tag
@@ -76,6 +80,7 @@ function toMemberQualificationResponse(qual: {
     name: string
     description: string | null
     canReceiveLockup: boolean
+    isAutomatic: boolean
     displayOrder: number
     tagId: string | null
     tag: { id: string; name: string; chipVariant: string; chipColor: string } | null
@@ -139,6 +144,7 @@ export const qualificationsRouter = s.router(qualificationContract, {
         name: body.name,
         description: body.description,
         canReceiveLockup: body.canReceiveLockup,
+        isAutomatic: body.isAutomatic,
         displayOrder: body.displayOrder,
         tagId: body.tagId,
       })
@@ -198,6 +204,7 @@ export const qualificationsRouter = s.router(qualificationContract, {
         name: body.name,
         description: body.description,
         canReceiveLockup: body.canReceiveLockup,
+        isAutomatic: body.isAutomatic,
         displayOrder: body.displayOrder,
         tagId: body.tagId,
       })
@@ -432,6 +439,61 @@ export const qualificationsRouter = s.router(qualificationContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to revoke qualification',
+        },
+      }
+    }
+  },
+
+  /**
+   * Bulk sync auto-qualifications for all active members
+   */
+  syncAllAutoQualifications: async () => {
+    try {
+      const result = await autoQualService.syncAll()
+
+      return {
+        status: 200 as const,
+        body: result,
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to sync auto-qualifications',
+        },
+      }
+    }
+  },
+
+  /**
+   * Sync auto-qualifications for a single member
+   */
+  syncMemberAutoQualifications: async ({ params }: { params: MemberIdParam }) => {
+    try {
+      const result = await autoQualService.syncMember(params.memberId)
+
+      return {
+        status: 200 as const,
+        body: result,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to sync member auto-qualifications',
         },
       }
     }

@@ -10,6 +10,9 @@ import type {
   UpdateScheduleInput,
   CreateAssignmentInput,
   UpdateAssignmentInput,
+  CreateDwOverrideInput,
+  DwOverrideParams,
+  DwOverrideQuery,
 } from '@sentinel/contracts'
 import { ScheduleService } from '../services/schedule-service.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -154,6 +157,53 @@ function assignmentToApiFormat(assignment: {
 }
 
 /**
+ * Convert DW night override entity to API format
+ */
+function overrideToApiFormat(override: {
+  id: string
+  scheduleId: string
+  nightDate: Date
+  dutyPositionId: string
+  overrideType: string
+  memberId: string | null
+  baseMemberId: string | null
+  notes: string | null
+  createdAt: Date
+  updatedAt: Date
+  member: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    serviceNumber: string
+  } | null
+  baseMember: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    serviceNumber: string
+  } | null
+  dutyPosition: { id: string; code: string; name: string }
+}) {
+  return {
+    id: override.id,
+    scheduleId: override.scheduleId,
+    nightDate: override.nightDate.toISOString().substring(0, 10),
+    dutyPositionId: override.dutyPositionId,
+    overrideType: override.overrideType as 'replace' | 'add' | 'remove',
+    memberId: override.memberId,
+    baseMemberId: override.baseMemberId,
+    notes: override.notes,
+    createdAt: override.createdAt.toISOString(),
+    updatedAt: override.updatedAt.toISOString(),
+    member: override.member,
+    baseMember: override.baseMember,
+    dutyPosition: override.dutyPosition,
+  }
+}
+
+/**
  * Convert schedule with details to API format
  */
 function scheduleWithDetailsToApiFormat(schedule: {
@@ -188,12 +238,40 @@ function scheduleWithDetailsToApiFormat(schedule: {
     }
     dutyPosition: { id: string; code: string; name: string } | null
   }>
+  nightOverrides: Array<{
+    id: string
+    scheduleId: string
+    nightDate: Date
+    dutyPositionId: string
+    overrideType: string
+    memberId: string | null
+    baseMemberId: string | null
+    notes: string | null
+    createdAt: Date
+    updatedAt: Date
+    member: {
+      id: string
+      firstName: string
+      lastName: string
+      rank: string
+      serviceNumber: string
+    } | null
+    baseMember: {
+      id: string
+      firstName: string
+      lastName: string
+      rank: string
+      serviceNumber: string
+    } | null
+    dutyPosition: { id: string; code: string; name: string }
+  }>
   createdByAdmin: { id: string; displayName: string } | null
   publishedByAdmin: { id: string; displayName: string } | null
 }) {
   return {
     ...scheduleToApiFormat(schedule),
     assignments: schedule.assignments.map(assignmentToApiFormat),
+    nightOverrides: schedule.nightOverrides.map(overrideToApiFormat),
     createdByAdmin: schedule.createdByAdmin,
     publishedByAdmin: schedule.publishedByAdmin,
   }
@@ -820,6 +898,153 @@ export const schedulesRouter = s.router(scheduleContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch tonight Duty Watch',
+        },
+      }
+    }
+  },
+
+  // ==========================================================================
+  // DW Night Overrides
+  // ==========================================================================
+
+  listDwOverrides: async ({
+    params,
+    query,
+  }: {
+    params: ScheduleIdParam
+    query: DwOverrideQuery
+  }) => {
+    try {
+      const overrides = await scheduleService.listDwOverrides(params.id, query.nightDate)
+      return {
+        status: 200 as const,
+        body: {
+          data: overrides.map(overrideToApiFormat),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch overrides',
+        },
+      }
+    }
+  },
+
+  createDwOverride: async ({
+    params,
+    body,
+  }: {
+    params: ScheduleIdParam
+    body: CreateDwOverrideInput
+  }) => {
+    try {
+      const override = await scheduleService.createDwOverride(params.id, {
+        nightDate: body.nightDate,
+        dutyPositionId: body.dutyPositionId,
+        overrideType: body.overrideType,
+        memberId: body.memberId,
+        baseMemberId: body.baseMemberId,
+        notes: body.notes,
+      })
+      return {
+        status: 201 as const,
+        body: overrideToApiFormat(override),
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('already exists') || error.message.includes('Unique constraint'))
+      ) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: 'An override already exists for this position/member/night combination',
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('Cannot create') ||
+          error.message.includes('requires') ||
+          error.message.includes('must be') ||
+          error.message.includes('not within') ||
+          error.message.includes('Invalid override') ||
+          error.message.includes('Overrides can only'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create override',
+        },
+      }
+    }
+  },
+
+  deleteDwOverride: async ({ params }: { params: DwOverrideParams }) => {
+    try {
+      await scheduleService.deleteDwOverride(params.id, params.overrideId)
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: 'Override deleted successfully',
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (error instanceof Error && error.message.includes('Cannot delete')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to delete override',
         },
       }
     }
