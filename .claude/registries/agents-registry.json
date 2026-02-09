@@ -1,1 +1,387 @@
-[]
+{
+  "local": {
+    "agents": {}
+  },
+  "shared": {
+    "agents": {
+      "devops-advisor": {
+        "tiers": [2, 4],
+        "category": "git",
+        "capabilities": ["monitoring", "implementation", "optimization", "security", "deployment"],
+        "triggers": [
+          "optimization",
+          "security",
+          "monitoring",
+          "implementation",
+          "deployment",
+          "devops"
+        ],
+        "parallel": true,
+        "path": "~/.claude/agents/devops-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "DevOps and infrastructure specialist for CI/CD pipelines, deployment automation, container orchestration, and cloud operations. Use PROACTIVELY for GitHub Actions, Docker, Kubernetes, Terraform, infra"
+      },
+      "security-advisor": {
+        "tiers": [2, 4, 5],
+        "category": "expertise",
+        "capabilities": ["review", "security"],
+        "triggers": ["review", "advisor", "security"],
+        "parallel": true,
+        "path": "~/.claude/agents/security-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Review code for vulnerabilities, implement secure authentication, and ensure OWASP compliance. Handles JWT, OAuth2, CORS, CSP, and encryption. Use PROACTIVELY for security reviews, auth flows, or vuln"
+      },
+      "frontend-builder": {
+        "tiers": [1, 2, 4],
+        "category": "explore",
+        "capabilities": ["optimization", "performance", "frontend"],
+        "triggers": ["performance", "optimization", "frontend", "builder"],
+        "parallel": true,
+        "path": "~/.claude/agents/frontend-builder.md",
+        "mtime": 1767070446.8543224,
+        "description": "Frontend development specialist with framework auto-detection. Discovers React, Vue, or Svelte from codebase and loads appropriate patterns. Use PROACTIVELY for UI components, state management, perfor"
+      },
+      "product-planner": {
+        "tiers": [2, 3],
+        "category": "expertise",
+        "capabilities": [],
+        "triggers": ["product", "planner"],
+        "parallel": true,
+        "path": "~/.claude/agents/product-planner.md",
+        "mtime": 1767070446.8543224,
+        "description": "Interactive requirements gathering specialist. Use PROACTIVELY when starting new features or products to define comprehensive requirements through structured sessions."
+      },
+      "architecture-advisor": {
+        "tiers": [2, 5],
+        "category": "expertise",
+        "capabilities": ["validation", "review", "analysis", "design"],
+        "triggers": ["review", "validation", "analysis", "architecture", "advisor"],
+        "parallel": true,
+        "path": "~/.claude/agents/architecture-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Technical advisor for architectural analysis, code review, SOLID compliance, and design decisions. Specializes in pattern adherence, PR reviews, proper layering, and maintainability. Use PROACTIVELY f"
+      },
+      "cleanup-builder": {
+        "tiers": [],
+        "category": "implementation",
+        "capabilities": ["deployment"],
+        "triggers": ["cleanup", "deployment", "refactor", "builder"],
+        "parallel": true,
+        "path": "~/.claude/agents/cleanup-builder.md",
+        "mtime": 1767070446.8543224,
+        "description": "Detects and removes unused code (imports, functions, classes) across multiple languages. Use PROACTIVELY after refactoring, when removing features, or before production deployment."
+      },
+      "orchestrate-research": {
+        "tiers": [3],
+        "category": "explore",
+        "capabilities": ["search"],
+        "triggers": ["orchestrate", "research", "search"],
+        "parallel": true,
+        "path": "~/.claude/agents/orchestrate-research.md",
+        "mtime": 1767070446.8543224,
+        "description": "Coordinate comprehensive research projects with multiple specialized agents. Use PROACTIVELY for complex research requiring multiple phases and specialized researchers."
+      },
+      "mcp-advisor": {
+        "tiers": [2],
+        "category": "expertise",
+        "capabilities": [],
+        "triggers": ["advisor", "mcp"],
+        "parallel": true,
+        "path": "~/.claude/agents/mcp-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Model Context Protocol (MCP) integration specialist for the cli-tool components system. Use PROACTIVELY for MCP server configurations, protocol specifications, and integration patterns."
+      },
+      "schema-builder": {
+        "tiers": [2, 4],
+        "category": "expertise",
+        "capabilities": ["database", "migration"],
+        "triggers": ["database", "schema", "migration", "builder"],
+        "parallel": true,
+        "path": "~/.claude/agents/schema-builder.md",
+        "mtime": 1767070446.8543224,
+        "description": "Production database specialist for schema changes, migrations, RLS policies, and RPC functions. Use PROACTIVELY for any database modifications on production."
+      },
+      "code-reviewer": {
+        "tiers": [2, 4, 5],
+        "category": "expertise",
+        "capabilities": ["review", "security"],
+        "triggers": ["code", "reviewer", "security", "review"],
+        "parallel": true,
+        "path": "~/.claude/agents/code-reviewer.md",
+        "mtime": 1767070446.8543224,
+        "description": "Expert code review specialist for quality, security, and maintainability. Use PROACTIVELY after writing or modifying code to ensure high development standards."
+      },
+      "web-researcher": {
+        "tiers": [1],
+        "category": "explore",
+        "capabilities": ["search", "analysis"],
+        "triggers": ["web", "search", "analysis", "researcher"],
+        "parallel": true,
+        "path": "~/.claude/agents/web-researcher.md",
+        "mtime": 1767070446.8543224,
+        "description": "Expert web researcher for information gathering, fact-checking, and multi-source synthesis. Use PROACTIVELY for research tasks, competitive analysis, and trend analysis."
+      },
+      "git-manager": {
+        "tiers": [0, 4, 5],
+        "category": "git",
+        "capabilities": ["validation"],
+        "triggers": ["manager", "validation", "git"],
+        "parallel": true,
+        "path": "~/.claude/agents/git-manager.md",
+        "mtime": 1767070446.8543224,
+        "description": "Git Flow workflow manager. Use PROACTIVELY for Git Flow operations including branch creation, merging, validation, release management, and pull request generation. Handles feature, release, and hotfix"
+      },
+      "sql-advisor": {
+        "tiers": [2, 3],
+        "category": "expertise",
+        "capabilities": ["design", "optimization", "database"],
+        "triggers": ["design", "optimization", "database", "advisor", "sql"],
+        "parallel": true,
+        "path": "~/.claude/agents/sql-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Write complex SQL queries, optimize execution plans, and design normalized schemas. Masters CTEs, window functions, and stored procedures. Use PROACTIVELY for query optimization, complex joins, or dat"
+      },
+      "schema-architect": {
+        "tiers": [2, 3],
+        "category": "expertise",
+        "capabilities": ["design", "database"],
+        "triggers": ["database", "schema", "architect", "design"],
+        "parallel": true,
+        "path": "~/.claude/agents/schema-architect.md",
+        "mtime": 1767070446.8543224,
+        "description": "Database architecture and design specialist. Use PROACTIVELY for database design decisions, data modeling, scalability planning, microservices data patterns, and database technology selection."
+      },
+      "nextjs-architect": {
+        "tiers": [2, 3],
+        "category": "expertise",
+        "capabilities": ["optimization", "performance", "migration"],
+        "triggers": ["nextjs", "optimization", "architect", "performance", "migration"],
+        "parallel": true,
+        "path": "~/.claude/agents/nextjs-architect.md",
+        "mtime": 1767070446.8543224,
+        "description": "Master of Next.js best practices, App Router, Server Components, and performance optimization. Use PROACTIVELY for Next.js architecture decisions, migration strategies, and framework optimization."
+      },
+      "feature-builder": {
+        "tiers": [2, 4],
+        "category": "research",
+        "capabilities": ["implementation"],
+        "triggers": ["multi-file", "implementation", "feature", "builder"],
+        "parallel": true,
+        "path": "~/.claude/agents/feature-builder.md",
+        "mtime": 1767070446.8543224,
+        "description": "Multi-file implementation specialist for complex features spanning 3+ files. Analyzes patterns first, then implements. Use PROACTIVELY for parallel execution of independent coding tasks."
+      },
+      "orchestrate-docs": {
+        "tiers": [],
+        "category": "documentation",
+        "capabilities": ["documentation"],
+        "triggers": ["documentation", "orchestrate", "docs"],
+        "parallel": true,
+        "path": "~/.claude/agents/orchestrate-docs.md",
+        "mtime": 1767392124.2030272,
+        "description": "Documentation workflow orchestrator. Use PROACTIVELY for any documentation task - automatically detects document type and loads appropriate Skill."
+      },
+      "ux-planner": {
+        "tiers": [1, 2, 3],
+        "category": "explore",
+        "capabilities": ["search", "design", "optimization"],
+        "triggers": ["search", "optimization", "design", "planner"],
+        "parallel": true,
+        "path": "~/.claude/agents/ux-planner.md",
+        "mtime": 1767070446.8543224,
+        "description": "UI/UX design specialist for user-centered design and interface systems. Use PROACTIVELY for user research, wireframes, design systems, prototyping, accessibility standards, and user experience optimiz"
+      },
+      "repo-researcher": {
+        "tiers": [1],
+        "category": "git",
+        "capabilities": ["implementation", "documentation"],
+        "triggers": ["documentation", "implementation", "repo", "researcher"],
+        "parallel": true,
+        "path": "~/.claude/agents/repo-researcher.md",
+        "mtime": 1767070446.8543224,
+        "description": "Analyze code repositories, GitHub projects, and technical documentation. Use PROACTIVELY for evaluating libraries, finding implementation patterns, and comparing technical solutions."
+      },
+      "test-checker": {
+        "tiers": [2, 3, 5],
+        "category": "expertise",
+        "capabilities": ["testing", "analysis"],
+        "triggers": ["test", "testing", "analysis", "checker"],
+        "parallel": true,
+        "path": "~/.claude/agents/test-checker.md",
+        "mtime": 1767070446.8543224,
+        "description": "Test automation and quality assurance specialist. Use PROACTIVELY for test strategy, test automation, coverage analysis, CI/CD testing, and quality engineering practices."
+      },
+      "backend-advisor": {
+        "tiers": [2, 3],
+        "category": "expertise",
+        "capabilities": ["design", "optimization", "performance", "database", "api"],
+        "triggers": ["design", "optimization", "performance", "database", "backend", "advisor"],
+        "parallel": true,
+        "path": "~/.claude/agents/backend-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Backend system architecture and API design specialist. Use PROACTIVELY for RESTful APIs, microservice boundaries, database schemas, scalability planning, and performance optimization."
+      },
+      "focused-builder": {
+        "tiers": [4],
+        "category": "implementation",
+        "capabilities": ["implementation"],
+        "triggers": ["implementation", "focused", "builder"],
+        "parallel": true,
+        "path": "~/.claude/agents/focused-builder.md",
+        "mtime": 1767070446.8543224,
+        "description": "Focused implementation agent for well-specified tasks with clear patterns. Use PROACTIVELY for straightforward coding when requirements and approach are already defined."
+      },
+      "database-advisor": {
+        "tiers": [2],
+        "category": "expertise",
+        "capabilities": ["monitoring", "database"],
+        "triggers": ["database", "monitoring", "advisor"],
+        "parallel": true,
+        "path": "~/.claude/agents/database-advisor.md",
+        "mtime": 1767070446.8543224,
+        "description": "Database administration specialist for operations, backups, replication, and monitoring. Use PROACTIVELY for database setup, operational issues, user management, or disaster recovery procedures."
+      },
+      "error-checker": {
+        "tiers": [1, 2],
+        "category": "expertise",
+        "capabilities": ["analysis"],
+        "triggers": ["analysis", "error", "checker"],
+        "parallel": true,
+        "path": "~/.claude/agents/error-checker.md",
+        "mtime": 1767070446.8543224,
+        "description": "Production log analysis and error pattern detection specialist. Use PROACTIVELY for analyzing logs, investigating production errors, identifying system anomalies, and correlating errors across distrib"
+      },
+      "orchestrate-project": {
+        "tiers": [3],
+        "category": "planning",
+        "capabilities": ["validation"],
+        "triggers": ["orchestrate", "project", "validation"],
+        "parallel": true,
+        "path": "~/.claude/agents/orchestrate-project.md",
+        "mtime": 1767070446.8543224,
+        "description": "Project workflow orchestrator. Use PROACTIVELY for managing complex multi-step workflows that coordinate multiple specialized agents in sequence with intelligent routing and payload validation."
+      },
+      "task-planner": {
+        "tiers": [3],
+        "category": "expertise",
+        "capabilities": [],
+        "triggers": ["task", "planner"],
+        "parallel": true,
+        "path": "~/.claude/agents/task-planner.md",
+        "mtime": 1767070446.8543224,
+        "description": "Complex goal breakdown specialist. Use PROACTIVELY for multi-step projects requiring different capabilities. Masters workflow architecture, agent selection, and task orchestration."
+      },
+      "react-optimizer": {
+        "tiers": [2],
+        "category": "expertise",
+        "capabilities": ["optimization", "performance"],
+        "triggers": ["performance", "optimizer", "react", "optimization"],
+        "parallel": true,
+        "path": "~/.claude/agents/react-optimizer.md",
+        "mtime": 1767070446.8543224,
+        "description": "React performance optimization specialist. Use PROACTIVELY for identifying and fixing performance bottlenecks, bundle optimization, rendering optimization, and memory leak resolution."
+      },
+      "implementation-planner": {
+        "tiers": [3, 4],
+        "category": "planning",
+        "capabilities": ["implementation"],
+        "triggers": ["implementation", "planner"],
+        "parallel": true,
+        "path": "~/.claude/agents/implementation-planner.md",
+        "mtime": 1767070446.8543224,
+        "description": "Technical planner for breaking down complex features into implementation tasks. Use PROACTIVELY before implementing complex features to create structured plans with dependencies."
+      },
+      "debug-checker": {
+        "tiers": [2, 5],
+        "category": "explore",
+        "capabilities": ["debugging"],
+        "triggers": ["debug", "debugging", "checker", "test"],
+        "parallel": true,
+        "path": "~/.claude/agents/debug-checker.md",
+        "mtime": 1767070446.8543224,
+        "description": "Code-level debugging specialist for errors, test failures, and stack traces. Use PROACTIVELY when encountering code issues, analyzing stack traces, or fixing broken tests. Focuses on hypothesis-driven"
+      },
+      "codebase-explorer": {
+        "tiers": [1],
+        "category": "explore",
+        "capabilities": ["discovery"],
+        "triggers": ["discovery", "codebase", "explorer"],
+        "parallel": true,
+        "path": "~/.claude/agents/codebase-explorer.md",
+        "mtime": 1767070446.8543224,
+        "description": "Codebase discovery specialist for finding files, tracing data flows, and understanding patterns. Use PROACTIVELY for context gathering and code investigation."
+      },
+      "orchestrate-workflow": {
+        "tiers": [],
+        "category": "general",
+        "capabilities": [],
+        "triggers": ["orchestrate", "workflow"],
+        "parallel": true,
+        "path": "~/.claude/agents/orchestrate-workflow.md",
+        "mtime": 1767075135.8328018,
+        "description": "Intelligent workflow coordinator using dynamic agent registry. Matches requirements to agents, sequences execution by tier, handles project-specific agents. Use PROACTIVELY for complex multi-phase tas"
+      },
+      "orchestrate-memory": {
+        "tiers": [4],
+        "category": "validation",
+        "capabilities": [],
+        "triggers": ["orchestrate", "memory"],
+        "parallel": true,
+        "path": "~/.claude/agents/orchestrate-memory.md",
+        "mtime": 1767075113.7165532,
+        "description": "Memory and rules workflow orchestrator. Use PROACTIVELY for auditing CLAUDE.md files, migrating monolithic memory to modular rules, organizing memory hierarchy, or helping users create new rules."
+      },
+      "rfid-iot-specialist": {
+        "tiers": [2, 4],
+        "category": "expertise",
+        "capabilities": [],
+        "triggers": ["iot", "rfid", "specialist"],
+        "parallel": true,
+        "path": ".claude/agents/rfid-iot-specialist.md",
+        "mtime": 1769184642.469058,
+        "description": "RFID hardware and Socket.IO specialist for Sentinel. Use PROACTIVELY when integrating RFID readers, implementing real-time events, or working with hardware protocols."
+      },
+      "testing-specialist": {
+        "tiers": [2, 5],
+        "category": "expertise",
+        "capabilities": ["testing", "debugging"],
+        "triggers": ["debugging", "testing", "specialist", "test"],
+        "parallel": true,
+        "path": ".claude/agents/testing-specialist.md",
+        "mtime": 1769184642.469058,
+        "description": "Testing specialist for Sentinel using Vitest, Testcontainers, and Supertest. Use PROACTIVELY when writing tests, setting up test infrastructure, or debugging test failures."
+      },
+      "api-design-specialist": {
+        "tiers": [2, 5],
+        "category": "expertise",
+        "capabilities": ["validation", "design", "api"],
+        "triggers": ["api", "validation", "specialist", "design"],
+        "parallel": true,
+        "path": ".claude/agents/api-design-specialist.md",
+        "mtime": 1769184642.4647288,
+        "description": "ts-rest API design specialist for Sentinel. Use PROACTIVELY when designing APIs, defining routes, adding validation, or generating OpenAPI docs."
+      },
+      "auth-specialist": {
+        "tiers": [2, 4],
+        "category": "expertise",
+        "capabilities": ["security", "api"],
+        "triggers": ["auth", "security", "api", "specialist"],
+        "parallel": true,
+        "path": ".claude/agents/auth-specialist.md",
+        "mtime": 1769184642.4647288,
+        "description": "better-auth specialist for Sentinel. Use PROACTIVELY when implementing authentication, authorization, API keys, sessions, or security features."
+      },
+      "database-specialist": {
+        "tiers": [2],
+        "category": "expertise",
+        "capabilities": ["database", "migration"],
+        "triggers": ["migration", "specialist", "database"],
+        "parallel": true,
+        "path": ".claude/agents/database-specialist.md",
+        "mtime": 1769184642.469058,
+        "description": "Prisma/Kysely ORM specialist for Sentinel. Use PROACTIVELY when working with database schemas, migrations, queries, or data modeling."
+      }
+    }
+  },
+  "last_synced": "2026-02-05T22:23:01.732747"
+}

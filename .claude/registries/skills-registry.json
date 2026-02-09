@@ -1,1 +1,350 @@
-{}
+{
+  "version": "1.0",
+  "last_synced": "2026-02-05T22:23:01.785036",
+  "skills": {
+    "writing-commands": {
+      "what": "Write slash command definitions for .claude/commands/. Use when creating or updating custom slash commands.",
+      "path": "@~/.claude/skills/writing-commands/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-readmes": {
+      "what": "Write README.md files for projects and packages. Use when creating or improving README documentation.",
+      "path": "@~/.claude/skills/writing-readmes/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "auditing-artifacts": {
+      "what": "Audit Claude Code artifacts (commands, agents, skills, hooks, CLAUDE.md, rules) using standardized 20-point scoring rubric. Use when auditing, reviewing, scoring, or evaluating any Claude Code artifac",
+      "path": "@~/.claude/skills/auditing-artifacts/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-plans": {
+      "what": "Write implementation plans with task breakdowns and dependencies. Use when creating plan.md files or implementation strategies.",
+      "path": "@~/.claude/skills/writing-plans/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "collaborative-mode": {
+      "what": "Requirements gathering and advisory session with structured phases, live plan updates, and agent orchestration. Use when starting new features to collaboratively define scope before implementation.",
+      "path": "@~/.claude/skills/collaborative-mode/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "react-best-practices": {
+      "what": "React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patter",
+      "path": "@~/.claude/skills/react-best-practices/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-legal-docs": {
+      "what": "Legal documentation and compliance guidance for privacy policies, terms of service, GDPR compliance, and regulatory documentation. Use when creating legal notices or ensuring data protection complianc",
+      "path": "@~/.claude/skills/writing-legal-docs/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "applying-git-flow": {
+      "what": "Git Flow workflow patterns, validation rules, and automation scripts for branch management. Use when executing Git Flow operations like feature, release, or hotfix workflows.",
+      "path": "@~/.claude/skills/applying-git-flow/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "applying-testing-patterns": {
+      "what": "Comprehensive testing patterns, frameworks, and CI/CD templates. Use when implementing test suites, configuring test runners, or setting up testing infrastructure.",
+      "path": "@~/.claude/skills/applying-testing-patterns/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-hooks": {
+      "what": "Configure Claude Code hooks in settings.json for event-driven automation. Use when setting up or modifying lifecycle hooks.",
+      "path": "@~/.claude/skills/writing-hooks/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "referencing-typescript-sdk": {
+      "what": "Comprehensive reference for the TypeScript Agent SDK with functions, types, and interfaces for programmatic Claude Code interactions. Use when building applications with the Anthropic Agent SDK or int",
+      "path": "@~/.claude/skills/referencing-typescript-sdk/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-commit-messages": {
+      "what": "Generate descriptive commit messages by analyzing git diffs. Use when the user asks for help writing commit messages or reviewing staged changes.",
+      "path": "@~/.claude/skills/writing-commit-messages/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "applying-devops-patterns": {
+      "what": "DevOps patterns, templates, and infrastructure code examples for CI/CD pipelines, Infrastructure as Code, Kubernetes deployments, monitoring stacks, security scanning, and deployment strategies. Use w",
+      "path": "@~/.claude/skills/applying-devops-patterns/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-accessibility": {
+      "what": "WCAG-compliant accessibility patterns with ARIA, keyboard navigation, and screen reader support. Use when implementing accessible UI components or auditing accessibility.",
+      "path": "@~/.claude/skills/writing-accessibility/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-subagents": {
+      "what": "Write and review Claude Code subagent definitions following official best practices. Use when creating, editing, or auditing .claude/agents/*.md files.",
+      "path": "@~/.claude/skills/writing-subagents/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-typescript": {
+      "what": "Advanced TypeScript patterns with strict typing, generics, conditional types, and type inference. Use when writing TypeScript code, creating complex types, designing type-safe APIs, or migrating from ",
+      "path": "@~/.claude/skills/writing-typescript/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "managing-memory": {
+      "what": "Reference documentation for Claude Code memory hierarchy, imports, and shortcuts. For memory management workflows (audit, migrate, create rules), use the orchestrate-memory agent instead.",
+      "path": "@~/.claude/skills/managing-memory/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-investigations": {
+      "what": "Write investigation documents that bundle all context needed for implementation. Use when creating investigation.md files or context bundles for features/fixes.",
+      "path": "@~/.claude/skills/writing-investigations/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "managing-context": {
+      "what": "Context preservation patterns for multi-agent workflows and long-running tasks. Use when coordinating complex projects or preserving context across agent invocations.",
+      "path": "@~/.claude/skills/managing-context/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "designing-databases": {
+      "what": "Database architecture patterns including data modeling, microservices data boundaries, polyglot persistence, and scalability strategies. Use when designing database schemas, choosing database technolo",
+      "path": "@~/.claude/skills/designing-databases/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-tailwind": {
+      "what": "Utility-first CSS with Tailwind patterns, responsive design, and theming. Use when styling components with Tailwind CSS or implementing responsive layouts.",
+      "path": "@~/.claude/skills/writing-tailwind/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "testing-playwright": {
+      "what": "Run and write end-to-end browser tests with Playwright. Use when testing web applications, verifying UI functionality, checking user flows, or when proactive testing is beneficial after code changes. ",
+      "path": "@~/.claude/skills/testing-playwright/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-technical-docs": {
+      "what": "Write technical documentation including user guides, tutorials, and how-to guides. Use when creating documentation for end users or developers.",
+      "path": "@~/.claude/skills/writing-technical-docs/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-claudemd": {
+      "what": "Write and maintain CLAUDE.md memory files for directories, modules, and projects. Use when creating CLAUDE.md files, setting up project memory, configuring memory hierarchy, or writing context documen",
+      "path": "@~/.claude/skills/writing-claudemd/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-library-references": {
+      "what": "Create compressed LLM-optimized reference docs for external libraries. Use when documenting third-party libraries or creating quick reference guides.",
+      "path": "@~/.claude/skills/writing-library-references/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-requirements": {
+      "what": "Write requirements documents with functional and technical specs. Use when creating requirements.md files or gathering feature specifications.",
+      "path": "@~/.claude/skills/writing-requirements/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "configuring-mcp-servers": {
+      "what": "MCP server configuration templates, patterns, and integration examples for Claude Code. Use when creating MCP configurations, setting up MCP servers, or integrating external services via Model Context",
+      "path": "@~/.claude/skills/configuring-mcp-servers/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-react": {
+      "what": "Modern React patterns with hooks, context, and component architecture. Use when building React components, managing state, or optimizing React performance.",
+      "path": "@~/.claude/skills/writing-react/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "processing-spreadsheets": {
+      "what": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. Use when working with spreadsheets (.xlsx, .xlsm, .csv, .tsv) for cre",
+      "path": "@~/.claude/skills/processing-spreadsheets/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-architecture": {
+      "what": "Write architecture documentation explaining system design. Use when creating architecture.md or system design documents.",
+      "path": "@~/.claude/skills/writing-architecture/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-rules": {
+      "what": "Write modular rule files for .claude/rules/ with path-based activation. Use when creating rules, adding testing conventions, writing git workflow rules, or setting up path-scoped guidance. Triggers on",
+      "path": "@~/.claude/skills/writing-rules/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-cli-commands": {
+      "what": "CLI command development patterns for argument parsing, task automation, and command-line interface best practices. Use when designing CLI tools or writing slash commands.",
+      "path": "@~/.claude/skills/writing-cli-commands/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-changelogs": {
+      "what": "Write changelogs and release notes following Keep a Changelog format. Use when creating CHANGELOG.md, release notes, or version documentation.",
+      "path": "@~/.claude/skills/writing-changelogs/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-shell-scripts": {
+      "what": "Robust shell scripts with POSIX compliance, error handling, and automation patterns. Use when writing bash/zsh scripts, deployment automation, or system administration tasks.",
+      "path": "@~/.claude/skills/writing-shell-scripts/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-skills": {
+      "what": "Write and manage Claude Code Skill definitions. Use when creating, editing, or understanding .claude/skills/*/SKILL.md files.",
+      "path": "@~/.claude/skills/writing-skills/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-api-specs": {
+      "what": "Write OpenAPI/Swagger specifications and API documentation. Use when creating API specs, SDK docs, or interactive API documentation.",
+      "path": "@~/.claude/skills/writing-api-specs/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-reports": {
+      "what": "Write research reports with findings, analysis, and citations. Use when creating reports from research findings or synthesizing information.",
+      "path": "@~/.claude/skills/writing-reports/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "crafting-prompts": {
+      "what": "Expert prompt optimization for LLMs and AI systems. Use when crafting system prompts, improving agent performance, or building AI features. Masters prompt patterns and techniques.",
+      "path": "@~/.claude/skills/crafting-prompts/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "auditing-security": {
+      "what": "Identify and remediate vulnerabilities through systematic code analysis. Use when performing security assessments, pre-deployment reviews, compliance validation (OWASP, PCI-DSS, GDPR), investigating k",
+      "path": "@~/.claude/skills/auditing-security/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-api-endpoints": {
+      "what": "Write documentation for individual API endpoints. Use when documenting REST API endpoints or server actions.",
+      "path": "@~/.claude/skills/writing-api-endpoints/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-feature-docs": {
+      "what": "Write feature documentation explaining how features work. Use when creating feature docs or explaining existing functionality.",
+      "path": "@~/.claude/skills/writing-feature-docs/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "writing-setup-guides": {
+      "what": "Write development setup guides for projects. Use when creating setup.md or getting-started documentation.",
+      "path": "@~/.claude/skills/writing-setup-guides/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    },
+    "executing-parallel-work": {
+      "what": "Coordinate concurrent task execution through agent delegation. Plan independent work, manage dependencies, and execute multiple agents simultaneously. Use when handling multiple unrelated tasks, resea",
+      "path": "@~/.claude/skills/executing-parallel-work/SKILL.md",
+      "domain": "reference",
+      "when": "",
+      "priority": 2,
+      "why": ""
+    }
+  }
+}
