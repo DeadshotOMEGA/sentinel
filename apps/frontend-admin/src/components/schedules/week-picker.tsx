@@ -5,9 +5,11 @@ import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getMonday, formatDateISO, parseDateString } from '@/lib/date-utils'
 
+export type NavigationDirection = -1 | 0 | 1
+
 interface WeekPickerProps {
   weekStartDate: string // YYYY-MM-DD format
-  onWeekChange: (newDate: string) => void
+  onWeekChange: (newDate: string, direction: NavigationDirection) => void
 }
 
 function formatWeekLabel(dateStr: string): string {
@@ -32,16 +34,16 @@ export function WeekPicker({ weekStartDate, onWeekChange }: WeekPickerProps) {
 
   const handlePreviousWeek = () => {
     const date = parseDateString(weekStartDate)
-    onWeekChange(formatDateISO(addDays(date, -7)))
+    onWeekChange(formatDateISO(addDays(date, -7)), -1)
   }
 
   const handleNextWeek = () => {
     const date = parseDateString(weekStartDate)
-    onWeekChange(formatDateISO(addDays(date, 7)))
+    onWeekChange(formatDateISO(addDays(date, 7)), 1)
   }
 
   const handleToday = () => {
-    onWeekChange(formatDateISO(currentMonday))
+    onWeekChange(formatDateISO(currentMonday), 0)
   }
 
   return (
@@ -59,11 +61,14 @@ export function WeekPicker({ weekStartDate, onWeekChange }: WeekPickerProps) {
         <ChevronRight className="h-4 w-4" />
       </Button>
 
-      {!isCurrentWeek && (
-        <Button variant="ghost" size="sm" onClick={handleToday}>
-          Today
-        </Button>
-      )}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleToday}
+        className={isCurrentWeek ? 'invisible' : ''}
+      >
+        Today
+      </Button>
     </div>
   )
 }

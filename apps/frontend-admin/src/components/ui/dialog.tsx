@@ -36,21 +36,16 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     return () => dialog.removeEventListener('close', handleClose)
   }, [onOpenChange])
 
-  // Handle backdrop click
-  const handleClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (e.target === e.currentTarget) {
-      onOpenChange?.(false)
-    }
-  }
-
   return (
     <dialog
       ref={dialogRef}
       className="modal"
-      onClick={handleClick}
       data-slot="dialog"
     >
       {children}
+      <form method="dialog" className="modal-backdrop">
+        <button>close</button>
+      </form>
     </dialog>
   )
 }

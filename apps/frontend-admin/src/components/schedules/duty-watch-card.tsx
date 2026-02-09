@@ -59,7 +59,7 @@ interface PositionSlotProps {
 
 function PositionSlot({ position, assignment, onAssign, onRemove, disabled }: PositionSlotProps) {
   return (
-    <div className="flex items-center justify-between p-3 bg-base-200/50 rounded-lg border">
+    <div className="flex items-center justify-between p-2 bg-base-200/50 rounded-lg border">
       <div className="flex items-center gap-3">
         <Chip
           variant="flat"
@@ -328,7 +328,7 @@ export function DutyWatchCard({
         </div>
       </AppCardHeader>
       <AppCardContent>
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {positionsList.flatMap((position) => {
             const positionAssignments = assignmentsByPosition[position.code] ?? []
             const filledSlots = positionAssignments.map((assignment, idx) => (
