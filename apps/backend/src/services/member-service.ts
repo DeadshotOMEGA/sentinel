@@ -4,6 +4,7 @@ import { MemberRepository } from '../repositories/member-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
+import { serviceLogger } from '../lib/logger.js'
 import type {
   Member,
   MemberWithDivision,
@@ -160,6 +161,11 @@ export class MemberService {
       await this.badgeRepo.assign(data.badgeId, member.id, 'member')
     }
 
+    serviceLogger.info(`Member created: ${data.rank} ${data.lastName} ${data.firstName}`, {
+      memberId: member.id,
+      serviceNumber: data.serviceNumber,
+    })
+
     return member
   }
 
@@ -236,6 +242,10 @@ export class MemberService {
     if (existing.badgeId) {
       await this.badgeRepo.unassign(existing.badgeId)
     }
+
+    serviceLogger.info(`Member deactivated: ${existing.rank} ${existing.lastName}`, {
+      memberId: id,
+    })
   }
 
   /**

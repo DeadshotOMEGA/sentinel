@@ -1,7 +1,8 @@
 import { Socket } from 'socket.io'
 import { logger } from '../lib/logger.js'
 import { socketIOTransport } from '../lib/log-transport-socketio.js'
-import { getUserId, requireRole } from './auth.js'
+import { getMemberId, hasMinimumLevel } from './auth.js'
+import { AccountLevel } from '../middleware/roles.js'
 
 /**
  * Register event handlers for a connected socket
@@ -9,7 +10,7 @@ import { getUserId, requireRole } from './auth.js'
 export function registerSocketHandlers(socket: Socket) {
   logger.info('Registering socket handlers', {
     socketId: socket.id,
-    userId: getUserId(socket),
+    memberId: getMemberId(socket),
   })
 
   // Subscribe to presence updates
@@ -47,10 +48,10 @@ export function registerSocketHandlers(socket: Socket) {
 
   // Subscribe to security alerts (admin only)
   socket.on('alerts:subscribe', () => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to subscribe to alerts',
+        message: 'Admin access required to subscribe to alerts',
       })
       return
     }
@@ -77,10 +78,10 @@ export function registerSocketHandlers(socket: Socket) {
 
   // Subscribe to lockup events (admin only)
   socket.on('lockup:subscribe', () => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to subscribe to lockup events',
+        message: 'Admin access required to subscribe to lockup events',
       })
       return
     }
@@ -118,10 +119,10 @@ export function registerSocketHandlers(socket: Socket) {
 
   // Subscribe to kiosk status (admin only)
   socket.on('kiosks:subscribe', () => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to subscribe to kiosk status',
+        message: 'Admin access required to subscribe to kiosk status',
       })
       return
     }
@@ -137,10 +138,10 @@ export function registerSocketHandlers(socket: Socket) {
 
   // Subscribe to live log streaming (admin only)
   socket.on('logs:subscribe', () => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to subscribe to logs',
+        message: 'Admin access required to subscribe to logs',
       })
       return
     }
@@ -158,10 +159,10 @@ export function registerSocketHandlers(socket: Socket) {
   })
 
   socket.on('logs:set-level', (level: string) => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to change log level',
+        message: 'Admin access required to change log level',
       })
       return
     }
@@ -176,21 +177,21 @@ export function registerSocketHandlers(socket: Socket) {
     }
 
     socketIOTransport.level = level
-    logger.info('Log streaming level changed', { level, changedBy: getUserId(socket) })
+    logger.info('Log streaming level changed', { level, memberId: getMemberId(socket) })
     socket.emit('logs:level-changed', { level })
   })
 
   socket.on('logs:clear-history', () => {
-    if (!requireRole(socket, 'admin')) {
+    if (!hasMinimumLevel(socket, AccountLevel.ADMIN)) {
       socket.emit('error', {
         code: 'FORBIDDEN',
-        message: 'Admin role required to clear log history',
+        message: 'Admin access required to clear log history',
       })
       return
     }
 
     socketIOTransport.clearHistory()
-    logger.info('Log history cleared', { clearedBy: getUserId(socket) })
+    logger.info('Log history cleared', { memberId: getMemberId(socket) })
     socket.emit('logs:history-cleared')
   })
 
@@ -203,7 +204,7 @@ export function registerSocketHandlers(socket: Socket) {
   socket.on('disconnect', (reason) => {
     logger.info('Socket disconnected', {
       socketId: socket.id,
-      userId: getUserId(socket),
+      memberId: getMemberId(socket),
       reason,
     })
   })
@@ -212,7 +213,7 @@ export function registerSocketHandlers(socket: Socket) {
   socket.on('error', (error) => {
     logger.error('Socket error', {
       socketId: socket.id,
-      userId: getUserId(socket),
+      memberId: getMemberId(socket),
       error: error instanceof Error ? error.message : 'Unknown error',
     })
   })

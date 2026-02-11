@@ -1,6 +1,17 @@
 import Transport from 'winston-transport'
 import type { Server as SocketIOServer } from 'socket.io'
 
+/** Winston syslog-style level ordering (lower = more severe) */
+const LEVEL_VALUES: Record<string, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  verbose: 4,
+  debug: 5,
+  silly: 6,
+}
+
 export interface LogEntry {
   id: string
   timestamp: string
@@ -64,7 +75,9 @@ export class SocketIOTransport extends Transport {
   }
 
   getHistory(): LogEntry[] {
-    return [...this.buffer]
+    // Filter buffer by current transport level so history respects level changes
+    const maxLevel = LEVEL_VALUES[this.level ?? 'info'] ?? 2
+    return this.buffer.filter((e) => (LEVEL_VALUES[e.level] ?? 2) <= maxLevel)
   }
 
   clearHistory(): void {

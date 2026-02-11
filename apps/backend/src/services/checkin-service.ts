@@ -17,6 +17,7 @@ import type { Checkin, CheckinDirection, MemberWithDivision } from '@sentinel/ty
 // import { getKioskName } from '../utils/kiosk-names.js'
 
 import { broadcastCheckin } from '../websocket/broadcast.js'
+import { serviceLogger } from '../lib/logger.js'
 
 interface CheckinOptions {
   timestamp?: Date
@@ -179,6 +180,13 @@ export class CheckinService {
       })
     }
 
+    serviceLogger.info(`Check-${direction} ${member.rank} ${member.lastName}`, {
+      memberId,
+      direction,
+      badgeSerial: serialNumber,
+      kioskId: options.kioskId,
+    })
+
     return {
       checkin,
       member,
@@ -254,6 +262,10 @@ export class CheckinService {
       direction: 'out',
       timestamp: checkoutTimestamp.toISOString(),
       kioskId: 'admin-forced-checkout',
+    })
+
+    serviceLogger.info(`Admin force checkout ${member.rank} ${member.lastName}`, {
+      memberId,
     })
 
     return {

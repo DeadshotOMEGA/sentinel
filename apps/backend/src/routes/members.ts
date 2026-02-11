@@ -26,15 +26,20 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Get all members with pagination
    */
-  getMembers: async ({ query }: { query: MemberListQuery }) => {
+  getMembers: async ({ query, req }: { query: MemberListQuery; req: { member?: { accountLevel?: number } } }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
 
-      const filters: { divisionId?: string; search?: string; status?: MemberStatus; qualificationCode?: string } = {
+      // Only admin+ users can see hidden members
+      const isAdmin = (req.member?.accountLevel ?? 0) >= 5
+      const includeHidden = query.includeHidden === true && isAdmin
+
+      const filters: { divisionId?: string; search?: string; status?: MemberStatus; qualificationCode?: string; includeHidden?: boolean } = {
         divisionId: query.divisionId,
         search: query.search,
         qualificationCode: query.qualificationCode,
+        includeHidden,
       }
       if (query.status) {
         filters.status = query.status as MemberStatus

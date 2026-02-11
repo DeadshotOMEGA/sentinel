@@ -229,21 +229,32 @@ export class DdsService {
       },
     })
 
-    // Auto-assign lockup responsibility to new DDS holder
+    // Auto-assign lockup and open building for accepted DDS
     try {
       const lockupStatus = await this.lockupService.getCurrentStatus()
-      if (lockupStatus.currentHolderId) {
+
+      if (lockupStatus.currentHolderId && lockupStatus.currentHolderId !== memberId) {
         // Transfer from current holder to DDS
         await this.lockupService.transferLockup(
           memberId,
           'dds_handoff',
           'Auto-transferred on DDS acceptance'
         )
-      } else {
+      } else if (!lockupStatus.currentHolderId) {
         // No one holds lockup — DDS acquires it directly
         await this.lockupService.acquireLockup(
           memberId,
           'Auto-acquired on DDS acceptance'
+        )
+      }
+      // If currentHolderId === memberId, they already hold lockup — skip
+
+      // Open building if still secured (DDS acceptance implies building should open)
+      const updatedStatus = await this.lockupService.getCurrentStatus()
+      if (updatedStatus.buildingStatus === 'secured') {
+        await this.lockupService.openBuilding(
+          memberId,
+          'Auto-opened on DDS acceptance'
         )
       }
     } catch (error) {

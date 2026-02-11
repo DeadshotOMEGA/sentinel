@@ -7,6 +7,7 @@ import type {
   DivisionToCreate,
 } from '@sentinel/contracts'
 import type { Member, MemberType, CreateMemberInput, UpdateMemberInput } from '@sentinel/types'
+import { importLogger } from '../lib/logger.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { MemberTypeRepository } from '../repositories/member-type-repository.js'
@@ -689,6 +690,8 @@ export class ImportService {
     } catch {
       // Non-blocking: don't fail import if auto-qual sync errors
     }
+
+    importLogger.info(`Import complete: ${added} added, ${updated} updated, ${flaggedForReview} deactivated`)
 
     return {
       added,

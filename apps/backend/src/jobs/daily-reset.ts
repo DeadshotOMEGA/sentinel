@@ -12,7 +12,7 @@ import {
   getOperationalDateISO,
   getOperationalWeek,
 } from '../utils/operational-date.js'
-import { broadcastLockupTransfer, broadcastCheckin } from '../websocket/broadcast.js'
+import { broadcastCheckin } from '../websocket/broadcast.js'
 
 /**
  * Daily Reset Job
@@ -68,7 +68,7 @@ export async function runDailyReset(): Promise<void> {
           const lastCheckin = await prisma.checkin.findFirst({
             where: {
               memberId: member.id,
-              direction: 'IN',
+              direction: 'in',
             },
             orderBy: { timestamp: 'desc' },
           })
@@ -103,7 +103,7 @@ export async function runDailyReset(): Promise<void> {
               data: {
                 memberId: member.id,
                 badgeId: badge.id,
-                direction: 'OUT',
+                direction: 'out',
                 kioskId: 'SYSTEM',
                 method: 'system',
               },
@@ -172,11 +172,24 @@ export async function runDailyReset(): Promise<void> {
     })
 
     if (!existingStatus) {
-      // Find today's DDS from schedule
+      // Create lockup status with no holder — DDS must physically scan in to acquire
+      const newStatus = await prisma.lockupStatus.create({
+        data: {
+          date: todayDate,
+          buildingStatus: 'secured',
+          currentHolderId: null,
+          acquiredAt: null,
+        },
+      })
+
+      jobLogger.info('Created new lockup status for operational day', {
+        operationalDate,
+        statusId: newStatus.id,
+      })
+
+      // Create pending DDS assignment from weekly schedule so badge scan triggers auto-accept
       const { start } = getOperationalWeek()
       const ddsRole = await prisma.dutyRole.findUnique({ where: { code: 'DDS' } })
-
-      let initialHolderId: string | null = null
 
       if (ddsRole) {
         const ddsSchedule = await prisma.weeklySchedule.findUnique({
@@ -195,44 +208,30 @@ export async function runDailyReset(): Promise<void> {
         })
 
         if (ddsSchedule && ddsSchedule.assignments.length > 0) {
-          initialHolderId = ddsSchedule.assignments[0]!.memberId
-          jobLogger.info('Auto-assigning lockup to scheduled DDS', {
-            memberId: initialHolderId,
+          const scheduledMemberId = ddsSchedule.assignments[0]!.memberId
+
+          // Only create if no assignment already exists for today
+          const existingAssignment = await prisma.ddsAssignment.findFirst({
+            where: {
+              assignedDate: todayDate,
+              status: { in: ['pending', 'active'] },
+            },
           })
-        }
-      }
 
-      const newStatus = await prisma.lockupStatus.create({
-        data: {
-          date: todayDate,
-          buildingStatus: 'secured',
-          currentHolderId: initialHolderId,
-          acquiredAt: initialHolderId ? new Date() : null,
-        },
-      })
+          if (!existingAssignment) {
+            await prisma.ddsAssignment.create({
+              data: {
+                memberId: scheduledMemberId,
+                assignedDate: todayDate,
+                status: 'pending',
+                notes: 'Auto-created from weekly schedule during daily reset',
+              },
+            })
 
-      jobLogger.info('Created new lockup status for operational day', {
-        operationalDate,
-        initialHolderId,
-        statusId: newStatus.id,
-      })
-
-      // Broadcast lockup status update
-      if (initialHolderId) {
-        const holder = await prisma.member.findUnique({
-          where: { id: initialHolderId },
-        })
-
-        if (holder) {
-          broadcastLockupTransfer({
-            transferId: newStatus.id,
-            fromMemberId: 'system',
-            fromMemberName: 'Daily Reset',
-            toMemberId: initialHolderId,
-            toMemberName: `${holder.rank} ${holder.firstName} ${holder.lastName}`,
-            reason: 'dds_handoff',
-            timestamp: new Date().toISOString(),
-          })
+            jobLogger.info('Created pending DDS assignment from schedule', {
+              memberId: scheduledMemberId,
+            })
+          }
         }
       }
     }

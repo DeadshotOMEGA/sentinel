@@ -1,4 +1,4 @@
-import Bree from 'bree'
+import cron, { type ScheduledTask } from 'node-cron'
 import { logger } from '../lib/logger.js'
 import { checkMissedDailyReset, runDailyReset } from './daily-reset.js'
 import { runDutyWatchAlerts } from './duty-watch-alerts.js'
@@ -25,99 +25,90 @@ const DEFAULT_CONFIG: JobScheduleConfig = {
 }
 
 // ============================================================================
-// Job Scheduler
+// Job Scheduler (node-cron, runs in main thread)
 // ============================================================================
 
-let bree: Bree | null = null
+const scheduledTasks: ScheduledTask[] = []
 let config: JobScheduleConfig = DEFAULT_CONFIG
+
+/**
+ * Wrap a job function with error logging so failures don't crash the process
+ */
+function wrapJob(name: string, fn: () => Promise<void>): () => void {
+  return () => {
+    logger.info(`Job "${name}" starting`, { component: 'scheduler' })
+    fn()
+      .then(() => logger.info(`Job "${name}" completed`, { component: 'scheduler' }))
+      .catch((error) =>
+        logger.error(`Job "${name}" failed`, {
+          component: 'scheduler',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        })
+      )
+  }
+}
+
+/**
+ * Build cron expression from HH:MM time string
+ * Optional dayOfWeek for day-specific schedules (e.g., "2,4" for Tue/Thu)
+ */
+function toCron(time: string, dayOfWeek = '*'): string {
+  const [hour, minute] = time.split(':')
+  return `${minute} ${hour} * * ${dayOfWeek}`
+}
 
 /**
  * Initialize and start the job scheduler
  */
 export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig>): Promise<void> {
-  if (bree) {
+  if (scheduledTasks.length > 0) {
     logger.warn('Job scheduler already running')
     return
   }
 
-  // Merge custom config with defaults
   config = { ...DEFAULT_CONFIG, ...customConfig }
 
-  logger.info('Starting job scheduler', {
-    config,
-    nodeEnv: process.env.NODE_ENV,
-  })
+  logger.info('Starting job scheduler', { config, nodeEnv: process.env.NODE_ENV })
 
-  // In development/test, we use inline functions instead of worker threads
-  // This simplifies debugging and testing
   if (process.env.NODE_ENV === 'test') {
     logger.info('Job scheduler disabled in test environment')
     return
   }
 
   try {
-    // Create Bree instance with jobs
-    bree = new Bree({
-      logger: {
-        info: (msg: string) => logger.info(msg, { component: 'bree' }),
-        warn: (msg: string) => logger.warn(msg, { component: 'bree' }),
-        error: (msg: string) => logger.error(msg, { component: 'bree' }),
+    const jobs = [
+      {
+        name: 'daily-reset',
+        cronExpr: toCron(config.dayRolloverTime),
+        fn: runDailyReset,
       },
-      root: false, // Disable file-based workers
-      jobs: [
-        // Daily reset at configured time (default 3:00 AM)
-        // Cron format: minute hour day-of-month month day-of-week
-        {
-          name: 'daily-reset',
-          path: () => runDailyReset(),
-          cron: `${config.dayRolloverTime.split(':')[1]} ${config.dayRolloverTime.split(':')[0]} * * *`,
-          timezone: config.timezone,
-        },
-        // Duty Watch alerts on Tue/Thu at configured time (default 7:00 PM)
-        {
-          name: 'duty-watch-alerts',
-          path: () => runDutyWatchAlerts(),
-          cron: `${config.dutyWatchAlertTime.split(':')[1]} ${config.dutyWatchAlertTime.split(':')[0]} * * 2,4`,
-          timezone: config.timezone,
-        },
-        // Lockup warning at configured time (default 10:00 PM)
-        {
-          name: 'lockup-warning',
-          path: () => runLockupAlerts('warning'),
-          cron: `${config.lockupWarningTime.split(':')[1]} ${config.lockupWarningTime.split(':')[0]} * * *`,
-          timezone: config.timezone,
-        },
-        // Lockup critical at configured time (default 11:00 PM)
-        {
-          name: 'lockup-critical',
-          path: () => runLockupAlerts('critical'),
-          cron: `${config.lockupCriticalTime.split(':')[1]} ${config.lockupCriticalTime.split(':')[0]} * * *`,
-          timezone: config.timezone,
-        },
-      ],
-      // Handle job execution inline (no worker threads)
-      workerMessageHandler: () => {
-        // Not used when running inline
+      {
+        name: 'duty-watch-alerts',
+        cronExpr: toCron(config.dutyWatchAlertTime, '2,4'),
+        fn: runDutyWatchAlerts,
       },
-    })
+      {
+        name: 'lockup-warning',
+        cronExpr: toCron(config.lockupWarningTime),
+        fn: () => runLockupAlerts('warning'),
+      },
+      {
+        name: 'lockup-critical',
+        cronExpr: toCron(config.lockupCriticalTime),
+        fn: () => runLockupAlerts('critical'),
+      },
+    ]
 
-    // Listen for job events
-    bree.on('worker created', (name) => {
-      logger.debug(`Job worker created: ${name}`)
-    })
-
-    bree.on('worker deleted', (name) => {
-      logger.debug(`Job worker deleted: ${name}`)
-    })
-
-    // Start the scheduler
-    await bree.start()
+    for (const job of jobs) {
+      const task = cron.schedule(job.cronExpr, wrapJob(job.name, job.fn), {
+        timezone: config.timezone,
+      })
+      scheduledTasks.push(task)
+    }
 
     logger.info('Job scheduler started successfully', {
-      jobs: bree.config.jobs.map((j) => ({
-        name: typeof j === 'string' ? j : j.name,
-        cron: typeof j === 'string' ? null : j.cron,
-      })),
+      jobs: jobs.map((j) => ({ name: j.name, cron: j.cronExpr })),
     })
 
     // Check for missed daily reset on startup
@@ -128,7 +119,6 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
         error: catchUpError instanceof Error ? catchUpError.message : 'Unknown error',
         stack: catchUpError instanceof Error ? catchUpError.stack : undefined,
       })
-      // Non-fatal: scheduler continues even if catch-up fails
     }
   } catch (error) {
     logger.error('Failed to start job scheduler', {
@@ -143,23 +133,19 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
  * Stop the job scheduler gracefully
  */
 export async function stopJobScheduler(): Promise<void> {
-  if (!bree) {
+  if (scheduledTasks.length === 0) {
     logger.debug('Job scheduler not running')
     return
   }
 
   logger.info('Stopping job scheduler')
 
-  try {
-    await bree.stop()
-    bree = null
-    logger.info('Job scheduler stopped')
-  } catch (error) {
-    logger.error('Error stopping job scheduler', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    throw error
+  for (const task of scheduledTasks) {
+    task.stop()
   }
+  scheduledTasks.length = 0
+
+  logger.info('Job scheduler stopped')
 }
 
 /**
@@ -208,5 +194,5 @@ export function updateJobConfig(newConfig: Partial<JobScheduleConfig>): void {
  * Check if job scheduler is running
  */
 export function isJobSchedulerRunning(): boolean {
-  return bree !== null
+  return scheduledTasks.length > 0
 }

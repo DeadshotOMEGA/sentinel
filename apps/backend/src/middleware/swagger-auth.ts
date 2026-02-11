@@ -95,8 +95,8 @@ export function swaggerAuth(req: Request, res: Response, next: NextFunction): vo
 
   // Mode 4: Session authentication
   if (authMode === 'session') {
-    // Check if req.user exists (set by session middleware)
-    if (!req.user) {
+    // Check if req.member exists (set by session middleware)
+    if (!req.member) {
       apiLogger.warn('Swagger UI access denied - no session', {
         path: req.path,
         ip: req.ip,
@@ -110,7 +110,7 @@ export function swaggerAuth(req: Request, res: Response, next: NextFunction): vo
 
     apiLogger.info('Swagger UI access granted (session auth)', {
       path: req.path,
-      userId: req.user.id,
+      memberId: req.member.id,
     })
     next()
     return

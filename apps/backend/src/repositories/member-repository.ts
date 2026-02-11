@@ -19,6 +19,7 @@ interface MemberFilters extends MemberFilterParams {
   search?: string
   hasBadge?: boolean
   qualificationCode?: string
+  includeHidden?: boolean
 }
 
 /**
@@ -329,6 +330,20 @@ export class MemberRepository {
       ]
     }
 
+    // Exclude members with hidden statuses unless explicitly included
+    if (!filters?.includeHidden) {
+      const existingAnd = (where.AND as Record<string, unknown>[]) ?? []
+      where.AND = [
+        ...existingAnd,
+        {
+          OR: [
+            { memberStatusId: null },
+            { memberStatusRef: { isHidden: false } },
+          ],
+        },
+      ]
+    }
+
     const members = await this.prisma.member.findMany({
       where,
       include: {
@@ -493,6 +508,20 @@ export class MemberRepository {
         { firstName: { contains: filters.search, mode: 'insensitive' } },
         { lastName: { contains: filters.search, mode: 'insensitive' } },
         { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
+      ]
+    }
+
+    // Exclude members with hidden statuses unless explicitly included
+    if (!filters?.includeHidden) {
+      const existingAnd = (where.AND as Record<string, unknown>[]) ?? []
+      where.AND = [
+        ...existingAnd,
+        {
+          OR: [
+            { memberStatusId: null },
+            { memberStatusRef: { isHidden: false } },
+          ],
+        },
       ]
     }
 

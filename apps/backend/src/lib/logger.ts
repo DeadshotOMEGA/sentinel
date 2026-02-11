@@ -215,7 +215,17 @@ export function logRequest(
   duration: number,
   metadata: Record<string, unknown> = {}
 ) {
-  apiLogger.info('HTTP Request', {
+  // Determine log level based on status code
+  const level =
+    statusCode >= 500
+      ? 'error'
+      : statusCode >= 400 && statusCode !== 401 && statusCode !== 404
+        ? 'warn'
+        : statusCode >= 400
+          ? 'info'
+          : 'http'
+
+  apiLogger.log(level, `${method} ${path} ${statusCode} ${duration}ms`, {
     method,
     path,
     statusCode,
