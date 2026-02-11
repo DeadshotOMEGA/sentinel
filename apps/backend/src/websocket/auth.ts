@@ -34,7 +34,8 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
     }
 
     // Strip "Bearer " prefix if present
-    const rawToken = typeof token === 'string' && token.startsWith('Bearer ') ? token.slice(7) : token
+    const rawToken =
+      typeof token === 'string' && token.startsWith('Bearer ') ? token.slice(7) : token
 
     const sessionRepo = new SessionRepository(getPrismaClient())
     const session = await sessionRepo.findByToken(rawToken)

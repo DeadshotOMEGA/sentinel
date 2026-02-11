@@ -455,13 +455,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/disable - Disable admin user account
    */
-  disableAdminUser: async ({
-    params,
-    request,
-  }: {
-    params: { id: string }
-    request: Request
-  }) => {
+  disableAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
     try {
       const req = request
       const actorLevel = req.member?.accountLevel ?? 0
@@ -571,13 +565,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/enable - Re-enable disabled admin user account
    */
-  enableAdminUser: async ({
-    params,
-    request,
-  }: {
-    params: { id: string }
-    request: Request
-  }) => {
+  enableAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
     try {
       const req = request
       const actorLevel = req.member?.accountLevel ?? 0
@@ -656,13 +644,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * DELETE /api/admin-users/:id - Delete admin user (hard delete)
    */
-  deleteAdminUser: async ({
-    params,
-    request,
-  }: {
-    params: { id: string }
-    request: Request
-  }) => {
+  deleteAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
     try {
       const req = request
 
