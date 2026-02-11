@@ -49,13 +49,13 @@ export function useAcknowledgeAlert() {
   const member = useAuthStore((s) => s.member)
 
   return useMutation({
-    mutationFn: async (alertId: string) => {
+    mutationFn: async ({ alertId, note }: { alertId: string; note?: string }) => {
       if (!member?.id) {
         throw new Error('Not authenticated')
       }
       const response = await apiClient.securityAlerts.acknowledgeAlert({
         params: { id: alertId },
-        body: { adminId: member.id },
+        body: { adminId: member.id, ...(note ? { note } : {}) },
       })
       if (response.status !== 200) {
         throw new Error('Failed to acknowledge alert')

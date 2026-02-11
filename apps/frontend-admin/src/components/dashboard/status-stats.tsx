@@ -177,11 +177,11 @@ function BuildingStat({
 
   return (
     <StatContainer>
-      <div className="stat-figure text-primary">
+      <div className="stat-figure text-success">
         <StatusIcon size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Building Status</div>
-      <div className="stat-value font-display text-primary text-3xl">{display.label}</div>
+      <div className="stat-value font-display text-success text-3xl">{display.label}</div>
       <div className="stat-desc">{getDesc()}</div>
     </StatContainer>
   )

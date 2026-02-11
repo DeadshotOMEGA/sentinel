@@ -24,8 +24,9 @@ const POSITION_COLOR = 'border border-secondary bg-secondary/10 text-secondary'
 // Reuse faded color classes from Chip component for avatar styling
 const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
 
-// Tags that represent active responsibilities (shown only when person holds the role)
+// Tag names that represent active responsibilities — hidden from chips when not in role
 const RESPONSIBILITY_TAG_NAMES = ['DDS']
+const FTS_TAG_NAME = 'FTS'
 
 interface PersonAvatarProps {
   person: PresentPerson
@@ -34,18 +35,7 @@ interface PersonAvatarProps {
 }
 
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
-  // Priority 1: Duty position
-  if (dutyPosition) {
-    return (
-      <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
-        <div className={`w-10 rounded-full ${POSITION_COLOR}`}>
-          <span className="text-xs font-bold">{dutyPosition}</span>
-        </div>
-      </div>
-    )
-  }
-
-  // Priority 2: Active DDS
+  // Priority 1: Active DDS
   if (isDds) {
     const ddsTag = person.tags?.find((t) => t.name === 'DDS')
     const colorClass = ddsTag?.chipColor
@@ -60,11 +50,28 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     )
   }
 
-  // Priority 3: First non-responsibility, non-positional tag (for members)
+  // Priority 2: Duty Watch position
+  if (dutyPosition) {
+    return (
+      <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
+        <div className={`w-10 rounded-full ${POSITION_COLOR}`}>
+          <span className="text-xs font-bold">{dutyPosition}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Priority 3+: Tag-based avatar (FTS first, then by displayOrder)
   if (person.type === 'member') {
-    const displayTag = person.tags?.find(
+    const nonPositionalTags = person.tags?.filter(
       (t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional
     )
+
+    // Priority 3: FTS tag
+    const ftsTag = nonPositionalTags?.find((t) => t.name === FTS_TAG_NAME)
+    // Priority 4: Other non-positional tags sorted by displayOrder (already sorted from backend)
+    const displayTag = ftsTag ?? nonPositionalTags?.[0]
+
     if (displayTag) {
       const abbrev =
         displayTag.name.match(/[A-Z]/g)?.join('') || displayTag.name.slice(0, 2).toUpperCase()
@@ -81,7 +88,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     }
   }
 
-  // Priority 4: Default initials
+  // Priority 5: Default initials
   const initials = person.name
     .split(' ')
     .map((n) => n[0])
@@ -112,11 +119,15 @@ export const PersonCard = memo(function PersonCard({
 }: PersonCardProps) {
   const isMember = person.type === 'member'
 
-  // Determine which tag the avatar is displaying (if any) to avoid showing it as a chip too
-  const avatarTagId =
-    isMember && !dutyPosition && !isDds
-      ? person.tags?.find((t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional)?.id
-      : undefined
+  // Determine which tag the avatar is displaying (if any) to suppress from chip row
+  const avatarTagId = (() => {
+    if (!isMember || isDds || dutyPosition) return undefined
+    const nonPositionalTags = person.tags?.filter(
+      (t) => !RESPONSIBILITY_TAG_NAMES.includes(t.name) && !t.isPositional
+    )
+    const ftsTag = nonPositionalTags?.find((t) => t.name === FTS_TAG_NAME)
+    return (ftsTag ?? nonPositionalTags?.[0])?.id
+  })()
 
   // Card border color: subtle indicator for member vs visitor
   const cardBorderClass = isMember
@@ -165,7 +176,11 @@ export const PersonCard = memo(function PersonCard({
           {isMember ? (
             <div className="flex flex-wrap gap-1">
               {person.tags
-                ?.filter((tag) => tag.source !== 'qualification' && tag.id !== avatarTagId)
+                ?.filter((tag) => {
+                  if (tag.source === 'qualification') return false
+                  if (tag.id === avatarTagId) return false
+                  return true
+                })
                 .map((tag) => (
                   <Chip
                     key={tag.id}
