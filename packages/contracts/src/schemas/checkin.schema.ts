@@ -90,7 +90,7 @@ export const CheckinWithMemberResponseSchema = v.object({
       rank: v.string(),
       firstName: v.string(),
       lastName: v.string(),
-      divisionId: v.string(),
+      divisionId: v.nullable(v.string()),
     })
   ),
 })
@@ -165,6 +165,7 @@ export const PresentPersonSchema = v.object({
         chipVariant: v.optional(v.string()),
         chipColor: v.optional(v.string()),
         isPositional: v.optional(v.boolean()),
+        displayOrder: v.optional(v.number()),
         source: v.optional(v.picklist(['direct', 'qualification'])),
       })
     )

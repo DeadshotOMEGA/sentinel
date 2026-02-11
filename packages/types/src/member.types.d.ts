@@ -8,7 +8,7 @@ export interface Member {
     lastName: string;
     initials?: string;
     rank: string;
-    divisionId: string;
+    divisionId?: string;
     mess?: string;
     moc?: string;
     memberType: MemberType;
@@ -52,7 +52,7 @@ export interface Tag {
     updatedAt: Date;
 }
 export interface MemberWithDivision extends Member {
-    division: Division;
+    division?: Division;
     badge?: Badge;
     tags?: Tag[];
 }

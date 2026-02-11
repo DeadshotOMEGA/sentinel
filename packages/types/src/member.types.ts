@@ -14,7 +14,7 @@ export interface Member {
   lastName: string
   initials?: string
   rank: string
-  divisionId: string
+  divisionId?: string
   mess?: string
   moc?: string
   memberType: MemberType
@@ -54,7 +54,7 @@ export interface QualificationSummary {
 }
 
 export interface MemberWithDivision extends Member {
-  division: Division
+  division?: Division
   badge?: Badge
   tags?: Tag[]
   qualifications?: QualificationSummary[]

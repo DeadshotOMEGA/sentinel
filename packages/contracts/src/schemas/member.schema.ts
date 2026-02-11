@@ -120,7 +120,7 @@ export const MemberResponseSchema = v.object({
   middleInitial: v.nullable(v.string()),
   email: v.nullable(v.string()),
   phoneNumber: v.nullable(v.string()),
-  divisionId: v.string(),
+  divisionId: v.nullable(v.string()),
   badgeId: v.nullable(v.string()),
   badgeStatus: v.optional(BadgeStatusSummarySchema),
   memberTypeId: v.nullable(v.string()),
@@ -146,7 +146,12 @@ export const MemberListQuerySchema = v.object({
   rank: v.optional(v.string()),
   status: v.optional(v.string()),
   qualificationCode: v.optional(v.string()),
-  includeHidden: v.optional(v.pipe(v.string(), v.transform((s) => s === 'true'))),
+  includeHidden: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((s) => s === 'true')
+    )
+  ),
 })
 
 /**
