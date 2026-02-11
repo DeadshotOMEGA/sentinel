@@ -146,6 +146,7 @@ export const MemberListQuerySchema = v.object({
   rank: v.optional(v.string()),
   status: v.optional(v.string()),
   qualificationCode: v.optional(v.string()),
+  includeHidden: v.optional(v.pipe(v.string(), v.transform((s) => s === 'true'))),
 })
 
 /**
