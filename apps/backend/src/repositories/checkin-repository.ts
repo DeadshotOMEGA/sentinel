@@ -764,8 +764,9 @@ export class CheckinRepository {
               'chipVariant', t.chip_variant,
               'chipColor', t.chip_color,
               'isPositional', t.is_positional,
+              'displayOrder', t.display_order,
               'source', amt.source
-            ) ORDER BY t.name
+            ) ORDER BY t.display_order, t.name
           ) as tags
         FROM all_member_tags amt
         INNER JOIN tags t ON amt.tag_id = t.id
@@ -956,9 +957,12 @@ export class CheckinRepository {
     // Calculate the operational day cutoff (3am today in local timezone)
     // Activity before this cutoff belongs to a previous operational day
     const now = DateTime.now().setZone(DEFAULT_TIMEZONE)
-    const cutoff = now.hour < OPERATIONAL_DAY_START_HOUR
-      ? now.minus({ days: 1 }).set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
-      : now.set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+    const cutoff =
+      now.hour < OPERATIONAL_DAY_START_HOUR
+        ? now
+            .minus({ days: 1 })
+            .set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+        : now.set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
     const cutoffDate = cutoff.toJSDate()
 
     // Use raw query for UNION (not supported in Prisma)

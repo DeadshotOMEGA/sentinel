@@ -112,11 +112,21 @@ export class SecurityAlertService {
   /**
    * Acknowledge a security alert
    */
-  async acknowledgeAlert(
-    alertId: string,
-    adminId: string,
-    note?: string
-  ): Promise<ActiveAlert> {
+  async acknowledgeAlert(alertId: string, memberId: string, note?: string): Promise<ActiveAlert> {
+    // Verify member exists and has Admin (5) or Developer (6) level
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { id: true, accountLevel: true },
+    })
+
+    if (!member) {
+      throw new NotFoundError('Member', memberId)
+    }
+
+    if (member.accountLevel < 5) {
+      throw new ValidationError('Only Admin or Developer level members can acknowledge alerts')
+    }
+
     // Check if alert exists
     const existing = await this.prisma.securityAlert.findUnique({
       where: { id: alertId },
@@ -134,7 +144,7 @@ export class SecurityAlertService {
       where: { id: alertId },
       data: {
         status: 'acknowledged',
-        acknowledgedBy: adminId,
+        acknowledgedBy: memberId,
         acknowledgedAt: new Date(),
         acknowledgeNote: note ?? null,
       },

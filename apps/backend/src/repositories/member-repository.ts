@@ -26,10 +26,6 @@ interface MemberFilters extends MemberFilterParams {
  * Convert Prisma Member (with null) to shared Member type (with undefined)
  */
 function toMember(prismaMember: PrismaMember): Member {
-  if (!prismaMember.divisionId) {
-    throw new Error('Member must have a divisionId')
-  }
-
   return {
     id: prismaMember.id,
     serviceNumber: prismaMember.serviceNumber,
@@ -38,7 +34,7 @@ function toMember(prismaMember: PrismaMember): Member {
     lastName: prismaMember.lastName,
     initials: prismaMember.initials ?? undefined,
     rank: prismaMember.rank,
-    divisionId: prismaMember.divisionId,
+    divisionId: prismaMember.divisionId ?? undefined,
     mess: prismaMember.mess ?? undefined,
     moc: prismaMember.moc ?? undefined,
     memberType: prismaMember.memberType as MemberType,
@@ -127,20 +123,18 @@ function toMemberWithDivision(
     }>
   }
 ): MemberWithDivision {
-  if (!prismaMember.division) {
-    throw new Error('Member must have a division loaded')
-  }
-
   const base = {
     ...toMember(prismaMember),
-    division: {
-      id: prismaMember.division.id,
-      name: prismaMember.division.name,
-      code: prismaMember.division.code,
-      description: prismaMember.division.description ?? undefined,
-      createdAt: prismaMember.division.createdAt ?? new Date(),
-      updatedAt: prismaMember.division.updatedAt ?? new Date(),
-    },
+    division: prismaMember.division
+      ? {
+          id: prismaMember.division.id,
+          name: prismaMember.division.name,
+          code: prismaMember.division.code,
+          description: prismaMember.division.description ?? undefined,
+          createdAt: prismaMember.division.createdAt ?? new Date(),
+          updatedAt: prismaMember.division.updatedAt ?? new Date(),
+        }
+      : undefined,
   }
 
   // Add badge if included and exists
@@ -336,10 +330,7 @@ export class MemberRepository {
       where.AND = [
         ...existingAnd,
         {
-          OR: [
-            { memberStatusId: null },
-            { memberStatusRef: { isHidden: false } },
-          ],
+          OR: [{ memberStatusId: null }, { memberStatusRef: { isHidden: false } }],
         },
       ]
     }
@@ -349,10 +340,10 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-            include: {
-              badgeStatusRef: true,
-            },
+          include: {
+            badgeStatusRef: true,
           },
+        },
         rankRef: true,
         memberTags: {
           include: {
@@ -517,10 +508,7 @@ export class MemberRepository {
       where.AND = [
         ...existingAnd,
         {
-          OR: [
-            { memberStatusId: null },
-            { memberStatusRef: { isHidden: false } },
-          ],
+          OR: [{ memberStatusId: null }, { memberStatusRef: { isHidden: false } }],
         },
       ]
     }
@@ -580,10 +568,10 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-            include: {
-              badgeStatusRef: true,
-            },
+          include: {
+            badgeStatusRef: true,
           },
+        },
         memberTags: {
           include: {
             tag: true,
@@ -806,10 +794,10 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-            include: {
-              badgeStatusRef: true,
-            },
+          include: {
+            badgeStatusRef: true,
           },
+        },
         memberTags: {
           include: {
             tag: true,
@@ -857,10 +845,10 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-            include: {
-              badgeStatusRef: true,
-            },
+          include: {
+            badgeStatusRef: true,
           },
+        },
         memberTags: {
           include: {
             tag: true,

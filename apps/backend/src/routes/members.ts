@@ -26,7 +26,13 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Get all members with pagination
    */
-  getMembers: async ({ query, req }: { query: MemberListQuery; req: { member?: { accountLevel?: number } } }) => {
+  getMembers: async ({
+    query,
+    req,
+  }: {
+    query: MemberListQuery
+    req: { member?: { accountLevel?: number } }
+  }) => {
     try {
       const page = query.page ? Number(query.page) : 1
       const limit = query.limit ? Number(query.limit) : 50
@@ -35,7 +41,13 @@ export const membersRouter = s.router(memberContract, {
       const isAdmin = (req.member?.accountLevel ?? 0) >= 5
       const includeHidden = query.includeHidden === true && isAdmin
 
-      const filters: { divisionId?: string; search?: string; status?: MemberStatus; qualificationCode?: string; includeHidden?: boolean } = {
+      const filters: {
+        divisionId?: string
+        search?: string
+        status?: MemberStatus
+        qualificationCode?: string
+        includeHidden?: boolean
+      } = {
         divisionId: query.divisionId,
         search: query.search,
         qualificationCode: query.qualificationCode,
@@ -61,7 +73,7 @@ export const membersRouter = s.router(memberContract, {
             middleInitial: member.initials || null,
             email: member.email || null,
             phoneNumber: member.mobilePhone || member.homePhone || null,
-            divisionId: member.divisionId,
+            divisionId: member.divisionId ?? null,
             badgeId: member.badgeId || null,
             badgeStatus: member.badge?.badgeStatusSummary
               ? {
@@ -135,7 +147,7 @@ export const membersRouter = s.router(memberContract, {
           middleInitial: member.initials || null,
           email: member.email || null,
           phoneNumber: member.mobilePhone || member.homePhone || null,
-          divisionId: member.divisionId,
+          divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
           memberTypeId: null,
           memberStatusId: null,
@@ -191,7 +203,7 @@ export const membersRouter = s.router(memberContract, {
           middleInitial: member.initials || null,
           email: member.email || null,
           phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId,
+          divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
           memberTypeId: null,
           memberStatusId: null,
@@ -260,7 +272,7 @@ export const membersRouter = s.router(memberContract, {
           middleInitial: member.initials || null,
           email: member.email || null,
           phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId,
+          divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
           memberTypeId: member.memberTypeId || null,
           memberStatusId: member.memberStatusId || null,
@@ -352,7 +364,7 @@ export const membersRouter = s.router(memberContract, {
           middleInitial: member.initials || null,
           email: member.email || null,
           phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId,
+          divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
           memberTypeId: null,
           memberStatusId: null,

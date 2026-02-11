@@ -290,14 +290,6 @@ export class QualificationService {
    * with canReceiveLockup=true (DDS Qualified, SWK Qualified, or Building Authorized).
    */
   async canMemberReceiveLockup(memberId: string): Promise<boolean> {
-    // Member must have account level >= 3 (Lockup) before qualification check
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { accountLevel: true },
-    })
-    if (!member || member.accountLevel < 3) {
-      return false
-    }
     return this.repository.canMemberReceiveLockup(memberId)
   }
 
