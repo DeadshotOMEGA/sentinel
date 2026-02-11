@@ -28,7 +28,6 @@ model AdminUser {
   auditLogs               AuditLog[]
   checkins                Checkin[]
   report_audit_log        report_audit_log[]
-  securityAlerts          SecurityAlert[]
   visitors                Visitor[]
   ddsAssignments          DdsAssignment[]
   disabledByAdmin         AdminUser?            @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -239,9 +238,10 @@ model Member {
   lockupExecutions         LockupExecution[]
   pinHash                  String?                   @map("pin_hash") @db.VarChar(255)
   accountLevel             Int                       @default(1) @map("account_level")
-  missedCheckouts          MissedCheckout[]
-  unitEventDutyAssignments UnitEventDutyAssignment[]
-  memberSessions           MemberSession[]
+  missedCheckouts              MissedCheckout[]
+  unitEventDutyAssignments     UnitEventDutyAssignment[]
+  memberSessions               MemberSession[]
+  acknowledgedSecurityAlerts   SecurityAlert[]              @relation("AlertAcknowledgedBy")
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -320,7 +320,7 @@ model SecurityAlert {
   acknowledgeNote String?   @map("acknowledge_note")
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
 
-  acknowledgedByAdmin AdminUser? @relation(fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
+  acknowledgedByMember Member? @relation("AlertAcknowledgedBy", fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
 
   @@index([status], map: "idx_security_alerts_status")
   @@index([alertType], map: "idx_security_alerts_type")

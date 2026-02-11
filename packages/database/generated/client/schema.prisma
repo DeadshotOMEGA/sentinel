@@ -28,7 +28,6 @@ model AdminUser {
   auditLogs               AuditLog[]
   checkins                Checkin[]
   report_audit_log        report_audit_log[]
-  securityAlerts          SecurityAlert[]
   visitors                Visitor[]
   ddsAssignments          DdsAssignment[]
   disabledByAdmin         AdminUser?            @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -190,58 +189,59 @@ model Event {
 }
 
 model Member {
-  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  serviceNumber            String                    @unique @map("service_number") @db.VarChar(20)
-  rankId                   String                    @map("rank_id") @db.Uuid
-  rank                     String                    @db.VarChar(50)
-  firstName                String                    @map("first_name") @db.VarChar(100)
-  lastName                 String                    @map("last_name") @db.VarChar(100)
-  email                    String?                   @db.VarChar(255)
-  mobilePhone              String?                   @map("mobile_phone") @db.VarChar(50)
-  divisionId               String?                   @map("division_id") @db.Uuid
-  badgeId                  String?                   @map("badge_id") @db.Uuid
-  memberType               String                    @map("member_type") @db.VarChar(20)
-  status                   String                    @default("active") @db.VarChar(20)
-  memberTypeId             String?                   @map("member_type_id") @db.Uuid
-  memberStatusId           String?                   @map("member_status_id") @db.Uuid
-  createdAt                DateTime?                 @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt                DateTime?                 @default(now()) @map("updated_at") @db.Timestamp(6)
-  employeeNumber           String?                   @map("employee_number") @db.VarChar(20)
-  initials                 String?                   @db.VarChar(10)
-  mess                     String?                   @db.VarChar(50)
-  moc                      String?                   @db.VarChar(100)
-  classDetails             String?                   @map("class_details") @db.VarChar(100)
-  homePhone                String?                   @map("home_phone") @db.VarChar(30)
-  notes                    String?
-  contract_start           DateTime?                 @db.Date
-  contract_end             DateTime?                 @db.Date
-  missedCheckoutCount      Int                       @default(0) @map("missed_checkout_count")
-  lastMissedCheckout       DateTime?                 @map("last_missed_checkout") @db.Timestamp(6)
-  rankRef                  Rank?                     @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  badge                    Badge?                    @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  bmqEnrollments           BmqEnrollment[]
-  checkins                 Checkin[]
-  division                 Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  visitors                 Visitor[]
-  memberTags               MemberTag[]
-  ddsAssignments           DdsAssignment[]           @relation("DdsMember")
-  ddsTransfers             DdsAssignment[]           @relation("DdsTransferredTo")
-  memberTypeRef            MemberType?               @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  memberStatusRef          MemberStatus?             @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  qualifications           MemberQualification[]
-  scheduleAssignments      ScheduleAssignment[]
-  dwOverridesAsMember      DutyWatchNightOverride[]  @relation("OverrideMember")
-  dwOverridesAsBase        DutyWatchNightOverride[]  @relation("OverrideBaseMember")
-  lockupHolding            LockupStatus[]            @relation("LockupCurrentHolder")
-  lockupSecured            LockupStatus[]            @relation("LockupSecuredBy")
-  lockupTransfersFrom      LockupTransfer[]          @relation("LockupTransferFrom")
-  lockupTransfersTo        LockupTransfer[]          @relation("LockupTransferTo")
-  lockupExecutions         LockupExecution[]
-  pinHash                  String?                   @map("pin_hash") @db.VarChar(255)
-  accountLevel             Int                       @default(1) @map("account_level")
-  missedCheckouts          MissedCheckout[]
-  unitEventDutyAssignments UnitEventDutyAssignment[]
-  memberSessions           MemberSession[]
+  id                         String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serviceNumber              String                    @unique @map("service_number") @db.VarChar(20)
+  rankId                     String                    @map("rank_id") @db.Uuid
+  rank                       String                    @db.VarChar(50)
+  firstName                  String                    @map("first_name") @db.VarChar(100)
+  lastName                   String                    @map("last_name") @db.VarChar(100)
+  email                      String?                   @db.VarChar(255)
+  mobilePhone                String?                   @map("mobile_phone") @db.VarChar(50)
+  divisionId                 String?                   @map("division_id") @db.Uuid
+  badgeId                    String?                   @map("badge_id") @db.Uuid
+  memberType                 String                    @map("member_type") @db.VarChar(20)
+  status                     String                    @default("active") @db.VarChar(20)
+  memberTypeId               String?                   @map("member_type_id") @db.Uuid
+  memberStatusId             String?                   @map("member_status_id") @db.Uuid
+  createdAt                  DateTime?                 @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                  DateTime?                 @default(now()) @map("updated_at") @db.Timestamp(6)
+  employeeNumber             String?                   @map("employee_number") @db.VarChar(20)
+  initials                   String?                   @db.VarChar(10)
+  mess                       String?                   @db.VarChar(50)
+  moc                        String?                   @db.VarChar(100)
+  classDetails               String?                   @map("class_details") @db.VarChar(100)
+  homePhone                  String?                   @map("home_phone") @db.VarChar(30)
+  notes                      String?
+  contract_start             DateTime?                 @db.Date
+  contract_end               DateTime?                 @db.Date
+  missedCheckoutCount        Int                       @default(0) @map("missed_checkout_count")
+  lastMissedCheckout         DateTime?                 @map("last_missed_checkout") @db.Timestamp(6)
+  rankRef                    Rank?                     @relation(fields: [rankId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  badge                      Badge?                    @relation(fields: [badgeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  bmqEnrollments             BmqEnrollment[]
+  checkins                   Checkin[]
+  division                   Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitors                   Visitor[]
+  memberTags                 MemberTag[]
+  ddsAssignments             DdsAssignment[]           @relation("DdsMember")
+  ddsTransfers               DdsAssignment[]           @relation("DdsTransferredTo")
+  memberTypeRef              MemberType?               @relation(fields: [memberTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  memberStatusRef            MemberStatus?             @relation(fields: [memberStatusId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  qualifications             MemberQualification[]
+  scheduleAssignments        ScheduleAssignment[]
+  dwOverridesAsMember        DutyWatchNightOverride[]  @relation("OverrideMember")
+  dwOverridesAsBase          DutyWatchNightOverride[]  @relation("OverrideBaseMember")
+  lockupHolding              LockupStatus[]            @relation("LockupCurrentHolder")
+  lockupSecured              LockupStatus[]            @relation("LockupSecuredBy")
+  lockupTransfersFrom        LockupTransfer[]          @relation("LockupTransferFrom")
+  lockupTransfersTo          LockupTransfer[]          @relation("LockupTransferTo")
+  lockupExecutions           LockupExecution[]
+  pinHash                    String?                   @map("pin_hash") @db.VarChar(255)
+  accountLevel               Int                       @default(1) @map("account_level")
+  missedCheckouts            MissedCheckout[]
+  unitEventDutyAssignments   UnitEventDutyAssignment[]
+  memberSessions             MemberSession[]
+  acknowledgedSecurityAlerts SecurityAlert[]           @relation("AlertAcknowledgedBy")
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -320,7 +320,7 @@ model SecurityAlert {
   acknowledgeNote String?   @map("acknowledge_note")
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
 
-  acknowledgedByAdmin AdminUser? @relation(fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
+  acknowledgedByMember Member? @relation("AlertAcknowledgedBy", fields: [acknowledgedBy], references: [id], onUpdate: NoAction)
 
   @@index([status], map: "idx_security_alerts_status")
   @@index([alertType], map: "idx_security_alerts_type")

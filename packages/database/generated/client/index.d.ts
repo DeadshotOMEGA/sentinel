@@ -5325,7 +5325,6 @@ export namespace Prisma {
     auditLogs: number
     checkins: number
     report_audit_log: number
-    securityAlerts: number
     visitors: number
     ddsAssignments: number
     disabledUsers: number
@@ -5341,7 +5340,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUserCountOutputTypeCountAuditLogsArgs
     checkins?: boolean | AdminUserCountOutputTypeCountCheckinsArgs
     report_audit_log?: boolean | AdminUserCountOutputTypeCountReport_audit_logArgs
-    securityAlerts?: boolean | AdminUserCountOutputTypeCountSecurityAlertsArgs
     visitors?: boolean | AdminUserCountOutputTypeCountVisitorsArgs
     ddsAssignments?: boolean | AdminUserCountOutputTypeCountDdsAssignmentsArgs
     disabledUsers?: boolean | AdminUserCountOutputTypeCountDisabledUsersArgs
@@ -5383,13 +5381,6 @@ export namespace Prisma {
    */
   export type AdminUserCountOutputTypeCountReport_audit_logArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: report_audit_logWhereInput
-  }
-
-  /**
-   * AdminUserCountOutputType without action
-   */
-  export type AdminUserCountOutputTypeCountSecurityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SecurityAlertWhereInput
   }
 
   /**
@@ -5648,6 +5639,7 @@ export namespace Prisma {
     missedCheckouts: number
     unitEventDutyAssignments: number
     memberSessions: number
+    acknowledgedSecurityAlerts: number
   }
 
   export type MemberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5669,6 +5661,7 @@ export namespace Prisma {
     missedCheckouts?: boolean | MemberCountOutputTypeCountMissedCheckoutsArgs
     unitEventDutyAssignments?: boolean | MemberCountOutputTypeCountUnitEventDutyAssignmentsArgs
     memberSessions?: boolean | MemberCountOutputTypeCountMemberSessionsArgs
+    acknowledgedSecurityAlerts?: boolean | MemberCountOutputTypeCountAcknowledgedSecurityAlertsArgs
   }
 
   // Custom InputTypes
@@ -5806,6 +5799,13 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountMemberSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MemberSessionWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountAcknowledgedSecurityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SecurityAlertWhereInput
   }
 
 
@@ -6627,7 +6627,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUser$auditLogsArgs<ExtArgs>
     checkins?: boolean | AdminUser$checkinsArgs<ExtArgs>
     report_audit_log?: boolean | AdminUser$report_audit_logArgs<ExtArgs>
-    securityAlerts?: boolean | AdminUser$securityAlertsArgs<ExtArgs>
     visitors?: boolean | AdminUser$visitorsArgs<ExtArgs>
     ddsAssignments?: boolean | AdminUser$ddsAssignmentsArgs<ExtArgs>
     disabledByAdmin?: boolean | AdminUser$disabledByAdminArgs<ExtArgs>
@@ -6708,7 +6707,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUser$auditLogsArgs<ExtArgs>
     checkins?: boolean | AdminUser$checkinsArgs<ExtArgs>
     report_audit_log?: boolean | AdminUser$report_audit_logArgs<ExtArgs>
-    securityAlerts?: boolean | AdminUser$securityAlertsArgs<ExtArgs>
     visitors?: boolean | AdminUser$visitorsArgs<ExtArgs>
     ddsAssignments?: boolean | AdminUser$ddsAssignmentsArgs<ExtArgs>
     disabledByAdmin?: boolean | AdminUser$disabledByAdminArgs<ExtArgs>
@@ -6737,7 +6735,6 @@ export namespace Prisma {
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       checkins: Prisma.$CheckinPayload<ExtArgs>[]
       report_audit_log: Prisma.$report_audit_logPayload<ExtArgs>[]
-      securityAlerts: Prisma.$SecurityAlertPayload<ExtArgs>[]
       visitors: Prisma.$VisitorPayload<ExtArgs>[]
       ddsAssignments: Prisma.$DdsAssignmentPayload<ExtArgs>[]
       disabledByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
@@ -7164,7 +7161,6 @@ export namespace Prisma {
     auditLogs<T extends AdminUser$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkins<T extends AdminUser$checkinsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$checkinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     report_audit_log<T extends AdminUser$report_audit_logArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$report_audit_logArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$report_audit_logPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    securityAlerts<T extends AdminUser$securityAlertsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$securityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     visitors<T extends AdminUser$visitorsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$visitorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsAssignments<T extends AdminUser$ddsAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$ddsAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     disabledByAdmin<T extends AdminUser$disabledByAdminArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$disabledByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -7695,30 +7691,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: Report_audit_logScalarFieldEnum | Report_audit_logScalarFieldEnum[]
-  }
-
-  /**
-   * AdminUser.securityAlerts
-   */
-  export type AdminUser$securityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SecurityAlert
-     */
-    select?: SecurityAlertSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SecurityAlert
-     */
-    omit?: SecurityAlertOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SecurityAlertInclude<ExtArgs> | null
-    where?: SecurityAlertWhereInput
-    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
-    cursor?: SecurityAlertWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
   }
 
   /**
@@ -16658,6 +16630,7 @@ export namespace Prisma {
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
     unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
     memberSessions?: boolean | Member$memberSessionsArgs<ExtArgs>
+    acknowledgedSecurityAlerts?: boolean | Member$acknowledgedSecurityAlertsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
@@ -16792,6 +16765,7 @@ export namespace Prisma {
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
     unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
     memberSessions?: boolean | Member$memberSessionsArgs<ExtArgs>
+    acknowledgedSecurityAlerts?: boolean | Member$acknowledgedSecurityAlertsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type MemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16835,6 +16809,7 @@ export namespace Prisma {
       missedCheckouts: Prisma.$MissedCheckoutPayload<ExtArgs>[]
       unitEventDutyAssignments: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>[]
       memberSessions: Prisma.$MemberSessionPayload<ExtArgs>[]
+      acknowledgedSecurityAlerts: Prisma.$SecurityAlertPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17283,6 +17258,7 @@ export namespace Prisma {
     missedCheckouts<T extends Member$missedCheckoutsArgs<ExtArgs> = {}>(args?: Subset<T, Member$missedCheckoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MissedCheckoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     unitEventDutyAssignments<T extends Member$unitEventDutyAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$unitEventDutyAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     memberSessions<T extends Member$memberSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Member$memberSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    acknowledgedSecurityAlerts<T extends Member$acknowledgedSecurityAlertsArgs<ExtArgs> = {}>(args?: Subset<T, Member$acknowledgedSecurityAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18270,6 +18246,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+  }
+
+  /**
+   * Member.acknowledgedSecurityAlerts
+   */
+  export type Member$acknowledgedSecurityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SecurityAlert
+     */
+    select?: SecurityAlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SecurityAlert
+     */
+    omit?: SecurityAlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SecurityAlertInclude<ExtArgs> | null
+    where?: SecurityAlertWhereInput
+    orderBy?: SecurityAlertOrderByWithRelationInput | SecurityAlertOrderByWithRelationInput[]
+    cursor?: SecurityAlertWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SecurityAlertScalarFieldEnum | SecurityAlertScalarFieldEnum[]
   }
 
   /**
@@ -21876,7 +21876,7 @@ export namespace Prisma {
     acknowledgedAt?: boolean
     acknowledgeNote?: boolean
     createdAt?: boolean
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }, ExtArgs["result"]["securityAlert"]>
 
   export type SecurityAlertSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -21893,7 +21893,7 @@ export namespace Prisma {
     acknowledgedAt?: boolean
     acknowledgeNote?: boolean
     createdAt?: boolean
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }, ExtArgs["result"]["securityAlert"]>
 
   export type SecurityAlertSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -21910,7 +21910,7 @@ export namespace Prisma {
     acknowledgedAt?: boolean
     acknowledgeNote?: boolean
     createdAt?: boolean
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }, ExtArgs["result"]["securityAlert"]>
 
   export type SecurityAlertSelectScalar = {
@@ -21931,19 +21931,19 @@ export namespace Prisma {
 
   export type SecurityAlertOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "alertType" | "severity" | "badgeSerial" | "memberId" | "kioskId" | "message" | "details" | "status" | "acknowledgedBy" | "acknowledgedAt" | "acknowledgeNote" | "createdAt", ExtArgs["result"]["securityAlert"]>
   export type SecurityAlertInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }
   export type SecurityAlertIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }
   export type SecurityAlertIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    acknowledgedByAdmin?: boolean | SecurityAlert$acknowledgedByAdminArgs<ExtArgs>
+    acknowledgedByMember?: boolean | SecurityAlert$acknowledgedByMemberArgs<ExtArgs>
   }
 
   export type $SecurityAlertPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SecurityAlert"
     objects: {
-      acknowledgedByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
+      acknowledgedByMember: Prisma.$MemberPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -22353,7 +22353,7 @@ export namespace Prisma {
    */
   export interface Prisma__SecurityAlertClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    acknowledgedByAdmin<T extends SecurityAlert$acknowledgedByAdminArgs<ExtArgs> = {}>(args?: Subset<T, SecurityAlert$acknowledgedByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    acknowledgedByMember<T extends SecurityAlert$acknowledgedByMemberArgs<ExtArgs> = {}>(args?: Subset<T, SecurityAlert$acknowledgedByMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22801,22 +22801,22 @@ export namespace Prisma {
   }
 
   /**
-   * SecurityAlert.acknowledgedByAdmin
+   * SecurityAlert.acknowledgedByMember
    */
-  export type SecurityAlert$acknowledgedByAdminArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type SecurityAlert$acknowledgedByMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the AdminUser
+     * Select specific fields to fetch from the Member
      */
-    select?: AdminUserSelect<ExtArgs> | null
+    select?: MemberSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the AdminUser
+     * Omit specific fields from the Member
      */
-    omit?: AdminUserOmit<ExtArgs> | null
+    omit?: MemberOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: AdminUserInclude<ExtArgs> | null
-    where?: AdminUserWhereInput
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
   }
 
   /**
@@ -66078,7 +66078,6 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     checkins?: CheckinListRelationFilter
     report_audit_log?: Report_audit_logListRelationFilter
-    securityAlerts?: SecurityAlertListRelationFilter
     visitors?: VisitorListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     disabledByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
@@ -66112,7 +66111,6 @@ export namespace Prisma {
     auditLogs?: AuditLogOrderByRelationAggregateInput
     checkins?: CheckinOrderByRelationAggregateInput
     report_audit_log?: report_audit_logOrderByRelationAggregateInput
-    securityAlerts?: SecurityAlertOrderByRelationAggregateInput
     visitors?: VisitorOrderByRelationAggregateInput
     ddsAssignments?: DdsAssignmentOrderByRelationAggregateInput
     disabledByAdmin?: AdminUserOrderByWithRelationInput
@@ -66149,7 +66147,6 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     checkins?: CheckinListRelationFilter
     report_audit_log?: Report_audit_logListRelationFilter
-    securityAlerts?: SecurityAlertListRelationFilter
     visitors?: VisitorListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     disabledByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
@@ -66841,6 +66838,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutListRelationFilter
     unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
     memberSessions?: MemberSessionListRelationFilter
+    acknowledgedSecurityAlerts?: SecurityAlertListRelationFilter
   }
 
   export type MemberOrderByWithRelationInput = {
@@ -66896,6 +66894,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutOrderByRelationAggregateInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentOrderByRelationAggregateInput
     memberSessions?: MemberSessionOrderByRelationAggregateInput
+    acknowledgedSecurityAlerts?: SecurityAlertOrderByRelationAggregateInput
   }
 
   export type MemberWhereUniqueInput = Prisma.AtLeast<{
@@ -66954,6 +66953,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutListRelationFilter
     unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
     memberSessions?: MemberSessionListRelationFilter
+    acknowledgedSecurityAlerts?: SecurityAlertListRelationFilter
   }, "id" | "serviceNumber">
 
   export type MemberOrderByWithAggregationInput = {
@@ -67249,7 +67249,7 @@ export namespace Prisma {
     acknowledgedAt?: DateTimeNullableFilter<"SecurityAlert"> | Date | string | null
     acknowledgeNote?: StringNullableFilter<"SecurityAlert"> | string | null
     createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
-    acknowledgedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
+    acknowledgedByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
   }
 
   export type SecurityAlertOrderByWithRelationInput = {
@@ -67266,7 +67266,7 @@ export namespace Prisma {
     acknowledgedAt?: SortOrderInput | SortOrder
     acknowledgeNote?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    acknowledgedByAdmin?: AdminUserOrderByWithRelationInput
+    acknowledgedByMember?: MemberOrderByWithRelationInput
   }
 
   export type SecurityAlertWhereUniqueInput = Prisma.AtLeast<{
@@ -67286,7 +67286,7 @@ export namespace Prisma {
     acknowledgedAt?: DateTimeNullableFilter<"SecurityAlert"> | Date | string | null
     acknowledgeNote?: StringNullableFilter<"SecurityAlert"> | string | null
     createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
-    acknowledgedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
+    acknowledgedByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
   }, "id">
 
   export type SecurityAlertOrderByWithAggregationInput = {
@@ -70247,7 +70247,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -70281,7 +70280,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -70311,7 +70309,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -70345,7 +70342,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -71103,6 +71099,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateInput = {
@@ -71153,6 +71150,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUpdateInput = {
@@ -71203,6 +71201,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateInput = {
@@ -71253,6 +71252,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberCreateManyInput = {
@@ -71574,7 +71574,7 @@ export namespace Prisma {
     acknowledgedAt?: Date | string | null
     acknowledgeNote?: string | null
     createdAt?: Date | string
-    acknowledgedByAdmin?: AdminUserCreateNestedOneWithoutSecurityAlertsInput
+    acknowledgedByMember?: MemberCreateNestedOneWithoutAcknowledgedSecurityAlertsInput
   }
 
   export type SecurityAlertUncheckedCreateInput = {
@@ -71606,7 +71606,7 @@ export namespace Prisma {
     acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    acknowledgedByAdmin?: AdminUserUpdateOneWithoutSecurityAlertsNestedInput
+    acknowledgedByMember?: MemberUpdateOneWithoutAcknowledgedSecurityAlertsNestedInput
   }
 
   export type SecurityAlertUncheckedUpdateInput = {
@@ -74923,12 +74923,6 @@ export namespace Prisma {
     none?: report_audit_logWhereInput
   }
 
-  export type SecurityAlertListRelationFilter = {
-    every?: SecurityAlertWhereInput
-    some?: SecurityAlertWhereInput
-    none?: SecurityAlertWhereInput
-  }
-
   export type VisitorListRelationFilter = {
     every?: VisitorWhereInput
     some?: VisitorWhereInput
@@ -74984,10 +74978,6 @@ export namespace Prisma {
   }
 
   export type report_audit_logOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SecurityAlertOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -75652,6 +75642,12 @@ export namespace Prisma {
     none?: MemberSessionWhereInput
   }
 
+  export type SecurityAlertListRelationFilter = {
+    every?: SecurityAlertWhereInput
+    some?: SecurityAlertWhereInput
+    none?: SecurityAlertWhereInput
+  }
+
   export type BmqEnrollmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -75685,6 +75681,10 @@ export namespace Prisma {
   }
 
   export type MemberSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SecurityAlertOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -77694,13 +77694,6 @@ export namespace Prisma {
     connect?: report_audit_logWhereUniqueInput | report_audit_logWhereUniqueInput[]
   }
 
-  export type SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput = {
-    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput> | SecurityAlertCreateWithoutAcknowledgedByAdminInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput[]
-    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput[]
-    createMany?: SecurityAlertCreateManyAcknowledgedByAdminInputEnvelope
-    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-  }
-
   export type VisitorCreateNestedManyWithoutAdmin_usersInput = {
     create?: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput> | VisitorCreateWithoutAdmin_usersInput[] | VisitorUncheckedCreateWithoutAdmin_usersInput[]
     connectOrCreate?: VisitorCreateOrConnectWithoutAdmin_usersInput | VisitorCreateOrConnectWithoutAdmin_usersInput[]
@@ -77795,13 +77788,6 @@ export namespace Prisma {
     connectOrCreate?: report_audit_logCreateOrConnectWithoutAdmin_usersInput | report_audit_logCreateOrConnectWithoutAdmin_usersInput[]
     createMany?: report_audit_logCreateManyAdmin_usersInputEnvelope
     connect?: report_audit_logWhereUniqueInput | report_audit_logWhereUniqueInput[]
-  }
-
-  export type SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput = {
-    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput> | SecurityAlertCreateWithoutAcknowledgedByAdminInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput[]
-    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput[]
-    createMany?: SecurityAlertCreateManyAcknowledgedByAdminInputEnvelope
-    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
   }
 
   export type VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput = {
@@ -77923,20 +77909,6 @@ export namespace Prisma {
     update?: report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput | report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput[]
     updateMany?: report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput | report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput[]
     deleteMany?: report_audit_logScalarWhereInput | report_audit_logScalarWhereInput[]
-  }
-
-  export type SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput = {
-    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput> | SecurityAlertCreateWithoutAcknowledgedByAdminInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput[]
-    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput[]
-    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByAdminInput | SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByAdminInput[]
-    createMany?: SecurityAlertCreateManyAcknowledgedByAdminInputEnvelope
-    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    update?: SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByAdminInput | SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByAdminInput[]
-    updateMany?: SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByAdminInput | SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByAdminInput[]
-    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
   }
 
   export type VisitorUpdateManyWithoutAdmin_usersNestedInput = {
@@ -78125,20 +78097,6 @@ export namespace Prisma {
     update?: report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput | report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput[]
     updateMany?: report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput | report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput[]
     deleteMany?: report_audit_logScalarWhereInput | report_audit_logScalarWhereInput[]
-  }
-
-  export type SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput = {
-    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput> | SecurityAlertCreateWithoutAcknowledgedByAdminInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput[]
-    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput[]
-    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByAdminInput | SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByAdminInput[]
-    createMany?: SecurityAlertCreateManyAcknowledgedByAdminInputEnvelope
-    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
-    update?: SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByAdminInput | SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByAdminInput[]
-    updateMany?: SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByAdminInput | SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByAdminInput[]
-    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
   }
 
   export type VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput = {
@@ -78947,6 +78905,13 @@ export namespace Prisma {
     connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
   }
 
+  export type SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput = {
+    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput> | SecurityAlertCreateWithoutAcknowledgedByMemberInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput[]
+    createMany?: SecurityAlertCreateManyAcknowledgedByMemberInputEnvelope
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+  }
+
   export type BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -79071,6 +79036,13 @@ export namespace Prisma {
     connectOrCreate?: MemberSessionCreateOrConnectWithoutMemberInput | MemberSessionCreateOrConnectWithoutMemberInput[]
     createMany?: MemberSessionCreateManyMemberInputEnvelope
     connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+  }
+
+  export type SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput = {
+    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput> | SecurityAlertCreateWithoutAcknowledgedByMemberInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput[]
+    createMany?: SecurityAlertCreateManyAcknowledgedByMemberInputEnvelope
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -79383,6 +79355,20 @@ export namespace Prisma {
     deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
   }
 
+  export type SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput = {
+    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput> | SecurityAlertCreateWithoutAcknowledgedByMemberInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput[]
+    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByMemberInput | SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByMemberInput[]
+    createMany?: SecurityAlertCreateManyAcknowledgedByMemberInputEnvelope
+    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    update?: SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByMemberInput | SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByMemberInput[]
+    updateMany?: SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByMemberInput | SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByMemberInput[]
+    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+  }
+
   export type BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -79635,6 +79621,20 @@ export namespace Prisma {
     deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
   }
 
+  export type SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput = {
+    create?: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput> | SecurityAlertCreateWithoutAcknowledgedByMemberInput[] | SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput[]
+    connectOrCreate?: SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput | SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput[]
+    upsert?: SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByMemberInput | SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByMemberInput[]
+    createMany?: SecurityAlertCreateManyAcknowledgedByMemberInputEnvelope
+    set?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    disconnect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    delete?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    connect?: SecurityAlertWhereUniqueInput | SecurityAlertWhereUniqueInput[]
+    update?: SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByMemberInput | SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByMemberInput[]
+    updateMany?: SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByMemberInput | SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByMemberInput[]
+    deleteMany?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+  }
+
   export type MemberCreateNestedOneWithoutMemberSessionsInput = {
     create?: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
     connectOrCreate?: MemberCreateOrConnectWithoutMemberSessionsInput
@@ -79761,20 +79761,20 @@ export namespace Prisma {
     update?: XOR<XOR<TagUpdateToOneWithWhereWithoutMemberTagsInput, TagUpdateWithoutMemberTagsInput>, TagUncheckedUpdateWithoutMemberTagsInput>
   }
 
-  export type AdminUserCreateNestedOneWithoutSecurityAlertsInput = {
-    create?: XOR<AdminUserCreateWithoutSecurityAlertsInput, AdminUserUncheckedCreateWithoutSecurityAlertsInput>
-    connectOrCreate?: AdminUserCreateOrConnectWithoutSecurityAlertsInput
-    connect?: AdminUserWhereUniqueInput
+  export type MemberCreateNestedOneWithoutAcknowledgedSecurityAlertsInput = {
+    create?: XOR<MemberCreateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedCreateWithoutAcknowledgedSecurityAlertsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutAcknowledgedSecurityAlertsInput
+    connect?: MemberWhereUniqueInput
   }
 
-  export type AdminUserUpdateOneWithoutSecurityAlertsNestedInput = {
-    create?: XOR<AdminUserCreateWithoutSecurityAlertsInput, AdminUserUncheckedCreateWithoutSecurityAlertsInput>
-    connectOrCreate?: AdminUserCreateOrConnectWithoutSecurityAlertsInput
-    upsert?: AdminUserUpsertWithoutSecurityAlertsInput
-    disconnect?: AdminUserWhereInput | boolean
-    delete?: AdminUserWhereInput | boolean
-    connect?: AdminUserWhereUniqueInput
-    update?: XOR<XOR<AdminUserUpdateToOneWithWhereWithoutSecurityAlertsInput, AdminUserUpdateWithoutSecurityAlertsInput>, AdminUserUncheckedUpdateWithoutSecurityAlertsInput>
+  export type MemberUpdateOneWithoutAcknowledgedSecurityAlertsNestedInput = {
+    create?: XOR<MemberCreateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedCreateWithoutAcknowledgedSecurityAlertsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutAcknowledgedSecurityAlertsInput
+    upsert?: MemberUpsertWithoutAcknowledgedSecurityAlertsInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutAcknowledgedSecurityAlertsInput, MemberUpdateWithoutAcknowledgedSecurityAlertsInput>, MemberUncheckedUpdateWithoutAcknowledgedSecurityAlertsInput>
   }
 
   export type AdminUserCreateNestedOneWithoutVisitorsInput = {
@@ -81787,46 +81787,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type SecurityAlertCreateWithoutAcknowledgedByAdminInput = {
-    id?: string
-    alertType: string
-    severity: string
-    badgeSerial?: string | null
-    memberId?: string | null
-    kioskId: string
-    message: string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: string
-    acknowledgedAt?: Date | string | null
-    acknowledgeNote?: string | null
-    createdAt?: Date | string
-  }
-
-  export type SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput = {
-    id?: string
-    alertType: string
-    severity: string
-    badgeSerial?: string | null
-    memberId?: string | null
-    kioskId: string
-    message: string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: string
-    acknowledgedAt?: Date | string | null
-    acknowledgeNote?: string | null
-    createdAt?: Date | string
-  }
-
-  export type SecurityAlertCreateOrConnectWithoutAcknowledgedByAdminInput = {
-    where: SecurityAlertWhereUniqueInput
-    create: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput>
-  }
-
-  export type SecurityAlertCreateManyAcknowledgedByAdminInputEnvelope = {
-    data: SecurityAlertCreateManyAcknowledgedByAdminInput | SecurityAlertCreateManyAcknowledgedByAdminInput[]
-    skipDuplicates?: boolean
-  }
-
   export type VisitorCreateWithoutAdmin_usersInput = {
     id?: string
     name: string
@@ -81927,7 +81887,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -81960,7 +81919,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -81994,7 +81952,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -82027,7 +81984,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -82061,7 +82017,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -82093,7 +82048,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -82133,7 +82087,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -82165,7 +82118,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -82472,41 +82424,6 @@ export namespace Prisma {
     generation_time_ms?: IntNullableFilter<"report_audit_log"> | number | null
   }
 
-  export type SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByAdminInput = {
-    where: SecurityAlertWhereUniqueInput
-    update: XOR<SecurityAlertUpdateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedUpdateWithoutAcknowledgedByAdminInput>
-    create: XOR<SecurityAlertCreateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByAdminInput>
-  }
-
-  export type SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByAdminInput = {
-    where: SecurityAlertWhereUniqueInput
-    data: XOR<SecurityAlertUpdateWithoutAcknowledgedByAdminInput, SecurityAlertUncheckedUpdateWithoutAcknowledgedByAdminInput>
-  }
-
-  export type SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByAdminInput = {
-    where: SecurityAlertScalarWhereInput
-    data: XOR<SecurityAlertUpdateManyMutationInput, SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminInput>
-  }
-
-  export type SecurityAlertScalarWhereInput = {
-    AND?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
-    OR?: SecurityAlertScalarWhereInput[]
-    NOT?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
-    id?: UuidFilter<"SecurityAlert"> | string
-    alertType?: StringFilter<"SecurityAlert"> | string
-    severity?: StringFilter<"SecurityAlert"> | string
-    badgeSerial?: StringNullableFilter<"SecurityAlert"> | string | null
-    memberId?: UuidNullableFilter<"SecurityAlert"> | string | null
-    kioskId?: StringFilter<"SecurityAlert"> | string
-    message?: StringFilter<"SecurityAlert"> | string
-    details?: JsonNullableFilter<"SecurityAlert">
-    status?: StringFilter<"SecurityAlert"> | string
-    acknowledgedBy?: UuidNullableFilter<"SecurityAlert"> | string | null
-    acknowledgedAt?: DateTimeNullableFilter<"SecurityAlert"> | Date | string | null
-    acknowledgeNote?: StringNullableFilter<"SecurityAlert"> | string | null
-    createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
-  }
-
   export type VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput = {
     where: VisitorWhereUniqueInput
     update: XOR<VisitorUpdateWithoutAdmin_usersInput, VisitorUncheckedUpdateWithoutAdmin_usersInput>
@@ -82607,7 +82524,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -82640,7 +82556,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -82680,7 +82595,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -82713,7 +82627,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -82926,7 +82839,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -82959,7 +82871,6 @@ export namespace Prisma {
     updatedBy?: string | null
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -83004,7 +82915,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -83037,7 +82947,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -83204,6 +83113,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBadgeInput = {
@@ -83253,6 +83163,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBadgeInput = {
@@ -83572,7 +83483,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -83605,7 +83515,6 @@ export namespace Prisma {
     updatedBy?: string | null
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -83669,6 +83578,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutCheckinsInput = {
@@ -83718,6 +83628,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutCheckinsInput = {
@@ -83796,7 +83707,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -83829,7 +83739,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -83899,6 +83808,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutCheckinsInput = {
@@ -83948,6 +83858,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberCreateWithoutDivisionInput = {
@@ -83997,6 +83908,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDivisionInput = {
@@ -84046,6 +83958,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDivisionInput = {
@@ -85321,6 +85234,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type SecurityAlertCreateWithoutAcknowledgedByMemberInput = {
+    id?: string
+    alertType: string
+    severity: string
+    badgeSerial?: string | null
+    memberId?: string | null
+    kioskId: string
+    message: string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: string
+    acknowledgedAt?: Date | string | null
+    acknowledgeNote?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput = {
+    id?: string
+    alertType: string
+    severity: string
+    badgeSerial?: string | null
+    memberId?: string | null
+    kioskId: string
+    message: string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: string
+    acknowledgedAt?: Date | string | null
+    acknowledgeNote?: string | null
+    createdAt?: Date | string
+  }
+
+  export type SecurityAlertCreateOrConnectWithoutAcknowledgedByMemberInput = {
+    where: SecurityAlertWhereUniqueInput
+    create: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput>
+  }
+
+  export type SecurityAlertCreateManyAcknowledgedByMemberInputEnvelope = {
+    data: SecurityAlertCreateManyAcknowledgedByMemberInput | SecurityAlertCreateManyAcknowledgedByMemberInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RankUpsertWithoutMembersInput = {
     update: XOR<RankUpdateWithoutMembersInput, RankUncheckedUpdateWithoutMembersInput>
     create: XOR<RankCreateWithoutMembersInput, RankUncheckedCreateWithoutMembersInput>
@@ -85918,6 +85871,41 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
   }
 
+  export type SecurityAlertUpsertWithWhereUniqueWithoutAcknowledgedByMemberInput = {
+    where: SecurityAlertWhereUniqueInput
+    update: XOR<SecurityAlertUpdateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedUpdateWithoutAcknowledgedByMemberInput>
+    create: XOR<SecurityAlertCreateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedCreateWithoutAcknowledgedByMemberInput>
+  }
+
+  export type SecurityAlertUpdateWithWhereUniqueWithoutAcknowledgedByMemberInput = {
+    where: SecurityAlertWhereUniqueInput
+    data: XOR<SecurityAlertUpdateWithoutAcknowledgedByMemberInput, SecurityAlertUncheckedUpdateWithoutAcknowledgedByMemberInput>
+  }
+
+  export type SecurityAlertUpdateManyWithWhereWithoutAcknowledgedByMemberInput = {
+    where: SecurityAlertScalarWhereInput
+    data: XOR<SecurityAlertUpdateManyMutationInput, SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberInput>
+  }
+
+  export type SecurityAlertScalarWhereInput = {
+    AND?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+    OR?: SecurityAlertScalarWhereInput[]
+    NOT?: SecurityAlertScalarWhereInput | SecurityAlertScalarWhereInput[]
+    id?: UuidFilter<"SecurityAlert"> | string
+    alertType?: StringFilter<"SecurityAlert"> | string
+    severity?: StringFilter<"SecurityAlert"> | string
+    badgeSerial?: StringNullableFilter<"SecurityAlert"> | string | null
+    memberId?: UuidNullableFilter<"SecurityAlert"> | string | null
+    kioskId?: StringFilter<"SecurityAlert"> | string
+    message?: StringFilter<"SecurityAlert"> | string
+    details?: JsonNullableFilter<"SecurityAlert">
+    status?: StringFilter<"SecurityAlert"> | string
+    acknowledgedBy?: UuidNullableFilter<"SecurityAlert"> | string | null
+    acknowledgedAt?: DateTimeNullableFilter<"SecurityAlert"> | Date | string | null
+    acknowledgeNote?: StringNullableFilter<"SecurityAlert"> | string | null
+    createdAt?: DateTimeFilter<"SecurityAlert"> | Date | string
+  }
+
   export type MemberCreateWithoutMemberSessionsInput = {
     id?: string
     serviceNumber: string
@@ -85965,6 +85953,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberSessionsInput = {
@@ -86014,6 +86003,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberSessionsInput = {
@@ -86079,6 +86069,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberSessionsInput = {
@@ -86128,6 +86119,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberTagCreateWithoutTagInput = {
@@ -86283,6 +86275,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTagsInput = {
@@ -86332,6 +86325,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTagsInput = {
@@ -86428,6 +86422,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTagsInput = {
@@ -86477,6 +86472,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type TagUpsertWithoutMemberTagsInput = {
@@ -86516,144 +86512,220 @@ export namespace Prisma {
     qualificationTypes?: QualificationTypeUncheckedUpdateManyWithoutTagNestedInput
   }
 
-  export type AdminUserCreateWithoutSecurityAlertsInput = {
+  export type MemberCreateWithoutAcknowledgedSecurityAlertsInput = {
     id?: string
-    username: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
     email?: string | null
-    passwordHash: string
-    displayName: string
-    fullName?: string | null
-    role: string
-    lastLogin?: Date | string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
     createdAt?: Date | string | null
-    first_name?: string | null
-    last_name?: string | null
-    updated_at?: Date | string | null
-    disabled?: boolean
-    disabledAt?: Date | string | null
-    auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
-    checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
-    report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
-    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
-    disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
-    updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
-    disabledUsers?: AdminUserCreateNestedManyWithoutDisabledByAdminInput
-    updatedUsers?: AdminUserCreateNestedManyWithoutUpdatedByAdminInput
-    qualificationsGranted?: MemberQualificationCreateNestedManyWithoutGrantedByAdminInput
-    qualificationsRevoked?: MemberQualificationCreateNestedManyWithoutRevokedByAdminInput
-    schedulesCreated?: WeeklyScheduleCreateNestedManyWithoutCreatedByAdminInput
-    schedulesPublished?: WeeklyScheduleCreateNestedManyWithoutPublishedByAdminInput
-    missedCheckoutsResolved?: MissedCheckoutCreateNestedManyWithoutResolvedByAdminInput
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
-  export type AdminUserUncheckedCreateWithoutSecurityAlertsInput = {
+  export type MemberUncheckedCreateWithoutAcknowledgedSecurityAlertsInput = {
     id?: string
-    username: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
     email?: string | null
-    passwordHash: string
-    displayName: string
-    fullName?: string | null
-    role: string
-    lastLogin?: Date | string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
     createdAt?: Date | string | null
-    first_name?: string | null
-    last_name?: string | null
-    updated_at?: Date | string | null
-    disabled?: boolean
-    disabledAt?: Date | string | null
-    disabledBy?: string | null
-    updatedBy?: string | null
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
-    checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
-    report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
-    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
-    disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
-    updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
-    qualificationsGranted?: MemberQualificationUncheckedCreateNestedManyWithoutGrantedByAdminInput
-    qualificationsRevoked?: MemberQualificationUncheckedCreateNestedManyWithoutRevokedByAdminInput
-    schedulesCreated?: WeeklyScheduleUncheckedCreateNestedManyWithoutCreatedByAdminInput
-    schedulesPublished?: WeeklyScheduleUncheckedCreateNestedManyWithoutPublishedByAdminInput
-    missedCheckoutsResolved?: MissedCheckoutUncheckedCreateNestedManyWithoutResolvedByAdminInput
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
-  export type AdminUserCreateOrConnectWithoutSecurityAlertsInput = {
-    where: AdminUserWhereUniqueInput
-    create: XOR<AdminUserCreateWithoutSecurityAlertsInput, AdminUserUncheckedCreateWithoutSecurityAlertsInput>
+  export type MemberCreateOrConnectWithoutAcknowledgedSecurityAlertsInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedCreateWithoutAcknowledgedSecurityAlertsInput>
   }
 
-  export type AdminUserUpsertWithoutSecurityAlertsInput = {
-    update: XOR<AdminUserUpdateWithoutSecurityAlertsInput, AdminUserUncheckedUpdateWithoutSecurityAlertsInput>
-    create: XOR<AdminUserCreateWithoutSecurityAlertsInput, AdminUserUncheckedCreateWithoutSecurityAlertsInput>
-    where?: AdminUserWhereInput
+  export type MemberUpsertWithoutAcknowledgedSecurityAlertsInput = {
+    update: XOR<MemberUpdateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedUpdateWithoutAcknowledgedSecurityAlertsInput>
+    create: XOR<MemberCreateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedCreateWithoutAcknowledgedSecurityAlertsInput>
+    where?: MemberWhereInput
   }
 
-  export type AdminUserUpdateToOneWithWhereWithoutSecurityAlertsInput = {
-    where?: AdminUserWhereInput
-    data: XOR<AdminUserUpdateWithoutSecurityAlertsInput, AdminUserUncheckedUpdateWithoutSecurityAlertsInput>
+  export type MemberUpdateToOneWithWhereWithoutAcknowledgedSecurityAlertsInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutAcknowledgedSecurityAlertsInput, MemberUncheckedUpdateWithoutAcknowledgedSecurityAlertsInput>
   }
 
-  export type AdminUserUpdateWithoutSecurityAlertsInput = {
+  export type MemberUpdateWithoutAcknowledgedSecurityAlertsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    displayName?: StringFieldUpdateOperationsInput | string
-    fullName?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
-    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    first_name?: NullableStringFieldUpdateOperationsInput | string | null
-    last_name?: NullableStringFieldUpdateOperationsInput | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabled?: BoolFieldUpdateOperationsInput | boolean
-    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
-    checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
-    report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
-    ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
-    disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
-    updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
-    disabledUsers?: AdminUserUpdateManyWithoutDisabledByAdminNestedInput
-    updatedUsers?: AdminUserUpdateManyWithoutUpdatedByAdminNestedInput
-    qualificationsGranted?: MemberQualificationUpdateManyWithoutGrantedByAdminNestedInput
-    qualificationsRevoked?: MemberQualificationUpdateManyWithoutRevokedByAdminNestedInput
-    schedulesCreated?: WeeklyScheduleUpdateManyWithoutCreatedByAdminNestedInput
-    schedulesPublished?: WeeklyScheduleUpdateManyWithoutPublishedByAdminNestedInput
-    missedCheckoutsResolved?: MissedCheckoutUpdateManyWithoutResolvedByAdminNestedInput
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
-  export type AdminUserUncheckedUpdateWithoutSecurityAlertsInput = {
+  export type MemberUncheckedUpdateWithoutAcknowledgedSecurityAlertsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    displayName?: StringFieldUpdateOperationsInput | string
-    fullName?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
-    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    first_name?: NullableStringFieldUpdateOperationsInput | string | null
-    last_name?: NullableStringFieldUpdateOperationsInput | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabled?: BoolFieldUpdateOperationsInput | boolean
-    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabledBy?: NullableStringFieldUpdateOperationsInput | string | null
-    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
-    checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
-    disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
-    updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
-    qualificationsGranted?: MemberQualificationUncheckedUpdateManyWithoutGrantedByAdminNestedInput
-    qualificationsRevoked?: MemberQualificationUncheckedUpdateManyWithoutRevokedByAdminNestedInput
-    schedulesCreated?: WeeklyScheduleUncheckedUpdateManyWithoutCreatedByAdminNestedInput
-    schedulesPublished?: WeeklyScheduleUncheckedUpdateManyWithoutPublishedByAdminNestedInput
-    missedCheckoutsResolved?: MissedCheckoutUncheckedUpdateManyWithoutResolvedByAdminNestedInput
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserCreateWithoutVisitorsInput = {
@@ -86674,7 +86746,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -86707,7 +86778,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -86807,6 +86877,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutVisitorsInput = {
@@ -86856,6 +86927,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutVisitorsInput = {
@@ -86956,7 +87028,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -86989,7 +87060,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -87101,6 +87171,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutVisitorsInput = {
@@ -87150,6 +87221,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type BadgeUpsertWithoutVisitorsInput = {
@@ -87348,6 +87420,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBmqEnrollmentsInput = {
@@ -87397,6 +87470,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBmqEnrollmentsInput = {
@@ -87499,6 +87573,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBmqEnrollmentsInput = {
@@ -87548,6 +87623,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type AdminUserCreateWithoutReport_audit_logInput = {
@@ -87567,7 +87643,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -87600,7 +87675,6 @@ export namespace Prisma {
     updatedBy?: string | null
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -87645,7 +87719,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -87678,7 +87751,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -87737,6 +87809,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsAssignmentsInput = {
@@ -87786,6 +87859,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsAssignmentsInput = {
@@ -87840,6 +87914,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsTransfersInput = {
@@ -87889,6 +87964,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsTransfersInput = {
@@ -87914,7 +87990,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -87947,7 +88022,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -88021,6 +88095,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsAssignmentsInput = {
@@ -88070,6 +88145,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUpsertWithoutDdsTransfersInput = {
@@ -88130,6 +88206,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsTransfersInput = {
@@ -88179,6 +88256,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutDdsAssignmentsInput = {
@@ -88210,7 +88288,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -88243,7 +88320,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -88301,6 +88377,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberStatusRefInput = {
@@ -88350,6 +88427,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberStatusRefInput = {
@@ -88425,6 +88503,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTypeRefInput = {
@@ -88474,6 +88553,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTypeRefInput = {
@@ -88684,6 +88764,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutRankRefInput = {
@@ -88733,6 +88814,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutRankRefInput = {
@@ -89339,6 +89421,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutQualificationsInput = {
@@ -89388,6 +89471,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutQualificationsInput = {
@@ -89444,7 +89528,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -89477,7 +89560,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -89511,7 +89593,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -89544,7 +89625,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -89618,6 +89698,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutQualificationsInput = {
@@ -89667,6 +89748,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type QualificationTypeUpsertWithoutMemberQualificationsInput = {
@@ -89735,7 +89817,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -89768,7 +89849,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -89808,7 +89888,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -89841,7 +89920,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -90196,7 +90274,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -90229,7 +90306,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -90263,7 +90339,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -90296,7 +90371,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -90448,7 +90522,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -90481,7 +90554,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -90521,7 +90593,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -90554,7 +90625,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -90708,6 +90778,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutScheduleAssignmentsInput = {
@@ -90757,6 +90828,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutScheduleAssignmentsInput = {
@@ -90898,6 +90970,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutScheduleAssignmentsInput = {
@@ -90947,6 +91020,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type WeeklyScheduleCreateWithoutNightOverridesInput = {
@@ -91060,6 +91134,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDwOverridesAsMemberInput = {
@@ -91109,6 +91184,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDwOverridesAsMemberInput = {
@@ -91163,6 +91239,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDwOverridesAsBaseInput = {
@@ -91212,6 +91289,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDwOverridesAsBaseInput = {
@@ -91353,6 +91431,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDwOverridesAsMemberInput = {
@@ -91402,6 +91481,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUpsertWithoutDwOverridesAsBaseInput = {
@@ -91462,6 +91542,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDwOverridesAsBaseInput = {
@@ -91511,6 +91592,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberCreateWithoutLockupHoldingInput = {
@@ -91560,6 +91642,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupHoldingInput = {
@@ -91609,6 +91692,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupHoldingInput = {
@@ -91663,6 +91747,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupSecuredInput = {
@@ -91712,6 +91797,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupSecuredInput = {
@@ -91834,6 +91920,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupHoldingInput = {
@@ -91883,6 +91970,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupSecuredInput = {
@@ -91943,6 +92031,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupSecuredInput = {
@@ -91992,6 +92081,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type LockupTransferUpsertWithWhereUniqueWithoutLockupStatusInput = {
@@ -92123,6 +92213,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersFromInput = {
@@ -92172,6 +92263,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersFromInput = {
@@ -92226,6 +92318,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersToInput = {
@@ -92275,6 +92368,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersToInput = {
@@ -92379,6 +92473,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersFromInput = {
@@ -92428,6 +92523,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupTransfersToInput = {
@@ -92488,6 +92584,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersToInput = {
@@ -92537,6 +92634,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type LockupStatusCreateWithoutExecutionInput = {
@@ -92619,6 +92717,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupExecutionsInput = {
@@ -92668,6 +92767,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupExecutionsInput = {
@@ -92772,6 +92872,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupExecutionsInput = {
@@ -92821,6 +92922,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberCreateWithoutMissedCheckoutsInput = {
@@ -92870,6 +92972,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMissedCheckoutsInput = {
@@ -92919,6 +93022,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMissedCheckoutsInput = {
@@ -92944,7 +93048,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
@@ -92977,7 +93080,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    securityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByAdminInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
@@ -93051,6 +93153,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMissedCheckoutsInput = {
@@ -93100,6 +93203,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutMissedCheckoutsResolvedInput = {
@@ -93131,7 +93235,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -93164,7 +93267,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -93718,6 +93820,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput = {
@@ -93767,6 +93870,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
   export type MemberCreateOrConnectWithoutUnitEventDutyAssignmentsInput = {
@@ -93920,6 +94024,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput = {
@@ -93969,6 +94074,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type AuditLogCreateManyAdminUserInput = {
@@ -94004,21 +94110,6 @@ export namespace Prisma {
     generated_at?: Date | string | null
     file_size_bytes?: number | null
     generation_time_ms?: number | null
-  }
-
-  export type SecurityAlertCreateManyAcknowledgedByAdminInput = {
-    id?: string
-    alertType: string
-    severity: string
-    badgeSerial?: string | null
-    memberId?: string | null
-    kioskId: string
-    message: string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: string
-    acknowledgedAt?: Date | string | null
-    acknowledgeNote?: string | null
-    createdAt?: Date | string
   }
 
   export type VisitorCreateManyAdmin_usersInput = {
@@ -94259,51 +94350,6 @@ export namespace Prisma {
     generation_time_ms?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type SecurityAlertUpdateWithoutAcknowledgedByAdminInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    alertType?: StringFieldUpdateOperationsInput | string
-    severity?: StringFieldUpdateOperationsInput | string
-    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
-    memberId?: NullableStringFieldUpdateOperationsInput | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    message?: StringFieldUpdateOperationsInput | string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SecurityAlertUncheckedUpdateWithoutAcknowledgedByAdminInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    alertType?: StringFieldUpdateOperationsInput | string
-    severity?: StringFieldUpdateOperationsInput | string
-    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
-    memberId?: NullableStringFieldUpdateOperationsInput | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    message?: StringFieldUpdateOperationsInput | string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    alertType?: StringFieldUpdateOperationsInput | string
-    severity?: StringFieldUpdateOperationsInput | string
-    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
-    memberId?: NullableStringFieldUpdateOperationsInput | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    message?: StringFieldUpdateOperationsInput | string
-    details?: NullableJsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type VisitorUpdateWithoutAdmin_usersInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -94415,7 +94461,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -94447,7 +94492,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -94495,7 +94539,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
@@ -94527,7 +94570,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    securityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByAdminNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
@@ -95013,6 +95055,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBadgeInput = {
@@ -95062,6 +95105,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutBadgeInput = {
@@ -95227,6 +95271,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDivisionInput = {
@@ -95276,6 +95321,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutDivisionInput = {
@@ -95690,6 +95736,21 @@ export namespace Prisma {
     userAgent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type SecurityAlertCreateManyAcknowledgedByMemberInput = {
+    id?: string
+    alertType: string
+    severity: string
+    badgeSerial?: string | null
+    memberId?: string | null
+    kioskId: string
+    message: string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: string
+    acknowledgedAt?: Date | string | null
+    acknowledgeNote?: string | null
+    createdAt?: Date | string
   }
 
   export type BmqEnrollmentUpdateWithoutMemberInput = {
@@ -96339,6 +96400,51 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SecurityAlertUpdateWithoutAcknowledgedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: StringFieldUpdateOperationsInput | string
+    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUncheckedUpdateWithoutAcknowledgedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: StringFieldUpdateOperationsInput | string
+    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    alertType?: StringFieldUpdateOperationsInput | string
+    severity?: StringFieldUpdateOperationsInput | string
+    badgeSerial?: NullableStringFieldUpdateOperationsInput | string | null
+    memberId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    details?: NullableJsonNullValueInput | InputJsonValue
+    status?: StringFieldUpdateOperationsInput | string
+    acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MemberTagCreateManyTagInput = {
     id?: string
     memberId: string
@@ -96523,6 +96629,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberStatusRefInput = {
@@ -96572,6 +96679,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberStatusRefInput = {
@@ -96683,6 +96791,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTypeRefInput = {
@@ -96732,6 +96841,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberTypeRefInput = {
@@ -96981,6 +97091,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutRankRefInput = {
@@ -97030,6 +97141,7 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutRankRefInput = {
