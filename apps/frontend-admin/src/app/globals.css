@@ -69,6 +69,21 @@
   --font-serif: 'Roboto Slab', ui-serif, Georgia, serif;
 }
 
+/* Apply font families globally */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+
+  h1, h2 {
+    font-family: var(--font-display);
+  }
+
+  code, kbd, pre, samp {
+    font-family: var(--font-mono);
+  }
+}
+
 /* ========================================
    DASHBOARD ANIMATIONS
    Naval Operations Center aesthetic
@@ -340,6 +355,36 @@
 .presence-section-header {
   border-bottom: 1px solid oklch(94% 0 0);
   background: oklch(99% 0 0);
+}
+
+/* ========================================
+   TYPOGRAPHY UTILITIES
+   Semantic heading hierarchy
+   ======================================== */
+
+.heading-page {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+.heading-section {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+.heading-subsection {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+.text-caption {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: oklch(from oklch(var(--color-base-content)) l c h / 0.6);
 }
 
 /* ========================================

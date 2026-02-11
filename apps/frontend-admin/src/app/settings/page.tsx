@@ -4,14 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EnumTable } from '@/components/settings/enum-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, BadgeCheck, UserCheck, Building, Tag, Award, Calendar } from 'lucide-react'
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
         <Tabs defaultValue="member-types" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7 lg:w-[1050px]">
+          <TabsList>
             <TabsTrigger value="member-types" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Member Types</span>
@@ -43,85 +42,57 @@ export default function SettingsPage() {
           </TabsList>
 
           <TabsContent value="member-types">
-            <Card>
-              <CardContent>
-                <EnumTable
-                  enumType="member-types"
-                  title="Member Types"
-                  description="Categories for different member employment classifications"
-                />
-              </CardContent>
-            </Card>
+            <EnumTable
+              enumType="member-types"
+              title="Member Types"
+              description="Categories for different member employment classifications"
+            />
           </TabsContent>
 
           <TabsContent value="member-statuses">
-            <Card>
-              <CardContent>
-                <EnumTable
-                  enumType="member-statuses"
-                  title="Member Statuses"
-                  description="Status indicators for member records"
-                />
-              </CardContent>
-            </Card>
+            <EnumTable
+              enumType="member-statuses"
+              title="Member Statuses"
+              description="Status indicators for member records"
+            />
           </TabsContent>
 
           <TabsContent value="badge-statuses">
-            <Card>
-              <CardContent>
-                <EnumTable
-                  enumType="badge-statuses"
-                  title="Badge Statuses"
-                  description="Status indicators for badge records"
-                />
-              </CardContent>
-            </Card>
+            <EnumTable
+              enumType="badge-statuses"
+              title="Badge Statuses"
+              description="Status indicators for badge records"
+            />
           </TabsContent>
 
           <TabsContent value="visit-types">
-            <Card>
-              <CardContent>
-                <EnumTable
-                  enumType="visit-types"
-                  title="Visit Types"
-                  description="Categories for visitor classification"
-                />
-              </CardContent>
-            </Card>
+            <EnumTable
+              enumType="visit-types"
+              title="Visit Types"
+              description="Categories for visitor classification"
+            />
           </TabsContent>
 
           <TabsContent value="qualifications">
-            <Card>
-              <CardContent>
-                <QualificationTypeTable
-                  title="Qualification Types"
-                  description="Qualifications that determine member eligibility for duties like lockup"
-                />
-              </CardContent>
-            </Card>
+            <QualificationTypeTable
+              title="Qualification Types"
+              description="Qualifications that determine member eligibility for duties like lockup"
+            />
           </TabsContent>
 
           <TabsContent value="tags">
-            <Card>
-              <CardContent>
-                <EnumTable
-                  enumType="tags"
-                  title="Tags"
-                  description="Labels for organizing and filtering members"
-                />
-              </CardContent>
-            </Card>
+            <EnumTable
+              enumType="tags"
+              title="Tags"
+              description="Labels for organizing and filtering members"
+            />
           </TabsContent>
 
           <TabsContent value="stat-holidays">
-            <Card>
-              <CardContent>
-                <StatHolidayTable
-                  title="Statutory Holidays"
-                  description="Holidays that affect DDS handover timing and operational days"
-                />
-              </CardContent>
-            </Card>
+            <StatHolidayTable
+              title="Statutory Holidays"
+              description="Holidays that affect DDS handover timing and operational days"
+            />
           </TabsContent>
         </Tabs>
     </div>

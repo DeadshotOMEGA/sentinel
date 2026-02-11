@@ -28,7 +28,7 @@ interface FormData {
 export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
-  const user = useAuthStore((state) => state.user)
+  const member = useAuthStore((state) => state.member)
 
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -117,7 +117,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
         visitType: data.visitType,
         kioskId: 'ADMIN_MANUAL',
         checkInMethod: 'admin_manual',
-        ...(user?.id && UUID_RE.test(user.id) ? { createdByAdmin: user.id } : {}),
+        ...(member?.id && UUID_RE.test(member.id) ? { createdByAdmin: member.id } : {}),
       }
 
       if (data.organization) visitorData.organization = data.organization

@@ -64,11 +64,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         </ul>
       </div>
 
-      <div className="navbar-end">
+      <div className="navbar-end gap-2">
         <span className="badge badge-outline badge-xl">
           <span className={cn('status', dot)} />
           {label}
         </span>
+        <UserMenu />
       </div>
     </div>
   )

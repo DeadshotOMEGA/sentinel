@@ -6,7 +6,7 @@ import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
 import { useDdsStatus } from '@/hooks/use-dds'
-import { useAuthStore } from '@/store/auth-store'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
 
@@ -17,8 +17,8 @@ export function PersonCardGrid() {
   const { data: dutyWatch } = useTonightDutyWatch()
   const { data: ddsStatus } = useDdsStatus()
   const checkoutVisitor = useCheckoutVisitor()
-  const user = useAuthStore((state) => state.user)
-  const canCheckout = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
+  const member = useAuthStore((state) => state.member)
+  const canCheckout = (member?.accountLevel ?? 0) >= AccountLevel.QUARTERMASTER
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
   const [isPending, startTransition] = useTransition()

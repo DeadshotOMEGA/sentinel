@@ -123,7 +123,10 @@ export const useLogViewerStore = create<LogViewerState>((set, get) => ({
   },
 
   setHistory: (logs: LogEntry[]) => {
-    set({ logs: logs.slice(0, MAX_LOGS) })
+    const sorted = [...logs].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    set({ logs: sorted.slice(0, MAX_LOGS) })
   },
 
   setConnected: (connected: boolean) => {
@@ -147,7 +150,7 @@ export function useFilteredLogs(): LogEntry[] {
   const { logs, filters } = useLogViewerStore()
 
   return useMemo(() => {
-    return logs.filter((log) => {
+    const filtered = logs.filter((log) => {
       // Filter by levels
       if (filters.levels.length > 0 && !filters.levels.includes(log.level)) {
         return false
@@ -175,6 +178,11 @@ export function useFilteredLogs(): LogEntry[] {
 
       return true
     })
+
+    // Sort by timestamp descending (newest first)
+    return filtered.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
   }, [logs, filters])
 }
 

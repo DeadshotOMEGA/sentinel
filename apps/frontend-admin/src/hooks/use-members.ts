@@ -12,6 +12,7 @@ interface MembersQueryParams {
   status?: string
   search?: string
   qualificationCode?: string
+  includeHidden?: boolean
 }
 
 export function useMembers(params: MembersQueryParams = {}) {
@@ -27,6 +28,7 @@ export function useMembers(params: MembersQueryParams = {}) {
           status: params.status,
           search: params.search,
           qualificationCode: params.qualificationCode,
+          includeHidden: params.includeHidden ? 'true' : undefined,
         },
       })
       if (response.status !== 200) {

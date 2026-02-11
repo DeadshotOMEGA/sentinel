@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth-store'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,39 +11,65 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut } from 'lucide-react'
+import { ChangePinModal } from '@/components/auth/change-pin-modal'
+import { User, LogOut, KeyRound } from 'lucide-react'
+
+const LEVEL_LABELS: Record<number, string> = {
+  [AccountLevel.BASIC]: 'Basic',
+  [AccountLevel.QUARTERMASTER]: 'Quartermaster',
+  [AccountLevel.LOCKUP]: 'Lockup',
+  [AccountLevel.COMMAND]: 'Command',
+  [AccountLevel.ADMIN]: 'Admin',
+  [AccountLevel.DEVELOPER]: 'Developer',
+}
 
 export function UserMenu() {
   const router = useRouter()
-  const { user, logout } = useAuthStore()
+  const { member, logout } = useAuthStore()
+  const [changePinOpen, setChangePinOpen] = useState(false)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch {
+      // Logout locally even if API call fails
+    }
     logout()
     router.push('/login')
   }
 
-  if (!user) return null
+  if (!member) return null
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" className="btn btn-ghost btn-sm">
-          <User className="h-4 w-4 mr-2" />
-          {user.name}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>
-          <div className="text-xs text-base-content/60">Signed in as</div>
-          <div className="font-semibold">{user.email}</div>
-          <div className="text-xs text-base-content/60 capitalize">{user.role}</div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="btn btn-ghost btn-sm">
+          <User className="h-5 w-5" />
+          {member.rank} {member.lastName}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>
+            Signed in as {member.firstName} {member.lastName}
+            <br />
+            {LEVEL_LABELS[member.accountLevel] ?? `Level ${member.accountLevel}`}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setChangePinOpen(true)}>
+            <KeyRound className="h-5 w-5" />
+            Change PIN
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="h-5 w-5" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ChangePinModal open={changePinOpen} onOpenChange={setChangePinOpen} />
+    </>
   )
 }

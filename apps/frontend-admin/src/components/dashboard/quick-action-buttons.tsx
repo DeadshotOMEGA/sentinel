@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { UserPlus, Users, FileText, Lock, Radio, DoorOpen } from 'lucide-react'
-import { useAuthStore } from '@/store/auth-store'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
 import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
@@ -12,7 +12,7 @@ import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import { useLockupStatus } from '@/hooks/use-lockup'
 
 export function QuickActionButtons() {
-  const user = useAuthStore((state) => state.user)
+  const member = useAuthStore((state) => state.member)
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
   const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false)
   const [isLockupModalOpen, setIsLockupModalOpen] = useState(false)
@@ -24,9 +24,9 @@ export function QuickActionButtons() {
   const currentHolder = lockupStatus?.currentHolder
   const buildingStatus = lockupStatus?.buildingStatus
 
-  // Check user role for permissions
-  const canManualCheckin = user?.role && ['developer', 'admin', 'duty_watch'].includes(user.role)
-  const isAdmin = user?.role && ['developer', 'admin'].includes(user.role)
+  // Check account level for permissions
+  const canManualCheckin = (member?.accountLevel ?? 0) >= AccountLevel.QUARTERMASTER
+  const isAdmin = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
 
   // Context-sensitive lockup button logic
   const isSecured = buildingStatus === 'secured'
@@ -37,7 +37,7 @@ export function QuickActionButtons() {
     <div className="flex flex-wrap gap-3">
       <div
         className={!canManualCheckin ? 'tooltip' : ''}
-        data-tip="Requires duty_watch or admin role"
+        data-tip="Requires Quartermaster level or higher"
       >
         <button
           className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
@@ -51,7 +51,7 @@ export function QuickActionButtons() {
 
       <div
         className={!canManualCheckin ? 'tooltip' : ''}
-        data-tip="Requires duty_watch or admin role"
+        data-tip="Requires Quartermaster level or higher"
       >
         <button
           className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
@@ -72,7 +72,7 @@ export function QuickActionButtons() {
       </button>
 
       {isSecured ? (
-        <div className={!isAdmin ? 'tooltip' : ''} data-tip="Requires admin role">
+        <div className={!isAdmin ? 'tooltip' : ''} data-tip="Requires Admin level or higher">
           <button
             className="btn btn-success btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
             disabled={!isAdmin}

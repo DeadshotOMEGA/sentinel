@@ -3,6 +3,7 @@
 import * as React from "react"
 import { XIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { MODAL_SIZE, type ModalSize } from "@/lib/constants/modal-sizes"
 
 interface DialogProps {
   open?: boolean
@@ -54,14 +55,16 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
+  size?: ModalSize
 }) {
   return (
     <div
       data-slot="dialog-content"
-      className={cn("modal-box", className)}
+      className={cn("modal-box text-base-content", size && MODAL_SIZE[size], className)}
       {...props}
     >
       {children}

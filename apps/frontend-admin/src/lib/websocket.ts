@@ -43,6 +43,11 @@ class WebSocketManager {
     this.socket.on(event, handler)
   }
 
+  emit(event: string, ...args: unknown[]) {
+    if (!this.socket) throw new Error('Socket not initialized')
+    this.socket.emit(event, ...args)
+  }
+
   off(event: string, handler?: (data: unknown) => void) {
     if (!this.socket) throw new Error('Socket not initialized')
     this.socket.off(event, handler)

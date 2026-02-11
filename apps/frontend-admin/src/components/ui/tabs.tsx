@@ -45,7 +45,7 @@ function TabsList({
     <div
       role="tablist"
       data-slot="tabs-list"
-      className={cn("tabs tabs-bordered", className)}
+      className={cn("tabs tabs-box", className)}
       {...props}
     />
   )

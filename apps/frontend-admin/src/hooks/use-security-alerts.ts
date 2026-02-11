@@ -1,9 +1,11 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { apiClient } from '@/lib/api-client'
 import { websocketManager } from '@/lib/websocket'
+import { useAuthStore } from '@/store/auth-store'
 
 export function useSecurityAlerts() {
   const query = useQuery({
@@ -40,4 +42,32 @@ export function useSecurityAlerts() {
   }, [refetch])
 
   return query
+}
+
+export function useAcknowledgeAlert() {
+  const queryClient = useQueryClient()
+  const member = useAuthStore((s) => s.member)
+
+  return useMutation({
+    mutationFn: async (alertId: string) => {
+      if (!member?.id) {
+        throw new Error('Not authenticated')
+      }
+      const response = await apiClient.securityAlerts.acknowledgeAlert({
+        params: { id: alertId },
+        body: { adminId: member.id },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to acknowledge alert')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['security-alerts'] })
+      toast.success('Alert acknowledged')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to acknowledge alert')
+    },
+  })
 }
