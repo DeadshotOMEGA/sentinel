@@ -55,7 +55,7 @@
     "apps/**/*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write",
-      "vitest related --run --reporter=verbose"
+      "vitest related --run --reporter=verbose --no-file-parallelism"
     ],
     "packages/**/*.{ts,tsx}": [
       "eslint --fix",

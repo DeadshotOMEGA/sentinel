@@ -1,6 +1,8 @@
 import { initServer } from '@ts-rest/express'
 import { adminUserContract } from '@sentinel/contracts'
+import type { CreateAdminUser, UpdateAdminUser, ResetPassword } from '@sentinel/contracts'
 import type { AdminRole } from '@sentinel/types'
+import type { Request } from 'express'
 import { AdminUserRepository } from '../repositories/admin-user-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -14,18 +16,23 @@ const adminUserRepo = new AdminUserRepository(getPrismaClient())
 const auditRepo = new AuditRepository(getPrismaClient())
 
 /**
- * Check if actor can manage target role (privilege escalation check)
- * - Admins can only manage quartermaster and admin accounts
- * - Developers can manage all accounts
+ * Map AdminUser string roles to numeric levels for comparison
  */
-function canManageRole(actorRole: string, targetRole: AdminRole): boolean {
-  if (actorRole === 'developer') {
-    return true
-  }
-  if (actorRole === 'admin') {
-    return targetRole !== 'developer'
-  }
-  return false
+const ADMIN_ROLE_LEVEL: Record<string, number> = {
+  quartermaster: 2,
+  duty_watch: 2,
+  executive: 4,
+  admin: 5,
+  developer: 6,
+}
+
+/**
+ * Check if actor can manage target role (privilege escalation check)
+ * Actor's account level must be >= the target role's level
+ */
+function canManageRole(actorLevel: number, targetRole: AdminRole): boolean {
+  const targetLevel = ADMIN_ROLE_LEVEL[targetRole] ?? 0
+  return actorLevel >= targetLevel
 }
 
 /**
@@ -115,7 +122,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * GET /api/admin-users/:id - Get admin user by ID
    */
-  getAdminUserById: async ({ params }: any) => {
+  getAdminUserById: async ({ params }: { params: { id: string } }) => {
     try {
       const user = await adminUserRepo.findById(params.id)
 
@@ -151,21 +158,21 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users - Create new admin user
    */
-  createAdminUser: async ({ body, request }: any) => {
+  createAdminUser: async ({ body, request }: { body: CreateAdminUser; request: Request }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
-      const actorRole = req.user?.role ?? ''
+      const req = request
+      const actorLevel = req.member?.accountLevel ?? 0
 
       apiLogger.info('Creating new admin user', {
         username: body.username,
         role: body.role,
-        actorId: req.user?.id,
+        actorId: req.member?.id,
       })
 
       // Privilege escalation check
-      if (!canManageRole(actorRole, body.role)) {
+      if (!canManageRole(actorLevel, body.role)) {
         apiLogger.warn('Privilege escalation attempt blocked', {
-          actorRole,
+          actorLevel,
           targetRole: body.role,
           username: body.username,
         })
@@ -173,7 +180,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot create accounts with the ${body.role} role`,
+            message: `Your account level (${actorLevel}) cannot create accounts with the ${body.role} role`,
           },
         }
       }
@@ -208,7 +215,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: 'user_created',
         entityType: 'admin_user',
         entityId: user.id,
@@ -247,10 +254,18 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * PUT /api/admin-users/:id - Update admin user
    */
-  updateAdminUser: async ({ params, body, request }: any) => {
+  updateAdminUser: async ({
+    params,
+    body,
+    request,
+  }: {
+    params: { id: string }
+    body: UpdateAdminUser
+    request: Request
+  }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
-      const actorRole = req.user?.role ?? ''
+      const req = request
+      const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -265,23 +280,23 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Privilege escalation check for current user role
-      if (!canManageRole(actorRole, existingUser.role)) {
+      if (!canManageRole(actorLevel, existingUser.role)) {
         return {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot modify accounts with the ${existingUser.role} role`,
+            message: `Your account level (${actorLevel}) cannot modify accounts with the ${existingUser.role} role`,
           },
         }
       }
 
       // Privilege escalation check for target role (if changing role)
-      if (body.role && !canManageRole(actorRole, body.role)) {
+      if (body.role && !canManageRole(actorLevel, body.role)) {
         return {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot assign the ${body.role} role`,
+            message: `Your account level (${actorLevel}) cannot assign the ${body.role} role`,
           },
         }
       }
@@ -322,11 +337,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       const roleChanged = body.role && body.role !== existingUser.role
 
       // Update user
-      const user = await adminUserRepo.update(params.id, body, req.user?.id)
+      const user = await adminUserRepo.update(params.id, body, req.member?.id)
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: roleChanged ? 'role_changed' : 'user_updated',
         entityType: 'admin_user',
         entityId: user.id,
@@ -361,10 +376,18 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/reset-password - Reset admin user password
    */
-  resetAdminUserPassword: async ({ params, body, request }: any) => {
+  resetAdminUserPassword: async ({
+    params,
+    body,
+    request,
+  }: {
+    params: { id: string }
+    body: ResetPassword
+    request: Request
+  }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
-      const actorRole = req.user?.role ?? ''
+      const req = request
+      const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -379,12 +402,12 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Privilege escalation check
-      if (!canManageRole(actorRole, existingUser.role)) {
+      if (!canManageRole(actorLevel, existingUser.role)) {
         return {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot reset passwords for accounts with the ${existingUser.role} role`,
+            message: `Your account level (${actorLevel}) cannot reset passwords for accounts with the ${existingUser.role} role`,
           },
         }
       }
@@ -393,11 +416,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       const passwordHash = await hashPassword(body.newPassword)
 
       // Reset password
-      await adminUserRepo.resetPassword(params.id, passwordHash, req.user?.id ?? 'unknown')
+      await adminUserRepo.resetPassword(params.id, passwordHash, req.member?.id ?? 'unknown')
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: 'password_reset',
         entityType: 'admin_user',
         entityId: params.id,
@@ -432,13 +455,19 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/disable - Disable admin user account
    */
-  disableAdminUser: async ({ params, request }: any) => {
+  disableAdminUser: async ({
+    params,
+    request,
+  }: {
+    params: { id: string }
+    request: Request
+  }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
-      const actorRole = req.user?.role ?? ''
+      const req = request
+      const actorLevel = req.member?.accountLevel ?? 0
 
       // Cannot disable yourself
-      if (req.user?.id === params.id) {
+      if (req.member?.id === params.id) {
         return {
           status: 403 as const,
           body: {
@@ -461,12 +490,12 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Privilege escalation check
-      if (!canManageRole(actorRole, existingUser.role)) {
+      if (!canManageRole(actorLevel, existingUser.role)) {
         return {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot disable accounts with the ${existingUser.role} role`,
+            message: `Your account level (${actorLevel}) cannot disable accounts with the ${existingUser.role} role`,
           },
         }
       }
@@ -503,11 +532,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Disable user
-      await adminUserRepo.disable(params.id, req.user?.id ?? 'unknown')
+      await adminUserRepo.disable(params.id, req.member?.id ?? 'unknown')
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: 'user_disabled',
         entityType: 'admin_user',
         entityId: params.id,
@@ -542,10 +571,16 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/enable - Re-enable disabled admin user account
    */
-  enableAdminUser: async ({ params, request }: any) => {
+  enableAdminUser: async ({
+    params,
+    request,
+  }: {
+    params: { id: string }
+    request: Request
+  }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
-      const actorRole = req.user?.role ?? ''
+      const req = request
+      const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -560,12 +595,12 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Privilege escalation check
-      if (!canManageRole(actorRole, existingUser.role)) {
+      if (!canManageRole(actorLevel, existingUser.role)) {
         return {
           status: 403 as const,
           body: {
             error: 'FORBIDDEN',
-            message: `Your role (${actorRole}) cannot enable accounts with the ${existingUser.role} role`,
+            message: `Your account level (${actorLevel}) cannot enable accounts with the ${existingUser.role} role`,
           },
         }
       }
@@ -586,7 +621,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: 'user_enabled',
         entityType: 'admin_user',
         entityId: params.id,
@@ -621,12 +656,18 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * DELETE /api/admin-users/:id - Delete admin user (hard delete)
    */
-  deleteAdminUser: async ({ params, request }: any) => {
+  deleteAdminUser: async ({
+    params,
+    request,
+  }: {
+    params: { id: string }
+    request: Request
+  }) => {
     try {
-      const req = request as { user?: { id: string; role: string } }
+      const req = request
 
       // Cannot delete yourself
-      if (req.user?.id === params.id) {
+      if (req.member?.id === params.id) {
         return {
           status: 403 as const,
           body: {
@@ -673,7 +714,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.user?.id ?? null,
+        adminUserId: req.member?.id ?? null,
         action: 'user_deleted',
         entityType: 'admin_user',
         entityId: params.id,

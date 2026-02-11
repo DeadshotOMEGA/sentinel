@@ -61,3 +61,34 @@ export const db = {
     setPrismaClient(c)
   },
 }
+
+/**
+ * Wire Prisma client events to Winston logger
+ *
+ * Call this on startup after the Prisma client is initialized.
+ * Requires Prisma client configured with event-based logging.
+ */
+export function configurePrismaLogging(prismaClient: PrismaClientInstance): void {
+  const clientWithEvents = prismaClient as unknown as {
+    $on: (event: string, callback: (e: Record<string, unknown>) => void) => void
+  }
+
+  if (typeof clientWithEvents.$on !== 'function') {
+    dbLogger.warn('Prisma client does not support $on events — skipping log integration')
+    return
+  }
+
+  clientWithEvents.$on('query', (e) => {
+    dbLogger.debug(`${e.query}`, { duration: e.duration, params: e.params })
+  })
+
+  clientWithEvents.$on('error', (e) => {
+    dbLogger.error(String(e.message), { target: e.target })
+  })
+
+  clientWithEvents.$on('warn', (e) => {
+    dbLogger.warn(String(e.message), { target: e.target })
+  })
+
+  dbLogger.info('Prisma query logging wired to Winston')
+}

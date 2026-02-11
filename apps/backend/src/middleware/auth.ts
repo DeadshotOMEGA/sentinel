@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-import { auth } from '../lib/auth.js'
 import { authLogger } from '../lib/logger.js'
 import { requestContext } from '../lib/logger.js'
+import { SessionRepository } from '../repositories/session-repository.js'
+import { getPrismaClient } from '../lib/database.js'
 
 /**
  * Extend Express Request type to include authentication data
@@ -10,20 +11,18 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: {
+      member?: {
         id: string
-        email: string
-        name?: string | null
-        role?: string | null
+        firstName: string
+        lastName: string
+        rank: string
+        serviceNumber: string
+        accountLevel: number
       }
       apiKey?: {
         id: string
         name?: string | null
         scopes?: string[]
-      }
-      session?: {
-        id: string
-        expiresAt: Date
       }
     }
   }
@@ -44,32 +43,35 @@ export class AuthenticationError extends Error {
 }
 
 /**
- * Extract bearer token from Authorization header
+ * Extract session token from sentinel-session cookie or Authorization: Bearer header
  */
-function extractBearerToken(req: Request): string | null {
+function extractSessionToken(req: Request): string | null {
+  // Check sentinel-session cookie first
+  const cookie = req.cookies?.['sentinel-session']
+  if (typeof cookie === 'string' && cookie.length > 0) return cookie
+
+  // Fall back to Authorization: Bearer (skip API keys starting with sk_)
   const authHeader = req.headers.authorization
-  if (!authHeader) return null
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice(7)
+    if (token && !token.startsWith('sk_')) return token
+  }
 
-  const parts = authHeader.split(' ')
-  if (parts.length !== 2 || parts[0] !== 'Bearer') return null
-
-  return parts[1] ?? null
+  return null
 }
 
 /**
  * Extract API key from header
  */
 function extractApiKey(req: Request): string | null {
-  // Check X-API-Key header
   const apiKeyHeader = req.headers['x-api-key']
   if (typeof apiKeyHeader === 'string') {
     return apiKeyHeader
   }
 
-  // Check Authorization header with Bearer token (if it starts with 'sk_')
-  const bearerToken = extractBearerToken(req)
-  if (bearerToken?.startsWith('sk_')) {
-    return bearerToken
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer sk_')) {
+    return authHeader.slice(7)
   }
 
   return null
@@ -78,69 +80,52 @@ function extractApiKey(req: Request): string | null {
 /**
  * Authenticate request using session token or API key
  *
- * This middleware checks for authentication in this order:
- * 1. Session cookie (for web app)
- * 2. Bearer token in Authorization header (for web app)
- * 3. API key in X-API-Key header or Bearer token (for kiosks)
- *
- * If authentication succeeds, adds `req.user` or `req.apiKey` to request.
- * If authentication fails, responds with 401 Unauthorized.
+ * Checks for authentication in this order:
+ * 1. Session cookie or Bearer token → sets req.member
+ * 2. API key in X-API-Key header or Bearer token → sets req.apiKey
  *
  * @param required - If true, returns 401 on missing/invalid auth. If false, continues without auth.
  */
 export function requireAuth(required: boolean = true) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Try session authentication first (cookie or bearer token)
-      const sessionToken = extractBearerToken(req) || req.cookies?.['better-auth.session_token']
+      // Try session authentication first
+      const sessionToken = extractSessionToken(req)
 
-      if (sessionToken && !sessionToken.startsWith('sk_')) {
-        try {
-          const session = await auth.api.getSession({
-            headers: req.headers as unknown as Record<string, string>,
-          })
+      if (sessionToken) {
+        const sessionRepo = new SessionRepository(getPrismaClient())
+        const session = await sessionRepo.findByToken(sessionToken)
 
-          if (session?.user) {
-            req.user = {
-              id: session.user.id,
-              email: session.user.email,
-              name: session.user.name ?? null,
-              role: ((session.user as Record<string, unknown>).role as string | undefined) ?? null,
-            }
-            req.session = {
-              id: session.session.id,
-              expiresAt: new Date(session.session.expiresAt),
-            }
-
-            // Add user ID to request context for logging
-            const store = requestContext.getStore()
-            if (store) {
-              store.userId = session.user.id
-            }
-
-            authLogger.debug('Session authenticated', {
-              userId: session.user.id,
-              sessionId: session.session.id,
-            })
-
-            return next()
+        if (session) {
+          req.member = {
+            id: session.member.id,
+            firstName: session.member.firstName,
+            lastName: session.member.lastName,
+            rank: session.member.rank,
+            serviceNumber: session.member.serviceNumber,
+            accountLevel: session.member.accountLevel,
           }
-        } catch (error) {
-          authLogger.debug('Session validation failed', {
-            error: error instanceof Error ? error.message : 'Unknown error',
+
+          // Add user ID to request context for logging
+          const store = requestContext.getStore()
+          if (store) {
+            store.userId = session.member.id
+          }
+
+          authLogger.debug('Session authenticated', {
+            memberId: session.member.id,
           })
-          // Fall through to API key check
+
+          return next()
         }
+
+        authLogger.debug('Session validation failed: invalid or expired token')
       }
 
       // Try API key authentication
-      // Note: API keys are validated against the api_key table directly
-      // since we're not using the better-auth API key plugin
       const apiKey = extractApiKey(req)
-
       if (apiKey) {
         // TODO: Implement custom API key validation
-        // For now, skip API key authentication until we implement it
         authLogger.debug('API key authentication not yet implemented')
       }
 
@@ -157,7 +142,6 @@ export function requireAuth(required: boolean = true) {
         })
       }
 
-      // Optional auth - continue without authentication
       next()
     } catch (error) {
       authLogger.error('Authentication error', {
@@ -178,20 +162,20 @@ export function requireAuth(required: boolean = true) {
 }
 
 /**
- * Require user to be authenticated (not API key)
+ * Require member to be authenticated (not API key)
  */
-export function requireUser() {
+export function requireMember() {
   return async (req: Request, res: Response, next: NextFunction) => {
     await requireAuth(true)(req, res, () => {
-      if (!req.user) {
-        authLogger.warn('User authentication required', {
+      if (!req.member) {
+        authLogger.warn('Member authentication required', {
           path: req.path,
           method: req.method,
         })
 
         return res.status(401).json({
           error: 'Unauthorized',
-          message: 'User authentication required. API keys are not permitted for this endpoint.',
+          message: 'Member authentication required. API keys are not permitted for this endpoint.',
         })
       }
 
@@ -201,7 +185,7 @@ export function requireUser() {
 }
 
 /**
- * Require API key authentication (not user session)
+ * Require API key authentication (not member session)
  */
 export function requireApiKey(scopes?: string[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -244,6 +228,6 @@ export function requireApiKey(scopes?: string[]) {
 }
 
 /**
- * Optional authentication - adds user/apiKey if present but doesn't require it
+ * Optional authentication - adds member/apiKey if present but doesn't require it
  */
 export const optionalAuth = requireAuth(false)

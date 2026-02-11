@@ -79,10 +79,9 @@ import { schedulesRouter } from './routes/schedules.js'
 import { unitEventsRouter } from './routes/unit-events.js'
 import { statHolidaysRouter } from './routes/stat-holidays.js'
 import { tagsRouter } from './routes/tags.js'
+import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
-import { auth } from './lib/auth.js'
-import { logger } from './lib/logger.js'
 
 /**
  * Create and configure Express application
@@ -158,24 +157,8 @@ export function createApp(): Express {
     app.use('/openapi.json', openapiRouter)
   }
 
-  // Better-auth routes
-  // This mounts the auth endpoints at /api/auth
-  app.all('/api/auth/*', (req, res) => {
-    try {
-      // better-auth handler expects its own request type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return auth.handler(req as any)
-    } catch (error) {
-      logger.error('Auth handler error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        path: req.path,
-      })
-      res.status(500).json({
-        error: 'INTERNAL_ERROR',
-        message: 'Authentication service error',
-      })
-    }
-  })
+  // Badge+PIN auth routes
+  app.use('/api/auth', authRouter)
 
   // Application routes
   // Mount ts-rest routers with validation enabled

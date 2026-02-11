@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { createServer } from 'http'
 import { createApp } from './app.js'
 import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger.js'
+import { configurePrismaLogging } from './lib/database.js'
 import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
 import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
 
@@ -38,6 +39,16 @@ async function main() {
   try {
     // Validate environment
     validateEnvironment()
+
+    // Wire Prisma events to Winston
+    try {
+      const { prisma } = await import('@sentinel/database')
+      configurePrismaLogging(prisma)
+    } catch (error) {
+      logger.warn('Failed to configure Prisma logging', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
 
     // Create Express app
     const app = createApp()

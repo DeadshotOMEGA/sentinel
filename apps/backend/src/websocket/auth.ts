@@ -1,17 +1,20 @@
 import { Socket } from 'socket.io'
 import { logger } from '../lib/logger.js'
+import { SessionRepository } from '../repositories/session-repository.js'
+import { getPrismaClient } from '../lib/database.js'
+import { AccountLevel } from '../middleware/roles.js'
 
 /**
  * WebSocket authentication middleware
- * Validates session token or API key from Socket.IO handshake
+ * Validates session token from Socket.IO handshake
  */
 export async function authenticateSocket(socket: Socket, next: (err?: Error) => void) {
   try {
-    // In development, bypass auth and assign dev user context
+    // In development, bypass auth and assign dev member context
     if (process.env.NODE_ENV !== 'production') {
-      socket.data.userId = 'dev-user'
+      socket.data.memberId = 'dev-member'
       socket.data.sessionId = 'dev-session'
-      socket.data.role = 'admin'
+      socket.data.accountLevel = AccountLevel.DEVELOPER
 
       logger.debug('WebSocket auth bypassed (development mode)', {
         socketId: socket.id,
@@ -30,9 +33,11 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
       return next(new Error('Authentication required'))
     }
 
-    // Verify session token with better-auth
-    // This is a placeholder - better-auth integration would go here
-    const session = await verifySessionToken(token)
+    // Strip "Bearer " prefix if present
+    const rawToken = typeof token === 'string' && token.startsWith('Bearer ') ? token.slice(7) : token
+
+    const sessionRepo = new SessionRepository(getPrismaClient())
+    const session = await sessionRepo.findByToken(rawToken)
 
     if (!session) {
       logger.warn('WebSocket connection rejected: Invalid session token', {
@@ -42,15 +47,15 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
       return next(new Error('Invalid authentication token'))
     }
 
-    // Attach user info to socket
-    socket.data.userId = session.userId
-    socket.data.sessionId = session.sessionId
-    socket.data.role = session.role
+    // Attach member info to socket
+    socket.data.memberId = session.member.id
+    socket.data.sessionId = session.id
+    socket.data.accountLevel = session.member.accountLevel
 
     logger.info('WebSocket authenticated', {
       socketId: socket.id,
-      userId: session.userId,
-      role: session.role,
+      memberId: session.member.id,
+      accountLevel: session.member.accountLevel,
     })
 
     next()
@@ -64,47 +69,16 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
 }
 
 /**
- * Verify session token using better-auth
- * TODO: Implement with better-auth session verification
+ * Check if socket has at least the required account level
  */
-async function verifySessionToken(token: string): Promise<{
-  userId: string
-  sessionId: string
-  role: string
-} | null> {
-  try {
-    // Placeholder for better-auth session verification
-    // This would use auth.api.getSession() or similar
-
-    // For now, just validate token format
-    if (!token || token.length < 10) {
-      return null
-    }
-
-    // Mock session data - replace with actual better-auth verification
-    return {
-      userId: 'user-id-from-session',
-      sessionId: 'session-id',
-      role: 'admin',
-    }
-  } catch (error) {
-    logger.error('Session verification error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-    return null
-  }
+export function hasMinimumLevel(socket: Socket, requiredLevel: number): boolean {
+  const memberLevel = socket.data.accountLevel ?? 0
+  return memberLevel >= requiredLevel
 }
 
 /**
- * Check if socket has required role
+ * Get member ID from socket
  */
-export function requireRole(socket: Socket, requiredRole: string): boolean {
-  return socket.data.role === requiredRole || socket.data.role === 'admin'
-}
-
-/**
- * Get user ID from socket
- */
-export function getUserId(socket: Socket): string | undefined {
-  return socket.data.userId
+export function getMemberId(socket: Socket): string | undefined {
+  return socket.data.memberId
 }

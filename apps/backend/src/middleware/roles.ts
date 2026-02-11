@@ -2,44 +2,43 @@ import { Request, Response, NextFunction } from 'express'
 import { authLogger } from '../lib/logger.js'
 
 /**
- * Role hierarchy (highest to lowest authority)
+ * Account level labels (for display/logging only — checks use numeric comparisons)
  *
- * 5. Developer - Full system access
- * 4. Admin - User management, system settings
- * 3. Executive - Read-only oversight (CO, XO, Coxswain, Staff Officer)
- * 2. Duty Watch - Active watch operations, limited user updates
- * 1. Quartermaster - Minimal access (check-ins and member lookup only)
+ * 1 = Basic         — View own info
+ * 2 = Quartermaster — Higher access, NOT lockup capable
+ * 3 = Lockup        — Lockup capable (still needs qualification)
+ * 4 = Command       — CO, XO, COXN, RPO — full operational authority
+ * 5 = Admin         — System administration
+ * 6 = Developer     — Everything
  */
-export enum Role {
-  DEVELOPER = 'developer',
-  ADMIN = 'admin',
-  EXECUTIVE = 'executive',
-  DUTY_WATCH = 'duty_watch',
-  QUARTERMASTER = 'quartermaster',
+export enum AccountLevel {
+  BASIC = 1,
+  QUARTERMASTER = 2,
+  LOCKUP = 3,
+  COMMAND = 4,
+  ADMIN = 5,
+  DEVELOPER = 6,
 }
 
 /**
- * Role hierarchy levels for comparison
+ * Human-readable labels for account levels
  */
-const ROLE_LEVELS: Record<string, number> = {
-  [Role.DEVELOPER]: 5,
-  [Role.ADMIN]: 4,
-  [Role.EXECUTIVE]: 3,
-  [Role.DUTY_WATCH]: 2,
-  [Role.QUARTERMASTER]: 1,
+export const ACCOUNT_LEVEL_LABELS: Record<number, string> = {
+  [AccountLevel.BASIC]: 'Basic',
+  [AccountLevel.QUARTERMASTER]: 'Quartermaster',
+  [AccountLevel.LOCKUP]: 'Lockup',
+  [AccountLevel.COMMAND]: 'Command',
+  [AccountLevel.ADMIN]: 'Admin',
+  [AccountLevel.DEVELOPER]: 'Developer',
 }
 
 /**
- * Check if user has required role
- *
- * @param allowedRoles - Array of roles that can access the endpoint, or 'all' for any authenticated user
- * @returns Express middleware function
+ * Middleware: require authenticated member with minimum account level.
  */
-export function requireRole(allowedRoles: string[] | 'all') {
+export function requireMinimumLevel(level: number) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // Check if user is authenticated
-    if (!req.user) {
-      authLogger.warn('Role check failed: No authenticated user', {
+    if (!req.member) {
+      authLogger.warn('Level check failed: No authenticated member', {
         path: req.path,
         method: req.method,
       })
@@ -50,26 +49,17 @@ export function requireRole(allowedRoles: string[] | 'all') {
       })
     }
 
-    // Allow all authenticated users
-    if (allowedRoles === 'all') {
-      return next()
-    }
-
-    // Get user's role
-    const userRole = req.user.role || Role.QUARTERMASTER
-
-    // Check if user has one of the allowed roles
-    if (!allowedRoles.includes(userRole)) {
-      authLogger.warn('Role check failed: Insufficient permissions', {
+    if (req.member.accountLevel < level) {
+      authLogger.warn('Level check failed: Insufficient account level', {
         path: req.path,
         method: req.method,
-        userRole,
-        requiredRoles: allowedRoles,
+        memberLevel: req.member.accountLevel,
+        requiredLevel: level,
       })
 
       return res.status(403).json({
         error: 'Forbidden',
-        message: `Access denied. Required role: ${allowedRoles.join(' or ')}`,
+        message: `Access denied. Required level: ${ACCOUNT_LEVEL_LABELS[level] ?? level}`,
       })
     }
 
@@ -78,61 +68,8 @@ export function requireRole(allowedRoles: string[] | 'all') {
 }
 
 /**
- * Check if user has at least the minimum required role level
- *
- * @param minimumRole - Minimum role required (users with higher roles also allowed)
- * @returns Express middleware function
+ * Helper to check if member has at least the specified account level.
  */
-export function requireMinimumRole(minimumRole: Role) {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      authLogger.warn('Minimum role check failed: No authenticated user', {
-        path: req.path,
-        method: req.method,
-      })
-
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Authentication required',
-      })
-    }
-
-    const userRole = req.user.role || Role.QUARTERMASTER
-    const userLevel = ROLE_LEVELS[userRole] || 0
-    const minimumLevel = ROLE_LEVELS[minimumRole] || 0
-
-    if (userLevel < minimumLevel) {
-      authLogger.warn('Minimum role check failed: Insufficient role level', {
-        path: req.path,
-        method: req.method,
-        userRole,
-        userLevel,
-        minimumRole,
-        minimumLevel,
-      })
-
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: `Access denied. Minimum required role: ${minimumRole}`,
-      })
-    }
-
-    next()
-  }
-}
-
-/**
- * Helper to check if user has specific role
- */
-export function hasRole(userRole: string | undefined | null, targetRole: Role): boolean {
-  return userRole === targetRole
-}
-
-/**
- * Helper to check if user has minimum role level
- */
-export function hasMinimumRole(userRole: string | undefined | null, minimumRole: Role): boolean {
-  const userLevel = ROLE_LEVELS[userRole || Role.QUARTERMASTER] || 0
-  const minimumLevel = ROLE_LEVELS[minimumRole] || 0
-  return userLevel >= minimumLevel
+export function hasMinimumLevel(memberLevel: number | undefined | null, required: number): boolean {
+  return (memberLevel ?? 0) >= required
 }
