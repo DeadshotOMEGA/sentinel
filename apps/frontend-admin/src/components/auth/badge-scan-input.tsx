@@ -1,51 +1,49 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { CreditCard } from 'lucide-react'
+
 interface BadgeScanInputProps {
   onScan: (serial: string) => void
 }
 
 export function BadgeScanInput({ onScan }: BadgeScanInputProps) {
-  const [serial, setSerial] = useState('')
+  const [value, setValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Listen for badge scan via keyboard input
-    // For MVP, simple input field with auto-submit on Enter
-    const handleKeyDown = (e: Event) => {
-      if (e instanceof KeyboardEvent && e.key === 'Enter' && serial.length > 0) {
-        onScan(serial)
-      }
-    }
+    inputRef.current?.focus()
+  }, [])
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', handleKeyDown)
-      return () => window.removeEventListener('keydown', handleKeyDown)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && value.trim()) {
+      e.preventDefault()
+      onScan(value.trim())
+      setValue('')
     }
-  }, [serial, onScan])
+  }
 
   return (
-    <div className="space-y-4">
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Scan Your Badge</legend>
-        <input
-          className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          id="badge"
-          type="text"
-          placeholder="Badge serial number"
-          value={serial}
-          onChange={(e) => setSerial(e.target.value)}
-          autoFocus
-        />
-        <span className="label">Place your badge on the reader or enter manually</span>
-      </fieldset>
-      <button
-        type="button"
-        className="btn btn-primary btn-md w-full"
-        onClick={() => serial && onScan(serial)}
-        disabled={!serial}
-      >
-        Continue
-      </button>
-    </div>
+    <fieldset className="fieldset">
+      <div className="flex justify-center">
+        <div className="rounded-full bg-primary/10 p-4">
+          <CreditCard size={48} strokeWidth={1.5} className="text-primary" />
+        </div>
+      </div>
+      <legend className="fieldset-legend text-center">
+        Scan your badge or enter badge number
+      </legend>
+      <input
+        ref={inputRef}
+        type="text"
+        className="input w-full text-center font-mono text-lg tracking-widest"
+        placeholder="Badge number..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        aria-label="Badge number"
+        autoComplete="off"
+      />
+    </fieldset>
   )
 }
