@@ -26,6 +26,11 @@ coverage/
 test-results/
 playwright-report/
 
+# Playwright CLI
+.playwright/
+**/.playwright-cli/
+apps/backend/*.png
+
 # Environment variables
 .env
 .env.local
@@ -138,6 +143,7 @@ docs/reviews/
 
 # External skills (installed from other projects)
 .claude/skills/infographic-*/
+.claude/skills/playwright-cli/
 
 # Claude Code plugins (embedded git repos)
 claude-mermaid/
