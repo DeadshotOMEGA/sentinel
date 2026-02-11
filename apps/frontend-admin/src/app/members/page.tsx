@@ -7,7 +7,7 @@ import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
 import { NominalRollImportDialog } from '@/components/members/nominal-roll-import-dialog'
 
-import { Plus, Upload, RefreshCw } from 'lucide-react'
+import { UsersRound, Plus, Upload, RefreshCw } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSyncAllAutoQualifications } from '@/hooks/use-qualifications'
 import { toast } from 'sonner'
@@ -68,39 +68,47 @@ function MembersPageContent() {
   }, [])
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-2">
-          <button
-            className="btn btn-outline btn-md"
-            onClick={() => {
-              syncAutoQuals.mutate(undefined, {
-                onSuccess: (data) => {
-                  toast.success(
-                    `Sync complete: ${data.granted} granted, ${data.revoked} revoked, ${data.unchanged} unchanged` +
-                      (data.errors.length > 0 ? `, ${data.errors.length} errors` : '')
-                  )
-                },
-                onError: () => {
-                  toast.error('Failed to sync auto-qualifications')
-                },
-              })
-            }}
-            disabled={syncAutoQuals.isPending}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${syncAutoQuals.isPending ? 'animate-spin' : ''}`}
-            />
-            Sync Qualifications
-          </button>
-          <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import CSV
-          </button>
-          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Member
-          </button>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="col-start-1">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <UsersRound className="h-6 w-6" aria-hidden="true" />
+            Members
+          </h1>
+          <p className="text-base-content/60">
+            Review and manage member information, including manual adjustments for special cases
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+        <button
+          className="btn btn-outline btn-md"
+          onClick={() => {
+            syncAutoQuals.mutate(undefined, {
+              onSuccess: (data) => {
+                toast.success(
+                  `Sync complete: ${data.granted} granted, ${data.revoked} revoked, ${data.unchanged} unchanged` +
+                    (data.errors.length > 0 ? `, ${data.errors.length} errors` : '')
+                )
+              },
+              onError: () => {
+                toast.error('Failed to sync auto-qualifications')
+              },
+            })
+          }}
+          disabled={syncAutoQuals.isPending}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${syncAutoQuals.isPending ? 'animate-spin' : ''}`} />
+          Sync Qualifications
+        </button>
+        <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
+          <Upload className="h-4 w-4 mr-2" />
+          Import CSV
+        </button>
+        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Member
+        </button>
         </div>
       </div>
 
@@ -116,7 +124,7 @@ function MembersPageContent() {
 
       <MemberFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} mode="create" />
       <NominalRollImportDialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen} />
-    </>
+    </div>
   )
 }
 

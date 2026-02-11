@@ -20,6 +20,7 @@ import { BulkGrantQualificationModal } from './bulk-grant-qualification-modal'
 import { BulkAssignTagModal } from './bulk-assign-tag-modal'
 import { MemberQualificationsModal } from './member-qualifications-modal'
 import { MemberTagsModal } from './member-tags-modal'
+import { SetPinModal } from './set-pin-modal'
 
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -35,8 +36,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, X, Shield, Tag, ChevronLeft, ChevronRight, Users } from 'lucide-react'
-import { useAuthStore } from '@/store/auth-store'
+import { Pencil, Trash2, X, Shield, Tag, KeyRound, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SortableHeader } from './sortable-header'
 import { cn } from '@/lib/utils'
 import type { MemberResponse } from '@sentinel/contracts'
@@ -64,11 +65,13 @@ export function MembersTable({
   onPageChange,
   onLimitChange,
 }: MembersTableProps) {
-  const { data, isLoading, isError } = useMembers({ ...filters, page, limit })
+  // Hidden members toggle (admin+ only)
+  const [includeHidden, setIncludeHidden] = useState(false)
+  const { data, isLoading, isError } = useMembers({ ...filters, page, limit, includeHidden })
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
   const deleteMember = useDeleteMember()
-  const user = useAuthStore((state) => state.user)
+  const member = useAuthStore((state) => state.member)
 
   // Selection state
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -86,6 +89,7 @@ export function MembersTable({
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
   const [qualificationsMember, setQualificationsMember] = useState<MemberResponse | null>(null)
   const [tagsMember, setTagsMember] = useState<MemberResponse | null>(null)
+  const [pinMember, setPinMember] = useState<MemberResponse | null>(null)
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   const [showBulkGrantQualDialog, setShowBulkGrantQualDialog] = useState(false)
@@ -94,7 +98,7 @@ export function MembersTable({
   const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
 
   // Check if user can edit/delete
-  const canEdit = user?.role != null && ['developer', 'admin'].includes(user.role)
+  const canEdit = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
 
   // Create lookup maps for IDs to names
   const divisionMap = useMemo(() => {
@@ -103,8 +107,13 @@ export function MembersTable({
   }, [divisions])
 
   const memberStatusMap = useMemo(() => {
-    if (!enums?.memberStatuses) return new Map<string, string>()
-    return new Map(enums.memberStatuses.map((s: { id: string; name: string }) => [s.id, s.name]))
+    if (!enums?.memberStatuses) return new Map<string, { name: string; chipVariant: string; chipColor: string }>()
+    return new Map(
+      enums.memberStatuses.map((s: { id: string; name: string; chipVariant?: string; chipColor?: string }) => [
+        s.id,
+        { name: s.name, chipVariant: s.chipVariant ?? 'solid', chipColor: s.chipColor ?? 'default' },
+      ])
+    )
   }, [enums])
 
   // Rank order map for proper military rank sorting (higher displayOrder = more senior)
@@ -222,10 +231,16 @@ export function MembersTable({
                 <span className="text-base-content/60">N/A</span>
               </div>
             )
-          const statusName = memberStatusMap.get(statusId)
+          const status = memberStatusMap.get(statusId)
           return (
             <div className="flex justify-center">
-              <span className="badge badge-primary">{String(statusName ?? 'Unknown')}</span>
+              <Chip
+                variant={(status?.chipVariant as ChipVariant) || 'solid'}
+                color={(status?.chipColor as ChipColor) || 'default'}
+                size="sm"
+              >
+                {status?.name ?? 'Unknown'}
+              </Chip>
             </div>
           )
         },
@@ -340,6 +355,13 @@ export function MembersTable({
                   title="Manage tags"
                 >
                   <Tag className="h-4 w-4" />
+                </button>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setPinMember(member)}
+                  title="Set PIN"
+                >
+                  <KeyRound className="h-4 w-4" />
                 </button>
                 <button className="btn btn-ghost btn-sm" onClick={() => setEditingMember(member)}>
                   <Pencil className="h-4 w-4" />
@@ -514,7 +536,19 @@ export function MembersTable({
 
         {/* Pagination footer */}
         <div className="flex items-center justify-between px-4 py-3 border-t">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            {canEdit && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="toggle toggle-sm"
+                  checked={includeHidden}
+                  onChange={(e) => setIncludeHidden(e.target.checked)}
+                />
+                <span className="text-sm text-base-content/60">Show deployed</span>
+              </label>
+            )}
+            <div className="flex items-center gap-2">
             <span className="text-sm text-base-content/60">Rows per page</span>
             <select
               className="select select-sm"
@@ -526,6 +560,7 @@ export function MembersTable({
               <option value={100}>100</option>
               <option value={200}>200</option>
             </select>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-base-content/60">
@@ -645,6 +680,16 @@ export function MembersTable({
         onOpenChange={(open) => !open && setTagsMember(null)}
         member={tagsMember}
       />
+
+      {/* Set PIN Modal (Admin) */}
+      {pinMember && (
+        <SetPinModal
+          open={!!pinMember}
+          onOpenChange={(open) => !open && setPinMember(null)}
+          memberId={pinMember.id}
+          memberName={`${pinMember.rank ?? ''} ${pinMember.lastName}`.trim()}
+        />
+      )}
     </>
   )
 }
