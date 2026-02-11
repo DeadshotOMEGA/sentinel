@@ -259,7 +259,20 @@ exports.Prisma.MemberScalarFieldEnum = {
   contract_start: 'contract_start',
   contract_end: 'contract_end',
   missedCheckoutCount: 'missedCheckoutCount',
-  lastMissedCheckout: 'lastMissedCheckout'
+  lastMissedCheckout: 'lastMissedCheckout',
+  pinHash: 'pinHash',
+  accountLevel: 'accountLevel'
+};
+
+exports.Prisma.MemberSessionScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TagScalarFieldEnum = {
@@ -408,6 +421,7 @@ exports.Prisma.MemberStatusScalarFieldEnum = {
   description: 'description',
   chipVariant: 'chipVariant',
   chipColor: 'chipColor',
+  isHidden: 'isHidden',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -783,6 +797,7 @@ exports.Prisma.ModelName = {
   EventCheckin: 'EventCheckin',
   Event: 'Event',
   Member: 'Member',
+  MemberSession: 'MemberSession',
   Tag: 'Tag',
   MemberTag: 'MemberTag',
   SecurityAlert: 'SecurityAlert',

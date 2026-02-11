@@ -17,7 +17,14 @@ function getPrismaClient(): PrismaClient {
 
     prismaInstance = new PrismaClient({
       adapter,
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      log:
+        process.env.NODE_ENV === 'development'
+          ? [
+              { emit: 'event', level: 'query' },
+              { emit: 'event', level: 'error' },
+              { emit: 'event', level: 'warn' },
+            ]
+          : [{ emit: 'event', level: 'error' }],
     })
 
     if (process.env.NODE_ENV !== 'production') {

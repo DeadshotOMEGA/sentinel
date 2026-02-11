@@ -237,8 +237,11 @@ model Member {
   lockupTransfersFrom      LockupTransfer[]          @relation("LockupTransferFrom")
   lockupTransfersTo        LockupTransfer[]          @relation("LockupTransferTo")
   lockupExecutions         LockupExecution[]
+  pinHash                  String?                   @map("pin_hash") @db.VarChar(255)
+  accountLevel             Int                       @default(1) @map("account_level")
   missedCheckouts          MissedCheckout[]
   unitEventDutyAssignments UnitEventDutyAssignment[]
+  memberSessions           MemberSession[]
 
   @@index([badgeId], map: "idx_members_badge")
   @@index([divisionId], map: "idx_members_division")
@@ -252,6 +255,22 @@ model Member {
   @@index([memberTypeId], map: "idx_members_member_type_id")
   @@index([memberStatusId], map: "idx_members_member_status_id")
   @@map("members")
+}
+
+model MemberSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId  String   @map("member_id") @db.Uuid
+  token     String   @unique @db.VarChar(128)
+  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
+  ipAddress String?  @map("ip_address") @db.Inet
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([memberId], map: "idx_member_sessions_member")
+  @@index([expiresAt], map: "idx_member_sessions_expires")
+  @@map("member_sessions")
 }
 
 model Tag {
@@ -484,6 +503,7 @@ model MemberStatus {
   description String?
   chipVariant String    @default("solid") @map("chip_variant") @db.VarChar(20)
   chipColor   String    @default("default") @map("chip_color") @db.VarChar(20)
+  isHidden    Boolean   @default(false) @map("is_hidden")
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
   members     Member[]

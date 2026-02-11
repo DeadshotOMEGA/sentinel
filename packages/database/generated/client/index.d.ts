@@ -59,6 +59,11 @@ export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
  */
 export type Member = $Result.DefaultSelection<Prisma.$MemberPayload>
 /**
+ * Model MemberSession
+ * 
+ */
+export type MemberSession = $Result.DefaultSelection<Prisma.$MemberSessionPayload>
+/**
  * Model Tag
  * 
  */
@@ -466,6 +471,16 @@ export class PrismaClient<
     * ```
     */
   get member(): Prisma.MemberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.memberSession`: Exposes CRUD operations for the **MemberSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MemberSessions
+    * const memberSessions = await prisma.memberSession.findMany()
+    * ```
+    */
+  get memberSession(): Prisma.MemberSessionDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tag`: Exposes CRUD operations for the **Tag** model.
@@ -1309,6 +1324,7 @@ export namespace Prisma {
     EventCheckin: 'EventCheckin',
     Event: 'Event',
     Member: 'Member',
+    MemberSession: 'MemberSession',
     Tag: 'Tag',
     MemberTag: 'MemberTag',
     SecurityAlert: 'SecurityAlert',
@@ -1364,7 +1380,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "memberSession" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2031,6 +2047,80 @@ export namespace Prisma {
           count: {
             args: Prisma.MemberCountArgs<ExtArgs>
             result: $Utils.Optional<MemberCountAggregateOutputType> | number
+          }
+        }
+      }
+      MemberSession: {
+        payload: Prisma.$MemberSessionPayload<ExtArgs>
+        fields: Prisma.MemberSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MemberSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MemberSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.MemberSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MemberSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          findMany: {
+            args: Prisma.MemberSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>[]
+          }
+          create: {
+            args: Prisma.MemberSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          createMany: {
+            args: Prisma.MemberSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MemberSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.MemberSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          update: {
+            args: Prisma.MemberSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.MemberSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MemberSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MemberSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.MemberSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.MemberSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMemberSession>
+          }
+          groupBy: {
+            args: Prisma.MemberSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MemberSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MemberSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<MemberSessionCountAggregateOutputType> | number
           }
         }
       }
@@ -5111,6 +5201,7 @@ export namespace Prisma {
     eventCheckin?: EventCheckinOmit
     event?: EventOmit
     member?: MemberOmit
+    memberSession?: MemberSessionOmit
     tag?: TagOmit
     memberTag?: MemberTagOmit
     securityAlert?: SecurityAlertOmit
@@ -5556,6 +5647,7 @@ export namespace Prisma {
     lockupExecutions: number
     missedCheckouts: number
     unitEventDutyAssignments: number
+    memberSessions: number
   }
 
   export type MemberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5576,6 +5668,7 @@ export namespace Prisma {
     lockupExecutions?: boolean | MemberCountOutputTypeCountLockupExecutionsArgs
     missedCheckouts?: boolean | MemberCountOutputTypeCountMissedCheckoutsArgs
     unitEventDutyAssignments?: boolean | MemberCountOutputTypeCountUnitEventDutyAssignmentsArgs
+    memberSessions?: boolean | MemberCountOutputTypeCountMemberSessionsArgs
   }
 
   // Custom InputTypes
@@ -5706,6 +5799,13 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountUnitEventDutyAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UnitEventDutyAssignmentWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountMemberSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MemberSessionWhereInput
   }
 
 
@@ -16155,10 +16255,12 @@ export namespace Prisma {
 
   export type MemberAvgAggregateOutputType = {
     missedCheckoutCount: number | null
+    accountLevel: number | null
   }
 
   export type MemberSumAggregateOutputType = {
     missedCheckoutCount: number | null
+    accountLevel: number | null
   }
 
   export type MemberMinAggregateOutputType = {
@@ -16189,6 +16291,8 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number | null
     lastMissedCheckout: Date | null
+    pinHash: string | null
+    accountLevel: number | null
   }
 
   export type MemberMaxAggregateOutputType = {
@@ -16219,6 +16323,8 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number | null
     lastMissedCheckout: Date | null
+    pinHash: string | null
+    accountLevel: number | null
   }
 
   export type MemberCountAggregateOutputType = {
@@ -16249,16 +16355,20 @@ export namespace Prisma {
     contract_end: number
     missedCheckoutCount: number
     lastMissedCheckout: number
+    pinHash: number
+    accountLevel: number
     _all: number
   }
 
 
   export type MemberAvgAggregateInputType = {
     missedCheckoutCount?: true
+    accountLevel?: true
   }
 
   export type MemberSumAggregateInputType = {
     missedCheckoutCount?: true
+    accountLevel?: true
   }
 
   export type MemberMinAggregateInputType = {
@@ -16289,6 +16399,8 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
+    pinHash?: true
+    accountLevel?: true
   }
 
   export type MemberMaxAggregateInputType = {
@@ -16319,6 +16431,8 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
+    pinHash?: true
+    accountLevel?: true
   }
 
   export type MemberCountAggregateInputType = {
@@ -16349,6 +16463,8 @@ export namespace Prisma {
     contract_end?: true
     missedCheckoutCount?: true
     lastMissedCheckout?: true
+    pinHash?: true
+    accountLevel?: true
     _all?: true
   }
 
@@ -16466,6 +16582,8 @@ export namespace Prisma {
     contract_end: Date | null
     missedCheckoutCount: number
     lastMissedCheckout: Date | null
+    pinHash: string | null
+    accountLevel: number
     _count: MemberCountAggregateOutputType | null
     _avg: MemberAvgAggregateOutputType | null
     _sum: MemberSumAggregateOutputType | null
@@ -16515,6 +16633,8 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
+    pinHash?: boolean
+    accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
     bmqEnrollments?: boolean | Member$bmqEnrollmentsArgs<ExtArgs>
@@ -16537,6 +16657,7 @@ export namespace Prisma {
     lockupExecutions?: boolean | Member$lockupExecutionsArgs<ExtArgs>
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
     unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
+    memberSessions?: boolean | Member$memberSessionsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["member"]>
 
@@ -16568,6 +16689,8 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
+    pinHash?: boolean
+    accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
@@ -16603,6 +16726,8 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
+    pinHash?: boolean
+    accountLevel?: boolean
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
@@ -16638,9 +16763,11 @@ export namespace Prisma {
     contract_end?: boolean
     missedCheckoutCount?: boolean
     lastMissedCheckout?: boolean
+    pinHash?: boolean
+    accountLevel?: boolean
   }
 
-  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout", ExtArgs["result"]["member"]>
+  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout" | "pinHash" | "accountLevel", ExtArgs["result"]["member"]>
   export type MemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -16664,6 +16791,7 @@ export namespace Prisma {
     lockupExecutions?: boolean | Member$lockupExecutionsArgs<ExtArgs>
     missedCheckouts?: boolean | Member$missedCheckoutsArgs<ExtArgs>
     unitEventDutyAssignments?: boolean | Member$unitEventDutyAssignmentsArgs<ExtArgs>
+    memberSessions?: boolean | Member$memberSessionsArgs<ExtArgs>
     _count?: boolean | MemberCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type MemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16706,6 +16834,7 @@ export namespace Prisma {
       lockupExecutions: Prisma.$LockupExecutionPayload<ExtArgs>[]
       missedCheckouts: Prisma.$MissedCheckoutPayload<ExtArgs>[]
       unitEventDutyAssignments: Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>[]
+      memberSessions: Prisma.$MemberSessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16735,6 +16864,8 @@ export namespace Prisma {
       contract_end: Date | null
       missedCheckoutCount: number
       lastMissedCheckout: Date | null
+      pinHash: string | null
+      accountLevel: number
     }, ExtArgs["result"]["member"]>
     composites: {}
   }
@@ -17151,6 +17282,7 @@ export namespace Prisma {
     lockupExecutions<T extends Member$lockupExecutionsArgs<ExtArgs> = {}>(args?: Subset<T, Member$lockupExecutionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LockupExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     missedCheckouts<T extends Member$missedCheckoutsArgs<ExtArgs> = {}>(args?: Subset<T, Member$missedCheckoutsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MissedCheckoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     unitEventDutyAssignments<T extends Member$unitEventDutyAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$unitEventDutyAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnitEventDutyAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    memberSessions<T extends Member$memberSessionsArgs<ExtArgs> = {}>(args?: Subset<T, Member$memberSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17207,6 +17339,8 @@ export namespace Prisma {
     readonly contract_end: FieldRef<"Member", 'DateTime'>
     readonly missedCheckoutCount: FieldRef<"Member", 'Int'>
     readonly lastMissedCheckout: FieldRef<"Member", 'DateTime'>
+    readonly pinHash: FieldRef<"Member", 'String'>
+    readonly accountLevel: FieldRef<"Member", 'Int'>
   }
     
 
@@ -18115,6 +18249,30 @@ export namespace Prisma {
   }
 
   /**
+   * Member.memberSessions
+   */
+  export type Member$memberSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    where?: MemberSessionWhereInput
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    cursor?: MemberSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+  }
+
+  /**
    * Member without action
    */
   export type MemberDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18130,6 +18288,1112 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: MemberInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MemberSession
+   */
+
+  export type AggregateMemberSession = {
+    _count: MemberSessionCountAggregateOutputType | null
+    _min: MemberSessionMinAggregateOutputType | null
+    _max: MemberSessionMaxAggregateOutputType | null
+  }
+
+  export type MemberSessionMinAggregateOutputType = {
+    id: string | null
+    memberId: string | null
+    token: string | null
+    expiresAt: Date | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MemberSessionMaxAggregateOutputType = {
+    id: string | null
+    memberId: string | null
+    token: string | null
+    expiresAt: Date | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MemberSessionCountAggregateOutputType = {
+    id: number
+    memberId: number
+    token: number
+    expiresAt: number
+    ipAddress: number
+    userAgent: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type MemberSessionMinAggregateInputType = {
+    id?: true
+    memberId?: true
+    token?: true
+    expiresAt?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MemberSessionMaxAggregateInputType = {
+    id?: true
+    memberId?: true
+    token?: true
+    expiresAt?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MemberSessionCountAggregateInputType = {
+    id?: true
+    memberId?: true
+    token?: true
+    expiresAt?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type MemberSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MemberSession to aggregate.
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberSessions to fetch.
+     */
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MemberSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MemberSessions
+    **/
+    _count?: true | MemberSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MemberSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MemberSessionMaxAggregateInputType
+  }
+
+  export type GetMemberSessionAggregateType<T extends MemberSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateMemberSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMemberSession[P]>
+      : GetScalarType<T[P], AggregateMemberSession[P]>
+  }
+
+
+
+
+  export type MemberSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MemberSessionWhereInput
+    orderBy?: MemberSessionOrderByWithAggregationInput | MemberSessionOrderByWithAggregationInput[]
+    by: MemberSessionScalarFieldEnum[] | MemberSessionScalarFieldEnum
+    having?: MemberSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MemberSessionCountAggregateInputType | true
+    _min?: MemberSessionMinAggregateInputType
+    _max?: MemberSessionMaxAggregateInputType
+  }
+
+  export type MemberSessionGroupByOutputType = {
+    id: string
+    memberId: string
+    token: string
+    expiresAt: Date
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: MemberSessionCountAggregateOutputType | null
+    _min: MemberSessionMinAggregateOutputType | null
+    _max: MemberSessionMaxAggregateOutputType | null
+  }
+
+  type GetMemberSessionGroupByPayload<T extends MemberSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MemberSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MemberSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MemberSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], MemberSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MemberSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    token?: boolean
+    expiresAt?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["memberSession"]>
+
+  export type MemberSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    token?: boolean
+    expiresAt?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["memberSession"]>
+
+  export type MemberSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    token?: boolean
+    expiresAt?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["memberSession"]>
+
+  export type MemberSessionSelectScalar = {
+    id?: boolean
+    memberId?: boolean
+    token?: boolean
+    expiresAt?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type MemberSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "memberId" | "token" | "expiresAt" | "ipAddress" | "userAgent" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSession"]>
+  export type MemberSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+  export type MemberSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+  export type MemberSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    member?: boolean | MemberDefaultArgs<ExtArgs>
+  }
+
+  export type $MemberSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MemberSession"
+    objects: {
+      member: Prisma.$MemberPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      memberId: string
+      token: string
+      expiresAt: Date
+      ipAddress: string | null
+      userAgent: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["memberSession"]>
+    composites: {}
+  }
+
+  type MemberSessionGetPayload<S extends boolean | null | undefined | MemberSessionDefaultArgs> = $Result.GetResult<Prisma.$MemberSessionPayload, S>
+
+  type MemberSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MemberSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: MemberSessionCountAggregateInputType | true
+    }
+
+  export interface MemberSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MemberSession'], meta: { name: 'MemberSession' } }
+    /**
+     * Find zero or one MemberSession that matches the filter.
+     * @param {MemberSessionFindUniqueArgs} args - Arguments to find a MemberSession
+     * @example
+     * // Get one MemberSession
+     * const memberSession = await prisma.memberSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MemberSessionFindUniqueArgs>(args: SelectSubset<T, MemberSessionFindUniqueArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MemberSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MemberSessionFindUniqueOrThrowArgs} args - Arguments to find a MemberSession
+     * @example
+     * // Get one MemberSession
+     * const memberSession = await prisma.memberSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MemberSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, MemberSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MemberSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionFindFirstArgs} args - Arguments to find a MemberSession
+     * @example
+     * // Get one MemberSession
+     * const memberSession = await prisma.memberSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MemberSessionFindFirstArgs>(args?: SelectSubset<T, MemberSessionFindFirstArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MemberSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionFindFirstOrThrowArgs} args - Arguments to find a MemberSession
+     * @example
+     * // Get one MemberSession
+     * const memberSession = await prisma.memberSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MemberSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, MemberSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MemberSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MemberSessions
+     * const memberSessions = await prisma.memberSession.findMany()
+     * 
+     * // Get first 10 MemberSessions
+     * const memberSessions = await prisma.memberSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const memberSessionWithIdOnly = await prisma.memberSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MemberSessionFindManyArgs>(args?: SelectSubset<T, MemberSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MemberSession.
+     * @param {MemberSessionCreateArgs} args - Arguments to create a MemberSession.
+     * @example
+     * // Create one MemberSession
+     * const MemberSession = await prisma.memberSession.create({
+     *   data: {
+     *     // ... data to create a MemberSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends MemberSessionCreateArgs>(args: SelectSubset<T, MemberSessionCreateArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MemberSessions.
+     * @param {MemberSessionCreateManyArgs} args - Arguments to create many MemberSessions.
+     * @example
+     * // Create many MemberSessions
+     * const memberSession = await prisma.memberSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MemberSessionCreateManyArgs>(args?: SelectSubset<T, MemberSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MemberSessions and returns the data saved in the database.
+     * @param {MemberSessionCreateManyAndReturnArgs} args - Arguments to create many MemberSessions.
+     * @example
+     * // Create many MemberSessions
+     * const memberSession = await prisma.memberSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MemberSessions and only return the `id`
+     * const memberSessionWithIdOnly = await prisma.memberSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MemberSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, MemberSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MemberSession.
+     * @param {MemberSessionDeleteArgs} args - Arguments to delete one MemberSession.
+     * @example
+     * // Delete one MemberSession
+     * const MemberSession = await prisma.memberSession.delete({
+     *   where: {
+     *     // ... filter to delete one MemberSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MemberSessionDeleteArgs>(args: SelectSubset<T, MemberSessionDeleteArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MemberSession.
+     * @param {MemberSessionUpdateArgs} args - Arguments to update one MemberSession.
+     * @example
+     * // Update one MemberSession
+     * const memberSession = await prisma.memberSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MemberSessionUpdateArgs>(args: SelectSubset<T, MemberSessionUpdateArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MemberSessions.
+     * @param {MemberSessionDeleteManyArgs} args - Arguments to filter MemberSessions to delete.
+     * @example
+     * // Delete a few MemberSessions
+     * const { count } = await prisma.memberSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MemberSessionDeleteManyArgs>(args?: SelectSubset<T, MemberSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MemberSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MemberSessions
+     * const memberSession = await prisma.memberSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MemberSessionUpdateManyArgs>(args: SelectSubset<T, MemberSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MemberSessions and returns the data updated in the database.
+     * @param {MemberSessionUpdateManyAndReturnArgs} args - Arguments to update many MemberSessions.
+     * @example
+     * // Update many MemberSessions
+     * const memberSession = await prisma.memberSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MemberSessions and only return the `id`
+     * const memberSessionWithIdOnly = await prisma.memberSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MemberSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, MemberSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MemberSession.
+     * @param {MemberSessionUpsertArgs} args - Arguments to update or create a MemberSession.
+     * @example
+     * // Update or create a MemberSession
+     * const memberSession = await prisma.memberSession.upsert({
+     *   create: {
+     *     // ... data to create a MemberSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MemberSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MemberSessionUpsertArgs>(args: SelectSubset<T, MemberSessionUpsertArgs<ExtArgs>>): Prisma__MemberSessionClient<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MemberSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionCountArgs} args - Arguments to filter MemberSessions to count.
+     * @example
+     * // Count the number of MemberSessions
+     * const count = await prisma.memberSession.count({
+     *   where: {
+     *     // ... the filter for the MemberSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends MemberSessionCountArgs>(
+      args?: Subset<T, MemberSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MemberSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MemberSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MemberSessionAggregateArgs>(args: Subset<T, MemberSessionAggregateArgs>): Prisma.PrismaPromise<GetMemberSessionAggregateType<T>>
+
+    /**
+     * Group by MemberSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MemberSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MemberSessionGroupByArgs['orderBy'] }
+        : { orderBy?: MemberSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MemberSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMemberSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MemberSession model
+   */
+  readonly fields: MemberSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MemberSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MemberSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    member<T extends MemberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MemberDefaultArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MemberSession model
+   */
+  interface MemberSessionFieldRefs {
+    readonly id: FieldRef<"MemberSession", 'String'>
+    readonly memberId: FieldRef<"MemberSession", 'String'>
+    readonly token: FieldRef<"MemberSession", 'String'>
+    readonly expiresAt: FieldRef<"MemberSession", 'DateTime'>
+    readonly ipAddress: FieldRef<"MemberSession", 'String'>
+    readonly userAgent: FieldRef<"MemberSession", 'String'>
+    readonly createdAt: FieldRef<"MemberSession", 'DateTime'>
+    readonly updatedAt: FieldRef<"MemberSession", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MemberSession findUnique
+   */
+  export type MemberSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which MemberSession to fetch.
+     */
+    where: MemberSessionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession findUniqueOrThrow
+   */
+  export type MemberSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which MemberSession to fetch.
+     */
+    where: MemberSessionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession findFirst
+   */
+  export type MemberSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which MemberSession to fetch.
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberSessions to fetch.
+     */
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MemberSessions.
+     */
+    cursor?: MemberSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MemberSessions.
+     */
+    distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession findFirstOrThrow
+   */
+  export type MemberSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which MemberSession to fetch.
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberSessions to fetch.
+     */
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MemberSessions.
+     */
+    cursor?: MemberSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MemberSessions.
+     */
+    distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession findMany
+   */
+  export type MemberSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which MemberSessions to fetch.
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberSessions to fetch.
+     */
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MemberSessions.
+     */
+    cursor?: MemberSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberSessions.
+     */
+    skip?: number
+    distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession create
+   */
+  export type MemberSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MemberSession.
+     */
+    data: XOR<MemberSessionCreateInput, MemberSessionUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession createMany
+   */
+  export type MemberSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MemberSessions.
+     */
+    data: MemberSessionCreateManyInput | MemberSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MemberSession createManyAndReturn
+   */
+  export type MemberSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many MemberSessions.
+     */
+    data: MemberSessionCreateManyInput | MemberSessionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MemberSession update
+   */
+  export type MemberSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MemberSession.
+     */
+    data: XOR<MemberSessionUpdateInput, MemberSessionUncheckedUpdateInput>
+    /**
+     * Choose, which MemberSession to update.
+     */
+    where: MemberSessionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession updateMany
+   */
+  export type MemberSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MemberSessions.
+     */
+    data: XOR<MemberSessionUpdateManyMutationInput, MemberSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which MemberSessions to update
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * Limit how many MemberSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MemberSession updateManyAndReturn
+   */
+  export type MemberSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update MemberSessions.
+     */
+    data: XOR<MemberSessionUpdateManyMutationInput, MemberSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which MemberSessions to update
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * Limit how many MemberSessions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MemberSession upsert
+   */
+  export type MemberSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MemberSession to update in case it exists.
+     */
+    where: MemberSessionWhereUniqueInput
+    /**
+     * In case the MemberSession found by the `where` argument doesn't exist, create a new MemberSession with this data.
+     */
+    create: XOR<MemberSessionCreateInput, MemberSessionUncheckedCreateInput>
+    /**
+     * In case the MemberSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MemberSessionUpdateInput, MemberSessionUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession delete
+   */
+  export type MemberSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    /**
+     * Filter which MemberSession to delete.
+     */
+    where: MemberSessionWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * MemberSession deleteMany
+   */
+  export type MemberSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MemberSessions to delete
+     */
+    where?: MemberSessionWhereInput
+    /**
+     * Limit how many MemberSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MemberSession without action
+   */
+  export type MemberSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
   }
 
 
@@ -31630,6 +32894,7 @@ export namespace Prisma {
     description: string | null
     chipVariant: string | null
     chipColor: string | null
+    isHidden: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -31641,6 +32906,7 @@ export namespace Prisma {
     description: string | null
     chipVariant: string | null
     chipColor: string | null
+    isHidden: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -31652,6 +32918,7 @@ export namespace Prisma {
     description: number
     chipVariant: number
     chipColor: number
+    isHidden: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -31665,6 +32932,7 @@ export namespace Prisma {
     description?: true
     chipVariant?: true
     chipColor?: true
+    isHidden?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -31676,6 +32944,7 @@ export namespace Prisma {
     description?: true
     chipVariant?: true
     chipColor?: true
+    isHidden?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -31687,6 +32956,7 @@ export namespace Prisma {
     description?: true
     chipVariant?: true
     chipColor?: true
+    isHidden?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -31771,6 +33041,7 @@ export namespace Prisma {
     description: string | null
     chipVariant: string
     chipColor: string
+    isHidden: boolean
     createdAt: Date | null
     updatedAt: Date | null
     _count: MemberStatusCountAggregateOutputType | null
@@ -31799,6 +33070,7 @@ export namespace Prisma {
     description?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isHidden?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     members?: boolean | MemberStatus$membersArgs<ExtArgs>
@@ -31812,6 +33084,7 @@ export namespace Prisma {
     description?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isHidden?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["memberStatus"]>
@@ -31823,6 +33096,7 @@ export namespace Prisma {
     description?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isHidden?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["memberStatus"]>
@@ -31834,11 +33108,12 @@ export namespace Prisma {
     description?: boolean
     chipVariant?: boolean
     chipColor?: boolean
+    isHidden?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MemberStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "chipVariant" | "chipColor" | "createdAt" | "updatedAt", ExtArgs["result"]["memberStatus"]>
+  export type MemberStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "chipVariant" | "chipColor" | "isHidden" | "createdAt" | "updatedAt", ExtArgs["result"]["memberStatus"]>
   export type MemberStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | MemberStatus$membersArgs<ExtArgs>
     _count?: boolean | MemberStatusCountOutputTypeDefaultArgs<ExtArgs>
@@ -31858,6 +33133,7 @@ export namespace Prisma {
       description: string | null
       chipVariant: string
       chipColor: string
+      isHidden: boolean
       createdAt: Date | null
       updatedAt: Date | null
     }, ExtArgs["result"]["memberStatus"]>
@@ -32290,6 +33566,7 @@ export namespace Prisma {
     readonly description: FieldRef<"MemberStatus", 'String'>
     readonly chipVariant: FieldRef<"MemberStatus", 'String'>
     readonly chipColor: FieldRef<"MemberStatus", 'String'>
+    readonly isHidden: FieldRef<"MemberStatus", 'Boolean'>
     readonly createdAt: FieldRef<"MemberStatus", 'DateTime'>
     readonly updatedAt: FieldRef<"MemberStatus", 'DateTime'>
   }
@@ -64022,10 +65299,26 @@ export namespace Prisma {
     contract_start: 'contract_start',
     contract_end: 'contract_end',
     missedCheckoutCount: 'missedCheckoutCount',
-    lastMissedCheckout: 'lastMissedCheckout'
+    lastMissedCheckout: 'lastMissedCheckout',
+    pinHash: 'pinHash',
+    accountLevel: 'accountLevel'
   };
 
   export type MemberScalarFieldEnum = (typeof MemberScalarFieldEnum)[keyof typeof MemberScalarFieldEnum]
+
+
+  export const MemberSessionScalarFieldEnum: {
+    id: 'id',
+    memberId: 'memberId',
+    token: 'token',
+    expiresAt: 'expiresAt',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type MemberSessionScalarFieldEnum = (typeof MemberSessionScalarFieldEnum)[keyof typeof MemberSessionScalarFieldEnum]
 
 
   export const TagScalarFieldEnum: {
@@ -64210,6 +65503,7 @@ export namespace Prisma {
     description: 'description',
     chipVariant: 'chipVariant',
     chipColor: 'chipColor',
+    isHidden: 'isHidden',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -65522,6 +66816,8 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
+    pinHash?: StringNullableFilter<"Member"> | string | null
+    accountLevel?: IntFilter<"Member"> | number
     rankRef?: XOR<RankNullableScalarRelationFilter, RankWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
     bmqEnrollments?: BmqEnrollmentListRelationFilter
@@ -65544,6 +66840,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionListRelationFilter
     missedCheckouts?: MissedCheckoutListRelationFilter
     unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
+    memberSessions?: MemberSessionListRelationFilter
   }
 
   export type MemberOrderByWithRelationInput = {
@@ -65574,6 +66871,8 @@ export namespace Prisma {
     contract_end?: SortOrderInput | SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrderInput | SortOrder
+    pinHash?: SortOrderInput | SortOrder
+    accountLevel?: SortOrder
     rankRef?: RankOrderByWithRelationInput
     badge?: BadgeOrderByWithRelationInput
     bmqEnrollments?: BmqEnrollmentOrderByRelationAggregateInput
@@ -65596,6 +66895,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionOrderByRelationAggregateInput
     missedCheckouts?: MissedCheckoutOrderByRelationAggregateInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentOrderByRelationAggregateInput
+    memberSessions?: MemberSessionOrderByRelationAggregateInput
   }
 
   export type MemberWhereUniqueInput = Prisma.AtLeast<{
@@ -65629,6 +66929,8 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
+    pinHash?: StringNullableFilter<"Member"> | string | null
+    accountLevel?: IntFilter<"Member"> | number
     rankRef?: XOR<RankNullableScalarRelationFilter, RankWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
     bmqEnrollments?: BmqEnrollmentListRelationFilter
@@ -65651,6 +66953,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionListRelationFilter
     missedCheckouts?: MissedCheckoutListRelationFilter
     unitEventDutyAssignments?: UnitEventDutyAssignmentListRelationFilter
+    memberSessions?: MemberSessionListRelationFilter
   }, "id" | "serviceNumber">
 
   export type MemberOrderByWithAggregationInput = {
@@ -65681,6 +66984,8 @@ export namespace Prisma {
     contract_end?: SortOrderInput | SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrderInput | SortOrder
+    pinHash?: SortOrderInput | SortOrder
+    accountLevel?: SortOrder
     _count?: MemberCountOrderByAggregateInput
     _avg?: MemberAvgOrderByAggregateInput
     _max?: MemberMaxOrderByAggregateInput
@@ -65719,6 +67024,78 @@ export namespace Prisma {
     contract_end?: DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntWithAggregatesFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
+    pinHash?: StringNullableWithAggregatesFilter<"Member"> | string | null
+    accountLevel?: IntWithAggregatesFilter<"Member"> | number
+  }
+
+  export type MemberSessionWhereInput = {
+    AND?: MemberSessionWhereInput | MemberSessionWhereInput[]
+    OR?: MemberSessionWhereInput[]
+    NOT?: MemberSessionWhereInput | MemberSessionWhereInput[]
+    id?: UuidFilter<"MemberSession"> | string
+    memberId?: UuidFilter<"MemberSession"> | string
+    token?: StringFilter<"MemberSession"> | string
+    expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
+    ipAddress?: StringNullableFilter<"MemberSession"> | string | null
+    userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    createdAt?: DateTimeFilter<"MemberSession"> | Date | string
+    updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  }
+
+  export type MemberSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    token?: SortOrder
+    expiresAt?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    member?: MemberOrderByWithRelationInput
+  }
+
+  export type MemberSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: MemberSessionWhereInput | MemberSessionWhereInput[]
+    OR?: MemberSessionWhereInput[]
+    NOT?: MemberSessionWhereInput | MemberSessionWhereInput[]
+    memberId?: UuidFilter<"MemberSession"> | string
+    expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
+    ipAddress?: StringNullableFilter<"MemberSession"> | string | null
+    userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    createdAt?: DateTimeFilter<"MemberSession"> | Date | string
+    updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
+    member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+  }, "id" | "token">
+
+  export type MemberSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    token?: SortOrder
+    expiresAt?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: MemberSessionCountOrderByAggregateInput
+    _max?: MemberSessionMaxOrderByAggregateInput
+    _min?: MemberSessionMinOrderByAggregateInput
+  }
+
+  export type MemberSessionScalarWhereWithAggregatesInput = {
+    AND?: MemberSessionScalarWhereWithAggregatesInput | MemberSessionScalarWhereWithAggregatesInput[]
+    OR?: MemberSessionScalarWhereWithAggregatesInput[]
+    NOT?: MemberSessionScalarWhereWithAggregatesInput | MemberSessionScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"MemberSession"> | string
+    memberId?: UuidWithAggregatesFilter<"MemberSession"> | string
+    token?: StringWithAggregatesFilter<"MemberSession"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
+    ipAddress?: StringNullableWithAggregatesFilter<"MemberSession"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"MemberSession"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
   }
 
   export type TagWhereInput = {
@@ -66629,6 +68006,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"MemberStatus"> | string | null
     chipVariant?: StringFilter<"MemberStatus"> | string
     chipColor?: StringFilter<"MemberStatus"> | string
+    isHidden?: BoolFilter<"MemberStatus"> | boolean
     createdAt?: DateTimeNullableFilter<"MemberStatus"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"MemberStatus"> | Date | string | null
     members?: MemberListRelationFilter
@@ -66641,6 +68019,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isHidden?: SortOrder
     createdAt?: SortOrderInput | SortOrder
     updatedAt?: SortOrderInput | SortOrder
     members?: MemberOrderByRelationAggregateInput
@@ -66656,6 +68035,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"MemberStatus"> | string | null
     chipVariant?: StringFilter<"MemberStatus"> | string
     chipColor?: StringFilter<"MemberStatus"> | string
+    isHidden?: BoolFilter<"MemberStatus"> | boolean
     createdAt?: DateTimeNullableFilter<"MemberStatus"> | Date | string | null
     updatedAt?: DateTimeNullableFilter<"MemberStatus"> | Date | string | null
     members?: MemberListRelationFilter
@@ -66668,6 +68048,7 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isHidden?: SortOrder
     createdAt?: SortOrderInput | SortOrder
     updatedAt?: SortOrderInput | SortOrder
     _count?: MemberStatusCountOrderByAggregateInput
@@ -66685,6 +68066,7 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"MemberStatus"> | string | null
     chipVariant?: StringWithAggregatesFilter<"MemberStatus"> | string
     chipColor?: StringWithAggregatesFilter<"MemberStatus"> | string
+    isHidden?: BoolWithAggregatesFilter<"MemberStatus"> | boolean
     createdAt?: DateTimeNullableWithAggregatesFilter<"MemberStatus"> | Date | string | null
     updatedAt?: DateTimeNullableWithAggregatesFilter<"MemberStatus"> | Date | string | null
   }
@@ -69696,6 +71078,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -69718,6 +71102,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateInput = {
@@ -69748,6 +71133,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -69765,6 +71152,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUpdateInput = {
@@ -69790,6 +71178,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -69812,6 +71202,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateInput = {
@@ -69842,6 +71233,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -69859,6 +71252,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateManyInput = {
@@ -69889,6 +71283,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type MemberUpdateManyMutationInput = {
@@ -69914,6 +71310,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type MemberUncheckedUpdateManyInput = {
@@ -69944,6 +71342,84 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type MemberSessionCreateInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    member: MemberCreateNestedOneWithoutMemberSessionsInput
+  }
+
+  export type MemberSessionUncheckedCreateInput = {
+    id?: string
+    memberId: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    member?: MemberUpdateOneRequiredWithoutMemberSessionsNestedInput
+  }
+
+  export type MemberSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionCreateManyInput = {
+    id?: string
+    memberId: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TagCreateInput = {
@@ -70921,6 +72397,7 @@ export namespace Prisma {
     description?: string | null
     chipVariant?: string
     chipColor?: string
+    isHidden?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     members?: MemberCreateNestedManyWithoutMemberStatusRefInput
@@ -70933,6 +72410,7 @@ export namespace Prisma {
     description?: string | null
     chipVariant?: string
     chipColor?: string
+    isHidden?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     members?: MemberUncheckedCreateNestedManyWithoutMemberStatusRefInput
@@ -70945,6 +72423,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: MemberUpdateManyWithoutMemberStatusRefNestedInput
@@ -70957,6 +72436,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: MemberUncheckedUpdateManyWithoutMemberStatusRefNestedInput
@@ -70969,6 +72449,7 @@ export namespace Prisma {
     description?: string | null
     chipVariant?: string
     chipColor?: string
+    isHidden?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -70980,6 +72461,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -70991,6 +72473,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -74163,6 +75646,12 @@ export namespace Prisma {
     none?: UnitEventDutyAssignmentWhereInput
   }
 
+  export type MemberSessionListRelationFilter = {
+    every?: MemberSessionWhereInput
+    some?: MemberSessionWhereInput
+    none?: MemberSessionWhereInput
+  }
+
   export type BmqEnrollmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -74195,6 +75684,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type MemberSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type MemberCountOrderByAggregateInput = {
     id?: SortOrder
     serviceNumber?: SortOrder
@@ -74223,10 +75716,13 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
+    pinHash?: SortOrder
+    accountLevel?: SortOrder
   }
 
   export type MemberAvgOrderByAggregateInput = {
     missedCheckoutCount?: SortOrder
+    accountLevel?: SortOrder
   }
 
   export type MemberMaxOrderByAggregateInput = {
@@ -74257,6 +75753,8 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
+    pinHash?: SortOrder
+    accountLevel?: SortOrder
   }
 
   export type MemberMinOrderByAggregateInput = {
@@ -74287,10 +75785,13 @@ export namespace Prisma {
     contract_end?: SortOrder
     missedCheckoutCount?: SortOrder
     lastMissedCheckout?: SortOrder
+    pinHash?: SortOrder
+    accountLevel?: SortOrder
   }
 
   export type MemberSumOrderByAggregateInput = {
     missedCheckoutCount?: SortOrder
+    accountLevel?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -74307,6 +75808,44 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type MemberScalarRelationFilter = {
+    is?: MemberWhereInput
+    isNot?: MemberWhereInput
+  }
+
+  export type MemberSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    token?: SortOrder
+    expiresAt?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MemberSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    token?: SortOrder
+    expiresAt?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MemberSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    token?: SortOrder
+    expiresAt?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type QualificationTypeListRelationFilter = {
@@ -74361,11 +75900,6 @@ export namespace Prisma {
 
   export type TagSumOrderByAggregateInput = {
     displayOrder?: SortOrder
-  }
-
-  export type MemberScalarRelationFilter = {
-    is?: MemberWhereInput
-    isNot?: MemberWhereInput
   }
 
   export type TagScalarRelationFilter = {
@@ -74876,6 +76410,7 @@ export namespace Prisma {
     description?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isHidden?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -74887,6 +76422,7 @@ export namespace Prisma {
     description?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isHidden?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -74898,6 +76434,7 @@ export namespace Prisma {
     description?: SortOrder
     chipVariant?: SortOrder
     chipColor?: SortOrder
+    isHidden?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -77403,6 +78940,13 @@ export namespace Prisma {
     connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
   }
 
+  export type MemberSessionCreateNestedManyWithoutMemberInput = {
+    create?: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput> | MemberSessionCreateWithoutMemberInput[] | MemberSessionUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutMemberInput | MemberSessionCreateOrConnectWithoutMemberInput[]
+    createMany?: MemberSessionCreateManyMemberInputEnvelope
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+  }
+
   export type BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -77520,6 +79064,13 @@ export namespace Prisma {
     connectOrCreate?: UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput | UnitEventDutyAssignmentCreateOrConnectWithoutMemberInput[]
     createMany?: UnitEventDutyAssignmentCreateManyMemberInputEnvelope
     connect?: UnitEventDutyAssignmentWhereUniqueInput | UnitEventDutyAssignmentWhereUniqueInput[]
+  }
+
+  export type MemberSessionUncheckedCreateNestedManyWithoutMemberInput = {
+    create?: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput> | MemberSessionCreateWithoutMemberInput[] | MemberSessionUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutMemberInput | MemberSessionCreateOrConnectWithoutMemberInput[]
+    createMany?: MemberSessionCreateManyMemberInputEnvelope
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -77818,6 +79369,20 @@ export namespace Prisma {
     deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
   }
 
+  export type MemberSessionUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput> | MemberSessionCreateWithoutMemberInput[] | MemberSessionUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutMemberInput | MemberSessionCreateOrConnectWithoutMemberInput[]
+    upsert?: MemberSessionUpsertWithWhereUniqueWithoutMemberInput | MemberSessionUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: MemberSessionCreateManyMemberInputEnvelope
+    set?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    disconnect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    delete?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    update?: MemberSessionUpdateWithWhereUniqueWithoutMemberInput | MemberSessionUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: MemberSessionUpdateManyWithWhereWithoutMemberInput | MemberSessionUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
+  }
+
   export type BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput = {
     create?: XOR<BmqEnrollmentCreateWithoutMemberInput, BmqEnrollmentUncheckedCreateWithoutMemberInput> | BmqEnrollmentCreateWithoutMemberInput[] | BmqEnrollmentUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: BmqEnrollmentCreateOrConnectWithoutMemberInput | BmqEnrollmentCreateOrConnectWithoutMemberInput[]
@@ -78054,6 +79619,34 @@ export namespace Prisma {
     update?: UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput | UnitEventDutyAssignmentUpdateWithWhereUniqueWithoutMemberInput[]
     updateMany?: UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput | UnitEventDutyAssignmentUpdateManyWithWhereWithoutMemberInput[]
     deleteMany?: UnitEventDutyAssignmentScalarWhereInput | UnitEventDutyAssignmentScalarWhereInput[]
+  }
+
+  export type MemberSessionUncheckedUpdateManyWithoutMemberNestedInput = {
+    create?: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput> | MemberSessionCreateWithoutMemberInput[] | MemberSessionUncheckedCreateWithoutMemberInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutMemberInput | MemberSessionCreateOrConnectWithoutMemberInput[]
+    upsert?: MemberSessionUpsertWithWhereUniqueWithoutMemberInput | MemberSessionUpsertWithWhereUniqueWithoutMemberInput[]
+    createMany?: MemberSessionCreateManyMemberInputEnvelope
+    set?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    disconnect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    delete?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    update?: MemberSessionUpdateWithWhereUniqueWithoutMemberInput | MemberSessionUpdateWithWhereUniqueWithoutMemberInput[]
+    updateMany?: MemberSessionUpdateManyWithWhereWithoutMemberInput | MemberSessionUpdateManyWithWhereWithoutMemberInput[]
+    deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
+  }
+
+  export type MemberCreateNestedOneWithoutMemberSessionsInput = {
+    create?: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutMemberSessionsInput
+    connect?: MemberWhereUniqueInput
+  }
+
+  export type MemberUpdateOneRequiredWithoutMemberSessionsNestedInput = {
+    create?: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutMemberSessionsInput
+    upsert?: MemberUpsertWithoutMemberSessionsInput
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutMemberSessionsInput, MemberUpdateWithoutMemberSessionsInput>, MemberUncheckedUpdateWithoutMemberSessionsInput>
   }
 
   export type MemberTagCreateNestedManyWithoutTagInput = {
@@ -81587,6 +83180,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
@@ -81608,6 +83203,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBadgeInput = {
@@ -81637,6 +83233,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -81654,6 +83252,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBadgeInput = {
@@ -81866,6 +83465,8 @@ export namespace Prisma {
     contract_end?: DateTimeNullableFilter<"Member"> | Date | string | null
     missedCheckoutCount?: IntFilter<"Member"> | number
     lastMissedCheckout?: DateTimeNullableFilter<"Member"> | Date | string | null
+    pinHash?: StringNullableFilter<"Member"> | string | null
+    accountLevel?: IntFilter<"Member"> | number
   }
 
   export type VisitorUpsertWithWhereUniqueWithoutBadgeInput = {
@@ -82044,6 +83645,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -82065,6 +83668,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutCheckinsInput = {
@@ -82095,6 +83699,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -82111,6 +83717,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutCheckinsInput = {
@@ -82268,6 +83875,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -82289,6 +83898,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutCheckinsInput = {
@@ -82319,6 +83929,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -82335,6 +83947,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutDivisionInput = {
@@ -82360,6 +83973,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -82381,6 +83996,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDivisionInput = {
@@ -82410,6 +84026,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -82427,6 +84045,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDivisionInput = {
@@ -83270,6 +84889,7 @@ export namespace Prisma {
     description?: string | null
     chipVariant?: string
     chipColor?: string
+    isHidden?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -83281,6 +84901,7 @@ export namespace Prisma {
     description?: string | null
     chipVariant?: string
     chipColor?: string
+    isHidden?: boolean
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
   }
@@ -83670,6 +85291,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MemberSessionCreateWithoutMemberInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionUncheckedCreateWithoutMemberInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionCreateOrConnectWithoutMemberInput = {
+    where: MemberSessionWhereUniqueInput
+    create: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput>
+  }
+
+  export type MemberSessionCreateManyMemberInputEnvelope = {
+    data: MemberSessionCreateManyMemberInput | MemberSessionCreateManyMemberInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RankUpsertWithoutMembersInput = {
     update: XOR<RankUpdateWithoutMembersInput, RankUncheckedUpdateWithoutMembersInput>
     create: XOR<RankCreateWithoutMembersInput, RankUncheckedCreateWithoutMembersInput>
@@ -83950,6 +85601,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -83961,6 +85613,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     chipVariant?: StringFieldUpdateOperationsInput | string
     chipColor?: StringFieldUpdateOperationsInput | string
+    isHidden?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -84235,6 +85888,248 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"UnitEventDutyAssignment"> | Date | string
   }
 
+  export type MemberSessionUpsertWithWhereUniqueWithoutMemberInput = {
+    where: MemberSessionWhereUniqueInput
+    update: XOR<MemberSessionUpdateWithoutMemberInput, MemberSessionUncheckedUpdateWithoutMemberInput>
+    create: XOR<MemberSessionCreateWithoutMemberInput, MemberSessionUncheckedCreateWithoutMemberInput>
+  }
+
+  export type MemberSessionUpdateWithWhereUniqueWithoutMemberInput = {
+    where: MemberSessionWhereUniqueInput
+    data: XOR<MemberSessionUpdateWithoutMemberInput, MemberSessionUncheckedUpdateWithoutMemberInput>
+  }
+
+  export type MemberSessionUpdateManyWithWhereWithoutMemberInput = {
+    where: MemberSessionScalarWhereInput
+    data: XOR<MemberSessionUpdateManyMutationInput, MemberSessionUncheckedUpdateManyWithoutMemberInput>
+  }
+
+  export type MemberSessionScalarWhereInput = {
+    AND?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
+    OR?: MemberSessionScalarWhereInput[]
+    NOT?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
+    id?: UuidFilter<"MemberSession"> | string
+    memberId?: UuidFilter<"MemberSession"> | string
+    token?: StringFilter<"MemberSession"> | string
+    expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
+    ipAddress?: StringNullableFilter<"MemberSession"> | string | null
+    userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    createdAt?: DateTimeFilter<"MemberSession"> | Date | string
+    updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
+  }
+
+  export type MemberCreateWithoutMemberSessionsInput = {
+    id?: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutMemberSessionsInput = {
+    id?: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
+    email?: string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutMemberSessionsInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
+  }
+
+  export type MemberUpsertWithoutMemberSessionsInput = {
+    update: XOR<MemberUpdateWithoutMemberSessionsInput, MemberUncheckedUpdateWithoutMemberSessionsInput>
+    create: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutMemberSessionsInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutMemberSessionsInput, MemberUncheckedUpdateWithoutMemberSessionsInput>
+  }
+
+  export type MemberUpdateWithoutMemberSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutMemberSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+  }
+
   export type MemberTagCreateWithoutTagInput = {
     id?: string
     createdAt?: Date | string | null
@@ -84364,6 +86259,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -84385,6 +86282,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTagsInput = {
@@ -84415,6 +86313,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -84431,6 +86331,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTagsInput = {
@@ -84503,6 +86404,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -84524,6 +86427,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTagsInput = {
@@ -84554,6 +86458,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -84570,6 +86476,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type TagUpsertWithoutMemberTagsInput = {
@@ -84876,6 +86783,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -84897,6 +86806,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutVisitorsInput = {
@@ -84927,6 +86837,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -84943,6 +86855,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutVisitorsInput = {
@@ -85164,6 +87077,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -85185,6 +87100,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutVisitorsInput = {
@@ -85215,6 +87131,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -85231,6 +87149,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type BadgeUpsertWithoutVisitorsInput = {
@@ -85405,6 +87324,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
@@ -85426,6 +87347,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutBmqEnrollmentsInput = {
@@ -85456,6 +87378,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
@@ -85472,6 +87396,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutBmqEnrollmentsInput = {
@@ -85550,6 +87475,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
@@ -85571,6 +87498,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBmqEnrollmentsInput = {
@@ -85601,6 +87529,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
@@ -85617,6 +87547,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserCreateWithoutReport_audit_logInput = {
@@ -85782,6 +87713,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -85803,6 +87736,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsAssignmentsInput = {
@@ -85833,6 +87767,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -85849,6 +87785,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsAssignmentsInput = {
@@ -85879,6 +87816,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -85900,6 +87839,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDdsTransfersInput = {
@@ -85930,6 +87870,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -85946,6 +87888,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDdsTransfersInput = {
@@ -86054,6 +87997,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -86075,6 +88020,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsAssignmentsInput = {
@@ -86105,6 +88051,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -86121,6 +88069,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutDdsTransfersInput = {
@@ -86157,6 +88106,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -86178,6 +88129,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDdsTransfersInput = {
@@ -86208,6 +88160,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -86224,6 +88178,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutDdsAssignmentsInput = {
@@ -86322,6 +88277,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -86343,6 +88300,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberStatusRefInput = {
@@ -86372,6 +88330,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -86389,6 +88349,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberStatusRefInput = {
@@ -86440,6 +88401,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -86461,6 +88424,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMemberTypeRefInput = {
@@ -86490,6 +88454,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -86507,6 +88473,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMemberTypeRefInput = {
@@ -86693,6 +88660,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
@@ -86714,6 +88683,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutRankRefInput = {
@@ -86743,6 +88713,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -86760,6 +88732,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutRankRefInput = {
@@ -87342,6 +89315,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -87363,6 +89338,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutQualificationsInput = {
@@ -87393,6 +89369,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -87409,6 +89387,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutQualificationsInput = {
@@ -87615,6 +89594,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -87636,6 +89617,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutQualificationsInput = {
@@ -87666,6 +89648,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -87682,6 +89666,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type QualificationTypeUpsertWithoutMemberQualificationsInput = {
@@ -88699,6 +90684,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -88720,6 +90707,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutScheduleAssignmentsInput = {
@@ -88750,6 +90738,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -88766,6 +90756,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutScheduleAssignmentsInput = {
@@ -88883,6 +90874,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -88904,6 +90897,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutScheduleAssignmentsInput = {
@@ -88934,6 +90928,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -88950,6 +90946,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type WeeklyScheduleCreateWithoutNightOverridesInput = {
@@ -89039,6 +91036,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -89060,6 +91059,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDwOverridesAsMemberInput = {
@@ -89090,6 +91090,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -89106,6 +91108,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDwOverridesAsMemberInput = {
@@ -89136,6 +91139,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -89157,6 +91162,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutDwOverridesAsBaseInput = {
@@ -89187,6 +91193,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -89203,6 +91211,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutDwOverridesAsBaseInput = {
@@ -89320,6 +91329,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -89341,6 +91352,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDwOverridesAsMemberInput = {
@@ -89371,6 +91383,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -89387,6 +91401,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutDwOverridesAsBaseInput = {
@@ -89423,6 +91438,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -89444,6 +91461,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDwOverridesAsBaseInput = {
@@ -89474,6 +91492,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -89490,6 +91510,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutLockupHoldingInput = {
@@ -89515,6 +91536,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -89536,6 +91559,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupHoldingInput = {
@@ -89566,6 +91590,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -89582,6 +91608,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupHoldingInput = {
@@ -89612,6 +91639,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -89633,6 +91662,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupSecuredInput = {
@@ -89663,6 +91693,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -89679,6 +91711,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupSecuredInput = {
@@ -89777,6 +91810,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -89798,6 +91833,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupHoldingInput = {
@@ -89828,6 +91864,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -89844,6 +91882,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupSecuredInput = {
@@ -89880,6 +91919,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -89901,6 +91942,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupSecuredInput = {
@@ -89931,6 +91973,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -89947,6 +91991,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type LockupTransferUpsertWithWhereUniqueWithoutLockupStatusInput = {
@@ -90054,6 +92099,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -90075,6 +92122,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersFromInput = {
@@ -90105,6 +92153,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -90121,6 +92171,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersFromInput = {
@@ -90151,6 +92202,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -90172,6 +92225,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupTransfersToInput = {
@@ -90202,6 +92256,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -90218,6 +92274,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupTransfersToInput = {
@@ -90298,6 +92355,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -90319,6 +92378,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersFromInput = {
@@ -90349,6 +92409,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -90365,6 +92427,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUpsertWithoutLockupTransfersToInput = {
@@ -90401,6 +92464,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -90422,6 +92487,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupTransfersToInput = {
@@ -90452,6 +92518,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -90468,6 +92536,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type LockupStatusCreateWithoutExecutionInput = {
@@ -90526,6 +92595,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -90547,6 +92618,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutLockupExecutionsInput = {
@@ -90577,6 +92649,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -90593,6 +92667,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutLockupExecutionsInput = {
@@ -90673,6 +92748,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -90694,6 +92771,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutLockupExecutionsInput = {
@@ -90724,6 +92802,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -90740,6 +92820,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberCreateWithoutMissedCheckoutsInput = {
@@ -90765,6 +92846,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -90786,6 +92869,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutMissedCheckoutsInput = {
@@ -90816,6 +92900,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -90832,6 +92918,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutMissedCheckoutsInput = {
@@ -90940,6 +93027,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -90961,6 +93050,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMissedCheckoutsInput = {
@@ -90991,6 +93081,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -91007,6 +93099,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AdminUserUpsertWithoutMissedCheckoutsResolvedInput = {
@@ -91601,6 +93694,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     rankRef?: RankCreateNestedOneWithoutMembersInput
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
@@ -91622,6 +93717,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
   }
 
   export type MemberUncheckedCreateWithoutUnitEventDutyAssignmentsInput = {
@@ -91652,6 +93748,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
@@ -91668,6 +93766,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
     lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
     missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
   }
 
   export type MemberCreateOrConnectWithoutUnitEventDutyAssignmentsInput = {
@@ -91797,6 +93896,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -91818,6 +93919,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutUnitEventDutyAssignmentsInput = {
@@ -91848,6 +93950,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -91864,6 +93968,7 @@ export namespace Prisma {
     lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type AuditLogCreateManyAdminUserInput = {
@@ -92723,6 +94828,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type VisitorCreateManyBadgeInput = {
@@ -92882,6 +94989,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
@@ -92903,6 +95012,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutBadgeInput = {
@@ -92932,6 +95042,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -92949,6 +95061,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutBadgeInput = {
@@ -92978,6 +95091,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type VisitorUpdateWithoutBadgeInput = {
@@ -93061,6 +95176,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type MemberUpdateWithoutDivisionInput = {
@@ -93086,6 +95203,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -93107,6 +95226,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutDivisionInput = {
@@ -93136,6 +95256,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -93153,6 +95275,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutDivisionInput = {
@@ -93182,6 +95305,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type EventCheckinCreateManyEventAttendeeInput = {
@@ -93553,6 +95678,16 @@ export namespace Prisma {
     confirmedAt?: Date | string | null
     releasedAt?: Date | string | null
     notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionCreateManyMemberInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -94174,6 +96309,36 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MemberSessionUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionUncheckedUpdateWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionUncheckedUpdateManyWithoutMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MemberTagCreateManyTagInput = {
     id?: string
     memberId: string
@@ -94307,6 +96472,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type MemberUpdateWithoutMemberStatusRefInput = {
@@ -94332,6 +96499,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -94353,6 +96522,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberStatusRefInput = {
@@ -94382,6 +96552,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -94399,6 +96571,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberStatusRefInput = {
@@ -94428,6 +96601,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type MemberCreateManyMemberTypeRefInput = {
@@ -94457,6 +96632,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type MemberUpdateWithoutMemberTypeRefInput = {
@@ -94482,6 +96659,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     rankRef?: RankUpdateOneWithoutMembersNestedInput
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
@@ -94503,6 +96682,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutMemberTypeRefInput = {
@@ -94532,6 +96712,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -94549,6 +96731,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutMemberTypeRefInput = {
@@ -94578,6 +96761,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type VisitorCreateManyVisitTypeRefInput = {
@@ -94733,6 +96918,8 @@ export namespace Prisma {
     contract_end?: Date | string | null
     missedCheckoutCount?: number
     lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
   }
 
   export type RankCreateManyReplacedByRankInput = {
@@ -94770,6 +96957,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
@@ -94791,6 +96980,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateWithoutRankRefInput = {
@@ -94820,6 +97010,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
@@ -94837,6 +97029,7 @@ export namespace Prisma {
     lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
   export type MemberUncheckedUpdateManyWithoutRankRefInput = {
@@ -94866,6 +97059,8 @@ export namespace Prisma {
     contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     missedCheckoutCount?: IntFieldUpdateOperationsInput | number
     lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
   }
 
   export type RankUpdateWithoutReplacedByRankInput = {
