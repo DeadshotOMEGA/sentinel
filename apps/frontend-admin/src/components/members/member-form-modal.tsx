@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useCreateMember, useUpdateMember } from '@/hooks/use-members'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
+import { TID } from '@/lib/test-ids'
 import {
   Dialog,
   DialogContent,
@@ -123,7 +124,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
+      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto" testId={TID.members.form.modal}>
         <DialogHeader>
           <DialogTitle>{mode === 'create' ? 'Create New Member' : 'Edit Member'}</DialogTitle>
           <DialogDescription>
@@ -143,6 +144,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 id="serviceNumber"
                 {...register('serviceNumber', { required: 'Service number is required' })}
                 placeholder="e.g., V123456"
+                data-testid={TID.members.form.serviceNumber}
               />
               {errors.serviceNumber && (
                 <span className="label text-error">{errors.serviceNumber.message}</span>
@@ -159,6 +161,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 className="select"
                 value={selectedRank}
                 onChange={(e) => setValue('rank', e.target.value, { shouldValidate: true })}
+                data-testid={TID.members.form.rank}
               >
                 <option value="" disabled>
                   Select rank
@@ -182,6 +185,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 id="firstName"
                 {...register('firstName', { required: 'First name is required' })}
                 placeholder="John"
+                data-testid={TID.members.form.firstName}
               />
               {errors.firstName && (
                 <span className="label text-error">{errors.firstName.message}</span>
@@ -198,6 +202,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 id="lastName"
                 {...register('lastName', { required: 'Last name is required' })}
                 placeholder="Doe"
+                data-testid={TID.members.form.lastName}
               />
               {errors.lastName && (
                 <span className="label text-error">{errors.lastName.message}</span>
@@ -226,6 +231,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 className="select"
                 value={selectedDivisionId}
                 onChange={(e) => setValue('divisionId', e.target.value, { shouldValidate: true })}
+                data-testid={TID.members.form.division}
               >
                 <option value="" disabled>
                   Select division
@@ -272,10 +278,11 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
               className="btn btn-outline btn-md"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              data-testid={TID.members.form.cancel}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
+            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting} data-testid={TID.members.form.submit}>
               {isSubmitting && <ButtonSpinner />}
               {mode === 'create' ? 'Create Member' : 'Save Changes'}
             </button>

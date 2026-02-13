@@ -6,6 +6,7 @@ import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
 import { X, Search } from 'lucide-react'
+import { TID } from '@/lib/test-ids'
 
 interface MembersFiltersProps {
   filters: {
@@ -67,6 +68,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
               placeholder="Search by name or service number..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
+              data-testid={TID.members.filter.search}
             />
           </div>
         </fieldset>
@@ -81,6 +83,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             onChange={(e) =>
               onFilterChange({ divisionId: e.target.value === 'all' ? undefined : e.target.value })
             }
+            data-testid={TID.members.filter.division}
           >
             <option value="all">All Divisions</option>
             {divisions?.divisions.map((division) => (
@@ -101,6 +104,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             onChange={(e) =>
               onFilterChange({ rank: e.target.value === 'all' ? undefined : e.target.value })
             }
+            data-testid={TID.members.filter.rank}
           >
             <option value="all">All Ranks</option>
             {enums?.ranks.map((rank: string) => (
@@ -121,6 +125,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             onChange={(e) =>
               onFilterChange({ status: e.target.value === 'all' ? undefined : e.target.value })
             }
+            data-testid={TID.members.filter.status}
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -140,6 +145,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
                 qualificationCode: e.target.value === 'all' ? undefined : e.target.value,
               })
             }
+            data-testid={TID.members.filter.qualification}
           >
             <option value="all">All Qualifications</option>
             {qualificationTypes?.map((type) => (
@@ -153,7 +159,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters}>
+            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters} data-testid={TID.members.filter.clear}>
               <X className="h-4 w-4 mr-2" />
               Clear Filters
             </button>

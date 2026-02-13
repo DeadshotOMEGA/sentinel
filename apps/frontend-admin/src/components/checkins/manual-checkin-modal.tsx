@@ -8,6 +8,7 @@ import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { AlertTriangle, Search, X } from 'lucide-react'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import type { CreateCheckinInput } from '@sentinel/contracts'
+import { TID } from '@/lib/test-ids'
 
 interface ManualCheckinModalProps {
   open: boolean
@@ -176,6 +177,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                         setTimeout(() => searchInputRef.current?.focus(), 0)
                       }}
                       disabled={isFormBusy}
+                      data-testid={TID.checkins.manualModal.clearMember}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -192,6 +194,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                         value={memberSearch}
                         onChange={(e) => setMemberSearch(e.target.value)}
                         disabled={isFormBusy}
+                        data-testid={TID.checkins.manualModal.memberSearch}
                       />
                     </div>
                     <ul className="menu bg-base-200 rounded-box mt-2 w-full max-h-48 overflow-y-auto">
@@ -204,6 +207,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                           <li key={member.id}>
                             <button
                               type="button"
+                              data-testid={TID.checkins.manualModal.memberOption(member.id)}
                               onClick={() => {
                                 setValue('memberId', member.id, { shouldValidate: true })
                                 setSelectedMemberInfo({
@@ -249,6 +253,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                     checked={selectedDirection === 'in'}
                     onChange={() => setValue('direction', 'in', { shouldValidate: true })}
                     disabled={isFormBusy}
+                    data-testid={TID.checkins.manualModal.directionIn}
                   />
                   <span className="flex items-center gap-1.5">
                     <span className="badge badge-success badge-sm">IN</span>
@@ -263,6 +268,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                     checked={selectedDirection === 'out'}
                     onChange={() => setValue('direction', 'out', { shouldValidate: true })}
                     disabled={isFormBusy}
+                    data-testid={TID.checkins.manualModal.directionOut}
                   />
                   <span className="flex items-center gap-1.5">
                     <span className="badge badge-error badge-sm">OUT</span>
@@ -296,6 +302,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                 className="btn btn-outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isFormBusy}
+                data-testid={TID.checkins.manualModal.cancel}
               >
                 Cancel
               </button>
@@ -303,6 +310,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                 type="submit"
                 className="btn btn-primary"
                 disabled={isFormBusy || !selectedMemberId}
+                data-testid={TID.checkins.manualModal.submit}
               >
                 {isFormBusy && <span className="loading loading-spinner loading-sm" />}
                 {selectedDirection === 'out' && holdsLockup

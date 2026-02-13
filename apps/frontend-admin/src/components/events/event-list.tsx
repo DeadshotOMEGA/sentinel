@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
+import { TID } from '@/lib/test-ids'
 
 import type { UnitEventCategory, UnitEventStatus } from '@sentinel/contracts'
 
@@ -99,6 +100,7 @@ export function EventList() {
               className="select"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value as UnitEventCategory | '')}
+              data-testid={TID.events.filter.category}
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -116,6 +118,7 @@ export function EventList() {
               className="select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as UnitEventStatus | '')}
+              data-testid={TID.events.filter.status}
             >
               <option value="">All Statuses</option>
               {statuses.map((status) => (
@@ -135,6 +138,7 @@ export function EventList() {
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               aria-label="Filter by start date"
+              data-testid={TID.events.filter.startDate}
             />
           </fieldset>
 
@@ -147,6 +151,7 @@ export function EventList() {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               aria-label="Filter by end date"
+              data-testid={TID.events.filter.endDate}
             />
           </fieldset>
         </div>
@@ -156,6 +161,7 @@ export function EventList() {
             className="btn btn-ghost btn-sm"
             onClick={handleClearFilters}
             disabled={!categoryFilter && !statusFilter && !startDate && !endDate}
+            data-testid={TID.events.filter.clear}
           >
             Clear Filters
           </button>
@@ -186,7 +192,7 @@ export function EventList() {
             </thead>
             <tbody>
               {sortedEvents.map((event) => (
-                <tr key={event.id}>
+                <tr key={event.id} data-testid={TID.events.listItem(event.id)}>
                   <td className="whitespace-nowrap">
                     {format(new Date(event.eventDate), 'MMM dd, yyyy')}
                   </td>
@@ -213,6 +219,7 @@ export function EventList() {
                       <button
                         className="btn btn-ghost btn-square btn-sm"
                         aria-label={`View ${event.title}`}
+                        data-testid={TID.events.viewBtn(event.id)}
                       >
                         <Eye className="h-4 w-4" />
                       </button>

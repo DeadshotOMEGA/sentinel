@@ -6,6 +6,7 @@ import { Bell, Menu, PanelLeftOpen, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { useBackendHealth } from '@/hooks/use-backend-health'
+import { TID } from '@/lib/test-ids'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -46,7 +47,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         )}
 
         {/* Logo with backend status indicator */}
-        <Link href="/dashboard" className="btn btn-ghost text-2xl font-bold">
+        <Link href="/dashboard" className="btn btn-ghost text-2xl font-bold" data-testid={TID.nav.logo}>
           HMCS Chippawa
         </Link>
       </div>
@@ -56,7 +57,11 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         <ul className="menu text-lg menu-horizontal px-1">
           {navLinks.map((link) => (
             <li key={link.href}>
-              <Link href={link.href} className={cn(pathname === link.href && 'active')}>
+              <Link
+                href={link.href}
+                className={cn(pathname === link.href && 'active')}
+                data-testid={TID.nav.link(link.href.slice(1))}
+              >
                 {link.label}
               </Link>
             </li>
@@ -65,7 +70,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end gap-2">
-        <span className="badge badge-outline badge-xl">
+        <span className="badge badge-outline badge-xl" data-testid={TID.nav.backendStatus}>
           <span className={cn('status', dot)} />
           {label}
         </span>

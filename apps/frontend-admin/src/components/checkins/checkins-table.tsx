@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { TID } from '@/lib/test-ids'
 import {
   createColumnHelper,
   flexRender,
@@ -156,7 +157,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
   return (
     <div className="bg-base-100 border shadow-sm">
       <div className="relative w-full overflow-x-auto">
-        <table className="table">
+        <table className="table" data-testid={TID.checkins.table}>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="hover">
@@ -173,7 +174,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           <tbody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="hover">
+                <tr key={row.id} className="hover" data-testid={TID.checkins.row(row.original.id)}>
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="whitespace-nowrap">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -203,6 +204,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
             className="select select-bordered w-20"
             value={filters.limit.toString()}
             onChange={() => onPageChange(1)}
+            data-testid={TID.checkins.pagination.rowsPerPage}
           >
             <option value="25">25</option>
             <option value="50">50</option>
@@ -220,6 +222,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
               className="btn btn-outline btn-sm"
               onClick={() => onPageChange(filters.page - 1)}
               disabled={filters.page === 1}
+              data-testid={TID.checkins.pagination.prev}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -227,6 +230,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
               className="btn btn-outline btn-sm"
               onClick={() => onPageChange(filters.page + 1)}
               disabled={filters.page >= (data?.totalPages ?? 1)}
+              data-testid={TID.checkins.pagination.next}
             >
               <ChevronRight className="h-4 w-4" />
             </button>

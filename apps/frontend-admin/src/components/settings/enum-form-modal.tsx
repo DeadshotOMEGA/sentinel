@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { TID } from '@/lib/test-ids'
 import {
   Form,
   FormControl,
@@ -185,6 +186,7 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
                         placeholder="e.g., active, pending_review"
                         {...field}
                         disabled={mode === 'edit'} // Code cannot be changed after creation
+                        data-testid={TID.settings.enumForm.code}
                       />
                     </FormControl>
                     <FormDescription>
@@ -208,6 +210,7 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
                       className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="e.g., Active, Pending Review"
                       {...field}
+                      data-testid={TID.settings.enumForm.name}
                     />
                   </FormControl>
                   <FormDescription>Human-readable name shown in the UI</FormDescription>
@@ -227,6 +230,7 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
                       className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Optional description"
                       {...field}
+                      data-testid={TID.settings.enumForm.description}
                     />
                   </FormControl>
                   <FormMessage />
@@ -249,6 +253,7 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
                         className="select"
                         value={field.value || 'solid'}
                         onChange={(e) => field.onChange(e.target.value)}
+                        data-testid={TID.settings.enumForm.chipVariant}
                       >
                         {CHIP_VARIANTS.map((variant) => (
                           <option key={variant.value} value={variant.value}>
@@ -317,10 +322,11 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
                 className="btn btn-outline btn-md"
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
+                data-testid={TID.settings.enumForm.cancel}
               >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
+              <button type="submit" className="btn btn-primary btn-md" disabled={isPending} data-testid={TID.settings.enumForm.submit}>
                 {isPending ? (
                   <>
                     <ButtonSpinner />

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { KeyRound, ArrowLeft } from 'lucide-react'
+import { TID } from '@/lib/test-ids'
 
 interface PinInputProps {
   onSubmit: (pin: string) => void
@@ -58,6 +59,7 @@ export function PinInput({ onSubmit, onBack, loading = false }: PinInputProps) {
         disabled={loading}
         aria-label="PIN"
         autoComplete="off"
+        data-testid={TID.auth.pinInput}
       />
       <div className="flex items-center justify-between">
         <button
@@ -65,6 +67,7 @@ export function PinInput({ onSubmit, onBack, loading = false }: PinInputProps) {
           className="btn btn-ghost btn-sm"
           onClick={onBack}
           disabled={loading}
+          data-testid={TID.auth.pinBack}
         >
           <ArrowLeft size={16} />
           Back

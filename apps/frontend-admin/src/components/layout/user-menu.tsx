@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ChangePinModal } from '@/components/auth/change-pin-modal'
 import { User, LogOut, KeyRound } from 'lucide-react'
+import { TID } from '@/lib/test-ids'
 
 const LEVEL_LABELS: Record<number, string> = {
   [AccountLevel.BASIC]: 'Basic',
@@ -47,7 +48,7 @@ export function UserMenu() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="btn btn-ghost btn-sm">
+        <DropdownMenuTrigger className="btn btn-ghost btn-sm" testId={TID.nav.userMenu}>
           <User className="h-5 w-5" />
           {member.rank} {member.lastName}
         </DropdownMenuTrigger>
@@ -58,12 +59,12 @@ export function UserMenu() {
             {LEVEL_LABELS[member.accountLevel] ?? `Level ${member.accountLevel}`}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setChangePinOpen(true)}>
+          <DropdownMenuItem onClick={() => setChangePinOpen(true)} testId={TID.nav.changePin}>
             <KeyRound className="h-5 w-5" />
             Change PIN
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
+          <DropdownMenuItem onClick={handleLogout} testId={TID.nav.logout}>
             <LogOut className="h-5 w-5" />
             Sign Out
           </DropdownMenuItem>

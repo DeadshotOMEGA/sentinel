@@ -3,6 +3,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
+import { TID } from '@/lib/test-ids'
 import {
   Dialog,
   DialogContent,
@@ -163,6 +164,7 @@ export function EventFormModal({
                   required
                   maxLength={200}
                   aria-required="true"
+                  data-testid={TID.events.form.title}
                 />
               </fieldset>
 
@@ -173,6 +175,7 @@ export function EventFormModal({
                   className="select"
                   value={eventTypeId ?? ''}
                   onChange={(e) => setEventTypeId(e.target.value || null)}
+                  data-testid={TID.events.form.type}
                 >
                   <option value="">None</option>
                   {eventTypes.map((type) => (
@@ -196,6 +199,7 @@ export function EventFormModal({
                     onChange={(e) => setEventDate(e.target.value)}
                     required
                     aria-required="true"
+                    data-testid={TID.events.form.date}
                   />
                 </fieldset>
 
@@ -207,6 +211,7 @@ export function EventFormModal({
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
+                    data-testid={TID.events.form.startTime}
                   />
                 </fieldset>
 
@@ -218,6 +223,7 @@ export function EventFormModal({
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
+                    data-testid={TID.events.form.endTime}
                   />
                 </fieldset>
               </div>
@@ -244,6 +250,7 @@ export function EventFormModal({
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     maxLength={200}
+                    data-testid={TID.events.form.location}
                   />
                 </fieldset>
 
@@ -255,6 +262,7 @@ export function EventFormModal({
                     onChange={(e) => setDescription(e.target.value)}
                     className="textarea textarea-bordered w-full"
                     rows={4}
+                    data-testid={TID.events.form.description}
                   />
                 </fieldset>
 
@@ -352,10 +360,11 @@ export function EventFormModal({
               className="btn btn-ghost btn-md"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              data-testid={TID.events.form.cancel}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting}>
+            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting} data-testid={TID.events.form.submit}>
               {isSubmitting && <ButtonSpinner />}
               {isEditMode ? 'Update Event' : 'Create Event'}
             </button>

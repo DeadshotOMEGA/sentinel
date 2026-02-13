@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TID } from '@/lib/test-ids'
 
 import {
   AlertDialog,
@@ -72,6 +73,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             className="select select-bordered w-[120px]"
             value={selectedYear.toString()}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            data-testid={TID.settings.statHoliday.yearSelect}
           >
             {yearOptions.map((year) => (
               <option key={year} value={year.toString()}>
@@ -79,7 +81,7 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
               </option>
             ))}
           </select>
-          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
+          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)} data-testid={TID.settings.statHoliday.addBtn}>
             <Plus className="h-4 w-4 mr-2" />
             Add Holiday
           </button>
@@ -133,12 +135,14 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
                         <button
                           className="btn btn-ghost btn-square btn-md"
                           onClick={() => setEditingItem(holiday)}
+                          data-testid={TID.settings.statHoliday.editBtn(holiday.id)}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
                           className="btn btn-ghost btn-square btn-md"
                           onClick={() => setDeletingItem(holiday)}
+                          data-testid={TID.settings.statHoliday.deleteBtn(holiday.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -199,11 +203,12 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             </div>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid={TID.settings.statHoliday.deleteCancel}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-error text-error-content hover:bg-error/90"
               disabled={deleteMutation.isPending}
+              data-testid={TID.settings.statHoliday.deleteConfirm}
             >
               {deleteMutation.isPending ? (
                 <>

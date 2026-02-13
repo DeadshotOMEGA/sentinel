@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { useDivisions } from '@/hooks/use-divisions'
 import { X } from 'lucide-react'
+import { TID } from '@/lib/test-ids'
 
 interface CheckinsFiltersProps {
   filters: {
@@ -70,6 +71,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             type="date"
             value={startDateInput}
             onChange={(e) => handleStartDateChange(e.target.value)}
+            data-testid={TID.checkins.filter.startDate}
           />
         </fieldset>
 
@@ -82,6 +84,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             type="date"
             value={endDateInput}
             onChange={(e) => handleEndDateChange(e.target.value)}
+            data-testid={TID.checkins.filter.endDate}
           />
         </fieldset>
 
@@ -95,6 +98,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             onChange={(e) =>
               onFilterChange({ direction: e.target.value === 'all' ? undefined : e.target.value })
             }
+            data-testid={TID.checkins.filter.direction}
           >
             <option value="all">All Directions</option>
             <option value="in">Check In</option>
@@ -112,6 +116,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             onChange={(e) =>
               onFilterChange({ divisionId: e.target.value === 'all' ? undefined : e.target.value })
             }
+            data-testid={TID.checkins.filter.division}
           >
             <option value="all">All Divisions</option>
             {divisions?.divisions.map((division) => (
@@ -125,7 +130,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters}>
+            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters} data-testid={TID.checkins.filter.clear}>
               <X className="h-4 w-4 mr-2" />
               Clear Filters
             </button>

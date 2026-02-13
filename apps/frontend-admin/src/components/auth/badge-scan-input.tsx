@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { CreditCard } from 'lucide-react'
+import { TID } from '@/lib/test-ids'
 
 interface BadgeScanInputProps {
   onScan: (serial: string) => void
@@ -43,6 +44,7 @@ export function BadgeScanInput({ onScan }: BadgeScanInputProps) {
         onKeyDown={handleKeyDown}
         aria-label="Badge number"
         autoComplete="off"
+        data-testid={TID.auth.badgeInput}
       />
     </fieldset>
   )

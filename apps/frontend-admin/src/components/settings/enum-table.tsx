@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { Chip, type ChipVariant, type ChipColor } from '@/components/ui/chip'
+import { TID } from '@/lib/test-ids'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,7 +91,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
-        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
+        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)} data-testid={TID.settings.enumTable.addBtn}>
           <Plus className="h-4 w-4 mr-2" />
           Add New
         </button>
@@ -134,6 +135,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                             className="btn btn-ghost btn-square btn-md h-7 w-7"
                             onClick={() => handleMoveUp(index)}
                             disabled={index === 0 || reorderTags.isPending}
+                            data-testid={TID.settings.enumTable.moveUpBtn(item.id)}
                           >
                             <ChevronUp className="h-4 w-4" />
                           </button>
@@ -141,6 +143,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                             className="btn btn-ghost btn-square btn-md h-7 w-7"
                             onClick={() => handleMoveDown(index)}
                             disabled={index === items.length - 1 || reorderTags.isPending}
+                            data-testid={TID.settings.enumTable.moveDownBtn(item.id)}
                           >
                             <ChevronDown className="h-4 w-4" />
                           </button>
@@ -184,6 +187,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                         <button
                           className="btn btn-ghost btn-square btn-md"
                           onClick={() => setEditingItem(item)}
+                          data-testid={TID.settings.enumTable.editBtn(item.id)}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -191,6 +195,7 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                           className="btn btn-ghost btn-square btn-md"
                           onClick={() => setDeletingItem(item)}
                           disabled={item.usageCount !== undefined && item.usageCount > 0}
+                          data-testid={TID.settings.enumTable.deleteBtn(item.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -238,11 +243,12 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid={TID.settings.enumTable.deleteCancel}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-error text-error-content hover:bg-error/90"
               disabled={deleteEnum.isPending}
+              data-testid={TID.settings.enumTable.deleteConfirm}
             >
               {deleteEnum.isPending ? (
                 <>

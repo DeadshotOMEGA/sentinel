@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
+import { TID } from '@/lib/test-ids'
 import {
   createColumnHelper,
   flexRender,
@@ -346,6 +347,7 @@ export function MembersTable({
                   className="btn btn-ghost btn-sm"
                   onClick={() => setQualificationsMember(member)}
                   title="Manage qualifications"
+                  data-testid={TID.members.rowAction(member.id, 'quals')}
                 >
                   <Shield className="h-4 w-4" />
                 </button>
@@ -353,6 +355,7 @@ export function MembersTable({
                   className="btn btn-ghost btn-sm"
                   onClick={() => setTagsMember(member)}
                   title="Manage tags"
+                  data-testid={TID.members.rowAction(member.id, 'tags')}
                 >
                   <Tag className="h-4 w-4" />
                 </button>
@@ -360,15 +363,21 @@ export function MembersTable({
                   className="btn btn-ghost btn-sm"
                   onClick={() => setPinMember(member)}
                   title="Set PIN"
+                  data-testid={TID.members.rowAction(member.id, 'pin')}
                 >
                   <KeyRound className="h-4 w-4" />
                 </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditingMember(member)}>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setEditingMember(member)}
+                  data-testid={TID.members.rowAction(member.id, 'edit')}
+                >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   className="btn btn-ghost btn-sm"
                   onClick={() => setDeletingMemberId(member.id)}
+                  data-testid={TID.members.rowAction(member.id, 'delete')}
                 >
                   <Trash2 className="h-4 w-4 text-error" />
                 </button>
@@ -436,6 +445,7 @@ export function MembersTable({
             <button
               className="btn btn-ghost btn-sm text-base-content/60"
               onClick={() => setRowSelection({})}
+              data-testid={TID.members.bulk.clear}
             >
               <X className="h-4 w-4 mr-1" />
               Clear selection
@@ -445,6 +455,7 @@ export function MembersTable({
             <div className="flex items-center gap-2">
               <button
                 className="btn btn-outline btn-sm"
+                data-testid={TID.members.bulk.edit}
                 onClick={() => {
                   if (selectedCount === 1) {
                     const selectedId = selectedMemberIds[0]
@@ -463,6 +474,7 @@ export function MembersTable({
               <button
                 className="btn btn-outline btn-sm"
                 onClick={() => setShowBulkGrantQualDialog(true)}
+                data-testid={TID.members.bulk.quals}
               >
                 <Shield className="h-4 w-4 mr-2" />
                 Quals
@@ -470,6 +482,7 @@ export function MembersTable({
               <button
                 className="btn btn-outline btn-sm"
                 onClick={() => setShowBulkAssignTagDialog(true)}
+                data-testid={TID.members.bulk.tags}
               >
                 <Tag className="h-4 w-4 mr-2" />
                 Tags
@@ -477,6 +490,7 @@ export function MembersTable({
               <button
                 className="btn btn-error btn-sm"
                 onClick={() => setShowBulkDeleteDialog(true)}
+                data-testid={TID.members.bulk.delete}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete {selectedCount > 1 ? `(${selectedCount})` : ''}
@@ -486,7 +500,7 @@ export function MembersTable({
         </div>
 
         <div className="relative w-full overflow-x-auto">
-          <table className="table table-fixed">
+          <table className="table table-fixed" data-testid={TID.members.table}>
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="hover">
@@ -511,6 +525,7 @@ export function MembersTable({
                     key={row.id}
                     className={cn('hover', row.getIsSelected() ? 'bg-base-200/50' : '')}
                     data-state={row.getIsSelected() ? 'selected' : undefined}
+                    data-testid={TID.members.row(row.id)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
@@ -544,6 +559,7 @@ export function MembersTable({
                   className="toggle toggle-sm"
                   checked={includeHidden}
                   onChange={(e) => setIncludeHidden(e.target.checked)}
+                  data-testid={TID.members.pagination.showDeployed}
                 />
                 <span className="text-sm text-base-content/60">Show deployed</span>
               </label>
@@ -554,6 +570,7 @@ export function MembersTable({
               className="select select-sm"
               value={limit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
+              data-testid={TID.members.pagination.rowsPerPage}
             >
               <option value={25}>25</option>
               <option value={50}>50</option>
@@ -572,6 +589,7 @@ export function MembersTable({
                 className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page <= 1}
+                data-testid={TID.members.pagination.prev}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -579,6 +597,7 @@ export function MembersTable({
                 className="btn btn-outline btn-sm"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= (data?.totalPages ?? 1)}
+                data-testid={TID.members.pagination.next}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
