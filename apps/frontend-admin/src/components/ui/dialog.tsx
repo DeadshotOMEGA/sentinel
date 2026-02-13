@@ -56,14 +56,19 @@ function DialogContent({
   children,
   showCloseButton = true,
   size,
+  testId,
+  closeButtonTestId,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
   size?: ModalSize
+  testId?: string
+  closeButtonTestId?: string
 }) {
   return (
     <div
       data-slot="dialog-content"
+      data-testid={testId}
       className={cn("modal-box text-base-content", size && MODAL_SIZE[size], className)}
       {...props}
     >
@@ -72,6 +77,7 @@ function DialogContent({
         <form method="dialog" className="absolute top-4 right-4">
           <button
             data-slot="dialog-close"
+            data-testid={closeButtonTestId}
             className="btn btn-sm btn-circle btn-ghost"
           >
             <XIcon className="size-4" />

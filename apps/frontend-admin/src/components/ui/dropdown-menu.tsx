@@ -26,15 +26,17 @@ function DropdownMenu({ children }: { children: React.ReactNode }) {
 function DropdownMenuTrigger({
   className,
   asChild: _asChild,
+  testId,
   children,
   ...props
-}: React.ComponentProps<"button"> & { asChild?: boolean }) {
+}: React.ComponentProps<"button"> & { asChild?: boolean; testId?: string }) {
   const { popoverId, anchorName } = useDropdownContext()
 
   return (
     <button
       type="button"
       data-slot="dropdown-menu-trigger"
+      data-testid={testId}
       popoverTarget={popoverId}
       className={className}
       style={{ anchorName } as React.CSSProperties}
@@ -80,17 +82,20 @@ function DropdownMenuItem({
   inset,
   variant = "default",
   onClick,
+  testId,
   children,
   ...props
 }: React.ComponentProps<"li"> & {
   inset?: boolean
   variant?: "default" | "destructive"
   onClick?: () => void
+  testId?: string
 }) {
   return (
     <li data-slot="dropdown-menu-item" data-variant={variant} {...props}>
       <button
         type="button"
+        data-testid={testId}
         onClick={onClick}
         className={cn(
           variant === "destructive" && "text-error",

@@ -29,6 +29,7 @@ type ModalStep = 'pick-member' | 'kiosk-result'
 export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps) {
   const [step, setStep] = useState<ModalStep>('pick-member')
   const [search, setSearch] = useState('')
+  const [scanTime, setScanTime] = useState('')
   const [scanResult, setScanResult] = useState<MockScanResponse | null>(null)
   const [showLockupOptions, setShowLockupOptions] = useState(false)
   const [ddsHandled, setDdsHandled] = useState(false)
@@ -105,6 +106,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     setStep('pick-member')
     setSearch('')
     setScanResult(null)
+    setScanTime('')
     setShowLockupOptions(false)
     setDdsHandled(false)
     setLockupBlockedMember(null)
@@ -115,6 +117,14 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     onOpenChange(false)
   }
 
+  const buildTimestamp = (): string | undefined => {
+    if (!scanTime) return undefined
+    const now = new Date()
+    const [hours, minutes] = scanTime.split(':').map(Number)
+    now.setHours(hours, minutes, 0, 0)
+    return now.toISOString()
+  }
+
   const handleScan = async (member: DevMember) => {
     if (!member.badgeSerialNumber) return
 
@@ -122,6 +132,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
       const result = await mockScan.mutateAsync({
         serialNumber: member.badgeSerialNumber,
         kioskId: 'dev-mock-scanner',
+        timestamp: buildTimestamp(),
       })
       setScanResult(result)
       setStep('kiosk-result')
@@ -192,10 +203,10 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent size="lg" className="max-h-[85vh] flex flex-col">
+        <DialogContent size="lg" className="max-h-[85vh] flex flex-col gap-3">
           {step === 'pick-member' && (
             <>
-              <DialogHeader>
+              <DialogHeader className="mb-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Radio className="h-5 w-5" />
                   Simulate Badge Scan
@@ -205,16 +216,39 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                 </DialogDescription>
               </DialogHeader>
 
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60 pointer-events-none" />
+              {/* Search + Scan time — same row for density */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/50 pointer-events-none" />
+                  <input
+                    type="text"
+                    className="input input-sm input-bordered w-full pl-8"
+                    placeholder="Search by name, rank, or division..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <label className="text-xs text-base-content/50 whitespace-nowrap" htmlFor="scan-time">
+                  Time
+                </label>
                 <input
-                  type="text"
-                  className="input input-neutral w-full pl-10"
-                  placeholder="Search by name, rank, or division..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  id="scan-time"
+                  type="time"
+                  className="input input-sm input-bordered w-32"
+                  value={scanTime}
+                  onChange={(e) => setScanTime(e.target.value)}
                 />
+                {scanTime ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs text-base-content/50"
+                    onClick={() => setScanTime('')}
+                  >
+                    now
+                  </button>
+                ) : (
+                  <span className="text-xs text-base-content/50 whitespace-nowrap">now</span>
+                )}
               </div>
 
               {/* Present count + Clear All */}
@@ -251,7 +285,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                     <p>No members found</p>
                   </div>
                 ) : (
-                  <ul className="list">
+                  <ul>
                     {filteredMembers?.map((member) => {
                       const hasBadge = !!member.badgeSerialNumber
                       const disabled = !hasBadge || mockScan.isPending
@@ -261,7 +295,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                           role="button"
                           tabIndex={disabled ? -1 : 0}
                           aria-disabled={disabled}
-                          className={`list-row transition-colors ${
+                          className={`flex items-center gap-3 px-6 py-2 transition-colors ${
                             disabled
                               ? 'opacity-40 cursor-not-allowed'
                               : 'cursor-pointer hover:bg-base-200/60'
@@ -275,26 +309,24 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                           }}
                         >
                           {/* Status dot */}
-                          <div className="flex items-center">
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                member.isPresent ? 'bg-success' : 'bg-base-300'
-                              }`}
-                            />
-                          </div>
+                          <span
+                            className={`status status-sm shrink-0 ${
+                              member.isPresent ? 'status-success' : 'status-neutral'
+                            }`}
+                          />
 
                           {/* Member info (grows) */}
-                          <div>
-                            <div className="font-medium">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">
                               {member.rank} {member.lastName}, {member.firstName}
                             </div>
-                            <div className="text-xs opacity-60">{member.division}</div>
+                            <div className="text-xs text-base-content/50">{member.division}</div>
                           </div>
 
                           {/* Badge serial + status */}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             {hasBadge ? (
-                              <span className="text-xs opacity-60 font-mono">
+                              <span className="text-xs text-base-content/50 font-mono">
                                 {member.badgeSerialNumber!.slice(-6)}
                               </span>
                             ) : (
@@ -303,7 +335,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                             {member.isPresent ? (
                               <span className="badge badge-success badge-sm">IN</span>
                             ) : (
-                              <span className="badge badge-ghost badge-sm">OUT</span>
+                              <span className="badge badge-neutral badge-sm">OUT</span>
                             )}
                           </div>
                         </li>

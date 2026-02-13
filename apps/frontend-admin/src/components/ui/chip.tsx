@@ -201,7 +201,7 @@ function Chip({
       data-slot="chip"
       data-variant={variant}
       data-color={color}
-      className={cn(baseClasses, sizeClasses[size], variantColorClasses[variant][color], className)}
+      className={cn(baseClasses, sizeClasses[size], (variantColorClasses[variant] ?? variantColorClasses.solid)[color] ?? variantColorClasses.solid.default, className)}
       {...props}
     >
       {shouldShowDot && (
