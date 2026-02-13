@@ -2,14 +2,16 @@
 'use client'
 
 import { useState } from 'react'
-import { UserPlus, Users, FileText, Lock, Radio, DoorOpen } from 'lucide-react'
+import { UserPlus, Users, FileText, Lock, Radio, DoorOpen, ArrowRightLeft } from 'lucide-react'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
 import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
+import { TransferLockupScanModal } from '@/components/lockup/transfer-lockup-scan-modal'
 import { VisitorSigninModal } from '@/components/visitors/visitor-signin-modal'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
-import { useLockupStatus } from '@/hooks/use-lockup'
+import { useLockupStatus, useCheckoutOptions } from '@/hooks/use-lockup'
+import { TID } from '@/lib/test-ids'
 
 export function QuickActionButtons() {
   const member = useAuthStore((state) => state.member)
@@ -18,11 +20,14 @@ export function QuickActionButtons() {
   const [isLockupModalOpen, setIsLockupModalOpen] = useState(false)
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
   const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
+  const [isTransferScanModalOpen, setIsTransferScanModalOpen] = useState(false)
   const isDevMode = process.env.NODE_ENV === 'development'
 
   const { data: lockupStatus } = useLockupStatus()
   const currentHolder = lockupStatus?.currentHolder
   const buildingStatus = lockupStatus?.buildingStatus
+
+  const { data: checkoutOptions } = useCheckoutOptions(currentHolder?.id ?? '')
 
   // Check account level for permissions
   const canManualCheckin = (member?.accountLevel ?? 0) >= AccountLevel.QUARTERMASTER
@@ -43,6 +48,7 @@ export function QuickActionButtons() {
           className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
           disabled={!canManualCheckin}
           onClick={() => setIsCheckinModalOpen(true)}
+          data-testid={TID.dashboard.quickAction.manualCheckin}
         >
           <UserPlus className="h-4 w-4" />
           Manual Check-in
@@ -57,6 +63,7 @@ export function QuickActionButtons() {
           className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
           disabled={!canManualCheckin}
           onClick={() => setIsVisitorModalOpen(true)}
+          data-testid={TID.dashboard.quickAction.visitorSignin}
         >
           <Users className="h-4 w-4" />
           Visitor Sign-in
@@ -77,6 +84,7 @@ export function QuickActionButtons() {
             className="btn btn-success btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
             disabled={!isAdmin}
             onClick={() => setIsOpenBuildingOpen(true)}
+            data-testid={TID.dashboard.quickAction.openBuilding}
           >
             <DoorOpen className="h-4 w-4" />
             Open Building
@@ -91,9 +99,24 @@ export function QuickActionButtons() {
             className="btn btn-secondary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
             disabled={!isAdmin || isOpenNoHolder}
             onClick={() => setIsLockupModalOpen(true)}
+            data-testid={TID.dashboard.quickAction.executeLockup}
           >
             <Lock className="h-4 w-4" />
             Execute Lockup
+          </button>
+        </div>
+      )}
+
+      {isOpenWithHolder && (
+        <div className={!isAdmin ? 'tooltip' : ''} data-tip="Requires Admin level or higher">
+          <button
+            className="btn btn-secondary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+            disabled={!isAdmin}
+            onClick={() => setIsTransferScanModalOpen(true)}
+            data-testid={TID.dashboard.quickAction.transferLockup}
+          >
+            <ArrowRightLeft className="h-4 w-4" />
+            Transfer Lockup
           </button>
         </div>
       )}
@@ -102,6 +125,7 @@ export function QuickActionButtons() {
         <button
           className="btn btn-outline btn-accent hover:shadow-md transition-all duration-200 ml-auto"
           onClick={() => setIsScanModalOpen(true)}
+          data-testid={TID.dashboard.quickAction.simulateScan}
         >
           <Radio className="h-4 w-4" />
           Simulate Scan
@@ -120,6 +144,15 @@ export function QuickActionButtons() {
         />
       )}
       <OpenBuildingModal open={isOpenBuildingOpen} onOpenChange={setIsOpenBuildingOpen} />
+      {isOpenWithHolder && currentHolder && (
+        <TransferLockupScanModal
+          open={isTransferScanModalOpen}
+          onOpenChange={setIsTransferScanModalOpen}
+          currentHolder={currentHolder}
+          eligibleRecipients={checkoutOptions?.eligibleRecipients ?? []}
+          onComplete={() => setIsTransferScanModalOpen(false)}
+        />
+      )}
       {isDevMode && <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />}
     </div>
   )

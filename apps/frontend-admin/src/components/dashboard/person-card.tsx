@@ -4,6 +4,7 @@ import { memo } from 'react'
 import { Clock, User, Building2, LogOut } from 'lucide-react'
 import { Chip, fadedColorClasses, type ChipColor, type ChipVariant } from '@/components/ui/chip'
 import type { PresentPerson } from '@sentinel/contracts'
+import { TID } from '@/lib/test-ids'
 
 function formatRelativeTime(isoString: string): string {
   const now = Date.now()
@@ -24,8 +25,9 @@ const POSITION_COLOR = 'border border-secondary bg-secondary/10 text-secondary'
 // Reuse faded color classes from Chip component for avatar styling
 const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
 
-// Tag names that represent active responsibilities — hidden from chips when not in role
-const RESPONSIBILITY_TAG_NAMES = ['DDS']
+// Tag names that represent active responsibilities — hidden from avatar fallback and chips
+// These are qualification tags (DDS, Duty Watch positions) that only display when scheduled
+const RESPONSIBILITY_TAG_NAMES = ['DDS', 'SWK', 'DSWK', 'QM', 'BM', 'APS']
 const FTS_TAG_NAME = 'FTS'
 
 interface PersonAvatarProps {
@@ -50,11 +52,15 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     )
   }
 
-  // Priority 2: Duty Watch position
+  // Priority 2: Duty Watch position (qualification tag, like DDS)
   if (dutyPosition) {
+    const posTag = person.tags?.find((t) => t.name === dutyPosition)
+    const colorClass = posTag?.chipColor
+      ? CHIP_COLOR_AVATAR_CLASSES[posTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
+      : POSITION_COLOR
     return (
       <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
-        <div className={`w-10 rounded-full ${POSITION_COLOR}`}>
+        <div className={`w-10 rounded-full ${colorClass}`}>
           <span className="text-xs font-bold">{dutyPosition}</span>
         </div>
       </div>
@@ -135,7 +141,7 @@ export const PersonCard = memo(function PersonCard({
     : 'border-info/30 hover:border-info/50'
 
   return (
-    <div className={`card card-elevated border ${cardBorderClass}`}>
+    <div className={`card card-elevated border ${cardBorderClass}`} data-testid={TID.dashboard.personCard(person.id)}>
       <div className="card-body p-3 gap-2">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (
@@ -178,6 +184,7 @@ export const PersonCard = memo(function PersonCard({
               {person.tags
                 ?.filter((tag) => {
                   if (tag.source === 'qualification') return false
+                  if (RESPONSIBILITY_TAG_NAMES.includes(tag.name)) return false
                   if (tag.id === avatarTagId) return false
                   return true
                 })
@@ -225,6 +232,7 @@ export const PersonCard = memo(function PersonCard({
               type="button"
               className="btn btn-ghost btn-xs text-error gap-1"
               onClick={() => onCheckoutVisitor(person.id)}
+              data-testid={TID.dashboard.visitorCheckout(person.id)}
             >
               <LogOut size={10} />
               Sign Out
