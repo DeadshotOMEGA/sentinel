@@ -1,11 +1,14 @@
 import { initServer } from '@ts-rest/express'
 import { lockupContract } from '@sentinel/contracts'
 import { LockupService } from '../services/lockup-service.js'
+import { BadgeRepository } from '../repositories/badge-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { AccountLevel } from '../middleware/roles.js'
 
 const s = initServer()
 
 const lockupService = new LockupService(getPrismaClient())
+const badgeRepository = new BadgeRepository(getPrismaClient())
 
 /**
  * Lockup route implementation using ts-rest
@@ -157,6 +160,78 @@ export const lockupRouter = s.router(lockupContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to transfer lockup',
+        },
+      }
+    }
+  },
+
+  /**
+   * Verify badge authorization for lockup transfer
+   * Checks if the scanned badge belongs to the current lockup holder or an Admin/Developer.
+   * Does NOT create any checkin record.
+   */
+  verifyBadge: async ({ body }) => {
+    try {
+      const result = await badgeRepository.findBySerialNumberWithMember(body.serialNumber)
+
+      if (!result || !result.member) {
+        return {
+          status: 403 as const,
+          body: {
+            error: 'BADGE_NOT_FOUND',
+            message: 'Badge not found or not assigned to a member',
+          },
+        }
+      }
+
+      const { member } = result
+
+      // Fetch accountLevel directly — not in shared types package
+      const memberRecord = await getPrismaClient().member.findUnique({
+        where: { id: member.id },
+        select: { accountLevel: true },
+      })
+
+      const accountLevel = memberRecord?.accountLevel ?? 0
+
+      const lockupStatus = await lockupService.getCurrentStatus()
+      const isHolder = lockupStatus.currentHolder?.id === member.id
+      const isPrivileged = accountLevel >= AccountLevel.ADMIN
+
+      if (!isHolder && !isPrivileged) {
+        return {
+          status: 200 as const,
+          body: {
+            authorized: false,
+            memberId: member.id,
+            memberName: `${member.firstName} ${member.lastName}`,
+            reason: 'holder' as const,
+          },
+        }
+      }
+
+      const reason =
+        accountLevel >= AccountLevel.DEVELOPER
+          ? ('developer' as const)
+          : isHolder
+            ? ('holder' as const)
+            : ('admin' as const)
+
+      return {
+        status: 200 as const,
+        body: {
+          authorized: true,
+          memberId: member.id,
+          memberName: `${member.firstName} ${member.lastName}`,
+          reason,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to verify badge',
         },
       }
     }

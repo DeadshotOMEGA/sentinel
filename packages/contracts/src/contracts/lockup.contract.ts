@@ -17,6 +17,8 @@ import {
   OpenBuildingSchema,
   OpenBuildingResponseSchema,
   EligibleOpenersResponseSchema,
+  VerifyBadgeSchema,
+  VerifyBadgeResponseSchema,
 } from '../schemas/index.js'
 
 const c = initContract()
@@ -83,6 +85,26 @@ export const lockupContract = c.router({
     },
     summary: 'Transfer lockup responsibility',
     description: 'Transfer lockup to another qualified and checked-in member',
+  },
+
+  /**
+   * Verify badge authorization for lockup transfer
+   * Checks if the scanned badge belongs to the current lockup holder or an Admin/Developer.
+   * Does NOT create any checkin record.
+   */
+  verifyBadge: {
+    method: 'POST',
+    path: '/api/lockup/verify-badge',
+    body: VerifyBadgeSchema,
+    responses: {
+      200: VerifyBadgeResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Verify badge for lockup transfer authorization',
+    description:
+      'Check if a scanned badge belongs to the current lockup holder or an Admin/Developer. Returns authorization result without creating any attendance record.',
   },
 
   /**

@@ -8,6 +8,7 @@ import type {
   TransferLockupInput,
   ExecuteLockupInput,
   OpenBuildingInput,
+  VerifyBadgeInput,
 } from '@sentinel/contracts'
 
 export function useLockupStatus() {
@@ -165,6 +166,28 @@ export function useEligibleOpeners() {
         throw new Error('Failed to fetch eligible openers')
       }
       return response.body.openers
+    },
+  })
+}
+
+/**
+ * Verify badge authorization for lockup transfer
+ * Checks if scanned badge belongs to current holder or Admin/Developer.
+ * Does NOT create any checkin record.
+ */
+export function useVerifyBadge() {
+  return useMutation({
+    mutationFn: async (data: VerifyBadgeInput) => {
+      const response = await apiClient.lockup.verifyBadge({
+        body: data,
+      })
+      if (response.status === 403 || response.status === 404) {
+        throw new Error('Badge not found or not assigned to a member')
+      }
+      if (response.status !== 200) {
+        throw new Error('Failed to verify badge')
+      }
+      return response.body
     },
   })
 }

@@ -302,6 +302,27 @@ export const CheckLockupAuthResponseSchema = v.object({
   message: v.string(),
 })
 
+// ============================================================================
+// Verify Badge Schemas (for scan-authorized transfer)
+// ============================================================================
+
+/**
+ * Verify badge request schema
+ */
+export const VerifyBadgeSchema = v.object({
+  serialNumber: v.string(),
+})
+
+/**
+ * Verify badge response schema
+ */
+export const VerifyBadgeResponseSchema = v.object({
+  authorized: v.boolean(),
+  memberId: v.string(),
+  memberName: v.string(),
+  reason: v.picklist(['holder', 'admin', 'developer']),
+})
+
 // Type exports - New types
 export type BuildingStatus = v.InferOutput<typeof BuildingStatusSchema>
 export type LockupHolder = v.InferOutput<typeof LockupHolderSchema>
@@ -330,3 +351,5 @@ export type OpenBuildingResponse = v.InferOutput<typeof OpenBuildingResponseSche
 export type EligibleOpener = v.InferOutput<typeof EligibleOpenerSchema>
 export type EligibleOpenersResponse = v.InferOutput<typeof EligibleOpenersResponseSchema>
 export type CheckLockupAuthResponse = v.InferOutput<typeof CheckLockupAuthResponseSchema>
+export type VerifyBadgeInput = v.InferOutput<typeof VerifyBadgeSchema>
+export type VerifyBadgeResponse = v.InferOutput<typeof VerifyBadgeResponseSchema>
