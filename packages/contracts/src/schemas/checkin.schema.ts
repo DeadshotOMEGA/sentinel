@@ -44,6 +44,7 @@ export const BulkCreateCheckinsSchema = v.object({
  */
 export const UpdateCheckinSchema = v.object({
   direction: v.optional(CheckinDirectionEnum),
+  timestamp: v.optional(v.pipe(v.string(), v.isoTimestamp())),
   flaggedForReview: v.optional(v.boolean()),
   flagReason: v.optional(v.string()),
 })

@@ -347,7 +347,7 @@ export class CheckinRepository {
   /**
    * Update checkin (e.g., flag for review, change direction)
    */
-  async update(id: string, data: Partial<CreateCheckinInput>): Promise<Checkin> {
+  async update(id: string, data: { direction?: string; timestamp?: Date }): Promise<Checkin> {
     const existing = await this.findById(id)
     if (!existing) {
       throw new Error(`Checkin with ID '${id}' not found`)
@@ -359,8 +359,7 @@ export class CheckinRepository {
       where: { id },
       data: {
         direction: data.direction,
-        // Note: flaggedForReview and flagReason are not in the current schema
-        // If they need to be added, update the Prisma schema first
+        timestamp: data.timestamp,
       },
     })
 

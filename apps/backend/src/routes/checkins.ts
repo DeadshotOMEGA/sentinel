@@ -602,6 +602,7 @@ export const checkinsRouter = s.router(checkinContract, {
     try {
       const updated = await checkinRepo.update(params.id, {
         direction: body.direction,
+        timestamp: body.timestamp ? new Date(body.timestamp) : undefined,
       })
 
       // Fetch with member details for response

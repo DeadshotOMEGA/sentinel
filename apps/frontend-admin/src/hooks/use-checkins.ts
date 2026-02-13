@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { websocketManager } from '@/lib/websocket'
-import type { CreateCheckinInput } from '@sentinel/contracts'
+import type { CreateCheckinInput, UpdateCheckinInput } from '@sentinel/contracts'
 
 interface CheckinsQueryParams {
   page?: number
@@ -166,6 +166,51 @@ export function useCreateCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
       queryClient.invalidateQueries({ queryKey: ['recent-checkins'] })
+    },
+  })
+}
+
+export function useUpdateCheckin() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateCheckinInput }) => {
+      const response = await apiClient.checkins.updateCheckin({
+        params: { id },
+        body: data,
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to update check-in')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
+      queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      queryClient.invalidateQueries({ queryKey: ['presence'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
+    },
+  })
+}
+
+export function useDeleteCheckin() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.checkins.deleteCheckin({
+        params: { id },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to delete check-in')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
+      queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      queryClient.invalidateQueries({ queryKey: ['presence'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
     },
   })
 }
