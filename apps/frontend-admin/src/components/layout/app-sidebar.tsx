@@ -1,16 +1,110 @@
 'use client'
 
-import { Clock, ArrowDownCircle, ArrowUpCircle, PanelLeftClose } from 'lucide-react'
-import { useRecentActivity } from '@/hooks/use-checkins'
+import { useState } from 'react'
+import { Clock, ArrowDownCircle, ArrowUpCircle, PanelLeftClose, Pencil, Trash2, Check, X } from 'lucide-react'
+import { useRecentActivity, useUpdateCheckin, useDeleteCheckin } from '@/hooks/use-checkins'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import type { RecentActivityItem } from '@sentinel/contracts'
+import { TID } from '@/lib/test-ids'
 
 interface AppSidebarProps {
   drawerId: string
 }
 
+// ── Inline edit row (dev only, member checkins only) ─────────────────────────
+
+interface EditRowProps {
+  item: RecentActivityItem
+  onDone: () => void
+}
+
+function EditRow({ item, onDone }: EditRowProps) {
+  const update = useUpdateCheckin()
+  const remove = useDeleteCheckin()
+
+  // Pre-fill time from the existing timestamp (HH:MM in local time)
+  const existing = new Date(item.timestamp)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const initialTime = `${pad(existing.getHours())}:${pad(existing.getMinutes())}`
+  const [time, setTime] = useState(initialTime)
+
+  const handleSave = async () => {
+    const [hours, minutes] = time.split(':').map(Number)
+    const updated = new Date(existing)
+    updated.setHours(hours, minutes, 0, 0)
+    await update.mutateAsync({ id: item.id, data: { timestamp: updated.toISOString() } })
+    onDone()
+  }
+
+  const handleDelete = async () => {
+    await remove.mutateAsync(item.id)
+    onDone()
+  }
+
+  const busy = update.isPending || remove.isPending
+
+  return (
+    <div className="bg-base-100 px-3 py-2 flex flex-col gap-2">
+      {/* Time input */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-base-content/50 whitespace-nowrap">Time</label>
+        <input
+          type="time"
+          className="input input-xs input-bordered flex-1"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          disabled={busy}
+        />
+      </div>
+      {/* Actions */}
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          className="btn btn-xs btn-success flex-1"
+          onClick={handleSave}
+          disabled={busy || time === initialTime}
+          data-testid={TID.sidebar.saveBtn}
+        >
+          {update.isPending ? <ButtonSpinner /> : <Check className="h-3 w-3" />}
+          Save
+        </button>
+        <button
+          type="button"
+          className="btn btn-xs btn-error flex-1"
+          onClick={handleDelete}
+          disabled={busy}
+          data-testid={TID.sidebar.deleteBtn}
+        >
+          {remove.isPending ? <ButtonSpinner /> : <Trash2 className="h-3 w-3" />}
+          Delete
+        </button>
+        <button
+          type="button"
+          className="btn btn-xs btn-ghost"
+          onClick={onDone}
+          disabled={busy}
+          data-testid={TID.sidebar.cancelBtn}
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+      {(update.isError || remove.isError) && (
+        <p className="text-xs text-error">
+          {update.error?.message ?? remove.error?.message}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
 export function AppSidebar({ drawerId }: AppSidebarProps) {
   const { data, isLoading, isError } = useRecentActivity()
   const activities = data?.activities ?? []
+  const isDeveloper = useAuthStore((s) => s.hasMinimumLevel(AccountLevel.DEVELOPER))
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   return (
     <div className="flex min-h-full w-72.5 flex-col bg-base-300 p-4">
@@ -53,33 +147,55 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
           {activities.map((item: RecentActivityItem) => {
             const isCheckIn = item.direction === 'in'
             const isVisitor = item.type === 'visitor'
+            const isEditing = editingId === item.id
             const Icon = isCheckIn ? ArrowDownCircle : ArrowUpCircle
+            // Visitors don't have a checkin record to edit/delete
+            const canEdit = isDeveloper && !isVisitor
 
             return (
               <li key={`${item.type}-${item.id}`}>
-                <div className="flex items-start gap-2 bg-base-100 p-3 rounded-none">
-                  <Icon
-                    className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-error'}`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium">
-                        {item.rank ? `${item.rank} ` : ''}
-                        {item.name}
-                      </span>
-                      {isVisitor && (
-                        <span className="badge badge-info badge-sm shrink-0">Visitor</span>
-                      )}
+                {isEditing ? (
+                  <EditRow item={item} onDone={() => setEditingId(null)} />
+                ) : (
+                  <div
+                    className={`flex items-start gap-2 bg-base-100 p-3 rounded-none ${canEdit ? 'group' : ''}`}
+                  >
+                    <Icon
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-error'}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-medium">
+                          {item.rank ? `${item.rank} ` : ''}
+                          {item.name}
+                        </span>
+                        {isVisitor && (
+                          <span className="badge badge-info badge-sm shrink-0">Visitor</span>
+                        )}
+                      </div>
+
+                      <div className="mt-0.5 text-xs text-base-content/60">
+                        {new Date(item.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
                     </div>
 
-                    <div className="mt-0.5 text-xs text-base-content/60">
-                      {new Date(item.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </div>
+                    {/* Dev edit button — visible on hover */}
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs opacity-0 group-hover:opacity-100 transition-opacity shrink-0 -mr-1"
+                        aria-label="Edit entry"
+                        onClick={() => setEditingId(item.id)}
+                        data-testid={TID.sidebar.editBtn(item.id)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
-                </div>
+                )}
               </li>
             )
           })}
