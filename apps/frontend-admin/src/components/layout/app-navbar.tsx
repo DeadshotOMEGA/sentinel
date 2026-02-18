@@ -11,6 +11,7 @@ import { TID } from '@/lib/test-ids'
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/members', label: 'Members' },
+  { href: '/badges', label: 'Badges' },
   { href: '/checkins', label: 'Check-ins' },
   { href: '/events', label: 'Events' },
   { href: '/schedules', label: 'Schedules' },

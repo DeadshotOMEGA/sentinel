@@ -137,11 +137,11 @@ export const PersonCard = memo(function PersonCard({
 
   // Card border color: subtle indicator for member vs visitor
   const cardBorderClass = isMember
-    ? 'border-success/30 hover:border-success/50'
-    : 'border-info/30 hover:border-info/50'
+    ? 'border-primary/50'
+    : 'border-neutral/50'
 
   return (
-    <div className={`card card-elevated border ${cardBorderClass}`} data-testid={TID.dashboard.personCard(person.id)}>
+    <div className={`card card-elevated border-2 h-full ${cardBorderClass}`} data-testid={TID.dashboard.personCard(person.id)}>
       <div className="card-body p-3 gap-2">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (
@@ -178,7 +178,7 @@ export const PersonCard = memo(function PersonCard({
         )}
 
         {/* Body - tags for members, visit info for visitors */}
-        <div className="min-h-[1.25rem]">
+        <div className="min-h-5">
           {isMember ? (
             <div className="flex flex-wrap gap-1">
               {person.tags

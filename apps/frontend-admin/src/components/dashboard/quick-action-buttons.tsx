@@ -2,7 +2,15 @@
 'use client'
 
 import { useState } from 'react'
-import { UserPlus, Users, FileText, Lock, Radio, DoorOpen, ArrowRightLeft } from 'lucide-react'
+import {
+  Users,
+  FileText,
+  Lock,
+  Radio,
+  DoorOpen,
+  ArrowRightLeft,
+  ScanLine,
+} from 'lucide-react'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
@@ -10,6 +18,7 @@ import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
 import { TransferLockupScanModal } from '@/components/lockup/transfer-lockup-scan-modal'
 import { VisitorSigninModal } from '@/components/visitors/visitor-signin-modal'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
+import { KioskCheckinModal } from '@/components/dashboard/kiosk-checkin-modal'
 import { useLockupStatus, useCheckoutOptions } from '@/hooks/use-lockup'
 import { TID } from '@/lib/test-ids'
 
@@ -19,6 +28,7 @@ export function QuickActionButtons() {
   const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false)
   const [isLockupModalOpen, setIsLockupModalOpen] = useState(false)
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
+  const [isKioskModalOpen, setIsKioskModalOpen] = useState(false)
   const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
   const [isTransferScanModalOpen, setIsTransferScanModalOpen] = useState(false)
   const isDevMode = process.env.NODE_ENV === 'development'
@@ -40,20 +50,14 @@ export function QuickActionButtons() {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <div
-        className={!canManualCheckin ? 'tooltip' : ''}
-        data-tip="Requires Quartermaster level or higher"
+      <button
+        className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200"
+        onClick={() => setIsKioskModalOpen(true)}
+        data-testid={TID.dashboard.quickAction.kiosk}
       >
-        <button
-          className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
-          disabled={!canManualCheckin}
-          onClick={() => setIsCheckinModalOpen(true)}
-          data-testid={TID.dashboard.quickAction.manualCheckin}
-        >
-          <UserPlus className="h-4 w-4" />
-          Manual Check-in
-        </button>
-      </div>
+        <ScanLine className="h-4 w-4" />
+        Kiosk Check-In
+      </button>
 
       <div
         className={!canManualCheckin ? 'tooltip' : ''}
@@ -154,6 +158,7 @@ export function QuickActionButtons() {
         />
       )}
       {isDevMode && <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />}
+      <KioskCheckinModal open={isKioskModalOpen} onOpenChange={setIsKioskModalOpen} />
     </div>
   )
 }

@@ -58,6 +58,32 @@ export const TID = {
       submit: 'member-form-submit',
     },
   },
+  badges: {
+    newBadgeBtn: 'badges-new-badge-btn',
+    filter: {
+      search: 'badges-filter-search',
+      status: 'badges-filter-status',
+      assignmentType: 'badges-filter-assignment-type',
+      clear: 'badges-filter-clear',
+    },
+    table: 'badges-table',
+    row: (id: string) => `badges-row-${id}`,
+    rowAction: (id: string, action: string) => `badges-row-${id}-${action}`,
+    pagination: {
+      prev: 'badges-page-prev',
+      next: 'badges-page-next',
+      rowsPerPage: 'badges-rows-per-page',
+    },
+    form: {
+      modal: 'badge-form-modal',
+      serialNumber: 'badge-form-serial-number',
+      status: 'badge-form-status',
+      assignmentType: 'badge-form-assignment-type',
+      assignedTo: 'badge-form-assigned-to',
+      cancel: 'badge-form-cancel',
+      submit: 'badge-form-submit',
+    },
+  },
   checkins: {
     manualCheckinBtn: 'checkins-manual-checkin-btn',
     filter: {
@@ -149,12 +175,17 @@ export const TID = {
   },
   dashboard: {
     quickAction: {
+      kiosk: 'quick-action-kiosk',
       manualCheckin: 'quick-action-manual-checkin',
       visitorSignin: 'quick-action-visitor-signin',
       openBuilding: 'quick-action-open-building',
       executeLockup: 'quick-action-execute-lockup',
       transferLockup: 'quick-action-transfer-lockup',
       simulateScan: 'quick-action-simulate-scan',
+    },
+    kiosk: {
+      badgeInput: 'kiosk-badge-input',
+      scanSubmit: 'kiosk-scan-submit',
     },
     personCard: (id: string) => `person-card-${id}`,
     visitorCheckout: (id: string) => `person-card-visitor-checkout-${id}`,
