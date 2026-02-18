@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PROJECT_CODEX_HOME="${PROJECT_ROOT}/.codex"
+GLOBAL_CODEX_HOME="${CODEX_GLOBAL_HOME:-$HOME/.codex}"
+
+mkdir -p "$PROJECT_CODEX_HOME"
+
+link_global_file() {
+  local source_path="$1"
+  local target_path="$2"
+
+  if [[ ! -f "$source_path" ]]; then
+    return
+  fi
+
+  if [[ -e "$target_path" || -L "$target_path" ]]; then
+    return
+  fi
+
+  ln -s "$source_path" "$target_path" 2>/dev/null || true
+}
+
+link_global_file "$GLOBAL_CODEX_HOME/auth.json" "$PROJECT_CODEX_HOME/auth.json"
+link_global_file "$GLOBAL_CODEX_HOME/models_cache.json" "$PROJECT_CODEX_HOME/models_cache.json"
+
+exec env CODEX_HOME="$PROJECT_CODEX_HOME" codex -C "$PROJECT_ROOT" "$@"

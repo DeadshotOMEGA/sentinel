@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Commit Push"
+  short_description: "Create logical commits and push safely"
+  default_prompt: "Analyze git changes, create signed logical commits, enforce protected-branch safety, and push safely; open PRs only on explicit request."

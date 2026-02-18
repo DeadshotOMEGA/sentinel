@@ -1,0 +1,8 @@
+# Generated when using this directory as CODEX_HOME
+auth.json
+models_cache.json
+sessions/
+shell_snapshots/
+tmp/
+.personality_migration
+*.log

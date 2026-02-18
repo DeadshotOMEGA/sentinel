@@ -1,0 +1,11 @@
+# Sentinel project Codex defaults
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
+
+[mcp_servers.daisyui-blueprint]
+command = "npx"
+args = ["-y", "daisyui-blueprint@latest"]
+
+[mcp_servers.daisyui-blueprint.env]
+LICENSE = ""
+EMAIL = ""
