@@ -5325,7 +5325,6 @@ export namespace Prisma {
     auditLogs: number
     checkins: number
     report_audit_log: number
-    visitors: number
     ddsAssignments: number
     disabledUsers: number
     updatedUsers: number
@@ -5340,7 +5339,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUserCountOutputTypeCountAuditLogsArgs
     checkins?: boolean | AdminUserCountOutputTypeCountCheckinsArgs
     report_audit_log?: boolean | AdminUserCountOutputTypeCountReport_audit_logArgs
-    visitors?: boolean | AdminUserCountOutputTypeCountVisitorsArgs
     ddsAssignments?: boolean | AdminUserCountOutputTypeCountDdsAssignmentsArgs
     disabledUsers?: boolean | AdminUserCountOutputTypeCountDisabledUsersArgs
     updatedUsers?: boolean | AdminUserCountOutputTypeCountUpdatedUsersArgs
@@ -5381,13 +5379,6 @@ export namespace Prisma {
    */
   export type AdminUserCountOutputTypeCountReport_audit_logArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: report_audit_logWhereInput
-  }
-
-  /**
-   * AdminUserCountOutputType without action
-   */
-  export type AdminUserCountOutputTypeCountVisitorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: VisitorWhereInput
   }
 
   /**
@@ -5623,7 +5614,8 @@ export namespace Prisma {
   export type MemberCountOutputType = {
     bmqEnrollments: number
     checkins: number
-    visitors: number
+    visitorsHosted: number
+    visitorsCreated: number
     memberTags: number
     ddsAssignments: number
     ddsTransfers: number
@@ -5645,7 +5637,8 @@ export namespace Prisma {
   export type MemberCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     bmqEnrollments?: boolean | MemberCountOutputTypeCountBmqEnrollmentsArgs
     checkins?: boolean | MemberCountOutputTypeCountCheckinsArgs
-    visitors?: boolean | MemberCountOutputTypeCountVisitorsArgs
+    visitorsHosted?: boolean | MemberCountOutputTypeCountVisitorsHostedArgs
+    visitorsCreated?: boolean | MemberCountOutputTypeCountVisitorsCreatedArgs
     memberTags?: boolean | MemberCountOutputTypeCountMemberTagsArgs
     ddsAssignments?: boolean | MemberCountOutputTypeCountDdsAssignmentsArgs
     ddsTransfers?: boolean | MemberCountOutputTypeCountDdsTransfersArgs
@@ -5692,7 +5685,14 @@ export namespace Prisma {
   /**
    * MemberCountOutputType without action
    */
-  export type MemberCountOutputTypeCountVisitorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MemberCountOutputTypeCountVisitorsHostedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountVisitorsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VisitorWhereInput
   }
 
@@ -6627,7 +6627,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUser$auditLogsArgs<ExtArgs>
     checkins?: boolean | AdminUser$checkinsArgs<ExtArgs>
     report_audit_log?: boolean | AdminUser$report_audit_logArgs<ExtArgs>
-    visitors?: boolean | AdminUser$visitorsArgs<ExtArgs>
     ddsAssignments?: boolean | AdminUser$ddsAssignmentsArgs<ExtArgs>
     disabledByAdmin?: boolean | AdminUser$disabledByAdminArgs<ExtArgs>
     updatedByAdmin?: boolean | AdminUser$updatedByAdminArgs<ExtArgs>
@@ -6707,7 +6706,6 @@ export namespace Prisma {
     auditLogs?: boolean | AdminUser$auditLogsArgs<ExtArgs>
     checkins?: boolean | AdminUser$checkinsArgs<ExtArgs>
     report_audit_log?: boolean | AdminUser$report_audit_logArgs<ExtArgs>
-    visitors?: boolean | AdminUser$visitorsArgs<ExtArgs>
     ddsAssignments?: boolean | AdminUser$ddsAssignmentsArgs<ExtArgs>
     disabledByAdmin?: boolean | AdminUser$disabledByAdminArgs<ExtArgs>
     updatedByAdmin?: boolean | AdminUser$updatedByAdminArgs<ExtArgs>
@@ -6735,7 +6733,6 @@ export namespace Prisma {
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       checkins: Prisma.$CheckinPayload<ExtArgs>[]
       report_audit_log: Prisma.$report_audit_logPayload<ExtArgs>[]
-      visitors: Prisma.$VisitorPayload<ExtArgs>[]
       ddsAssignments: Prisma.$DdsAssignmentPayload<ExtArgs>[]
       disabledByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
       updatedByAdmin: Prisma.$AdminUserPayload<ExtArgs> | null
@@ -7161,7 +7158,6 @@ export namespace Prisma {
     auditLogs<T extends AdminUser$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkins<T extends AdminUser$checkinsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$checkinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     report_audit_log<T extends AdminUser$report_audit_logArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$report_audit_logArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$report_audit_logPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    visitors<T extends AdminUser$visitorsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$visitorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsAssignments<T extends AdminUser$ddsAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$ddsAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     disabledByAdmin<T extends AdminUser$disabledByAdminArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$disabledByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     updatedByAdmin<T extends AdminUser$updatedByAdminArgs<ExtArgs> = {}>(args?: Subset<T, AdminUser$updatedByAdminArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -7691,30 +7687,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: Report_audit_logScalarFieldEnum | Report_audit_logScalarFieldEnum[]
-  }
-
-  /**
-   * AdminUser.visitors
-   */
-  export type AdminUser$visitorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Visitor
-     */
-    select?: VisitorSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Visitor
-     */
-    omit?: VisitorOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: VisitorInclude<ExtArgs> | null
-    where?: VisitorWhereInput
-    orderBy?: VisitorOrderByWithRelationInput | VisitorOrderByWithRelationInput[]
-    cursor?: VisitorWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: VisitorScalarFieldEnum | VisitorScalarFieldEnum[]
   }
 
   /**
@@ -16612,7 +16584,8 @@ export namespace Prisma {
     bmqEnrollments?: boolean | Member$bmqEnrollmentsArgs<ExtArgs>
     checkins?: boolean | Member$checkinsArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
-    visitors?: boolean | Member$visitorsArgs<ExtArgs>
+    visitorsHosted?: boolean | Member$visitorsHostedArgs<ExtArgs>
+    visitorsCreated?: boolean | Member$visitorsCreatedArgs<ExtArgs>
     memberTags?: boolean | Member$memberTagsArgs<ExtArgs>
     ddsAssignments?: boolean | Member$ddsAssignmentsArgs<ExtArgs>
     ddsTransfers?: boolean | Member$ddsTransfersArgs<ExtArgs>
@@ -16747,7 +16720,8 @@ export namespace Prisma {
     bmqEnrollments?: boolean | Member$bmqEnrollmentsArgs<ExtArgs>
     checkins?: boolean | Member$checkinsArgs<ExtArgs>
     division?: boolean | Member$divisionArgs<ExtArgs>
-    visitors?: boolean | Member$visitorsArgs<ExtArgs>
+    visitorsHosted?: boolean | Member$visitorsHostedArgs<ExtArgs>
+    visitorsCreated?: boolean | Member$visitorsCreatedArgs<ExtArgs>
     memberTags?: boolean | Member$memberTagsArgs<ExtArgs>
     ddsAssignments?: boolean | Member$ddsAssignmentsArgs<ExtArgs>
     ddsTransfers?: boolean | Member$ddsTransfersArgs<ExtArgs>
@@ -16791,7 +16765,8 @@ export namespace Prisma {
       bmqEnrollments: Prisma.$BmqEnrollmentPayload<ExtArgs>[]
       checkins: Prisma.$CheckinPayload<ExtArgs>[]
       division: Prisma.$DivisionPayload<ExtArgs> | null
-      visitors: Prisma.$VisitorPayload<ExtArgs>[]
+      visitorsHosted: Prisma.$VisitorPayload<ExtArgs>[]
+      visitorsCreated: Prisma.$VisitorPayload<ExtArgs>[]
       memberTags: Prisma.$MemberTagPayload<ExtArgs>[]
       ddsAssignments: Prisma.$DdsAssignmentPayload<ExtArgs>[]
       ddsTransfers: Prisma.$DdsAssignmentPayload<ExtArgs>[]
@@ -17240,7 +17215,8 @@ export namespace Prisma {
     bmqEnrollments<T extends Member$bmqEnrollmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$bmqEnrollmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BmqEnrollmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkins<T extends Member$checkinsArgs<ExtArgs> = {}>(args?: Subset<T, Member$checkinsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CheckinPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     division<T extends Member$divisionArgs<ExtArgs> = {}>(args?: Subset<T, Member$divisionArgs<ExtArgs>>): Prisma__DivisionClient<$Result.GetResult<Prisma.$DivisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    visitors<T extends Member$visitorsArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    visitorsHosted<T extends Member$visitorsHostedArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsHostedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    visitorsCreated<T extends Member$visitorsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     memberTags<T extends Member$memberTagsArgs<ExtArgs> = {}>(args?: Subset<T, Member$memberTagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsAssignments<T extends Member$ddsAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$ddsAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsTransfers<T extends Member$ddsTransfersArgs<ExtArgs> = {}>(args?: Subset<T, Member$ddsTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -17827,9 +17803,33 @@ export namespace Prisma {
   }
 
   /**
-   * Member.visitors
+   * Member.visitorsHosted
    */
-  export type Member$visitorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Member$visitorsHostedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visitor
+     */
+    select?: VisitorSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visitor
+     */
+    omit?: VisitorOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorInclude<ExtArgs> | null
+    where?: VisitorWhereInput
+    orderBy?: VisitorOrderByWithRelationInput | VisitorOrderByWithRelationInput[]
+    cursor?: VisitorWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisitorScalarFieldEnum | VisitorScalarFieldEnum[]
+  }
+
+  /**
+   * Member.visitorsCreated
+   */
+  export type Member$visitorsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Visitor
      */
@@ -23090,7 +23090,7 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
@@ -23114,7 +23114,7 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
@@ -23138,7 +23138,7 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
@@ -23166,21 +23166,21 @@ export namespace Prisma {
 
   export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "organization" | "visitType" | "visitTypeId" | "visitReason" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
   export type VisitorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
   }
   export type VisitorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
   }
   export type VisitorIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    admin_users?: boolean | Visitor$admin_usersArgs<ExtArgs>
+    createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
@@ -23190,7 +23190,7 @@ export namespace Prisma {
   export type $VisitorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Visitor"
     objects: {
-      admin_users: Prisma.$AdminUserPayload<ExtArgs> | null
+      createdByMember: Prisma.$MemberPayload<ExtArgs> | null
       event: Prisma.$EventPayload<ExtArgs> | null
       hostMember: Prisma.$MemberPayload<ExtArgs> | null
       badge: Prisma.$BadgePayload<ExtArgs> | null
@@ -23607,7 +23607,7 @@ export namespace Prisma {
    */
   export interface Prisma__VisitorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    admin_users<T extends Visitor$admin_usersArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$admin_usersArgs<ExtArgs>>): Prisma__AdminUserClient<$Result.GetResult<Prisma.$AdminUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    createdByMember<T extends Visitor$createdByMemberArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$createdByMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     event<T extends Visitor$eventArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$eventArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     hostMember<T extends Visitor$hostMemberArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$hostMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     badge<T extends Visitor$badgeArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$badgeArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -24062,22 +24062,22 @@ export namespace Prisma {
   }
 
   /**
-   * Visitor.admin_users
+   * Visitor.createdByMember
    */
-  export type Visitor$admin_usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Visitor$createdByMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the AdminUser
+     * Select specific fields to fetch from the Member
      */
-    select?: AdminUserSelect<ExtArgs> | null
+    select?: MemberSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the AdminUser
+     * Omit specific fields from the Member
      */
-    omit?: AdminUserOmit<ExtArgs> | null
+    omit?: MemberOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: AdminUserInclude<ExtArgs> | null
-    where?: AdminUserWhereInput
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
   }
 
   /**
@@ -66078,7 +66078,6 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     checkins?: CheckinListRelationFilter
     report_audit_log?: Report_audit_logListRelationFilter
-    visitors?: VisitorListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     disabledByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     updatedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
@@ -66111,7 +66110,6 @@ export namespace Prisma {
     auditLogs?: AuditLogOrderByRelationAggregateInput
     checkins?: CheckinOrderByRelationAggregateInput
     report_audit_log?: report_audit_logOrderByRelationAggregateInput
-    visitors?: VisitorOrderByRelationAggregateInput
     ddsAssignments?: DdsAssignmentOrderByRelationAggregateInput
     disabledByAdmin?: AdminUserOrderByWithRelationInput
     updatedByAdmin?: AdminUserOrderByWithRelationInput
@@ -66147,7 +66145,6 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     checkins?: CheckinListRelationFilter
     report_audit_log?: Report_audit_logListRelationFilter
-    visitors?: VisitorListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     disabledByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
     updatedByAdmin?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
@@ -66820,7 +66817,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentListRelationFilter
     checkins?: CheckinListRelationFilter
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
-    visitors?: VisitorListRelationFilter
+    visitorsHosted?: VisitorListRelationFilter
+    visitorsCreated?: VisitorListRelationFilter
     memberTags?: MemberTagListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     ddsTransfers?: DdsAssignmentListRelationFilter
@@ -66876,7 +66874,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentOrderByRelationAggregateInput
     checkins?: CheckinOrderByRelationAggregateInput
     division?: DivisionOrderByWithRelationInput
-    visitors?: VisitorOrderByRelationAggregateInput
+    visitorsHosted?: VisitorOrderByRelationAggregateInput
+    visitorsCreated?: VisitorOrderByRelationAggregateInput
     memberTags?: MemberTagOrderByRelationAggregateInput
     ddsAssignments?: DdsAssignmentOrderByRelationAggregateInput
     ddsTransfers?: DdsAssignmentOrderByRelationAggregateInput
@@ -66935,7 +66934,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentListRelationFilter
     checkins?: CheckinListRelationFilter
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
-    visitors?: VisitorListRelationFilter
+    visitorsHosted?: VisitorListRelationFilter
+    visitorsCreated?: VisitorListRelationFilter
     memberTags?: MemberTagListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     ddsTransfers?: DdsAssignmentListRelationFilter
@@ -67347,7 +67347,7 @@ export namespace Prisma {
     adminNotes?: StringNullableFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
-    admin_users?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
+    createdByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
     hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
@@ -67371,7 +67371,7 @@ export namespace Prisma {
     adminNotes?: SortOrderInput | SortOrder
     checkInMethod?: SortOrderInput | SortOrder
     createdByAdmin?: SortOrderInput | SortOrder
-    admin_users?: AdminUserOrderByWithRelationInput
+    createdByMember?: MemberOrderByWithRelationInput
     event?: EventOrderByWithRelationInput
     hostMember?: MemberOrderByWithRelationInput
     badge?: BadgeOrderByWithRelationInput
@@ -67398,7 +67398,7 @@ export namespace Prisma {
     adminNotes?: StringNullableFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
-    admin_users?: XOR<AdminUserNullableScalarRelationFilter, AdminUserWhereInput> | null
+    createdByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
     hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
@@ -70247,7 +70247,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -70280,7 +70279,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -70309,7 +70307,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -70342,7 +70339,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -71081,7 +71077,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -71134,7 +71131,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -71183,7 +71181,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -71236,7 +71235,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -71684,9 +71684,9 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
-    admin_users?: AdminUserCreateNestedOneWithoutVisitorsInput
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
     event?: EventCreateNestedOneWithoutVisitorsInput
-    hostMember?: MemberCreateNestedOneWithoutVisitorsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
   }
@@ -71722,9 +71722,9 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    admin_users?: AdminUserUpdateOneWithoutVisitorsNestedInput
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
     event?: EventUpdateOneWithoutVisitorsNestedInput
-    hostMember?: MemberUpdateOneWithoutVisitorsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
   }
@@ -74923,12 +74923,6 @@ export namespace Prisma {
     none?: report_audit_logWhereInput
   }
 
-  export type VisitorListRelationFilter = {
-    every?: VisitorWhereInput
-    some?: VisitorWhereInput
-    none?: VisitorWhereInput
-  }
-
   export type DdsAssignmentListRelationFilter = {
     every?: DdsAssignmentWhereInput
     some?: DdsAssignmentWhereInput
@@ -74978,10 +74972,6 @@ export namespace Prisma {
   }
 
   export type report_audit_logOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type VisitorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -75248,6 +75238,12 @@ export namespace Prisma {
     none?: MemberWhereInput
   }
 
+  export type VisitorListRelationFilter = {
+    every?: VisitorWhereInput
+    some?: VisitorWhereInput
+    none?: VisitorWhereInput
+  }
+
   export type BadgeStatusNullableScalarRelationFilter = {
     is?: BadgeStatusWhereInput | null
     isNot?: BadgeStatusWhereInput | null
@@ -75262,6 +75258,10 @@ export namespace Prisma {
   }
 
   export type MemberOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VisitorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -77694,13 +77694,6 @@ export namespace Prisma {
     connect?: report_audit_logWhereUniqueInput | report_audit_logWhereUniqueInput[]
   }
 
-  export type VisitorCreateNestedManyWithoutAdmin_usersInput = {
-    create?: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput> | VisitorCreateWithoutAdmin_usersInput[] | VisitorUncheckedCreateWithoutAdmin_usersInput[]
-    connectOrCreate?: VisitorCreateOrConnectWithoutAdmin_usersInput | VisitorCreateOrConnectWithoutAdmin_usersInput[]
-    createMany?: VisitorCreateManyAdmin_usersInputEnvelope
-    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-  }
-
   export type DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput = {
     create?: XOR<DdsAssignmentCreateWithoutAssignedByAdminInput, DdsAssignmentUncheckedCreateWithoutAssignedByAdminInput> | DdsAssignmentCreateWithoutAssignedByAdminInput[] | DdsAssignmentUncheckedCreateWithoutAssignedByAdminInput[]
     connectOrCreate?: DdsAssignmentCreateOrConnectWithoutAssignedByAdminInput | DdsAssignmentCreateOrConnectWithoutAssignedByAdminInput[]
@@ -77788,13 +77781,6 @@ export namespace Prisma {
     connectOrCreate?: report_audit_logCreateOrConnectWithoutAdmin_usersInput | report_audit_logCreateOrConnectWithoutAdmin_usersInput[]
     createMany?: report_audit_logCreateManyAdmin_usersInputEnvelope
     connect?: report_audit_logWhereUniqueInput | report_audit_logWhereUniqueInput[]
-  }
-
-  export type VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput = {
-    create?: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput> | VisitorCreateWithoutAdmin_usersInput[] | VisitorUncheckedCreateWithoutAdmin_usersInput[]
-    connectOrCreate?: VisitorCreateOrConnectWithoutAdmin_usersInput | VisitorCreateOrConnectWithoutAdmin_usersInput[]
-    createMany?: VisitorCreateManyAdmin_usersInputEnvelope
-    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
   }
 
   export type DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput = {
@@ -77909,20 +77895,6 @@ export namespace Prisma {
     update?: report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput | report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput[]
     updateMany?: report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput | report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput[]
     deleteMany?: report_audit_logScalarWhereInput | report_audit_logScalarWhereInput[]
-  }
-
-  export type VisitorUpdateManyWithoutAdmin_usersNestedInput = {
-    create?: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput> | VisitorCreateWithoutAdmin_usersInput[] | VisitorUncheckedCreateWithoutAdmin_usersInput[]
-    connectOrCreate?: VisitorCreateOrConnectWithoutAdmin_usersInput | VisitorCreateOrConnectWithoutAdmin_usersInput[]
-    upsert?: VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput | VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput[]
-    createMany?: VisitorCreateManyAdmin_usersInputEnvelope
-    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    update?: VisitorUpdateWithWhereUniqueWithoutAdmin_usersInput | VisitorUpdateWithWhereUniqueWithoutAdmin_usersInput[]
-    updateMany?: VisitorUpdateManyWithWhereWithoutAdmin_usersInput | VisitorUpdateManyWithWhereWithoutAdmin_usersInput[]
-    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
   }
 
   export type DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput = {
@@ -78097,20 +78069,6 @@ export namespace Prisma {
     update?: report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput | report_audit_logUpdateWithWhereUniqueWithoutAdmin_usersInput[]
     updateMany?: report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput | report_audit_logUpdateManyWithWhereWithoutAdmin_usersInput[]
     deleteMany?: report_audit_logScalarWhereInput | report_audit_logScalarWhereInput[]
-  }
-
-  export type VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput = {
-    create?: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput> | VisitorCreateWithoutAdmin_usersInput[] | VisitorUncheckedCreateWithoutAdmin_usersInput[]
-    connectOrCreate?: VisitorCreateOrConnectWithoutAdmin_usersInput | VisitorCreateOrConnectWithoutAdmin_usersInput[]
-    upsert?: VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput | VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput[]
-    createMany?: VisitorCreateManyAdmin_usersInputEnvelope
-    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
-    update?: VisitorUpdateWithWhereUniqueWithoutAdmin_usersInput | VisitorUpdateWithWhereUniqueWithoutAdmin_usersInput[]
-    updateMany?: VisitorUpdateManyWithWhereWithoutAdmin_usersInput | VisitorUpdateManyWithWhereWithoutAdmin_usersInput[]
-    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
   }
 
   export type DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput = {
@@ -78788,6 +78746,13 @@ export namespace Prisma {
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
   }
 
+  export type VisitorCreateNestedManyWithoutCreatedByMemberInput = {
+    create?: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput> | VisitorCreateWithoutCreatedByMemberInput[] | VisitorUncheckedCreateWithoutCreatedByMemberInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
+    createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
   export type MemberTagCreateNestedManyWithoutMemberInput = {
     create?: XOR<MemberTagCreateWithoutMemberInput, MemberTagUncheckedCreateWithoutMemberInput> | MemberTagCreateWithoutMemberInput[] | MemberTagUncheckedCreateWithoutMemberInput[]
     connectOrCreate?: MemberTagCreateOrConnectWithoutMemberInput | MemberTagCreateOrConnectWithoutMemberInput[]
@@ -78930,6 +78895,13 @@ export namespace Prisma {
     create?: XOR<VisitorCreateWithoutHostMemberInput, VisitorUncheckedCreateWithoutHostMemberInput> | VisitorCreateWithoutHostMemberInput[] | VisitorUncheckedCreateWithoutHostMemberInput[]
     connectOrCreate?: VisitorCreateOrConnectWithoutHostMemberInput | VisitorCreateOrConnectWithoutHostMemberInput[]
     createMany?: VisitorCreateManyHostMemberInputEnvelope
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput = {
+    create?: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput> | VisitorCreateWithoutCreatedByMemberInput[] | VisitorUncheckedCreateWithoutCreatedByMemberInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
+    createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
   }
 
@@ -79122,6 +79094,20 @@ export namespace Prisma {
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
     update?: VisitorUpdateWithWhereUniqueWithoutHostMemberInput | VisitorUpdateWithWhereUniqueWithoutHostMemberInput[]
     updateMany?: VisitorUpdateManyWithWhereWithoutHostMemberInput | VisitorUpdateManyWithWhereWithoutHostMemberInput[]
+    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorUpdateManyWithoutCreatedByMemberNestedInput = {
+    create?: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput> | VisitorCreateWithoutCreatedByMemberInput[] | VisitorUncheckedCreateWithoutCreatedByMemberInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
+    upsert?: VisitorUpsertWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpsertWithWhereUniqueWithoutCreatedByMemberInput[]
+    createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
+    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    update?: VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput[]
+    updateMany?: VisitorUpdateManyWithWhereWithoutCreatedByMemberInput | VisitorUpdateManyWithWhereWithoutCreatedByMemberInput[]
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
   }
 
@@ -79408,6 +79394,20 @@ export namespace Prisma {
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
     update?: VisitorUpdateWithWhereUniqueWithoutHostMemberInput | VisitorUpdateWithWhereUniqueWithoutHostMemberInput[]
     updateMany?: VisitorUpdateManyWithWhereWithoutHostMemberInput | VisitorUpdateManyWithWhereWithoutHostMemberInput[]
+    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput = {
+    create?: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput> | VisitorCreateWithoutCreatedByMemberInput[] | VisitorUncheckedCreateWithoutCreatedByMemberInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
+    upsert?: VisitorUpsertWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpsertWithWhereUniqueWithoutCreatedByMemberInput[]
+    createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
+    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    update?: VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput[]
+    updateMany?: VisitorUpdateManyWithWhereWithoutCreatedByMemberInput | VisitorUpdateManyWithWhereWithoutCreatedByMemberInput[]
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
   }
 
@@ -79777,10 +79777,10 @@ export namespace Prisma {
     update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutAcknowledgedSecurityAlertsInput, MemberUpdateWithoutAcknowledgedSecurityAlertsInput>, MemberUncheckedUpdateWithoutAcknowledgedSecurityAlertsInput>
   }
 
-  export type AdminUserCreateNestedOneWithoutVisitorsInput = {
-    create?: XOR<AdminUserCreateWithoutVisitorsInput, AdminUserUncheckedCreateWithoutVisitorsInput>
-    connectOrCreate?: AdminUserCreateOrConnectWithoutVisitorsInput
-    connect?: AdminUserWhereUniqueInput
+  export type MemberCreateNestedOneWithoutVisitorsCreatedInput = {
+    create?: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsCreatedInput
+    connect?: MemberWhereUniqueInput
   }
 
   export type EventCreateNestedOneWithoutVisitorsInput = {
@@ -79789,9 +79789,9 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput
   }
 
-  export type MemberCreateNestedOneWithoutVisitorsInput = {
-    create?: XOR<MemberCreateWithoutVisitorsInput, MemberUncheckedCreateWithoutVisitorsInput>
-    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsInput
+  export type MemberCreateNestedOneWithoutVisitorsHostedInput = {
+    create?: XOR<MemberCreateWithoutVisitorsHostedInput, MemberUncheckedCreateWithoutVisitorsHostedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsHostedInput
     connect?: MemberWhereUniqueInput
   }
 
@@ -79807,14 +79807,14 @@ export namespace Prisma {
     connect?: VisitTypeWhereUniqueInput
   }
 
-  export type AdminUserUpdateOneWithoutVisitorsNestedInput = {
-    create?: XOR<AdminUserCreateWithoutVisitorsInput, AdminUserUncheckedCreateWithoutVisitorsInput>
-    connectOrCreate?: AdminUserCreateOrConnectWithoutVisitorsInput
-    upsert?: AdminUserUpsertWithoutVisitorsInput
-    disconnect?: AdminUserWhereInput | boolean
-    delete?: AdminUserWhereInput | boolean
-    connect?: AdminUserWhereUniqueInput
-    update?: XOR<XOR<AdminUserUpdateToOneWithWhereWithoutVisitorsInput, AdminUserUpdateWithoutVisitorsInput>, AdminUserUncheckedUpdateWithoutVisitorsInput>
+  export type MemberUpdateOneWithoutVisitorsCreatedNestedInput = {
+    create?: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsCreatedInput
+    upsert?: MemberUpsertWithoutVisitorsCreatedInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutVisitorsCreatedInput, MemberUpdateWithoutVisitorsCreatedInput>, MemberUncheckedUpdateWithoutVisitorsCreatedInput>
   }
 
   export type EventUpdateOneWithoutVisitorsNestedInput = {
@@ -79827,14 +79827,14 @@ export namespace Prisma {
     update?: XOR<XOR<EventUpdateToOneWithWhereWithoutVisitorsInput, EventUpdateWithoutVisitorsInput>, EventUncheckedUpdateWithoutVisitorsInput>
   }
 
-  export type MemberUpdateOneWithoutVisitorsNestedInput = {
-    create?: XOR<MemberCreateWithoutVisitorsInput, MemberUncheckedCreateWithoutVisitorsInput>
-    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsInput
-    upsert?: MemberUpsertWithoutVisitorsInput
+  export type MemberUpdateOneWithoutVisitorsHostedNestedInput = {
+    create?: XOR<MemberCreateWithoutVisitorsHostedInput, MemberUncheckedCreateWithoutVisitorsHostedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorsHostedInput
+    upsert?: MemberUpsertWithoutVisitorsHostedInput
     disconnect?: MemberWhereInput | boolean
     delete?: MemberWhereInput | boolean
     connect?: MemberWhereUniqueInput
-    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutVisitorsInput, MemberUpdateWithoutVisitorsInput>, MemberUncheckedUpdateWithoutVisitorsInput>
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutVisitorsHostedInput, MemberUpdateWithoutVisitorsHostedInput>, MemberUncheckedUpdateWithoutVisitorsHostedInput>
   }
 
   export type BadgeUpdateOneWithoutVisitorsNestedInput = {
@@ -81787,52 +81787,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type VisitorCreateWithoutAdmin_usersInput = {
-    id?: string
-    name: string
-    organization?: string | null
-    visitType: string
-    visitReason?: string | null
-    checkInTime?: Date | string
-    checkOutTime?: Date | string | null
-    kioskId: string
-    createdAt?: Date | string | null
-    adminNotes?: string | null
-    checkInMethod?: string | null
-    event?: EventCreateNestedOneWithoutVisitorsInput
-    hostMember?: MemberCreateNestedOneWithoutVisitorsInput
-    badge?: BadgeCreateNestedOneWithoutVisitorsInput
-    visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
-  }
-
-  export type VisitorUncheckedCreateWithoutAdmin_usersInput = {
-    id?: string
-    name: string
-    organization?: string | null
-    visitType: string
-    visitTypeId?: string | null
-    visitReason?: string | null
-    eventId?: string | null
-    hostMemberId?: string | null
-    checkInTime?: Date | string
-    checkOutTime?: Date | string | null
-    temporaryBadgeId?: string | null
-    kioskId: string
-    createdAt?: Date | string | null
-    adminNotes?: string | null
-    checkInMethod?: string | null
-  }
-
-  export type VisitorCreateOrConnectWithoutAdmin_usersInput = {
-    where: VisitorWhereUniqueInput
-    create: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput>
-  }
-
-  export type VisitorCreateManyAdmin_usersInputEnvelope = {
-    data: VisitorCreateManyAdmin_usersInput | VisitorCreateManyAdmin_usersInput[]
-    skipDuplicates?: boolean
-  }
-
   export type DdsAssignmentCreateWithoutAssignedByAdminInput = {
     id?: string
     assignedDate: Date | string
@@ -81887,7 +81841,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -81919,7 +81872,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
     qualificationsGranted?: MemberQualificationUncheckedCreateNestedManyWithoutGrantedByAdminInput
@@ -81952,7 +81904,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -81984,7 +81935,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     qualificationsGranted?: MemberQualificationUncheckedCreateNestedManyWithoutGrantedByAdminInput
@@ -82017,7 +81967,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
     disabledUsers?: AdminUserCreateNestedManyWithoutDisabledByAdminInput
@@ -82048,7 +81997,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -82087,7 +82035,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     disabledUsers?: AdminUserCreateNestedManyWithoutDisabledByAdminInput
@@ -82118,7 +82065,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -82424,44 +82370,6 @@ export namespace Prisma {
     generation_time_ms?: IntNullableFilter<"report_audit_log"> | number | null
   }
 
-  export type VisitorUpsertWithWhereUniqueWithoutAdmin_usersInput = {
-    where: VisitorWhereUniqueInput
-    update: XOR<VisitorUpdateWithoutAdmin_usersInput, VisitorUncheckedUpdateWithoutAdmin_usersInput>
-    create: XOR<VisitorCreateWithoutAdmin_usersInput, VisitorUncheckedCreateWithoutAdmin_usersInput>
-  }
-
-  export type VisitorUpdateWithWhereUniqueWithoutAdmin_usersInput = {
-    where: VisitorWhereUniqueInput
-    data: XOR<VisitorUpdateWithoutAdmin_usersInput, VisitorUncheckedUpdateWithoutAdmin_usersInput>
-  }
-
-  export type VisitorUpdateManyWithWhereWithoutAdmin_usersInput = {
-    where: VisitorScalarWhereInput
-    data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutAdmin_usersInput>
-  }
-
-  export type VisitorScalarWhereInput = {
-    AND?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
-    OR?: VisitorScalarWhereInput[]
-    NOT?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
-    id?: UuidFilter<"Visitor"> | string
-    name?: StringFilter<"Visitor"> | string
-    organization?: StringNullableFilter<"Visitor"> | string | null
-    visitType?: StringFilter<"Visitor"> | string
-    visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
-    visitReason?: StringNullableFilter<"Visitor"> | string | null
-    eventId?: UuidNullableFilter<"Visitor"> | string | null
-    hostMemberId?: UuidNullableFilter<"Visitor"> | string | null
-    checkInTime?: DateTimeFilter<"Visitor"> | Date | string
-    checkOutTime?: DateTimeNullableFilter<"Visitor"> | Date | string | null
-    temporaryBadgeId?: UuidNullableFilter<"Visitor"> | string | null
-    kioskId?: StringFilter<"Visitor"> | string
-    createdAt?: DateTimeNullableFilter<"Visitor"> | Date | string | null
-    adminNotes?: StringNullableFilter<"Visitor"> | string | null
-    checkInMethod?: StringNullableFilter<"Visitor"> | string | null
-    createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
-  }
-
   export type DdsAssignmentUpsertWithWhereUniqueWithoutAssignedByAdminInput = {
     where: DdsAssignmentWhereUniqueInput
     update: XOR<DdsAssignmentUpdateWithoutAssignedByAdminInput, DdsAssignmentUncheckedUpdateWithoutAssignedByAdminInput>
@@ -82524,7 +82432,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -82556,7 +82463,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
     qualificationsGranted?: MemberQualificationUncheckedUpdateManyWithoutGrantedByAdminNestedInput
@@ -82595,7 +82501,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -82627,7 +82532,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     qualificationsGranted?: MemberQualificationUncheckedUpdateManyWithoutGrantedByAdminNestedInput
@@ -82839,7 +82743,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -82871,7 +82774,6 @@ export namespace Prisma {
     updatedBy?: string | null
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -82915,7 +82817,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -82947,7 +82848,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -83095,7 +82995,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -83147,7 +83048,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -83188,9 +83090,9 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
-    admin_users?: AdminUserCreateNestedOneWithoutVisitorsInput
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
     event?: EventCreateNestedOneWithoutVisitorsInput
-    hostMember?: MemberCreateNestedOneWithoutVisitorsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
   }
 
@@ -83396,6 +83298,28 @@ export namespace Prisma {
     data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutBadgeInput>
   }
 
+  export type VisitorScalarWhereInput = {
+    AND?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+    OR?: VisitorScalarWhereInput[]
+    NOT?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+    id?: UuidFilter<"Visitor"> | string
+    name?: StringFilter<"Visitor"> | string
+    organization?: StringNullableFilter<"Visitor"> | string | null
+    visitType?: StringFilter<"Visitor"> | string
+    visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
+    visitReason?: StringNullableFilter<"Visitor"> | string | null
+    eventId?: UuidNullableFilter<"Visitor"> | string | null
+    hostMemberId?: UuidNullableFilter<"Visitor"> | string | null
+    checkInTime?: DateTimeFilter<"Visitor"> | Date | string
+    checkOutTime?: DateTimeNullableFilter<"Visitor"> | Date | string | null
+    temporaryBadgeId?: UuidNullableFilter<"Visitor"> | string | null
+    kioskId?: StringFilter<"Visitor"> | string
+    createdAt?: DateTimeNullableFilter<"Visitor"> | Date | string | null
+    adminNotes?: StringNullableFilter<"Visitor"> | string | null
+    checkInMethod?: StringNullableFilter<"Visitor"> | string | null
+    createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
+  }
+
   export type BadgeStatusUpsertWithoutBadgesInput = {
     update: XOR<BadgeStatusUpdateWithoutBadgesInput, BadgeStatusUncheckedUpdateWithoutBadgesInput>
     create: XOR<BadgeStatusCreateWithoutBadgesInput, BadgeStatusUncheckedCreateWithoutBadgesInput>
@@ -83483,7 +83407,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -83515,7 +83438,6 @@ export namespace Prisma {
     updatedBy?: string | null
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -83560,7 +83482,8 @@ export namespace Prisma {
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -83612,7 +83535,8 @@ export namespace Prisma {
     pinHash?: string | null
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -83707,7 +83631,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -83739,7 +83662,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -83790,7 +83712,8 @@ export namespace Prisma {
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -83842,7 +83765,8 @@ export namespace Prisma {
     pinHash?: NullableStringFieldUpdateOperationsInput | string | null
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -83890,7 +83814,8 @@ export namespace Prisma {
     badge?: BadgeCreateNestedOneWithoutMembersInput
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -83942,7 +83867,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -84405,8 +84331,8 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
-    admin_users?: AdminUserCreateNestedOneWithoutVisitorsInput
-    hostMember?: MemberCreateNestedOneWithoutVisitorsInput
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
   }
@@ -84640,7 +84566,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
-    admin_users?: AdminUserCreateNestedOneWithoutVisitorsInput
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
     event?: EventCreateNestedOneWithoutVisitorsInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
@@ -84671,6 +84597,52 @@ export namespace Prisma {
 
   export type VisitorCreateManyHostMemberInputEnvelope = {
     data: VisitorCreateManyHostMemberInput | VisitorCreateManyHostMemberInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VisitorCreateWithoutCreatedByMemberInput = {
+    id?: string
+    name: string
+    organization?: string | null
+    visitType: string
+    visitReason?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
+    event?: EventCreateNestedOneWithoutVisitorsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
+    badge?: BadgeCreateNestedOneWithoutVisitorsInput
+    visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+  }
+
+  export type VisitorUncheckedCreateWithoutCreatedByMemberInput = {
+    id?: string
+    name: string
+    organization?: string | null
+    visitType: string
+    visitTypeId?: string | null
+    visitReason?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    temporaryBadgeId?: string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
+  }
+
+  export type VisitorCreateOrConnectWithoutCreatedByMemberInput = {
+    where: VisitorWhereUniqueInput
+    create: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput>
+  }
+
+  export type VisitorCreateManyCreatedByMemberInputEnvelope = {
+    data: VisitorCreateManyCreatedByMemberInput | VisitorCreateManyCreatedByMemberInput[]
     skipDuplicates?: boolean
   }
 
@@ -85445,6 +85417,22 @@ export namespace Prisma {
     data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutHostMemberInput>
   }
 
+  export type VisitorUpsertWithWhereUniqueWithoutCreatedByMemberInput = {
+    where: VisitorWhereUniqueInput
+    update: XOR<VisitorUpdateWithoutCreatedByMemberInput, VisitorUncheckedUpdateWithoutCreatedByMemberInput>
+    create: XOR<VisitorCreateWithoutCreatedByMemberInput, VisitorUncheckedCreateWithoutCreatedByMemberInput>
+  }
+
+  export type VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput = {
+    where: VisitorWhereUniqueInput
+    data: XOR<VisitorUpdateWithoutCreatedByMemberInput, VisitorUncheckedUpdateWithoutCreatedByMemberInput>
+  }
+
+  export type VisitorUpdateManyWithWhereWithoutCreatedByMemberInput = {
+    where: VisitorScalarWhereInput
+    data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutCreatedByMemberInput>
+  }
+
   export type MemberTagUpsertWithWhereUniqueWithoutMemberInput = {
     where: MemberTagWhereUniqueInput
     update: XOR<MemberTagUpdateWithoutMemberInput, MemberTagUncheckedUpdateWithoutMemberInput>
@@ -85936,7 +85924,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -85988,7 +85977,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -86052,7 +86042,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -86104,7 +86095,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -86258,7 +86250,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -86310,7 +86303,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -86405,7 +86399,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -86457,7 +86452,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -86542,7 +86538,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -86594,7 +86591,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -86658,7 +86656,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -86710,7 +86709,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -86728,69 +86728,111 @@ export namespace Prisma {
     memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
   }
 
-  export type AdminUserCreateWithoutVisitorsInput = {
+  export type MemberCreateWithoutVisitorsCreatedInput = {
     id?: string
-    username: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
     email?: string | null
-    passwordHash: string
-    displayName: string
-    fullName?: string | null
-    role: string
-    lastLogin?: Date | string | null
+    mobilePhone?: string | null
+    memberType: string
+    status?: string
     createdAt?: Date | string | null
-    first_name?: string | null
-    last_name?: string | null
-    updated_at?: Date | string | null
-    disabled?: boolean
-    disabledAt?: Date | string | null
-    auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
-    checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
-    report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
-    disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
-    updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
-    disabledUsers?: AdminUserCreateNestedManyWithoutDisabledByAdminInput
-    updatedUsers?: AdminUserCreateNestedManyWithoutUpdatedByAdminInput
-    qualificationsGranted?: MemberQualificationCreateNestedManyWithoutGrantedByAdminInput
-    qualificationsRevoked?: MemberQualificationCreateNestedManyWithoutRevokedByAdminInput
-    schedulesCreated?: WeeklyScheduleCreateNestedManyWithoutCreatedByAdminInput
-    schedulesPublished?: WeeklyScheduleCreateNestedManyWithoutPublishedByAdminInput
-    missedCheckoutsResolved?: MissedCheckoutCreateNestedManyWithoutResolvedByAdminInput
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
-  export type AdminUserUncheckedCreateWithoutVisitorsInput = {
+  export type MemberUncheckedCreateWithoutVisitorsCreatedInput = {
     id?: string
-    username: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
     email?: string | null
-    passwordHash: string
-    displayName: string
-    fullName?: string | null
-    role: string
-    lastLogin?: Date | string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
     createdAt?: Date | string | null
-    first_name?: string | null
-    last_name?: string | null
-    updated_at?: Date | string | null
-    disabled?: boolean
-    disabledAt?: Date | string | null
-    disabledBy?: string | null
-    updatedBy?: string | null
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
-    checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
-    report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
-    disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
-    updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
-    qualificationsGranted?: MemberQualificationUncheckedCreateNestedManyWithoutGrantedByAdminInput
-    qualificationsRevoked?: MemberQualificationUncheckedCreateNestedManyWithoutRevokedByAdminInput
-    schedulesCreated?: WeeklyScheduleUncheckedCreateNestedManyWithoutCreatedByAdminInput
-    schedulesPublished?: WeeklyScheduleUncheckedCreateNestedManyWithoutPublishedByAdminInput
-    missedCheckoutsResolved?: MissedCheckoutUncheckedCreateNestedManyWithoutResolvedByAdminInput
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    accountLevel?: number
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
-  export type AdminUserCreateOrConnectWithoutVisitorsInput = {
-    where: AdminUserWhereUniqueInput
-    create: XOR<AdminUserCreateWithoutVisitorsInput, AdminUserUncheckedCreateWithoutVisitorsInput>
+  export type MemberCreateOrConnectWithoutVisitorsCreatedInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
   }
 
   export type EventCreateWithoutVisitorsInput = {
@@ -86830,7 +86872,7 @@ export namespace Prisma {
     create: XOR<EventCreateWithoutVisitorsInput, EventUncheckedCreateWithoutVisitorsInput>
   }
 
-  export type MemberCreateWithoutVisitorsInput = {
+  export type MemberCreateWithoutVisitorsHostedInput = {
     id?: string
     serviceNumber: string
     rank: string
@@ -86860,6 +86902,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -86880,7 +86923,7 @@ export namespace Prisma {
     acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
-  export type MemberUncheckedCreateWithoutVisitorsInput = {
+  export type MemberUncheckedCreateWithoutVisitorsHostedInput = {
     id?: string
     serviceNumber: string
     rankId: string
@@ -86912,6 +86955,7 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -86930,9 +86974,9 @@ export namespace Prisma {
     acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
   }
 
-  export type MemberCreateOrConnectWithoutVisitorsInput = {
+  export type MemberCreateOrConnectWithoutVisitorsHostedInput = {
     where: MemberWhereUniqueInput
-    create: XOR<MemberCreateWithoutVisitorsInput, MemberUncheckedCreateWithoutVisitorsInput>
+    create: XOR<MemberCreateWithoutVisitorsHostedInput, MemberUncheckedCreateWithoutVisitorsHostedInput>
   }
 
   export type BadgeCreateWithoutVisitorsInput = {
@@ -86999,75 +87043,117 @@ export namespace Prisma {
     create: XOR<VisitTypeCreateWithoutVisitorsInput, VisitTypeUncheckedCreateWithoutVisitorsInput>
   }
 
-  export type AdminUserUpsertWithoutVisitorsInput = {
-    update: XOR<AdminUserUpdateWithoutVisitorsInput, AdminUserUncheckedUpdateWithoutVisitorsInput>
-    create: XOR<AdminUserCreateWithoutVisitorsInput, AdminUserUncheckedCreateWithoutVisitorsInput>
-    where?: AdminUserWhereInput
+  export type MemberUpsertWithoutVisitorsCreatedInput = {
+    update: XOR<MemberUpdateWithoutVisitorsCreatedInput, MemberUncheckedUpdateWithoutVisitorsCreatedInput>
+    create: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
+    where?: MemberWhereInput
   }
 
-  export type AdminUserUpdateToOneWithWhereWithoutVisitorsInput = {
-    where?: AdminUserWhereInput
-    data: XOR<AdminUserUpdateWithoutVisitorsInput, AdminUserUncheckedUpdateWithoutVisitorsInput>
+  export type MemberUpdateToOneWithWhereWithoutVisitorsCreatedInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutVisitorsCreatedInput, MemberUncheckedUpdateWithoutVisitorsCreatedInput>
   }
 
-  export type AdminUserUpdateWithoutVisitorsInput = {
+  export type MemberUpdateWithoutVisitorsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    displayName?: StringFieldUpdateOperationsInput | string
-    fullName?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
-    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    first_name?: NullableStringFieldUpdateOperationsInput | string | null
-    last_name?: NullableStringFieldUpdateOperationsInput | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabled?: BoolFieldUpdateOperationsInput | boolean
-    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
-    checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
-    report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
-    disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
-    updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
-    disabledUsers?: AdminUserUpdateManyWithoutDisabledByAdminNestedInput
-    updatedUsers?: AdminUserUpdateManyWithoutUpdatedByAdminNestedInput
-    qualificationsGranted?: MemberQualificationUpdateManyWithoutGrantedByAdminNestedInput
-    qualificationsRevoked?: MemberQualificationUpdateManyWithoutRevokedByAdminNestedInput
-    schedulesCreated?: WeeklyScheduleUpdateManyWithoutCreatedByAdminNestedInput
-    schedulesPublished?: WeeklyScheduleUpdateManyWithoutPublishedByAdminNestedInput
-    missedCheckoutsResolved?: MissedCheckoutUpdateManyWithoutResolvedByAdminNestedInput
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
-  export type AdminUserUncheckedUpdateWithoutVisitorsInput = {
+  export type MemberUncheckedUpdateWithoutVisitorsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    passwordHash?: StringFieldUpdateOperationsInput | string
-    displayName?: StringFieldUpdateOperationsInput | string
-    fullName?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
-    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    first_name?: NullableStringFieldUpdateOperationsInput | string | null
-    last_name?: NullableStringFieldUpdateOperationsInput | string | null
-    updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabled?: BoolFieldUpdateOperationsInput | boolean
-    disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    disabledBy?: NullableStringFieldUpdateOperationsInput | string | null
-    updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
-    checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
-    disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
-    updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
-    qualificationsGranted?: MemberQualificationUncheckedUpdateManyWithoutGrantedByAdminNestedInput
-    qualificationsRevoked?: MemberQualificationUncheckedUpdateManyWithoutRevokedByAdminNestedInput
-    schedulesCreated?: WeeklyScheduleUncheckedUpdateManyWithoutCreatedByAdminNestedInput
-    schedulesPublished?: WeeklyScheduleUncheckedUpdateManyWithoutPublishedByAdminNestedInput
-    missedCheckoutsResolved?: MissedCheckoutUncheckedUpdateManyWithoutResolvedByAdminNestedInput
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
   export type EventUpsertWithoutVisitorsInput = {
@@ -87113,18 +87199,18 @@ export namespace Prisma {
     eventAttendees?: EventAttendeeUncheckedUpdateManyWithoutEventNestedInput
   }
 
-  export type MemberUpsertWithoutVisitorsInput = {
-    update: XOR<MemberUpdateWithoutVisitorsInput, MemberUncheckedUpdateWithoutVisitorsInput>
-    create: XOR<MemberCreateWithoutVisitorsInput, MemberUncheckedCreateWithoutVisitorsInput>
+  export type MemberUpsertWithoutVisitorsHostedInput = {
+    update: XOR<MemberUpdateWithoutVisitorsHostedInput, MemberUncheckedUpdateWithoutVisitorsHostedInput>
+    create: XOR<MemberCreateWithoutVisitorsHostedInput, MemberUncheckedCreateWithoutVisitorsHostedInput>
     where?: MemberWhereInput
   }
 
-  export type MemberUpdateToOneWithWhereWithoutVisitorsInput = {
+  export type MemberUpdateToOneWithWhereWithoutVisitorsHostedInput = {
     where?: MemberWhereInput
-    data: XOR<MemberUpdateWithoutVisitorsInput, MemberUncheckedUpdateWithoutVisitorsInput>
+    data: XOR<MemberUpdateWithoutVisitorsHostedInput, MemberUncheckedUpdateWithoutVisitorsHostedInput>
   }
 
-  export type MemberUpdateWithoutVisitorsInput = {
+  export type MemberUpdateWithoutVisitorsHostedInput = {
     id?: StringFieldUpdateOperationsInput | string
     serviceNumber?: StringFieldUpdateOperationsInput | string
     rank?: StringFieldUpdateOperationsInput | string
@@ -87154,6 +87240,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -87174,7 +87261,7 @@ export namespace Prisma {
     acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
   }
 
-  export type MemberUncheckedUpdateWithoutVisitorsInput = {
+  export type MemberUncheckedUpdateWithoutVisitorsHostedInput = {
     id?: StringFieldUpdateOperationsInput | string
     serviceNumber?: StringFieldUpdateOperationsInput | string
     rankId?: StringFieldUpdateOperationsInput | string
@@ -87206,6 +87293,7 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -87402,7 +87490,8 @@ export namespace Prisma {
     badge?: BadgeCreateNestedOneWithoutMembersInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -87454,7 +87543,8 @@ export namespace Prisma {
     pinHash?: string | null
     accountLevel?: number
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -87555,7 +87645,8 @@ export namespace Prisma {
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -87607,7 +87698,8 @@ export namespace Prisma {
     pinHash?: NullableStringFieldUpdateOperationsInput | string | null
     accountLevel?: IntFieldUpdateOperationsInput | number
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -87643,7 +87735,6 @@ export namespace Prisma {
     disabledAt?: Date | string | null
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -87675,7 +87766,6 @@ export namespace Prisma {
     updatedBy?: string | null
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -87719,7 +87809,6 @@ export namespace Prisma {
     disabledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -87751,7 +87840,6 @@ export namespace Prisma {
     updatedBy?: NullableStringFieldUpdateOperationsInput | string | null
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -87792,7 +87880,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -87844,7 +87933,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -87897,7 +87987,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -87949,7 +88040,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -87990,7 +88082,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
     disabledUsers?: AdminUserCreateNestedManyWithoutDisabledByAdminInput
@@ -88022,7 +88113,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
     qualificationsGranted?: MemberQualificationUncheckedCreateNestedManyWithoutGrantedByAdminInput
@@ -88078,7 +88168,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -88130,7 +88221,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -88189,7 +88281,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -88241,7 +88334,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -88288,7 +88382,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
     disabledUsers?: AdminUserUpdateManyWithoutDisabledByAdminNestedInput
@@ -88320,7 +88413,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
     qualificationsGranted?: MemberQualificationUncheckedUpdateManyWithoutGrantedByAdminNestedInput
@@ -88360,7 +88452,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -88411,7 +88504,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -88486,7 +88580,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -88537,7 +88632,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -88594,9 +88690,9 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
-    admin_users?: AdminUserCreateNestedOneWithoutVisitorsInput
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
     event?: EventCreateNestedOneWithoutVisitorsInput
-    hostMember?: MemberCreateNestedOneWithoutVisitorsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
   }
 
@@ -88746,7 +88842,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -88798,7 +88895,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -89404,7 +89502,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -89456,7 +89555,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -89528,7 +89628,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -89560,7 +89659,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -89593,7 +89691,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -89625,7 +89722,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -89681,7 +89777,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -89733,7 +89830,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -89817,7 +89915,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -89849,7 +89946,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -89888,7 +89984,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -89920,7 +90015,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -90274,7 +90368,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -90306,7 +90399,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -90339,7 +90431,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -90371,7 +90462,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -90522,7 +90612,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -90554,7 +90643,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -90593,7 +90681,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -90625,7 +90712,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -90761,7 +90847,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -90813,7 +90900,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -90953,7 +91041,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91005,7 +91094,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91117,7 +91207,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91169,7 +91260,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91222,7 +91314,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91274,7 +91367,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91414,7 +91508,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91466,7 +91561,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91525,7 +91621,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91577,7 +91674,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91625,7 +91723,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91677,7 +91776,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91730,7 +91830,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91782,7 +91883,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91903,7 +92005,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91955,7 +92058,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92014,7 +92118,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -92066,7 +92171,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92196,7 +92302,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -92248,7 +92355,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -92301,7 +92409,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -92353,7 +92462,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -92456,7 +92566,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -92508,7 +92619,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92567,7 +92679,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -92619,7 +92732,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92700,7 +92814,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -92752,7 +92867,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -92855,7 +92971,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -92907,7 +93024,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92955,7 +93073,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -93007,7 +93126,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -93048,7 +93168,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutAssignedByAdminInput
     disabledByAdmin?: AdminUserCreateNestedOneWithoutDisabledUsersInput
     updatedByAdmin?: AdminUserCreateNestedOneWithoutUpdatedUsersInput
@@ -93080,7 +93199,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAdminUserInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutAdmin_usersInput
     report_audit_log?: report_audit_logUncheckedCreateNestedManyWithoutAdmin_usersInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutAdmin_usersInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutAssignedByAdminInput
     disabledUsers?: AdminUserUncheckedCreateNestedManyWithoutDisabledByAdminInput
     updatedUsers?: AdminUserUncheckedCreateNestedManyWithoutUpdatedByAdminInput
@@ -93136,7 +93254,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -93188,7 +93307,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -93235,7 +93355,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
@@ -93267,7 +93386,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -93803,7 +93921,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
-    visitors?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -93855,7 +93974,8 @@ export namespace Prisma {
     accountLevel?: number
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
-    visitors?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -94007,7 +94127,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -94059,7 +94180,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -94110,24 +94232,6 @@ export namespace Prisma {
     generated_at?: Date | string | null
     file_size_bytes?: number | null
     generation_time_ms?: number | null
-  }
-
-  export type VisitorCreateManyAdmin_usersInput = {
-    id?: string
-    name: string
-    organization?: string | null
-    visitType: string
-    visitTypeId?: string | null
-    visitReason?: string | null
-    eventId?: string | null
-    hostMemberId?: string | null
-    checkInTime?: Date | string
-    checkOutTime?: Date | string | null
-    temporaryBadgeId?: string | null
-    kioskId: string
-    createdAt?: Date | string | null
-    adminNotes?: string | null
-    checkInMethod?: string | null
   }
 
   export type DdsAssignmentCreateManyAssignedByAdminInput = {
@@ -94350,60 +94454,6 @@ export namespace Prisma {
     generation_time_ms?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type VisitorUpdateWithoutAdmin_usersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    organization?: NullableStringFieldUpdateOperationsInput | string | null
-    visitType?: StringFieldUpdateOperationsInput | string
-    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
-    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    event?: EventUpdateOneWithoutVisitorsNestedInput
-    hostMember?: MemberUpdateOneWithoutVisitorsNestedInput
-    badge?: BadgeUpdateOneWithoutVisitorsNestedInput
-    visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
-  }
-
-  export type VisitorUncheckedUpdateWithoutAdmin_usersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    organization?: NullableStringFieldUpdateOperationsInput | string | null
-    visitType?: StringFieldUpdateOperationsInput | string
-    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
-    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
-    eventId?: NullableStringFieldUpdateOperationsInput | string | null
-    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
-    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type VisitorUncheckedUpdateManyWithoutAdmin_usersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    organization?: NullableStringFieldUpdateOperationsInput | string | null
-    visitType?: StringFieldUpdateOperationsInput | string
-    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
-    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
-    eventId?: NullableStringFieldUpdateOperationsInput | string | null
-    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
-    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
-    kioskId?: StringFieldUpdateOperationsInput | string
-    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
-    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
   export type DdsAssignmentUpdateWithoutAssignedByAdminInput = {
     id?: StringFieldUpdateOperationsInput | string
     assignedDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -94461,7 +94511,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     updatedByAdmin?: AdminUserUpdateOneWithoutUpdatedUsersNestedInput
     disabledUsers?: AdminUserUpdateManyWithoutDisabledByAdminNestedInput
@@ -94492,7 +94541,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -94539,7 +94587,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutAssignedByAdminNestedInput
     disabledByAdmin?: AdminUserUpdateOneWithoutDisabledUsersNestedInput
     disabledUsers?: AdminUserUpdateManyWithoutDisabledByAdminNestedInput
@@ -94570,7 +94617,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutAdmin_usersNestedInput
     report_audit_log?: report_audit_logUncheckedUpdateManyWithoutAdmin_usersNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutAdmin_usersNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutAssignedByAdminNestedInput
     disabledUsers?: AdminUserUncheckedUpdateManyWithoutDisabledByAdminNestedInput
     updatedUsers?: AdminUserUncheckedUpdateManyWithoutUpdatedByAdminNestedInput
@@ -95037,7 +95083,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -95089,7 +95136,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -95151,9 +95199,9 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    admin_users?: AdminUserUpdateOneWithoutVisitorsNestedInput
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
     event?: EventUpdateOneWithoutVisitorsNestedInput
-    hostMember?: MemberUpdateOneWithoutVisitorsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
   }
 
@@ -95253,7 +95301,8 @@ export namespace Prisma {
     badge?: BadgeUpdateOneWithoutMembersNestedInput
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -95305,7 +95354,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -95483,8 +95533,8 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    admin_users?: AdminUserUpdateOneWithoutVisitorsNestedInput
-    hostMember?: MemberUpdateOneWithoutVisitorsNestedInput
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
   }
@@ -95563,6 +95613,24 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+  }
+
+  export type VisitorCreateManyCreatedByMemberInput = {
+    id?: string
+    name: string
+    organization?: string | null
+    visitType: string
+    visitTypeId?: string | null
+    visitReason?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    temporaryBadgeId?: string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
   }
 
   export type MemberTagCreateManyMemberInput = {
@@ -95831,7 +95899,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    admin_users?: AdminUserUpdateOneWithoutVisitorsNestedInput
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
     event?: EventUpdateOneWithoutVisitorsNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
@@ -95871,6 +95939,60 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorUpdateWithoutCreatedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    event?: EventUpdateOneWithoutVisitorsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
+    badge?: BadgeUpdateOneWithoutVisitorsNestedInput
+    visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+  }
+
+  export type VisitorUncheckedUpdateWithoutCreatedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorUncheckedUpdateManyWithoutCreatedByMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MemberTagUpdateWithoutMemberInput = {
@@ -96612,7 +96734,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -96663,7 +96786,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -96774,7 +96898,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -96825,7 +96950,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -96905,9 +97031,9 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
-    admin_users?: AdminUserUpdateOneWithoutVisitorsNestedInput
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
     event?: EventUpdateOneWithoutVisitorsNestedInput
-    hostMember?: MemberUpdateOneWithoutVisitorsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
   }
 
@@ -97073,7 +97199,8 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
-    visitors?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -97125,7 +97252,8 @@ export namespace Prisma {
     accountLevel?: IntFieldUpdateOperationsInput | number
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
-    visitors?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput

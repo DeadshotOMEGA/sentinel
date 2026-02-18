@@ -28,7 +28,6 @@ model AdminUser {
   auditLogs               AuditLog[]
   checkins                Checkin[]
   report_audit_log        report_audit_log[]
-  visitors                Visitor[]
   ddsAssignments          DdsAssignment[]
   disabledByAdmin         AdminUser?            @relation("DisabledBy", fields: [disabledBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedByAdmin          AdminUser?            @relation("UpdatedBy", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -221,7 +220,8 @@ model Member {
   bmqEnrollments             BmqEnrollment[]
   checkins                   Checkin[]
   division                   Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
-  visitors                   Visitor[]
+  visitorsHosted             Visitor[]                 @relation("VisitorHost")
+  visitorsCreated            Visitor[]                 @relation("VisitorCreatedBy")
   memberTags                 MemberTag[]
   ddsAssignments             DdsAssignment[]           @relation("DdsMember")
   ddsTransfers               DdsAssignment[]           @relation("DdsTransferredTo")
@@ -346,9 +346,9 @@ model Visitor {
   adminNotes       String?    @map("admin_notes")
   checkInMethod    String?    @default("kiosk") @map("check_in_method") @db.VarChar(20)
   createdByAdmin   String?    @map("created_by_admin") @db.Uuid
-  admin_users      AdminUser? @relation(fields: [createdByAdmin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdByMember  Member?    @relation("VisitorCreatedBy", fields: [createdByAdmin], references: [id], onDelete: SetNull, onUpdate: NoAction)
   event            Event?     @relation(fields: [eventId], references: [id], onUpdate: NoAction)
-  hostMember       Member?    @relation(fields: [hostMemberId], references: [id], onUpdate: NoAction)
+  hostMember       Member?    @relation("VisitorHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
   badge            Badge?     @relation(fields: [temporaryBadgeId], references: [id], onUpdate: NoAction)
   visitTypeRef     VisitType? @relation(fields: [visitTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
