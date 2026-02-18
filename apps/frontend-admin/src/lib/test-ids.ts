@@ -174,6 +174,11 @@ export const TID = {
     row: 'log-row',
   },
   dashboard: {
+    help: {
+      launcher: 'dashboard-help-launcher',
+      toggle: 'dashboard-help-toggle',
+      panel: 'dashboard-help-panel',
+    },
     quickAction: {
       kiosk: 'quick-action-kiosk',
       manualCheckin: 'quick-action-manual-checkin',

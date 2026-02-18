@@ -2,10 +2,11 @@ import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
 import { QuickActionButtons } from '@/components/dashboard/quick-action-buttons'
 import { StatusStats } from '@/components/dashboard/status-stats'
 import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
+import { DashboardHelpLauncher } from '@/components/help/dashboard-help-launcher'
 
 export default function DashboardPage() {
   return (
-    <main>
+    <main data-help-id="dashboard.root">
       <h1 className="sr-only">Dashboard</h1>
 
       {/* Security Alerts Bar - only shows if there are active alerts */}
@@ -23,6 +24,8 @@ export default function DashboardPage() {
       <div className="mt-6">
         <PersonCardGrid />
       </div>
+
+      <DashboardHelpLauncher />
     </main>
   )
 }

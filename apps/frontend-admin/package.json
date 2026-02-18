@@ -19,6 +19,7 @@
     "@ts-rest/react-query": "^3.52.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "driver.js": "^1.4.0",
     "lucide-react": "^0.563.0",
     "motion": "^12.33.0",
     "next": "16.1.4",

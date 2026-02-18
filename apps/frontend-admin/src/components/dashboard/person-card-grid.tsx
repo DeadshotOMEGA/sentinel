@@ -33,8 +33,6 @@ export function PersonCardGrid() {
     )
   }, [dutyWatch?.team])
 
-
-
   // Current DDS member ID (only when assignment is active/pending)
   const ddsMemberId = ddsStatus?.assignment?.memberId ?? null
 
@@ -139,9 +137,15 @@ export function PersonCardGrid() {
   }
 
   return (
-    <div className="presence-section p-4 shadow-lg animate-fade-in">
+    <div
+      className="presence-section p-4 shadow-lg animate-fade-in"
+      data-help-id="dashboard.presence"
+    >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3">
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3"
+        data-help-id="dashboard.presence.filters"
+      >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10">
             <UsersRound size={24} strokeWidth={1.5} className="text-primary" />
@@ -186,6 +190,7 @@ export function PersonCardGrid() {
               className="input input-bordered input-sm pl-8 w-48"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              data-help-id="dashboard.presence.search"
             />
           </div>
         </div>

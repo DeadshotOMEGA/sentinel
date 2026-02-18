@@ -39,14 +39,17 @@ const ACCENT_BORDER_CLASSES: Record<string, string> = {
 function StatContainer({
   children,
   accentColor,
+  helpId,
 }: {
   children: ReactNode
   accentColor?: 'error' | 'warning' | 'success' | 'info'
+  helpId?: string
 }) {
   const borderClass = accentColor ? ACCENT_BORDER_CLASSES[accentColor] : ''
   return (
     <div
       className={`stat bg-linear-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass}`}
+      data-help-id={helpId}
     >
       {children}
     </div>
@@ -63,7 +66,7 @@ function DdsStat() {
 
   if (isLoading) {
     return (
-      <StatContainer>
+      <StatContainer helpId="dashboard.stat.dds">
         <div className="stat-figure text-primary">
           <ShieldEllipsis size={32} strokeWidth={2} />
         </div>
@@ -82,7 +85,7 @@ function DdsStat() {
 
   if (!ddsStatus?.assignment) {
     return (
-      <StatContainer accentColor="warning">
+      <StatContainer accentColor="warning" helpId="dashboard.stat.dds">
         <div className="stat-figure text-error">
           <ShieldAlert size={32} strokeWidth={2} />
         </div>
@@ -102,7 +105,7 @@ function DdsStat() {
   const subHeading = onSite ? 'DDS On Site' : 'Contact DDS Cell 204-612-4621'
 
   return (
-    <StatContainer accentColor={onSite ? 'success' : 'error'}>
+    <StatContainer accentColor={onSite ? 'success' : 'error'} helpId="dashboard.stat.dds">
       <div className={`stat-figure ${nameColor}`}>
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
@@ -137,7 +140,7 @@ function BuildingStat({
 
   if (isLoading) {
     return (
-      <StatContainer>
+      <StatContainer helpId="dashboard.stat.building">
         <div className="stat-title">Building Status</div>
         <div className="stat-value">
           <span
@@ -166,7 +169,7 @@ function BuildingStat({
 
   if (display.label === 'Secured') {
     return (
-      <StatContainer accentColor="error">
+      <StatContainer accentColor="error" helpId="dashboard.stat.building">
         <div className="stat-figure text-error">
           <StatusIcon size={32} strokeWidth={2} />
         </div>
@@ -178,7 +181,7 @@ function BuildingStat({
   }
 
   return (
-    <StatContainer>
+    <StatContainer helpId="dashboard.stat.building">
       <div className="stat-figure text-success">
         <StatusIcon size={32} strokeWidth={2} />
       </div>
@@ -198,7 +201,7 @@ function LockupHolderStat({
 }) {
   if (isLoading) {
     return (
-      <StatContainer>
+      <StatContainer helpId="dashboard.stat.lockup-holder">
         <div className="stat-figure text-primary">
           <KeyRound size={32} strokeWidth={2} />
         </div>
@@ -223,7 +226,7 @@ function LockupHolderStat({
   // No one holds lockup
   if (!lockupStatus?.currentHolder) {
     return (
-      <StatContainer accentColor="warning">
+      <StatContainer accentColor="warning" helpId="dashboard.stat.lockup-holder">
         <div className="stat-figure text-warning">
           <KeyRound size={32} strokeWidth={2} />
         </div>
@@ -236,7 +239,7 @@ function LockupHolderStat({
 
   // Someone holds lockup
   return (
-    <StatContainer>
+    <StatContainer helpId="dashboard.stat.lockup-holder">
       <div className="stat-figure text-primary">
         <KeyRound size={32} strokeWidth={2} />
       </div>
@@ -263,7 +266,7 @@ function DutyWatchStat() {
 
   if (isLoading) {
     return (
-      <StatContainer>
+      <StatContainer helpId="dashboard.stat.duty-watch">
         <div className="stat-figure text-primary">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -290,7 +293,7 @@ function DutyWatchStat() {
 
   if (team.length === 0) {
     return (
-      <StatContainer accentColor="warning">
+      <StatContainer accentColor="warning" helpId="dashboard.stat.duty-watch">
         <div className="stat-figure text-warning">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -302,7 +305,10 @@ function DutyWatchStat() {
   }
 
   return (
-    <StatContainer accentColor={allCheckedIn ? undefined : 'warning'}>
+    <StatContainer
+      accentColor={allCheckedIn ? undefined : 'warning'}
+      helpId="dashboard.stat.duty-watch"
+    >
       <div className={`stat-figure ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
         <Users size={32} strokeWidth={2} />
       </div>
@@ -333,6 +339,7 @@ export function StatusStats() {
     <div
       className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel animate-fade-in"
       aria-live="polite"
+      data-help-id="dashboard.status-stats"
     >
       <DdsStat />
       <DutyWatchStat />

@@ -2,15 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Users,
-  FileText,
-  Lock,
-  Radio,
-  DoorOpen,
-  ArrowRightLeft,
-  ScanLine,
-} from 'lucide-react'
+import { Users, FileText, Lock, Radio, DoorOpen, ArrowRightLeft, ScanLine } from 'lucide-react'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
@@ -49,11 +41,12 @@ export function QuickActionButtons() {
   const isOpenNoHolder = buildingStatus === 'open' && !currentHolder
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-3" data-help-id="dashboard.quick-actions">
       <button
         className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200"
         onClick={() => setIsKioskModalOpen(true)}
         data-testid={TID.dashboard.quickAction.kiosk}
+        data-help-id="dashboard.quick-actions.kiosk-checkin"
       >
         <ScanLine className="h-4 w-4" />
         Kiosk Check-In
@@ -68,6 +61,7 @@ export function QuickActionButtons() {
           disabled={!canManualCheckin}
           onClick={() => setIsVisitorModalOpen(true)}
           data-testid={TID.dashboard.quickAction.visitorSignin}
+          data-help-id="dashboard.quick-actions.visitor-signin"
         >
           <Users className="h-4 w-4" />
           Visitor Sign-in
@@ -89,6 +83,7 @@ export function QuickActionButtons() {
             disabled={!isAdmin}
             onClick={() => setIsOpenBuildingOpen(true)}
             data-testid={TID.dashboard.quickAction.openBuilding}
+            data-help-id="dashboard.quick-actions.open-building"
           >
             <DoorOpen className="h-4 w-4" />
             Open Building
@@ -104,6 +99,7 @@ export function QuickActionButtons() {
             disabled={!isAdmin || isOpenNoHolder}
             onClick={() => setIsLockupModalOpen(true)}
             data-testid={TID.dashboard.quickAction.executeLockup}
+            data-help-id="dashboard.quick-actions.execute-lockup"
           >
             <Lock className="h-4 w-4" />
             Execute Lockup
@@ -118,6 +114,7 @@ export function QuickActionButtons() {
             disabled={!isAdmin}
             onClick={() => setIsTransferScanModalOpen(true)}
             data-testid={TID.dashboard.quickAction.transferLockup}
+            data-help-id="dashboard.quick-actions.transfer-lockup"
           >
             <ArrowRightLeft className="h-4 w-4" />
             Transfer Lockup

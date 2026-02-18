@@ -42,7 +42,12 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
   const handleAcknowledge = () => {
     acknowledge.mutate(
       { alertId: alert.id, note: note.trim() || undefined },
-      { onSuccess: () => { setDialogOpen(false); setNote('') } }
+      {
+        onSuccess: () => {
+          setDialogOpen(false)
+          setNote('')
+        },
+      }
     )
   }
 
@@ -73,9 +78,16 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
         <div>
           <button
             className="btn btn-sm"
+            data-help-id="dashboard.security-alerts.acknowledge"
             disabled={!canAcknowledge}
             onClick={() => setDialogOpen(true)}
-            title={!member ? 'Sign in to acknowledge alerts' : !canAcknowledge ? 'Admin or Developer level required' : undefined}
+            title={
+              !member
+                ? 'Sign in to acknowledge alerts'
+                : !canAcknowledge
+                  ? 'Admin or Developer level required'
+                  : undefined
+            }
           >
             Acknowledge
           </button>
@@ -129,7 +141,7 @@ export function SecurityAlertsBar() {
   const alerts = data.alerts
 
   return (
-    <div className="space-y-2 mb-4">
+    <div className="space-y-2 mb-4" data-help-id="dashboard.security-alerts">
       {alerts.slice(0, 3).map((alert: SecurityAlertResponse) => (
         <SecurityAlertItem key={alert.id} alert={alert} />
       ))}
