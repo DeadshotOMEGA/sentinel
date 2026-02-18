@@ -8,11 +8,13 @@ import type {
   IdParam,
 } from '@sentinel/contracts'
 import { DdsService } from '../services/dds-service.js'
+import { PresenceService } from '../services/presence-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
 
 const ddsService = new DdsService(getPrismaClient())
+const presenceService = new PresenceService(getPrismaClient())
 
 interface DdsAssignmentData {
   id: string
@@ -86,11 +88,16 @@ export const ddsRouter = s.router(ddsContract, {
         ddsService.getNextWeekDds(),
       ])
 
+      const isDdsOnSite = assignment
+        ? await presenceService.isMemberPresent(assignment.memberId)
+        : false
+
       return {
         status: 200 as const,
         body: {
           assignment: assignment ? toApiFormat(assignment) : null,
           nextDds,
+          isDdsOnSite,
         },
       }
     } catch (error) {

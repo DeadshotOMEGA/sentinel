@@ -90,6 +90,7 @@ export const NextDdsMemberSchema = v.object({
 export const GetCurrentDdsResponseSchema = v.object({
   assignment: v.nullable(DdsAssignmentResponseSchema),
   nextDds: v.nullable(NextDdsMemberSchema),
+  isDdsOnSite: v.boolean(),
 })
 
 /**

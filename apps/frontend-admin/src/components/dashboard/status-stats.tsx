@@ -97,19 +97,21 @@ function DdsStat() {
     )
   }
 
+  const onSite = ddsStatus.isDdsOnSite
+  const nameColor = onSite ? 'text-success' : 'text-error'
+  const subHeading = onSite ? 'DDS On Site' : 'Contact DDS Cell 204-612-4621'
+
   return (
-    <StatContainer>
-      <div className="stat-figure text-primary">
+    <StatContainer accentColor={onSite ? 'success' : 'error'}>
+      <div className={`stat-figure ${nameColor}`}>
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
       <div className="stat-title">Duty Day Staff</div>
-      <div className="stat-value font-display text-primary text-3xl">
+      <div className={`stat-value font-display ${nameColor} text-3xl`}>
         {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName}{' '}
         {ddsStatus.assignment.member.firstName.charAt(0)}
       </div>
-      <div className="stat-desc">
-        {ddsStatus.nextDds ? `Next DDS: ${formatNextDds(ddsStatus.nextDds)}` : 'On duty today'}
-      </div>
+      <div className="stat-desc">{subHeading}</div>
     </StatContainer>
   )
 }
