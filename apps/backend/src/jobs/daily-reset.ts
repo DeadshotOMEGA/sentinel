@@ -49,6 +49,11 @@ export async function runDailyReset(): Promise<void> {
     }
 
     // Step 2: Force-checkout remaining members
+    // Use 3am of the operational date as the checkout time, not "now"
+    const resetTimestamp = DateTime.fromISO(operationalDate, { zone: DEFAULT_TIMEZONE })
+      .set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+      .toJSDate()
+
     const presentMembers = await presenceService.getPresentMembers()
 
     if (presentMembers.length > 0) {
@@ -106,6 +111,7 @@ export async function runDailyReset(): Promise<void> {
                 direction: 'out',
                 kioskId: 'SYSTEM',
                 method: 'system',
+                timestamp: resetTimestamp,
               },
             })
 
@@ -115,7 +121,7 @@ export async function runDailyReset(): Promise<void> {
               memberId: member.id,
               memberName: `${member.rank} ${member.firstName} ${member.lastName}`,
               direction: 'out',
-              timestamp: new Date().toISOString(),
+              timestamp: resetTimestamp.toISOString(),
               kioskId: 'SYSTEM',
             })
           }
@@ -153,7 +159,7 @@ export async function runDailyReset(): Promise<void> {
           await prisma.visitor.update({
             where: { id: visitor.id },
             data: {
-              checkOutTime: new Date(),
+              checkOutTime: resetTimestamp,
             },
           })
         } catch (error) {
