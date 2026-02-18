@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -634,7 +633,15 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
         ? 'bg-warning-fadded text-warning-fadded-content border-warning/30'
         : screenState.status === 'error'
           ? 'bg-error-fadded text-error-fadded-content border-error/30'
-          : 'bg-info-fadded text-info-fadded-content border-info/20'
+          : 'bg-base-100 text-base-content border-base-300'
+  const statusAccentClass =
+    screenState.status === 'success'
+      ? 'border-l-success'
+      : screenState.status === 'warning'
+        ? 'border-l-warning'
+        : screenState.status === 'error'
+          ? 'border-l-error'
+          : 'border-l-primary/40'
 
   const assignments = screenState.insights?.assignments
   const hasUpcomingAssignments =
@@ -652,41 +659,59 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
       }),
     [now]
   )
+  const isReadyState =
+    !scanMutation.isPending &&
+    screenState.status === 'neutral' &&
+    !screenState.memberName &&
+    !screenState.scannedAt
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent size="full" className="max-h-[92vh] overflow-hidden p-0">
+        <DialogContent
+          size="full"
+          showCloseButton={false}
+          className="max-h-[95vh] overflow-hidden p-0"
+        >
           <div className="h-full flex flex-col bg-base-100">
-            <DialogHeader className="mb-0 border-b border-base-300 bg-base-200 p-6">
+            <DialogHeader className="mb-0 border-b border-base-300 bg-gradient-to-r from-base-200 via-base-200 to-base-100 p-4 lg:p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <DialogTitle className="font-display text-3xl flex items-center gap-3">
-                    <ScanLine className="h-8 w-8 text-primary" />
+                  <DialogTitle className="font-display text-2xl sm:text-3xl flex items-center gap-3">
+                    <ScanLine className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                     Front Entrance Kiosk
                   </DialogTitle>
-                  <DialogDescription className="mt-2 text-base">
+                  <DialogDescription className="mt-2 text-sm sm:text-base">
                     Welcome to the Unit. Scan your badge for check-in and check-out.
                   </DialogDescription>
                 </div>
 
-                <div className="rounded border border-base-300 bg-base-100 px-4 py-2 text-right">
-                  <p className="text-xs uppercase tracking-wide text-base-content/60">
-                    Operational Time
-                  </p>
-                  <p suppressHydrationWarning className="font-mono text-sm">
-                    {clockLabel}
-                  </p>
-                  <p className="text-xs text-base-content/60 mt-1">{KIOSK_ID}</p>
+                <div className="flex w-full sm:w-auto items-start justify-between sm:justify-end gap-2">
+                  <div className="rounded border border-base-300 bg-base-100 px-3 py-2 sm:px-4 text-right min-w-60">
+                    <p className="text-xs uppercase tracking-wide text-base-content/60">
+                      Operational Time
+                    </p>
+                    <p
+                      suppressHydrationWarning
+                      className="font-mono text-xs sm:text-sm leading-tight"
+                    >
+                      {clockLabel}
+                    </p>
+                    <p className="text-xs text-base-content/60 mt-1 tracking-wide">{KIOSK_ID}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm self-start"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Close Kiosk
+                  </button>
                 </div>
               </div>
             </DialogHeader>
 
-            <div className="grid flex-1 min-h-0 lg:grid-cols-[1.5fr_1fr]">
-              <section
-                className="border-r border-base-300 p-6 lg:p-8 flex flex-col"
-                style={{ gap: 'var(--space-5)' }}
-              >
+            <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[1.45fr_1fr]">
+              <section className="bg-base-100 p-4 lg:p-6 flex min-h-0 flex-col gap-4 overflow-y-auto lg:border-r lg:border-base-300">
                 <div className="flex items-center gap-4">
                   <div className="rounded-full border border-primary/20 bg-primary-fadded p-4 text-primary-fadded-content">
                     <IdCard className="h-10 w-10" />
@@ -699,65 +724,90 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                   </div>
                 </div>
 
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault()
-                    if (scanMutation.isPending) return
-                    setPendingLockup(null)
-                    setShowLockupOptions(false)
-                    scanMutation.mutate(serial)
-                  }}
-                  className="flex flex-col gap-4 sm:flex-row sm:items-end"
-                >
-                  <fieldset className="fieldset flex-1">
-                    <legend className="fieldset-legend text-base">Badge Serial</legend>
-                    <input
-                      ref={(node) => {
-                        inputRef.current = node
+                <div className="card card-border bg-base-100 shadow-sm">
+                  <div className="card-body p-4">
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault()
+                        if (scanMutation.isPending) return
+                        setPendingLockup(null)
+                        setShowLockupOptions(false)
+                        scanMutation.mutate(serial)
                       }}
-                      type="text"
-                      className="input input-neutral w-full font-mono text-2xl tracking-wider h-16"
-                      placeholder="Scan or enter badge serial..."
-                      value={serial}
-                      autoComplete="off"
-                      onChange={(event) => setSerial(event.target.value)}
-                      disabled={scanMutation.isPending}
-                      data-testid={TID.dashboard.kiosk.badgeInput}
-                    />
-                  </fieldset>
+                      className="space-y-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-base-100 rounded-box p-1.5 transition-shadow"
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+                        <fieldset className="fieldset flex-1">
+                          <legend className="fieldset-legend text-base">Badge Serial</legend>
+                          <input
+                            ref={(node) => {
+                              inputRef.current = node
+                            }}
+                            type="text"
+                            className="input input-bordered input-lg w-full font-mono text-xl tracking-wide uppercase placeholder:normal-case placeholder:tracking-normal focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                            placeholder="Scan or enter badge serial..."
+                            value={serial}
+                            autoComplete="off"
+                            onChange={(event) => setSerial(event.target.value)}
+                            disabled={scanMutation.isPending}
+                            data-testid={TID.dashboard.kiosk.badgeInput}
+                          />
+                        </fieldset>
 
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-action h-16 min-w-44 text-base"
-                    disabled={scanMutation.isPending || !serial.trim()}
-                    data-testid={TID.dashboard.kiosk.scanSubmit}
-                  >
-                    {scanMutation.isPending && <ButtonSpinner />}
-                    Scan Badge
-                  </button>
-                </form>
+                        <button
+                          type="submit"
+                          className="btn btn-primary btn-lg min-w-44 disabled:btn-disabled font-semibold tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
+                          disabled={scanMutation.isPending || !serial.trim()}
+                          data-testid={TID.dashboard.kiosk.scanSubmit}
+                        >
+                          {scanMutation.isPending && <ButtonSpinner />}
+                          Scan Badge
+                        </button>
+                      </div>
+                      <p className="text-xs text-base-content/65 flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                        Scan a badge or type a serial, then press{' '}
+                        <kbd className="kbd kbd-xs">Enter</kbd>.
+                      </p>
+                    </form>
+                  </div>
+                </div>
 
                 <div
-                  className={`rounded border p-6 flex-1 min-h-52 ${statusSurfaceClass}`}
-                  role="status"
-                  aria-live="polite"
+                  className={`card card-border border-l-8 rounded-box flex-1 ${isReadyState ? 'min-h-40 sm:min-h-44' : 'min-h-52 sm:min-h-56'} ${statusSurfaceClass} ${statusAccentClass}`}
+                  role={screenState.status === 'error' ? 'alert' : 'status'}
+                  aria-live={
+                    screenState.status === 'error'
+                      ? 'assertive'
+                      : screenState.status === 'warning'
+                        ? 'assertive'
+                        : 'polite'
+                  }
                 >
                   {scanMutation.isPending ? (
-                    <div className="h-full flex flex-col items-start justify-center gap-3">
+                    <div className="card-body h-full flex flex-col items-start justify-center gap-3 p-5 sm:p-6">
                       <div className="flex items-center gap-2">
-                        <AppBadge status="info" pulse>
+                        <AppBadge status="info" pulse className="tracking-wide">
                           SCANNING
                         </AppBadge>
                       </div>
-                      <p className="font-display text-2xl">Reading badge...</p>
+                      <p className="font-display text-xl sm:text-2xl">Reading badge...</p>
                       <p className="text-sm opacity-85">
                         Please hold card steady over the scanner.
                       </p>
                     </div>
                   ) : (
-                    <div className="h-full flex flex-col justify-center gap-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <AppBadge status={badgeStatus} size="md">
+                    <div
+                      className={`card-body h-full flex flex-col justify-center gap-4 ${
+                        isReadyState ? 'p-4' : 'p-6'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <AppBadge
+                          status={screenState.status === 'neutral' ? 'neutral' : badgeStatus}
+                          size="md"
+                          className={screenState.status === 'neutral' ? 'badge-outline' : undefined}
+                        >
                           {screenState.status === 'neutral'
                             ? 'READY'
                             : screenState.status.toUpperCase()}
@@ -771,20 +821,30 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                           </AppBadge>
                         )}
                         {screenState.scannedAt && (
-                          <span className="font-mono text-xs opacity-80">
+                          <span className="font-mono text-xs opacity-90 rounded bg-base-100/80 border border-base-300/60 px-2 py-1">
                             {formatDateTime(screenState.scannedAt)}
                           </span>
                         )}
                       </div>
 
                       <div>
-                        <p className="font-display text-3xl">{screenState.title}</p>
+                        <p
+                          className={`font-display leading-tight ${isReadyState ? 'text-[1.8rem] sm:text-[2.1rem]' : 'text-2xl sm:text-3xl'} break-words`}
+                        >
+                          {screenState.title}
+                        </p>
                         {screenState.memberName && (
-                          <p className="text-xl font-semibold mt-1">{screenState.memberName}</p>
+                          <p className="text-lg sm:text-xl font-semibold mt-1 leading-tight break-words">
+                            {screenState.memberName}
+                          </p>
                         )}
-                        <p className="text-sm mt-3">{screenState.message}</p>
+                        <p className="text-sm mt-3 leading-relaxed break-words font-medium">
+                          {screenState.message}
+                        </p>
                         {screenState.serial && (
-                          <p className="font-mono text-xs mt-3 opacity-75">{screenState.serial}</p>
+                          <p className="font-mono text-xs mt-3 opacity-85 rounded bg-base-100/75 border border-base-300/50 inline-block px-2 py-1 break-all">
+                            {screenState.serial}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -792,154 +852,151 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                 </div>
 
                 {pendingLockup && loadingCheckoutOptions && (
-                  <div className="rounded border border-warning/30 bg-warning-fadded text-warning-fadded-content p-3 text-sm flex items-start gap-2">
+                  <div className="alert alert-warning alert-soft text-sm">
                     <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>Loading lockup options for {pendingLockup.memberName}...</span>
                   </div>
                 )}
               </section>
 
-              <aside
-                className="bg-base-200/70 p-6 flex min-h-0 flex-col overflow-y-auto"
-                style={{ gap: 'var(--space-4)' }}
-              >
-                <div className="rounded border border-base-300 bg-base-100 p-4">
-                  <h4 className="font-display text-lg flex items-center gap-2">
-                    <Clock3 className="h-4 w-4 text-info" />
-                    {lastVisitLabel}
-                  </h4>
-                  {screenState.memberName ? (
-                    screenState.insights?.lastVisitAt ? (
-                      <p className="mt-2 text-sm font-medium">
-                        {formatDateTime(screenState.insights.lastVisitAt)}
-                      </p>
+              <aside className="bg-base-200 p-4 lg:p-5 flex min-h-0 flex-col gap-2.5 overflow-y-auto border-t border-base-300 lg:border-t-0">
+                <div className="card card-border bg-base-100 shadow-sm">
+                  <div className="card-body p-3.5">
+                    <h4 className="card-title font-display text-lg leading-tight flex items-center gap-2 text-base-content">
+                      <Clock3 className="h-5 w-5 text-info" />
+                      {lastVisitLabel}
+                    </h4>
+                    {screenState.memberName ? (
+                      screenState.insights?.lastVisitAt ? (
+                        <p className="text-sm leading-snug font-medium">
+                          {formatDateTime(screenState.insights.lastVisitAt)}
+                        </p>
+                      ) : (
+                        <p className="text-sm leading-snug text-base-content/70">
+                          No prior unit visit found.
+                        </p>
+                      )
                     ) : (
-                      <p className="mt-2 text-sm text-base-content/70">
-                        No previous unit visit found.
+                      <p className="text-sm leading-snug text-base-content/70">
+                        Scan a member badge to view previous visit details.
                       </p>
-                    )
-                  ) : (
-                    <p className="mt-2 text-sm text-base-content/70">
-                      Scan a member badge to view their previous visit timeline.
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
 
-                <div className="rounded border border-base-300 bg-base-100 p-4">
-                  <h4 className="font-display text-lg flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-warning" />
-                    Scan Health
-                  </h4>
-                  {screenState.memberName ? (
-                    screenState.insights && screenState.insights.recentIssues.length > 0 ? (
-                      <ul className="mt-2 space-y-2 text-sm">
-                        {screenState.insights.recentIssues.map((issue) => (
-                          <li
-                            key={issue}
-                            className="rounded bg-warning-fadded text-warning-fadded-content px-2 py-1"
-                          >
-                            {issue}
-                          </li>
-                        ))}
-                      </ul>
+                <div className="card card-border bg-base-100 shadow-sm">
+                  <div className="card-body p-3.5">
+                    <h4 className="card-title font-display text-lg leading-tight flex items-center gap-2 text-base-content">
+                      <Shield className="h-5 w-5 text-warning" />
+                      Scan Health
+                    </h4>
+                    {screenState.memberName ? (
+                      screenState.insights && screenState.insights.recentIssues.length > 0 ? (
+                        <ul className="space-y-2 text-sm leading-snug">
+                          {screenState.insights.recentIssues.map((issue) => (
+                            <li
+                              key={issue}
+                              className="rounded bg-warning-fadded text-warning-fadded-content px-2 py-1"
+                            >
+                              {issue}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm leading-snug text-success">
+                          No scan issues found recently.
+                        </p>
+                      )
                     ) : (
-                      <p className="mt-2 text-sm text-success">No issues found in recent scans.</p>
-                    )
-                  ) : (
-                    <p className="mt-2 text-sm text-base-content/70">
-                      Recent scan quality checks appear here after a member scan.
-                    </p>
-                  )}
+                      <p className="text-sm leading-snug text-base-content/70">
+                        Scan integrity and anomalies appear here after a member scan.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="rounded border border-base-300 bg-base-100 p-4">
-                  <h4 className="font-display text-lg flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-primary" />
-                    Duty Commitments
-                  </h4>
+                <div className="card card-border bg-base-100 shadow-sm">
+                  <div className="card-body p-3.5">
+                    <h4 className="card-title font-display text-lg leading-tight flex items-center gap-2 text-base-content">
+                      <CalendarDays className="h-5 w-5 text-primary" />
+                      Duty Commitments
+                    </h4>
 
-                  {!screenState.memberName ? (
-                    <div className="mt-2 text-sm text-base-content/70 space-y-2">
-                      <p>
-                        Members see DDS and Duty Watch obligations for this week and upcoming weeks.
-                      </p>
-                      <p className="rounded bg-info-fadded text-info-fadded-content px-2 py-1">
-                        Visitors: a staff member will assist your entry process.
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {assignments?.isDdsThisWeek ? (
-                          <AppBadge status="success" size="sm">
-                            DDS This Week
-                          </AppBadge>
-                        ) : (
-                          <AppBadge status="neutral" size="sm">
-                            DDS Not Assigned
-                          </AppBadge>
-                        )}
-
-                        {assignments?.isDutyWatchTonight ? (
-                          <AppBadge status="warning" size="sm" pulse>
-                            Duty Watch Tonight
-                          </AppBadge>
-                        ) : (
-                          <AppBadge status="neutral" size="sm">
-                            No Duty Watch Tonight
-                          </AppBadge>
-                        )}
+                    {!screenState.memberName ? (
+                      <div className="text-sm leading-snug text-base-content/70 space-y-2">
+                        <p>Shows DDS and Duty Watch obligations for current/upcoming weeks.</p>
+                        <p className="rounded bg-info-fadded text-info-fadded-content px-2 py-1">
+                          Visitors are processed with staff assistance.
+                        </p>
                       </div>
-
-                      {hasUpcomingAssignments ? (
-                        <div className="mt-3 space-y-3 text-sm">
-                          {assignments.upcomingDdsWeeks.length > 0 && (
-                            <div>
-                              <p className="font-semibold">DDS:</p>
-                              <p className="text-base-content/80">
-                                {assignments.upcomingDdsWeeks.join(' | ')}
-                              </p>
-                            </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap gap-2">
+                          {assignments?.isDdsThisWeek ? (
+                            <AppBadge status="success" size="sm">
+                              DDS This Week
+                            </AppBadge>
+                          ) : (
+                            <AppBadge status="neutral" size="sm">
+                              DDS Not Assigned
+                            </AppBadge>
                           )}
 
-                          {assignments.upcomingDutyWatchWeeks.length > 0 && (
-                            <div>
-                              <p className="font-semibold">Duty Watch:</p>
-                              <p className="text-base-content/80">
-                                {assignments.upcomingDutyWatchWeeks.join(' | ')}
-                              </p>
-                            </div>
+                          {assignments?.isDutyWatchTonight ? (
+                            <AppBadge status="warning" size="sm" pulse>
+                              Duty Watch Tonight
+                            </AppBadge>
+                          ) : (
+                            <AppBadge status="neutral" size="sm">
+                              No Duty Watch Tonight
+                            </AppBadge>
                           )}
                         </div>
-                      ) : (
-                        <p className="mt-3 text-sm text-base-content/70">
-                          No current or upcoming duty assignments found.
-                        </p>
-                      )}
-                    </>
-                  )}
+
+                        {hasUpcomingAssignments ? (
+                          <div className="space-y-2 text-sm leading-snug">
+                            {assignments.upcomingDdsWeeks.length > 0 && (
+                              <div>
+                                <p className="font-semibold">DDS:</p>
+                                <p className="text-base-content/80">
+                                  {assignments.upcomingDdsWeeks.join(' | ')}
+                                </p>
+                              </div>
+                            )}
+
+                            {assignments.upcomingDutyWatchWeeks.length > 0 && (
+                              <div>
+                                <p className="font-semibold">Duty Watch:</p>
+                                <p className="text-base-content/80">
+                                  {assignments.upcomingDutyWatchWeeks.join(' | ')}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-snug text-base-content/70">
+                            No current or upcoming duty assignments found.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <div className="rounded border border-base-300 bg-base-100 p-4">
-                  <h4 className="font-display text-lg flex items-center gap-2">
-                    <Users className="h-4 w-4 text-secondary" />
-                    Assistance
-                  </h4>
-                  <p className="mt-2 text-sm text-base-content/80">
-                    If your badge is damaged, inactive, or unassigned, please contact the duty desk.
-                  </p>
+                <div className="card card-border bg-base-100 shadow-sm">
+                  <div className="card-body p-3.5">
+                    <h4 className="card-title font-display text-lg leading-tight flex items-center gap-2 text-base-content">
+                      <Users className="h-5 w-5 text-secondary" />
+                      Assistance
+                    </h4>
+                    <p className="text-sm leading-snug text-base-content/80">
+                      If your badge is damaged, inactive, or unassigned, please contact the duty
+                      desk.
+                    </p>
+                  </div>
                 </div>
               </aside>
             </div>
-
-            <DialogFooter className="border-t border-base-300 bg-base-200 px-6 py-4 mt-0 justify-between">
-              <p className="text-xs text-base-content/60">
-                This kiosk remains focused on badge input for continuous scanning.
-              </p>
-              <button type="button" className="btn btn-outline" onClick={() => onOpenChange(false)}>
-                Close Kiosk
-              </button>
-            </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>

@@ -1,18 +1,19 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { XIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { MODAL_SIZE, type ModalSize } from "@/lib/constants/modal-sizes"
+import * as React from 'react'
+import { XIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { MODAL_SIZE, type ModalSize } from '@/lib/constants/modal-sizes'
 
 interface DialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  dismissible?: boolean
   children: React.ReactNode
 }
 
-function Dialog({ open, onOpenChange, children }: DialogProps) {
-  const dialogRef = React.useRef<HTMLDialogElement>(null)
+function Dialog({ open, onOpenChange, dismissible = true, children }: DialogProps) {
+  const dialogRef = React.useRef<React.ElementRef<'dialog'>>(null)
 
   React.useEffect(() => {
     const dialog = dialogRef.current
@@ -29,6 +30,20 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
     const dialog = dialogRef.current
     if (!dialog) return
 
+    const handleCancel = (event: Event) => {
+      if (!dismissible) {
+        event.preventDefault()
+      }
+    }
+
+    dialog.addEventListener('cancel', handleCancel)
+    return () => dialog.removeEventListener('cancel', handleCancel)
+  }, [dismissible])
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+
     const handleClose = () => {
       onOpenChange?.(false)
     }
@@ -38,15 +53,13 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   }, [onOpenChange])
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="modal"
-      data-slot="dialog"
-    >
+    <dialog ref={dialogRef} className="modal" data-slot="dialog">
       {children}
-      <form method="dialog" className="modal-backdrop">
-        <button>close</button>
-      </form>
+      {dismissible && (
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      )}
     </dialog>
   )
 }
@@ -59,7 +72,7 @@ function DialogContent({
   testId,
   closeButtonTestId,
   ...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentProps<'div'> & {
   showCloseButton?: boolean
   size?: ModalSize
   testId?: string
@@ -69,7 +82,7 @@ function DialogContent({
     <div
       data-slot="dialog-content"
       data-testid={testId}
-      className={cn("modal-box text-base-content", size && MODAL_SIZE[size], className)}
+      className={cn('modal-box text-base-content', size && MODAL_SIZE[size], className)}
       {...props}
     >
       {children}
@@ -89,11 +102,11 @@ function DialogContent({
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 mb-4", className)}
+      className={cn('flex flex-col gap-2 mb-4', className)}
       {...props}
     />
   )
@@ -104,13 +117,9 @@ function DialogFooter({
   children,
   showCloseButton = false,
   ...props
-}: React.ComponentProps<"div"> & { showCloseButton?: boolean }) {
+}: React.ComponentProps<'div'> & { showCloseButton?: boolean }) {
   return (
-    <div
-      data-slot="dialog-footer"
-      className={cn("modal-action", className)}
-      {...props}
-    >
+    <div data-slot="dialog-footer" className={cn('modal-action', className)} {...props}>
       {children}
       {showCloseButton && (
         <form method="dialog">
@@ -121,35 +130,37 @@ function DialogFooter({
   )
 }
 
-function DialogTitle({ className, ...props }: React.ComponentProps<"h3">) {
+function DialogTitle({ className, ...props }: React.ComponentProps<'h3'>) {
   return (
-    <h3
-      data-slot="dialog-title"
-      className={cn("text-lg font-semibold", className)}
-      {...props}
-    />
+    <h3 data-slot="dialog-title" className={cn('text-lg font-semibold', className)} {...props} />
   )
 }
 
-function DialogDescription({ className, ...props }: React.ComponentProps<"p">) {
+function DialogDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       data-slot="dialog-description"
-      className={cn("text-base-content/60 text-sm", className)}
+      className={cn('text-base-content/60 text-sm', className)}
       {...props}
     />
   )
 }
 
 // Compatibility stubs — these are no-ops for DaisyUI but keep imports working
-function DialogTrigger({ children, ...props }: React.ComponentProps<"button">) {
-  return <button data-slot="dialog-trigger" {...props}>{children}</button>
+function DialogTrigger({ children, ...props }: React.ComponentProps<'button'>) {
+  return (
+    <button data-slot="dialog-trigger" {...props}>
+      {children}
+    </button>
+  )
 }
 
-function DialogClose({ children, ...props }: React.ComponentProps<"button">) {
+function DialogClose({ children, ...props }: React.ComponentProps<'button'>) {
   return (
     <form method="dialog" style={{ display: 'inline' }}>
-      <button data-slot="dialog-close" {...props}>{children}</button>
+      <button data-slot="dialog-close" {...props}>
+        {children}
+      </button>
     </form>
   )
 }
@@ -158,8 +169,8 @@ function DialogPortal({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function DialogOverlay({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-overlay" className={cn("modal-backdrop", className)} {...props} />
+function DialogOverlay({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div data-slot="dialog-overlay" className={cn('modal-backdrop', className)} {...props} />
 }
 
 export {
