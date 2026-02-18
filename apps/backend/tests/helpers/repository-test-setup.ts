@@ -211,7 +211,7 @@ export const createTestData = {
     return await prisma.member.create({
       data: {
         serviceNumber: overrides.serviceNumber || `SN${Date.now()}`,
-        rank: overrides.rank || 'AB',
+        rank: overrides.rank || 'S2',
         firstName: overrides.firstName || 'Test',
         lastName: overrides.lastName || 'Member',
         divisionId,

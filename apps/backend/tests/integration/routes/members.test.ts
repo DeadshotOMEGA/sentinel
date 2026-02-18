@@ -66,7 +66,7 @@ describe('Members Routes Integration Tests', () => {
       // Create test members
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -74,7 +74,7 @@ describe('Members Routes Integration Tests', () => {
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
-        rank: 'LS',
+        rank: 'S1',
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: testDivisionId,
@@ -101,7 +101,7 @@ describe('Members Routes Integration Tests', () => {
       for (let i = 1; i <= 5; i++) {
         await memberRepo.create({
           serviceNumber: `SN00${i}`,
-          rank: 'AB',
+          rank: 'S2',
           firstName: `Member${i}`,
           lastName: 'Test',
           divisionId: testDivisionId,
@@ -128,7 +128,7 @@ describe('Members Routes Integration Tests', () => {
 
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -136,7 +136,7 @@ describe('Members Routes Integration Tests', () => {
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
-        rank: 'LS',
+        rank: 'S1',
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: division2.id,
@@ -155,7 +155,7 @@ describe('Members Routes Integration Tests', () => {
     beforeEach(async () => {
       const member = await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -174,7 +174,7 @@ describe('Members Routes Integration Tests', () => {
       expect(response.body).toMatchObject({
         id: testMemberId,
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -249,7 +249,7 @@ describe('Members Routes Integration Tests', () => {
       // Create initial member
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -259,7 +259,7 @@ describe('Members Routes Integration Tests', () => {
       // Try to create duplicate
       const duplicate = {
         serviceNumber: 'SN0001',
-        rank: 'LS',
+        rank: 'S1',
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: testDivisionId,
@@ -286,7 +286,7 @@ describe('Members Routes Integration Tests', () => {
     // Currently ts-rest doesn't auto-validate Valibot schemas - needs manual integration
     it.skip('should return 400 for missing required fields', async () => {
       const invalidMember = {
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         // Missing serviceNumber, lastName, divisionId
       }
@@ -322,7 +322,7 @@ describe('Members Routes Integration Tests', () => {
     beforeEach(async () => {
       const member = await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -333,7 +333,7 @@ describe('Members Routes Integration Tests', () => {
 
     it('should return 200 and update member with valid data', async () => {
       const updates = {
-        rank: 'LS',
+        rank: 'S1',
         email: 'updated@test.com',
         phoneNumber: '999-8888',
       }
@@ -352,14 +352,14 @@ describe('Members Routes Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         id: testMemberId,
-        rank: 'LS',
+        rank: 'S1',
         email: 'updated@test.com',
         phoneNumber: '999-8888',
       })
 
       // Verify changes in database
       const updated = await memberRepo.findById(testMemberId)
-      expect(updated?.rank).toBe('LS')
+      expect(updated?.rank).toBe('S1')
       expect(updated?.email).toBe('updated@test.com')
     })
 
@@ -368,7 +368,7 @@ describe('Members Routes Integration Tests', () => {
 
       const response = await request(app)
         .patch(`/api/members/${nonExistentId}`)
-        .send({ rank: 'LS' })
+        .send({ rank: 'S1' })
         .expect(404)
 
       expect(response.body).toMatchObject({
@@ -391,7 +391,7 @@ describe('Members Routes Integration Tests', () => {
     beforeEach(async () => {
       const member = await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -433,7 +433,7 @@ describe('Members Routes Integration Tests', () => {
     beforeEach(async () => {
       await memberRepo.create({
         serviceNumber: 'SN12345',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -448,7 +448,7 @@ describe('Members Routes Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         serviceNumber: 'SN12345',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
       })

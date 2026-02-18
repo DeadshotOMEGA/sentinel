@@ -273,7 +273,7 @@ describe('TagRepository Integration Tests', () => {
       const member1 = await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'SN001',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'John',
           lastName: 'Doe',
           divisionId: division.id,
@@ -285,7 +285,7 @@ describe('TagRepository Integration Tests', () => {
       const member2 = await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'SN002',
-          rank: 'LS',
+          rank: 'S1',
           firstName: 'Jane',
           lastName: 'Smith',
           divisionId: division.id,

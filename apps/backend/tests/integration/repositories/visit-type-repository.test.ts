@@ -251,7 +251,7 @@ describe('VisitTypeRepository Integration Tests', () => {
       const hostMember = await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'HOST001',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'Host',
           lastName: 'Member',
           divisionId: division.id,
@@ -305,7 +305,7 @@ describe('VisitTypeRepository Integration Tests', () => {
       const hostMember = await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'HOST001',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'Host',
           lastName: 'Member',
           divisionId: division.id,

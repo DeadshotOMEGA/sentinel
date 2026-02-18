@@ -448,7 +448,7 @@ describe('Events Routes Integration Tests', () => {
       await eventRepo.addAttendee({
         eventId: testEventId,
         name: 'John Doe',
-        rank: 'AB',
+        rank: 'S2',
         organization: 'HMCS Chippawa',
         role: 'participant',
         status: 'pending',
@@ -457,7 +457,7 @@ describe('Events Routes Integration Tests', () => {
       await eventRepo.addAttendee({
         eventId: testEventId,
         name: 'Jane Smith',
-        rank: 'LS',
+        rank: 'S1',
         organization: 'HMCS Chippawa',
         role: 'speaker',
         status: 'pending',

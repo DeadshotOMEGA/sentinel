@@ -271,7 +271,7 @@ describe('DivisionRepository Integration Tests', () => {
       await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'SN12345',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'John',
           lastName: 'Doe',
           divisionId: division.id,
@@ -300,7 +300,7 @@ describe('DivisionRepository Integration Tests', () => {
         data: [
           {
             serviceNumber: 'SN001',
-            rank: 'AB',
+            rank: 'S2',
             firstName: 'John',
             lastName: 'Doe',
             divisionId: division.id,
@@ -309,7 +309,7 @@ describe('DivisionRepository Integration Tests', () => {
           },
           {
             serviceNumber: 'SN002',
-            rank: 'LS',
+            rank: 'S1',
             firstName: 'Jane',
             lastName: 'Smith',
             divisionId: division.id,
@@ -355,7 +355,7 @@ describe('DivisionRepository Integration Tests', () => {
         data: [
           {
             serviceNumber: 'SN001',
-            rank: 'AB',
+            rank: 'S2',
             firstName: 'John',
             lastName: 'Doe',
             divisionId: division.id,
@@ -364,7 +364,7 @@ describe('DivisionRepository Integration Tests', () => {
           },
           {
             serviceNumber: 'SN002',
-            rank: 'LS',
+            rank: 'S1',
             firstName: 'Jane',
             lastName: 'Smith',
             divisionId: division.id,
@@ -393,7 +393,7 @@ describe('DivisionRepository Integration Tests', () => {
         data: [
           {
             serviceNumber: 'SN001',
-            rank: 'AB',
+            rank: 'S2',
             firstName: 'Active',
             lastName: 'Member',
             divisionId: division.id,
@@ -402,7 +402,7 @@ describe('DivisionRepository Integration Tests', () => {
           },
           {
             serviceNumber: 'SN002',
-            rank: 'LS',
+            rank: 'S1',
             firstName: 'Inactive',
             lastName: 'Member',
             divisionId: division.id,

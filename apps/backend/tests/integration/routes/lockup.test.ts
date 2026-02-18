@@ -68,14 +68,14 @@ describe('Lockup Routes Integration Tests', () => {
     await testDb.prisma!.rank.createMany({
       data: [
         {
-          code: 'AB',
+          code: 'S2',
           name: 'Able Seaman',
           branch: 'navy',
           category: 'junior_ncm',
           displayOrder: 1,
         },
         {
-          code: 'LS',
+          code: 'S1',
           name: 'Leading Seaman',
           branch: 'navy',
           category: 'junior_ncm',
@@ -166,7 +166,7 @@ describe('Lockup Routes Integration Tests', () => {
     // Create test members
     const member1 = await memberRepo.create({
       serviceNumber: 'SN0001',
-      rank: 'AB',
+      rank: 'S2',
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
@@ -177,7 +177,7 @@ describe('Lockup Routes Integration Tests', () => {
 
     const member2 = await memberRepo.create({
       serviceNumber: 'SN0002',
-      rank: 'LS',
+      rank: 'S1',
       firstName: 'Jane',
       lastName: 'Smith',
       divisionId: testDivisionId,

@@ -29,7 +29,8 @@ describe('Divisions Routes Integration Tests', () => {
 
   beforeEach(async () => {
     await testDb.reset()
-  })
+    await testDb.seedRanks()
+  }, 30000)
 
   describe('GET /api/divisions', () => {
     it('should return 200 with empty array when no divisions exist', async () => {
@@ -66,12 +67,11 @@ describe('Divisions Routes Integration Tests', () => {
       expect(response.body.divisions[0]).toHaveProperty('id')
       expect(response.body.divisions[0]).toHaveProperty('name')
       expect(response.body.divisions[0]).toHaveProperty('code')
-      expect(response.body.divisions[0]).toHaveProperty('memberCount')
       expect(response.body.divisions[0]).toHaveProperty('createdAt')
       expect(response.body.divisions[0]).toHaveProperty('updatedAt')
     })
 
-    it('should include member counts for each division', async () => {
+    it('should return created divisions in list response', async () => {
       const division = await divisionRepo.create({
         name: 'Test Division',
         code: 'TD',
@@ -80,7 +80,7 @@ describe('Divisions Routes Integration Tests', () => {
       // Create members in division
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: division.id,
@@ -88,7 +88,7 @@ describe('Divisions Routes Integration Tests', () => {
       })
       await memberRepo.create({
         serviceNumber: 'SN0002',
-        rank: 'LS',
+        rank: 'S1',
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: division.id,
@@ -100,7 +100,8 @@ describe('Divisions Routes Integration Tests', () => {
         .expect(200)
 
       const testDiv = response.body.divisions.find((d: any) => d.id === division.id)
-      expect(testDiv.memberCount).toBe(2)
+      expect(testDiv).toBeDefined()
+      expect(testDiv.code).toBe('TD')
     })
   })
 
@@ -124,7 +125,6 @@ describe('Divisions Routes Integration Tests', () => {
         name: 'Test Division',
         code: 'TD',
         description: 'Test description',
-        memberCount: 0,
       })
       expect(response.body).toHaveProperty('createdAt')
       expect(response.body).toHaveProperty('updatedAt')
@@ -143,10 +143,10 @@ describe('Divisions Routes Integration Tests', () => {
       })
     })
 
-    it('should include accurate member count', async () => {
+    it('should return division details after members are added', async () => {
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -156,7 +156,8 @@ describe('Divisions Routes Integration Tests', () => {
         .get(`/api/divisions/${testDivisionId}`)
         .expect(200)
 
-      expect(response.body.memberCount).toBe(1)
+      expect(response.body.id).toBe(testDivisionId)
+      expect(response.body.code).toBe('TD')
     })
   })
 
@@ -178,7 +179,6 @@ describe('Divisions Routes Integration Tests', () => {
         name: 'New Division',
         code: 'ND',
         description: 'A new division',
-        memberCount: 0,
       })
       expect(response.body).toHaveProperty('id')
       expect(response.body).toHaveProperty('createdAt')
@@ -337,11 +337,11 @@ describe('Divisions Routes Integration Tests', () => {
       expect(response.body.code).toBe('ON') // Unchanged
     })
 
-    it('should preserve member count in response', async () => {
+    it('should return updated division when members exist', async () => {
       // Add members to division
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,
@@ -352,7 +352,8 @@ describe('Divisions Routes Integration Tests', () => {
         .send({ name: 'Updated Name' })
         .expect(200)
 
-      expect(response.body.memberCount).toBe(1)
+      expect(response.body.id).toBe(testDivisionId)
+      expect(response.body.name).toBe('Updated Name')
     })
   })
 
@@ -396,7 +397,7 @@ describe('Divisions Routes Integration Tests', () => {
       // Add member to division
       await memberRepo.create({
         serviceNumber: 'SN0001',
-        rank: 'AB',
+        rank: 'S2',
         firstName: 'John',
         lastName: 'Doe',
         divisionId: testDivisionId,

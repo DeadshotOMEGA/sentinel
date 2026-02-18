@@ -62,7 +62,7 @@ export async function createMember(
   return prisma.member.create({
     data: {
       serviceNumber: `A${100000 + id}`,
-      rank: 'AB',
+      rank: 'S2',
       firstName: `Test`,
       lastName: `Member${id}`,
       email: `test.member${id}@example.com`,

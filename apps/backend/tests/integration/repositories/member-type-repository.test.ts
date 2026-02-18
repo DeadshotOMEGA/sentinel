@@ -251,7 +251,7 @@ describe('MemberTypeRepository Integration Tests', () => {
       await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'SN001',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'John',
           lastName: 'Doe',
           divisionId: division.id,
@@ -295,7 +295,7 @@ describe('MemberTypeRepository Integration Tests', () => {
         data: [
           {
             serviceNumber: 'SN001',
-            rank: 'AB',
+            rank: 'S2',
             firstName: 'John',
             lastName: 'Doe',
             divisionId: division.id,
@@ -305,7 +305,7 @@ describe('MemberTypeRepository Integration Tests', () => {
           },
           {
             serviceNumber: 'SN002',
-            rank: 'LS',
+            rank: 'S1',
             firstName: 'Jane',
             lastName: 'Smith',
             divisionId: division.id,

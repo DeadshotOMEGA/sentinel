@@ -43,8 +43,8 @@ describe('Checkins Routes Integration Tests', () => {
     // Seed ranks (required for member creation)
     await testDb.prisma!.rank.createMany({
       data: [
-        { code: 'AB', name: 'Able Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 2 },
-        { code: 'LS', name: 'Leading Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 3 },
+        { code: 'S2', name: 'Able Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 2 },
+        { code: 'S1', name: 'Leading Seaman', branch: 'navy', category: 'junior_ncm', displayOrder: 3 },
       ],
       skipDuplicates: true,
     })
@@ -66,7 +66,7 @@ describe('Checkins Routes Integration Tests', () => {
     // Create test member
     const member = await memberRepo.create({
       serviceNumber: 'SN0001',
-      rank: 'AB',
+      rank: 'S2',
       firstName: 'John',
       lastName: 'Doe',
       divisionId: division.id,
@@ -147,7 +147,7 @@ describe('Checkins Routes Integration Tests', () => {
       // Create second member
       const member2 = await memberRepo.create({
         serviceNumber: 'SN0002',
-        rank: 'LS',
+        rank: 'S1',
         firstName: 'Jane',
         lastName: 'Smith',
         divisionId: (await divisionRepo.findAll())[0]!.id,
@@ -424,7 +424,7 @@ describe('Checkins Routes Integration Tests', () => {
         // Create second member
         const member2 = await memberRepo.create({
           serviceNumber: 'SN0002',
-          rank: 'LS',
+          rank: 'S1',
           firstName: 'Jane',
           lastName: 'Smith',
           divisionId: (await divisionRepo.findAll())[0]!.id,

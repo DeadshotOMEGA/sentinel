@@ -211,18 +211,7 @@ export class ImportService {
       const nominalRollRow: NominalRollRow = {
         serviceNumber: row.SN.trim().replace(/\s+/g, ''),
         employeeNumber: row['EMPL #']?.trim() || undefined,
-        rank: row.RANK.trim() as
-          | 'AB'
-          | 'LS'
-          | 'OS'
-          | 'S3'
-          | 'S2'
-          | 'S1'
-          | 'MS'
-          | 'PO2'
-          | 'PO1'
-          | 'CPO2'
-          | 'CPO1',
+        rank: row.RANK.trim(),
         lastName: toNameCase(row['LAST NAME'].trim()),
         firstName: toNameCase(row['FIRST NAME'].trim()),
         initials: row.INITIALS?.trim() || undefined,

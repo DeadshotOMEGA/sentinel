@@ -43,7 +43,7 @@ describe('MemberRepository Integration Tests', () => {
         serviceNumber: 'A123456',
         firstName: 'John',
         lastName: 'Doe',
-        rank: 'AB',
+        rank: 'S2',
         divisionId: division!.id,
         memberType: 'reserve',
       }
@@ -54,7 +54,7 @@ describe('MemberRepository Integration Tests', () => {
       expect(member.serviceNumber).toBe('A123456')
       expect(member.firstName).toBe('John')
       expect(member.lastName).toBe('Doe')
-      expect(member.rank).toBe('AB')
+      expect(member.rank).toBe('S2')
       expect(member.divisionId).toBe(division!.id)
       expect(member.memberType).toBe('reserve')
       expect(member.status).toBe('active') // Default status
@@ -106,7 +106,7 @@ describe('MemberRepository Integration Tests', () => {
         serviceNumber: 'A123456',
         firstName: 'John',
         lastName: 'Doe',
-        rank: 'AB',
+        rank: 'S2',
         divisionId: division!.id,
         memberType: 'reserve',
       }
@@ -122,7 +122,7 @@ describe('MemberRepository Integration Tests', () => {
         serviceNumber: 'A123456',
         firstName: 'John',
         lastName: 'Doe',
-        rank: 'AB',
+        rank: 'S2',
         divisionId: 'a0ebe404-c5d1-41c6-b2da-0f647e49057f',
         memberType: 'reserve',
       }
@@ -470,7 +470,7 @@ describe('MemberRepository Integration Tests', () => {
           serviceNumber: 'BULK1',
           firstName: 'Bulk',
           lastName: 'One',
-          rank: 'AB',
+          rank: 'S2',
           divisionId: division!.id,
           memberType: 'reserve',
         },
@@ -478,7 +478,7 @@ describe('MemberRepository Integration Tests', () => {
           serviceNumber: 'BULK2',
           firstName: 'Bulk',
           lastName: 'Two',
-          rank: 'LS',
+          rank: 'S1',
           divisionId: division!.id,
           memberType: 'reserve',
         },
@@ -509,7 +509,7 @@ describe('MemberRepository Integration Tests', () => {
           serviceNumber: 'BULK1',
           firstName: 'Bulk',
           lastName: 'One',
-          rank: 'AB',
+          rank: 'S2',
           divisionId: division!.id,
           memberType: 'reserve',
         },
@@ -517,7 +517,7 @@ describe('MemberRepository Integration Tests', () => {
           serviceNumber: 'EXISTING', // Duplicate
           firstName: 'Bulk',
           lastName: 'Two',
-          rank: 'LS',
+          rank: 'S1',
           divisionId: division!.id,
           memberType: 'reserve',
         },
@@ -851,29 +851,29 @@ describe('MemberRepository Integration Tests', () => {
       })
 
       it('should handle single item in bulkUpdate', async () => {
-        const member = await createMember(testDb.prisma!, { rank: 'AB' })
+        const member = await createMember(testDb.prisma!, { rank: 'S2' })
 
         const result = await repo.bulkUpdate([
           {
             id: member.id,
-            rank: 'LS',
+            rank: 'S1',
           },
         ])
 
         expect(result).toBe(1)
 
         const updated = await repo.findById(member.id)
-        expect(updated?.rank).toBe('LS')
+        expect(updated?.rank).toBe('S1')
       })
 
       it('should handle bulkUpdate with no updates needed', async () => {
-        const member = await createMember(testDb.prisma!, { rank: 'AB' })
+        const member = await createMember(testDb.prisma!, { rank: 'S2' })
 
         // Update to same value
         const result = await repo.bulkUpdate([
           {
             id: member.id,
-            rank: 'AB',
+            rank: 'S2',
           },
         ])
 

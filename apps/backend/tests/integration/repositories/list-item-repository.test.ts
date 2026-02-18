@@ -23,7 +23,7 @@ describe('ListItemRepository Integration Tests', () => {
   describe('create', () => {
     it('should create a list item with all fields', async () => {
       const input: CreateListItemInput = {
-        code: 'AB',
+        code: 'S2',
         name: 'Able Seaman',
         description: 'Entry level rank',
         displayOrder: 1,
@@ -34,7 +34,7 @@ describe('ListItemRepository Integration Tests', () => {
 
       expect(item.id).toBeDefined()
       expect(item.listType).toBe('rank')
-      expect(item.code).toBe('AB')
+      expect(item.code).toBe('S2')
       expect(item.name).toBe('Able Seaman')
       expect(item.description).toBe('Entry level rank')
       expect(item.displayOrder).toBe(1)
@@ -58,15 +58,15 @@ describe('ListItemRepository Integration Tests', () => {
     })
 
     it('should auto-increment display order', async () => {
-      await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
-      await repo.create('rank', { code: 'LS', name: 'Leading Seaman' })
+      await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
+      await repo.create('rank', { code: 'S1', name: 'Leading Seaman' })
       const item3 = await repo.create('rank', { code: 'MS', name: 'Master Seaman' })
 
       expect(item3.displayOrder).toBe(3)
     })
 
     it('should respect custom display order', async () => {
-      await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
+      await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
       const item = await repo.create('rank', {
         code: 'CPO',
         name: 'Chief Petty Officer',
@@ -92,9 +92,9 @@ describe('ListItemRepository Integration Tests', () => {
     })
 
     it('should return only items of specified type', async () => {
-      await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
+      await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
       await repo.create('mess', { code: 'JR', name: 'Junior Ranks' })
-      await repo.create('rank', { code: 'LS', name: 'Leading Seaman' })
+      await repo.create('rank', { code: 'S1', name: 'Leading Seaman' })
 
       const rankItems = await repo.findByType('rank')
 
@@ -143,14 +143,14 @@ describe('ListItemRepository Integration Tests', () => {
   describe('findByTypeAndCode', () => {
     it('should find existing list item by type and code', async () => {
       await repo.create('rank', {
-        code: 'AB',
+        code: 'S2',
         name: 'Able Seaman',
       })
 
-      const found = await repo.findByTypeAndCode('rank', 'AB')
+      const found = await repo.findByTypeAndCode('rank', 'S2')
 
       expect(found).toBeDefined()
-      expect(found?.code).toBe('AB')
+      expect(found?.code).toBe('S2')
       expect(found?.listType).toBe('rank')
     })
 
@@ -274,7 +274,7 @@ describe('ListItemRepository Integration Tests', () => {
 
     it('should return correct count for rank items', async () => {
       const item = await repo.create('rank', {
-        code: 'AB',
+        code: 'S2',
         name: 'Able Seaman',
       })
 
@@ -328,7 +328,7 @@ describe('ListItemRepository Integration Tests', () => {
       await testDb.prisma!.member.create({
         data: {
           serviceNumber: 'SN001',
-          rank: 'AB',
+          rank: 'S2',
           firstName: 'John',
           lastName: 'Doe',
           divisionId: division.id,
@@ -405,11 +405,11 @@ describe('ListItemRepository Integration Tests', () => {
   describe('reorder', () => {
     it('should reorder items based on array position', async () => {
       const item1 = await repo.create('rank', {
-        code: 'AB',
+        code: 'S2',
         name: 'Able Seaman',
         displayOrder: 1,
       })
-      const item2 = await repo.create('rank', { code: 'LS', name: 'Leading Seaman', displayOrder: 2 })
+      const item2 = await repo.create('rank', { code: 'S1', name: 'Leading Seaman', displayOrder: 2 })
       const item3 = await repo.create('rank', {
         code: 'MS',
         name: 'Master Seaman',
@@ -431,14 +431,14 @@ describe('ListItemRepository Integration Tests', () => {
     })
 
     it('should handle empty array', async () => {
-      await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
+      await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
 
       // Should not throw
       await expect(repo.reorder('rank', [])).resolves.not.toThrow()
     })
 
     it('should only reorder items of specified type', async () => {
-      const rankItem = await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
+      const rankItem = await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
       const messItem = await repo.create('mess', { code: 'JR', name: 'Junior Ranks' })
 
       await repo.reorder('rank', [rankItem.id])
@@ -448,7 +448,7 @@ describe('ListItemRepository Integration Tests', () => {
     })
 
     it('should update updatedAt timestamp', async () => {
-      const item = await repo.create('rank', { code: 'AB', name: 'Able Seaman' })
+      const item = await repo.create('rank', { code: 'S2', name: 'Able Seaman' })
       const originalUpdatedAt = item.updatedAt
 
       // Wait a bit to ensure timestamp difference

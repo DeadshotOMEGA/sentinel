@@ -54,7 +54,7 @@ describe('DDS Routes Integration Tests', () => {
     // Create test members
     const member1 = await memberRepo.create({
       serviceNumber: 'SN0001',
-      rank: 'AB',
+      rank: 'S2',
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
@@ -64,7 +64,7 @@ describe('DDS Routes Integration Tests', () => {
 
     const member2 = await memberRepo.create({
       serviceNumber: 'SN0002',
-      rank: 'LS',
+      rank: 'S1',
       firstName: 'Jane',
       lastName: 'Smith',
       divisionId: testDivisionId,

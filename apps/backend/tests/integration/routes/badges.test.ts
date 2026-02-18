@@ -34,6 +34,7 @@ describe('Badges Routes Integration Tests', () => {
 
   beforeEach(async () => {
     await testDb.reset()
+    await testDb.seedRanks()
 
     // Create test division
     const division = await divisionRepo.create({
@@ -45,14 +46,14 @@ describe('Badges Routes Integration Tests', () => {
     // Create test member
     const member = await memberRepo.create({
       serviceNumber: 'SN0001',
-      rank: 'AB',
+      rank: 'S2',
       firstName: 'John',
       lastName: 'Doe',
       divisionId: testDivisionId,
       memberType: 'reserve',
     })
     testMemberId = member.id
-  })
+  }, 30000)
 
   describe('GET /api/badges', () => {
     it('should return 200 with empty array when no badges exist', async () => {
