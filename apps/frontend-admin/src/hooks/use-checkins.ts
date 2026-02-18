@@ -180,7 +180,8 @@ export function useUpdateCheckin() {
         body: data,
       })
       if (response.status !== 200) {
-        throw new Error('Failed to update check-in')
+        const body = response.body as { message?: string }
+        throw new Error(body?.message ?? 'Failed to update check-in')
       }
       return response.body
     },
@@ -202,7 +203,8 @@ export function useDeleteCheckin() {
         params: { id },
       })
       if (response.status !== 200) {
-        throw new Error('Failed to delete check-in')
+        const body = response.body as { message?: string }
+        throw new Error(body?.message ?? 'Failed to delete check-in')
       }
       return response.body
     },

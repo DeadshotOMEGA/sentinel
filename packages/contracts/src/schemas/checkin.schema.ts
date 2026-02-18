@@ -40,13 +40,15 @@ export const BulkCreateCheckinsSchema = v.object({
 })
 
 /**
- * Update checkin request schema
+ * Update checkin request schema (admin/developer only)
  */
 export const UpdateCheckinSchema = v.object({
   direction: v.optional(CheckinDirectionEnum),
   timestamp: v.optional(v.pipe(v.string(), v.isoTimestamp())),
   flaggedForReview: v.optional(v.boolean()),
   flagReason: v.optional(v.string()),
+  /** Reason for the edit — recorded in audit log */
+  editReason: v.optional(v.pipe(v.string(), v.maxLength(500, 'Edit reason must be 500 characters or less'))),
 })
 
 /**

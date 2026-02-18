@@ -38,6 +38,7 @@ import {
   statHolidayContract,
   tagContract,
 } from '@sentinel/contracts'
+import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
 import { metricsMiddleware } from './middleware/metrics.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
@@ -145,6 +146,10 @@ export function createApp(): Express {
 
   // Rate limiting for API routes
   app.use('/api', apiLimiter)
+
+  // Populate req.member from session cookie when present (non-blocking — does not reject unauthenticated requests)
+  // This allows ts-rest handlers to inspect req.member for role-based access control
+  app.use('/api', requireAuth(false))
 
   // Health check routes (no auth required)
   app.use(healthRouter)

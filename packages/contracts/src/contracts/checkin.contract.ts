@@ -172,11 +172,11 @@ export const checkinContract = c.router({
     method: 'DELETE',
     path: '/api/checkins/:id',
     pathParams: IdParamSchema,
-    body: c.type<undefined>(),
     responses: {
       200: SuccessResponseSchema,
       400: ErrorResponseSchema,
       401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
       404: ErrorResponseSchema,
       500: ErrorResponseSchema,
     },

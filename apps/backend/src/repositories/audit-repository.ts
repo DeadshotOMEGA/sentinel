@@ -43,6 +43,8 @@ export type AuditAction =
   | 'user_enabled'
   | 'password_reset'
   | 'role_changed'
+  | 'checkin_update'
+  | 'checkin_delete'
 
 interface AuditLogEntry {
   adminUserId: string | null

@@ -370,7 +370,8 @@ export class CheckinRepository {
    * Delete checkin
    */
   async delete(id: string): Promise<void> {
-    const existing = await this.findById(id)
+    // Use findUnique directly — toCheckin() throws for member-less records (visitors)
+    const existing = await this.prisma.checkin.findUnique({ where: { id }, select: { id: true } })
     if (!existing) {
       throw new Error(`Checkin with ID '${id}' not found`)
     }

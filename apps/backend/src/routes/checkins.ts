@@ -8,20 +8,29 @@ import type {
   RecentActivityQuery,
   IdParam,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { PresenceService } from '../services/presence-service.js'
 import { LockupService } from '../services/lockup-service.js'
 import { DdsService } from '../services/dds-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
+import { AccountLevel } from '../middleware/roles.js'
+
+function getClientIp(req: unknown): string {
+  const r = req as { ip?: string; socket?: { remoteAddress?: string } }
+  return r.ip || r.socket?.remoteAddress || 'unknown'
+}
 
 const s = initServer()
 
 const checkinRepo = new CheckinRepository(getPrismaClient())
 const visitorRepo = new VisitorRepository(getPrismaClient())
 const presenceService = new PresenceService(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 /**
  * Checkins route implementation using ts-rest
@@ -596,10 +605,44 @@ export const checkinsRouter = s.router(checkinContract, {
   },
 
   /**
-   * Update existing checkin
+   * Update existing checkin — Admin/Developer only, fully audited
    */
-  updateCheckin: async ({ params, body }: { params: IdParam; body: UpdateCheckinInput }) => {
+  updateCheckin: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: UpdateCheckinInput
+    req: Request
+  }) => {
+    // Enforce Admin+ access
+    if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing check-in records requires Admin or Developer access',
+        },
+      }
+    }
+
     try {
+      // Snapshot before update — use raw findUnique so we get the record even if memberId is null
+      const before = await getPrismaClient().checkin.findUnique({
+        where: { id: params.id },
+        select: { id: true, direction: true, timestamp: true, memberId: true },
+      })
+      if (!before) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Checkin with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       const updated = await checkinRepo.update(params.id, {
         direction: body.direction,
         timestamp: body.timestamp ? new Date(body.timestamp) : undefined,
@@ -607,10 +650,45 @@ export const checkinsRouter = s.router(checkinContract, {
 
       // Fetch with member details for response
       const checkinWithMember = await checkinRepo.findByIdWithMember(updated.id)
-
       if (!checkinWithMember) {
         throw new Error('Failed to fetch updated checkin')
       }
+
+      // Record exactly what changed, who changed it, and why
+      const changes: Record<string, { before: unknown; after: unknown }> = {}
+      if (body.direction !== undefined && body.direction !== before.direction) {
+        changes.direction = { before: before.direction, after: body.direction }
+      }
+      if (body.timestamp !== undefined) {
+        const beforeTs = before.timestamp.toISOString()
+        const afterTs = new Date(body.timestamp).toISOString()
+        if (beforeTs !== afterTs) {
+          changes.timestamp = { before: beforeTs, after: afterTs }
+        }
+      }
+
+      await auditRepo.log({
+        adminUserId: null, // member sessions use members table, not admin_users — store identity in details
+        action: 'checkin_update',
+        entityType: 'checkin',
+        entityId: params.id,
+        details: {
+          editReason: body.editReason ?? null,
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          changes,
+          subjectMemberId: before.memberId ?? null,
+        },
+        ipAddress: getClientIp(req),
+      })
+
+      serviceLogger.info('Checkin updated by admin', {
+        checkinId: params.id,
+        editorId: req.member?.id,
+        changes,
+      })
 
       return {
         status: 200 as const,
@@ -659,11 +737,69 @@ export const checkinsRouter = s.router(checkinContract, {
   },
 
   /**
-   * Delete checkin
+   * Delete checkin — Admin/Developer only, fully audited
    */
-  deleteCheckin: async ({ params }: { params: IdParam }) => {
+  deleteCheckin: async ({
+    params,
+    req,
+  }: {
+    params: IdParam
+    req: Request
+  }) => {
+    // Enforce Admin+ access
+    if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Deleting check-in records requires Admin or Developer access',
+        },
+      }
+    }
+
     try {
+      // Snapshot before delete — use raw findUnique so we get the record even if memberId is null
+      const before = await getPrismaClient().checkin.findUnique({
+        where: { id: params.id },
+        select: { id: true, direction: true, timestamp: true, kioskId: true, memberId: true, method: true },
+      })
+      if (!before) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Checkin with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       await checkinRepo.delete(params.id)
+
+      await auditRepo.log({
+        adminUserId: null, // member sessions use members table, not admin_users — store identity in details
+        action: 'checkin_delete',
+        entityType: 'checkin',
+        entityId: params.id,
+        details: {
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          deletedRecord: {
+            direction: before.direction,
+            timestamp: before.timestamp.toISOString(),
+            kioskId: before.kioskId,
+            memberId: before.memberId ?? null,
+            method: before.method ?? null,
+          },
+        },
+        ipAddress: getClientIp(req),
+      })
+
+      serviceLogger.info('Checkin deleted by admin', {
+        checkinId: params.id,
+        editorId: req.member?.id,
+      })
 
       return {
         status: 200 as const,

@@ -153,7 +153,7 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
             const canEdit = isDeveloper && !isVisitor
 
             return (
-              <li key={`${item.type}-${item.id}`}>
+              <li key={`${item.type}-${item.id}-${item.direction}`}>
                 {isEditing ? (
                   <EditRow item={item} onDone={() => setEditingId(null)} />
                 ) : (
