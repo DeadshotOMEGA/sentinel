@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, Menu, PanelLeftOpen, Search } from 'lucide-react'
+import { Menu, PanelLeftOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { useBackendHealth } from '@/hooks/use-backend-health'
@@ -12,9 +12,12 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/members', label: 'Members' },
   { href: '/badges', label: 'Badges' },
-  { href: '/checkins', label: 'Check-ins' },
   { href: '/events', label: 'Events' },
   { href: '/schedules', label: 'Schedules' },
+]
+
+const adminLinks = [
+  { href: '/checkins', label: 'History' },
   { href: '/database', label: 'Database' },
   { href: '/settings', label: 'Settings' },
   { href: '/logs', label: 'Logs' },
@@ -34,7 +37,8 @@ const statusConfig = {
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
   const backendStatus = useBackendHealth()
-  const { color, dot, label } = statusConfig[backendStatus]
+  const { dot, label } = statusConfig[backendStatus]
+  const isAdminRoute = adminLinks.some((link) => pathname === link.href)
 
   return (
     <div className="navbar w-full shadow-lg bg-primary text-primary-content">
@@ -48,7 +52,11 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         )}
 
         {/* Logo with backend status indicator */}
-        <Link href="/dashboard" className="btn btn-ghost text-2xl font-bold" data-testid={TID.nav.logo}>
+        <Link
+          href="/dashboard"
+          className="btn btn-ghost text-2xl font-bold"
+          data-testid={TID.nav.logo}
+        >
           HMCS Chippawa
         </Link>
       </div>
@@ -67,6 +75,29 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
               </Link>
             </li>
           ))}
+          <li>
+            <details>
+              <summary
+                className={cn('inline-flex items-center gap-1', isAdminRoute && 'active')}
+                data-testid={TID.nav.link('admin')}
+              >
+                Admin
+              </summary>
+              <ul className="z-20 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-xl">
+                {adminLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={cn(pathname === link.href && 'active')}
+                      data-testid={TID.nav.link(link.href.slice(1))}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </li>
         </ul>
       </div>
 

@@ -2,15 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  AlertTriangle,
-  CalendarDays,
-  Clock3,
-  IdCard,
-  ScanLine,
-  Shield,
-  Users,
-} from 'lucide-react'
+import { AlertTriangle, CalendarDays, Clock3, IdCard, ScanLine, Shield, Users } from 'lucide-react'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
@@ -649,7 +641,8 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
     !!assignments &&
     (assignments.upcomingDdsWeeks.length > 0 || assignments.upcomingDutyWatchWeeks.length > 0)
 
-  const lastVisitLabel = screenState.direction === 'out' ? 'Current visit started' : 'Last unit visit'
+  const lastVisitLabel =
+    screenState.direction === 'out' ? 'Current visit started' : 'Last unit visit'
 
   const clockLabel = useMemo(
     () =>
@@ -678,15 +671,22 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                 </div>
 
                 <div className="rounded border border-base-300 bg-base-100 px-4 py-2 text-right">
-                  <p className="text-xs uppercase tracking-wide text-base-content/60">Operational Time</p>
-                  <p className="font-mono text-sm">{clockLabel}</p>
+                  <p className="text-xs uppercase tracking-wide text-base-content/60">
+                    Operational Time
+                  </p>
+                  <p suppressHydrationWarning className="font-mono text-sm">
+                    {clockLabel}
+                  </p>
                   <p className="text-xs text-base-content/60 mt-1">{KIOSK_ID}</p>
                 </div>
               </div>
             </DialogHeader>
 
             <div className="grid flex-1 min-h-0 lg:grid-cols-[1.5fr_1fr]">
-              <section className="border-r border-base-300 p-6 lg:p-8 flex flex-col" style={{ gap: 'var(--space-5)' }}>
+              <section
+                className="border-r border-base-300 p-6 lg:p-8 flex flex-col"
+                style={{ gap: 'var(--space-5)' }}
+              >
                 <div className="flex items-center gap-4">
                   <div className="rounded-full border border-primary/20 bg-primary-fadded p-4 text-primary-fadded-content">
                     <IdCard className="h-10 w-10" />
@@ -763,7 +763,10 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                             : screenState.status.toUpperCase()}
                         </AppBadge>
                         {screenState.direction && (
-                          <AppBadge status={screenState.direction === 'in' ? 'success' : 'error'} size="md">
+                          <AppBadge
+                            status={screenState.direction === 'in' ? 'success' : 'error'}
+                            size="md"
+                          >
                             {screenState.direction.toUpperCase()}
                           </AppBadge>
                         )}
@@ -796,7 +799,10 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                 )}
               </section>
 
-              <aside className="bg-base-200/70 p-6 flex min-h-0 flex-col overflow-y-auto" style={{ gap: 'var(--space-4)' }}>
+              <aside
+                className="bg-base-200/70 p-6 flex min-h-0 flex-col overflow-y-auto"
+                style={{ gap: 'var(--space-4)' }}
+              >
                 <div className="rounded border border-base-300 bg-base-100 p-4">
                   <h4 className="font-display text-lg flex items-center gap-2">
                     <Clock3 className="h-4 w-4 text-info" />
@@ -804,9 +810,13 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                   </h4>
                   {screenState.memberName ? (
                     screenState.insights?.lastVisitAt ? (
-                      <p className="mt-2 text-sm font-medium">{formatDateTime(screenState.insights.lastVisitAt)}</p>
+                      <p className="mt-2 text-sm font-medium">
+                        {formatDateTime(screenState.insights.lastVisitAt)}
+                      </p>
                     ) : (
-                      <p className="mt-2 text-sm text-base-content/70">No previous unit visit found.</p>
+                      <p className="mt-2 text-sm text-base-content/70">
+                        No previous unit visit found.
+                      </p>
                     )
                   ) : (
                     <p className="mt-2 text-sm text-base-content/70">
@@ -824,7 +834,10 @@ export function KioskCheckinModal({ open, onOpenChange }: KioskCheckinModalProps
                     screenState.insights && screenState.insights.recentIssues.length > 0 ? (
                       <ul className="mt-2 space-y-2 text-sm">
                         {screenState.insights.recentIssues.map((issue) => (
-                          <li key={issue} className="rounded bg-warning-fadded text-warning-fadded-content px-2 py-1">
+                          <li
+                            key={issue}
+                            className="rounded bg-warning-fadded text-warning-fadded-content px-2 py-1"
+                          >
                             {issue}
                           </li>
                         ))}
