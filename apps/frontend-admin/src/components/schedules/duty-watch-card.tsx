@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
-import { Users, Plus, X, Check, Pencil, AlertCircle } from 'lucide-react'
+import { Users, Plus, X, Check, Pencil, AlertCircle, UserX, UserCheck } from 'lucide-react'
 import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import { cn } from '@/lib/utils'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
@@ -34,6 +34,7 @@ import {
   useCreateSchedule,
   useCreateAssignment,
   useDeleteAssignment,
+  useUpdateAssignment,
   usePublishSchedule,
   useRevertToDraft,
   useDutyRoles,
@@ -54,12 +55,16 @@ interface PositionSlotProps {
   position: { code: string; name: string; required: boolean }
   assignment: {
     id: string
+    status: 'assigned' | 'confirmed' | 'released'
     member: { id: string; firstName: string; lastName: string; rank: string }
   } | null
   chipVariant?: ChipVariant
   chipColor?: ChipColor
+  isPublished: boolean
   onAssign: () => void
   onRemove: () => void
+  onMarkUnfilled: () => void
+  onMarkFilled: () => void
   disabled?: boolean
 }
 
@@ -68,32 +73,44 @@ function PositionSlot({
   assignment,
   chipVariant,
   chipColor,
+  isPublished,
   onAssign,
   onRemove,
+  onMarkUnfilled,
+  onMarkFilled,
   disabled,
 }: PositionSlotProps) {
+  const isUnfilled = assignment?.status === 'released'
+
   return (
     <div
       className={cn(
         'flex items-center justify-between p-2 rounded-lg',
-        assignment ? 'bg-base-200/50 border' : 'border-2 border-dashed'
+        assignment
+          ? isUnfilled
+            ? 'bg-error/10 border border-error/30'
+            : 'bg-base-200/50 border'
+          : 'border-2 border-dashed'
       )}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <Chip
           variant={chipVariant || 'flat'}
           color={chipColor || 'default'}
           size="sm"
-          className="w-16 justify-center"
+          className="w-16 shrink-0 justify-center"
         >
           {position.code}
         </Chip>
-        <div>
-          <p className="font-medium text-sm">
+        <div className="min-w-0">
+          <p className={cn('font-medium text-sm truncate', isUnfilled && 'line-through text-base-content/50')}>
             {assignment
               ? `${assignment.member.rank} ${assignment.member.lastName}, ${assignment.member.firstName}`
               : position.name}
           </p>
+          {isUnfilled && (
+            <p className="text-xs text-error font-medium">Unfilled</p>
+          )}
           {!assignment && (
             <p className="text-xs text-base-content/60">
               {position.required ? 'Required' : 'Optional'}
@@ -101,22 +118,55 @@ function PositionSlot({
           )}
         </div>
       </div>
-      {assignment ? (
+
+      {/* Empty slot: show assign button (draft only) */}
+      {!assignment && !isPublished && (
         <button
-          className="btn btn-circle btn-sm btn-error btn-outline"
-          onClick={onRemove}
-          disabled={disabled}
-        >
-          <X className="h-4 w-4" />
-        </button>
-      ) : (
-        <button
-          className="btn btn-circle btn-sm btn-success btn-outline"
+          className="btn btn-circle btn-sm btn-success btn-outline shrink-0"
           onClick={onAssign}
           disabled={disabled}
+          title="Assign member"
         >
           <Plus className="h-4 w-4" />
         </button>
+      )}
+
+      {/* Filled slot actions */}
+      {assignment && (
+        <div className="flex items-center gap-1 shrink-0">
+          {isUnfilled ? (
+            /* Restore: always available on unfilled slots */
+            <button
+              className="btn btn-circle btn-sm btn-success btn-outline"
+              onClick={onMarkFilled}
+              disabled={disabled}
+              title="Mark as filled"
+            >
+              <UserCheck className="h-4 w-4" />
+            </button>
+          ) : (
+            /* Mark unfilled: available in both draft and published */
+            <button
+              className="btn btn-circle btn-sm btn-warning btn-outline"
+              onClick={onMarkUnfilled}
+              disabled={disabled}
+              title="Mark as unfilled"
+            >
+              <UserX className="h-4 w-4" />
+            </button>
+          )}
+          {/* Remove entirely: draft only */}
+          {!isPublished && (
+            <button
+              className="btn btn-circle btn-sm btn-error btn-outline"
+              onClick={onRemove}
+              disabled={disabled}
+              title="Remove assignment"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
@@ -162,6 +212,7 @@ export function DutyWatchCard({
   const createSchedule = useCreateSchedule()
   const createAssignment = useCreateAssignment()
   const deleteAssignment = useDeleteAssignment()
+  const updateAssignment = useUpdateAssignment()
   const publishSchedule = usePublishSchedule()
   const revertToDraft = useRevertToDraft()
 
@@ -171,6 +222,8 @@ export function DutyWatchCard({
   const { data: positions, isLoading: positionsLoading } = useDutyRolePositions(
     dutyWatchRole?.id || ''
   )
+
+  const isPublished = dutyWatchSchedule?.status === 'published'
 
   // Derive positions list from API data, sorted by displayOrder
   const positionsList = useMemo(() => {
@@ -189,6 +242,7 @@ export function DutyWatchCard({
   // Build assignments map from schedule data, keyed by position code (supports multiple per position)
   type AssignmentEntry = {
     id: string
+    status: 'assigned' | 'confirmed' | 'released'
     member: { id: string; firstName: string; lastName: string; rank: string }
   }
   const assignmentsByPosition: Record<string, AssignmentEntry[]> = {}
@@ -201,6 +255,7 @@ export function DutyWatchCard({
         }
         assignmentsByPosition[code].push({
           id: assignment.id,
+          status: assignment.status as 'assigned' | 'confirmed' | 'released',
           member: assignment.member,
         })
       }
@@ -271,6 +326,36 @@ export function DutyWatchCard({
     setRemoveAssignmentId(null)
   }
 
+  const handleMarkUnfilled = async (assignmentId: string, memberName: string) => {
+    if (!dutyWatchSchedule) return
+    try {
+      await updateAssignment.mutateAsync({
+        scheduleId: dutyWatchSchedule.id,
+        assignmentId,
+        data: { status: 'released' },
+      })
+      toast.warning(`${memberName} marked as unfilled`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update assignment'
+      toast.error(message)
+    }
+  }
+
+  const handleMarkFilled = async (assignmentId: string, memberName: string) => {
+    if (!dutyWatchSchedule) return
+    try {
+      await updateAssignment.mutateAsync({
+        scheduleId: dutyWatchSchedule.id,
+        assignmentId,
+        data: { status: 'assigned' },
+      })
+      toast.success(`${memberName} restored to duty watch`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update assignment'
+      toast.error(message)
+    }
+  }
+
   const handlePublish = async () => {
     if (!dutyWatchSchedule) return
     try {
@@ -293,13 +378,19 @@ export function DutyWatchCard({
     }
   }
 
+  // Only count non-released assignments as filling a slot
   const assignedMemberIds = dutyWatchSchedule?.assignments?.map((a) => a.memberId) ?? []
   const missingRequired = positionsList
     .filter((p) => p.required)
-    .reduce(
-      (count, p) => count + Math.max(0, p.maxSlots - (assignmentsByPosition[p.code]?.length ?? 0)),
-      0
-    )
+    .reduce((count, p) => {
+      const activeAssignments = (assignmentsByPosition[p.code] ?? []).filter(
+        (a) => a.status !== 'released'
+      )
+      return count + Math.max(0, p.maxSlots - activeAssignments.length)
+    }, 0)
+
+  const isMutating =
+    createAssignment.isPending || deleteAssignment.isPending || updateAssignment.isPending
 
   if (isError) {
     return (
@@ -355,12 +446,14 @@ export function DutyWatchCard({
           <AppCardAction>
             <div className="flex items-center gap-2">
               {dutyWatchSchedule && (
-                <AppBadge status={dutyWatchSchedule.status === 'published' ? 'success' : 'warning'}>
-                  {dutyWatchSchedule.status === 'published' ? 'Published' : 'Draft'}
+                <AppBadge status={isPublished ? 'success' : 'warning'}>
+                  {isPublished ? 'Published' : 'Draft'}
                 </AppBadge>
               )}
               {missingRequired > 0 && (
-                <AppBadge status="error">{missingRequired} REQUIRED</AppBadge>
+                <AppBadge status="error" className="whitespace-nowrap">
+                  {missingRequired} Required
+                </AppBadge>
               )}
             </div>
           </AppCardAction>
@@ -371,6 +464,7 @@ export function DutyWatchCard({
           {positionsList.flatMap((position) => {
             const positionAssignments = assignmentsByPosition[position.code] ?? []
             const chipStyle = qualChipStyleByCode.get(position.code)
+
             const filledSlots = positionAssignments.map((assignment, idx) => (
               <PositionSlot
                 key={`${position.code}-${idx}`}
@@ -378,12 +472,31 @@ export function DutyWatchCard({
                 assignment={assignment}
                 chipVariant={chipStyle?.variant}
                 chipColor={chipStyle?.color}
+                isPublished={!!isPublished}
                 onAssign={() => handleAssignPosition(position.code)}
                 onRemove={() => setRemoveAssignmentId(assignment.id)}
-                disabled={createAssignment.isPending || deleteAssignment.isPending}
+                onMarkUnfilled={() =>
+                  handleMarkUnfilled(
+                    assignment.id,
+                    `${assignment.member.rank} ${assignment.member.lastName}`
+                  )
+                }
+                onMarkFilled={() =>
+                  handleMarkFilled(
+                    assignment.id,
+                    `${assignment.member.rank} ${assignment.member.lastName}`
+                  )
+                }
+                disabled={isMutating}
               />
             ))
-            const emptySlotCount = position.maxSlots - positionAssignments.length
+
+            // In published mode, don't show empty slots for released assignments
+            // (they're visually represented as "Unfilled" on the filled slot)
+            const activeCount = isPublished
+              ? positionAssignments.filter((a) => a.status !== 'released').length
+              : positionAssignments.length
+            const emptySlotCount = isPublished ? 0 : position.maxSlots - activeCount
             const emptySlots = Array.from({ length: emptySlotCount }, (_, idx) => (
               <PositionSlot
                 key={`${position.code}-empty-${idx}`}
@@ -391,9 +504,12 @@ export function DutyWatchCard({
                 assignment={null}
                 chipVariant={chipStyle?.variant}
                 chipColor={chipStyle?.color}
+                isPublished={!!isPublished}
                 onAssign={() => handleAssignPosition(position.code)}
                 onRemove={() => {}}
-                disabled={createAssignment.isPending || deleteAssignment.isPending}
+                onMarkUnfilled={() => {}}
+                onMarkFilled={() => {}}
+                disabled={isMutating}
               />
             ))
             return [...filledSlots, ...emptySlots]
