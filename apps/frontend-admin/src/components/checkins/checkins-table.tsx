@@ -76,7 +76,9 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           if (row.type === 'visitor') {
             return (
               <div className="text-sm">
-                <div className="font-medium">{row.visitorName ?? 'Unknown Visitor'}</div>
+                <div className="font-medium">
+                  {row.visitorDisplayName ?? row.visitorName ?? 'Unknown Visitor'}
+                </div>
                 {row.visitorOrganization && (
                   <div className="text-base-content/60">{row.visitorOrganization}</div>
                 )}
@@ -88,7 +90,7 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
           return (
             <div className="text-sm">
               <div className="font-medium">
-                {member.rank} {member.firstName} {member.lastName}
+                {member.displayName ?? `${member.rank} ${member.firstName} ${member.lastName}`}
               </div>
               <div className="text-base-content/60">{member.serviceNumber}</div>
             </div>
@@ -205,7 +207,11 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
             <tbody>
               {table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover" data-testid={TID.checkins.row(row.original.id)}>
+                  <tr
+                    key={row.id}
+                    className="hover"
+                    data-testid={TID.checkins.row(row.original.id)}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="whitespace-nowrap">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

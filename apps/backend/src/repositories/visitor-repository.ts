@@ -1,6 +1,14 @@
 import type { PrismaClientInstance, Visitor as PrismaVisitor } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import type { Visitor, CreateVisitorInput, UpdateVisitorInput } from '@sentinel/types'
+import {
+  buildLegacyVisitorName,
+  buildVisitorDisplayName,
+  computeCollisionKey,
+  getVisitorInitials,
+  normalizeNamePart,
+  splitLegacyVisitorName,
+} from '../utils/display-name.js'
 
 interface VisitorFilters {
   dateRange?: {
@@ -19,6 +27,61 @@ export class VisitorRepository {
    */
   constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
+  }
+
+  private getDisplayKeyForVisitor(visitor: {
+    firstName?: string | null
+    lastName?: string | null
+  }): string {
+    const initials = getVisitorInitials(visitor.firstName)
+    return computeCollisionKey(visitor.lastName, initials)
+  }
+
+  private async recomputeDisplayNamesByKeys(
+    tx: PrismaClientInstance,
+    keys: Set<string>
+  ): Promise<void> {
+    const normalizedKeys = Array.from(keys).filter(Boolean)
+    if (normalizedKeys.length === 0) return
+
+    const visitors = await tx.visitor.findMany({
+      select: {
+        id: true,
+        name: true,
+        rankPrefix: true,
+        firstName: true,
+        lastName: true,
+      },
+    })
+
+    const collisionCounts = new Map<string, number>()
+    for (const visitor of visitors) {
+      const key = this.getDisplayKeyForVisitor(visitor)
+      if (!key) continue
+      collisionCounts.set(key, (collisionCounts.get(key) ?? 0) + 1)
+    }
+
+    const updates = visitors
+      .filter((visitor) => normalizedKeys.includes(this.getDisplayKeyForVisitor(visitor)))
+      .map((visitor) => {
+        const key = this.getDisplayKeyForVisitor(visitor)
+        const useLongForm = (collisionCounts.get(key) ?? 0) > 1
+        const displayName = buildVisitorDisplayName({
+          rankPrefix: visitor.rankPrefix,
+          firstName: visitor.firstName,
+          lastName: visitor.lastName,
+          legacyName: visitor.name,
+          useLongForm,
+        })
+        return tx.visitor.update({
+          where: { id: visitor.id },
+          data: { displayName },
+        })
+      })
+
+    if (updates.length > 0) {
+      await Promise.all(updates)
+    }
   }
   /**
    * Find all visitors with optional filters
@@ -105,7 +168,13 @@ export class VisitorRepository {
    * Find active visitors with relations (host member, event)
    */
   async findActiveWithRelations(): Promise<
-    Array<Visitor & { hostName?: string; eventName?: string; visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string } }>
+    Array<
+      Visitor & {
+        hostName?: string
+        eventName?: string
+        visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string }
+      }
+    >
   > {
     const visitors = await this.prisma.visitor.findMany({
       where: {
@@ -129,62 +198,157 @@ export class VisitorRepository {
    * Create a new visitor
    */
   async create(data: CreateVisitorInput): Promise<Visitor> {
-    const visitor = await this.prisma.visitor.create({
-      data: {
-        name: data.name,
-        organization: data.organization,
-        visitType: data.visitType,
-        visitTypeId: data.visitTypeId ?? null,
-        hostMemberId: data.hostMemberId ?? null,
-        eventId: data.eventId ?? null,
-        visitReason: data.visitReason ?? null,
-        checkInTime: data.checkInTime ?? new Date(),
-        checkOutTime: data.checkOutTime ?? null,
-        temporaryBadgeId: data.temporaryBadgeId ?? null,
-        kioskId: data.kioskId,
-        adminNotes: data.adminNotes ?? null,
-        checkInMethod: data.checkInMethod ?? null,
-        createdByAdmin: data.createdByAdmin ?? null,
-      },
-      include: {
-        event: true,
-        hostMember: true,
-        badge: true,
-      },
+    const fallbackSplit = splitLegacyVisitorName(data.name ?? '')
+    const rankPrefix = normalizeNamePart(data.rankPrefix ?? fallbackSplit.rankPrefix)
+    const firstName = normalizeNamePart(data.firstName ?? fallbackSplit.firstName)
+    const lastName = normalizeNamePart(data.lastName ?? fallbackSplit.lastName)
+    const legacyName = buildLegacyVisitorName({
+      rankPrefix,
+      firstName,
+      lastName,
+      legacyName: data.name,
     })
 
-    return this.toVisitorType(visitor)
+    const visitor = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.visitor.create({
+        data: {
+          name: legacyName,
+          rankPrefix: rankPrefix || null,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          organization: data.organization,
+          visitType: data.visitType,
+          visitTypeId: data.visitTypeId ?? null,
+          hostMemberId: data.hostMemberId ?? null,
+          eventId: data.eventId ?? null,
+          visitReason: data.visitReason ?? null,
+          checkInTime: data.checkInTime ?? new Date(),
+          checkOutTime: data.checkOutTime ?? null,
+          temporaryBadgeId: data.temporaryBadgeId ?? null,
+          kioskId: data.kioskId,
+          adminNotes: data.adminNotes ?? null,
+          checkInMethod: data.checkInMethod ?? null,
+          createdByAdmin: data.createdByAdmin ?? null,
+        },
+      })
+
+      const key = this.getDisplayKeyForVisitor(created)
+      if (key) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          new Set([key])
+        )
+      } else {
+        await tx.visitor.update({
+          where: { id: created.id },
+          data: {
+            displayName: buildVisitorDisplayName({
+              rankPrefix: created.rankPrefix,
+              firstName: created.firstName,
+              lastName: created.lastName,
+              legacyName: created.name,
+            }),
+          },
+        })
+      }
+
+      return tx.visitor.findUniqueOrThrow({
+        where: { id: created.id },
+        include: {
+          event: true,
+          hostMember: true,
+          badge: true,
+        },
+      })
+    })
+
+    return this.toVisitorType(visitor as PrismaVisitor)
   }
 
   /**
    * Update visitor details (event, host, purpose)
    */
   async update(id: string, data: UpdateVisitorInput): Promise<Visitor> {
-    const visitor = await this.prisma.visitor.update({
-      where: { id },
-      data: {
-        name: data.name !== undefined ? data.name : undefined,
-        organization: data.organization !== undefined ? data.organization : undefined,
-        visitType: data.visitType !== undefined ? data.visitType : undefined,
-        visitTypeId: data.visitTypeId !== undefined ? data.visitTypeId : undefined,
-        eventId: data.eventId !== undefined ? data.eventId : undefined,
-        hostMemberId: data.hostMemberId !== undefined ? data.hostMemberId : undefined,
-        visitReason: data.visitReason !== undefined ? data.visitReason : undefined,
-        checkInTime: data.checkInTime !== undefined ? data.checkInTime : undefined,
-        checkOutTime: data.checkOutTime !== undefined ? data.checkOutTime : undefined,
-        temporaryBadgeId: data.temporaryBadgeId !== undefined ? data.temporaryBadgeId : undefined,
-        kioskId: data.kioskId !== undefined ? data.kioskId : undefined,
-        adminNotes: data.adminNotes !== undefined ? data.adminNotes : undefined,
-        checkInMethod: data.checkInMethod !== undefined ? data.checkInMethod : undefined,
-      },
-      include: {
-        event: true,
-        hostMember: true,
-        badge: true,
-      },
+    const visitor = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.visitor.findUniqueOrThrow({
+        where: { id },
+        select: { id: true, name: true, rankPrefix: true, firstName: true, lastName: true },
+      })
+      const keysToRecompute = new Set<string>()
+      const oldKey = this.getDisplayKeyForVisitor(existing)
+      if (oldKey) keysToRecompute.add(oldKey)
+
+      const splitFromLegacy =
+        data.name !== undefined ? splitLegacyVisitorName(data.name ?? '') : undefined
+
+      const rankPrefix =
+        data.rankPrefix !== undefined
+          ? normalizeNamePart(data.rankPrefix)
+          : splitFromLegacy?.rankPrefix !== undefined
+            ? normalizeNamePart(splitFromLegacy.rankPrefix)
+            : normalizeNamePart(existing.rankPrefix)
+      const firstName =
+        data.firstName !== undefined
+          ? normalizeNamePart(data.firstName)
+          : splitFromLegacy?.firstName !== undefined
+            ? normalizeNamePart(splitFromLegacy.firstName)
+            : normalizeNamePart(existing.firstName)
+      const lastName =
+        data.lastName !== undefined
+          ? normalizeNamePart(data.lastName)
+          : splitFromLegacy?.lastName !== undefined
+            ? normalizeNamePart(splitFromLegacy.lastName)
+            : normalizeNamePart(existing.lastName)
+      const legacyName = buildLegacyVisitorName({
+        rankPrefix,
+        firstName,
+        lastName,
+        legacyName: data.name ?? existing.name,
+      })
+
+      await tx.visitor.update({
+        where: { id },
+        data: {
+          name: legacyName,
+          rankPrefix: rankPrefix || null,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          organization: data.organization !== undefined ? data.organization : undefined,
+          visitType: data.visitType !== undefined ? data.visitType : undefined,
+          visitTypeId: data.visitTypeId !== undefined ? data.visitTypeId : undefined,
+          eventId: data.eventId !== undefined ? data.eventId : undefined,
+          hostMemberId: data.hostMemberId !== undefined ? data.hostMemberId : undefined,
+          visitReason: data.visitReason !== undefined ? data.visitReason : undefined,
+          checkInTime: data.checkInTime !== undefined ? data.checkInTime : undefined,
+          checkOutTime: data.checkOutTime !== undefined ? data.checkOutTime : undefined,
+          temporaryBadgeId: data.temporaryBadgeId !== undefined ? data.temporaryBadgeId : undefined,
+          kioskId: data.kioskId !== undefined ? data.kioskId : undefined,
+          adminNotes: data.adminNotes !== undefined ? data.adminNotes : undefined,
+          checkInMethod: data.checkInMethod !== undefined ? data.checkInMethod : undefined,
+        },
+      })
+
+      const newKey = computeCollisionKey(lastName, getVisitorInitials(firstName))
+      if (newKey) keysToRecompute.add(newKey)
+
+      if (keysToRecompute.size > 0) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          keysToRecompute
+        )
+      }
+
+      return tx.visitor.findUniqueOrThrow({
+        where: { id },
+        include: {
+          event: true,
+          hostMember: true,
+          badge: true,
+        },
+      })
     })
 
-    return this.toVisitorType(visitor)
+    return this.toVisitorType(visitor as PrismaVisitor)
   }
 
   /**
@@ -287,9 +451,9 @@ export class VisitorRepository {
         include: {
           hostMember: {
             select: {
+              displayName: true,
               firstName: true,
               lastName: true,
-              rank: true,
             },
           },
           event: {
@@ -314,7 +478,7 @@ export class VisitorRepository {
           visitType: v.visitType,
           purpose: v.visitReason ? v.visitReason : undefined,
           hostName: v.hostMember
-            ? `${v.hostMember.rank} ${v.hostMember.firstName} ${v.hostMember.lastName}`
+            ? (v.hostMember.displayName ?? `${v.hostMember.firstName} ${v.hostMember.lastName}`)
             : undefined,
           eventName: v.event?.name ? v.event.name : undefined,
           checkInTime: v.checkInTime,
@@ -340,6 +504,17 @@ export class VisitorRepository {
     return {
       id: visitor.id,
       name: visitor.name,
+      rankPrefix: visitor.rankPrefix ? visitor.rankPrefix : undefined,
+      firstName: visitor.firstName ? visitor.firstName : undefined,
+      lastName: visitor.lastName ? visitor.lastName : undefined,
+      displayName:
+        visitor.displayName ??
+        buildVisitorDisplayName({
+          rankPrefix: visitor.rankPrefix,
+          firstName: visitor.firstName,
+          lastName: visitor.lastName,
+          legacyName: visitor.name,
+        }),
       organization: visitor.organization || undefined,
       visitType: visitor.visitType as Visitor['visitType'],
       hostMemberId: visitor.hostMemberId ? visitor.hostMemberId : undefined,
@@ -361,16 +536,26 @@ export class VisitorRepository {
    */
   toVisitorWithRelations(
     visitor: PrismaVisitor & {
-      hostMember?: { firstName: string; lastName: string; rank: string } | null
+      hostMember?: { firstName: string; lastName: string; displayName?: string | null } | null
       event?: { name: string } | null
-      visitTypeRef?: { id: string; name: string; chipVariant?: string | null; chipColor?: string | null } | null
+      visitTypeRef?: {
+        id: string
+        name: string
+        chipVariant?: string | null
+        chipColor?: string | null
+      } | null
     }
-  ): Visitor & { hostName?: string; eventName?: string; visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string } } {
+  ): Visitor & {
+    hostName?: string
+    eventName?: string
+    visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string }
+  } {
     const base = this.toVisitorType(visitor)
     return {
       ...base,
       hostName: visitor.hostMember
-        ? `${visitor.hostMember.rank} ${visitor.hostMember.firstName} ${visitor.hostMember.lastName}`
+        ? (visitor.hostMember.displayName ??
+          `${visitor.hostMember.firstName} ${visitor.hostMember.lastName}`)
         : undefined,
       eventName: visitor.event?.name ?? undefined,
       visitTypeInfo: visitor.visitTypeRef

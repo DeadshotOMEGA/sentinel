@@ -115,6 +115,7 @@ export const MemberResponseSchema = v.object({
   id: v.string(),
   serviceNumber: v.string(),
   rank: v.string(),
+  displayName: v.string(),
   firstName: v.string(),
   lastName: v.string(),
   middleInitial: v.nullable(v.string()),

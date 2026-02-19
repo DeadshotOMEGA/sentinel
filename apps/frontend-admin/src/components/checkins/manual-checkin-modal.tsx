@@ -21,12 +21,15 @@ interface FormData {
 }
 
 export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalProps) {
+  // eslint-disable-next-line no-undef -- DOM type available in browser build
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // eslint-disable-next-line no-undef -- DOM type available in browser build
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [memberSearch, setMemberSearch] = useState('')
   const [selectedMemberInfo, setSelectedMemberInfo] = useState<{
     id: string
     rank: string
+    displayName?: string
     firstName: string
     lastName: string
     serviceNumber: string
@@ -61,7 +64,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   )
 
   const memberName = selectedMemberInfo
-    ? `${selectedMemberInfo.rank} ${selectedMemberInfo.firstName} ${selectedMemberInfo.lastName}`
+    ? (selectedMemberInfo.displayName ??
+      `${selectedMemberInfo.rank} ${selectedMemberInfo.firstName} ${selectedMemberInfo.lastName}`)
     : ''
 
   const holdsLockup = checkoutOptions?.holdsLockup ?? false
@@ -165,7 +169,9 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                 {selectedMemberInfo ? (
                   <div className="input input-neutral flex items-center gap-2">
                     <span className="flex-1 truncate">
-                      {selectedMemberInfo.rank} {selectedMemberInfo.lastName}, {selectedMemberInfo.firstName} ({selectedMemberInfo.serviceNumber.slice(-3)})
+                      {selectedMemberInfo.displayName ??
+                        `${selectedMemberInfo.rank} ${selectedMemberInfo.lastName}, ${selectedMemberInfo.firstName}`}{' '}
+                      ({selectedMemberInfo.serviceNumber.slice(-3)})
                     </span>
                     <button
                       type="button"
@@ -213,6 +219,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                                 setSelectedMemberInfo({
                                   id: member.id,
                                   rank: member.rank,
+                                  displayName: member.displayName ?? undefined,
                                   firstName: member.firstName,
                                   lastName: member.lastName,
                                   serviceNumber: member.serviceNumber,
@@ -221,7 +228,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                               }}
                             >
                               <span className="font-medium">
-                                {member.rank} {member.lastName}, {member.firstName}
+                                {member.displayName ??
+                                  `${member.rank} ${member.lastName}, ${member.firstName}`}
                               </span>
                               <span className="text-xs opacity-60">
                                 {member.serviceNumber.slice(-3)}

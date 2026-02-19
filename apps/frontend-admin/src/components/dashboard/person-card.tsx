@@ -95,14 +95,14 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   }
 
   // Priority 5: Default initials
-  const initials = person.name
+  const initials = (person.displayName ?? person.name)
     .split(' ')
     .map((n) => n[0])
     .join('')
     .slice(0, 2)
     .toUpperCase()
   return (
-    <div className="avatar avatar-placeholder" aria-label={person.name}>
+    <div className="avatar avatar-placeholder" aria-label={person.displayName ?? person.name}>
       <div className="w-10 rounded-full border border-base-300 bg-base-200 text-base-content/60">
         <span className="text-xs font-bold">{initials}</span>
       </div>
@@ -124,6 +124,7 @@ export const PersonCard = memo(function PersonCard({
   onCheckoutVisitor,
 }: PersonCardProps) {
   const isMember = person.type === 'member'
+  const displayName = person.displayName ?? person.name
 
   // Determine which tag the avatar is displaying (if any) to suppress from chip row
   const avatarTagId = (() => {
@@ -136,30 +137,29 @@ export const PersonCard = memo(function PersonCard({
   })()
 
   // Card border color: subtle indicator for member vs visitor
-  const cardBorderClass = isMember
-    ? 'border-primary/50'
-    : 'border-neutral/50'
+  const cardBorderClass = isMember ? 'border-primary/50' : 'border-neutral/50'
 
   return (
-    <div className={`card card-elevated border-2 h-full ${cardBorderClass}`} data-testid={TID.dashboard.personCard(person.id)}>
+    <div
+      className={`card card-elevated border-2 h-full ${cardBorderClass}`}
+      data-testid={TID.dashboard.personCard(person.id)}
+    >
       <div className="card-body p-3 gap-2">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (
           <div className="flex items-center gap-2">
             <PersonAvatar person={person} dutyPosition={dutyPosition} isDds={isDds} />
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm truncate">
-                {person.rank} {person.name.split(' ').pop()}
-              </h3>
-              <p className="text-xs text-base-content/60 truncate">
-                {person.name.split(' ').slice(0, -1).join(' ')}
-              </p>
+              <h3 className="font-bold text-sm truncate">{displayName}</h3>
+              {displayName !== person.name && (
+                <p className="text-xs text-base-content/60 truncate">{person.name}</p>
+              )}
             </div>
           </div>
         ) : (
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm truncate">{person.name}</h3>
+              <h3 className="font-bold text-sm truncate">{displayName}</h3>
               {person.organization && (
                 <p className="text-xs text-base-content/60 truncate">{person.organization}</p>
               )}

@@ -48,7 +48,9 @@ export const UpdateCheckinSchema = v.object({
   flaggedForReview: v.optional(v.boolean()),
   flagReason: v.optional(v.string()),
   /** Reason for the edit — recorded in audit log */
-  editReason: v.optional(v.pipe(v.string(), v.maxLength(500, 'Edit reason must be 500 characters or less'))),
+  editReason: v.optional(
+    v.pipe(v.string(), v.maxLength(500, 'Edit reason must be 500 characters or less'))
+  ),
 })
 
 /**
@@ -85,12 +87,14 @@ export const CheckinWithMemberResponseSchema = v.object({
   method: v.nullable(v.string()),
   type: v.optional(v.picklist(['member', 'visitor'])),
   visitorName: v.optional(v.string()),
+  visitorDisplayName: v.optional(v.string()),
   visitorOrganization: v.optional(v.string()),
   member: v.nullable(
     v.object({
       id: v.string(),
       serviceNumber: v.string(),
       rank: v.string(),
+      displayName: v.optional(v.string()),
       firstName: v.string(),
       lastName: v.string(),
       divisionId: v.nullable(v.string()),
@@ -155,6 +159,7 @@ export const PresentPersonSchema = v.object({
   id: v.string(),
   type: v.picklist(['member', 'visitor']),
   name: v.string(),
+  displayName: v.optional(v.string()),
   rank: v.optional(v.string()),
   rankSortOrder: v.optional(v.number()),
   division: v.optional(v.string()),
@@ -218,6 +223,7 @@ export const RecentActivityItemSchema = v.object({
   timestamp: v.string(),
   direction: v.picklist(['in', 'out']),
   name: v.string(),
+  displayName: v.optional(v.string()),
   rank: v.optional(v.string()),
   division: v.optional(v.string()),
   kioskId: v.optional(v.string()),

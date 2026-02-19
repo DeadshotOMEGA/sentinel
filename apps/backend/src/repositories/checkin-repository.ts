@@ -40,6 +40,7 @@ export interface PresentMember {
   id: string
   firstName: string
   lastName: string
+  displayName?: string
   rank: string
   rankSortOrder: number
   division: string
@@ -409,6 +410,7 @@ export class CheckinRepository {
         id: checkin.member.id,
         serviceNumber: checkin.member.serviceNumber,
         employeeNumber: checkin.member.employeeNumber ?? undefined,
+        displayName: checkin.member.displayName ?? undefined,
         firstName: checkin.member.firstName,
         lastName: checkin.member.lastName,
         initials: checkin.member.initials ?? undefined,
@@ -479,6 +481,7 @@ export class CheckinRepository {
             member: {
               id: c.member!.id,
               serviceNumber: c.member!.serviceNumber,
+              displayName: c.member!.displayName || undefined,
               rank: c.member!.rank,
               firstName: c.member!.firstName,
               lastName: c.member!.lastName,
@@ -582,6 +585,7 @@ export class CheckinRepository {
           member: {
             id: c.member.id,
             serviceNumber: c.member.serviceNumber,
+            displayName: c.member.displayName || undefined,
             rank: c.member.rank,
             firstName: c.member.firstName,
             lastName: c.member.lastName,
@@ -722,6 +726,7 @@ export class CheckinRepository {
         id: string
         first_name: string
         last_name: string
+        display_name: string | null
         rank: string
         rank_sort_order: number
         mess: string | null
@@ -776,6 +781,7 @@ export class CheckinRepository {
         m.id,
         m.first_name,
         m.last_name,
+        m.display_name,
         m.rank,
         COALESCE(r.display_order, 0) as rank_sort_order,
         m.mess,
@@ -798,6 +804,7 @@ export class CheckinRepository {
       id: row.id,
       firstName: row.first_name,
       lastName: row.last_name,
+      displayName: row.display_name ?? undefined,
       rank: row.rank,
       rankSortOrder: Number(row.rank_sort_order),
       division: row.division_name,
@@ -990,7 +997,7 @@ export class CheckinRepository {
           c.id,
           c.timestamp,
           c.direction,
-          m.first_name || ' ' || m.last_name as name,
+          COALESCE(NULLIF(m.display_name, ''), m.first_name || ' ' || m.last_name) as name,
           m.rank,
           d.name as division,
           c.kiosk_id,
@@ -1014,14 +1021,14 @@ export class CheckinRepository {
           v.id,
           v.check_in_time as timestamp,
           'in' as direction,
-          v.name,
+          COALESCE(NULLIF(v.display_name, ''), v.name),
           NULL as rank,
           NULL as division,
           v.kiosk_id,
           v.organization,
           v.visit_type,
           v.visit_reason,
-          CASE WHEN hm.id IS NOT NULL THEN hm.rank || ' ' || hm.first_name || ' ' || hm.last_name ELSE NULL END as host_name,
+          CASE WHEN hm.id IS NOT NULL THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
           v.event_id,
           e.name as event_name
         FROM visitors v
@@ -1038,14 +1045,14 @@ export class CheckinRepository {
           v.id,
           v.check_out_time as timestamp,
           'out' as direction,
-          v.name,
+          COALESCE(NULLIF(v.display_name, ''), v.name),
           NULL as rank,
           NULL as division,
           v.kiosk_id,
           v.organization,
           v.visit_type,
           v.visit_reason,
-          CASE WHEN hm.id IS NOT NULL THEN hm.rank || ' ' || hm.first_name || ' ' || hm.last_name ELSE NULL END as host_name,
+          CASE WHEN hm.id IS NOT NULL THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
           v.event_id,
           e.name as event_name
         FROM visitors v

@@ -20,6 +20,7 @@ interface PresentMember {
   id: string
   firstName: string
   lastName: string
+  displayName?: string
   rank: string
   rankSortOrder: number
   division: string
@@ -100,6 +101,7 @@ interface PresentPerson {
   id: string
   type: 'member' | 'visitor'
   name: string
+  displayName?: string
   rank?: string
   rankSortOrder?: number
   division?: string
@@ -190,7 +192,8 @@ export class PresenceService {
       return {
         id: m.id,
         type: 'member' as const,
-        name: `${m.firstName} ${m.lastName}`,
+        name: m.displayName ?? `${m.firstName} ${m.lastName}`,
+        displayName: m.displayName ?? `${m.firstName} ${m.lastName}`,
         rank: m.rank,
         rankSortOrder: m.rankSortOrder,
         division: m.division,
@@ -211,9 +214,15 @@ export class PresenceService {
       return {
         id: v.id,
         type: 'visitor' as const,
-        name: v.name,
+        name: v.displayName ?? v.name,
+        displayName: v.displayName ?? v.name,
         organization: v.organization,
-        visitType: v.visitTypeInfo ?? { id: '', name: v.visitType, chipVariant: undefined, chipColor: undefined },
+        visitType: v.visitTypeInfo ?? {
+          id: '',
+          name: v.visitType,
+          chipVariant: undefined,
+          chipColor: undefined,
+        },
         visitReason: v.visitReason,
         hostMemberId: v.hostMemberId,
         hostName: v.hostName,
@@ -246,7 +255,10 @@ export class PresenceService {
       })),
       lastUpdated: new Date().toISOString(),
     })
-    serviceLogger.info('Presence stats broadcast', { totalPresent: stats.present, totalMembers: stats.totalMembers })
+    serviceLogger.info('Presence stats broadcast', {
+      totalPresent: stats.present,
+      totalMembers: stats.totalMembers,
+    })
   }
 
   /**

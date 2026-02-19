@@ -239,6 +239,7 @@ exports.Prisma.MemberScalarFieldEnum = {
   rank: 'rank',
   firstName: 'firstName',
   lastName: 'lastName',
+  displayName: 'displayName',
   email: 'email',
   mobilePhone: 'mobilePhone',
   divisionId: 'divisionId',
@@ -313,6 +314,10 @@ exports.Prisma.SecurityAlertScalarFieldEnum = {
 exports.Prisma.VisitorScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  rankPrefix: 'rankPrefix',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  displayName: 'displayName',
   organization: 'organization',
   visitType: 'visitType',
   visitTypeId: 'visitTypeId',

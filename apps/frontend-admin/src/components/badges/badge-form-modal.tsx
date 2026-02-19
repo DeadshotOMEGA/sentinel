@@ -216,7 +216,8 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 <option value="">Select a member...</option>
                 {memberOptions.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.rank} {member.lastName}, {member.firstName} ({member.serviceNumber})
+                    {member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`}{' '}
+                    ({member.serviceNumber})
                   </option>
                 ))}
               </select>

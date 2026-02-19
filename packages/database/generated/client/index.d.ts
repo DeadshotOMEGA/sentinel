@@ -16214,6 +16214,7 @@ export namespace Prisma {
     rank: string | null
     firstName: string | null
     lastName: string | null
+    displayName: string | null
     email: string | null
     mobilePhone: string | null
     divisionId: string | null
@@ -16246,6 +16247,7 @@ export namespace Prisma {
     rank: string | null
     firstName: string | null
     lastName: string | null
+    displayName: string | null
     email: string | null
     mobilePhone: string | null
     divisionId: string | null
@@ -16278,6 +16280,7 @@ export namespace Prisma {
     rank: number
     firstName: number
     lastName: number
+    displayName: number
     email: number
     mobilePhone: number
     divisionId: number
@@ -16322,6 +16325,7 @@ export namespace Prisma {
     rank?: true
     firstName?: true
     lastName?: true
+    displayName?: true
     email?: true
     mobilePhone?: true
     divisionId?: true
@@ -16354,6 +16358,7 @@ export namespace Prisma {
     rank?: true
     firstName?: true
     lastName?: true
+    displayName?: true
     email?: true
     mobilePhone?: true
     divisionId?: true
@@ -16386,6 +16391,7 @@ export namespace Prisma {
     rank?: true
     firstName?: true
     lastName?: true
+    displayName?: true
     email?: true
     mobilePhone?: true
     divisionId?: true
@@ -16505,6 +16511,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName: string | null
     email: string | null
     mobilePhone: string | null
     divisionId: string | null
@@ -16556,6 +16563,7 @@ export namespace Prisma {
     rank?: boolean
     firstName?: boolean
     lastName?: boolean
+    displayName?: boolean
     email?: boolean
     mobilePhone?: boolean
     divisionId?: boolean
@@ -16614,6 +16622,7 @@ export namespace Prisma {
     rank?: boolean
     firstName?: boolean
     lastName?: boolean
+    displayName?: boolean
     email?: boolean
     mobilePhone?: boolean
     divisionId?: boolean
@@ -16651,6 +16660,7 @@ export namespace Prisma {
     rank?: boolean
     firstName?: boolean
     lastName?: boolean
+    displayName?: boolean
     email?: boolean
     mobilePhone?: boolean
     divisionId?: boolean
@@ -16688,6 +16698,7 @@ export namespace Prisma {
     rank?: boolean
     firstName?: boolean
     lastName?: boolean
+    displayName?: boolean
     email?: boolean
     mobilePhone?: boolean
     divisionId?: boolean
@@ -16713,7 +16724,7 @@ export namespace Prisma {
     accountLevel?: boolean
   }
 
-  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout" | "pinHash" | "accountLevel", ExtArgs["result"]["member"]>
+  export type MemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serviceNumber" | "rankId" | "rank" | "firstName" | "lastName" | "displayName" | "email" | "mobilePhone" | "divisionId" | "badgeId" | "memberType" | "status" | "memberTypeId" | "memberStatusId" | "createdAt" | "updatedAt" | "employeeNumber" | "initials" | "mess" | "moc" | "classDetails" | "homePhone" | "notes" | "contract_start" | "contract_end" | "missedCheckoutCount" | "lastMissedCheckout" | "pinHash" | "accountLevel", ExtArgs["result"]["member"]>
   export type MemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rankRef?: boolean | Member$rankRefArgs<ExtArgs>
     badge?: boolean | Member$badgeArgs<ExtArgs>
@@ -16793,6 +16804,7 @@ export namespace Prisma {
       rank: string
       firstName: string
       lastName: string
+      displayName: string | null
       email: string | null
       mobilePhone: string | null
       divisionId: string | null
@@ -17270,6 +17282,7 @@ export namespace Prisma {
     readonly rank: FieldRef<"Member", 'String'>
     readonly firstName: FieldRef<"Member", 'String'>
     readonly lastName: FieldRef<"Member", 'String'>
+    readonly displayName: FieldRef<"Member", 'String'>
     readonly email: FieldRef<"Member", 'String'>
     readonly mobilePhone: FieldRef<"Member", 'String'>
     readonly divisionId: FieldRef<"Member", 'String'>
@@ -22851,6 +22864,10 @@ export namespace Prisma {
   export type VisitorMinAggregateOutputType = {
     id: string | null
     name: string | null
+    rankPrefix: string | null
+    firstName: string | null
+    lastName: string | null
+    displayName: string | null
     organization: string | null
     visitType: string | null
     visitTypeId: string | null
@@ -22870,6 +22887,10 @@ export namespace Prisma {
   export type VisitorMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    rankPrefix: string | null
+    firstName: string | null
+    lastName: string | null
+    displayName: string | null
     organization: string | null
     visitType: string | null
     visitTypeId: string | null
@@ -22889,6 +22910,10 @@ export namespace Prisma {
   export type VisitorCountAggregateOutputType = {
     id: number
     name: number
+    rankPrefix: number
+    firstName: number
+    lastName: number
+    displayName: number
     organization: number
     visitType: number
     visitTypeId: number
@@ -22910,6 +22935,10 @@ export namespace Prisma {
   export type VisitorMinAggregateInputType = {
     id?: true
     name?: true
+    rankPrefix?: true
+    firstName?: true
+    lastName?: true
+    displayName?: true
     organization?: true
     visitType?: true
     visitTypeId?: true
@@ -22929,6 +22958,10 @@ export namespace Prisma {
   export type VisitorMaxAggregateInputType = {
     id?: true
     name?: true
+    rankPrefix?: true
+    firstName?: true
+    lastName?: true
+    displayName?: true
     organization?: true
     visitType?: true
     visitTypeId?: true
@@ -22948,6 +22981,10 @@ export namespace Prisma {
   export type VisitorCountAggregateInputType = {
     id?: true
     name?: true
+    rankPrefix?: true
+    firstName?: true
+    lastName?: true
+    displayName?: true
     organization?: true
     visitType?: true
     visitTypeId?: true
@@ -23040,6 +23077,10 @@ export namespace Prisma {
   export type VisitorGroupByOutputType = {
     id: string
     name: string
+    rankPrefix: string | null
+    firstName: string | null
+    lastName: string | null
+    displayName: string | null
     organization: string | null
     visitType: string
     visitTypeId: string | null
@@ -23076,6 +23117,10 @@ export namespace Prisma {
   export type VisitorSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    rankPrefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    displayName?: boolean
     organization?: boolean
     visitType?: boolean
     visitTypeId?: boolean
@@ -23100,6 +23145,10 @@ export namespace Prisma {
   export type VisitorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    rankPrefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    displayName?: boolean
     organization?: boolean
     visitType?: boolean
     visitTypeId?: boolean
@@ -23124,6 +23173,10 @@ export namespace Prisma {
   export type VisitorSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    rankPrefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    displayName?: boolean
     organization?: boolean
     visitType?: boolean
     visitTypeId?: boolean
@@ -23148,6 +23201,10 @@ export namespace Prisma {
   export type VisitorSelectScalar = {
     id?: boolean
     name?: boolean
+    rankPrefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    displayName?: boolean
     organization?: boolean
     visitType?: boolean
     visitTypeId?: boolean
@@ -23164,7 +23221,7 @@ export namespace Prisma {
     createdByAdmin?: boolean
   }
 
-  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "organization" | "visitType" | "visitTypeId" | "visitReason" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
+  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "rankPrefix" | "firstName" | "lastName" | "displayName" | "organization" | "visitType" | "visitTypeId" | "visitReason" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
   export type VisitorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
@@ -23199,6 +23256,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      rankPrefix: string | null
+      firstName: string | null
+      lastName: string | null
+      displayName: string | null
       organization: string | null
       visitType: string
       visitTypeId: string | null
@@ -23643,6 +23704,10 @@ export namespace Prisma {
   interface VisitorFieldRefs {
     readonly id: FieldRef<"Visitor", 'String'>
     readonly name: FieldRef<"Visitor", 'String'>
+    readonly rankPrefix: FieldRef<"Visitor", 'String'>
+    readonly firstName: FieldRef<"Visitor", 'String'>
+    readonly lastName: FieldRef<"Visitor", 'String'>
+    readonly displayName: FieldRef<"Visitor", 'String'>
     readonly organization: FieldRef<"Visitor", 'String'>
     readonly visitType: FieldRef<"Visitor", 'String'>
     readonly visitTypeId: FieldRef<"Visitor", 'String'>
@@ -65279,6 +65344,7 @@ export namespace Prisma {
     rank: 'rank',
     firstName: 'firstName',
     lastName: 'lastName',
+    displayName: 'displayName',
     email: 'email',
     mobilePhone: 'mobilePhone',
     divisionId: 'divisionId',
@@ -65368,6 +65434,10 @@ export namespace Prisma {
   export const VisitorScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    rankPrefix: 'rankPrefix',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    displayName: 'displayName',
     organization: 'organization',
     visitType: 'visitType',
     visitTypeId: 'visitTypeId',
@@ -66789,6 +66859,7 @@ export namespace Prisma {
     rank?: StringFilter<"Member"> | string
     firstName?: StringFilter<"Member"> | string
     lastName?: StringFilter<"Member"> | string
+    displayName?: StringNullableFilter<"Member"> | string | null
     email?: StringNullableFilter<"Member"> | string | null
     mobilePhone?: StringNullableFilter<"Member"> | string | null
     divisionId?: UuidNullableFilter<"Member"> | string | null
@@ -66846,6 +66917,7 @@ export namespace Prisma {
     rank?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    displayName?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     mobilePhone?: SortOrderInput | SortOrder
     divisionId?: SortOrderInput | SortOrder
@@ -66906,6 +66978,7 @@ export namespace Prisma {
     rank?: StringFilter<"Member"> | string
     firstName?: StringFilter<"Member"> | string
     lastName?: StringFilter<"Member"> | string
+    displayName?: StringNullableFilter<"Member"> | string | null
     email?: StringNullableFilter<"Member"> | string | null
     mobilePhone?: StringNullableFilter<"Member"> | string | null
     divisionId?: UuidNullableFilter<"Member"> | string | null
@@ -66963,6 +67036,7 @@ export namespace Prisma {
     rank?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    displayName?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     mobilePhone?: SortOrderInput | SortOrder
     divisionId?: SortOrderInput | SortOrder
@@ -67003,6 +67077,7 @@ export namespace Prisma {
     rank?: StringWithAggregatesFilter<"Member"> | string
     firstName?: StringWithAggregatesFilter<"Member"> | string
     lastName?: StringWithAggregatesFilter<"Member"> | string
+    displayName?: StringNullableWithAggregatesFilter<"Member"> | string | null
     email?: StringNullableWithAggregatesFilter<"Member"> | string | null
     mobilePhone?: StringNullableWithAggregatesFilter<"Member"> | string | null
     divisionId?: UuidNullableWithAggregatesFilter<"Member"> | string | null
@@ -67333,6 +67408,10 @@ export namespace Prisma {
     NOT?: VisitorWhereInput | VisitorWhereInput[]
     id?: UuidFilter<"Visitor"> | string
     name?: StringFilter<"Visitor"> | string
+    rankPrefix?: StringNullableFilter<"Visitor"> | string | null
+    firstName?: StringNullableFilter<"Visitor"> | string | null
+    lastName?: StringNullableFilter<"Visitor"> | string | null
+    displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
@@ -67357,6 +67436,10 @@ export namespace Prisma {
   export type VisitorOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    rankPrefix?: SortOrderInput | SortOrder
+    firstName?: SortOrderInput | SortOrder
+    lastName?: SortOrderInput | SortOrder
+    displayName?: SortOrderInput | SortOrder
     organization?: SortOrderInput | SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrderInput | SortOrder
@@ -67384,6 +67467,10 @@ export namespace Prisma {
     OR?: VisitorWhereInput[]
     NOT?: VisitorWhereInput | VisitorWhereInput[]
     name?: StringFilter<"Visitor"> | string
+    rankPrefix?: StringNullableFilter<"Visitor"> | string | null
+    firstName?: StringNullableFilter<"Visitor"> | string | null
+    lastName?: StringNullableFilter<"Visitor"> | string | null
+    displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
@@ -67408,6 +67495,10 @@ export namespace Prisma {
   export type VisitorOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    rankPrefix?: SortOrderInput | SortOrder
+    firstName?: SortOrderInput | SortOrder
+    lastName?: SortOrderInput | SortOrder
+    displayName?: SortOrderInput | SortOrder
     organization?: SortOrderInput | SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrderInput | SortOrder
@@ -67433,6 +67524,10 @@ export namespace Prisma {
     NOT?: VisitorScalarWhereWithAggregatesInput | VisitorScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"Visitor"> | string
     name?: StringWithAggregatesFilter<"Visitor"> | string
+    rankPrefix?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    firstName?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    lastName?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    displayName?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     organization?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     visitType?: StringWithAggregatesFilter<"Visitor"> | string
     visitTypeId?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
@@ -71053,6 +71148,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -71106,6 +71202,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -71157,6 +71254,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -71210,6 +71308,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71262,6 +71361,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -71293,6 +71393,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -71321,6 +71422,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71675,6 +71777,10 @@ export namespace Prisma {
   export type VisitorCreateInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -71694,6 +71800,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -71713,6 +71823,10 @@ export namespace Prisma {
   export type VisitorUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71732,6 +71846,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71751,6 +71869,10 @@ export namespace Prisma {
   export type VisitorCreateManyInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -71770,6 +71892,10 @@ export namespace Prisma {
   export type VisitorUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -71784,6 +71910,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -75695,6 +75825,7 @@ export namespace Prisma {
     rank?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    displayName?: SortOrder
     email?: SortOrder
     mobilePhone?: SortOrder
     divisionId?: SortOrder
@@ -75732,6 +75863,7 @@ export namespace Prisma {
     rank?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    displayName?: SortOrder
     email?: SortOrder
     mobilePhone?: SortOrder
     divisionId?: SortOrder
@@ -75764,6 +75896,7 @@ export namespace Prisma {
     rank?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    displayName?: SortOrder
     email?: SortOrder
     mobilePhone?: SortOrder
     divisionId?: SortOrder
@@ -75992,6 +76125,10 @@ export namespace Prisma {
   export type VisitorCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    rankPrefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    displayName?: SortOrder
     organization?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
@@ -76011,6 +76148,10 @@ export namespace Prisma {
   export type VisitorMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    rankPrefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    displayName?: SortOrder
     organization?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
@@ -76030,6 +76171,10 @@ export namespace Prisma {
   export type VisitorMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    rankPrefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    displayName?: SortOrder
     organization?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
@@ -82972,6 +83117,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -83024,6 +83170,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -83081,6 +83228,10 @@ export namespace Prisma {
   export type VisitorCreateWithoutBadgeInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -83099,6 +83250,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateWithoutBadgeInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -83257,6 +83412,7 @@ export namespace Prisma {
     rank?: StringFilter<"Member"> | string
     firstName?: StringFilter<"Member"> | string
     lastName?: StringFilter<"Member"> | string
+    displayName?: StringNullableFilter<"Member"> | string | null
     email?: StringNullableFilter<"Member"> | string | null
     mobilePhone?: StringNullableFilter<"Member"> | string | null
     divisionId?: UuidNullableFilter<"Member"> | string | null
@@ -83304,6 +83460,10 @@ export namespace Prisma {
     NOT?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
     id?: UuidFilter<"Visitor"> | string
     name?: StringFilter<"Visitor"> | string
+    rankPrefix?: StringNullableFilter<"Visitor"> | string | null
+    firstName?: StringNullableFilter<"Visitor"> | string | null
+    lastName?: StringNullableFilter<"Visitor"> | string | null
+    displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
@@ -83459,6 +83619,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -83511,6 +83672,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -83689,6 +83851,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -83741,6 +83904,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -83791,6 +83955,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -83843,6 +84008,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     badgeId?: string | null
@@ -84322,6 +84488,10 @@ export namespace Prisma {
   export type VisitorCreateWithoutEventInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -84340,6 +84510,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateWithoutEventInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -84557,6 +84731,10 @@ export namespace Prisma {
   export type VisitorCreateWithoutHostMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -84575,6 +84753,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateWithoutHostMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -84603,6 +84785,10 @@ export namespace Prisma {
   export type VisitorCreateWithoutCreatedByMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -84621,6 +84807,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateWithoutCreatedByMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -85900,6 +86090,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -85952,6 +86143,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -86018,6 +86210,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -86070,6 +86263,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -86226,6 +86420,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -86278,6 +86473,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -86375,6 +86571,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -86427,6 +86624,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -86514,6 +86712,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -86566,6 +86765,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -86632,6 +86832,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -86684,6 +86885,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -86734,6 +86936,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -86786,6 +86989,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -86878,6 +87082,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -86930,6 +87135,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -87060,6 +87266,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -87112,6 +87319,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -87216,6 +87424,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -87268,6 +87477,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -87467,6 +87677,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -87519,6 +87730,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -87622,6 +87834,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -87674,6 +87887,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -87856,6 +88070,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -87908,6 +88123,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -87963,6 +88179,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -88015,6 +88232,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -88144,6 +88362,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -88196,6 +88415,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88257,6 +88477,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -88309,6 +88530,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -88428,6 +88650,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -88480,6 +88703,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -88556,6 +88780,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -88608,6 +88833,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -88681,6 +88907,10 @@ export namespace Prisma {
   export type VisitorCreateWithoutVisitTypeRefInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -88699,6 +88929,10 @@ export namespace Prisma {
   export type VisitorUncheckedCreateWithoutVisitTypeRefInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -88819,6 +89053,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -88870,6 +89105,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -89478,6 +89714,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -89530,6 +89767,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -89753,6 +89991,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -89805,6 +90044,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -90823,6 +91063,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -90875,6 +91116,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -91017,6 +91259,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -91069,6 +91312,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -91183,6 +91427,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -91235,6 +91480,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -91290,6 +91536,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -91342,6 +91589,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -91484,6 +91732,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -91536,6 +91785,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -91597,6 +91847,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -91649,6 +91900,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -91699,6 +91951,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -91751,6 +92004,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -91806,6 +92060,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -91858,6 +92113,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -91981,6 +92237,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -92033,6 +92290,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92094,6 +92352,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -92146,6 +92405,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92278,6 +92538,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -92330,6 +92591,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -92385,6 +92647,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -92437,6 +92700,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -92542,6 +92806,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -92594,6 +92859,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92655,6 +92921,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -92707,6 +92974,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -92790,6 +93058,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -92842,6 +93111,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -92947,6 +93217,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -92999,6 +93270,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -93049,6 +93321,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -93101,6 +93374,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -93230,6 +93504,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -93282,6 +93557,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -93897,6 +94173,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     memberType: string
@@ -93949,6 +94226,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -94103,6 +94381,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -94155,6 +94434,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -94896,6 +95176,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -94923,6 +95204,10 @@ export namespace Prisma {
   export type VisitorCreateManyBadgeInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -95060,6 +95345,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -95112,6 +95398,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95163,6 +95450,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95190,6 +95478,10 @@ export namespace Prisma {
   export type VisitorUpdateWithoutBadgeInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95208,6 +95500,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateWithoutBadgeInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95226,6 +95522,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyWithoutBadgeInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95248,6 +95548,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     badgeId?: string | null
@@ -95278,6 +95579,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -95330,6 +95632,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     badgeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95381,6 +95684,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     badgeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95459,6 +95763,10 @@ export namespace Prisma {
   export type VisitorCreateManyEventInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -95524,6 +95832,10 @@ export namespace Prisma {
   export type VisitorUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95542,6 +95854,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95560,6 +95876,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95600,6 +95920,10 @@ export namespace Prisma {
   export type VisitorCreateManyHostMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -95618,6 +95942,10 @@ export namespace Prisma {
   export type VisitorCreateManyCreatedByMemberInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitTypeId?: string | null
@@ -95890,6 +96218,10 @@ export namespace Prisma {
   export type VisitorUpdateWithoutHostMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95908,6 +96240,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateWithoutHostMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95926,6 +96262,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyWithoutHostMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95944,6 +96284,10 @@ export namespace Prisma {
   export type VisitorUpdateWithoutCreatedByMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95962,6 +96306,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateWithoutCreatedByMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -95980,6 +96328,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyWithoutCreatedByMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96680,6 +97032,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -96710,6 +97063,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -96762,6 +97116,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96813,6 +97168,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96844,6 +97200,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -96874,6 +97231,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -96926,6 +97284,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -96977,6 +97336,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97004,6 +97364,10 @@ export namespace Prisma {
   export type VisitorCreateManyVisitTypeRefInput = {
     id?: string
     name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
     organization?: string | null
     visitType: string
     visitReason?: string | null
@@ -97022,6 +97386,10 @@ export namespace Prisma {
   export type VisitorUpdateWithoutVisitTypeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97040,6 +97408,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateWithoutVisitTypeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97058,6 +97430,10 @@ export namespace Prisma {
   export type VisitorUncheckedUpdateManyWithoutVisitTypeRefInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97133,6 +97509,7 @@ export namespace Prisma {
     rank: string
     firstName: string
     lastName: string
+    displayName?: string | null
     email?: string | null
     mobilePhone?: string | null
     divisionId?: string | null
@@ -97176,6 +97553,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     memberType?: StringFieldUpdateOperationsInput | string
@@ -97227,6 +97605,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97278,6 +97657,7 @@ export namespace Prisma {
     rank?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     divisionId?: NullableStringFieldUpdateOperationsInput | string | null

@@ -28,9 +28,13 @@ function formatForDatetimeLocal(isoString: string): string {
 }
 
 function getDisplayName(checkin: CheckinWithMemberResponse): string {
-  if (checkin.type === 'visitor') return checkin.visitorName ?? 'Unknown Visitor'
+  if (checkin.type === 'visitor')
+    return checkin.visitorDisplayName ?? checkin.visitorName ?? 'Unknown Visitor'
   if (!checkin.member) return 'Unknown Member'
-  return `${checkin.member.rank} ${checkin.member.firstName} ${checkin.member.lastName}`
+  return (
+    checkin.member.displayName ??
+    `${checkin.member.rank} ${checkin.member.firstName} ${checkin.member.lastName}`
+  )
 }
 
 export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinModalProps) {
@@ -111,7 +115,10 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent showCloseButton={false} className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display flex items-center gap-2" style={{ gap: 'var(--space-2)' }}>
+          <DialogTitle
+            className="font-display flex items-center gap-2"
+            style={{ gap: 'var(--space-2)' }}
+          >
             <Pencil className="h-5 w-5" aria-hidden="true" />
             Edit Check-In Record
           </DialogTitle>
@@ -123,7 +130,11 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
           className="bg-warning-fadded text-warning-fadded-content flex items-start rounded text-sm"
           role="note"
           aria-label="Audit log notice"
-          style={{ gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', marginBottom: 'var(--space-3)' }}
+          style={{
+            gap: 'var(--space-2)',
+            padding: 'var(--space-2) var(--space-3)',
+            marginBottom: 'var(--space-3)',
+          }}
         >
           <AlertTriangle className="h-4 w-4 shrink-0 mt-px" aria-hidden="true" />
           <span>All edits are permanently logged with your name, timestamp, and reason.</span>
@@ -195,7 +206,10 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
           <div className="form-control">
             <label className="label" htmlFor="edit-checkin-reason">
               <span className="label-text font-medium">
-                Reason for Edit <span className="text-error" aria-hidden="true">*</span>
+                Reason for Edit{' '}
+                <span className="text-error" aria-hidden="true">
+                  *
+                </span>
                 <span className="sr-only">(required)</span>
               </span>
             </label>
@@ -226,10 +240,7 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
         {confirmingDelete ? (
           <DialogFooter className="flex-col items-stretch" style={{ gap: 'var(--space-2)' }}>
             {/* Delete confirmation — full-strength error for destructive action */}
-            <div
-              className="alert alert-error py-2 text-sm"
-              role="alert"
-            >
+            <div className="alert alert-error py-2 text-sm" role="alert">
               <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>This will permanently delete the check-in record. This cannot be undone.</span>
             </div>

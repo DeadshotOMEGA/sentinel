@@ -6,6 +6,7 @@ import type {
   UpdateVisitorInput,
   IdParam,
 } from '@sentinel/contracts'
+import type { Visitor } from '@sentinel/types'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/broadcast.js'
@@ -13,6 +14,31 @@ import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/br
 const s = initServer()
 
 const visitorRepo = new VisitorRepository(getPrismaClient())
+
+function toVisitorResponse(v: Visitor) {
+  return {
+    id: v.id,
+    name: v.name,
+    rankPrefix: v.rankPrefix ?? null,
+    firstName: v.firstName ?? null,
+    lastName: v.lastName ?? null,
+    displayName: v.displayName ?? v.name,
+    organization: v.organization ?? null,
+    visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
+    visitTypeId: v.visitTypeId ?? null,
+    visitReason: v.visitReason ?? null,
+    eventId: v.eventId ?? null,
+    hostMemberId: v.hostMemberId ?? null,
+    checkInTime: v.checkInTime.toISOString(),
+    checkOutTime: v.checkOutTime?.toISOString() ?? null,
+    temporaryBadgeId: v.temporaryBadgeId ?? null,
+    kioskId: v.kioskId,
+    adminNotes: v.adminNotes ?? null,
+    checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
+    createdByAdmin: v.createdByAdmin ?? null,
+    createdAt: v.createdAt.toISOString(),
+  }
+}
 
 /**
  * Visitors route implementation using ts-rest
@@ -28,24 +54,7 @@ export const visitorsRouter = s.router(visitorContract, {
       return {
         status: 200 as const,
         body: {
-          visitors: visitors.map((v) => ({
-            id: v.id,
-            name: v.name,
-            organization: v.organization ?? null,
-            visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
-            visitTypeId: v.visitTypeId ?? null,
-            visitReason: v.visitReason ?? null,
-            eventId: v.eventId ?? null,
-            hostMemberId: v.hostMemberId ?? null,
-            checkInTime: v.checkInTime.toISOString(),
-            checkOutTime: v.checkOutTime?.toISOString() ?? null,
-            temporaryBadgeId: v.temporaryBadgeId ?? null,
-            kioskId: v.kioskId,
-            adminNotes: v.adminNotes ?? null,
-            checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-            createdByAdmin: v.createdByAdmin ?? null,
-            createdAt: v.createdAt.toISOString(),
-          })),
+          visitors: visitors.map(toVisitorResponse),
           count: visitors.length,
         },
       }
@@ -91,24 +100,7 @@ export const visitorsRouter = s.router(visitorContract, {
       return {
         status: 200 as const,
         body: {
-          visitors: paginatedVisitors.map((v) => ({
-            id: v.id,
-            name: v.name,
-            organization: v.organization ?? null,
-            visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
-            visitTypeId: v.visitTypeId ?? null,
-            visitReason: v.visitReason ?? null,
-            eventId: v.eventId ?? null,
-            hostMemberId: v.hostMemberId ?? null,
-            checkInTime: v.checkInTime.toISOString(),
-            checkOutTime: v.checkOutTime?.toISOString() ?? null,
-            temporaryBadgeId: v.temporaryBadgeId ?? null,
-            kioskId: v.kioskId,
-            adminNotes: v.adminNotes ?? null,
-            checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-            createdByAdmin: v.createdByAdmin ?? null,
-            createdAt: v.createdAt.toISOString(),
-          })),
+          visitors: paginatedVisitors.map(toVisitorResponse),
           total,
           page,
           limit,
@@ -131,8 +123,23 @@ export const visitorsRouter = s.router(visitorContract, {
    */
   createVisitor: async ({ body }: { body: CreateVisitorInput }) => {
     try {
+      const hasStructuredName = Boolean(body.firstName?.trim() && body.lastName?.trim())
+      const hasLegacyName = Boolean(body.name?.trim())
+      if (!hasStructuredName && !hasLegacyName) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: 'Visitor must include first and last name, or a legacy name value',
+          },
+        }
+      }
+
       const visitor = await visitorRepo.create({
         name: body.name,
+        rankPrefix: body.rankPrefix,
+        firstName: body.firstName,
+        lastName: body.lastName,
         organization: body.organization,
         visitType: body.visitType,
         visitTypeId: body.visitTypeId,
@@ -151,7 +158,7 @@ export const visitorsRouter = s.router(visitorContract, {
       // Broadcast visitor sign-in
       broadcastVisitorSignin({
         id: visitor.id,
-        name: visitor.name,
+        name: visitor.displayName ?? visitor.name,
         organization: visitor.organization ?? 'N/A',
         visitType: visitor.visitType,
         checkInTime: visitor.checkInTime.toISOString(),
@@ -160,24 +167,7 @@ export const visitorsRouter = s.router(visitorContract, {
 
       return {
         status: 201 as const,
-        body: {
-          id: visitor.id,
-          name: visitor.name,
-          organization: visitor.organization ?? null,
-          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
-          visitTypeId: visitor.visitTypeId ?? null,
-          visitReason: visitor.visitReason ?? null,
-          eventId: visitor.eventId ?? null,
-          hostMemberId: visitor.hostMemberId ?? null,
-          checkInTime: visitor.checkInTime.toISOString(),
-          checkOutTime: visitor.checkOutTime?.toISOString() ?? null,
-          temporaryBadgeId: visitor.temporaryBadgeId ?? null,
-          kioskId: visitor.kioskId,
-          adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-          createdByAdmin: visitor.createdByAdmin ?? null,
-          createdAt: visitor.createdAt.toISOString(),
-        },
+        body: toVisitorResponse(visitor),
       }
     } catch (error) {
       return {
@@ -201,7 +191,7 @@ export const visitorsRouter = s.router(visitorContract, {
       if (visitor.checkOutTime) {
         broadcastVisitorSignout({
           id: visitor.id,
-          name: visitor.name,
+          name: visitor.displayName ?? visitor.name,
           checkOutTime: visitor.checkOutTime.toISOString(),
         })
       }
@@ -211,24 +201,7 @@ export const visitorsRouter = s.router(visitorContract, {
         body: {
           success: true,
           message: 'Visitor checked out successfully',
-          visitor: {
-            id: visitor.id,
-            name: visitor.name,
-            organization: visitor.organization ?? null,
-            visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
-            visitTypeId: visitor.visitTypeId ?? null,
-            visitReason: visitor.visitReason ?? null,
-            eventId: visitor.eventId ?? null,
-            hostMemberId: visitor.hostMemberId ?? null,
-            checkInTime: visitor.checkInTime.toISOString(),
-            checkOutTime: visitor.checkOutTime?.toISOString() ?? null,
-            temporaryBadgeId: visitor.temporaryBadgeId ?? null,
-            kioskId: visitor.kioskId,
-            adminNotes: visitor.adminNotes ?? null,
-            checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-            createdByAdmin: visitor.createdByAdmin ?? null,
-            createdAt: visitor.createdAt.toISOString(),
-          },
+          visitor: toVisitorResponse(visitor),
         },
       }
     } catch (error) {
@@ -271,24 +244,7 @@ export const visitorsRouter = s.router(visitorContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: visitor.id,
-          name: visitor.name,
-          organization: visitor.organization ?? null,
-          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
-          visitTypeId: visitor.visitTypeId ?? null,
-          visitReason: visitor.visitReason ?? null,
-          eventId: visitor.eventId ?? null,
-          hostMemberId: visitor.hostMemberId ?? null,
-          checkInTime: visitor.checkInTime.toISOString(),
-          checkOutTime: visitor.checkOutTime?.toISOString() ?? null,
-          temporaryBadgeId: visitor.temporaryBadgeId ?? null,
-          kioskId: visitor.kioskId,
-          adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-          createdByAdmin: visitor.createdByAdmin ?? null,
-          createdAt: visitor.createdAt.toISOString(),
-        },
+        body: toVisitorResponse(visitor),
       }
     } catch (error) {
       return {
@@ -308,6 +264,9 @@ export const visitorsRouter = s.router(visitorContract, {
     try {
       const visitor = await visitorRepo.update(params.id, {
         name: body.name,
+        rankPrefix: body.rankPrefix,
+        firstName: body.firstName,
+        lastName: body.lastName,
         organization: body.organization,
         visitType: body.visitType,
         visitTypeId: body.visitTypeId,
@@ -324,24 +283,7 @@ export const visitorsRouter = s.router(visitorContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: visitor.id,
-          name: visitor.name,
-          organization: visitor.organization ?? null,
-          visitType: visitor.visitType as 'contractor' | 'guest' | 'official' | 'other',
-          visitTypeId: visitor.visitTypeId ?? null,
-          visitReason: visitor.visitReason ?? null,
-          eventId: visitor.eventId ?? null,
-          hostMemberId: visitor.hostMemberId ?? null,
-          checkInTime: visitor.checkInTime.toISOString(),
-          checkOutTime: visitor.checkOutTime?.toISOString() ?? null,
-          temporaryBadgeId: visitor.temporaryBadgeId ?? null,
-          kioskId: visitor.kioskId,
-          adminNotes: visitor.adminNotes ?? null,
-          checkInMethod: (visitor.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
-          createdByAdmin: visitor.createdByAdmin ?? null,
-          createdAt: visitor.createdAt.toISOString(),
-        },
+        body: toVisitorResponse(visitor),
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes('not found')) {

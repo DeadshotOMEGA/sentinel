@@ -106,9 +106,7 @@ export class CheckinService {
 
     // Only support member badges for now (not event attendees)
     if (badge.assignmentType !== 'member') {
-      throw new ValidationError(
-        `Badge type ${badge.assignmentType} not supported for check-in`
-      )
+      throw new ValidationError(`Badge type ${badge.assignmentType} not supported for check-in`)
     }
 
     const memberId = badge.assignedToId
@@ -171,7 +169,7 @@ export class CheckinService {
       broadcastCheckin({
         id: checkin.id,
         memberId: member.id,
-        memberName: `${member.firstName} ${member.lastName}`,
+        memberName: member.displayName ?? `${member.firstName} ${member.lastName}`,
         rank: member.rank,
         division: member.division?.name ?? 'Unknown',
         direction,
@@ -256,7 +254,7 @@ export class CheckinService {
     broadcastCheckin({
       id: checkin.id,
       memberId: member.id,
-      memberName: `${member.firstName} ${member.lastName}`,
+      memberName: member.displayName ?? `${member.firstName} ${member.lastName}`,
       rank: member.rank,
       division: member.division?.name ?? 'Unknown',
       direction: 'out',

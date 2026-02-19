@@ -80,9 +80,12 @@ export const checkinsRouter = s.router(checkinContract, {
                     id: checkin.member.id,
                     serviceNumber: checkin.member.serviceNumber,
                     rank: checkin.member.rank,
+                    displayName:
+                      checkin.member.displayName ??
+                      `${checkin.member.firstName} ${checkin.member.lastName}`,
                     firstName: checkin.member.firstName,
                     lastName: checkin.member.lastName,
-                    divisionId: checkin.member.divisionId,
+                    divisionId: checkin.member.divisionId ?? null,
                   }
                 : null,
             })),
@@ -106,7 +109,13 @@ export const checkinsRouter = s.router(checkinContract, {
 
       const [memberResult, visitors] = await Promise.all([
         checkinRepo.findAllWithMembers(filters),
-        visitorRepo.findAll(visitorFilters as { dateRange?: { start: Date; end: Date }; visitType?: string; hostMemberId?: string }),
+        visitorRepo.findAll(
+          visitorFilters as {
+            dateRange?: { start: Date; end: Date }
+            visitType?: string
+            hostMemberId?: string
+          }
+        ),
       ])
 
       // Unified checkin entry type for merging members and visitors
@@ -123,14 +132,16 @@ export const checkinsRouter = s.router(checkinContract, {
         method: string | null
         type: 'member' | 'visitor'
         visitorName?: string
+        visitorDisplayName?: string
         visitorOrganization?: string
         member: {
           id: string
           serviceNumber: string
           rank: string
+          displayName?: string
           firstName: string
           lastName: string
-          divisionId: string
+          divisionId: string | null
         } | null
       }
 
@@ -152,9 +163,10 @@ export const checkinsRouter = s.router(checkinContract, {
               id: checkin.member.id,
               serviceNumber: checkin.member.serviceNumber,
               rank: checkin.member.rank,
+              displayName: checkin.member.displayName,
               firstName: checkin.member.firstName,
               lastName: checkin.member.lastName,
-              divisionId: checkin.member.divisionId,
+              divisionId: checkin.member.divisionId ?? null,
             }
           : null,
       }))
@@ -175,7 +187,8 @@ export const checkinsRouter = s.router(checkinContract, {
           flagReason: null,
           method: v.checkInMethod ?? null,
           type: 'visitor' as const,
-          visitorName: v.name,
+          visitorName: v.displayName ?? v.name,
+          visitorDisplayName: v.displayName ?? v.name,
           visitorOrganization: v.organization,
           member: null,
         })
@@ -194,7 +207,8 @@ export const checkinsRouter = s.router(checkinContract, {
             flagReason: null,
             method: v.checkInMethod ?? null,
             type: 'visitor' as const,
-            visitorName: v.name,
+            visitorName: v.displayName ?? v.name,
+            visitorDisplayName: v.displayName ?? v.name,
             visitorOrganization: v.organization,
             member: null,
           })
@@ -202,8 +216,9 @@ export const checkinsRouter = s.router(checkinContract, {
       }
 
       // Merge and sort by timestamp descending
-      const allEntries = [...memberEntries, ...visitorEntries]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      const allEntries = [...memberEntries, ...visitorEntries].sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
 
       const total = allEntries.length
       const totalPages = Math.ceil(total / limit)
@@ -305,6 +320,7 @@ export const checkinsRouter = s.router(checkinContract, {
             id: p.id,
             type: p.type,
             name: p.name,
+            displayName: p.displayName,
             rank: p.rank,
             rankSortOrder: p.rankSortOrder,
             division: p.division,
@@ -398,9 +414,12 @@ export const checkinsRouter = s.router(checkinContract, {
                 id: checkin.member.id,
                 serviceNumber: checkin.member.serviceNumber,
                 rank: checkin.member.rank,
+                displayName:
+                  checkin.member.displayName ??
+                  `${checkin.member.firstName} ${checkin.member.lastName}`,
                 firstName: checkin.member.firstName,
                 lastName: checkin.member.lastName,
-                divisionId: checkin.member.divisionId,
+                divisionId: checkin.member.divisionId ?? null,
               }
             : null,
         },
@@ -431,7 +450,9 @@ export const checkinsRouter = s.router(checkinContract, {
             status: 403 as const,
             body: {
               error: 'LOCKUP_HELD',
-              message: checkoutOptions.blockReason ?? 'You must transfer or execute lockup before checking out',
+              message:
+                checkoutOptions.blockReason ??
+                'You must transfer or execute lockup before checking out',
               details: {
                 holdsLockup: checkoutOptions.holdsLockup,
                 availableOptions: checkoutOptions.availableOptions,
@@ -494,7 +515,8 @@ export const checkinsRouter = s.router(checkinContract, {
         id: checkinWithMember.id,
         memberId: checkinWithMember.memberId ?? null,
         memberName: checkinWithMember.member
-          ? `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`
+          ? (checkinWithMember.member.displayName ??
+            `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`)
           : undefined,
         rank: checkinWithMember.member?.rank,
         direction: checkinWithMember.direction as 'in' | 'out',
@@ -527,9 +549,12 @@ export const checkinsRouter = s.router(checkinContract, {
                 id: checkinWithMember.member.id,
                 serviceNumber: checkinWithMember.member.serviceNumber,
                 rank: checkinWithMember.member.rank,
+                displayName:
+                  checkinWithMember.member.displayName ??
+                  `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`,
                 firstName: checkinWithMember.member.firstName,
                 lastName: checkinWithMember.member.lastName,
-                divisionId: checkinWithMember.member.divisionId,
+                divisionId: checkinWithMember.member.divisionId ?? null,
               }
             : null,
         },
@@ -708,9 +733,12 @@ export const checkinsRouter = s.router(checkinContract, {
                 id: checkinWithMember.member.id,
                 serviceNumber: checkinWithMember.member.serviceNumber,
                 rank: checkinWithMember.member.rank,
+                displayName:
+                  checkinWithMember.member.displayName ??
+                  `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`,
                 firstName: checkinWithMember.member.firstName,
                 lastName: checkinWithMember.member.lastName,
-                divisionId: checkinWithMember.member.divisionId,
+                divisionId: checkinWithMember.member.divisionId ?? null,
               }
             : null,
         },
@@ -739,13 +767,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Delete checkin — Admin/Developer only, fully audited
    */
-  deleteCheckin: async ({
-    params,
-    req,
-  }: {
-    params: IdParam
-    req: Request
-  }) => {
+  deleteCheckin: async ({ params, req }: { params: IdParam; req: Request }) => {
     // Enforce Admin+ access
     if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
       return {
@@ -761,7 +783,14 @@ export const checkinsRouter = s.router(checkinContract, {
       // Snapshot before delete — use raw findUnique so we get the record even if memberId is null
       const before = await getPrismaClient().checkin.findUnique({
         where: { id: params.id },
-        select: { id: true, direction: true, timestamp: true, kioskId: true, memberId: true, method: true },
+        select: {
+          id: true,
+          direction: true,
+          timestamp: true,
+          kioskId: true,
+          memberId: true,
+          method: true,
+        },
       })
       if (!before) {
         return {
@@ -872,9 +901,12 @@ export const checkinsRouter = s.router(checkinContract, {
                   id: checkin.member.id,
                   serviceNumber: checkin.member.serviceNumber,
                   rank: checkin.member.rank,
+                  displayName:
+                    checkin.member.displayName ??
+                    `${checkin.member.firstName} ${checkin.member.lastName}`,
                   firstName: checkin.member.firstName,
                   lastName: checkin.member.lastName,
-                  divisionId: checkin.member.divisionId,
+                  divisionId: checkin.member.divisionId ?? null,
                 }
               : null,
           })),

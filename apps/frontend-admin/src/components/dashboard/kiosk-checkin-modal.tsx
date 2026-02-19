@@ -164,7 +164,10 @@ function extractErrorMessage(body: unknown, fallback: string): string {
 
 function toMemberName(checkin: CheckinWithMemberResponse, fallback: string): string {
   if (!checkin.member) return fallback
-  return `${checkin.member.rank} ${checkin.member.firstName} ${checkin.member.lastName}`
+  return (
+    checkin.member.displayName ??
+    `${checkin.member.rank} ${checkin.member.firstName} ${checkin.member.lastName}`
+  )
 }
 
 function findLastVisitAt(checkins: CheckinWithMemberResponse[]): string | null {

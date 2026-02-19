@@ -11,6 +11,12 @@ import type {
 import type { PrismaClientInstance, Member as PrismaMember } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import { RankRepository } from './rank-repository.js'
+import {
+  buildMemberDisplayName,
+  computeCollisionKey,
+  getMemberInitials,
+  normalizeNamePart,
+} from '../utils/display-name.js'
 
 interface MemberFilters extends MemberFilterParams {
   divisionId?: string
@@ -32,6 +38,7 @@ function toMember(prismaMember: PrismaMember): Member {
     employeeNumber: prismaMember.employeeNumber ?? undefined,
     firstName: prismaMember.firstName,
     lastName: prismaMember.lastName,
+    displayName: prismaMember.displayName ?? undefined,
     initials: prismaMember.initials ?? undefined,
     rank: prismaMember.rank,
     divisionId: prismaMember.divisionId ?? undefined,
@@ -218,6 +225,64 @@ export class MemberRepository {
     this.rankRepository = new RankRepository(this.prisma)
   }
 
+  private getDisplayKeyForMember(member: {
+    lastName?: string | null
+    firstName?: string | null
+    initials?: string | null
+  }): string {
+    const lastName = normalizeNamePart(member.lastName)
+    const initials = getMemberInitials(member.firstName, member.initials)
+    return computeCollisionKey(lastName, initials)
+  }
+
+  private async recomputeDisplayNamesByKeys(
+    tx: PrismaClientInstance,
+    keys: Set<string>
+  ): Promise<void> {
+    const normalizedKeys = Array.from(keys).filter(Boolean)
+    if (normalizedKeys.length === 0) return
+
+    const members = await tx.member.findMany({
+      select: {
+        id: true,
+        rank: true,
+        firstName: true,
+        lastName: true,
+        initials: true,
+      },
+    })
+
+    const collisionCounts = new Map<string, number>()
+    for (const member of members) {
+      const key = this.getDisplayKeyForMember(member)
+      if (!key) continue
+      collisionCounts.set(key, (collisionCounts.get(key) ?? 0) + 1)
+    }
+
+    const updates = members
+      .filter((member) => normalizedKeys.includes(this.getDisplayKeyForMember(member)))
+      .map((member) => {
+        const key = this.getDisplayKeyForMember(member)
+        const useLongForm = (collisionCounts.get(key) ?? 0) > 1
+        const displayName = buildMemberDisplayName({
+          rank: member.rank,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          initials: member.initials,
+          useLongForm,
+          fallback: `${member.firstName} ${member.lastName}`.trim(),
+        })
+        return tx.member.update({
+          where: { id: member.id },
+          data: { displayName },
+        })
+      })
+
+    if (updates.length > 0) {
+      await Promise.all(updates)
+    }
+  }
+
   /**
    * Find all members with optional filters
    */
@@ -318,6 +383,7 @@ export class MemberRepository {
 
     if (filters?.search) {
       where.OR = [
+        { displayName: { contains: filters.search, mode: 'insensitive' } },
         { firstName: { contains: filters.search, mode: 'insensitive' } },
         { lastName: { contains: filters.search, mode: 'insensitive' } },
         { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
@@ -496,6 +562,7 @@ export class MemberRepository {
 
     if (filters?.search) {
       where.OR = [
+        { displayName: { contains: filters.search, mode: 'insensitive' } },
         { firstName: { contains: filters.search, mode: 'insensitive' } },
         { lastName: { contains: filters.search, mode: 'insensitive' } },
         { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
@@ -604,27 +671,39 @@ export class MemberRepository {
       throw new Error(`Invalid rank code: ${data.rank}`)
     }
 
-    const member = await this.prisma.member.create({
-      data: {
-        serviceNumber: data.serviceNumber,
-        employeeNumber: data.employeeNumber !== undefined ? data.employeeNumber : null,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        initials: data.initials !== undefined ? data.initials : null,
-        rank: data.rank,
-        rankId: rank.id,
-        divisionId: data.divisionId,
-        mess: data.mess !== undefined ? data.mess : null,
-        moc: data.moc !== undefined ? data.moc : null,
-        memberType: data.memberType !== undefined ? data.memberType : 'regular',
-        memberTypeId: data.memberTypeId !== undefined ? data.memberTypeId : null,
-        classDetails: data.classDetails !== undefined ? data.classDetails : null,
-        status: data.status !== undefined ? data.status : 'active',
-        email: data.email !== undefined ? data.email : null,
-        homePhone: data.homePhone !== undefined ? data.homePhone : null,
-        mobilePhone: data.mobilePhone !== undefined ? data.mobilePhone : null,
-        badgeId: data.badgeId !== undefined ? data.badgeId : null,
-      },
+    const member = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.member.create({
+        data: {
+          serviceNumber: data.serviceNumber,
+          employeeNumber: data.employeeNumber !== undefined ? data.employeeNumber : null,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          initials: data.initials !== undefined ? data.initials : null,
+          rank: data.rank,
+          rankId: rank.id,
+          divisionId: data.divisionId,
+          mess: data.mess !== undefined ? data.mess : null,
+          moc: data.moc !== undefined ? data.moc : null,
+          memberType: data.memberType !== undefined ? data.memberType : 'regular',
+          memberTypeId: data.memberTypeId !== undefined ? data.memberTypeId : null,
+          classDetails: data.classDetails !== undefined ? data.classDetails : null,
+          status: data.status !== undefined ? data.status : 'active',
+          email: data.email !== undefined ? data.email : null,
+          homePhone: data.homePhone !== undefined ? data.homePhone : null,
+          mobilePhone: data.mobilePhone !== undefined ? data.mobilePhone : null,
+          badgeId: data.badgeId !== undefined ? data.badgeId : null,
+        },
+      })
+
+      const key = this.getDisplayKeyForMember(created)
+      if (key) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          new Set([key])
+        )
+      }
+
+      return (await tx.member.findUniqueOrThrow({ where: { id: created.id } })) as PrismaMember
     })
 
     await this.invalidatePresenceCache()
@@ -702,6 +781,15 @@ export class MemberRepository {
 
     // Use a transaction to update member and tags atomically
     const member = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.member.findUniqueOrThrow({
+        where: { id },
+        select: { id: true, rank: true, firstName: true, lastName: true, initials: true },
+      })
+
+      const keysToRecompute = new Set<string>()
+      const oldKey = this.getDisplayKeyForMember(existing)
+      if (oldKey) keysToRecompute.add(oldKey)
+
       // Update member fields if any
       let updatedMember
       if (hasFieldUpdate) {
@@ -730,6 +818,17 @@ export class MemberRepository {
           })
         }
       }
+
+      const newKey = this.getDisplayKeyForMember(updatedMember)
+      if (newKey) keysToRecompute.add(newKey)
+      if (keysToRecompute.size > 0) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          keysToRecompute
+        )
+      }
+
+      updatedMember = await tx.member.findUniqueOrThrow({ where: { id } })
 
       return updatedMember
     })
@@ -884,6 +983,7 @@ export class MemberRepository {
 
     const result = await this.prisma.$transaction(async (tx) => {
       let insertedCount = 0
+      const keysToRecompute = new Set<string>()
 
       for (const memberData of members) {
         const rankId = rankMap.get(memberData.rank)
@@ -914,8 +1014,20 @@ export class MemberRepository {
             badgeId: memberData.badgeId !== undefined ? memberData.badgeId : null,
           },
         })
+        const key = computeCollisionKey(
+          memberData.lastName,
+          getMemberInitials(memberData.firstName, memberData.initials)
+        )
+        if (key) keysToRecompute.add(key)
 
         insertedCount++
+      }
+
+      if (keysToRecompute.size > 0) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          keysToRecompute
+        )
       }
 
       return insertedCount
@@ -935,9 +1047,18 @@ export class MemberRepository {
 
     const result = await this.prisma.$transaction(async (tx) => {
       let updatedCount = 0
+      const keysToRecompute = new Set<string>()
 
       for (const update of updates) {
         const { id, ...data } = update
+        const existing = await tx.member.findUnique({
+          where: { id },
+          select: { lastName: true, firstName: true, initials: true },
+        })
+        if (existing) {
+          const oldKey = this.getDisplayKeyForMember(existing)
+          if (oldKey) keysToRecompute.add(oldKey)
+        }
         const updateData: Record<string, unknown> = {}
 
         if (data.serviceNumber !== undefined) {
@@ -1001,7 +1122,23 @@ export class MemberRepository {
           data: updateData,
         })
 
+        const newKey = computeCollisionKey(
+          data.lastName ?? existing?.lastName,
+          getMemberInitials(
+            data.firstName ?? existing?.firstName,
+            data.initials ?? existing?.initials
+          )
+        )
+        if (newKey) keysToRecompute.add(newKey)
+
         updatedCount++
+      }
+
+      if (keysToRecompute.size > 0) {
+        await this.recomputeDisplayNamesByKeys(
+          tx as unknown as PrismaClientInstance,
+          keysToRecompute
+        )
       }
 
       return updatedCount

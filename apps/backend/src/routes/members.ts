@@ -68,6 +68,8 @@ export const membersRouter = s.router(memberContract, {
             id: member.id,
             serviceNumber: member.serviceNumber,
             rank: member.rank,
+            displayName:
+              member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
             firstName: member.firstName,
             lastName: member.lastName,
             middleInitial: member.initials || null,
@@ -142,6 +144,8 @@ export const membersRouter = s.router(memberContract, {
           id: member.id,
           serviceNumber: member.serviceNumber,
           rank: member.rank,
+          displayName:
+            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
           firstName: member.firstName,
           lastName: member.lastName,
           middleInitial: member.initials || null,
@@ -198,6 +202,8 @@ export const membersRouter = s.router(memberContract, {
           id: member.id,
           serviceNumber: member.serviceNumber,
           rank: member.rank,
+          displayName:
+            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
           firstName: member.firstName,
           lastName: member.lastName,
           middleInitial: member.initials || null,
@@ -267,6 +273,8 @@ export const membersRouter = s.router(memberContract, {
           id: member.id,
           serviceNumber: member.serviceNumber,
           rank: member.rank,
+          displayName:
+            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
           firstName: member.firstName,
           lastName: member.lastName,
           middleInitial: member.initials || null,
@@ -359,6 +367,8 @@ export const membersRouter = s.router(memberContract, {
           id: member.id,
           serviceNumber: member.serviceNumber,
           rank: member.rank,
+          displayName:
+            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
           firstName: member.firstName,
           lastName: member.lastName,
           middleInitial: member.initials || null,

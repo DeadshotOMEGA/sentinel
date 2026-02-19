@@ -106,6 +106,8 @@ export function MemberQualificationsModal({
   )
 
   if (!member) return null
+  const memberDisplayName =
+    member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`
 
   return (
     <>
@@ -116,9 +118,7 @@ export function MemberQualificationsModal({
               <Shield className="h-5 w-5" />
               Qualifications
             </DialogTitle>
-            <DialogDescription>
-              {member.rank} {member.firstName} {member.lastName}
-            </DialogDescription>
+            <DialogDescription>{memberDisplayName}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -226,7 +226,7 @@ export function MemberQualificationsModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Grant Qualification</AlertDialogTitle>
             <AlertDialogDescription>
-              Select a qualification to grant to {member.rank} {member.firstName} {member.lastName}
+              Select a qualification to grant to {memberDisplayName}
             </AlertDialogDescription>
           </AlertDialogHeader>
 

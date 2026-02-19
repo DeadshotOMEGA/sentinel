@@ -9,10 +9,29 @@ export const VisitTypeEnum = v.picklist(['contractor', 'guest', 'official', 'oth
  * Create visitor request schema
  */
 export const CreateVisitorSchema = v.object({
-  name: v.pipe(
-    v.string('Visitor name is required'),
-    v.minLength(1, 'Visitor name cannot be empty'),
-    v.maxLength(200, 'Visitor name must be at most 200 characters')
+  name: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Visitor name cannot be empty'),
+      v.maxLength(200, 'Visitor name must be at most 200 characters')
+    )
+  ),
+  rankPrefix: v.optional(
+    v.pipe(v.string(), v.maxLength(50, 'Rank/prefix must be at most 50 characters'))
+  ),
+  firstName: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'First name cannot be empty'),
+      v.maxLength(100, 'First name must be at most 100 characters')
+    )
+  ),
+  lastName: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Last name cannot be empty'),
+      v.maxLength(100, 'Last name must be at most 100 characters')
+    )
   ),
   organization: v.optional(
     v.pipe(v.string(), v.maxLength(200, 'Organization must be at most 200 characters'))
@@ -42,6 +61,23 @@ export const UpdateVisitorSchema = v.object({
       v.maxLength(200, 'Visitor name must be at most 200 characters')
     )
   ),
+  rankPrefix: v.optional(
+    v.pipe(v.string(), v.maxLength(50, 'Rank/prefix must be at most 50 characters'))
+  ),
+  firstName: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'First name cannot be empty'),
+      v.maxLength(100, 'First name must be at most 100 characters')
+    )
+  ),
+  lastName: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Last name cannot be empty'),
+      v.maxLength(100, 'Last name must be at most 100 characters')
+    )
+  ),
   organization: v.optional(
     v.pipe(v.string(), v.maxLength(200, 'Organization must be at most 200 characters'))
   ),
@@ -64,6 +100,10 @@ export const UpdateVisitorSchema = v.object({
 export const VisitorResponseSchema = v.object({
   id: v.string(),
   name: v.string(),
+  rankPrefix: v.nullable(v.string()),
+  firstName: v.nullable(v.string()),
+  lastName: v.nullable(v.string()),
+  displayName: v.string(),
   organization: v.nullable(v.string()),
   visitType: VisitTypeEnum,
   visitTypeId: v.nullable(v.string()),
@@ -89,7 +129,9 @@ export const VisitorListQuerySchema = v.object({
   visitType: v.optional(VisitTypeEnum),
   hostMemberId: v.optional(v.pipe(v.string(), v.uuid('Invalid host member ID'))),
   page: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1))),
-  limit: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))),
+  limit: v.optional(
+    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))
+  ),
 })
 
 /**

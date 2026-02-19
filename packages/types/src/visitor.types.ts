@@ -3,6 +3,10 @@
 export interface Visitor {
   id: string
   name: string
+  rankPrefix?: string
+  firstName?: string
+  lastName?: string
+  displayName?: string
   organization?: string
   visitType: string
   visitTypeId?: string
@@ -20,7 +24,10 @@ export interface Visitor {
 }
 
 export interface CreateVisitorInput {
-  name: string
+  name?: string
+  rankPrefix?: string
+  firstName?: string
+  lastName?: string
   organization?: string
   visitType: string
   visitTypeId?: string
@@ -38,6 +45,9 @@ export interface CreateVisitorInput {
 
 export interface UpdateVisitorInput {
   name?: string
+  rankPrefix?: string
+  firstName?: string
+  lastName?: string
   organization?: string
   visitType?: string
   visitTypeId?: string

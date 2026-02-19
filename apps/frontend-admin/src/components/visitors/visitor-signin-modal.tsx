@@ -15,7 +15,9 @@ interface VisitorSigninModalProps {
 }
 
 interface FormData {
-  name: string
+  rankPrefix: string
+  firstName: string
+  lastName: string
   organization: string
   visitType: 'contractor' | 'guest' | 'official' | 'other'
   visitReason: string
@@ -26,7 +28,9 @@ interface FormData {
 }
 
 export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalProps) {
+  // eslint-disable-next-line no-undef -- DOM type available in browser build
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // eslint-disable-next-line no-undef -- DOM type available in browser build
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const member = useAuthStore((state) => state.member)
 
@@ -36,9 +40,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
   const [memberSearch, setMemberSearch] = useState('')
   const [selectedHost, setSelectedHost] = useState<{
     id: string
-    rank: string
-    firstName: string
-    lastName: string
+    displayName: string
   } | null>(null)
   const showMemberList = !selectedHost
 
@@ -65,7 +67,9 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
-      name: '',
+      rankPrefix: '',
+      firstName: '',
+      lastName: '',
       organization: '',
       visitType: 'guest',
       visitReason: '',
@@ -77,7 +81,8 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
   })
 
   const selectedBadgeId = watch('temporaryBadgeId')
-  const nameRegister = register('name', { required: 'Name is required' })
+  const firstNameRegister = register('firstName', { required: 'First name is required' })
+  const lastNameRegister = register('lastName', { required: 'Last name is required' })
 
   // Sync open prop with dialog element
   useEffect(() => {
@@ -113,7 +118,10 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
     try {
       const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       const visitorData: CreateVisitorInput = {
-        name: data.name,
+        rankPrefix: data.rankPrefix || undefined,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        name: [data.rankPrefix, data.firstName, data.lastName].filter(Boolean).join(' '),
         visitType: data.visitType,
         kioskId: 'ADMIN_MANUAL',
         checkInMethod: 'admin_manual',
@@ -140,9 +148,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
       <div className="modal-box max-w-lg">
         {/* Header */}
         <form method="dialog">
-          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-            ✕
-          </button>
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
         <h3 className="text-lg font-bold">Visitor Sign-in</h3>
         <p className="text-base-content/60 text-sm mt-1">
@@ -153,23 +159,48 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
           {/* Name */}
           <fieldset className="fieldset">
+            <legend className="fieldset-legend">Rank/Prefix</legend>
+            <input
+              type="text"
+              className="input input-neutral w-full"
+              placeholder="Optional (e.g., Cpl, Lt, Mr)"
+              disabled={isSubmitting}
+              {...register('rankPrefix')}
+            />
+          </fieldset>
+
+          <fieldset className="fieldset">
             <legend className="fieldset-legend">
-              Name <span className="text-error">*</span>
+              First Name <span className="text-error">*</span>
             </legend>
             <input
               type="text"
               className="input input-neutral w-full"
-              placeholder="Visitor full name"
+              placeholder="Visitor first name"
               disabled={isSubmitting}
-              {...nameRegister}
+              {...firstNameRegister}
               ref={(el) => {
-                nameRegister.ref(el)
+                firstNameRegister.ref(el)
                 nameInputRef.current = el
               }}
             />
-            {errors.name && (
-              <span className="label text-error">{errors.name.message}</span>
+            {errors.firstName && (
+              <span className="label text-error">{errors.firstName.message}</span>
             )}
+          </fieldset>
+
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">
+              Last Name <span className="text-error">*</span>
+            </legend>
+            <input
+              type="text"
+              className="input input-neutral w-full"
+              placeholder="Visitor last name"
+              disabled={isSubmitting}
+              {...lastNameRegister}
+            />
+            {errors.lastName && <span className="label text-error">{errors.lastName.message}</span>}
           </fieldset>
 
           {/* Organization */}
@@ -222,9 +253,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
             <div>
               {selectedHost ? (
                 <div className="input input-neutral flex items-center gap-2">
-                  <span className="flex-1 truncate">
-                    {selectedHost.rank} {selectedHost.lastName}, {selectedHost.firstName}
-                  </span>
+                  <span className="flex-1 truncate">{selectedHost.displayName}</span>
                   <button
                     type="button"
                     className="btn btn-ghost btn-xs btn-circle"
@@ -266,15 +295,16 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
                                 setValue('hostMemberId', member.id)
                                 setSelectedHost({
                                   id: member.id,
-                                  rank: member.rank,
-                                  firstName: member.firstName,
-                                  lastName: member.lastName,
+                                  displayName:
+                                    member.displayName ??
+                                    `${member.rank} ${member.lastName}, ${member.firstName}`,
                                 })
                                 setMemberSearch('')
                               }}
                             >
                               <span className="font-medium">
-                                {member.rank} {member.lastName}, {member.firstName}
+                                {member.displayName ??
+                                  `${member.rank} ${member.lastName}, ${member.firstName}`}
                               </span>
                             </button>
                           </li>
@@ -359,11 +389,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
               {isSubmitting && <span className="loading loading-spinner loading-sm" />}
               Sign In Visitor
             </button>

@@ -194,6 +194,7 @@ model Member {
   rank                       String                    @db.VarChar(50)
   firstName                  String                    @map("first_name") @db.VarChar(100)
   lastName                   String                    @map("last_name") @db.VarChar(100)
+  displayName                String?                   @map("display_name") @db.VarChar(200)
   email                      String?                   @db.VarChar(255)
   mobilePhone                String?                   @map("mobile_phone") @db.VarChar(50)
   divisionId                 String?                   @map("division_id") @db.Uuid
@@ -332,6 +333,10 @@ model SecurityAlert {
 model Visitor {
   id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String     @db.VarChar(200)
+  rankPrefix       String?    @map("rank_prefix") @db.VarChar(50)
+  firstName        String?    @map("first_name") @db.VarChar(100)
+  lastName         String?    @map("last_name") @db.VarChar(100)
+  displayName      String?    @map("display_name") @db.VarChar(200)
   organization     String?    @db.VarChar(200)
   visitType        String     @map("visit_type") @db.VarChar(50)
   visitTypeId      String?    @map("visit_type_id") @db.Uuid

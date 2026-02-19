@@ -37,7 +37,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Pencil, Trash2, X, Shield, Tag, KeyRound, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import {
+  Pencil,
+  Trash2,
+  X,
+  Shield,
+  Tag,
+  KeyRound,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+} from 'lucide-react'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SortableHeader } from './sortable-header'
 import { cn } from '@/lib/utils'
@@ -108,12 +118,19 @@ export function MembersTable({
   }, [divisions])
 
   const memberStatusMap = useMemo(() => {
-    if (!enums?.memberStatuses) return new Map<string, { name: string; chipVariant: string; chipColor: string }>()
+    if (!enums?.memberStatuses)
+      return new Map<string, { name: string; chipVariant: string; chipColor: string }>()
     return new Map(
-      enums.memberStatuses.map((s: { id: string; name: string; chipVariant?: string; chipColor?: string }) => [
-        s.id,
-        { name: s.name, chipVariant: s.chipVariant ?? 'solid', chipColor: s.chipColor ?? 'default' },
-      ])
+      enums.memberStatuses.map(
+        (s: { id: string; name: string; chipVariant?: string; chipColor?: string }) => [
+          s.id,
+          {
+            name: s.name,
+            chipVariant: s.chipVariant ?? 'solid',
+            chipColor: s.chipColor ?? 'default',
+          },
+        ]
+      )
     )
   }, [enums])
 
@@ -209,9 +226,7 @@ export function MembersTable({
         header: ({ column }) => <SortableHeader column={column} label="Name" />,
         cell: (info) => {
           const member = info.row.original
-          const toTitleCase = (str: string) =>
-            str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
-          return `${toTitleCase(member.lastName)}, ${toTitleCase(member.firstName)}`
+          return member.displayName || `${member.rank} ${member.lastName}, ${member.firstName}`
         },
         enableSorting: true,
       }),
@@ -565,18 +580,18 @@ export function MembersTable({
               </label>
             )}
             <div className="flex items-center gap-2">
-            <span className="text-sm text-base-content/60">Rows per page</span>
-            <select
-              className="select select-sm"
-              value={limit}
-              onChange={(e) => onLimitChange(Number(e.target.value))}
-              data-testid={TID.members.pagination.rowsPerPage}
-            >
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-              <option value={200}>200</option>
-            </select>
+              <span className="text-sm text-base-content/60">Rows per page</span>
+              <select
+                className="select select-sm"
+                value={limit}
+                onChange={(e) => onLimitChange(Number(e.target.value))}
+                data-testid={TID.members.pagination.rowsPerPage}
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center gap-4">

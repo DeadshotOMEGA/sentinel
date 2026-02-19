@@ -12,6 +12,7 @@ export interface Member {
   employeeNumber?: string
   firstName: string
   lastName: string
+  displayName?: string
   initials?: string
   rank: string
   divisionId?: string

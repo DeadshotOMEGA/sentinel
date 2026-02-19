@@ -81,6 +81,8 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
   )
 
   if (!member) return null
+  const memberDisplayName =
+    member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`
 
   return (
     <>
@@ -91,9 +93,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
               <Tag className="h-5 w-5" />
               Member Tags
             </DialogTitle>
-            <DialogDescription>
-              {member.rank} {member.firstName} {member.lastName}
-            </DialogDescription>
+            <DialogDescription>{memberDisplayName}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -171,7 +171,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
           <AlertDialogHeader>
             <AlertDialogTitle>Assign Tag</AlertDialogTitle>
             <AlertDialogDescription>
-              Select a tag to assign to {member.rank} {member.firstName} {member.lastName}
+              Select a tag to assign to {memberDisplayName}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
