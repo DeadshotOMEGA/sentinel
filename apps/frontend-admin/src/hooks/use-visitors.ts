@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import type { CreateVisitorInput } from '@sentinel/contracts'
+import type { CreateVisitorInput, UpdateVisitorInput } from '@sentinel/contracts'
 
 export function useActiveVisitors() {
   return useQuery({
@@ -52,6 +52,48 @@ export function useCheckoutVisitor() {
       return response.body
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
+    },
+  })
+}
+
+export function useVisitorById(id: string | null) {
+  return useQuery({
+    queryKey: ['visitor', id],
+    enabled: Boolean(id),
+    queryFn: async () => {
+      if (!id) throw new Error('Visitor ID is required')
+      const response = await apiClient.visitors.getVisitorById({
+        params: { id },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch visitor')
+      }
+      return response.body
+    },
+  })
+}
+
+export function useUpdateVisitor() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateVisitorInput }) => {
+      const response = await apiClient.visitors.updateVisitor({
+        params: { id },
+        body: data,
+      })
+      if (response.status !== 200) {
+        const body = response.body as { message?: string }
+        throw new Error(body?.message ?? 'Failed to update visitor')
+      }
+      return response.body
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['visitor', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
     },

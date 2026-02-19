@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp, User, Users, Pencil } fr
 import { TableSkeleton } from '@/components/ui/loading-skeleton'
 import type { CheckinWithMemberResponse } from '@sentinel/contracts'
 import { EditCheckinModal } from './edit-checkin-modal'
+import { EditVisitorModal } from './edit-visitor-modal'
 
 interface CheckinsTableProps {
   filters: {
@@ -37,6 +38,12 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
   const canEdit = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
 
   const [editingCheckin, setEditingCheckin] = useState<CheckinWithMemberResponse | null>(null)
+  const [editingVisitorId, setEditingVisitorId] = useState<string | null>(null)
+
+  const parseVisitorId = (id: string): string | null => {
+    const match = /^v-(?:in|out)-(.+)$/.exec(id)
+    return match?.[1] ?? null
+  }
 
   const columns = useMemo(
     () => [
@@ -141,8 +148,21 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
               header: '',
               cell: (info) => {
                 const row = info.row.original
-                // Visitor rows are synthetic (id = "v-in-..." / "v-out-..."), not real Checkin records
-                if (row.type === 'visitor') return null
+                if (row.type === 'visitor') {
+                  const visitorId = parseVisitorId(row.id)
+                  if (!visitorId) return null
+                  return (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs gap-1"
+                      title="Edit visitor"
+                      onClick={() => setEditingVisitorId(visitorId)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                      Edit Visitor
+                    </button>
+                  )
+                }
                 return (
                   <button
                     type="button"
@@ -281,6 +301,14 @@ export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
         open={editingCheckin !== null}
         onOpenChange={(open) => {
           if (!open) setEditingCheckin(null)
+        }}
+      />
+
+      <EditVisitorModal
+        visitorId={editingVisitorId}
+        open={editingVisitorId !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingVisitorId(null)
         }}
       />
     </>
