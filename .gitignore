@@ -262,3 +262,4 @@ nominal-roll.csv
 # Screenshots (temporary/local testing)
 screenshots/
 .claude/statusline/state/agents.json
+.codex/config.toml

@@ -79,6 +79,7 @@ export const TID = {
       serialNumber: 'badge-form-serial-number',
       status: 'badge-form-status',
       assignmentType: 'badge-form-assignment-type',
+      memberSearch: 'badge-form-member-search',
       assignedTo: 'badge-form-assigned-to',
       cancel: 'badge-form-cancel',
       submit: 'badge-form-submit',

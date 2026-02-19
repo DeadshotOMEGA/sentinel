@@ -88,7 +88,13 @@ function BadgesPageContent() {
         onLimitChange={handleLimitChange}
       />
 
-      <BadgeFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} mode="create" />
+      {isCreateModalOpen && (
+        <BadgeFormModal
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+          mode="create"
+        />
+      )}
     </div>
   )
 }

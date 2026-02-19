@@ -1,7 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import { ChevronLeft, ChevronRight, Pencil, Shield, Trash2 } from 'lucide-react'
 import { useBadges } from '@/hooks/use-badges'
 import { TableSkeleton } from '@/components/ui/loading-skeleton'
@@ -37,6 +42,18 @@ const assignmentClassMap: Record<string, string> = {
   member: 'badge-primary',
   visitor: 'badge-info',
   unassigned: 'badge-outline',
+}
+
+function formatLastUsed(lastUsed: string | null) {
+  if (!lastUsed) return 'Never'
+  const date = new Date(lastUsed)
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 export function BadgesTable({
@@ -100,7 +117,7 @@ export function BadgesTable({
         cell: (info) => {
           const lastUsed = info.getValue()
           if (!lastUsed) return <span className="text-base-content/50">Never</span>
-          return new Date(lastUsed).toLocaleString()
+          return formatLastUsed(lastUsed)
         },
       }),
       ...(canEdit
@@ -117,6 +134,8 @@ export function BadgesTable({
                       className="btn btn-ghost btn-sm"
                       onClick={() => setEditingBadge(badge)}
                       data-testid={TID.badges.rowAction(badge.id, 'edit')}
+                      title={`Edit badge ${badge.serialNumber}`}
+                      aria-label={`Edit badge ${badge.serialNumber}`}
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -125,6 +144,8 @@ export function BadgesTable({
                       className="btn btn-ghost btn-sm text-error"
                       onClick={() => setDeletingBadge(badge)}
                       data-testid={TID.badges.rowAction(badge.id, 'delete')}
+                      title={`Delete badge ${badge.serialNumber}`}
+                      aria-label={`Delete badge ${badge.serialNumber}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -147,6 +168,10 @@ export function BadgesTable({
     getRowId: (row) => row.id,
   })
 
+  const total = data?.total ?? 0
+  const showingStart = total === 0 ? 0 : (page - 1) * limit + 1
+  const showingEnd = total === 0 ? 0 : Math.min(page * limit, total)
+
   if (isError) {
     return (
       <div className="bg-base-100 p-6 border shadow-sm">
@@ -167,8 +192,8 @@ export function BadgesTable({
     <>
       <div className="bg-base-100 border shadow-sm">
         <div className="relative w-full overflow-x-auto">
-          <table className="table" data-testid={TID.badges.table}>
-            <thead>
+          <table className="table table-zebra" data-testid={TID.badges.table}>
+            <thead className="sticky top-0 z-10 bg-base-100">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="hover">
                   {headerGroup.headers.map((header) => (
@@ -195,7 +220,11 @@ export function BadgesTable({
               ) : (
                 <tr className="hover">
                   <td colSpan={columns.length}>
-                    <EmptyState icon={Shield} title="No badges found" />
+                    <EmptyState
+                      icon={Shield}
+                      title="No badges found"
+                      description="Try adjusting your search or filters."
+                    />
                   </td>
                 </tr>
               )}
@@ -220,7 +249,10 @@ export function BadgesTable({
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-base-content/60">
-              {(data?.total ?? 0) === 1 ? '1 badge' : `${data?.total ?? 0} badges`}
+              {total === 1 ? '1 badge' : `${total} badges`}
+            </span>
+            <span className="text-sm text-base-content/60">
+              Showing {showingStart}-{showingEnd}
             </span>
             <span className="text-sm text-base-content/60">
               Page {data?.page ?? 1} of {data?.totalPages ?? 1}
@@ -248,17 +280,22 @@ export function BadgesTable({
         </div>
       </div>
 
-      <BadgeFormModal
-        open={editingBadge !== null}
-        onOpenChange={(open) => {
-          if (!open) setEditingBadge(null)
-        }}
-        mode="edit"
-        badge={editingBadge ?? undefined}
-      />
+      {editingBadge && (
+        <BadgeFormModal
+          open={editingBadge !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditingBadge(null)
+          }}
+          mode="edit"
+          badge={editingBadge}
+        />
+      )}
 
       {deletingBadge && (
-        <DeleteBadgeDialog badge={deletingBadge} onOpenChange={(open) => !open && setDeletingBadge(null)} />
+        <DeleteBadgeDialog
+          badge={deletingBadge}
+          onOpenChange={(open) => !open && setDeletingBadge(null)}
+        />
       )}
     </>
   )

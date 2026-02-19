@@ -124,6 +124,7 @@ export class BadgeRepository {
 
       if (checkins.length > 0 && checkins[0]) {
         const checkin = checkins[0]
+        result.lastUsed = checkin.timestamp
         if (checkin.timestamp && checkin.kioskId && checkin.direction) {
           result.lastScan = {
             kioskId: checkin.kioskId,
@@ -193,6 +194,7 @@ export class BadgeRepository {
 
     if (checkins.length > 0 && checkins[0]) {
       const checkin = checkins[0]
+      result.lastUsed = checkin.timestamp
       if (checkin.timestamp && checkin.kioskId && checkin.direction) {
         result.lastScan = {
           kioskId: checkin.kioskId,

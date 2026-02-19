@@ -13,7 +13,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { TID } from '@/lib/test-ids'
-import type { BadgeWithAssignmentResponse, CreateBadgeInput, UpdateBadgeInput } from '@sentinel/contracts'
+import type {
+  BadgeWithAssignmentResponse,
+  CreateBadgeInput,
+  UpdateBadgeInput,
+} from '@sentinel/contracts'
 
 interface BadgeFormModalProps {
   open: boolean
@@ -25,12 +29,16 @@ interface BadgeFormModalProps {
 export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormModalProps) {
   const createBadge = useCreateBadge()
   const updateBadge = useUpdateBadge()
-  const { data: membersData } = useMembers({ limit: 500, status: 'active' })
+  const { data: membersData, isLoading: isMembersLoading } = useMembers({
+    limit: 500,
+    status: 'active',
+  })
 
   const [serialNumber, setSerialNumber] = useState('')
   const [status, setStatus] = useState<'active' | 'inactive' | 'lost' | 'damaged'>('active')
   const [assignmentType, setAssignmentType] = useState<'unassigned' | 'member'>('unassigned')
   const [assignedToId, setAssignedToId] = useState('')
+  const [memberSearch, setMemberSearch] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -44,6 +52,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
         setAssignmentType('unassigned')
         setAssignedToId('')
       }
+      setMemberSearch('')
       return
     }
 
@@ -51,14 +60,32 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
     setStatus('active')
     setAssignmentType('unassigned')
     setAssignedToId('')
+    setMemberSearch('')
     setError(null)
   }, [mode, badge, open])
 
   const isSubmitting = createBadge.isPending || updateBadge.isPending
 
   const memberOptions = useMemo(() => {
-    return membersData?.members ?? []
-  }, [membersData])
+    const members = [...(membersData?.members ?? [])]
+    const search = memberSearch.trim().toLowerCase()
+
+    members.sort((a, b) => {
+      const lastNameSort = a.lastName.localeCompare(b.lastName, undefined, { sensitivity: 'base' })
+      if (lastNameSort !== 0) return lastNameSort
+      return a.firstName.localeCompare(b.firstName, undefined, { sensitivity: 'base' })
+    })
+
+    if (!search) {
+      return members
+    }
+
+    return members.filter((member) => {
+      const fullName = `${member.firstName} ${member.lastName}`.toLowerCase()
+      const reverseName = `${member.lastName}, ${member.firstName}`.toLowerCase()
+      return fullName.includes(search) || reverseName.includes(search)
+    })
+  }, [membersData, memberSearch])
 
   const isMemberAssignmentInvalid = assignmentType === 'member' && !assignedToId
   const isSerialInvalid = !serialNumber.trim()
@@ -118,6 +145,11 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
               data-testid={TID.badges.form.serialNumber}
               required
             />
+            {isSerialInvalid && (
+              <span className="label text-base-content/60">
+                Enter a badge serial number to continue.
+              </span>
+            )}
           </fieldset>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,6 +182,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                   setAssignmentType(value)
                   if (value !== 'member') {
                     setAssignedToId('')
+                    setMemberSearch('')
                   }
                 }}
                 data-testid={TID.badges.form.assignmentType}
@@ -163,9 +196,18 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
           {assignmentType === 'member' && (
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Assigned Member</legend>
+              <input
+                id="badge-member-filter"
+                type="text"
+                className="input input-bordered w-full mb-2"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Filter members by name..."
+                data-testid={TID.badges.form.memberSearch}
+              />
               <select
                 id="badge-assigned-member"
-                className="select"
+                className="select w-full"
                 value={assignedToId}
                 onChange={(e) => setAssignedToId(e.target.value)}
                 data-testid={TID.badges.form.assignedTo}
@@ -174,10 +216,18 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 <option value="">Select a member...</option>
                 {memberOptions.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.rank} {member.firstName} {member.lastName} ({member.serviceNumber})
+                    {member.rank} {member.lastName}, {member.firstName} ({member.serviceNumber})
                   </option>
                 ))}
               </select>
+              {!isMembersLoading && memberOptions.length === 0 && (
+                <span className="label text-base-content/60">No members match that name.</span>
+              )}
+              {isMemberAssignmentInvalid && (
+                <span className="label text-base-content/60">
+                  Select an assigned member to enable saving.
+                </span>
+              )}
             </fieldset>
           )}
 
