@@ -1,0 +1,51 @@
+# Codex Project Instructions (Sentinel)
+
+This file migrates project guidance from Claude-style rules into Codex.
+
+## Source of truth and precedence
+
+- Primary rule source remains existing `CLAUDE.md` files throughout the repo.
+- Read and follow the nearest `AGENTS.md` and `CLAUDE.md` for the files you edit.
+- Conflict resolution: closest directory rule wins; `MUST`/`MUST NOT` override `SHOULD`.
+
+## Global non-negotiables
+
+- Use `pnpm` (not Bun) and Node.js 24.x.
+- Keep TypeScript strict and never introduce `any`.
+- Use Conventional Commits.
+- Never push directly to `develop`; use PRs from `rebuild` to `develop`.
+
+## High-traffic local instruction files
+
+- `apps/backend/AGENTS.md`
+- `apps/backend/src/routes/AGENTS.md`
+- `apps/backend/src/repositories/AGENTS.md`
+- `apps/backend/src/middleware/AGENTS.md`
+- `apps/backend/tests/AGENTS.md`
+- `packages/contracts/AGENTS.md`
+- `packages/database/AGENTS.md`
+- `packages/database/prisma/AGENTS.md`
+- `packages/database/src/AGENTS.md`
+
+These files inline operational rules so Codex can proceed with minimal indirection.
+
+## Path-specific rule mappings from `.claude/rules/`
+
+- Monorepo/package edits (`pnpm-workspace.yaml`, `package.json`, `tsconfig.json`):
+  follow `.claude/rules/90_monorepo-structure.md`.
+- Frontend admin edits (`apps/frontend-admin/**`):
+  follow `.claude/rules/frontend-design.md` and `.claude/rules/playwright-cli.md`.
+- Terminology mapping:
+  "DaisyUI MCP" maps to `mcp__daisyui-blueprint__daisyUI-Snippets`.
+
+## Practical workflow for Codex
+
+1. Identify files to change.
+2. Load nearest instruction files.
+3. Apply mandatory constraints first.
+4. Treat `SHOULD` as defaults unless task requirements conflict.
+5. For docs work, follow Diataxis and scoped naming/frontmatter rules.
+
+## Note
+
+- `.claude/CLAUDE.md` does not exist in this repo; root guidance is in `CLAUDE.md` and `.claude/rules/*.md`.
