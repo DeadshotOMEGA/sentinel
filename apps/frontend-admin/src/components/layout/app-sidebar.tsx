@@ -7,9 +7,15 @@ import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import type { RecentActivityItem } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
+import { formatPersonLabel } from '@/lib/name-format'
 
 interface AppSidebarProps {
   drawerId: string
+}
+
+function getOptionalDisplayName(item: RecentActivityItem): string | undefined {
+  const value = (item as { displayName?: unknown }).displayName
+  return typeof value === 'string' && value.trim() ? value : undefined
 }
 
 // ── Inline edit row (dev only, member checkins only) ─────────────────────────
@@ -149,6 +155,12 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
             const isVisitor = item.type === 'visitor'
             const isEditing = editingId === item.id
             const Icon = isCheckIn ? ArrowDownCircle : ArrowUpCircle
+            const itemDisplayName = formatPersonLabel({
+              name: item.name,
+              displayName: getOptionalDisplayName(item),
+              rank: item.rank,
+              compact: true,
+            })
             // Visitors don't have a checkin record to edit/delete
             const canEdit = isDeveloper && !isVisitor
 
@@ -164,21 +176,18 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
                       className={`mt-0.5 h-4 w-4 shrink-0 ${isCheckIn ? 'text-success' : 'text-error'}`}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate text-sm font-medium">
-                          {item.rank ? `${item.rank} ` : ''}
-                          {item.name}
+                      <div className="truncate text-sm font-medium">{itemDisplayName}</div>
+
+                      <div className="mt-0.5 flex items-center justify-between gap-2">
+                        <span className="text-xs text-base-content/60">
+                          {new Date(item.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                         {isVisitor && (
                           <span className="badge badge-info badge-sm shrink-0">Visitor</span>
                         )}
-                      </div>
-
-                      <div className="mt-0.5 text-xs text-base-content/60">
-                        {new Date(item.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
                       </div>
                     </div>
 

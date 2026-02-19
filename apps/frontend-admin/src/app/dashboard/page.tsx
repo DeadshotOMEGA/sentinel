@@ -6,24 +6,25 @@ import { DashboardHelpLauncher } from '@/components/help/dashboard-help-launcher
 
 export default function DashboardPage() {
   return (
-    <main data-help-id="dashboard.root">
+    <main className="mx-auto w-full max-w-[1600px] space-y-6 pb-24 sm:pb-20" data-help-id="dashboard.root">
       <h1 className="sr-only">Dashboard</h1>
 
       {/* Security Alerts Bar - only shows if there are active alerts */}
       <SecurityAlertsBar />
 
-      {/* Quick Action Buttons */}
-      <QuickActionButtons />
+      <section>
+        <QuickActionButtons />
+      </section>
 
       {/* Status Stats */}
-      <div className="mt-6">
+      <section>
         <StatusStats />
-      </div>
+      </section>
 
       {/* Presence Card Grid */}
-      <div className="mt-6">
+      <section>
         <PersonCardGrid />
-      </div>
+      </section>
 
       <DashboardHelpLauncher />
     </main>

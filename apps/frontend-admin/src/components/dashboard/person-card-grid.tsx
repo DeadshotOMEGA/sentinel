@@ -138,12 +138,12 @@ export function PersonCardGrid() {
 
   return (
     <div
-      className="presence-section p-4 shadow-lg animate-fade-in"
+      className="presence-section p-3 sm:p-4 shadow-md animate-fade-in"
       data-help-id="dashboard.presence"
     >
       {/* Header */}
       <div
-        className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 presence-section-header -mx-4 px-4 -mt-4 pt-3"
+        className="flex flex-wrap items-start justify-between gap-3 mb-3 pb-3 presence-section-header -mx-3 px-3 sm:-mx-4 sm:px-4 -mt-3 sm:-mt-4 pt-3"
         data-help-id="dashboard.presence.filters"
       >
         <div className="flex items-center gap-3">
@@ -154,8 +154,8 @@ export function PersonCardGrid() {
         </div>
 
         {/* Filters + Search */}
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-1">
             <button
               className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
               aria-pressed={filter === 'all'}
@@ -178,7 +178,7 @@ export function PersonCardGrid() {
               Visitors ({visitorCount})
             </button>
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search
               size={14}
               className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40"
@@ -187,7 +187,7 @@ export function PersonCardGrid() {
               type="text"
               placeholder="Search..."
               aria-label="Search people"
-              className="input input-bordered input-sm pl-8 w-48"
+              className="input input-bordered input-sm pl-8 w-full sm:w-48"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-help-id="dashboard.presence.search"

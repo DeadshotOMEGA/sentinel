@@ -54,7 +54,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         {/* Logo with backend status indicator */}
         <Link
           href="/dashboard"
-          className="btn btn-ghost text-2xl font-bold"
+          className="btn btn-ghost max-w-[12rem] truncate px-2 text-lg font-bold sm:max-w-none sm:px-4 sm:text-2xl"
           data-testid={TID.nav.logo}
         >
           HMCS Chippawa
@@ -101,10 +101,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         </ul>
       </div>
 
-      <div className="navbar-end gap-2">
-        <span className="badge badge-outline badge-xl" data-testid={TID.nav.backendStatus}>
+      <div className="navbar-end gap-1.5 sm:gap-2">
+        <span className="badge badge-outline badge-sm sm:badge-md md:badge-xl" data-testid={TID.nav.backendStatus}>
           <span className={cn('status', dot)} />
-          {label}
+          <span className="hidden sm:inline">{label}</span>
         </span>
         <UserMenu />
       </div>

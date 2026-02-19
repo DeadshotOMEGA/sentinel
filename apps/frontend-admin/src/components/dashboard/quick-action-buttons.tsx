@@ -39,11 +39,16 @@ export function QuickActionButtons() {
   const isSecured = buildingStatus === 'secured'
   const isOpenWithHolder = buildingStatus === 'open' && !!currentHolder
   const isOpenNoHolder = buildingStatus === 'open' && !currentHolder
+  const actionBaseClass =
+    'btn btn-sm min-h-9 px-3 text-sm justify-start md:justify-center font-medium transition-all duration-200 shadow-sm hover:shadow-md'
 
   return (
-    <div className="flex flex-wrap gap-3" data-help-id="dashboard.quick-actions">
+    <div
+      className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6"
+      data-help-id="dashboard.quick-actions"
+    >
       <button
-        className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200"
+        className={`${actionBaseClass} btn-primary btn-action`}
         onClick={() => setIsKioskModalOpen(true)}
         data-testid={TID.dashboard.quickAction.kiosk}
         data-help-id="dashboard.quick-actions.kiosk-checkin"
@@ -57,7 +62,7 @@ export function QuickActionButtons() {
         data-tip="Requires Quartermaster level or higher"
       >
         <button
-          className="btn btn-primary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+          className={`${actionBaseClass} btn-primary btn-action disabled:opacity-40`}
           disabled={!canManualCheckin}
           onClick={() => setIsVisitorModalOpen(true)}
           data-testid={TID.dashboard.quickAction.visitorSignin}
@@ -69,7 +74,7 @@ export function QuickActionButtons() {
       </div>
 
       <button
-        className="btn btn-outline btn-primary hover:shadow-md transition-all duration-200"
+        className={`${actionBaseClass} btn-outline btn-primary`}
         disabled
       >
         <FileText className="h-4 w-4" />
@@ -79,7 +84,7 @@ export function QuickActionButtons() {
       {isSecured ? (
         <div className={!isAdmin ? 'tooltip' : ''} data-tip="Requires Admin level or higher">
           <button
-            className="btn btn-success btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+            className={`${actionBaseClass} btn-success btn-action disabled:opacity-40`}
             disabled={!isAdmin}
             onClick={() => setIsOpenBuildingOpen(true)}
             data-testid={TID.dashboard.quickAction.openBuilding}
@@ -95,7 +100,7 @@ export function QuickActionButtons() {
           data-tip={!isAdmin ? 'Requires admin role' : 'No lockup holder assigned'}
         >
           <button
-            className="btn btn-secondary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+            className={`${actionBaseClass} btn-warning btn-action disabled:opacity-40`}
             disabled={!isAdmin || isOpenNoHolder}
             onClick={() => setIsLockupModalOpen(true)}
             data-testid={TID.dashboard.quickAction.executeLockup}
@@ -110,7 +115,7 @@ export function QuickActionButtons() {
       {isOpenWithHolder && (
         <div className={!isAdmin ? 'tooltip' : ''} data-tip="Requires Admin level or higher">
           <button
-            className="btn btn-secondary btn-action shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+            className={`${actionBaseClass} btn-outline btn-warning disabled:opacity-40`}
             disabled={!isAdmin}
             onClick={() => setIsTransferScanModalOpen(true)}
             data-testid={TID.dashboard.quickAction.transferLockup}
@@ -124,7 +129,7 @@ export function QuickActionButtons() {
 
       {isDevMode && (
         <button
-          className="btn btn-outline btn-accent hover:shadow-md transition-all duration-200 ml-auto"
+          className={`${actionBaseClass} btn-outline btn-accent`}
           onClick={() => setIsScanModalOpen(true)}
           data-testid={TID.dashboard.quickAction.simulateScan}
         >

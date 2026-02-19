@@ -20,10 +20,12 @@ interface PresentMember {
   id: string
   firstName: string
   lastName: string
+  initials?: string
   displayName?: string
   rank: string
   rankSortOrder: number
   division: string
+  divisionCode: string
   divisionId: string
   memberType: string
   mess: string | null
@@ -103,8 +105,12 @@ interface PresentPerson {
   name: string
   displayName?: string
   rank?: string
+  firstName?: string
+  lastName?: string
+  initials?: string
   rankSortOrder?: number
   division?: string
+  divisionCode?: string
   divisionId?: string
   memberType?: string
   tags?: Array<{ id: string; name: string; chipVariant?: string; chipColor?: string }>
@@ -195,8 +201,12 @@ export class PresenceService {
         name: m.displayName ?? `${m.firstName} ${m.lastName}`,
         displayName: m.displayName ?? `${m.firstName} ${m.lastName}`,
         rank: m.rank,
+        firstName: m.firstName,
+        lastName: m.lastName,
+        initials: m.initials,
         rankSortOrder: m.rankSortOrder,
         division: m.division,
+        divisionCode: m.divisionCode,
         divisionId: m.divisionId,
         memberType: m.memberType,
         tags: m.tags,

@@ -337,7 +337,7 @@ export function StatusStats() {
 
   return (
     <div
-      className="stats stats-vertical lg:stats-horizontal shadow-lg w-fit stats-panel animate-fade-in"
+      className="stats stats-vertical lg:stats-horizontal w-full lg:w-fit shadow-md stats-panel animate-fade-in"
       aria-live="polite"
       data-help-id="dashboard.status-stats"
     >

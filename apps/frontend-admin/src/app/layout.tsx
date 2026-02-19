@@ -22,7 +22,7 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode
 }>) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const pathname = usePathname()
   const isBareRoute = BARE_ROUTES.some((r) => pathname.startsWith(r))
 

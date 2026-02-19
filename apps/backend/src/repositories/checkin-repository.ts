@@ -40,10 +40,12 @@ export interface PresentMember {
   id: string
   firstName: string
   lastName: string
+  initials?: string
   displayName?: string
   rank: string
   rankSortOrder: number
   division: string
+  divisionCode: string
   divisionId: string | null
   memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
   mess: string | null
@@ -726,12 +728,14 @@ export class CheckinRepository {
         id: string
         first_name: string
         last_name: string
+        initials: string | null
         display_name: string | null
         rank: string
         rank_sort_order: number
         mess: string | null
         division_id: string
         division_name: string
+        division_code: string
         member_type: string
         checked_in_at: Date
         kiosk_id: string | null
@@ -781,12 +785,14 @@ export class CheckinRepository {
         m.id,
         m.first_name,
         m.last_name,
+        m.initials,
         m.display_name,
         m.rank,
         COALESCE(r.display_order, 0) as rank_sort_order,
         m.mess,
         m.division_id,
         d.name as division_name,
+        d.code as division_code,
         m.member_type,
         lc.timestamp as checked_in_at,
         lc.kiosk_id,
@@ -804,10 +810,12 @@ export class CheckinRepository {
       id: row.id,
       firstName: row.first_name,
       lastName: row.last_name,
+      initials: row.initials ?? undefined,
       displayName: row.display_name ?? undefined,
       rank: row.rank,
       rankSortOrder: Number(row.rank_sort_order),
       division: row.division_name,
+      divisionCode: row.division_code,
       divisionId: row.division_id,
       memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
       mess: row.mess,

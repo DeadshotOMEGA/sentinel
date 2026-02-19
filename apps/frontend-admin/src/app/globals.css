@@ -251,10 +251,13 @@
 .stats-panel {
   background: linear-gradient(135deg, oklch(99% 0 0) 0%, oklch(97% 0 0) 100%);
   border: 1px solid oklch(92% 0 0);
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
 
 .stats-panel .stat {
   border-color: oklch(94% 0 0);
+  min-height: 104px;
 }
 
 .stats-panel .stat-value {
@@ -334,23 +337,23 @@
 }
 
 @container (min-width: 640px) {
-  .presence-card-grid { grid-template-columns: repeat(3, 1fr); }
+  .presence-card-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @container (min-width: 900px) {
-  .presence-card-grid { grid-template-columns: repeat(4, 1fr); }
+  .presence-card-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @container (min-width: 1100px) {
-  .presence-card-grid { grid-template-columns: repeat(5, 1fr); }
+  .presence-card-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 @container (min-width: 1350px) {
-  .presence-card-grid { grid-template-columns: repeat(6, 1fr); }
+  .presence-card-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
 @container (min-width: 1650px) {
-  .presence-card-grid { grid-template-columns: repeat(7, 1fr); }
+  .presence-card-grid { grid-template-columns: repeat(6, 1fr); }
 }
 
 .presence-section-header {

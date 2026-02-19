@@ -5,6 +5,7 @@ import { Clock, User, Building2, LogOut } from 'lucide-react'
 import { Chip, fadedColorClasses, type ChipColor, type ChipVariant } from '@/components/ui/chip'
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
+import { formatPersonLabel } from '@/lib/name-format'
 
 function formatRelativeTime(isoString: string): string {
   const now = Date.now()
@@ -34,6 +35,16 @@ interface PersonAvatarProps {
   person: PresentPerson
   dutyPosition?: string | null
   isDds?: boolean
+}
+
+function getOptionalDisplayName(person: PresentPerson): string | undefined {
+  const value = (person as { displayName?: unknown }).displayName
+  return typeof value === 'string' && value.trim() ? value : undefined
+}
+
+function getOptionalString(person: PresentPerson, key: string): string | undefined {
+  const value = (person as Record<string, unknown>)[key]
+  return typeof value === 'string' && value.trim() ? value : undefined
 }
 
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
@@ -95,14 +106,14 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   }
 
   // Priority 5: Default initials
-  const initials = (person.displayName ?? person.name)
+  const initials = (getOptionalDisplayName(person) ?? person.name)
     .split(' ')
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join('')
     .slice(0, 2)
     .toUpperCase()
   return (
-    <div className="avatar avatar-placeholder" aria-label={person.displayName ?? person.name}>
+    <div className="avatar avatar-placeholder" aria-label={getOptionalDisplayName(person) ?? person.name}>
       <div className="w-10 rounded-full border border-base-300 bg-base-200 text-base-content/60">
         <span className="text-xs font-bold">{initials}</span>
       </div>
@@ -124,7 +135,23 @@ export const PersonCard = memo(function PersonCard({
   onCheckoutVisitor,
 }: PersonCardProps) {
   const isMember = person.type === 'member'
-  const displayName = person.displayName ?? person.name
+  const displayName = formatPersonLabel({
+    name: person.name,
+    displayName: getOptionalDisplayName(person),
+    rank: person.rank,
+    compact: !isMember,
+  })
+  const memberFirstName = getOptionalString(person, 'firstName')
+  const memberLastName = getOptionalString(person, 'lastName')
+  const memberInitials = getOptionalString(person, 'initials')
+  const divisionCode = getOptionalString(person, 'divisionCode') ?? person.division
+
+  const fallbackSplit = displayName.split(',')
+  const memberTitle = person.rank && memberLastName
+    ? `${person.rank} ${memberLastName}`
+    : fallbackSplit[0]?.trim() || displayName
+  const memberSubtitle = memberFirstName ?? memberInitials
+  const memberFallbackSubtitle = fallbackSplit.slice(1).join(',').trim()
 
   // Determine which tag the avatar is displaying (if any) to suppress from chip row
   const avatarTagId = (() => {
@@ -141,25 +168,28 @@ export const PersonCard = memo(function PersonCard({
 
   return (
     <div
-      className={`card card-elevated border-2 h-full ${cardBorderClass}`}
+      className={`card card-elevated border h-full ${cardBorderClass}`}
       data-testid={TID.dashboard.personCard(person.id)}
     >
-      <div className="card-body p-3 gap-2">
+      <div className="card-body p-3.5 gap-2.5">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <PersonAvatar person={person} dutyPosition={dutyPosition} isDds={isDds} />
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm truncate">{displayName}</h3>
-              {displayName !== person.name && (
-                <p className="text-xs text-base-content/60 truncate">{person.name}</p>
+              <h3 className="font-bold text-[0.95rem] leading-tight truncate">{memberTitle}</h3>
+              {(memberSubtitle || memberFallbackSubtitle) && (
+                <p className="text-xs text-base-content/60 truncate">
+                  {memberSubtitle || memberFallbackSubtitle}
+                </p>
               )}
             </div>
+            {divisionCode && <span className="badge badge-outline badge-sm shrink-0">{divisionCode}</span>}
           </div>
         ) : (
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-sm truncate">{displayName}</h3>
+              <h3 className="font-bold text-[0.95rem] leading-tight truncate">{displayName}</h3>
               {person.organization && (
                 <p className="text-xs text-base-content/60 truncate">{person.organization}</p>
               )}
@@ -201,21 +231,22 @@ export const PersonCard = memo(function PersonCard({
                 ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-0.5 text-xs text-base-content/70">
-              {person.eventName && (
-                <span className="flex items-center gap-1">
-                  <Building2 size={10} />
-                  {person.eventName}
-                </span>
-              )}
+            <div className="flex flex-col gap-1 text-xs text-base-content/70">
               {person.hostName && (
                 <span className="flex items-center gap-1">
                   <User size={10} />
-                  Host: {person.hostName}
+                  <span className="truncate">
+                    <span className="text-base-content/55">Host:</span> {person.hostName}
+                  </span>
                 </span>
               )}
-              {!person.eventName && !person.hostName && person.visitReason && (
-                <span className="truncate">{person.visitReason}</span>
+              {person.visitReason && (
+                <span className="flex items-center gap-1">
+                  <Building2 size={10} />
+                  <span className="truncate">
+                    <span className="text-base-content/55">Note:</span> {person.visitReason}
+                  </span>
+                </span>
               )}
             </div>
           )}

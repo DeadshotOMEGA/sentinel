@@ -117,8 +117,11 @@ export function DashboardHelpLauncher() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[70]" data-testid={TID.dashboard.help.launcher}>
-      <div className="card bg-base-100 border border-base-300 shadow-xl w-96">
+    <div
+      className="fixed bottom-3 left-3 right-3 z-[70] hidden sm:block sm:bottom-6 sm:left-auto sm:right-6"
+      data-testid={TID.dashboard.help.launcher}
+    >
+      <div className="card bg-base-100 border border-base-300 shadow-xl w-full sm:w-96">
         <div className="card-body p-3">
           <button
             className="btn btn-primary btn-sm justify-start"

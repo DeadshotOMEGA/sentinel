@@ -161,8 +161,12 @@ export const PresentPersonSchema = v.object({
   name: v.string(),
   displayName: v.optional(v.string()),
   rank: v.optional(v.string()),
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+  initials: v.optional(v.string()),
   rankSortOrder: v.optional(v.number()),
   division: v.optional(v.string()),
+  divisionCode: v.optional(v.string()),
   divisionId: v.optional(v.string()),
   memberType: v.optional(v.string()),
   tags: v.optional(
