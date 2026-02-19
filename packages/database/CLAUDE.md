@@ -32,6 +32,12 @@ Applies when editing files under: `packages/database/`
 3. Create migration: `pnpm prisma migrate dev --name description`
 4. Rebuild: `pnpm build`
 
+**When deploying migrations to existing (legacy) DBs**:
+
+1. Use `pnpm prisma:migrate:deploy:safe`
+2. If DB has no `_prisma_migrations` table, it auto-baselines from `prisma/migrations/*/migration.sql`
+3. Subsequent deploys can use normal `pnpm prisma:migrate:deploy`
+
 **When importing**:
 
 - Production: `import { prisma } from '@sentinel/database'` (singleton)

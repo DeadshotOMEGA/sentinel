@@ -11,6 +11,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:deploy:safe": "tsx scripts/migrate-deploy-safe.ts",
+    "prisma:baseline": "tsx scripts/baseline-prisma-migrations.ts",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset",
     "typecheck": "tsc --noEmit",
