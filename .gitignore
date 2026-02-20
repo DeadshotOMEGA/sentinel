@@ -251,6 +251,17 @@ apps/*/tests/**/*.js.map
 # Project Specific
 # ===================================
 
+# Codex local overrides (secrets)
+.codex/config.local.toml
+
+# Playwright CLI QA artifacts (session-generated)
+baseline-*.png
+baseline-*.yml
+qa-round*.png
+qa-round*.yml
+round1*.png
+round1*.yml
+
 # RFID hardware configs (if sensitive)
 # hardware/config/*.local.json
 

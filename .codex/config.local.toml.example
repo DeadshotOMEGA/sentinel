@@ -1,0 +1,6 @@
+# Local-only Codex overrides.
+# Copy to .codex/config.local.toml and keep real values there (ignored by git).
+
+[mcp_servers.daisyui-blueprint.env]
+LICENSE = "your-license-key"
+EMAIL = "you@example.com"
