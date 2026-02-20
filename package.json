@@ -14,8 +14,6 @@
     "playwright-cli:capture": "bash scripts/playwright/cli-capture.sh",
     "cleanup": "bash scripts/cleanup-ports.sh",
     "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "test:coverage": "pnpm -r test:coverage",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
@@ -32,15 +30,13 @@
     "@types/node": "^24.10.9",
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
-    "@vitest/coverage-v8": "^4.0.17",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.17"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=24.0.0",

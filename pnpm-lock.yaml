@@ -27,9 +27,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.53.1
         version: 8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/coverage-v8':
-        specifier: ^4.0.17
-        version: 4.0.17(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -51,9 +48,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-      vitest:
-        specifier: ^4.0.17
-        version: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/backend:
     dependencies:
@@ -178,9 +172,6 @@ importers:
       '@types/swagger-ui-express':
         specifier: ^4.1.8
         version: 4.1.8
-      '@vitest/coverage-v8':
-        specifier: ^4.0.17
-        version: 4.0.17(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
       fast-check:
         specifier: ^4.5.3
         version: 4.5.3
@@ -199,9 +190,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-      vitest:
-        specifier: ^4.0.17
-        version: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/frontend-admin:
     dependencies:
@@ -434,10 +422,6 @@ packages:
 
   '@balena/dockerignore@1.0.2':
     resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
-
-  '@bcoe/v8-coverage@1.0.2':
-    resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
-    engines: {node: '>=18'}
 
   '@better-auth/core@1.4.17':
     resolution: {integrity: sha512-WSaEQDdUO6B1CzAmissN6j0lx9fM9lcslEYzlApB5UzFaBeAOHNUONTdglSyUs6/idiZBoRvt0t/qMXCgIU8ug==}
@@ -1662,15 +1646,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@vitest/coverage-v8@4.0.17':
-    resolution: {integrity: sha512-/6zU2FLGg0jsd+ePZcwHRy3+WpNTBBhDY56P4JTRqUN/Dp6CvOEa9HrikcQ4KfV2b2kAHUFB4dl1SuocWXSFEw==}
-    peerDependencies:
-      '@vitest/browser': 4.0.17
-      vitest: 4.0.17
-    peerDependenciesMeta:
-      '@vitest/browser':
-        optional: true
-
   '@vitest/expect@4.0.17':
     resolution: {integrity: sha512-mEoqP3RqhKlbmUmntNDDCJeTDavDR+fVYkSOw8qRwJFaW/0/5zA9zFeTrHqNtcmwh6j26yMmwx2PqUDPzt5ZAQ==}
 
@@ -1803,9 +1778,6 @@ packages:
 
   ast-types-flow@0.0.8:
     resolution: {integrity: sha512-OH/2E5Fg20h2aPrbe+QL8JZQFko0YZaF+j4mnQ7BGhfavO7OpSLa8a0y9sBwomHdSbkhTS8TQNayBfnW5DwbvQ==}
-
-  ast-v8-to-istanbul@0.3.10:
-    resolution: {integrity: sha512-p4K7vMz2ZSk3wN8l5o3y2bJAoZXT3VuJI5OLTATY/01CYWumWvwkUw0SqDBnNq6IiTO3qDa1eSQDibAV8g7XOQ==}
 
   async-function@1.0.0:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
@@ -2851,9 +2823,6 @@ packages:
     resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
-  html-escaper@2.0.2:
-    resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
-
   http-errors@2.0.1:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
@@ -3035,18 +3004,6 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  istanbul-lib-coverage@3.2.2:
-    resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
-    engines: {node: '>=8'}
-
-  istanbul-lib-report@3.0.1:
-    resolution: {integrity: sha512-GCfE1mtsHGOELCU8e/Z7YWzpmybrx/+dSTfLrvY8qRmaY6zXTKWn6WQIjaAFw069icm6GVMNkgu0NzI4iPZUNw==}
-    engines: {node: '>=10'}
-
-  istanbul-reports@3.2.0:
-    resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
-    engines: {node: '>=8'}
-
   iterator.prototype@1.1.5:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
@@ -3063,9 +3020,6 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-
-  js-tokens@9.0.1:
-    resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
   js-yaml@4.1.1:
     resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
@@ -3255,13 +3209,6 @@ packages:
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
-
-  magicast@0.5.1:
-    resolution: {integrity: sha512-xrHS24IxaLrvuo613F719wvOIv9xPHFWQHuvGUBmPnCA/3MQxKI3b+r7n1jAoDHmsbC5bRhTZYR77invLAxVnw==}
-
-  make-dir@4.0.0:
-    resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
-    engines: {node: '>=10'}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -4650,8 +4597,6 @@ snapshots:
 
   '@balena/dockerignore@1.0.2': {}
 
-  '@bcoe/v8-coverage@1.0.2': {}
-
   '@better-auth/core@1.4.17(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.5))(jose@6.1.3)(kysely@0.28.10)(nanostores@1.1.0)':
     dependencies:
       '@better-auth/utils': 0.3.0
@@ -5436,6 +5381,7 @@ snapshots:
     dependencies:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
+    optional: true
 
   '@types/compression@1.8.1':
     dependencies:
@@ -5456,7 +5402,8 @@ snapshots:
     dependencies:
       '@types/node': 24.10.9
 
-  '@types/deep-eql@4.0.2': {}
+  '@types/deep-eql@4.0.2':
+    optional: true
 
   '@types/docker-modem@3.0.6':
     dependencies:
@@ -5720,20 +5667,6 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vitest/coverage-v8@4.0.17(vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
-    dependencies:
-      '@bcoe/v8-coverage': 1.0.2
-      '@vitest/utils': 4.0.17
-      ast-v8-to-istanbul: 0.3.10
-      istanbul-lib-coverage: 3.2.2
-      istanbul-lib-report: 3.0.1
-      istanbul-reports: 3.2.0
-      magicast: 0.5.1
-      obug: 2.1.1
-      std-env: 3.10.0
-      tinyrainbow: 3.0.3
-      vitest: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
-
   '@vitest/expect@4.0.17':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -5742,6 +5675,7 @@ snapshots:
       '@vitest/utils': 4.0.17
       chai: 6.2.2
       tinyrainbow: 3.0.3
+    optional: true
 
   '@vitest/mocker@4.0.17(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
@@ -5750,28 +5684,34 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+    optional: true
 
   '@vitest/pretty-format@4.0.17':
     dependencies:
       tinyrainbow: 3.0.3
+    optional: true
 
   '@vitest/runner@4.0.17':
     dependencies:
       '@vitest/utils': 4.0.17
       pathe: 2.0.3
+    optional: true
 
   '@vitest/snapshot@4.0.17':
     dependencies:
       '@vitest/pretty-format': 4.0.17
       magic-string: 0.30.21
       pathe: 2.0.3
+    optional: true
 
-  '@vitest/spy@4.0.17': {}
+  '@vitest/spy@4.0.17':
+    optional: true
 
   '@vitest/utils@4.0.17':
     dependencies:
       '@vitest/pretty-format': 4.0.17
       tinyrainbow: 3.0.3
+    optional: true
 
   abort-controller@3.0.0:
     dependencies:
@@ -5911,15 +5851,10 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  assertion-error@2.0.1: {}
+  assertion-error@2.0.1:
+    optional: true
 
   ast-types-flow@0.0.8: {}
-
-  ast-v8-to-istanbul@0.3.10:
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      estree-walker: 3.0.3
-      js-tokens: 9.0.1
 
   async-function@1.0.0: {}
 
@@ -6126,7 +6061,8 @@ snapshots:
 
   caniuse-lite@1.0.30001766: {}
 
-  chai@6.2.2: {}
+  chai@6.2.2:
+    optional: true
 
   chalk@4.1.2:
     dependencies:
@@ -6550,7 +6486,8 @@ snapshots:
       iterator.prototype: 1.1.5
       safe-array-concat: 1.1.3
 
-  es-module-lexer@1.7.0: {}
+  es-module-lexer@1.7.0:
+    optional: true
 
   es-object-atoms@1.1.1:
     dependencies:
@@ -6613,7 +6550,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.1.4
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.2(jiti@2.6.1))
@@ -6640,7 +6577,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -6655,14 +6592,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
@@ -6677,7 +6614,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.53.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -6816,6 +6753,7 @@ snapshots:
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.8
+    optional: true
 
   esutils@2.0.3: {}
 
@@ -6833,7 +6771,8 @@ snapshots:
 
   events@3.3.0: {}
 
-  expect-type@1.3.0: {}
+  expect-type@1.3.0:
+    optional: true
 
   express-rate-limit@8.2.1(express@4.22.1):
     dependencies:
@@ -7126,8 +7065,6 @@ snapshots:
 
   hono@4.11.4: {}
 
-  html-escaper@2.0.2: {}
-
   http-errors@2.0.1:
     dependencies:
       depd: 2.0.0
@@ -7301,19 +7238,6 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  istanbul-lib-coverage@3.2.2: {}
-
-  istanbul-lib-report@3.0.1:
-    dependencies:
-      istanbul-lib-coverage: 3.2.2
-      make-dir: 4.0.0
-      supports-color: 7.2.0
-
-  istanbul-reports@3.2.0:
-    dependencies:
-      html-escaper: 2.0.2
-      istanbul-lib-report: 3.0.1
-
   iterator.prototype@1.1.5:
     dependencies:
       define-data-property: 1.1.4
@@ -7334,8 +7258,6 @@ snapshots:
   jose@6.1.3: {}
 
   js-tokens@4.0.0: {}
-
-  js-tokens@9.0.1: {}
 
   js-yaml@4.1.1:
     dependencies:
@@ -7505,16 +7427,6 @@ snapshots:
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  magicast@0.5.1:
-    dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.28.6
-      source-map-js: 1.2.1
-
-  make-dir@4.0.0:
-    dependencies:
-      semver: 7.7.3
 
   math-intrinsics@1.1.0: {}
 
@@ -7702,7 +7614,8 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
 
-  obug@2.1.1: {}
+  obug@2.1.1:
+    optional: true
 
   ohash@2.0.11: {}
 
@@ -8089,6 +8002,7 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.55.2
       '@rollup/rollup-win32-x64-msvc': 4.55.2
       fsevents: 2.3.3
+    optional: true
 
   rou3@0.7.12: {}
 
@@ -8256,7 +8170,8 @@ snapshots:
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
 
-  siginfo@2.0.0: {}
+  siginfo@2.0.0:
+    optional: true
 
   signal-exit@3.0.7: {}
 
@@ -8338,11 +8253,13 @@ snapshots:
 
   stack-trace@0.0.10: {}
 
-  stackback@0.0.2: {}
+  stackback@0.0.2:
+    optional: true
 
   statuses@2.0.2: {}
 
-  std-env@3.10.0: {}
+  std-env@3.10.0:
+    optional: true
 
   std-env@3.9.0: {}
 
@@ -8580,7 +8497,8 @@ snapshots:
 
   text-hex@1.0.0: {}
 
-  tinybench@2.9.0: {}
+  tinybench@2.9.0:
+    optional: true
 
   tinyexec@1.0.2: {}
 
@@ -8589,7 +8507,8 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  tinyrainbow@3.0.3: {}
+  tinyrainbow@3.0.3:
+    optional: true
 
   tmp@0.2.5: {}
 
@@ -8760,6 +8679,7 @@ snapshots:
       lightningcss: 1.30.2
       tsx: 4.21.0
       yaml: 2.8.2
+    optional: true
 
   vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
@@ -8798,6 +8718,7 @@ snapshots:
       - terser
       - tsx
       - yaml
+    optional: true
 
   which-boxed-primitive@1.1.1:
     dependencies:
@@ -8848,6 +8769,7 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+    optional: true
 
   winston-daily-rotate-file@5.0.0(winston@3.19.0):
     dependencies:

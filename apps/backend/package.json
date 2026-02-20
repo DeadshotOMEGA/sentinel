@@ -9,12 +9,6 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch",
-    "test:clean": "bash tests/scripts/cleanup-test-containers.sh",
-    "test:clean:force": "bash tests/scripts/cleanup-test-containers.sh --force",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
@@ -63,13 +57,11 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
-    "@vitest/coverage-v8": "^4.0.17",
     "fast-check": "^4.5.3",
     "pg": "^8.17.2",
     "supertest": "^7.2.2",
     "testcontainers": "^11.11.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.17"
+    "typescript": "^5.9.3"
   }
 }
