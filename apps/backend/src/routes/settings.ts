@@ -4,10 +4,44 @@ import { SettingRepository } from '../repositories/setting-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import type { Setting } from '../repositories/setting-repository.js'
 import type { SettingResponse } from '@sentinel/contracts'
+import type { Request } from 'express'
+import { AccountLevel } from '../middleware/roles.js'
 
 const s = initServer()
 
 const settingRepo = new SettingRepository(getPrismaClient())
+
+function requireMember(req: Request) {
+  if (!req.member) {
+    return {
+      status: 401 as const,
+      body: {
+        error: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      },
+    }
+  }
+  return null
+}
+
+function requireAdminOrDeveloper(req: Request) {
+  const memberAuth = requireMember(req)
+  if (memberAuth) {
+    return memberAuth
+  }
+
+  if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
+    return {
+      status: 403 as const,
+      body: {
+        error: 'FORBIDDEN',
+        message: 'Admin or Developer access required',
+      },
+    }
+  }
+
+  return null
+}
 
 /**
  * Convert repository Setting to API SettingResponse format
@@ -33,7 +67,12 @@ export const settingsRouter = s.router(settingContract, {
   /**
    * Get all settings with optional filtering
    */
-  getSettings: async ({ query }) => {
+  getSettings: async ({ query, req }) => {
+    const auth = requireMember(req)
+    if (auth) {
+      return auth
+    }
+
     try {
       const settings = await settingRepo.findAll({
         category: query.category,
@@ -61,7 +100,12 @@ export const settingsRouter = s.router(settingContract, {
   /**
    * Get single setting by key
    */
-  getSettingByKey: async ({ params }) => {
+  getSettingByKey: async ({ params, req }) => {
+    const auth = requireMember(req)
+    if (auth) {
+      return auth
+    }
+
     try {
       const setting = await settingRepo.findByKey(params.key)
 
@@ -93,7 +137,12 @@ export const settingsRouter = s.router(settingContract, {
   /**
    * Create new setting (admin only)
    */
-  createSetting: async ({ body }) => {
+  createSetting: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
     try {
       // Check if key already exists
       const exists = await settingRepo.existsByKey(body.key)
@@ -143,7 +192,12 @@ export const settingsRouter = s.router(settingContract, {
   /**
    * Update existing setting (admin only)
    */
-  updateSetting: async ({ params, body }) => {
+  updateSetting: async ({ params, body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
     try {
       const setting = await settingRepo.updateByKey(params.key, {
         value: body.value,
@@ -188,7 +242,12 @@ export const settingsRouter = s.router(settingContract, {
   /**
    * Delete setting (admin only)
    */
-  deleteSetting: async ({ params }) => {
+  deleteSetting: async ({ params, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
     try {
       await settingRepo.deleteByKey(params.key)
 

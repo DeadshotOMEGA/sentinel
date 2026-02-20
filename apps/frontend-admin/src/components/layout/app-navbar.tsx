@@ -10,6 +10,7 @@ import { TID } from '@/lib/test-ids'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dds', label: 'DDS' },
   { href: '/members', label: 'Members' },
   { href: '/badges', label: 'Badges' },
   { href: '/events', label: 'Events' },
@@ -102,7 +103,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end gap-1.5 sm:gap-2">
-        <span className="badge badge-outline badge-sm sm:badge-md md:badge-xl" data-testid={TID.nav.backendStatus}>
+        <span
+          className="badge badge-outline badge-sm sm:badge-md md:badge-xl"
+          data-testid={TID.nav.backendStatus}
+        >
           <span className={cn('status', dot)} />
           <span className="hidden sm:inline">{label}</span>
         </span>

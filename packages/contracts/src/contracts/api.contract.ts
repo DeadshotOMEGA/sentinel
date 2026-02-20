@@ -25,6 +25,7 @@ import { lockupContract } from './lockup.contract.js'
 import { visitorContract } from './visitor.contract.js'
 import { statHolidayContract } from './stat-holiday.contract.js'
 import { tagContract } from './tag.contract.js'
+import { settingContract } from './setting.contract.js'
 
 const c = initContract()
 
@@ -62,6 +63,7 @@ export const apiContract = c.router(
     visitors: visitorContract,
     statHolidays: statHolidayContract,
     tags: tagContract,
+    settings: settingContract,
   },
   {
     pathPrefix: '',

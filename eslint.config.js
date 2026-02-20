@@ -32,12 +32,18 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: ['./tsconfig.json', './apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+        project: [
+          './tsconfig.json',
+          './apps/*/tsconfig.json',
+          './apps/backend/tests/tsconfig.json',
+          './packages/*/tsconfig.json',
+        ],
       },
       globals: {
         // Node.js globals
         process: 'readonly',
         Buffer: 'readonly',
+        require: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
         console: 'readonly',
