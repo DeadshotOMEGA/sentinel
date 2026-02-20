@@ -1,4 +1,5 @@
 'use client'
+/* global process */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -6,7 +7,7 @@ import { BadgeScanInput } from '@/components/auth/badge-scan-input'
 import { PinInput } from '@/components/auth/pin-input'
 import { useAuthStore } from '@/store/auth-store'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function LoginPage() {
   const [step, setStep] = useState<'badge' | 'pin'>('badge')
@@ -64,7 +65,14 @@ export default function LoginPage() {
         {step === 'badge' ? (
           <BadgeScanInput onScan={handleBadgeScan} />
         ) : (
-          <PinInput onSubmit={handlePinSubmit} onBack={() => { setStep('badge'); setError(null) }} loading={loading} />
+          <PinInput
+            onSubmit={handlePinSubmit}
+            onBack={() => {
+              setStep('badge')
+              setError(null)
+            }}
+            loading={loading}
+          />
         )}
       </div>
     </div>

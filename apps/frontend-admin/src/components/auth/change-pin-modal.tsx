@@ -1,6 +1,7 @@
 'use client'
+/* global process */
 
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 interface ChangePinModalProps {
   open: boolean
@@ -37,7 +38,7 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
     onOpenChange(value)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
 
@@ -85,7 +86,9 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
       <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Change PIN</DialogTitle>
-          <DialogDescription>Enter your current PIN and choose a new 4-digit PIN.</DialogDescription>
+          <DialogDescription>
+            Enter your current PIN and choose a new 4-digit PIN.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -155,7 +158,9 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || currentPin.length !== 4 || newPin.length !== 4 || confirmPin.length !== 4}
+              disabled={
+                loading || currentPin.length !== 4 || newPin.length !== 4 || confirmPin.length !== 4
+              }
             >
               {loading ? <span className="loading loading-spinner loading-sm" /> : 'Change PIN'}
             </button>

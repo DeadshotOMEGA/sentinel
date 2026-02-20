@@ -1,0 +1,184 @@
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: sentinel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sentinel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-sentinel}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-sentinel} -d ${POSTGRES_DB:-sentinel}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
+  backend:
+    image: ghcr.io/${GHCR_OWNER:-deadshotomega}/sentinel/backend:${SENTINEL_VERSION:?SENTINEL_VERSION is required}
+    container_name: sentinel-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      BASE_URL: ${APP_PUBLIC_URL:-http://sentinel.local}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://sentinel.local,http://localhost,http://127.0.0.1}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sentinel}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-sentinel}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      API_KEY_SECRET: ${API_KEY_SECRET:?API_KEY_SECRET is required}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+      SOCKET_IO_SECRET: ${SOCKET_IO_SECRET:?SOCKET_IO_SECRET is required}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_RATE_LIMITING: ${ENABLE_RATE_LIMITING:-true}
+      ENABLE_SWAGGER_AUTH: ${ENABLE_SWAGGER_AUTH:-false}
+      SWAGGER_USERNAME: ${SWAGGER_USERNAME:-admin}
+      SWAGGER_PASSWORD: ${SWAGGER_PASSWORD:-changeme}
+      TIMEZONE: ${TIMEZONE:-America/Winnipeg}
+      DAY_ROLLOVER_TIME: ${DAY_ROLLOVER_TIME:-03:00}
+      DUTY_WATCH_ALERT_TIME: ${DUTY_WATCH_ALERT_TIME:-19:00}
+      LOCKUP_WARNING_TIME: ${LOCKUP_WARNING_TIME:-22:00}
+      LOCKUP_CRITICAL_TIME: ${LOCKUP_CRITICAL_TIME:-23:00}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:-deadshotomega}/sentinel/frontend:${SENTINEL_VERSION:?SENTINEL_VERSION is required}
+    container_name: sentinel-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:3000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/ || exit 1',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
+  caddy:
+    image: caddy:2.9.1-alpine
+    container_name: sentinel-caddy
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    ports:
+      - '80:80'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1/healthz || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: sentinel-loki
+    restart: unless-stopped
+    profiles: ['obs']
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    mem_limit: 512m
+    networks:
+      - sentinel_net
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: sentinel-promtail
+    restart: unless-stopped
+    profiles: ['obs']
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 256m
+    networks:
+      - sentinel_net
+
+  prometheus:
+    image: prom/prometheus:v2.53.4
+    container_name: sentinel-prometheus
+    restart: unless-stopped
+    profiles: ['obs']
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-7d}
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    mem_limit: 512m
+    networks:
+      - sentinel_net
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: sentinel-grafana
+    restart: unless-stopped
+    profiles: ['obs']
+    depends_on:
+      - loki
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    mem_limit: 384m
+    networks:
+      - sentinel_net
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  loki_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  sentinel_net:
+    driver: bridge
