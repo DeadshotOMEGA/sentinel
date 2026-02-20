@@ -232,7 +232,10 @@ export function MembersTable({
       }),
       columnHelper.accessor('divisionId', {
         header: ({ column }) => <SortableHeader column={column} label="Division" />,
-        cell: (info) => divisionMap.get(info.getValue()) ?? 'N/A',
+        cell: (info) => {
+          const divisionId = info.getValue()
+          return divisionId ? (divisionMap.get(divisionId) ?? 'N/A') : 'N/A'
+        },
         enableSorting: true,
       }),
       columnHelper.accessor('memberStatusId', {

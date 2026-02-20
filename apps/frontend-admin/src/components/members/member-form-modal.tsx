@@ -72,7 +72,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         middleInitial: member.middleInitial ?? '',
         email: member.email ?? '',
         phoneNumber: member.phoneNumber ?? '',
-        divisionId: member.divisionId,
+        divisionId: member.divisionId ?? '',
         badgeId: member.badgeId ?? '',
         memberTypeId: member.memberTypeId ?? '',
         memberStatusId: member.memberStatusId ?? '',
@@ -124,7 +124,11 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto" testId={TID.members.form.modal}>
+      <DialogContent
+        size="xl"
+        className="max-h-[90vh] overflow-y-auto"
+        testId={TID.members.form.modal}
+      >
         <DialogHeader>
           <DialogTitle>{mode === 'create' ? 'Create New Member' : 'Edit Member'}</DialogTitle>
           <DialogDescription>
@@ -282,7 +286,12 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting} data-testid={TID.members.form.submit}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-md"
+              disabled={isSubmitting}
+              data-testid={TID.members.form.submit}
+            >
               {isSubmitting && <ButtonSpinner />}
               {mode === 'create' ? 'Create Member' : 'Save Changes'}
             </button>

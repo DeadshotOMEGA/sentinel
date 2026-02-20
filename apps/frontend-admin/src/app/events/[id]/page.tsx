@@ -21,6 +21,8 @@ import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventDutyWatchCard } from '@/components/events/event-duty-watch-card'
 import { EventFormModal } from '@/components/events/event-form-modal'
 import { Chip } from '@/components/ui/chip'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
@@ -166,9 +168,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
             <EventStatusBadge status={event.status} />
             {event.eventType && <Chip variant="bordered">{event.eventType.name}</Chip>}
             {event.eventType?.category && (
-              <Chip variant="light">
-                {event.eventType.category.replace('_', ' ')}
-              </Chip>
+              <Chip variant="light">{event.eventType.category.replace('_', ' ')}</Chip>
             )}
           </div>
         </div>
@@ -215,9 +215,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
               disabled={updateStatus.isPending}
               aria-label={transitions.label}
             >
-              {updateStatus.isPending ? (
-                <ButtonSpinner />
-              ) : null}
+              {updateStatus.isPending ? <ButtonSpinner /> : null}
               {transitions.label}
             </button>
           )}
