@@ -153,12 +153,6 @@ pnpm dev                  # Start dev server with hot reload
 pnpm build                # Compile TypeScript to JavaScript
 pnpm start                # Run production build
 
-# Testing
-pnpm test                 # Run all tests (477 repo + 157 route tests)
-pnpm test:watch           # Run tests in watch mode
-pnpm test:coverage        # Run tests with coverage report
-pnpm test:ui              # Open Vitest UI
-
 # Linting & Type Checking
 pnpm typecheck            # Check TypeScript types
 pnpm lint                 # Run ESLint
@@ -181,45 +175,10 @@ apps/backend/
 │   ├── websocket/       # Socket.IO real-time events
 │   ├── app.ts           # Express app configuration
 │   └── index.ts         # Server entry point
-├── tests/
-│   ├── integration/     # Integration tests (repositories, routes)
-│   └── setup.ts         # Test configuration
 ├── scripts/             # Utility scripts
 ├── openapi.json         # Generated OpenAPI specification
 └── Dockerfile           # Production container image
 ```
-
-## Testing
-
-### Test Coverage
-
-- **Repository Layer:** 88-90% coverage (477 tests)
-- **Route Layer:** 80-85% coverage (157 tests)
-- **Overall:** 70-80% coverage (adjusted for deferred services)
-
-### Running Tests
-
-```bash
-# Run all tests (~5 minutes)
-pnpm test
-
-# Run specific test file
-pnpm vitest run tests/integration/repositories/member-repository.test.ts
-
-# Watch mode
-pnpm test:watch
-
-# Coverage report
-pnpm test:coverage
-# View report: open coverage/index.html
-```
-
-### Test Infrastructure
-
-- **Vitest** - Fast unit test runner
-- **Testcontainers** - Isolated PostgreSQL instances per test suite
-- **Supertest** - HTTP assertions for route tests
-- **Integration-first approach** - 70% integration, 15% unit, 15% E2E
 
 ## Docker Deployment
 
@@ -337,11 +296,11 @@ Real-time updates via Socket.IO:
 
 ### Common Issues
 
-**1. Tests failing with "Port already in use"**
+**1. Docker services failing with "Port already in use"**
 
 ```bash
-# Clean up test containers
-pnpm test:clean:force
+# Stop running compose services
+docker-compose down
 ```
 
 **2. Database connection errors**
@@ -392,8 +351,6 @@ The backend is tested on every push via `.github/workflows/test.yml`:
 
 - ✅ TypeScript type checking
 - ✅ ESLint linting
-- ✅ Unit & integration tests
-- ✅ Coverage reporting (Codecov)
 
 Build artifacts are generated via `.github/workflows/build.yml`:
 
@@ -409,9 +366,6 @@ pnpm typecheck
 
 # Lint
 pnpm lint
-
-# Test
-pnpm test
 
 # Build
 pnpm build
@@ -447,8 +401,8 @@ pnpm audit fix
 ## Contributing
 
 1. Create feature branch from `develop`
-2. Make changes and add tests
-3. Ensure tests pass: `pnpm test`
+2. Make changes
+3. Ensure checks pass: `pnpm typecheck && pnpm lint`
 4. Create PR to `develop` (1 approval required)
 5. Never push directly to `develop` or `main`
 
