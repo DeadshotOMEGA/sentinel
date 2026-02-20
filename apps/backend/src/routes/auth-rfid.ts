@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express'
+import crypto from 'node:crypto'
 import { z } from 'zod'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'

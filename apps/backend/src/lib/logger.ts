@@ -1,6 +1,7 @@
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 import { AsyncLocalStorage } from 'async_hooks'
+import { performance } from 'node:perf_hooks'
 import { v4 as uuidv4 } from 'uuid'
 import { socketIOTransport } from './log-transport-socketio.js'
 
@@ -144,36 +145,31 @@ export const logger = winston.createLogger({
   },
   transports: [
     new winston.transports.Console({
-      format:
-        isDev
-          ? winston.format.combine(
-              winston.format.colorize(),
-              winston.format.printf(
-                ({ timestamp, level, message, module, correlationId, userId, ...meta }) => {
-                  const moduleStr = module ? `[${module}]` : ''
-                  const corrIdStr =
-                    correlationId && typeof correlationId === 'string'
-                      ? `[${correlationId.slice(0, 8)}]`
-                      : ''
-                  const userIdStr =
-                    userId && typeof userId === 'string' ? `[user:${userId.slice(0, 8)}]` : ''
-                  const metaStr =
-                    Object.keys(meta).length > 0 ? `\n${JSON.stringify(meta, null, 2)}` : ''
-                  return `${timestamp} ${level} ${moduleStr}${corrIdStr}${userIdStr}: ${message}${metaStr}`
-                }
-              )
+      format: isDev
+        ? winston.format.combine(
+            winston.format.colorize(),
+            winston.format.printf(
+              ({ timestamp, level, message, module, correlationId, userId, ...meta }) => {
+                const moduleStr = module ? `[${module}]` : ''
+                const corrIdStr =
+                  correlationId && typeof correlationId === 'string'
+                    ? `[${correlationId.slice(0, 8)}]`
+                    : ''
+                const userIdStr =
+                  userId && typeof userId === 'string' ? `[user:${userId.slice(0, 8)}]` : ''
+                const metaStr =
+                  Object.keys(meta).length > 0 ? `\n${JSON.stringify(meta, null, 2)}` : ''
+                return `${timestamp} ${level} ${moduleStr}${corrIdStr}${userIdStr}: ${message}${metaStr}`
+              }
             )
-          : winston.format.json(),
+          )
+        : winston.format.json(),
     }),
     socketIOTransport,
     ...fileTransports,
   ],
-  exceptionHandlers: [
-    new winston.transports.File({ filename: 'logs/exceptions.log' }),
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({ filename: 'logs/rejections.log' }),
-  ],
+  exceptionHandlers: [new winston.transports.File({ filename: 'logs/exceptions.log' })],
+  rejectionHandlers: [new winston.transports.File({ filename: 'logs/rejections.log' })],
 })
 
 /**

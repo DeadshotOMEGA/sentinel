@@ -4,6 +4,11 @@
 
 import { getPrismaClient } from '../lib/database.js'
 
+type ImportMapping = Record<string, string>
+type RoleImportMapping = Record<string, string>
+type ImportPreviewResult = Record<string, unknown>
+type ImportExecuteResult = Record<string, unknown>
+
 export class AttendeeImportService {
   constructor() {
     getPrismaClient()
@@ -13,7 +18,7 @@ export class AttendeeImportService {
    * Parse Excel file sheets
    * TODO Phase 3: Implement with xlsx library
    */
-  parseExcelSheets(_buffer: Buffer): any[] {
+  parseExcelSheets(_buffer: Buffer): Array<Record<string, unknown>> {
     throw new Error('Excel parsing not yet implemented (Phase 3)')
   }
 
@@ -29,7 +34,7 @@ export class AttendeeImportService {
    * Parse CSV headers
    * TODO Phase 3: Implement with papaparse library
    */
-  parseHeaders(_csvText: string): any {
+  parseHeaders(_csvText: string): string[] {
     throw new Error('CSV header parsing not yet implemented (Phase 3)')
   }
 
@@ -40,9 +45,9 @@ export class AttendeeImportService {
   async previewImport(
     _eventId: string,
     _csvText: string,
-    _mapping: any,
-    _roleMapping?: any
-  ): Promise<any> {
+    _mapping: ImportMapping,
+    _roleMapping?: RoleImportMapping
+  ): Promise<ImportPreviewResult> {
     throw new Error('Import preview not yet implemented (Phase 3)')
   }
 
@@ -53,10 +58,10 @@ export class AttendeeImportService {
   async executeImport(
     _eventId: string,
     _csvText: string,
-    _mapping: any,
-    _roleMapping?: any,
+    _mapping: ImportMapping,
+    _roleMapping?: RoleImportMapping,
     _duplicateResolution?: string
-  ): Promise<any> {
+  ): Promise<ImportExecuteResult> {
     throw new Error('Import execution not yet implemented (Phase 3)')
   }
 }

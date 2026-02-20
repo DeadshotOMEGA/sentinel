@@ -4,6 +4,9 @@
 
 import { getPrismaClient } from '../lib/database.js'
 
+type SimulationRecord = Record<string, unknown>
+type SimulationConfig = Record<string, unknown>
+
 export class SimulationService {
   constructor() {
     getPrismaClient()
@@ -13,7 +16,7 @@ export class SimulationService {
    * Generate test members
    * TODO Phase 3: Implement with faker library
    */
-  async generateMembers(_count: number, _divisionId: string): Promise<any[]> {
+  async generateMembers(_count: number, _divisionId: string): Promise<SimulationRecord[]> {
     throw new Error('Member generation not yet implemented (Phase 3)')
   }
 
@@ -26,7 +29,7 @@ export class SimulationService {
     _startDate: Date,
     _endDate: Date,
     _pattern?: string
-  ): Promise<any> {
+  ): Promise<SimulationRecord> {
     throw new Error('Checkin generation not yet implemented (Phase 3)')
   }
 
@@ -34,7 +37,7 @@ export class SimulationService {
    * Generate test badges
    * TODO Phase 3: Implement badge generation
    */
-  async generateBadges(_count: number): Promise<any[]> {
+  async generateBadges(_count: number): Promise<SimulationRecord[]> {
     throw new Error('Badge generation not yet implemented (Phase 3)')
   }
 
@@ -42,7 +45,7 @@ export class SimulationService {
    * Generate test events
    * TODO Phase 3: Implement event generation
    */
-  async generateEvents(_count: number): Promise<any[]> {
+  async generateEvents(_count: number): Promise<SimulationRecord[]> {
     throw new Error('Event generation not yet implemented (Phase 3)')
   }
 
@@ -58,7 +61,7 @@ export class SimulationService {
    * Run full simulation
    * TODO Phase 3: Implement complete simulation workflow
    */
-  async runSimulation(_config: any): Promise<any> {
+  async runSimulation(_config: SimulationConfig): Promise<SimulationRecord> {
     throw new Error('Simulation not yet implemented (Phase 3)')
   }
 }

@@ -2,6 +2,7 @@ import { initServer } from '@ts-rest/express'
 import { alertConfigContract } from '@sentinel/contracts'
 import * as v from 'valibot'
 import { AlertRuleConfigSchema } from '@sentinel/contracts'
+import type { AlertRuleConfig } from '@sentinel/contracts'
 import { AlertConfigRepository } from '../repositories/alert-config-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
@@ -23,9 +24,9 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
       const allConfigs = await alertConfigRepo.findAll()
 
       // Convert to map format
-      const configs: Record<string, any> = {}
+      const configs: Record<string, AlertRuleConfig> = {}
       for (const alertConfig of allConfigs) {
-        configs[alertConfig.key] = alertConfig.config
+        configs[alertConfig.key] = alertConfig.config as AlertRuleConfig
       }
 
       return {
@@ -64,7 +65,7 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         status: 200 as const,
         body: {
           key: alertConfig.key,
-          config: alertConfig.config as any,
+          config: alertConfig.config as AlertRuleConfig,
           updatedAt: alertConfig.updatedAt.toISOString(),
         },
       }
@@ -97,13 +98,16 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
         }
       }
 
-      const alertConfig = await alertConfigRepo.upsert(params.key, body.config)
+      const alertConfig = await alertConfigRepo.upsert(
+        params.key,
+        body.config as Record<string, unknown>
+      )
 
       return {
         status: 200 as const,
         body: {
           key: alertConfig.key,
-          config: alertConfig.config as any,
+          config: alertConfig.config as AlertRuleConfig,
           updatedAt: alertConfig.updatedAt.toISOString(),
         },
       }
@@ -145,7 +149,9 @@ export const alertConfigsRouter = s.router(alertConfigContract, {
       }
 
       // Bulk upsert in transaction
-      const updated = await alertConfigRepo.bulkUpsert(body.configs)
+      const updated = await alertConfigRepo.bulkUpsert(
+        body.configs as Record<string, Record<string, unknown>>
+      )
 
       return {
         status: 200 as const,

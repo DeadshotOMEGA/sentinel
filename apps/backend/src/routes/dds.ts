@@ -335,6 +335,7 @@ export const ddsRouter = s.router(ddsContract, {
         body: {
           assignment: null,
           nextDds,
+          isDdsOnSite: false,
         },
       }
     } catch (error) {

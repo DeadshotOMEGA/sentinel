@@ -1,10 +1,30 @@
 import { initServer } from '@ts-rest/express'
 import { bmqCourseContract } from '@sentinel/contracts'
+import type {
+  BMQCourseResponse,
+  BMQEnrollmentStatus,
+  BMQEnrollmentResponse,
+  BMQEnrollmentWithCourse,
+  BMQEnrollmentWithMember,
+  DayOfWeek,
+} from '@sentinel/contracts'
 import { BmqCourseRepository } from '../repositories/bmq-course-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
 const bmqRepo = new BmqCourseRepository(getPrismaClient())
+
+type CourseRecord = Awaited<ReturnType<BmqCourseRepository['create']>> & {
+  _count?: { bmqEnrollments: number }
+}
+type EnrollmentRecord = Awaited<ReturnType<BmqCourseRepository['createEnrollment']>>
+type EnrollmentWithMemberRecord = Awaited<
+  ReturnType<BmqCourseRepository['findCourseEnrollments']>
+>[number]
+type EnrollmentWithCourseRecord = Awaited<
+  ReturnType<BmqCourseRepository['findMemberEnrollments']>
+>[number]
+type CourseUpdateInput = Parameters<BmqCourseRepository['update']>[1]
 
 /**
  * BMQ Courses routes
@@ -26,7 +46,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 200 as const,
         body: {
-          courses: courses.map((course: any) => toCourseApiFormat(course)),
+          courses: courses.map((course) => toCourseApiFormat(course)),
         },
       }
     } catch (error) {
@@ -60,7 +80,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 200 as const,
         body: {
-          course: toCourseApiFormat(course as any),
+          course: toCourseApiFormat(course),
         },
       }
     } catch (error) {
@@ -92,7 +112,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 201 as const,
         body: {
-          course: toCourseApiFormat(course as any),
+          course: toCourseApiFormat(course),
         },
       }
     } catch (error) {
@@ -124,7 +144,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       }
 
       // Build update data
-      const updateData: any = {}
+      const updateData: CourseUpdateInput = {}
       if (body.name !== undefined) updateData.name = body.name
       if (body.startDate !== undefined) updateData.startDate = new Date(body.startDate)
       if (body.endDate !== undefined) updateData.endDate = new Date(body.endDate)
@@ -151,7 +171,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 200 as const,
         body: {
-          course: toCourseApiFormat(course as any),
+          course: toCourseApiFormat(course),
         },
       }
     } catch (error) {
@@ -224,9 +244,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 200 as const,
         body: {
-          enrollments: enrollments.map((enrollment: any) =>
-            toEnrollmentWithMemberApiFormat(enrollment)
-          ),
+          enrollments: enrollments.map((enrollment) => toEnrollmentWithMemberApiFormat(enrollment)),
         },
       }
     } catch (error) {
@@ -399,9 +417,7 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
       return {
         status: 200 as const,
         body: {
-          enrollments: enrollments.map((enrollment: any) =>
-            toEnrollmentWithCourseApiFormat(enrollment)
-          ),
+          enrollments: enrollments.map((enrollment) => toEnrollmentWithCourseApiFormat(enrollment)),
         },
       }
     } catch (error) {
@@ -419,13 +435,13 @@ export const bmqCoursesRouter = s.router(bmqCourseContract, {
 /**
  * Convert BmqCourse to API response format
  */
-function toCourseApiFormat(course: any) {
+function toCourseApiFormat(course: CourseRecord): BMQCourseResponse {
   return {
     id: course.id,
     name: course.name,
-    startDate: course.startDate.toISOString().split('T')[0],
-    endDate: course.endDate.toISOString().split('T')[0],
-    trainingDays: course.trainingDays,
+    startDate: toIsoDate(course.startDate),
+    endDate: toIsoDate(course.endDate),
+    trainingDays: course.trainingDays as DayOfWeek[],
     trainingStartTime: formatTime(course.trainingStartTime),
     trainingEndTime: formatTime(course.trainingEndTime),
     isActive: course.isActive,
@@ -438,28 +454,30 @@ function toCourseApiFormat(course: any) {
 /**
  * Convert BmqEnrollment to API response format
  */
-function toEnrollmentApiFormat(enrollment: any) {
+function toEnrollmentApiFormat(enrollment: EnrollmentRecord): BMQEnrollmentResponse {
   return {
     id: enrollment.id,
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
-    status: enrollment.status,
+    completedAt: enrollment.completedAt ? toIsoDate(enrollment.completedAt) : null,
+    status: enrollment.status as BMQEnrollmentStatus,
   }
 }
 
 /**
  * Convert BmqEnrollment with member to API response format
  */
-function toEnrollmentWithMemberApiFormat(enrollment: any) {
+function toEnrollmentWithMemberApiFormat(
+  enrollment: EnrollmentWithMemberRecord
+): BMQEnrollmentWithMember {
   return {
     id: enrollment.id,
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
-    status: enrollment.status,
+    completedAt: enrollment.completedAt ? toIsoDate(enrollment.completedAt) : null,
+    status: enrollment.status as BMQEnrollmentStatus,
     member: {
       id: enrollment.member.id,
       serviceNumber: enrollment.member.serviceNumber,
@@ -474,16 +492,22 @@ function toEnrollmentWithMemberApiFormat(enrollment: any) {
 /**
  * Convert BmqEnrollment with course to API response format
  */
-function toEnrollmentWithCourseApiFormat(enrollment: any) {
+function toEnrollmentWithCourseApiFormat(
+  enrollment: EnrollmentWithCourseRecord
+): BMQEnrollmentWithCourse {
   return {
     id: enrollment.id,
     memberId: enrollment.memberId,
     bmqCourseId: enrollment.bmqCourseId,
     enrolledAt: enrollment.enrolledAt.toISOString(),
-    completedAt: enrollment.completedAt ? enrollment.completedAt.toISOString().split('T')[0] : null,
-    status: enrollment.status,
+    completedAt: enrollment.completedAt ? toIsoDate(enrollment.completedAt) : null,
+    status: enrollment.status as BMQEnrollmentStatus,
     course: toCourseApiFormat(enrollment.bmqCourse),
   }
+}
+
+function toIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10)
 }
 
 /**

@@ -1,8 +1,7 @@
 import { initServer } from '@ts-rest/express'
 import { adminUserContract } from '@sentinel/contracts'
-import type { CreateAdminUser, UpdateAdminUser, ResetPassword } from '@sentinel/contracts'
+import type { UpdateAdminUser, ResetPassword } from '@sentinel/contracts'
 import type { AdminRole } from '@sentinel/types'
-import type { Request } from 'express'
 import { AdminUserRepository } from '../repositories/admin-user-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -158,9 +157,8 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users - Create new admin user
    */
-  createAdminUser: async ({ body, request }: { body: CreateAdminUser; request: Request }) => {
+  createAdminUser: async ({ body, req }) => {
     try {
-      const req = request
       const actorLevel = req.member?.accountLevel ?? 0
 
       apiLogger.info('Creating new admin user', {
@@ -257,14 +255,13 @@ export const adminUsersRouter = s.router(adminUserContract, {
   updateAdminUser: async ({
     params,
     body,
-    request,
+    req,
   }: {
     params: { id: string }
     body: UpdateAdminUser
-    request: Request
+    req: { member?: { id?: string; accountLevel?: number } }
   }) => {
     try {
-      const req = request
       const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
@@ -379,14 +376,13 @@ export const adminUsersRouter = s.router(adminUserContract, {
   resetAdminUserPassword: async ({
     params,
     body,
-    request,
+    req,
   }: {
     params: { id: string }
     body: ResetPassword
-    request: Request
+    req: { member?: { id?: string; accountLevel?: number } }
   }) => {
     try {
-      const req = request
       const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
@@ -455,9 +451,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/disable - Disable admin user account
    */
-  disableAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
+  disableAdminUser: async ({
+    params,
+    req,
+  }: {
+    params: { id: string }
+    req: { member?: { id?: string; accountLevel?: number } }
+  }) => {
     try {
-      const req = request
       const actorLevel = req.member?.accountLevel ?? 0
 
       // Cannot disable yourself
@@ -565,9 +566,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * POST /api/admin-users/:id/enable - Re-enable disabled admin user account
    */
-  enableAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
+  enableAdminUser: async ({
+    params,
+    req,
+  }: {
+    params: { id: string }
+    req: { member?: { id?: string; accountLevel?: number } }
+  }) => {
     try {
-      const req = request
       const actorLevel = req.member?.accountLevel ?? 0
 
       // Check if user exists
@@ -644,10 +650,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * DELETE /api/admin-users/:id - Delete admin user (hard delete)
    */
-  deleteAdminUser: async ({ params, request }: { params: { id: string }; request: Request }) => {
+  deleteAdminUser: async ({
+    params,
+    req,
+  }: {
+    params: { id: string }
+    req: { member?: { id?: string } }
+  }) => {
     try {
-      const req = request
-
       // Cannot delete yourself
       if (req.member?.id === params.id) {
         return {

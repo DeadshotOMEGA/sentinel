@@ -19,25 +19,25 @@ import { toNameCase } from '../utils/name-case.js'
  * Mapping of department codes to full names for auto-creation
  */
 const DEPARTMENT_CODE_NAMES: Record<string, string> = {
-  'ADMIN': 'Administration',
-  'BAND': 'Band',
-  'BMQ': 'Basic Military Qualification',
-  'CMD': 'Command',
-  'DECK': 'Deck',
-  'LOG': 'Logistics',
-  'OPS': 'Operations',
-  'PAO': 'Public Affairs',
-  'TRG': 'Training',
+  ADMIN: 'Administration',
+  BAND: 'Band',
+  BMQ: 'Basic Military Qualification',
+  CMD: 'Command',
+  DECK: 'Deck',
+  LOG: 'Logistics',
+  OPS: 'Operations',
+  PAO: 'Public Affairs',
+  TRG: 'Training',
 }
 
 /**
  * Mapping of member type codes to display names for auto-creation
  */
 const MEMBER_TYPE_NAMES: Record<string, string> = {
-  'class_a': 'Class A Reserve',
-  'class_b': 'Class B Reserve',
-  'class_c': 'Class C Reserve',
-  'reg_force': 'Regular Force',
+  class_a: 'Class A Reserve',
+  class_b: 'Class B Reserve',
+  class_c: 'Class C Reserve',
+  reg_force: 'Regular Force',
 }
 
 interface ParsedCSVRow {
@@ -73,7 +73,10 @@ export class ImportService {
    * @param csvText - The raw CSV text
    * @param excludeRows - Optional array of row numbers to skip (for continuing import despite errors)
    */
-  private parseCSV(csvText: string, excludeRows?: number[]): { rows: NominalRollRow[]; errors: ImportError[] } {
+  private parseCSV(
+    csvText: string,
+    excludeRows?: number[]
+  ): { rows: NominalRollRow[]; errors: ImportError[] } {
     const errors: ImportError[] = []
     const rows: NominalRollRow[] = []
     const excludeSet = new Set(excludeRows || [])
@@ -120,7 +123,7 @@ export class ImportService {
         row['LAST NAME'],
         row['FIRST NAME'],
         row.DEPT,
-      ].some(field => field && field.trim() !== '')
+      ].some((field) => field && field.trim() !== '')
 
       if (!hasAnyRequiredData) {
         // Silently skip completely empty rows - they're not validation errors, just trailing data
@@ -266,7 +269,7 @@ export class ImportService {
   private hasChanges(
     current: Member,
     incoming: NominalRollRow,
-    divisionId: string
+    divisionId?: string
   ): { hasChanges: boolean; changes: string[] } {
     const changes: string[] = []
 
@@ -279,9 +282,7 @@ export class ImportService {
     const currentEmpNum = current.employeeNumber || ''
     const incomingEmpNum = incoming.employeeNumber || ''
     if (currentEmpNum !== incomingEmpNum) {
-      changes.push(
-        `Employee #: ${currentEmpNum || '(none)'} → ${incomingEmpNum || '(none)'}`
-      )
+      changes.push(`Employee #: ${currentEmpNum || '(none)'} → ${incomingEmpNum || '(none)'}`)
     }
 
     // Check rank
@@ -303,9 +304,7 @@ export class ImportService {
     const currentInitials = current.initials || ''
     const incomingInitials = incoming.initials || ''
     if (currentInitials !== incomingInitials) {
-      changes.push(
-        `Initials: ${currentInitials || '(none)'} → ${incomingInitials || '(none)'}`
-      )
+      changes.push(`Initials: ${currentInitials || '(none)'} → ${incomingInitials || '(none)'}`)
     }
 
     // Check division
@@ -324,9 +323,7 @@ export class ImportService {
     const currentMobile = current.mobilePhone || ''
     const incomingMobile = incoming.mobilePhone || ''
     if (currentMobile !== incomingMobile) {
-      changes.push(
-        `Mobile: ${currentMobile || '(none)'} → ${incomingMobile || '(none)'}`
-      )
+      changes.push(`Mobile: ${currentMobile || '(none)'} → ${incomingMobile || '(none)'}`)
     }
 
     const currentHome = current.homePhone || ''
@@ -353,9 +350,7 @@ export class ImportService {
     const currentDetails = current.classDetails || ''
     const incomingDetails = incoming.details || ''
     if (currentDetails !== incomingDetails) {
-      changes.push(
-        `Details: ${currentDetails || '(none)'} → ${incomingDetails || '(none)'}`
-      )
+      changes.push(`Details: ${currentDetails || '(none)'} → ${incomingDetails || '(none)'}`)
     }
 
     // Check member type
@@ -380,7 +375,7 @@ export class ImportService {
     const { rows, errors } = this.parseCSV(csvText, excludeRows)
 
     // Check for non-excludable errors (like CSV parsing errors)
-    const nonExcludableErrors = errors.filter(e => e.excludable === false)
+    const nonExcludableErrors = errors.filter((e) => e.excludable === false)
     if (nonExcludableErrors.length > 0) {
       return {
         toAdd: [],
@@ -410,9 +405,7 @@ export class ImportService {
     // Map departments to division IDs and detect missing ones
     const unknownDepartments = new Map<string, number>() // code -> count of members
     for (const row of rows) {
-      const division = divisions.find(
-        (d) => d.code.toUpperCase() === row.department.toUpperCase()
-      )
+      const division = divisions.find((d) => d.code.toUpperCase() === row.department.toUpperCase())
 
       if (division) {
         divisionMapping[row.department] = division.id
@@ -473,7 +466,24 @@ export class ImportService {
         toAdd.push(row)
       } else {
         // Check for changes (use existing divisionId if new one doesn't exist yet)
-        const effectiveDivisionId = divisionId || existing.divisionId
+        const effectiveDivisionId = divisionId ?? existing.divisionId
+        if (!effectiveDivisionId) {
+          errors.push({
+            row: 0,
+            field: 'DEPT',
+            message: `Member ${existing.serviceNumber} has no divisionId and department "${row.department}" has no mapped division`,
+            excludable: false,
+            context: {
+              rank: row.rank,
+              firstName: row.firstName,
+              lastName: row.lastName,
+              serviceNumber: row.serviceNumber,
+              department: row.department,
+            },
+          })
+          continue
+        }
+
         const { hasChanges, changes } = this.hasChanges(existing, row, effectiveDivisionId)
 
         // If division is changing to a new one that doesn't exist yet, note it
@@ -489,7 +499,7 @@ export class ImportService {
               rank: existing.rank,
               firstName: existing.firstName,
               lastName: existing.lastName,
-              divisionId: existing.divisionId,
+              divisionId: effectiveDivisionId,
               email: existing.email,
               mobilePhone: existing.mobilePhone,
             },
@@ -503,14 +513,34 @@ export class ImportService {
     // Find members not in CSV (potential deactivations)
     const toReview = allActiveMembers
       .filter((m) => !csvServiceNumbers.has(m.serviceNumber))
-      .map((m) => ({
-        id: m.id,
-        serviceNumber: m.serviceNumber,
-        rank: m.rank,
-        firstName: m.firstName,
-        lastName: m.lastName,
-        divisionId: m.divisionId,
-      }))
+      .flatMap((m) => {
+        if (!m.divisionId) {
+          errors.push({
+            row: 0,
+            field: 'divisionId',
+            message: `Member ${m.serviceNumber} has no divisionId and cannot be flagged for review`,
+            excludable: false,
+            context: {
+              rank: m.rank,
+              firstName: m.firstName,
+              lastName: m.lastName,
+              serviceNumber: m.serviceNumber,
+            },
+          })
+          return []
+        }
+
+        return [
+          {
+            id: m.id,
+            serviceNumber: m.serviceNumber,
+            rank: m.rank,
+            firstName: m.firstName,
+            lastName: m.lastName,
+            divisionId: m.divisionId,
+          },
+        ]
+      })
 
     return {
       toAdd,
@@ -525,7 +555,9 @@ export class ImportService {
   /**
    * Create divisions that don't exist yet
    */
-  private async createMissingDivisions(divisionsToCreate: DivisionToCreate[]): Promise<Record<string, string>> {
+  private async createMissingDivisions(
+    divisionsToCreate: DivisionToCreate[]
+  ): Promise<Record<string, string>> {
     const newDivisionMapping: Record<string, string> = {}
 
     for (const div of divisionsToCreate) {
@@ -573,7 +605,7 @@ export class ImportService {
     const preview = await this.generatePreview(csvText, excludeRows)
 
     // Block execution if there are non-excludable errors
-    const blockingErrors = preview.errors.filter(e => e.excludable === false)
+    const blockingErrors = preview.errors.filter((e) => e.excludable === false)
     if (blockingErrors.length > 0) {
       return {
         added: 0,
@@ -680,7 +712,9 @@ export class ImportService {
       // Non-blocking: don't fail import if auto-qual sync errors
     }
 
-    importLogger.info(`Import complete: ${added} added, ${updated} updated, ${flaggedForReview} deactivated`)
+    importLogger.info(
+      `Import complete: ${added} added, ${updated} updated, ${flaggedForReview} deactivated`
+    )
 
     return {
       added,
