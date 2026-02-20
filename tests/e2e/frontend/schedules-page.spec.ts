@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+const SCREENSHOT_DIR = 'test-results/e2e/frontend/schedules-page'
+mkdirSync(SCREENSHOT_DIR, { recursive: true })
 
 test.describe('Schedules Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -24,7 +28,7 @@ test.describe('Schedules Page', () => {
     await expect(weekTab).toHaveAttribute('aria-selected', 'true')
 
     // Take a screenshot of the default state
-    await page.screenshot({ path: 'test-results/schedules-default.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/default.png`, fullPage: true })
   })
 
   test('defaults to 2-week side-by-side layout', async ({ page }) => {
@@ -39,7 +43,7 @@ test.describe('Schedules Page', () => {
     // Should show info alert
     await expect(page.getByText(/how schedules work/i)).toBeVisible()
 
-    await page.screenshot({ path: 'test-results/schedules-week-view.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/week-view.png`, fullPage: true })
   })
 
   test('switches to Month view', async ({ page }) => {
@@ -71,7 +75,7 @@ test.describe('Schedules Page', () => {
     // Info alert should NOT be visible in month view
     await expect(page.getByText(/how schedules work/i)).not.toBeVisible()
 
-    await page.screenshot({ path: 'test-results/schedules-month-view.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/month-view.png`, fullPage: true })
   })
 
   test('switches to Quarter view', async ({ page }) => {
@@ -105,7 +109,7 @@ test.describe('Schedules Page', () => {
       await expect(page.locator('.animate-spin')).toBeVisible()
     }
 
-    await page.screenshot({ path: 'test-results/schedules-quarter-view.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/quarter-view.png`, fullPage: true })
   })
 
   test('clicking week in Month view navigates to Week view', async ({ page }) => {

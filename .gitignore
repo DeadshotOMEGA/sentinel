@@ -29,6 +29,7 @@ playwright-report/
 # Playwright CLI
 .playwright/
 **/.playwright-cli/
+tests/e2e/.auth/
 apps/backend/*.png
 
 # Environment variables

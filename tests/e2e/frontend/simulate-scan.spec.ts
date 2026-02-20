@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+const SCREENSHOT_DIR = 'test-results/e2e/frontend/simulate-scan'
+mkdirSync(SCREENSHOT_DIR, { recursive: true })
 
 test.describe('Simulate Scan', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +13,7 @@ test.describe('Simulate Scan', () => {
   test('shows Simulate Scan button on dashboard', async ({ page }) => {
     const button = page.getByRole('button', { name: /simulate scan/i })
     await expect(button).toBeVisible()
-    await page.screenshot({ path: 'test-results/simulate-scan-button.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/button.png`, fullPage: true })
   })
 
   test('opens modal with member list', async ({ page }) => {
@@ -30,7 +34,7 @@ test.describe('Simulate Scan', () => {
       // spinner may have already gone
     })
 
-    await page.screenshot({ path: 'test-results/simulate-scan-modal.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/modal.png`, fullPage: true })
   })
 
   test('simulates check-in for an OUT member', async ({ page }) => {
@@ -50,7 +54,7 @@ test.describe('Simulate Scan', () => {
       await outMember.click()
       // Wait for scan result
       await page.waitForTimeout(1500)
-      await page.screenshot({ path: 'test-results/simulate-scan-checkin.png', fullPage: true })
+      await page.screenshot({ path: `${SCREENSHOT_DIR}/checkin.png`, fullPage: true })
     }
   })
 
@@ -71,7 +75,7 @@ test.describe('Simulate Scan', () => {
       await inMember.click()
       // Wait for scan result
       await page.waitForTimeout(1500)
-      await page.screenshot({ path: 'test-results/simulate-scan-checkout.png', fullPage: true })
+      await page.screenshot({ path: `${SCREENSHOT_DIR}/checkout.png`, fullPage: true })
     }
   })
 })

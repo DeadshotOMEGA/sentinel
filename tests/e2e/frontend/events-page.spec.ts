@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+const SCREENSHOT_DIR = 'test-results/e2e/frontend/events-page'
+mkdirSync(SCREENSHOT_DIR, { recursive: true })
 
 test.describe('Events Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,7 +23,7 @@ test.describe('Events Page', () => {
     // Create Event button (aria-label is "Create new event")
     await expect(page.getByRole('button', { name: /create new event/i })).toBeVisible()
 
-    await page.screenshot({ path: 'test-results/events-page-default.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/default.png`, fullPage: true })
   })
 
   test('shows event filters', async ({ page }) => {
@@ -58,7 +62,7 @@ test.describe('Events Page', () => {
       await expect(page.getByText(/no events found/i)).toBeVisible()
     }
 
-    await page.screenshot({ path: 'test-results/events-table.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/table.png`, fullPage: true })
   })
 
   test('Create Event modal opens and has required fields', async ({ page }) => {
@@ -83,7 +87,7 @@ test.describe('Events Page', () => {
     // Action buttons
     await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible()
 
-    await page.screenshot({ path: 'test-results/events-create-modal.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/create-modal.png`, fullPage: true })
   })
 
   test('Create Event modal closes on Cancel', async ({ page }) => {

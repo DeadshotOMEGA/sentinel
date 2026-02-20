@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+const SCREENSHOT_DIR = 'test-results/e2e/frontend/dds-page'
+mkdirSync(SCREENSHOT_DIR, { recursive: true })
 
 test.describe('DDS Operations Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,7 +15,7 @@ test.describe('DDS Operations Page', () => {
     await expect(page.getByRole('heading', { name: /responsibilities/i })).toBeVisible()
     await expect(page.getByRole('heading', { name: /daily checklist/i })).toBeVisible()
 
-    await page.screenshot({ path: 'test-results/dds-page-default.png', fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/default.png`, fullPage: true })
   })
 
   test('task checkoff persists after reload', async ({ page }) => {

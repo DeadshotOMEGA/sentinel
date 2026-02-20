@@ -10,6 +10,8 @@
     "dev:contracts": "pnpm --filter @sentinel/contracts dev",
     "dev:all": "bash scripts/ensure-services.sh && bash scripts/cleanup-ports.sh && concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"cyan,magenta\" \"pnpm dev:backend\" \"pnpm dev:frontend\"",
     "dev:frontend-stack": "concurrently --names \"CONTRACTS,FRONTEND\" --prefix-colors \"yellow,magenta\" \"pnpm dev:contracts\" \"pnpm dev:frontend\"",
+    "playwright-cli:auth": "bash scripts/playwright/save-cli-auth-state.sh",
+    "playwright-cli:capture": "bash scripts/playwright/cli-capture.sh",
     "cleanup": "bash scripts/cleanup-ports.sh",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
