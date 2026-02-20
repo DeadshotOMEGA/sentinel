@@ -6,7 +6,7 @@ Applies when editing files under: `apps/frontend-admin/`
 
 ## Source of Truth and Precedence
 
-- Read and follow nearest `AGENTS.md` and `CLAUDE.md` first.
+- Read and follow nearest `AGENTS.md` first.
 - Frontend visual/design constraints here are mandatory.
 - In conflicts: closest file wins; `MUST`/`MUST NOT` override `SHOULD`.
 

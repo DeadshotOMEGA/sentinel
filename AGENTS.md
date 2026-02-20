@@ -4,8 +4,8 @@ This file migrates project guidance from Claude-style rules into Codex.
 
 ## Source of truth and precedence
 
-- Primary rule source remains existing `CLAUDE.md` files throughout the repo.
-- Read and follow the nearest `AGENTS.md` and `CLAUDE.md` for the files you edit.
+- Primary rule source for Codex is `AGENTS.md` files throughout the repo.
+- Read and follow the nearest `AGENTS.md` for the files you edit.
 - Conflict resolution: closest directory rule wins; `MUST`/`MUST NOT` override `SHOULD`.
 
 ## Global non-negotiables
@@ -46,6 +46,10 @@ These files inline operational rules so Codex can proceed with minimal indirecti
 4. Treat `SHOULD` as defaults unless task requirements conflict.
 5. For docs work, follow Diataxis and scoped naming/frontmatter rules.
 
-## Note
+## Structured Context (Pilot)
 
-- `.claude/CLAUDE.md` does not exist in this repo; root guidance is in `CLAUDE.md` and `.claude/rules/*.md`.
+- Optional machine-readable context lives under `.ai/`:
+  - `.ai/context.yaml` for project essentials
+  - `.ai/workflows.yaml` for repeatable task flows
+  - `.ai/architecture.yaml` for system boundaries
+- Prefer loading these files only when needed for the task.

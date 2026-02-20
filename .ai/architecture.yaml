@@ -1,0 +1,33 @@
+version: 1
+system:
+  style: monorepo
+  layers:
+    - name: frontend-admin
+      tech: Next.js + React + TanStack Query + DaisyUI
+      path: apps/frontend-admin
+    - name: backend
+      tech: Express + ts-rest + Prisma + better-auth
+      path: apps/backend
+    - name: contracts
+      tech: Valibot schemas + ts-rest contracts
+      path: packages/contracts
+    - name: database
+      tech: Prisma schema/client
+      path: packages/database
+
+boundaries:
+  - frontend consumes backend via contracts
+  - backend validates request/response via contracts
+  - backend repositories isolate persistence access
+  - database package owns Prisma client construction
+
+crossCutting:
+  auth:
+    backend: better-auth
+    frontend: badge + PIN login flow
+  testing:
+    backend: vitest integration-first
+    frontend: playwright + playwright-cli QA
+  quality:
+    typescript: strict
+    linting: eslint + prettier

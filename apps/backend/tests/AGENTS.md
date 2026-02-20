@@ -19,4 +19,4 @@ Scope: `apps/backend/tests/**`
 
 ## Reference
 
-- Source file: `apps/backend/tests/CLAUDE.md`.
+- Source: this `AGENTS.md`.

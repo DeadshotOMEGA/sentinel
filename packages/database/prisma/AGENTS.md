@@ -27,4 +27,4 @@ Scope: `packages/database/prisma/**`
 
 ## Reference
 
-- Source file: `packages/database/prisma/CLAUDE.md`.
+- Source: this `AGENTS.md`.

@@ -25,4 +25,4 @@ Scope: backend query patterns in repository/service code using database package 
 
 ## Reference
 
-- Source files: `packages/database/src/CLAUDE.md`, `docs/guides/reference/database-query-patterns.md`.
+- Sources: this `AGENTS.md`, `docs/guides/reference/database-query-patterns.md`.

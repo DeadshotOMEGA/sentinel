@@ -25,4 +25,4 @@ Scope: `apps/backend/src/routes/*.ts`
 
 ## Reference
 
-- Source file: `apps/backend/src/routes/CLAUDE.md`.
+- Source: this `AGENTS.md`.

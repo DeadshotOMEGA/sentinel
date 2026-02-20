@@ -1,0 +1,47 @@
+version: 1
+project:
+  name: sentinel
+  description: RFID attendance and operations management for HMCS Chippawa
+  type: pnpm monorepo
+  runtime:
+    node: "24.x"
+    packageManager: pnpm
+
+goals:
+  - Keep coding agent context small and task-focused
+  - Preserve strict TypeScript quality and test discipline
+  - Maintain safe release workflow through PRs
+
+houseRules:
+  - Use pnpm only (no Bun)
+  - Never introduce TypeScript any
+  - Use Conventional Commits
+  - Never push directly to develop
+
+quickCommands:
+  install: pnpm install
+  devAll: pnpm dev:all
+  devBackend: pnpm dev:backend
+  devFrontend: pnpm dev:frontend
+  typecheck: pnpm typecheck
+  lint: pnpm lint
+  test: pnpm test
+
+repoMap:
+  apps:
+    backend: Express + ts-rest API
+    frontend-admin: Next.js admin UI
+  packages:
+    contracts: Valibot schemas + ts-rest contracts
+    database: Prisma client and schema
+    types: shared domain types
+  docs: design, domain, and process documentation
+  tests:
+    e2e: Playwright E2E tests
+
+majorGuidanceFiles:
+  - AGENTS.md
+  - apps/backend/AGENTS.md
+  - apps/frontend-admin/AGENTS.md
+  - packages/contracts/AGENTS.md
+  - packages/database/AGENTS.md

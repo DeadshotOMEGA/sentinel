@@ -4,9 +4,9 @@ Scope: `apps/backend/**`
 
 ## Inheritance
 
-- Apply root `AGENTS.md` and root `CLAUDE.md` first.
-- This file summarizes the most-used backend constraints from `apps/backend/CLAUDE.md`.
-- If a deeper directory has its own `AGENTS.md`/`CLAUDE.md`, deeper rules win.
+- Apply root `AGENTS.md` first.
+- This file captures the most-used backend constraints for Codex.
+- If a deeper directory has its own `AGENTS.md`, deeper rules win.
 
 ## Non-negotiable backend rules
 
@@ -33,4 +33,4 @@ Scope: `apps/backend/**`
 
 ## Reference
 
-- Source file: `apps/backend/CLAUDE.md`.
+- Source: this `AGENTS.md`.

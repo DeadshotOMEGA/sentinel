@@ -24,4 +24,4 @@ Scope: `apps/backend/src/middleware/*.ts`
 
 ## Reference
 
-- Source file: `apps/backend/src/middleware/CLAUDE.md`.
+- Source: this `AGENTS.md`.

@@ -1,0 +1,43 @@
+version: 1
+workflows:
+  - id: backend-route-change
+    when: "Editing API endpoints under apps/backend/src/routes"
+    steps:
+      - Read nearest AGENTS files
+      - Update contracts/schema first if response shape changes
+      - Implement route handler mapping and status handling
+      - Add or update integration tests
+      - Run backend typecheck and targeted tests
+    verify:
+      - pnpm --filter @sentinel/contracts typecheck
+      - pnpm --filter @sentinel/backend typecheck
+
+  - id: frontend-page-change
+    when: "Editing frontend-admin UI"
+    steps:
+      - Read apps/frontend-admin/AGENTS.md required design files
+      - Reuse DaisyUI patterns and Sentinel wrappers when applicable
+      - Implement change with token-based styling
+      - Run exactly 3 rounds of Playwright visual QA
+      - Run frontend typecheck
+    verify:
+      - pnpm --filter frontend-admin type-check
+
+  - id: prisma-or-database-change
+    when: "Editing packages/database or schema/migrations"
+    steps:
+      - Update Prisma schema or migration carefully
+      - Regenerate client
+      - Validate backend/package usage with typecheck
+    verify:
+      - pnpm --filter @sentinel/database prisma:generate
+      - pnpm --filter @sentinel/backend typecheck
+
+  - id: playwright-cli-auth-bootstrap
+    when: "Manual browser QA with playwright-cli"
+    steps:
+      - Generate auth state once using repo script
+      - Load state in session before route checks
+    commands:
+      - pnpm playwright-cli:auth
+      - playwright-cli -s=mysession state-load .playwright-cli/auth.json

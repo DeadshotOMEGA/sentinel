@@ -4,7 +4,7 @@ Scope: `packages/contracts/src/schemas/**`, `packages/contracts/src/contracts/**
 
 ## Inheritance
 
-- Apply root `AGENTS.md` and root `CLAUDE.md`.
+- Apply root `AGENTS.md`.
 
 ## Non-negotiable schema rules
 
@@ -33,4 +33,4 @@ Scope: `packages/contracts/src/schemas/**`, `packages/contracts/src/contracts/**
 
 ## Reference
 
-- Source file: `packages/contracts/CLAUDE.md`.
+- Source: this `AGENTS.md`.

@@ -23,4 +23,4 @@ Scope: `apps/backend/src/repositories/**`
 
 ## Reference
 
-- Source file: `apps/backend/src/repositories/CLAUDE.md`.
+- Source: this `AGENTS.md`.

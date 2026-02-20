@@ -4,7 +4,7 @@ Scope: `packages/database/**`
 
 ## Inheritance
 
-- Apply root `AGENTS.md` and root `CLAUDE.md`.
+- Apply root `AGENTS.md`.
 - Deeper directories (`prisma/`, `src/`) add stricter local rules.
 
 ## Non-negotiable package rules
@@ -25,4 +25,4 @@ Scope: `packages/database/**`
 
 ## Reference
 
-- Source file: `packages/database/CLAUDE.md`.
+- Source: this `AGENTS.md`.
