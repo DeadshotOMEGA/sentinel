@@ -1,6 +1,6 @@
 ---
 type: reference
-title: "Sentinel Quick Commands Reference"
+title: 'Sentinel Quick Commands Reference'
 status: published
 created: 2026-01-20
 last_updated: 2026-01-20
@@ -39,21 +39,21 @@ pnpm add -D <package>
 
 ## Development
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Start dev server | `pnpm dev` | Runs backend with hot reload |
-| Start frontend | `pnpm dev:frontend` | Frontend dev server (when implemented) |
-| Start all | `pnpm dev:all` | All services concurrently |
+| Task             | Command             | Description                            |
+| ---------------- | ------------------- | -------------------------------------- |
+| Start dev server | `pnpm dev`          | Runs backend with hot reload           |
+| Start frontend   | `pnpm dev:frontend` | Frontend dev server (when implemented) |
+| Start all        | `pnpm dev:all`      | All services concurrently              |
 
 ## Testing
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Run all tests | `pnpm test` | Vitest test runner |
-| Run with coverage | `pnpm test:coverage` | Generate coverage report |
+| Task              | Command               | Description                   |
+| ----------------- | --------------------- | ----------------------------- |
+| Run all tests     | `pnpm test`           | Vitest test runner            |
+| Run with coverage | `pnpm test:coverage`  | Generate coverage report      |
 | Run specific test | `pnpm test <pattern>` | Filter by file/describe block |
-| Watch mode | `pnpm test:watch` | Re-run on file changes |
-| UI mode | `pnpm test:ui` | Vitest UI interface |
+| Watch mode        | `pnpm test:watch`     | Re-run on file changes        |
+| UI mode           | `pnpm test:ui`        | Vitest UI interface           |
 
 ### Test Patterns
 
@@ -70,23 +70,23 @@ pnpm test "member.*repository"
 
 ## Building
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Build all | `pnpm build` | Build all workspaces |
-| Build backend | `pnpm build --filter @sentinel/backend` | Backend only |
-| Clean build | `pnpm clean && pnpm build` | Remove dist/ and rebuild |
+| Task          | Command                                 | Description              |
+| ------------- | --------------------------------------- | ------------------------ |
+| Build all     | `pnpm build`                            | Build all workspaces     |
+| Build backend | `pnpm build --filter @sentinel/backend` | Backend only             |
+| Clean build   | `pnpm clean && pnpm build`              | Remove dist/ and rebuild |
 
 ## Database
 
 ### Prisma
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Generate client | `pnpm prisma generate` | Generate Prisma + Kysely types |
-| Create migration | `pnpm prisma migrate dev --name <name>` | Create new migration |
-| Apply migrations | `pnpm prisma migrate deploy` | Apply pending migrations |
-| Reset database | `pnpm prisma migrate reset` | Drop DB, apply all migrations |
-| Prisma Studio | `pnpm prisma studio` | GUI database browser |
+| Task             | Command                                 | Description                    |
+| ---------------- | --------------------------------------- | ------------------------------ |
+| Generate client  | `pnpm prisma generate`                  | Generate Prisma + Kysely types |
+| Create migration | `pnpm prisma migrate dev --name <name>` | Create new migration           |
+| Apply migrations | `pnpm prisma migrate deploy`            | Apply pending migrations       |
+| Reset database   | `pnpm prisma migrate reset`             | Drop DB, apply all migrations  |
+| Prisma Studio    | `pnpm prisma studio`                    | GUI database browser           |
 
 ### Database Management
 
@@ -106,28 +106,25 @@ docker-compose exec postgres psql -U sentinel -d sentinel
 
 ## Linting & Formatting
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Lint code | `pnpm lint` | ESLint check |
-| Fix lint issues | `pnpm lint:fix` | Auto-fix linting |
-| Format code | `pnpm format` | Prettier format |
-| Type check | `pnpm typecheck` | TypeScript validation |
+| Task            | Command          | Description           |
+| --------------- | ---------------- | --------------------- |
+| Lint code       | `pnpm lint`      | ESLint check          |
+| Fix lint issues | `pnpm lint:fix`  | Auto-fix linting      |
+| Format code     | `pnpm format`    | Prettier format       |
+| Type check      | `pnpm typecheck` | TypeScript validation |
 
 ## Docker
 
-| Task | Command | Description |
-|------|---------|-------------|
-| Start all services | `docker-compose up -d` | All containers in background |
-| Stop all services | `docker-compose down` | Stop and remove containers |
-| View logs | `docker-compose logs -f` | Follow logs from all services |
-| Rebuild images | `docker-compose up -d --build` | Rebuild and restart |
+| Task               | Command                        | Description                   |
+| ------------------ | ------------------------------ | ----------------------------- |
+| Start all services | `docker-compose up -d`         | All containers in background  |
+| Stop all services  | `docker-compose down`          | Stop and remove containers    |
+| View logs          | `docker-compose logs -f`       | Follow logs from all services |
+| Rebuild images     | `docker-compose up -d --build` | Rebuild and restart           |
 
 ## Git Workflow
 
 ```bash
-# Checkout working branch
-git checkout rebuild
-
 # Create feature branch (if needed)
 git checkout -b feature/<name>
 
@@ -136,10 +133,10 @@ git add .
 git commit -m "feat: description"
 
 # Push to remote
-git push origin rebuild
+git push origin feature/<name>
 
-# Create PR to develop (via GitHub CLI)
-gh pr create --base develop --head rebuild --title "Title" --body "Description"
+# Create PR to main (via GitHub CLI)
+gh pr create --base main --head feature/<name> --title "Title" --body "Description"
 ```
 
 ## Workspace Commands

@@ -13,7 +13,7 @@ This file migrates project guidance from Claude-style rules into Codex.
 - Use `pnpm` (not Bun) and Node.js 24.x.
 - Keep TypeScript strict and never introduce `any`.
 - Use Conventional Commits.
-- Never push directly to `develop`; use PRs from `rebuild` to `develop`.
+- Never push directly to `main`; use PRs from `feature/*` to `main`.
 
 ## High-traffic local instruction files
 

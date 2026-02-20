@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [main, develop, rebuild]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   build:
@@ -33,6 +33,18 @@ jobs:
 
       - name: Build all packages
         run: pnpm -r build
+
+      - name: Generate backend build identity
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILT_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          mkdir -p apps/backend/dist
+          {
+            echo "VERSION=$VERSION"
+            echo "COMMIT=${GITHUB_SHA}"
+            echo "BUILT_AT=$BUILT_AT"
+          } > apps/backend/dist/build-info.env
+          cat apps/backend/dist/build-info.env
 
       - name: Check build artifacts
         run: |

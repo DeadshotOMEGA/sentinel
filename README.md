@@ -136,17 +136,15 @@ The backend is **production-ready** and fully documented.
 ### Branch Strategy
 
 - `main` - Production releases
-- `develop` - Integration branch
 - `feature/*` - Feature branches
-- `rebuild` - Current rebuild branch
 
 **Rules:**
 
-- Never push directly to `develop` or `main`
-- Create PRs from feature branches → `develop`
+- Never push directly to `main`
+- Create PRs from feature branches → `main`
 - 1 approval required for PRs
 
-### Git Flow
+### Git Workflow
 
 ```bash
 # Create feature branch
@@ -157,7 +155,7 @@ git commit -m "feat(reports): add attendance summary endpoint"
 
 # Push and create PR
 git push origin feature/add-reporting
-gh pr create --base develop
+gh pr create --base main
 ```
 
 ### Conventional Commits
@@ -175,16 +173,14 @@ Use semantic commit prefixes:
 ### Running Tests
 
 ```bash
-# Backend tests
-cd apps/backend
-pnpm test                    # All tests
-pnpm test:coverage           # With coverage report
-
 # Type checking (all packages)
 pnpm typecheck
 
 # Linting
 pnpm lint
+
+# Build
+pnpm build
 ```
 
 ## Docker Services
@@ -312,9 +308,9 @@ See [docs/plans/](docs/plans/) for detailed plans.
 ### Setup for Development
 
 1. Read [apps/backend/README.md](apps/backend/README.md) for backend setup
-2. Ensure tests pass: `pnpm test`
+2. Ensure CI-equivalent checks pass: `pnpm typecheck && pnpm lint && pnpm build`
 3. Follow conventional commit format
-4. Create feature branch from `develop`
+4. Create feature branch from `main`
 5. Open PR with 1 reviewer
 
 ### Code Standards

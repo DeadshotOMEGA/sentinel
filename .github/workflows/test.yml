@@ -2,13 +2,29 @@ name: Test
 
 on:
   push:
-    branches: [main, develop, rebuild]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sentinel
+          POSTGRES_PASSWORD: sentinel
+          POSTGRES_DB: sentinel_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sentinel -d sentinel_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://sentinel:sentinel@localhost:5432/sentinel_test?schema=public
 
     steps:
       - name: Checkout code
@@ -30,6 +46,9 @@ jobs:
 
       - name: Generate Prisma client
         run: pnpm --filter @sentinel/database prisma generate
+
+      - name: Run safe Prisma migration deploy (must fail on non-zero)
+        run: pnpm --filter @sentinel/database prisma:migrate:deploy:safe
 
       - name: Type check
         run: pnpm typecheck

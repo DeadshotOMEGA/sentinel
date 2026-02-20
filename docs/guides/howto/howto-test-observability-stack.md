@@ -1,6 +1,6 @@
 ---
 type: howto
-title: "How to Test the Observability Stack"
+title: 'How to Test the Observability Stack'
 status: published
 created: 2026-01-22
 last_updated: 2026-01-22
@@ -41,6 +41,7 @@ docker compose ps
 ```
 
 **Services Started**:
+
 - sentinel-postgres (database)
 - sentinel-redis (cache)
 - sentinel-backend (API server)
@@ -81,6 +82,7 @@ Open your browser and test the API documentation:
 **Swagger UI**: http://localhost:3000/docs
 
 **Checklist**:
+
 - [ ] Page loads without errors
 - [ ] All 23 resource endpoints visible
 - [ ] Schemas section shows all models
@@ -92,6 +94,7 @@ Open your browser and test the API documentation:
 **ReDoc**: http://localhost:3000/redoc
 
 **Checklist**:
+
 - [ ] Page loads with clean layout
 - [ ] Left sidebar shows all endpoints
 - [ ] Right panel shows request/response schemas
@@ -100,6 +103,7 @@ Open your browser and test the API documentation:
 **OpenAPI Spec**: http://localhost:3000/openapi.json
 
 **Checklist**:
+
 - [ ] Returns valid JSON
 - [ ] Contains "openapi": "3.0.2"
 - [ ] All 23 resources documented
@@ -121,6 +125,7 @@ curl http://localhost:3000/metrics
 ```
 
 **Checklist**:
+
 - [ ] Endpoint returns Prometheus text format
 - [ ] HTTP metrics present (requests_total, request_duration_seconds)
 - [ ] Database metrics present (query_duration_seconds, pool_size)
@@ -131,6 +136,7 @@ curl http://localhost:3000/metrics
 **Open Prometheus UI**: http://localhost:9090
 
 **Checklist**:
+
 - [ ] UI loads successfully
 - [ ] Navigate to Status → Targets
 - [ ] "sentinel-backend" target shows "UP" status
@@ -138,6 +144,7 @@ curl http://localhost:3000/metrics
 - [ ] No scrape errors
 
 **Test a Query**:
+
 1. Go to Graph tab
 2. Enter query: `rate(http_requests_total[5m])`
 3. Click "Execute"
@@ -167,6 +174,7 @@ docker compose logs -f backend | head -50
 ```
 
 **Checklist**:
+
 - [ ] Backend logs show JSON format
 - [ ] Each log entry includes correlationId
 - [ ] Each log entry includes module field
@@ -178,6 +186,7 @@ docker compose logs -f backend | head -50
 **Open Grafana**: http://localhost:3001
 
 **Login**:
+
 - Username: `admin`
 - Password: Check `.env.local` for `GRAFANA_ADMIN_PASSWORD`
   - If not set, default is `changeme`
@@ -198,6 +207,7 @@ docker compose logs -f backend | head -50
 2. Open "Sentinel Operations Dashboard"
 
 **Checklist**:
+
 - [ ] Dashboard loads without errors
 - [ ] "Request Rate" panel shows data (line graph)
 - [ ] "Error Rate" panel exists (should be 0 or low)
@@ -211,6 +221,7 @@ docker compose logs -f backend | head -50
 Open "Sentinel Authentication Dashboard"
 
 **Checklist**:
+
 - [ ] Dashboard loads
 - [ ] Panels show "No data" or actual data (depending on auth activity)
 - [ ] Structure is correct (login attempts, API key usage, etc.)
@@ -220,6 +231,7 @@ Open "Sentinel Authentication Dashboard"
 Open "Sentinel Database Dashboard"
 
 **Checklist**:
+
 - [ ] Dashboard loads
 - [ ] Query duration panels exist
 - [ ] Connection pool stats available
@@ -229,6 +241,7 @@ Open "Sentinel Database Dashboard"
 Open "Sentinel Tracing Dashboard"
 
 **Checklist**:
+
 - [ ] Dashboard loads
 - [ ] "Correlation ID" variable input at top
 - [ ] Empty state shows "Enter correlation ID to trace request"
@@ -243,6 +256,7 @@ Open "Sentinel Tracing Dashboard"
 4. Click "Run query"
 
 **Checklist**:
+
 - [ ] Logs appear in results
 - [ ] Logs are in JSON format
 - [ ] Click "Expand" on a log entry
@@ -268,6 +282,7 @@ sum(rate({service="sentinel-backend", level="error"}[5m]))
 ```
 
 **Checklist**:
+
 - [ ] Each query returns relevant results
 - [ ] Filtering by level works
 - [ ] Filtering by module works
@@ -293,6 +308,7 @@ echo "Correlation ID: $CORRELATION_ID"
 3. Click "Run query"
 
 **Checklist**:
+
 - [ ] All logs for that request appear
 - [ ] Logs show request flow (api → service → db → response)
 - [ ] Logs are in chronological order
@@ -305,6 +321,7 @@ echo "Correlation ID: $CORRELATION_ID"
 3. Press Enter or click away to trigger query
 
 **Checklist**:
+
 - [ ] Logs for that correlation ID appear
 - [ ] Timeline shows request flow
 - [ ] Module breakdown shows which components were involved
@@ -333,6 +350,7 @@ database_pool_size
 ```
 
 **Checklist**:
+
 - [ ] Each query returns data
 - [ ] Graphs show trends
 - [ ] No "No data" errors (except for error rate if no errors)
@@ -353,6 +371,7 @@ docker stats --no-stream | grep sentinel | awk '{print $1, $3, $7}'
 ```
 
 **Expected**:
+
 - Backend: ~200MB RAM, <10% CPU (idle)
 - Prometheus: ~150MB RAM
 - Loki: ~200MB RAM
@@ -360,6 +379,7 @@ docker stats --no-stream | grep sentinel | awk '{print $1, $3, $7}'
 - Total: <1GB RAM
 
 **Checklist**:
+
 - [ ] Backend response time <10ms per request
 - [ ] Total memory usage <1GB
 - [ ] CPU usage reasonable (<50% under load)
@@ -381,6 +401,7 @@ docker compose logs backend | tail -20
 ```
 
 **Checklist**:
+
 - [ ] 404 error appears in logs
 - [ ] Error logged with correlation ID
 - [ ] Error appears in Grafana Loki
@@ -400,6 +421,7 @@ docker compose exec prometheus cat /etc/prometheus/prometheus.yml | grep retenti
 ```
 
 **Expected**:
+
 - Loki: 30 days (720h) retention
 - Prometheus: 15 days retention
 
@@ -509,7 +531,7 @@ Once all tests pass:
 
 1. Update [implementation plan](../../plans/active/2026-01-22-observability-stack-implementation.md) with results
 2. Document any issues or configuration changes
-3. Create PR to `rebuild` branch
+3. Create PR to `main` branch
 4. Request code review
 
 ## Related Documentation
