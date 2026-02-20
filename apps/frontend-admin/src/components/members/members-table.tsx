@@ -403,7 +403,7 @@ export function MembersTable({
             return (
               <div className="flex items-center justify-center">
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setQualificationsMember(member)}
                   title="Manage qualifications"
                   data-testid={TID.members.rowAction(member.id, 'quals')}
@@ -411,7 +411,7 @@ export function MembersTable({
                   <Shield className="h-4 w-4" />
                 </button>
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setTagsMember(member)}
                   title="Manage tags"
                   data-testid={TID.members.rowAction(member.id, 'tags')}
@@ -419,7 +419,7 @@ export function MembersTable({
                   <Tag className="h-4 w-4" />
                 </button>
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setPinMember(member)}
                   title="Set PIN"
                   data-testid={TID.members.rowAction(member.id, 'pin')}
@@ -427,14 +427,14 @@ export function MembersTable({
                   <KeyRound className="h-4 w-4" />
                 </button>
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setEditingMember(member)}
                   data-testid={TID.members.rowAction(member.id, 'edit')}
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setDeletingMemberId(member.id)}
                   data-testid={TID.members.rowAction(member.id, 'delete')}
                 >
