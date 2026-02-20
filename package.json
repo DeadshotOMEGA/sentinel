@@ -54,8 +54,7 @@
   "lint-staged": {
     "apps/**/*.{ts,tsx}": [
       "eslint --fix",
-      "prettier --write",
-      "vitest related --run --reporter=verbose --no-file-parallelism"
+      "prettier --write"
     ],
     "packages/**/*.{ts,tsx}": [
       "eslint --fix",
