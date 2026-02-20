@@ -1,6 +1,6 @@
 ---
 name: frontend-ux-ui-guardrails
-description: Enforces Sentinel frontend design quality for apps/frontend-admin with DaisyUI-first implementation, DaisyUI Blueprint MCP lookup, and mandatory 3-round playwright-cli visual QA for every edited/new component or page.
+description: Enforces Sentinel frontend design quality for apps/frontend-admin with DaisyUI-first implementation and DaisyUI Blueprint MCP lookup.
 ---
 
 # Frontend UX/UI Guardrails
@@ -34,17 +34,15 @@ description: Enforces Sentinel frontend design quality for apps/frontend-admin w
 - Use `Chip` for decorative labels/tags.
 - Use token-based spacing/elevation/timing and avoid magic numbers.
 
-4. Perform mandatory 3-round visual QA using `playwright-cli`:
+4. Perform visual QA using `playwright-cli` only when explicitly requested:
 
-- Follow `references/three-round-visual-qa.md` exactly.
-- If any round fails, fix and restart from Round 1.
+- Use `references/three-round-visual-qa.md` when the request specifically asks for a three-round visual QA pass.
 
 5. Required completion evidence (frontend tasks):
 
 - `DaisyUI Fit Check`
 - `Research Notes`
 - `Design Compliance Checklist`
-- `3-Round Visual QA Evidence`
 
 ## Required outputs format
 
@@ -69,12 +67,9 @@ For every frontend change, include:
 - Semantic color usage compliance
 - Motion/accessibility compliance
 
-### 3-Round Visual QA Evidence
+### Visual QA Evidence (Only if requested)
 
-- Round 1: route, actions, artifact refs, result
-- Round 2: route, actions, artifact refs, result
-- Round 3: route, actions, artifact refs, result
-- If fixed issues occurred, note restart from Round 1
+- Route(s), actions, artifact refs, and result summary
 
 ## References
 

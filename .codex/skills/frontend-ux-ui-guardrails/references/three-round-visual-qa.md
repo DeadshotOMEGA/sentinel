@@ -1,14 +1,14 @@
-# Three-Round Visual QA (Mandatory)
+# Three-Round Visual QA (On Demand)
 
-Use this process for every edited or newly created frontend component/page.
+Use this process only when a user explicitly requests a three-round visual QA pass.
 
 ## Hard Rules
 
 - Use `playwright-cli` only for browser verification.
-- Run exactly 3 rounds, in order.
+- If requested, run exactly 3 rounds, in order.
 - Capture artifacts every round (snapshot required, screenshot optional but recommended for significant UI changes).
 - If any defect is found and fixed, restart from Round 1.
-- Do not mark task complete without all 3 rounds passing.
+- Do not report a three-round QA request complete until all 3 rounds pass.
 
 ## Canonical command flow
 
@@ -56,7 +56,7 @@ Goal: ensure global shell/pattern consistency remains intact.
 ## Evidence template
 
 ```md
-### 3-Round Visual QA Evidence
+### Visual QA Evidence (Three-Round, If Requested)
 
 - Round 1 (Targeted): route=<...>; actions=<...>; artifacts=<...>; result=PASS|FAIL
 - Round 2 (Adjacent): route=<...>; actions=<...>; artifacts=<...>; result=PASS|FAIL

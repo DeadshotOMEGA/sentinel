@@ -1,4 +1,4 @@
 interface:
   display_name: "Frontend UX/UI Guardrails"
-  short_description: "DaisyUI-first frontend quality with 3-round visual QA"
-  default_prompt: "Implement frontend changes in apps/frontend-admin with DaisyUI-first patterns, Sentinel design-token compliance, and mandatory 3-round playwright-cli visual QA evidence."
+  short_description: "DaisyUI-first frontend quality guardrails"
+  default_prompt: "Implement frontend changes in apps/frontend-admin with DaisyUI-first patterns and Sentinel design-token compliance."

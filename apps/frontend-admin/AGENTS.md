@@ -31,14 +31,7 @@ Applies when editing files under: `apps/frontend-admin/`
   - `DaisyUI Fit Check`
   - `Research Notes`
   - `Design Compliance Checklist`
-  - `3-Round Visual QA Evidence`
-- MUST use `playwright-cli` for visual verification of every edited/new component or page.
-- MUST perform exactly 3 visual QA rounds in this order:
-  1. Targeted component/page correctness
-  2. Adjacent/related regression checks on same route and nearby interactions/states
-  3. Cross-page/layout consistency (shell, spacing, typography, shared UI patterns)
-- MUST restart QA from Round 1 if any round fails after applying fixes.
-- MUST NOT mark frontend work complete without passing evidence from all 3 rounds.
+- MUST use `playwright-cli` for visual verification when the user explicitly requests visual QA.
 
 ## Defaults (SHOULD)
 
