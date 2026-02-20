@@ -69,6 +69,14 @@ interface MembersTableProps {
 
 const columnHelper = createColumnHelper<MemberResponse>()
 
+function normalizeMemberTypeText(memberType: string): string {
+  return memberType
+    .trim()
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 export function MembersTable({
   filters,
   page,
@@ -132,6 +140,11 @@ export function MembersTable({
         ]
       )
     )
+  }, [enums])
+
+  const memberTypeMap = useMemo(() => {
+    if (!enums?.memberTypes) return new Map<string, string>()
+    return new Map(enums.memberTypes.map((t: { id: string; name: string }) => [t.id, t.name]))
   }, [enums])
 
   // Rank order map for proper military rank sorting (higher displayOrder = more senior)
@@ -238,6 +251,34 @@ export function MembersTable({
         },
         enableSorting: true,
       }),
+      columnHelper.accessor('moc', {
+        header: ({ column }) => <SortableHeader column={column} label="MOC" />,
+        cell: (info) => {
+          const moc = info.getValue()
+          return moc ? <span className="font-mono text-sm">{moc}</span> : '—'
+        },
+        enableSorting: true,
+        size: 90,
+      }),
+      columnHelper.accessor(
+        (member) => {
+          const classDetails = member.classDetails?.trim()
+          if (classDetails) return classDetails
+          if (member.memberTypeId) {
+            const memberTypeName = memberTypeMap.get(member.memberTypeId)
+            if (memberTypeName) return normalizeMemberTypeText(memberTypeName)
+          }
+          if (member.memberType) return normalizeMemberTypeText(member.memberType)
+          return ''
+        },
+        {
+          id: 'contract',
+          header: ({ column }) => <SortableHeader column={column} label="Contract" />,
+          cell: (info) => info.getValue() || '—',
+          enableSorting: true,
+          size: 110,
+        }
+      ),
       columnHelper.accessor('memberStatusId', {
         header: ({ column }) => (
           <SortableHeader column={column} label="Status" className="flex justify-center" />
@@ -409,7 +450,7 @@ export function MembersTable({
     }
 
     return cols
-  }, [canEdit, divisionMap, memberStatusMap, rankOrderMap])
+  }, [canEdit, divisionMap, memberStatusMap, memberTypeMap, rankOrderMap])
 
   const table = useReactTable({
     data: data?.members ?? [],
