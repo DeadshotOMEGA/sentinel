@@ -47,6 +47,9 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @sentinel/database prisma generate
 
+      - name: Bootstrap schema on fresh CI Postgres instance
+        run: pnpm --filter @sentinel/database exec prisma db push --skip-generate
+
       - name: Run safe Prisma migration deploy (must fail on non-zero)
         run: pnpm --filter @sentinel/database prisma:migrate:deploy:safe
 
