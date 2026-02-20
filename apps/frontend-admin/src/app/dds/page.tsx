@@ -2,15 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ClipboardList,
-  ShieldCheck,
-  Pencil,
-  Save,
-  X,
-  RotateCcw,
-  Plus,
-  Trash2,
+  BookOpenCheck,
   CheckCircle2,
+  ClipboardList,
+  Download,
+  FileText,
+  Pencil,
+  Phone,
+  PhoneCall,
+  Plus,
+  RotateCcw,
+  Save,
+  ShieldCheck,
+  Trash2,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -24,10 +29,10 @@ import {
 import { AppBadge } from '@/components/ui/AppBadge'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useDdsPageContent } from '@/hooks/use-dds-page-content'
-import { AccountLevel, useAuthStore } from '@/store/auth-store'
-import { cn } from '@/lib/utils'
 import { cloneDdsPageContent, parseDdsPageContent, type DdsPageContent } from '@/lib/dds-content'
 import { formatDateISO } from '@/lib/date-utils'
+import { cn } from '@/lib/utils'
+import { AccountLevel, useAuthStore } from '@/store/auth-store'
 
 const CHECKOFF_STORAGE_PREFIX = 'dds.checkoff.v1'
 
@@ -46,6 +51,11 @@ function normalizeMultiline(value: string): string[] {
 
 function toMultiline(values: string[]): string {
   return values.join('\n')
+}
+
+function normalizeOptionalInput(value: string): string | null {
+  const next = value.trim()
+  return next.length > 0 ? next : null
 }
 
 function parseStoredCheckoff(value: string | null): TaskCheckoffMap {
@@ -71,6 +81,10 @@ function formatUpdatedAt(value: string | null): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Unknown'
   return date.toLocaleString()
+}
+
+function isUpdatePlaceholder(value: string): boolean {
+  return value.includes('<update required>')
 }
 
 const templateSourceConfig: Record<
@@ -155,7 +169,7 @@ export default function DdsPage() {
 
     const parsedDraft = parseDdsPageContent(draftTemplate)
     if (!parsedDraft) {
-      toast.error('Template data is invalid. Review section titles and task text.')
+      toast.error('Template data is invalid. Review titles and text fields.')
       return
     }
 
@@ -239,8 +253,8 @@ export default function DdsPage() {
                 DDS Operations
               </AppCardTitle>
               <AppCardDescription>
-                Duty Day Staff responsibilities, handoff expectations, and daily execution
-                checklist.
+                Duty Day Staff responsibilities, duty phone playbook, member call triage, and daily
+                execution checklist.
               </AppCardDescription>
               <div className="flex flex-wrap items-center gap-2">
                 <AppBadge status={sourceConfig.status}>{sourceConfig.label}</AppBadge>
@@ -318,8 +332,8 @@ export default function DdsPage() {
             <div>
               <h3 className="font-semibold">Template is editable</h3>
               <p className="text-sm">
-                Admin/Developer users can update responsibilities and checklist wording when SOP
-                text changes.
+                Admin/Developer users can update checklist, contacts, call playbooks, and reference
+                downloads when SOP text changes.
               </p>
             </div>
             <div className="text-xs text-base-content/70">
@@ -456,6 +470,519 @@ export default function DdsPage() {
 
             <AppCard>
               <AppCardHeader>
+                <AppCardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
+                  Quick Contacts
+                </AppCardTitle>
+                <AppCardDescription>
+                  Editable duty contact references used for calls and escalations.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {isEditingTemplate ? (
+                  <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {activeTemplate.quickContacts.map((contact, contactIndex) => (
+                      <section
+                        key={contact.id}
+                        className="border border-base-300 bg-base-100"
+                        style={{
+                          padding: 'var(--space-4)',
+                          display: 'grid',
+                          gap: 'var(--space-3)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold">Contact #{contactIndex + 1}</p>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm text-error"
+                            onClick={() => {
+                              updateDraft((current) => ({
+                                ...current,
+                                quickContacts: current.quickContacts.filter(
+                                  (_item, index) => index !== contactIndex
+                                ),
+                              }))
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Remove
+                          </button>
+                        </div>
+
+                        <input
+                          className="input input-bordered w-full"
+                          value={contact.label}
+                          placeholder="Contact label"
+                          onChange={(event) => {
+                            const nextLabel = event.target.value
+                            updateDraft((current) => {
+                              const nextContacts = [...current.quickContacts]
+                              nextContacts[contactIndex] = {
+                                ...nextContacts[contactIndex],
+                                label: nextLabel,
+                              }
+                              return { ...current, quickContacts: nextContacts }
+                            })
+                          }}
+                        />
+
+                        <input
+                          className="input input-bordered w-full"
+                          value={contact.phone}
+                          placeholder="Phone or extension"
+                          onChange={(event) => {
+                            const nextPhone = event.target.value
+                            updateDraft((current) => {
+                              const nextContacts = [...current.quickContacts]
+                              nextContacts[contactIndex] = {
+                                ...nextContacts[contactIndex],
+                                phone: nextPhone,
+                              }
+                              return { ...current, quickContacts: nextContacts }
+                            })
+                          }}
+                        />
+
+                        <textarea
+                          className="textarea textarea-bordered h-24 w-full"
+                          value={contact.notes ?? ''}
+                          placeholder="Optional notes"
+                          onChange={(event) => {
+                            const nextNotes = normalizeOptionalInput(event.target.value)
+                            updateDraft((current) => {
+                              const nextContacts = [...current.quickContacts]
+                              nextContacts[contactIndex] = {
+                                ...nextContacts[contactIndex],
+                                notes: nextNotes,
+                              }
+                              return { ...current, quickContacts: nextContacts }
+                            })
+                          }}
+                        />
+                      </section>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm justify-self-start"
+                      onClick={() => {
+                        updateDraft((current) => ({
+                          ...current,
+                          quickContacts: [
+                            ...current.quickContacts,
+                            {
+                              id: `contact-${Date.now()}`,
+                              label: 'New Contact',
+                              phone: '<update required>',
+                              notes: null,
+                            },
+                          ],
+                        }))
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Contact
+                    </button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Contact</th>
+                          <th>Phone</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeTemplate.quickContacts.map((contact) => (
+                          <tr key={contact.id}>
+                            <td className="font-medium">{contact.label}</td>
+                            <td>
+                              {isUpdatePlaceholder(contact.phone) ? (
+                                <span className="text-warning font-medium">{contact.phone}</span>
+                              ) : (
+                                <a className="link link-primary" href={`tel:${contact.phone}`}>
+                                  {contact.phone}
+                                </a>
+                              )}
+                            </td>
+                            <td className="text-sm text-base-content/80">{contact.notes ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </AppCardContent>
+            </AppCard>
+
+            <AppCard>
+              <AppCardHeader>
+                <AppCardTitle className="flex items-center gap-2">
+                  <PhoneCall className="h-5 w-5 text-primary" />
+                  Duty Phone Protocol
+                </AppCardTitle>
+                <AppCardDescription>
+                  Missed-call workflow, call categories, and priority message handling.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {isEditingTemplate ? (
+                  <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {activeTemplate.dutyPhoneProtocol.map((section, sectionIndex) => (
+                      <section
+                        key={section.id}
+                        className="border border-base-300 bg-base-100"
+                        style={{
+                          padding: 'var(--space-4)',
+                          display: 'grid',
+                          gap: 'var(--space-3)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <input
+                            className="input input-bordered w-full"
+                            value={section.title}
+                            onChange={(event) => {
+                              const nextTitle = event.target.value
+                              updateDraft((current) => {
+                                const nextSections = [...current.dutyPhoneProtocol]
+                                nextSections[sectionIndex] = {
+                                  ...nextSections[sectionIndex],
+                                  title: nextTitle,
+                                }
+                                return { ...current, dutyPhoneProtocol: nextSections }
+                              })
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm text-error"
+                            onClick={() => {
+                              updateDraft((current) => ({
+                                ...current,
+                                dutyPhoneProtocol: current.dutyPhoneProtocol.filter(
+                                  (_item, index) => index !== sectionIndex
+                                ),
+                              }))
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Remove
+                          </button>
+                        </div>
+
+                        <fieldset className="fieldset">
+                          <legend className="fieldset-legend">Protocol items (one per line)</legend>
+                          <textarea
+                            className="textarea textarea-bordered h-36 w-full"
+                            value={toMultiline(section.items)}
+                            onChange={(event) => {
+                              const nextItems = normalizeMultiline(event.target.value)
+                              updateDraft((current) => {
+                                const nextSections = [...current.dutyPhoneProtocol]
+                                nextSections[sectionIndex] = {
+                                  ...nextSections[sectionIndex],
+                                  items: nextItems,
+                                }
+                                return { ...current, dutyPhoneProtocol: nextSections }
+                              })
+                            }}
+                          />
+                        </fieldset>
+                      </section>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm justify-self-start"
+                      onClick={() => {
+                        updateDraft((current) => ({
+                          ...current,
+                          dutyPhoneProtocol: [
+                            ...current.dutyPhoneProtocol,
+                            {
+                              id: `protocol-${Date.now()}`,
+                              title: 'New Protocol Section',
+                              items: ['Describe procedure'],
+                            },
+                          ],
+                        }))
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Protocol Section
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+                    {activeTemplate.dutyPhoneProtocol.map((section, sectionIndex) => (
+                      <details
+                        key={section.id}
+                        className="collapse collapse-arrow border border-base-300 bg-base-100"
+                        open={sectionIndex === 0}
+                      >
+                        <summary className="collapse-title font-semibold">{section.title}</summary>
+                        <div className="collapse-content">
+                          <ul
+                            className="list-disc pl-5 text-sm"
+                            style={{ display: 'grid', gap: 'var(--space-2)' }}
+                          >
+                            {section.items.map((item) => (
+                              <li key={`${section.id}-${item}`}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </AppCardContent>
+            </AppCard>
+
+            <AppCard>
+              <AppCardHeader>
+                <AppCardTitle className="flex items-center gap-2">
+                  <BookOpenCheck className="h-5 w-5 text-primary" />
+                  Member Call Triage
+                </AppCardTitle>
+                <AppCardDescription>
+                  Member travel disruption scenarios and required DDS response steps.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {isEditingTemplate ? (
+                  <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {activeTemplate.memberCallScenarios.map((scenario, scenarioIndex) => (
+                      <section
+                        key={scenario.id}
+                        className="border border-base-300 bg-base-100"
+                        style={{
+                          padding: 'var(--space-4)',
+                          display: 'grid',
+                          gap: 'var(--space-3)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <input
+                            className="input input-bordered w-full"
+                            value={scenario.scenario}
+                            onChange={(event) => {
+                              const nextScenario = event.target.value
+                              updateDraft((current) => {
+                                const nextScenarios = [...current.memberCallScenarios]
+                                nextScenarios[scenarioIndex] = {
+                                  ...nextScenarios[scenarioIndex],
+                                  scenario: nextScenario,
+                                }
+                                return { ...current, memberCallScenarios: nextScenarios }
+                              })
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm text-error"
+                            onClick={() => {
+                              updateDraft((current) => ({
+                                ...current,
+                                memberCallScenarios: current.memberCallScenarios.filter(
+                                  (_item, index) => index !== scenarioIndex
+                                ),
+                              }))
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Remove
+                          </button>
+                        </div>
+
+                        <fieldset className="fieldset">
+                          <legend className="fieldset-legend">Guidance items (one per line)</legend>
+                          <textarea
+                            className="textarea textarea-bordered h-36 w-full"
+                            value={toMultiline(scenario.guidance)}
+                            onChange={(event) => {
+                              const nextGuidance = normalizeMultiline(event.target.value)
+                              updateDraft((current) => {
+                                const nextScenarios = [...current.memberCallScenarios]
+                                nextScenarios[scenarioIndex] = {
+                                  ...nextScenarios[scenarioIndex],
+                                  guidance: nextGuidance,
+                                }
+                                return { ...current, memberCallScenarios: nextScenarios }
+                              })
+                            }}
+                          />
+                        </fieldset>
+                      </section>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm justify-self-start"
+                      onClick={() => {
+                        updateDraft((current) => ({
+                          ...current,
+                          memberCallScenarios: [
+                            ...current.memberCallScenarios,
+                            {
+                              id: `scenario-${Date.now()}`,
+                              scenario: 'New Scenario',
+                              guidance: ['Describe response steps'],
+                            },
+                          ],
+                        }))
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Scenario
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+                    {activeTemplate.memberCallScenarios.map((scenario) => (
+                      <details
+                        key={scenario.id}
+                        className="collapse collapse-arrow border border-base-300 bg-base-100"
+                      >
+                        <summary className="collapse-title font-semibold">
+                          {scenario.scenario}
+                        </summary>
+                        <div className="collapse-content">
+                          <ul
+                            className="list-disc pl-5 text-sm"
+                            style={{ display: 'grid', gap: 'var(--space-2)' }}
+                          >
+                            {scenario.guidance.map((item) => (
+                              <li key={`${scenario.id}-${item}`}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </AppCardContent>
+            </AppCard>
+
+            <AppCard>
+              <AppCardHeader>
+                <AppCardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Phone Log Requirements
+                </AppCardTitle>
+                <AppCardDescription>
+                  Required information for every duty phone log entry.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {activeTemplate.phoneLogRequirements.map((requirement, requirementIndex) => (
+                  <section
+                    key={requirement.id}
+                    className="border border-base-300 bg-base-100"
+                    style={{ padding: 'var(--space-4)', display: 'grid', gap: 'var(--space-3)' }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      {isEditingTemplate ? (
+                        <input
+                          className="input input-bordered w-full"
+                          value={requirement.title}
+                          onChange={(event) => {
+                            const nextTitle = event.target.value
+                            updateDraft((current) => {
+                              const nextRequirements = [...current.phoneLogRequirements]
+                              nextRequirements[requirementIndex] = {
+                                ...nextRequirements[requirementIndex],
+                                title: nextTitle,
+                              }
+                              return { ...current, phoneLogRequirements: nextRequirements }
+                            })
+                          }}
+                        />
+                      ) : (
+                        <h3 className="font-semibold text-base">{requirement.title}</h3>
+                      )}
+
+                      {isEditingTemplate && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm text-error"
+                          onClick={() => {
+                            updateDraft((current) => ({
+                              ...current,
+                              phoneLogRequirements: current.phoneLogRequirements.filter(
+                                (_item, index) => index !== requirementIndex
+                              ),
+                            }))
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    {isEditingTemplate ? (
+                      <fieldset className="fieldset">
+                        <legend className="fieldset-legend">Items (one per line)</legend>
+                        <textarea
+                          className="textarea textarea-bordered h-28 w-full"
+                          value={toMultiline(requirement.items)}
+                          onChange={(event) => {
+                            const nextItems = normalizeMultiline(event.target.value)
+                            updateDraft((current) => {
+                              const nextRequirements = [...current.phoneLogRequirements]
+                              nextRequirements[requirementIndex] = {
+                                ...nextRequirements[requirementIndex],
+                                items: nextItems,
+                              }
+                              return { ...current, phoneLogRequirements: nextRequirements }
+                            })
+                          }}
+                        />
+                      </fieldset>
+                    ) : (
+                      <ul
+                        className="list-disc pl-5 text-sm"
+                        style={{ display: 'grid', gap: 'var(--space-2)' }}
+                      >
+                        {requirement.items.map((item) => (
+                          <li key={`${requirement.id}-${item}`}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                ))}
+
+                {isEditingTemplate && (
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm justify-self-start"
+                    onClick={() => {
+                      updateDraft((current) => ({
+                        ...current,
+                        phoneLogRequirements: [
+                          ...current.phoneLogRequirements,
+                          {
+                            id: `phone-log-${Date.now()}`,
+                            title: 'New Requirement',
+                            items: ['Describe required log detail'],
+                          },
+                        ],
+                      }))
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Requirement
+                  </button>
+                )}
+              </AppCardContent>
+            </AppCard>
+
+            <AppCard>
+              <AppCardHeader>
                 <AppCardTitle>Operational Notes</AppCardTitle>
                 <AppCardDescription>
                   Local clarifications and command notes for DDS execution.
@@ -491,7 +1018,7 @@ export default function DdsPage() {
             </AppCard>
           </div>
 
-          <div>
+          <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
             <AppCard className="lg:sticky" style={{ top: 'var(--space-4)' }}>
               <AppCardHeader>
                 <AppCardTitle>Daily Checklist</AppCardTitle>
@@ -664,6 +1191,191 @@ export default function DdsPage() {
                     <Plus className="h-4 w-4" />
                     Add Checklist Block
                   </button>
+                )}
+              </AppCardContent>
+            </AppCard>
+
+            <AppCard>
+              <AppCardHeader>
+                <AppCardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5 text-primary" />
+                  Reference Downloads
+                </AppCardTitle>
+                <AppCardDescription>
+                  Source SOP, phone log, member call guide, and floor plan documents.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {isEditingTemplate ? (
+                  <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                    {activeTemplate.referenceDownloads.map((download, downloadIndex) => (
+                      <section
+                        key={download.id}
+                        className="border border-base-300 bg-base-100"
+                        style={{
+                          padding: 'var(--space-4)',
+                          display: 'grid',
+                          gap: 'var(--space-3)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold">Reference #{downloadIndex + 1}</p>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm text-error"
+                            onClick={() => {
+                              updateDraft((current) => ({
+                                ...current,
+                                referenceDownloads: current.referenceDownloads.filter(
+                                  (_item, index) => index !== downloadIndex
+                                ),
+                              }))
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Remove
+                          </button>
+                        </div>
+
+                        <input
+                          className="input input-bordered w-full"
+                          value={download.title}
+                          placeholder="Reference title"
+                          onChange={(event) => {
+                            const nextTitle = event.target.value
+                            updateDraft((current) => {
+                              const nextDownloads = [...current.referenceDownloads]
+                              nextDownloads[downloadIndex] = {
+                                ...nextDownloads[downloadIndex],
+                                title: nextTitle,
+                              }
+                              return { ...current, referenceDownloads: nextDownloads }
+                            })
+                          }}
+                        />
+
+                        <div
+                          className="grid sm:grid-cols-[minmax(0,_1fr)_140px]"
+                          style={{ gap: 'var(--space-2)' }}
+                        >
+                          <input
+                            className="input input-bordered w-full"
+                            value={download.href}
+                            placeholder="/assets/dds/..."
+                            onChange={(event) => {
+                              const nextHref = event.target.value
+                              updateDraft((current) => {
+                                const nextDownloads = [...current.referenceDownloads]
+                                nextDownloads[downloadIndex] = {
+                                  ...nextDownloads[downloadIndex],
+                                  href: nextHref,
+                                }
+                                return { ...current, referenceDownloads: nextDownloads }
+                              })
+                            }}
+                          />
+                          <select
+                            className="select select-bordered w-full"
+                            value={download.fileType}
+                            onChange={(event) => {
+                              const nextType = event.target.value as 'pdf' | 'docx'
+                              updateDraft((current) => {
+                                const nextDownloads = [...current.referenceDownloads]
+                                nextDownloads[downloadIndex] = {
+                                  ...nextDownloads[downloadIndex],
+                                  fileType: nextType,
+                                }
+                                return { ...current, referenceDownloads: nextDownloads }
+                              })
+                            }}
+                          >
+                            <option value="pdf">PDF</option>
+                            <option value="docx">DOCX</option>
+                          </select>
+                        </div>
+
+                        <textarea
+                          className="textarea textarea-bordered h-24 w-full"
+                          value={download.description ?? ''}
+                          placeholder="Optional description"
+                          onChange={(event) => {
+                            const nextDescription = normalizeOptionalInput(event.target.value)
+                            updateDraft((current) => {
+                              const nextDownloads = [...current.referenceDownloads]
+                              nextDownloads[downloadIndex] = {
+                                ...nextDownloads[downloadIndex],
+                                description: nextDescription,
+                              }
+                              return { ...current, referenceDownloads: nextDownloads }
+                            })
+                          }}
+                        />
+                      </section>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm justify-self-start"
+                      onClick={() => {
+                        updateDraft((current) => ({
+                          ...current,
+                          referenceDownloads: [
+                            ...current.referenceDownloads,
+                            {
+                              id: `ref-${Date.now()}`,
+                              title: 'New Reference',
+                              href: '/assets/dds/<update-file>',
+                              fileType: 'pdf',
+                              description: null,
+                            },
+                          ],
+                        }))
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Reference
+                    </button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Document</th>
+                          <th>Type</th>
+                          <th>Description</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeTemplate.referenceDownloads.map((download) => (
+                          <tr key={download.id}>
+                            <td className="font-medium">{download.title}</td>
+                            <td>
+                              <span className="badge badge-ghost badge-sm uppercase">
+                                {download.fileType}
+                              </span>
+                            </td>
+                            <td className="text-sm text-base-content/80">
+                              {download.description ?? '—'}
+                            </td>
+                            <td>
+                              <a
+                                className="btn btn-ghost btn-sm"
+                                href={download.href}
+                                target="_blank"
+                                rel="noreferrer"
+                                download
+                              >
+                                <Download className="h-4 w-4" />
+                                Open
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </AppCardContent>
             </AppCard>
