@@ -185,6 +185,61 @@ compose() {
   docker_cmd compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}" "${profile_args[@]}" "$@"
 }
 
+database_non_prisma_table_count() {
+  local postgres_user postgres_db raw_count
+  postgres_user="$(env_value POSTGRES_USER sentinel)"
+  postgres_db="$(env_value POSTGRES_DB sentinel)"
+
+  raw_count="$(
+    compose exec -T postgres psql -U "${postgres_user}" -d "${postgres_db}" -tAc \
+      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name <> '_prisma_migrations';" \
+      2>/dev/null || true
+  )"
+
+  raw_count="$(printf '%s' "${raw_count}" | tr -d '[:space:]')"
+  if [[ "${raw_count}" =~ ^[0-9]+$ ]]; then
+    printf '%s\n' "${raw_count}"
+  else
+    printf '0\n'
+  fi
+}
+
+failed_prisma_migrations() {
+  local postgres_user postgres_db has_table migrations
+  postgres_user="$(env_value POSTGRES_USER sentinel)"
+  postgres_db="$(env_value POSTGRES_DB sentinel)"
+
+  has_table="$(
+    compose exec -T postgres psql -U "${postgres_user}" -d "${postgres_db}" -tAc \
+      "SELECT to_regclass('public._prisma_migrations') IS NOT NULL;" \
+      2>/dev/null || true
+  )"
+  has_table="$(printf '%s' "${has_table}" | tr -d '[:space:]')"
+  [[ "${has_table}" == "t" ]] || return 0
+
+  migrations="$(
+    compose exec -T postgres psql -U "${postgres_user}" -d "${postgres_db}" -tAc \
+      "SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NULL AND rolled_back_at IS NULL;" \
+      2>/dev/null || true
+  )"
+
+  printf '%s\n' "${migrations}" | sed '/^[[:space:]]*$/d'
+}
+
+resolve_failed_prisma_migrations() {
+  local found_any="false"
+  while IFS= read -r migration; do
+    [[ -n "${migration}" ]] || continue
+    found_any="true"
+    warn "Found failed migration state for ${migration}; marking as rolled back."
+    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate resolve --rolled-back ${migration}"
+  done < <(failed_prisma_migrations)
+
+  if [[ "${found_any}" == "true" ]]; then
+    log "Failed migration states were resolved."
+  fi
+}
+
 wait_for_service_health() {
   local service="${1}"
   local timeout="${2:-180}"
@@ -217,10 +272,19 @@ wait_for_service_health() {
 }
 
 run_safe_migrations() {
+  local table_count
   log "Running one-shot safe migration deploy"
   wait_for_service_health postgres 120 || die "Postgres is not healthy; cannot run migrations"
   wait_for_service_health backend 120 || die "Backend is not healthy; cannot run migrations"
 
+  table_count="$(database_non_prisma_table_count)"
+  if [[ "${table_count}" == "0" ]]; then
+    log "Detected empty database schema; bootstrapping schema via prisma db push before migration deploy."
+    resolve_failed_prisma_migrations
+    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"
+  fi
+
+  resolve_failed_prisma_migrations
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe"
 
   log "Verifying migration status"
