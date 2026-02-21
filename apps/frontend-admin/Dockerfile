@@ -6,6 +6,7 @@ ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
 
 WORKDIR /workspace
+ENV DATABASE_URL=postgresql://sentinel:sentinel@localhost:5432/sentinel?schema=public
 
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY apps/frontend-admin/package.json ./apps/frontend-admin/package.json
@@ -19,7 +20,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 
 RUN pnpm --filter @sentinel/database prisma:generate
-RUN pnpm --filter frontend-admin build
+RUN pnpm -r build
 
 FROM node:24.11.0-alpine3.21 AS runtime
 
