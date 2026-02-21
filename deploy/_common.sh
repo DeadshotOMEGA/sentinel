@@ -185,6 +185,51 @@ compose() {
   docker_cmd compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}" "${profile_args[@]}" "$@"
 }
 
+wait_for_service_health() {
+  local service="${1}"
+  local timeout="${2:-180}"
+  local elapsed=0
+
+  while (( elapsed < timeout )); do
+    local container_id
+    container_id="$(compose ps -q "${service}" 2>/dev/null | head -n1 || true)"
+
+    if [[ -n "${container_id}" ]]; then
+      local status
+      status="$(docker_cmd inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "${container_id}" 2>/dev/null || true)"
+      case "${status}" in
+        healthy|running)
+          return 0
+          ;;
+        unhealthy|exited|dead)
+          warn "Service ${service} is ${status}"
+          return 1
+          ;;
+      esac
+    fi
+
+    sleep 3
+    elapsed=$((elapsed + 3))
+  done
+
+  warn "Timed out waiting for service ${service} to become healthy"
+  return 1
+}
+
+run_safe_migrations() {
+  log "Running one-shot safe migration deploy"
+  wait_for_service_health postgres 120 || die "Postgres is not healthy; cannot run migrations"
+  wait_for_service_health backend 120 || die "Backend is not healthy; cannot run migrations"
+
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe"
+
+  log "Verifying migration status"
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
+
+  log "Verifying schema parity against migration files"
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+}
+
 wait_for_healthz() {
   local timeout="${1:-180}"
   local elapsed=0

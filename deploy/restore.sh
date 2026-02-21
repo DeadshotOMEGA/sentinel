@@ -57,8 +57,7 @@ log "Restoring database from ${BACKUP_FILE}"
 compose exec -T postgres psql -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
 cat "${BACKUP_FILE}" | compose exec -T postgres pg_restore -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" --clean --if-exists --no-owner --no-privileges
 
-log "Running one-shot safe migration deploy"
-compose exec backend pnpm --filter @sentinel/database prisma:migrate:deploy:safe
+run_safe_migrations
 
 if ! wait_for_healthz 240; then
   print_health_diagnostics
