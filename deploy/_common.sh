@@ -326,6 +326,22 @@ run_safe_migrations() {
   compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
 }
 
+run_bootstrap_schema_and_baseline() {
+  log "Bootstrapping schema (create all tables) and baselining migrations"
+  wait_for_service_health postgres 120 || die "Postgres is not healthy; cannot bootstrap schema"
+  wait_for_service_health backend 120 || die "Backend is not healthy; cannot bootstrap schema"
+
+  resolve_failed_prisma_migrations
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"
+
+  log "Verifying migration status"
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
+
+  log "Verifying schema parity against migration files"
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+}
+
 wait_for_healthz() {
   local timeout="${1:-180}"
   local elapsed=0
