@@ -128,8 +128,7 @@ save_state
 ensure_compose_pull_with_login_fallback
 compose up -d
 
-log "Running one-shot safe migration deploy"
-compose exec backend pnpm --filter @sentinel/database prisma:migrate:deploy:safe
+run_safe_migrations
 
 if ! wait_for_healthz 240; then
   print_health_diagnostics
