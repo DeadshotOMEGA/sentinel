@@ -204,6 +204,21 @@ database_non_prisma_table_count() {
   fi
 }
 
+db_table_exists() {
+  local table_name="${1}"
+  local postgres_user postgres_db exists
+  postgres_user="$(env_value POSTGRES_USER sentinel)"
+  postgres_db="$(env_value POSTGRES_DB sentinel)"
+
+  exists="$(
+    compose exec -T postgres psql -U "${postgres_user}" -d "${postgres_db}" -tAc \
+      "SELECT to_regclass('public.${table_name}') IS NOT NULL;" \
+      2>/dev/null || true
+  )"
+  exists="$(printf '%s' "${exists}" | tr -d '[:space:]')"
+  [[ "${exists}" == "t" ]]
+}
+
 failed_prisma_migrations() {
   local postgres_user postgres_db has_table migrations
   postgres_user="$(env_value POSTGRES_USER sentinel)"
@@ -273,19 +288,36 @@ wait_for_service_health() {
 
 run_safe_migrations() {
   local table_count
+  local bootstrap_schema="false"
+  local bootstrap_reason=""
   log "Running one-shot safe migration deploy"
   wait_for_service_health postgres 120 || die "Postgres is not healthy; cannot run migrations"
   wait_for_service_health backend 120 || die "Backend is not healthy; cannot run migrations"
 
   table_count="$(database_non_prisma_table_count)"
   if [[ "${table_count}" == "0" ]]; then
-    log "Detected empty database schema; bootstrapping schema via prisma db push before migration deploy."
-    resolve_failed_prisma_migrations
-    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"
+    bootstrap_schema="true"
+    bootstrap_reason="empty database schema"
+  fi
+
+  if ! db_table_exists members || ! db_table_exists badges; then
+    bootstrap_schema="true"
+    if [[ -n "${bootstrap_reason}" ]]; then
+      bootstrap_reason+=", missing core tables (members/badges)"
+    else
+      bootstrap_reason="missing core tables (members/badges)"
+    fi
   fi
 
   resolve_failed_prisma_migrations
-  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe"
+
+  if [[ "${bootstrap_schema}" == "true" ]]; then
+    log "Detected ${bootstrap_reason}; bootstrapping schema and baselining migrations."
+    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"
+    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"
+  else
+    compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe"
+  fi
 
   log "Verifying migration status"
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
