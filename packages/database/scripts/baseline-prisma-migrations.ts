@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 import 'dotenv/config'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash, randomUUID } from 'node:crypto'
@@ -15,11 +15,11 @@ function getMigrationFolders(): Array<{ name: string; sqlPath: string; checksum:
   const entries = readdirSync(migrationsDir)
 
   return entries
-    .filter((name) => /^\d{8,}_/.test(name))
     .filter((name) => {
       const fullPath = join(migrationsDir, name)
       return statSync(fullPath).isDirectory()
     })
+    .filter((name) => existsSync(join(migrationsDir, name, 'migration.sql')))
     .map((name) => {
       const sqlPath = join(migrationsDir, name, 'migration.sql')
       const sql = readFileSync(sqlPath, 'utf8')
