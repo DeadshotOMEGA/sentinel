@@ -140,11 +140,10 @@ curl -f http://127.0.0.1/healthz
 
 - Compose v2 is required (`docker compose`).
 - `SENTINEL_VERSION` must be explicit (never `latest`).
-- Backend migration command is run as a one-shot deploy step:
-  `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe"`
-- On empty databases, installer auto-runs `prisma db push` once before migration deploy to bootstrap base schema.
-- If core tables like `members`/`badges` are missing, installer uses bootstrap mode (`prisma db push` + migration baseline) instead of replaying member-related migration SQL.
-- If `_prisma_migrations` contains failed rows, installer auto-resolves them as rolled back before retrying deploy/baseline.
+- Fresh install now forces bootstrap mode to create all tables first and keep them empty:
+  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"`
+  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"`
+- If `_prisma_migrations` contains failed rows, installer auto-resolves them as rolled back before bootstrapping/baselining.
 - Installer/update then verifies migration status:
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Installer/update then verifies schema parity with migration files:

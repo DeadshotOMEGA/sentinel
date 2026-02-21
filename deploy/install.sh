@@ -154,7 +154,7 @@ set_compose_file_args
 ensure_compose_pull_with_login_fallback
 compose up -d
 
-run_safe_migrations
+run_bootstrap_schema_and_baseline
 
 if ! wait_for_healthz 240; then
   print_health_diagnostics
