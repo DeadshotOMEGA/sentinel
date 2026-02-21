@@ -1,6 +1,7 @@
 'use client'
+/* global process */
 
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 interface SetPinModalProps {
   open: boolean
@@ -37,7 +38,7 @@ export function SetPinModal({ open, onOpenChange, memberId, memberName }: SetPin
     onOpenChange(value)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
 

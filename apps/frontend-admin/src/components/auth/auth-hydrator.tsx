@@ -1,9 +1,10 @@
 'use client'
+/* global process */
 
 import { useEffect, useRef } from 'react'
 import { useAuthStore } from '@/store/auth-store'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 /**
  * Validates the session cookie on mount and syncs the Zustand auth store.

@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
+evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: sentinel-backend
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['backend:3000']
+        labels:
+          service: sentinel-backend
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: loki
+    static_configs:
+      - targets: ['loki:3100']
+
+  - job_name: grafana
+    static_configs:
+      - targets: ['grafana:3000']

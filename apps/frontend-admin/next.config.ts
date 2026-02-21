@@ -1,4 +1,7 @@
+/* global process */
 import type { NextConfig } from 'next'
+
+const backendInternalUrl = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3000'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -7,7 +10,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3000/api/:path*', // Proxy to backend
+        destination: `${backendInternalUrl}/api/:path*`,
       },
     ]
   },

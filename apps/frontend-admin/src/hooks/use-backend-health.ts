@@ -4,18 +4,18 @@ import { useEffect, useState } from 'react'
 
 type BackendStatus = 'connected' | 'disconnected' | 'checking'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 const POLL_INTERVAL = 30_000 // 30 seconds
 
 export function useBackendHealth() {
   const [status, setStatus] = useState<BackendStatus>('checking')
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef -- AbortController is a browser global
     const controller = new AbortController()
 
     async function checkHealth() {
       try {
-        const res = await fetch(`${API_URL}/health`, {
+        const res = await fetch('/healthz', {
           signal: controller.signal,
           cache: 'no-store',
         })

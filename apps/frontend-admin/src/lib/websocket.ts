@@ -7,7 +7,8 @@ class WebSocketManager {
   connect() {
     if (this.socket) return
 
-    this.socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000', {
+    const socketUrl = process.env.NEXT_PUBLIC_WS_URL || undefined
+    this.socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,

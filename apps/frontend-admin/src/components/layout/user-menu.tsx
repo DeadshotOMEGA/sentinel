@@ -1,4 +1,5 @@
 'use client'
+/* global process */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -31,7 +32,7 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
