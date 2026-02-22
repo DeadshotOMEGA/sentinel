@@ -9,6 +9,7 @@ import type {
   BadgeStatus,
   MemberWithDivision,
 } from '@sentinel/types'
+import { getSentinelBootstrapIdentity } from '../lib/system-bootstrap.js'
 
 interface BadgeFilters {
   status?: BadgeStatus
@@ -37,6 +38,13 @@ export class BadgeRepository {
 
   constructor(prismaClient?: PrismaClientInstance) {
     this.prisma = prismaClient || defaultPrisma
+  }
+
+  private async assertNotProtectedSentinelBadge(badgeId: string, operation: string): Promise<void> {
+    const identity = await getSentinelBootstrapIdentity(this.prisma)
+    if (identity && identity.badgeId === badgeId) {
+      throw new Error(`Cannot ${operation} the protected Sentinel bootstrap badge`)
+    }
   }
 
   /**
@@ -307,6 +315,8 @@ export class BadgeRepository {
     assignedToId: string,
     assignmentType: BadgeAssignmentType
   ): Promise<Badge> {
+    await this.assertNotProtectedSentinelBadge(badgeId, 'reassign')
+
     if (assignmentType === 'unassigned') {
       throw new Error('Cannot assign badge with type "unassigned"')
     }
@@ -327,6 +337,8 @@ export class BadgeRepository {
    * Unassign badge
    */
   async unassign(badgeId: string): Promise<Badge> {
+    await this.assertNotProtectedSentinelBadge(badgeId, 'unassign')
+
     const badge = await this.prisma.badge.update({
       where: { id: badgeId },
       data: {
@@ -343,6 +355,8 @@ export class BadgeRepository {
    * Update badge status
    */
   async updateStatus(badgeId: string, status: BadgeStatus): Promise<Badge> {
+    await this.assertNotProtectedSentinelBadge(badgeId, 'change status for')
+
     const badge = await this.prisma.badge.update({
       where: { id: badgeId },
       data: {
@@ -358,6 +372,8 @@ export class BadgeRepository {
    * Delete a badge
    */
   async delete(badgeId: string): Promise<void> {
+    await this.assertNotProtectedSentinelBadge(badgeId, 'delete')
+
     await this.prisma.badge.delete({
       where: { id: badgeId },
     })

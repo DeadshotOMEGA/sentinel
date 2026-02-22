@@ -324,6 +324,8 @@ run_safe_migrations() {
 
   log "Verifying schema parity against migration files"
   compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+
+  run_bootstrap_sentinel_account
 }
 
 run_bootstrap_schema_and_baseline() {
@@ -340,6 +342,14 @@ run_bootstrap_schema_and_baseline() {
 
   log "Verifying schema parity against migration files"
   compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+
+  run_bootstrap_sentinel_account
+}
+
+run_bootstrap_sentinel_account() {
+  log "Ensuring protected Sentinel bootstrap badge/PIN account exists"
+  wait_for_service_health backend 120 || die "Backend is not healthy; cannot bootstrap Sentinel account"
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account"
 }
 
 wait_for_healthz() {
@@ -461,4 +471,5 @@ UNIT
 
   run_root systemctl daemon-reload
   run_root systemctl enable sentinel-appliance.service
+  run_root systemctl start sentinel-appliance.service
 }

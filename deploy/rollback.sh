@@ -56,6 +56,7 @@ save_state
 
 ensure_compose_pull_with_login_fallback
 compose up -d
+run_bootstrap_sentinel_account
 
 if ! wait_for_healthz 240; then
   print_health_diagnostics

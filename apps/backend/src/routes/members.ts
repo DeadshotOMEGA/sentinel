@@ -310,6 +310,15 @@ export const membersRouter = s.router(memberContract, {
           },
         }
       }
+      if (error instanceof Error && error.message.includes('protected Sentinel bootstrap member')) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
 
       return {
         status: 500 as const,
