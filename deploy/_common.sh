@@ -69,6 +69,7 @@ ensure_docker_and_compose_v2() {
   local version
   version="$(docker_cmd compose version --short 2>/dev/null || true)"
   [[ -n "${version}" ]] || die "Docker Compose v2 is required (docker compose)."
+  log "Using docker command: ${DOCKER_CMD[*]}"
   log "Detected Docker Compose v2: ${version}"
 }
 
@@ -290,8 +291,20 @@ compose() {
   if [[ "${WITH_OBS}" == "true" ]]; then
     profile_args+=(--profile obs)
   fi
+  if docker_cmd compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}" "${profile_args[@]}" "$@"; then
+    return 0
+  fi
 
-  docker_cmd compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}" "${profile_args[@]}" "$@"
+  if [[ "${DOCKER_CMD[*]}" != "sudo docker" ]] \
+    && command -v sudo >/dev/null 2>&1 \
+    && sudo docker info >/dev/null 2>&1; then
+    warn "docker compose failed with '${DOCKER_CMD[*]}'; retrying with sudo docker."
+    DOCKER_CMD=(sudo docker)
+    docker_cmd compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}" "${profile_args[@]}" "$@"
+    return $?
+  fi
+
+  return 1
 }
 
 database_non_prisma_table_count() {
