@@ -92,7 +92,7 @@ services:
       frontend:
         condition: service_healthy
     ports:
-      - '80:80'
+      - '${APP_HTTP_PORT:-80}:80'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -162,7 +162,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
       GF_USERS_ALLOW_SIGN_UP: 'false'
       GF_AUTH_ANONYMOUS_ENABLED: 'false'
-      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:${GRAFANA_LAN_PORT:-3002}}
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro

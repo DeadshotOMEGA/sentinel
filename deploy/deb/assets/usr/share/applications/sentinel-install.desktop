@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Install Sentinel Appliance
+Comment=Install Sentinel with guided prompts
+Exec=/usr/local/bin/sentinel-install
+Icon=utilities-terminal
+Terminal=true
+Categories=System;

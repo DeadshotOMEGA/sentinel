@@ -17,6 +17,30 @@ Canonical public routes:
 - `/socket.io*` -> backend (path preserved)
 - `/healthz` -> backend `/health`
 
+## Debian package launcher (recommended for non-technical users)
+
+Release assets now include a Debian package:
+
+- `sentinel-appliance-tools_<version>_all.deb`
+
+Install it on Ubuntu:
+
+```bash
+sudo apt install ./sentinel-appliance-tools_<version>_all.deb
+```
+
+Then launch from app menu:
+
+- `Install Sentinel Appliance`
+- `Update Sentinel Appliance`
+
+Or run directly:
+
+```bash
+sentinel-install
+sentinel-update
+```
+
 ## If your laptop currently runs Windows
 
 1. Back up any Windows data you need.
@@ -66,6 +90,12 @@ Optional flags:
 - `--with-obs` enable observability profile
 - `--allow-grafana-lan` publish Grafana on `3002` (only with `--with-obs`)
 - `--no-firewall` skip UFW LAN-only rule setup
+
+Port defaults in `.env`:
+
+- `APP_HTTP_PORT=80` (Caddy appliance entrypoint)
+- `GRAFANA_LAN_PORT=3002` (only used if `--allow-grafana-lan`)
+- `GRAFANA_ROOT_URL=http://localhost:3002` (matches Grafana LAN port when enabled)
 
 ## Captive portal / GHCR reachability failure
 
@@ -173,6 +203,8 @@ curl -f http://127.0.0.1/healthz
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"`
 - Installer/update/rollback then enforce the bootstrap account and protections:
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account"`
+- Installer/update/rollback also ensure default enums exist (insert-missing only; does not overwrite unit-customized entries):
+  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:seed-default-enums"`
 - If `_prisma_migrations` contains failed rows, installer auto-resolves them as rolled back before bootstrapping/baselining.
 - Installer/update then verifies migration status:
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`

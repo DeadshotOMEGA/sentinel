@@ -5,6 +5,8 @@ export const SENTINEL_BOOTSTRAP_BADGE_SERIAL = '0000000000'
 export const SENTINEL_BOOTSTRAP_DEFAULT_PIN = '0000'
 export const SENTINEL_BOOTSTRAP_SERVICE_NUMBER = 'SENTINEL-SYSTEM'
 export const SENTINEL_BOOTSTRAP_RANK_CODE = 'SENTINEL'
+export const SENTINEL_BOOTSTRAP_DIVISION_CODE = 'SYS'
+export const SENTINEL_BOOTSTRAP_DIVISION_NAME = 'System'
 
 export interface SentinelBootstrapIdentity {
   memberId: string

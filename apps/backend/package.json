@@ -10,6 +10,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "sentinel:bootstrap-account": "tsx scripts/bootstrap-sentinel-account.ts",
+    "sentinel:seed-default-enums": "tsx scripts/seed-default-enums.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",

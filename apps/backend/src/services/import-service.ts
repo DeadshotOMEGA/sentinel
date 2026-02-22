@@ -14,6 +14,7 @@ import { MemberTypeRepository } from '../repositories/member-type-repository.js'
 import { AutoQualificationService } from './auto-qualification-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { toNameCase } from '../utils/name-case.js'
+import { SENTINEL_BOOTSTRAP_SERVICE_NUMBER } from '../lib/system-bootstrap.js'
 
 /**
  * Mapping of department codes to full names for auto-creation
@@ -66,6 +67,12 @@ export class ImportService {
     this.memberRepository = new MemberRepository(prisma)
     this.divisionRepository = new DivisionRepository(prisma)
     this.memberTypeRepository = new MemberTypeRepository(prisma)
+  }
+
+  private isProtectedSystemMember(serviceNumber: string): boolean {
+    return (
+      serviceNumber.trim().toUpperCase() === SENTINEL_BOOTSTRAP_SERVICE_NUMBER.trim().toUpperCase()
+    )
   }
 
   /**
@@ -428,13 +435,18 @@ export class ImportService {
       }
     }
 
+    // Exclude protected Sentinel bootstrap account from import workflow.
+    const importRows = rows.filter((row) => !this.isProtectedSystemMember(row.serviceNumber))
+
     // Get existing members by service numbers
-    const serviceNumbers = rows.map((r) => r.serviceNumber)
+    const serviceNumbers = importRows.map((r) => r.serviceNumber)
     const existingMembers = await this.memberRepository.findByServiceNumbers(serviceNumbers)
     const existingMembersMap = new Map(existingMembers.map((m) => [m.serviceNumber, m]))
 
     // Get all active members to check for deactivations
-    const allActiveMembers = await this.memberRepository.findAll({ status: 'active' })
+    const allActiveMembers = (await this.memberRepository.findAll({ status: 'active' })).filter(
+      (member) => !this.isProtectedSystemMember(member.serviceNumber)
+    )
     const csvServiceNumbers = new Set(serviceNumbers)
 
     // Categorize rows
@@ -454,7 +466,7 @@ export class ImportService {
       changes: string[]
     }> = []
 
-    for (const row of rows) {
+    for (const row of importRows) {
       const existing = existingMembersMap.get(row.serviceNumber)
       const divisionId = divisionMapping[row.department]
 
@@ -640,58 +652,66 @@ export class ImportService {
 
     // Create new members
     if (preview.toAdd.length > 0) {
-      const membersToCreate: CreateMemberInput[] = preview.toAdd
-        .filter((row) => getDivisionId(row.department))
-        .map((row) => {
-          const memberType = this.deriveMemberType(row.details)
-          return {
-            serviceNumber: row.serviceNumber,
-            employeeNumber: row.employeeNumber,
-            firstName: row.firstName,
-            lastName: row.lastName,
-            initials: row.initials,
-            rank: row.rank,
-            divisionId: getDivisionId(row.department)!,
-            mess: row.mess,
-            moc: row.moc,
-            memberType,
-            memberTypeId: memberTypeMapping[memberType],
-            classDetails: row.details,
-            status: 'active',
-            email: row.email,
-            homePhone: row.homePhone,
-            mobilePhone: row.mobilePhone,
-          }
+      const membersToCreate: CreateMemberInput[] = []
+      for (const row of preview.toAdd) {
+        const divisionId = getDivisionId(row.department)
+        if (!divisionId) {
+          continue
+        }
+
+        const memberType = this.deriveMemberType(row.details)
+        membersToCreate.push({
+          serviceNumber: row.serviceNumber,
+          employeeNumber: row.employeeNumber,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          initials: row.initials,
+          rank: row.rank,
+          divisionId,
+          mess: row.mess,
+          moc: row.moc,
+          memberType,
+          memberTypeId: memberTypeMapping[memberType],
+          classDetails: row.details,
+          status: 'active',
+          email: row.email,
+          homePhone: row.homePhone,
+          mobilePhone: row.mobilePhone,
         })
+      }
 
       added = await this.memberRepository.bulkCreate(membersToCreate)
     }
 
     // Update existing members
     if (preview.toUpdate.length > 0) {
-      const membersToUpdate: Array<{ id: string } & UpdateMemberInput> = preview.toUpdate
-        .filter((item) => getDivisionId(item.incoming.department))
-        .map((item) => {
-          const memberType = this.deriveMemberType(item.incoming.details)
-          return {
-            id: item.current.id,
-            serviceNumber: item.incoming.serviceNumber,
-            employeeNumber: item.incoming.employeeNumber,
-            firstName: item.incoming.firstName,
-            lastName: item.incoming.lastName,
-            initials: item.incoming.initials,
-            rank: item.incoming.rank,
-            divisionId: getDivisionId(item.incoming.department)!,
-            mess: item.incoming.mess,
-            moc: item.incoming.moc,
-            memberType,
-            memberTypeId: memberTypeMapping[memberType],
-            classDetails: item.incoming.details,
-            email: item.incoming.email,
-            homePhone: item.incoming.homePhone,
-            mobilePhone: item.incoming.mobilePhone,
-          }
+      const membersToUpdate: Array<{ id: string } & UpdateMemberInput> = []
+      for (const item of preview.toUpdate) {
+        const divisionId = getDivisionId(item.incoming.department)
+        if (!divisionId) {
+          continue
+        }
+
+        const memberType = this.deriveMemberType(item.incoming.details)
+        membersToUpdate.push({
+          id: item.current.id,
+          serviceNumber: item.incoming.serviceNumber,
+          employeeNumber: item.incoming.employeeNumber,
+          firstName: item.incoming.firstName,
+          lastName: item.incoming.lastName,
+          initials: item.incoming.initials,
+          rank: item.incoming.rank,
+          divisionId,
+          mess: item.incoming.mess,
+          moc: item.incoming.moc,
+          memberType,
+          memberTypeId: memberTypeMapping[memberType],
+          classDetails: item.incoming.details,
+          email: item.incoming.email,
+          homePhone: item.incoming.homePhone,
+          mobilePhone: item.incoming.mobilePhone,
         })
+      }
 
       updated = await this.memberRepository.bulkUpdate(membersToUpdate)
     }

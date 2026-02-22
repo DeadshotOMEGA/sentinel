@@ -5,6 +5,8 @@ import { prisma } from '@sentinel/database'
 import {
   SENTINEL_BOOTSTRAP_BADGE_SERIAL,
   SENTINEL_BOOTSTRAP_DEFAULT_PIN,
+  SENTINEL_BOOTSTRAP_DIVISION_CODE,
+  SENTINEL_BOOTSTRAP_DIVISION_NAME,
   SENTINEL_BOOTSTRAP_RANK_CODE,
   SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
   SENTINEL_BOOTSTRAP_SETTING_KEY,
@@ -30,6 +32,25 @@ async function ensureSentinelRank(): Promise<{ id: string; code: string }> {
       category: 'senior_ncm',
       displayOrder: 99,
       isActive: true,
+    },
+    select: { id: true, code: true },
+  })
+}
+
+async function ensureSentinelDivision(): Promise<{ id: string; code: string }> {
+  const existing = await prisma.division.findUnique({
+    where: { code: SENTINEL_BOOTSTRAP_DIVISION_CODE },
+    select: { id: true, code: true },
+  })
+  if (existing) {
+    return existing
+  }
+
+  return prisma.division.create({
+    data: {
+      code: SENTINEL_BOOTSTRAP_DIVISION_CODE,
+      name: SENTINEL_BOOTSTRAP_DIVISION_NAME,
+      description: 'Protected division for Sentinel internal bootstrap account',
     },
     select: { id: true, code: true },
   })
@@ -85,6 +106,7 @@ async function ensureDeleteProtectionTriggers(): Promise<void> {
 
 async function ensureBootstrapIdentity(): Promise<void> {
   const rank = await ensureSentinelRank()
+  const division = await ensureSentinelDivision()
   const pinHash = await bcrypt.hash(SENTINEL_BOOTSTRAP_DEFAULT_PIN, BCRYPT_COST)
   const existingIdentity = await getSentinelBootstrapIdentity(prisma)
 
@@ -109,6 +131,7 @@ async function ensureBootstrapIdentity(): Promise<void> {
           serviceNumber: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
           rankId: rank.id,
           rank: rank.code,
+          divisionId: division.id,
           firstName: 'Sentinel',
           lastName: 'System',
           displayName: 'Sentinel System',
@@ -166,6 +189,9 @@ async function ensureBootstrapIdentity(): Promise<void> {
       where: { id: memberRecord.id },
       data: {
         badgeId: badgeRecord.id,
+        divisionId: division.id,
+        rankId: rank.id,
+        rank: rank.code,
         status: 'active',
         accountLevel: 10,
       },
