@@ -147,6 +147,108 @@ ensure_env_file() {
   fi
 }
 
+is_placeholder_env_value() {
+  local value="${1:-}"
+  local value_lower
+  value="$(printf '%s' "${value}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  value="${value%\"}"
+  value="${value#\"}"
+  value="${value%\'}"
+  value="${value#\'}"
+  value_lower="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]')"
+
+  case "${value_lower}" in
+    ""|changeme|change-this-*|replace-me|replace-this-*|replace_*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+generate_random_secret() {
+  local length="${1:-48}"
+  local value
+
+  if command -v openssl >/dev/null 2>&1; then
+    value="$(openssl rand -base64 96 | tr -dc 'A-Za-z0-9' | head -c "${length}")"
+  else
+    value="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c "${length}")"
+  fi
+
+  if [[ -z "${value}" ]]; then
+    die "Failed to generate random secret value"
+  fi
+  printf '%s\n' "${value}"
+}
+
+bootstrap_env_defaults() {
+  local keys key value generated_value generated_count
+  generated_count=0
+  keys=(
+    POSTGRES_PASSWORD
+    JWT_SECRET
+    API_KEY_SECRET
+    SESSION_SECRET
+    SOCKET_IO_SECRET
+    GRAFANA_ADMIN_PASSWORD
+    SWAGGER_PASSWORD
+  )
+
+  for key in "${keys[@]}"; do
+    value="$(env_value "${key}")"
+    if is_placeholder_env_value "${value}"; then
+      generated_value="$(generate_random_secret 40)"
+      upsert_env "${key}" "${generated_value}"
+      generated_count=$((generated_count + 1))
+    fi
+  done
+
+  if is_placeholder_env_value "$(env_value GHCR_OWNER)"; then
+    upsert_env "GHCR_OWNER" "deadshotomega"
+  fi
+
+  if is_placeholder_env_value "$(env_value APP_PUBLIC_URL)"; then
+    upsert_env "APP_PUBLIC_URL" "http://sentinel.local"
+  fi
+
+  if [[ "${generated_count}" -gt 0 ]]; then
+    log "Auto-generated ${generated_count} secure .env values for first-time setup."
+    log "Generated values were written to ${ENV_FILE}."
+  fi
+}
+
+write_admin_credentials_snapshot() {
+  local credentials_dir="/opt/sentinel/credentials"
+  local credentials_file="${credentials_dir}/service-secrets.env"
+  local tmp_file
+  tmp_file="$(mktemp)"
+
+  cat >"${tmp_file}" <<SNAPSHOT
+# Sentinel service credentials snapshot
+# Generated (UTC): $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+# Access: root-only (chmod 600)
+
+POSTGRES_USER=$(env_value POSTGRES_USER sentinel)
+POSTGRES_PASSWORD=$(env_value POSTGRES_PASSWORD)
+JWT_SECRET=$(env_value JWT_SECRET)
+API_KEY_SECRET=$(env_value API_KEY_SECRET)
+SESSION_SECRET=$(env_value SESSION_SECRET)
+SOCKET_IO_SECRET=$(env_value SOCKET_IO_SECRET)
+SWAGGER_USERNAME=$(env_value SWAGGER_USERNAME admin)
+SWAGGER_PASSWORD=$(env_value SWAGGER_PASSWORD)
+GRAFANA_ADMIN_USER=$(env_value GRAFANA_ADMIN_USER admin)
+GRAFANA_ADMIN_PASSWORD=$(env_value GRAFANA_ADMIN_PASSWORD)
+SNAPSHOT
+
+  run_root install -d -m 700 "${credentials_dir}"
+  run_root install -m 600 "${tmp_file}" "${credentials_file}"
+  rm -f "${tmp_file}"
+
+  log "Service credential snapshot saved to ${credentials_file} (root-only)."
+}
+
 upsert_env() {
   local key="${1}" value="${2}" file="${3:-$ENV_FILE}"
   if grep -qE "^${key}=" "${file}"; then
@@ -330,7 +432,7 @@ run_safe_migrations() {
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
   log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
 
   run_bootstrap_sentinel_account
 }
@@ -348,7 +450,7 @@ run_bootstrap_schema_and_baseline() {
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
   log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
 
   run_bootstrap_sentinel_account
 }

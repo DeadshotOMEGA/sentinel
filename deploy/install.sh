@@ -140,6 +140,8 @@ if ! check_ghcr_reachability; then
 fi
 
 ensure_env_file
+bootstrap_env_defaults
+write_admin_credentials_snapshot
 
 if [[ -z "${TARGET_VERSION}" ]]; then
   TARGET_VERSION="$(grep -E '^SENTINEL_VERSION=' "${ENV_FILE}" | cut -d= -f2- || true)"

@@ -42,12 +42,15 @@ Canonical public routes:
 
 ```bash
 cd deploy
-cp .env.example .env
-# edit .env and set secrets/passwords before install
-nano .env
-
 ./install.sh --version vX.Y.Z
 ```
+
+Installer behavior:
+
+- If `.env` is missing, installer creates it from `.env.example`.
+- If secret fields still have placeholders (for example `change-this-...`, `replace-this-...`, or `changeme`), installer auto-generates secure random values.
+- Installer writes a root-only snapshot of service credentials to `/opt/sentinel/credentials/service-secrets.env`.
+- You can still edit `.env` later for custom settings.
 
 If operators will browse by IP (`http://<server-ip>`), ensure `CORS_ORIGIN` in `.env` includes both hostname and IP origins, for example:
 
@@ -174,4 +177,4 @@ curl -f http://127.0.0.1/healthz
 - Installer/update then verifies migration status:
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Installer/update then verifies schema parity with migration files:
-  `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'`
+  `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`

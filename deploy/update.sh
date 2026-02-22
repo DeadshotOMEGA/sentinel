@@ -94,6 +94,8 @@ if ! check_ghcr_reachability; then
 fi
 
 ensure_env_file
+bootstrap_env_defaults
+write_admin_credentials_snapshot
 load_state
 
 if [[ -n "${CLI_WITH_OBS}" ]]; then
