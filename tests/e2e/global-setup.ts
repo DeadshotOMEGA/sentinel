@@ -19,9 +19,23 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
 
   try {
     await page.goto(`${baseURL}/login`, { waitUntil: 'domcontentloaded' })
-    await page.getByTestId('auth-badge-input').fill(badgeSerial)
+    const badgeInputByTestId = page.getByTestId('auth-badge-input')
+    if ((await badgeInputByTestId.count()) > 0) {
+      await badgeInputByTestId.click()
+    } else {
+      await page.getByRole('textbox', { name: /badge number/i }).click()
+    }
+    await page.keyboard.type(badgeSerial)
     await page.keyboard.press('Enter')
-    await page.getByTestId('auth-pin-input').fill(pin)
+
+    const pinInputByTestId = page.getByTestId('auth-pin-input')
+    if ((await pinInputByTestId.count()) > 0) {
+      await pinInputByTestId.click()
+    } else {
+      await page.getByRole('textbox', { name: /pin/i }).click()
+    }
+    await page.keyboard.type(pin)
+    await page.keyboard.press('Enter')
 
     await page.waitForURL('**/dashboard', { timeout: 30_000 })
     await page.context().storageState({ path: authStatePath })
