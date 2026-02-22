@@ -10,6 +10,25 @@ interface EnumSeedInput {
   chipColor: string
 }
 
+interface TagSeedInput {
+  name: string
+  description: string
+  displayOrder: number
+  chipVariant: string
+  chipColor: string
+  isPositional: boolean
+}
+
+interface QualificationTypeSeedInput {
+  code: string
+  name: string
+  description: string
+  canReceiveLockup: boolean
+  isAutomatic: boolean
+  displayOrder: number
+  tagName: string
+}
+
 const DEFAULT_MEMBER_STATUSES: ReadonlyArray<EnumSeedInput> = [
   {
     code: 'active',
@@ -127,6 +146,199 @@ const DEFAULT_BADGE_STATUSES: ReadonlyArray<EnumSeedInput> = [
   },
 ]
 
+const DEFAULT_TAGS: ReadonlyArray<TagSeedInput> = [
+  {
+    name: 'DDS',
+    description: 'Duty Day Staff responsibility',
+    displayOrder: 1,
+    chipVariant: 'solid',
+    chipColor: 'warning',
+    isPositional: true,
+  },
+  {
+    name: 'SWK',
+    description: 'Senior Watchkeeper qualification tag',
+    displayOrder: 2,
+    chipVariant: 'solid',
+    chipColor: 'error',
+    isPositional: true,
+  },
+  {
+    name: 'BUILDING_AUTH',
+    description: 'Authorized for building access and lockup responsibility',
+    displayOrder: 3,
+    chipVariant: 'solid',
+    chipColor: 'primary',
+    isPositional: false,
+  },
+  {
+    name: 'VAULT_KEY',
+    description: 'Holds vault key access',
+    displayOrder: 4,
+    chipVariant: 'soft',
+    chipColor: 'secondary',
+    isPositional: false,
+  },
+  {
+    name: 'VAULT_CODE',
+    description: 'Holds vault code access',
+    displayOrder: 5,
+    chipVariant: 'soft',
+    chipColor: 'secondary',
+    isPositional: false,
+  },
+  {
+    name: 'FM',
+    description: 'Facility Manager responsibility',
+    displayOrder: 6,
+    chipVariant: 'soft',
+    chipColor: 'accent',
+    isPositional: false,
+  },
+  {
+    name: 'ISA',
+    description: 'Information Systems Authority responsibility',
+    displayOrder: 7,
+    chipVariant: 'soft',
+    chipColor: 'info',
+    isPositional: false,
+  },
+  {
+    name: 'APS',
+    description: 'Access Point Sentry duty watch qualification',
+    displayOrder: 10,
+    chipVariant: 'soft',
+    chipColor: 'warning',
+    isPositional: true,
+  },
+  {
+    name: 'BM',
+    description: "Bos'n Mate duty watch qualification",
+    displayOrder: 11,
+    chipVariant: 'soft',
+    chipColor: 'warning',
+    isPositional: true,
+  },
+  {
+    name: 'QM',
+    description: 'Quartermaster duty watch qualification',
+    displayOrder: 12,
+    chipVariant: 'soft',
+    chipColor: 'warning',
+    isPositional: true,
+  },
+  {
+    name: 'DSWK',
+    description: 'Deputy Senior Watchkeeper qualification',
+    displayOrder: 13,
+    chipVariant: 'soft',
+    chipColor: 'error',
+    isPositional: true,
+  },
+]
+
+const DEFAULT_QUALIFICATION_TYPES: ReadonlyArray<QualificationTypeSeedInput> = [
+  {
+    code: 'DDS',
+    name: 'DDS Qualified',
+    description: 'Trained to serve as Duty Day Staff',
+    canReceiveLockup: true,
+    isAutomatic: false,
+    displayOrder: 1,
+    tagName: 'DDS',
+  },
+  {
+    code: 'SWK',
+    name: 'SWK Qualified',
+    description: 'Trained to serve as Senior Watchkeeper',
+    canReceiveLockup: true,
+    isAutomatic: false,
+    displayOrder: 2,
+    tagName: 'SWK',
+  },
+  {
+    code: 'BUILDING_AUTH',
+    name: 'Building Authorized',
+    description: 'Has alarm codes and building access',
+    canReceiveLockup: true,
+    isAutomatic: false,
+    displayOrder: 3,
+    tagName: 'BUILDING_AUTH',
+  },
+  {
+    code: 'VAULT_KEY',
+    name: 'Vault Key Holder',
+    description: 'Has physical key to the vault',
+    canReceiveLockup: false,
+    isAutomatic: false,
+    displayOrder: 4,
+    tagName: 'VAULT_KEY',
+  },
+  {
+    code: 'VAULT_CODE',
+    name: 'Vault Code Holder',
+    description: 'Knows the vault combination',
+    canReceiveLockup: false,
+    isAutomatic: false,
+    displayOrder: 5,
+    tagName: 'VAULT_CODE',
+  },
+  {
+    code: 'FM',
+    name: 'Facility Manager',
+    description: 'Facility Manager responsibilities',
+    canReceiveLockup: false,
+    isAutomatic: false,
+    displayOrder: 6,
+    tagName: 'FM',
+  },
+  {
+    code: 'ISA',
+    name: 'ISA',
+    description: 'Unit Security Authority responsibilities',
+    canReceiveLockup: false,
+    isAutomatic: false,
+    displayOrder: 7,
+    tagName: 'ISA',
+  },
+  {
+    code: 'APS',
+    name: 'APS Qualified',
+    description: 'Access Point Sentry (auto: S3 not in BMQ)',
+    canReceiveLockup: false,
+    isAutomatic: true,
+    displayOrder: 10,
+    tagName: 'APS',
+  },
+  {
+    code: 'BM',
+    name: 'BM Qualified',
+    description: 'Bosn Mate (auto: S2)',
+    canReceiveLockup: false,
+    isAutomatic: true,
+    displayOrder: 11,
+    tagName: 'BM',
+  },
+  {
+    code: 'QM',
+    name: 'QM Qualified',
+    description: 'Quartermaster (auto: S1)',
+    canReceiveLockup: false,
+    isAutomatic: true,
+    displayOrder: 12,
+    tagName: 'QM',
+  },
+  {
+    code: 'DSWK',
+    name: 'DSWK Qualified',
+    description: 'Deputy Senior Watchkeeper (auto: MS-Lt(N) without SWK)',
+    canReceiveLockup: false,
+    isAutomatic: true,
+    displayOrder: 13,
+    tagName: 'DSWK',
+  },
+]
+
 async function ensureMemberStatuses(): Promise<number> {
   let inserted = 0
 
@@ -212,15 +424,94 @@ async function ensureBadgeStatuses(): Promise<number> {
   return inserted
 }
 
+async function ensureTags(): Promise<{ inserted: number; tagIdsByName: Map<string, string> }> {
+  let inserted = 0
+  const tagIdsByName = new Map<string, string>()
+
+  for (const tag of DEFAULT_TAGS) {
+    const existing = await prisma.tag.findUnique({
+      where: { name: tag.name },
+      select: { id: true },
+    })
+
+    if (existing) {
+      tagIdsByName.set(tag.name, existing.id)
+      continue
+    }
+
+    const created = await prisma.tag.create({
+      data: {
+        name: tag.name,
+        description: tag.description,
+        displayOrder: tag.displayOrder,
+        chipVariant: tag.chipVariant,
+        chipColor: tag.chipColor,
+        isPositional: tag.isPositional,
+      },
+      select: { id: true },
+    })
+
+    tagIdsByName.set(tag.name, created.id)
+    inserted += 1
+  }
+
+  return { inserted, tagIdsByName }
+}
+
+async function ensureQualificationTypes(tagIdsByName: Map<string, string>): Promise<{
+  inserted: number
+  linkedTagIds: number
+}> {
+  let inserted = 0
+  let linkedTagIds = 0
+
+  for (const qualificationType of DEFAULT_QUALIFICATION_TYPES) {
+    const tagId = tagIdsByName.get(qualificationType.tagName) ?? null
+    const existing = await prisma.qualificationType.findUnique({
+      where: { code: qualificationType.code },
+      select: { id: true, tagId: true },
+    })
+
+    if (!existing) {
+      await prisma.qualificationType.create({
+        data: {
+          code: qualificationType.code,
+          name: qualificationType.name,
+          description: qualificationType.description,
+          canReceiveLockup: qualificationType.canReceiveLockup,
+          isAutomatic: qualificationType.isAutomatic,
+          displayOrder: qualificationType.displayOrder,
+          tagId,
+        },
+      })
+      inserted += 1
+      continue
+    }
+
+    if (!existing.tagId && tagId) {
+      await prisma.qualificationType.update({
+        where: { id: existing.id },
+        data: { tagId },
+      })
+      linkedTagIds += 1
+    }
+  }
+
+  return { inserted, linkedTagIds }
+}
+
 async function main(): Promise<void> {
   try {
     const insertedMemberStatuses = await ensureMemberStatuses()
     const insertedMemberTypes = await ensureMemberTypes()
     const insertedVisitTypes = await ensureVisitTypes()
     const insertedBadgeStatuses = await ensureBadgeStatuses()
+    const { inserted: insertedTags, tagIdsByName } = await ensureTags()
+    const { inserted: insertedQualificationTypes, linkedTagIds } =
+      await ensureQualificationTypes(tagIdsByName)
 
     console.log(
-      `enum seed complete: member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses}`
+      `enum seed complete: member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags=${insertedTags} qualification_types=${insertedQualificationTypes} qualification_tag_links=${linkedTagIds}`
     )
   } finally {
     await prisma.$disconnect()

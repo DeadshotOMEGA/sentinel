@@ -15,6 +15,19 @@ interface MembersQueryParams {
   includeHidden?: boolean
 }
 
+function getApiErrorMessage(body: unknown, fallback: string): string {
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'message' in body &&
+    typeof (body as { message?: unknown }).message === 'string'
+  ) {
+    return (body as { message: string }).message
+  }
+
+  return fallback
+}
+
 export function useMembers(params: MembersQueryParams = {}) {
   return useQuery({
     queryKey: ['members', params],
@@ -121,7 +134,7 @@ export function useImportPreview() {
         body: { csvText },
       })
       if (response.status !== 200) {
-        throw new Error('Failed to preview import')
+        throw new Error(getApiErrorMessage(response.body, 'Failed to preview import'))
       }
       return response.body
     },
@@ -142,7 +155,7 @@ export function useExecuteImport() {
         body: data,
       })
       if (response.status !== 200) {
-        throw new Error('Failed to execute import')
+        throw new Error(getApiErrorMessage(response.body, 'Failed to execute import'))
       }
       return response.body
     },
