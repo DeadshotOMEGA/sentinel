@@ -1,10 +1,14 @@
 import 'dotenv/config'
+import { execFile } from 'node:child_process'
 import { createServer } from 'http'
+import { promisify } from 'node:util'
 import { createApp } from './app.js'
 import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger.js'
 import { configurePrismaLogging } from './lib/database.js'
 import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
 import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
+
+const execFileAsync = promisify(execFile)
 
 /**
  * Validate required environment variables
@@ -32,6 +36,82 @@ function validateEnvironment() {
   }
 }
 
+function isTruthy(value: string | undefined, defaultValue: boolean): boolean {
+  if (!value) {
+    return defaultValue
+  }
+
+  const normalized = value.trim().toLowerCase()
+  if (['1', 'true', 'yes', 'y', 'on'].includes(normalized)) {
+    return true
+  }
+  if (['0', 'false', 'no', 'n', 'off'].includes(normalized)) {
+    return false
+  }
+  return defaultValue
+}
+
+async function runStartupEnumSeed(): Promise<void> {
+  const autoSeedEnabled = isTruthy(process.env.SENTINEL_AUTO_SEED_ENUMS, true)
+  if (!autoSeedEnabled) {
+    logger.info('Startup enum seed disabled via SENTINEL_AUTO_SEED_ENUMS')
+    return
+  }
+
+  const maxAttemptsRaw = Number.parseInt(process.env.SENTINEL_AUTO_SEED_ATTEMPTS ?? '3', 10)
+  const retryDelayRaw = Number.parseInt(process.env.SENTINEL_AUTO_SEED_RETRY_DELAY_MS ?? '3000', 10)
+  const maxAttempts = Number.isNaN(maxAttemptsRaw) || maxAttemptsRaw < 1 ? 3 : maxAttemptsRaw
+  const retryDelayMs = Number.isNaN(retryDelayRaw) || retryDelayRaw < 500 ? 3000 : retryDelayRaw
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const { stdout, stderr } = await execFileAsync('pnpm', ['sentinel:seed-default-enums'], {
+        cwd: process.cwd(),
+        env: process.env,
+        timeout: 180_000,
+        maxBuffer: 10 * 1024 * 1024,
+      })
+
+      const outputLines = stdout
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+      const summaryLine = outputLines.find((line) => line.includes('enum seed complete'))
+
+      logger.info('Startup enum seed completed', {
+        attempt,
+        summary: summaryLine ?? 'No summary line emitted',
+      })
+
+      if (stderr.trim().length > 0) {
+        logger.warn('Startup enum seed emitted stderr output', {
+          stderr: stderr.trim().slice(-1500),
+        })
+      }
+
+      return
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      if (attempt >= maxAttempts) {
+        logger.warn('Startup enum seed failed; continuing without blocking startup', {
+          attempts: maxAttempts,
+          error: message,
+        })
+        return
+      }
+
+      logger.warn('Startup enum seed attempt failed; retrying', {
+        attempt,
+        maxAttempts,
+        retryDelayMs,
+        error: message,
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+    }
+  }
+}
+
 /**
  * Main application entry point
  */
@@ -49,6 +129,8 @@ async function main() {
         error: error instanceof Error ? error.message : 'Unknown error',
       })
     }
+
+    await runStartupEnumSeed()
 
     // Create Express app
     const app = createApp()

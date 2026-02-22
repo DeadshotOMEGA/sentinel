@@ -152,6 +152,9 @@ compose up -d
 
 run_safe_migrations
 
+log "Re-applying bootstrap + default enum seed post-update (idempotent)"
+run_bootstrap_sentinel_account
+
 if ! wait_for_healthz 240; then
   print_health_diagnostics
   die "Update failed health gate check at /healthz"
