@@ -11,6 +11,7 @@ import { importLogger } from '../lib/logger.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { DivisionRepository } from '../repositories/division-repository.js'
 import { MemberTypeRepository } from '../repositories/member-type-repository.js'
+import { RankRepository } from '../repositories/rank-repository.js'
 import { AutoQualificationService } from './auto-qualification-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { toNameCase } from '../utils/name-case.js'
@@ -43,30 +44,68 @@ const MEMBER_TYPE_NAMES: Record<string, string> = {
 
 interface ParsedCSVRow {
   SN?: string
-  'EMPL #'?: string
+  EMPL_NUMBER?: string
   RANK?: string
-  'LAST NAME'?: string
-  'FIRST NAME'?: string
+  LAST_NAME?: string
+  FIRST_NAME?: string
   INITIALS?: string
   DEPT?: string
   MESS?: string
   MOC?: string
-  'EMAIL ADDRESS'?: string
-  'HOME PHONE'?: string
-  'MOBILE PHONE'?: string
+  EMAIL_ADDRESS?: string
+  HOME_PHONE?: string
+  MOBILE_PHONE?: string
   DETAILS?: string
+}
+
+interface ParsedNominalRollRow extends NominalRollRow {
+  rowNumber: number
+}
+
+const REQUIRED_IMPORT_HEADERS = ['SN', 'RANK', 'LAST_NAME', 'FIRST_NAME', 'DEPT'] as const
+
+const HEADER_ALIASES: Record<string, keyof ParsedCSVRow> = {
+  SN: 'SN',
+  'SERVICE NUMBER': 'SN',
+  SERVICE_NO: 'SN',
+  SERVICE_NO_: 'SN',
+  'EMPL #': 'EMPL_NUMBER',
+  'EMPL#': 'EMPL_NUMBER',
+  'EMPLOYEE #': 'EMPL_NUMBER',
+  'EMPLOYEE NUMBER': 'EMPL_NUMBER',
+  RANK: 'RANK',
+  'LAST NAME': 'LAST_NAME',
+  LAST_NAME: 'LAST_NAME',
+  'FIRST NAME': 'FIRST_NAME',
+  FIRST_NAME: 'FIRST_NAME',
+  INITIALS: 'INITIALS',
+  DEPT: 'DEPT',
+  DEPARTMENT: 'DEPT',
+  DIVISION: 'DEPT',
+  MESS: 'MESS',
+  MOC: 'MOC',
+  'EMAIL ADDRESS': 'EMAIL_ADDRESS',
+  EMAIL_ADDRESS: 'EMAIL_ADDRESS',
+  EMAIL: 'EMAIL_ADDRESS',
+  'HOME PHONE': 'HOME_PHONE',
+  HOME_PHONE: 'HOME_PHONE',
+  'MOBILE PHONE': 'MOBILE_PHONE',
+  MOBILE_PHONE: 'MOBILE_PHONE',
+  DETAILS: 'DETAILS',
 }
 
 export class ImportService {
   private memberRepository: MemberRepository
   private divisionRepository: DivisionRepository
   private memberTypeRepository: MemberTypeRepository
+  private rankRepository: RankRepository
 
   constructor() {
     const prisma = getPrismaClient()
     this.memberRepository = new MemberRepository(prisma)
     this.divisionRepository = new DivisionRepository(prisma)
     this.memberTypeRepository = new MemberTypeRepository(prisma)
+    this.rankRepository = new RankRepository(prisma)
   }
 
   private isProtectedSystemMember(serviceNumber: string): boolean {
@@ -83,16 +122,32 @@ export class ImportService {
   private parseCSV(
     csvText: string,
     excludeRows?: number[]
-  ): { rows: NominalRollRow[]; errors: ImportError[] } {
+  ): { rows: ParsedNominalRollRow[]; errors: ImportError[] } {
     const errors: ImportError[] = []
-    const rows: NominalRollRow[] = []
+    const rows: ParsedNominalRollRow[] = []
     const excludeSet = new Set(excludeRows || [])
+    const seenServiceNumbers = new Map<string, number>()
+
+    const normalizeHeader = (header: string): string => {
+      const normalized = header
+        .replace(/^\uFEFF/, '')
+        .trim()
+        .toUpperCase()
+        .replace(/[-.]/g, '_')
+        .replace(/\s+/g, ' ')
+      return normalized
+    }
+
+    const toCanonicalHeader = (header: string): string => {
+      const normalized = normalizeHeader(header)
+      return HEADER_ALIASES[normalized] ?? normalized.replace(/\s+/g, '_')
+    }
 
     // Parse CSV with PapaParse
     const parseResult = Papa.parse<ParsedCSVRow>(csvText, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.trim(),
+      transformHeader: toCanonicalHeader,
     })
 
     // Check for parsing errors
@@ -105,6 +160,18 @@ export class ImportService {
           excludable: false, // CSV parsing errors are not excludable
         })
       }
+      return { rows: [], errors }
+    }
+
+    const parsedHeaders = new Set((parseResult.meta.fields ?? []).map((header) => header.trim()))
+    const missingHeaders = REQUIRED_IMPORT_HEADERS.filter((header) => !parsedHeaders.has(header))
+    if (missingHeaders.length > 0) {
+      errors.push({
+        row: 1,
+        field: 'headers',
+        message: `Missing required headers: ${missingHeaders.join(', ')}`,
+        excludable: false,
+      })
       return { rows: [], errors }
     }
 
@@ -124,13 +191,9 @@ export class ImportService {
       }
 
       // Skip rows where all required fields are empty (effectively empty rows with just commas)
-      const hasAnyRequiredData = [
-        row.SN,
-        row.RANK,
-        row['LAST NAME'],
-        row['FIRST NAME'],
-        row.DEPT,
-      ].some((field) => field && field.trim() !== '')
+      const hasAnyRequiredData = [row.SN, row.RANK, row.LAST_NAME, row.FIRST_NAME, row.DEPT].some(
+        (field) => field && field.trim() !== ''
+      )
 
       if (!hasAnyRequiredData) {
         // Silently skip completely empty rows - they're not validation errors, just trailing data
@@ -140,8 +203,8 @@ export class ImportService {
       // Build context object with available data for error identification
       const errorContext = {
         rank: row.RANK?.trim() || undefined,
-        firstName: row['FIRST NAME']?.trim() || undefined,
-        lastName: row['LAST NAME']?.trim() || undefined,
+        firstName: row.FIRST_NAME?.trim() || undefined,
+        lastName: row.LAST_NAME?.trim() || undefined,
         serviceNumber: row.SN?.trim() || undefined,
         department: row.DEPT?.trim() || undefined,
       }
@@ -169,7 +232,7 @@ export class ImportService {
         continue
       }
 
-      if (!row['LAST NAME'] || row['LAST NAME'].trim() === '') {
+      if (!row.LAST_NAME || row.LAST_NAME.trim() === '') {
         errors.push({
           row: rowNumber,
           field: 'LAST NAME',
@@ -180,7 +243,7 @@ export class ImportService {
         continue
       }
 
-      if (!row['FIRST NAME'] || row['FIRST NAME'].trim() === '') {
+      if (!row.FIRST_NAME || row.FIRST_NAME.trim() === '') {
         errors.push({
           row: rowNumber,
           field: 'FIRST NAME',
@@ -203,8 +266,8 @@ export class ImportService {
       }
 
       // Validate email format if provided
-      if (row['EMAIL ADDRESS'] && row['EMAIL ADDRESS'].trim() !== '') {
-        const email = row['EMAIL ADDRESS'].trim()
+      if (row.EMAIL_ADDRESS && row.EMAIL_ADDRESS.trim() !== '') {
+        const email = row.EMAIL_ADDRESS.trim()
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           errors.push({
             row: rowNumber,
@@ -217,20 +280,35 @@ export class ImportService {
         }
       }
 
+      const serviceNumber = row.SN.trim().replace(/\s+/g, '')
+      const seenAt = seenServiceNumbers.get(serviceNumber)
+      if (seenAt !== undefined) {
+        errors.push({
+          row: rowNumber,
+          field: 'SN',
+          message: `Duplicate service number in CSV (first seen at row ${seenAt})`,
+          excludable: true,
+          context: errorContext,
+        })
+        continue
+      }
+      seenServiceNumbers.set(serviceNumber, rowNumber)
+
       // Create NominalRollRow object
-      const nominalRollRow: NominalRollRow = {
-        serviceNumber: row.SN.trim().replace(/\s+/g, ''),
-        employeeNumber: row['EMPL #']?.trim() || undefined,
+      const nominalRollRow: ParsedNominalRollRow = {
+        rowNumber,
+        serviceNumber,
+        employeeNumber: row.EMPL_NUMBER?.trim() || undefined,
         rank: row.RANK.trim(),
-        lastName: toNameCase(row['LAST NAME'].trim()),
-        firstName: toNameCase(row['FIRST NAME'].trim()),
+        lastName: toNameCase(row.LAST_NAME.trim()),
+        firstName: toNameCase(row.FIRST_NAME.trim()),
         initials: row.INITIALS?.trim() || undefined,
-        department: row.DEPT.trim(),
+        department: row.DEPT.trim().toUpperCase(),
         mess: row.MESS?.trim() || undefined,
         moc: row.MOC?.trim() || undefined,
-        email: row['EMAIL ADDRESS']?.trim() || undefined,
-        homePhone: row['HOME PHONE']?.trim() || undefined,
-        mobilePhone: row['MOBILE PHONE']?.trim() || undefined,
+        email: row.EMAIL_ADDRESS?.trim() || undefined,
+        homePhone: row.HOME_PHONE?.trim() || undefined,
+        mobilePhone: row.MOBILE_PHONE?.trim() || undefined,
         details: row.DETAILS?.trim() || undefined,
       }
 
@@ -238,6 +316,46 @@ export class ImportService {
     }
 
     return { rows, errors }
+  }
+
+  private async normalizeAndValidateRanks(rows: ParsedNominalRollRow[]): Promise<{
+    rows: ParsedNominalRollRow[]
+    errors: ImportError[]
+  }> {
+    const errors: ImportError[] = []
+    const normalizedRows: ParsedNominalRollRow[] = []
+
+    const activeRanks = await this.rankRepository.findAll({ active: true })
+    const rankCodeMap = new Map(activeRanks.map((rank) => [rank.code.toUpperCase(), rank.code]))
+
+    for (const row of rows) {
+      const normalizedRank = rankCodeMap.get(row.rank.trim().toUpperCase())
+      if (!normalizedRank) {
+        errors.push({
+          row: row.rowNumber,
+          field: 'RANK',
+          message: `Unknown rank code "${row.rank}"`,
+          excludable: true,
+          context: {
+            rank: row.rank,
+            firstName: row.firstName,
+            lastName: row.lastName,
+            serviceNumber: row.serviceNumber,
+            department: row.department,
+          },
+        })
+        continue
+      }
+
+      normalizedRows.push({ ...row, rank: normalizedRank })
+    }
+
+    return { rows: normalizedRows, errors }
+  }
+
+  private toNominalRollRow(row: ParsedNominalRollRow): NominalRollRow {
+    const { rowNumber: _rowNumber, ...nominalRollRow } = row
+    return nominalRollRow
   }
 
   /**
@@ -379,7 +497,7 @@ export class ImportService {
    */
   async generatePreview(csvText: string, excludeRows?: number[]): Promise<PreviewImportResponse> {
     // Parse CSV
-    const { rows, errors } = this.parseCSV(csvText, excludeRows)
+    const { rows: parsedRows, errors } = this.parseCSV(csvText, excludeRows)
 
     // Check for non-excludable errors (like CSV parsing errors)
     const nonExcludableErrors = errors.filter((e) => e.excludable === false)
@@ -395,6 +513,21 @@ export class ImportService {
 
     // If there are excludable errors and no excludeRows specified, return errors for user decision
     // If excludeRows is specified, those rows are already filtered out by parseCSV
+    if (errors.length > 0 && !excludeRows) {
+      return {
+        toAdd: [],
+        toUpdate: [],
+        toReview: [],
+        errors,
+        divisionMapping: {},
+      }
+    }
+
+    const { rows, errors: rankErrors } = await this.normalizeAndValidateRanks(parsedRows)
+    if (rankErrors.length > 0) {
+      errors.push(...rankErrors)
+    }
+
     if (errors.length > 0 && !excludeRows) {
       return {
         toAdd: [],
@@ -475,7 +608,7 @@ export class ImportService {
 
       if (!existing) {
         // New member
-        toAdd.push(row)
+        toAdd.push(this.toNominalRollRow(row))
       } else {
         // Check for changes (use existing divisionId if new one doesn't exist yet)
         const effectiveDivisionId = divisionId ?? existing.divisionId
@@ -515,7 +648,7 @@ export class ImportService {
               email: existing.email,
               mobilePhone: existing.mobilePhone,
             },
-            incoming: row,
+            incoming: this.toNominalRollRow(row),
             changes,
           })
         }
@@ -527,17 +660,11 @@ export class ImportService {
       .filter((m) => !csvServiceNumbers.has(m.serviceNumber))
       .flatMap((m) => {
         if (!m.divisionId) {
-          errors.push({
-            row: 0,
-            field: 'divisionId',
-            message: `Member ${m.serviceNumber} has no divisionId and cannot be flagged for review`,
-            excludable: false,
-            context: {
-              rank: m.rank,
-              firstName: m.firstName,
-              lastName: m.lastName,
-              serviceNumber: m.serviceNumber,
-            },
+          importLogger.warn('Skipping toReview candidate without division', {
+            serviceNumber: m.serviceNumber,
+            rank: m.rank,
+            firstName: m.firstName,
+            lastName: m.lastName,
           })
           return []
         }
@@ -571,13 +698,25 @@ export class ImportService {
     divisionsToCreate: DivisionToCreate[]
   ): Promise<Record<string, string>> {
     const newDivisionMapping: Record<string, string> = {}
+    const existingDivisions = await this.divisionRepository.findAll()
+    const existingByUpperCode = new Map(
+      existingDivisions.map((division) => [division.code.toUpperCase(), division.id])
+    )
 
     for (const div of divisionsToCreate) {
+      const normalizedCode = div.code.trim().toUpperCase()
+      const existingId = existingByUpperCode.get(normalizedCode)
+      if (existingId) {
+        newDivisionMapping[normalizedCode] = existingId
+        continue
+      }
+
       const created = await this.divisionRepository.create({
-        code: div.code,
+        code: normalizedCode,
         name: div.name,
       })
-      newDivisionMapping[div.code] = created.id
+      newDivisionMapping[normalizedCode] = created.id
+      existingByUpperCode.set(normalizedCode, created.id)
     }
 
     return newDivisionMapping
@@ -645,6 +784,7 @@ export class ImportService {
     let added = 0
     let updated = 0
     let flaggedForReview = 0
+    const executionErrors: ImportError[] = []
 
     // Helper to get division ID (checks both original case and uppercase)
     const getDivisionId = (dept: string): string | undefined =>
@@ -656,6 +796,19 @@ export class ImportService {
       for (const row of preview.toAdd) {
         const divisionId = getDivisionId(row.department)
         if (!divisionId) {
+          executionErrors.push({
+            row: 0,
+            field: 'DEPT',
+            message: `Missing division for department "${row.department}" (service number ${row.serviceNumber})`,
+            excludable: false,
+            context: {
+              rank: row.rank,
+              firstName: row.firstName,
+              lastName: row.lastName,
+              serviceNumber: row.serviceNumber,
+              department: row.department,
+            },
+          })
           continue
         }
 
@@ -680,7 +833,9 @@ export class ImportService {
         })
       }
 
-      added = await this.memberRepository.bulkCreate(membersToCreate)
+      if (membersToCreate.length > 0) {
+        added = await this.memberRepository.bulkCreate(membersToCreate)
+      }
     }
 
     // Update existing members
@@ -689,6 +844,19 @@ export class ImportService {
       for (const item of preview.toUpdate) {
         const divisionId = getDivisionId(item.incoming.department)
         if (!divisionId) {
+          executionErrors.push({
+            row: 0,
+            field: 'DEPT',
+            message: `Missing division for department "${item.incoming.department}" (service number ${item.incoming.serviceNumber})`,
+            excludable: false,
+            context: {
+              rank: item.incoming.rank,
+              firstName: item.incoming.firstName,
+              lastName: item.incoming.lastName,
+              serviceNumber: item.incoming.serviceNumber,
+              department: item.incoming.department,
+            },
+          })
           continue
         }
 
@@ -713,14 +881,28 @@ export class ImportService {
         })
       }
 
-      updated = await this.memberRepository.bulkUpdate(membersToUpdate)
+      if (membersToUpdate.length > 0) {
+        updated = await this.memberRepository.bulkUpdate(membersToUpdate)
+      }
     }
 
     // Deactivate members if requested
     if (deactivateIds && deactivateIds.length > 0) {
       for (const id of deactivateIds) {
-        await this.memberRepository.update(id, { status: 'inactive' })
-        flaggedForReview++
+        try {
+          await this.memberRepository.update(id, { status: 'inactive' })
+          flaggedForReview++
+        } catch (error) {
+          executionErrors.push({
+            row: 0,
+            field: 'deactivateIds',
+            message:
+              error instanceof Error
+                ? `Failed to deactivate member ${id}: ${error.message}`
+                : `Failed to deactivate member ${id}`,
+            excludable: false,
+          })
+        }
       }
     }
 
@@ -733,14 +915,14 @@ export class ImportService {
     }
 
     importLogger.info(
-      `Import complete: ${added} added, ${updated} updated, ${flaggedForReview} deactivated`
+      `Import complete: ${added} added, ${updated} updated, ${flaggedForReview} deactivated, ${executionErrors.length} execution errors`
     )
 
     return {
       added,
       updated,
       flaggedForReview,
-      errors: [],
+      errors: executionErrors,
     }
   }
 

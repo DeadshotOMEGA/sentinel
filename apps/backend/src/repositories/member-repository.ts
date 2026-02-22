@@ -753,7 +753,12 @@ export class MemberRepository {
       updateData.initials = data.initials
     }
     if (data.rank !== undefined) {
+      const rank = await this.rankRepository.findByCode(data.rank)
+      if (!rank) {
+        throw new Error(`Invalid rank code: ${data.rank}`)
+      }
       updateData.rank = data.rank
+      updateData.rankId = rank.id
     }
     if (data.divisionId !== undefined) {
       updateData.divisionId = data.divisionId
@@ -1070,6 +1075,30 @@ export class MemberRepository {
       return 0
     }
 
+    const uniqueRankCodes = [
+      ...new Set(
+        updates
+          .map((update) => update.rank)
+          .filter((rank): rank is string => rank !== undefined && rank !== null)
+      ),
+    ]
+    const rankMap = new Map<string, string>()
+    if (uniqueRankCodes.length > 0) {
+      const ranks = await Promise.all(
+        uniqueRankCodes.map(async (code) => {
+          const rank = await this.rankRepository.findByCode(code)
+          if (!rank) {
+            throw new Error(`Invalid rank code: ${code}`)
+          }
+          return rank
+        })
+      )
+
+      for (const rank of ranks) {
+        rankMap.set(rank.code, rank.id)
+      }
+    }
+
     const result = await this.prisma.$transaction(async (tx) => {
       let updatedCount = 0
       const keysToRecompute = new Set<string>()
@@ -1108,6 +1137,11 @@ export class MemberRepository {
         }
         if (data.rank !== undefined) {
           updateData.rank = data.rank
+          const rankId = rankMap.get(data.rank)
+          if (!rankId) {
+            throw new Error(`Invalid rank code: ${data.rank}`)
+          }
+          updateData.rankId = rankId
         }
         if (data.divisionId !== undefined) {
           updateData.divisionId = data.divisionId
