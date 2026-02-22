@@ -104,7 +104,7 @@ check_ghcr_reachability() {
   local code
   code="$(curl -sSIL --max-time 10 -o /dev/null -w '%{http_code}' https://ghcr.io/v2/ || true)"
   case "${code}" in
-    200|401|403)
+    200|401|403|405)
       return 0
       ;;
     *)
