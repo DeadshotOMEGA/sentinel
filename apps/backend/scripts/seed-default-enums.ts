@@ -1,6 +1,12 @@
 #!/usr/bin/env tsx
 import 'dotenv/config'
 import { prisma } from '@sentinel/database'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 interface EnumSeedInput {
   code: string
@@ -28,6 +34,8 @@ interface QualificationTypeSeedInput {
   displayOrder: number
   tagName: string
 }
+
+const RANKS_SEED_SQL_RELATIVE_PATH = '../../../packages/database/scripts/seed-ranks.sql'
 
 const DEFAULT_MEMBER_STATUSES: ReadonlyArray<EnumSeedInput> = [
   {
@@ -500,8 +508,23 @@ async function ensureQualificationTypes(tagIdsByName: Map<string, string>): Prom
   return { inserted, linkedTagIds }
 }
 
+async function ensureRanks(): Promise<{ inserted: number; existing: number }> {
+  const existing = await prisma.rank.count()
+  if (existing > 0) {
+    return { inserted: 0, existing }
+  }
+
+  const seedPath = join(__dirname, RANKS_SEED_SQL_RELATIVE_PATH)
+  const seedSql = readFileSync(seedPath, 'utf-8')
+  await prisma.$executeRawUnsafe(seedSql)
+
+  const after = await prisma.rank.count()
+  return { inserted: after, existing }
+}
+
 async function main(): Promise<void> {
   try {
+    const { inserted: insertedRanks, existing: existingRanks } = await ensureRanks()
     const insertedMemberStatuses = await ensureMemberStatuses()
     const insertedMemberTypes = await ensureMemberTypes()
     const insertedVisitTypes = await ensureVisitTypes()
@@ -511,7 +534,7 @@ async function main(): Promise<void> {
       await ensureQualificationTypes(tagIdsByName)
 
     console.log(
-      `enum seed complete: member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags=${insertedTags} qualification_types=${insertedQualificationTypes} qualification_tag_links=${linkedTagIds}`
+      `enum seed complete: ranks_seeded=${insertedRanks} ranks_existing=${existingRanks} member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags=${insertedTags} qualification_types=${insertedQualificationTypes} qualification_tag_links=${linkedTagIds}`
     )
   } finally {
     await prisma.$disconnect()
