@@ -31,6 +31,15 @@ Canonical public routes:
 
 ## Fresh install (Ubuntu 24.04)
 
+### Easiest (double-click launcher)
+
+1. Open the `deploy` folder in Files.
+2. Double-click `Install Sentinel Appliance.desktop`.
+3. If Ubuntu prompts, choose **Allow Launching**.
+4. Enter version tag when prompted (example: `v1.1.8`).
+
+### Terminal fallback
+
 ```bash
 cd deploy
 cp .env.example .env
@@ -69,6 +78,14 @@ If install reports GHCR unreachable:
 ```
 
 ## Update
+
+### Easiest (double-click launcher)
+
+1. Open `/opt/sentinel/deploy` in Files.
+2. Double-click `Update Sentinel Appliance.desktop`.
+3. Enter target version tag when prompted.
+
+### Terminal fallback
 
 ```bash
 cd /opt/sentinel/deploy
@@ -140,9 +157,19 @@ curl -f http://127.0.0.1/healthz
 
 - Compose v2 is required (`docker compose`).
 - `SENTINEL_VERSION` must be explicit (never `latest`).
+- Installer auto-runs:
+  - `sudo systemctl daemon-reload`
+  - `sudo systemctl enable sentinel-appliance.service`
+  - `sudo systemctl start sentinel-appliance.service`
+- A protected bootstrap Sentinel login is automatically created/maintained:
+  - Badge: `0000000000`
+  - PIN: `0000`
+  - This record is guarded in API/repository paths and by DB delete triggers.
 - Fresh install now forces bootstrap mode to create all tables first and keep them empty:
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"`
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"`
+- Installer/update/rollback then enforce the bootstrap account and protections:
+  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account"`
 - If `_prisma_migrations` contains failed rows, installer auto-resolves them as rolled back before bootstrapping/baselining.
 - Installer/update then verifies migration status:
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`

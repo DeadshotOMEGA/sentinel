@@ -390,6 +390,15 @@ export const badgesRouter = s.router(badgeContract, {
           },
         }
       }
+      if (error instanceof Error && error.message.includes('protected Sentinel bootstrap badge')) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
 
       return {
         status: 500 as const,

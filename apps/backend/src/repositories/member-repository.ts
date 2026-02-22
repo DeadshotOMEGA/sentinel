@@ -17,6 +17,7 @@ import {
   getMemberInitials,
   normalizeNamePart,
 } from '../utils/display-name.js'
+import { getSentinelBootstrapIdentity } from '../lib/system-bootstrap.js'
 
 interface MemberFilters extends MemberFilterParams {
   divisionId?: string
@@ -233,6 +234,26 @@ export class MemberRepository {
     const lastName = normalizeNamePart(member.lastName)
     const initials = getMemberInitials(member.firstName, member.initials)
     return computeCollisionKey(lastName, initials)
+  }
+
+  private async assertNotProtectedSentinelMember(
+    memberId: string,
+    operation: string,
+    updateData?: Record<string, unknown>
+  ): Promise<void> {
+    const identity = await getSentinelBootstrapIdentity(this.prisma)
+    if (!identity || identity.memberId !== memberId) {
+      return
+    }
+
+    if (!updateData) {
+      throw new Error(`Cannot ${operation} the protected Sentinel bootstrap member`)
+    }
+
+    const disallowedKeys = ['status', 'serviceNumber', 'badgeId']
+    if (disallowedKeys.some((key) => key in updateData)) {
+      throw new Error(`Cannot ${operation} the protected Sentinel bootstrap member`)
+    }
   }
 
   private async recomputeDisplayNamesByKeys(
@@ -779,6 +800,8 @@ export class MemberRepository {
       throw new Error('No fields to update')
     }
 
+    await this.assertNotProtectedSentinelMember(id, 'modify', updateData)
+
     // Use a transaction to update member and tags atomically
     const member = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.member.findUniqueOrThrow({
@@ -841,6 +864,8 @@ export class MemberRepository {
    * Delete (soft delete) a member
    */
   async delete(id: string): Promise<void> {
+    await this.assertNotProtectedSentinelMember(id, 'deactivate')
+
     const result = await this.prisma.member.updateMany({
       where: { id },
       data: { status: 'inactive' },
@@ -1048,9 +1073,14 @@ export class MemberRepository {
     const result = await this.prisma.$transaction(async (tx) => {
       let updatedCount = 0
       const keysToRecompute = new Set<string>()
+      const identity = await getSentinelBootstrapIdentity(this.prisma)
 
       for (const update of updates) {
         const { id, ...data } = update
+        if (identity && identity.memberId === id) {
+          throw new Error('Cannot modify the protected Sentinel bootstrap member')
+        }
+
         const existing = await tx.member.findUnique({
           where: { id },
           select: { lastName: true, firstName: true, initials: true },
@@ -1154,6 +1184,11 @@ export class MemberRepository {
   async flagForReview(memberIds: string[]): Promise<void> {
     if (memberIds.length === 0) {
       return
+    }
+
+    const identity = await getSentinelBootstrapIdentity(this.prisma)
+    if (identity && memberIds.includes(identity.memberId)) {
+      throw new Error('Cannot modify the protected Sentinel bootstrap member')
     }
 
     await this.prisma.member.updateMany({

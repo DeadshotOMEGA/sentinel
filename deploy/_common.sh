@@ -104,7 +104,7 @@ check_ghcr_reachability() {
   local code
   code="$(curl -sSIL --max-time 10 -o /dev/null -w '%{http_code}' https://ghcr.io/v2/ || true)"
   case "${code}" in
-    200|401|403)
+    200|401|403|405)
       return 0
       ;;
     *)
@@ -127,9 +127,16 @@ HELP
 
 require_explicit_version() {
   local version="${1:-}"
+  local shown=""
+  version="$(printf '%s' "${version}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  version="${version%\"}"
+  version="${version#\"}"
+  version="${version%\'}"
+  version="${version#\'}"
+  printf -v shown '%q' "${version}"
   [[ -n "${version}" ]] || die "SENTINEL_VERSION is required (example: v1.0.0)."
   [[ "${version}" != "latest" ]] || die "SENTINEL_VERSION must be explicit and cannot be 'latest'."
-  [[ "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || die "SENTINEL_VERSION must look like vX.Y.Z"
+  [[ "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || die "SENTINEL_VERSION must look like vX.Y.Z (got: ${shown})"
 }
 
 ensure_env_file() {
@@ -324,6 +331,8 @@ run_safe_migrations() {
 
   log "Verifying schema parity against migration files"
   compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+
+  run_bootstrap_sentinel_account
 }
 
 run_bootstrap_schema_and_baseline() {
@@ -340,6 +349,14 @@ run_bootstrap_schema_and_baseline() {
 
   log "Verifying schema parity against migration files"
   compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-url "$DATABASE_URL" --exit-code'
+
+  run_bootstrap_sentinel_account
+}
+
+run_bootstrap_sentinel_account() {
+  log "Ensuring protected Sentinel bootstrap badge/PIN account exists"
+  wait_for_service_health backend 120 || die "Backend is not healthy; cannot bootstrap Sentinel account"
+  compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account"
 }
 
 wait_for_healthz() {
@@ -461,4 +478,5 @@ UNIT
 
   run_root systemctl daemon-reload
   run_root systemctl enable sentinel-appliance.service
+  run_root systemctl start sentinel-appliance.service
 }
