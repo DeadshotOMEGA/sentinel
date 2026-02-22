@@ -36,6 +36,12 @@ interface QualificationTypeSeedInput {
 }
 
 const RANKS_SEED_SQL_RELATIVE_PATH = '../../../packages/database/scripts/seed-ranks.sql'
+const RANK_INSERT_STATEMENT_REGEX = /INSERT INTO ranks[\s\S]*?;/gi
+const RANK_REPLACEMENT_MAPPINGS = [
+  { deprecatedCode: 'OS', replacementCode: 'S3' },
+  { deprecatedCode: 'AB', replacementCode: 'S2' },
+  { deprecatedCode: 'LS', replacementCode: 'S1' },
+] as const
 
 const DEFAULT_MEMBER_STATUSES: ReadonlyArray<EnumSeedInput> = [
   {
@@ -510,16 +516,36 @@ async function ensureQualificationTypes(tagIdsByName: Map<string, string>): Prom
 
 async function ensureRanks(): Promise<{ inserted: number; existing: number }> {
   const existing = await prisma.rank.count()
-  if (existing > 0) {
-    return { inserted: 0, existing }
-  }
-
   const seedPath = join(__dirname, RANKS_SEED_SQL_RELATIVE_PATH)
   const seedSql = readFileSync(seedPath, 'utf-8')
-  await prisma.$executeRawUnsafe(seedSql)
+  const insertStatements = seedSql.match(RANK_INSERT_STATEMENT_REGEX) ?? []
+
+  if (insertStatements.length === 0) {
+    throw new Error(`No rank INSERT statements found in ${seedPath}`)
+  }
+
+  for (const statement of insertStatements) {
+    const normalizedStatement = statement.trim().replace(/;\s*$/, '')
+    await prisma.$executeRawUnsafe(`${normalizedStatement}\nON CONFLICT (code) DO NOTHING`)
+  }
+
+  for (const mapping of RANK_REPLACEMENT_MAPPINGS) {
+    await prisma.$executeRawUnsafe(
+      `
+      UPDATE ranks AS deprecated
+      SET replaced_by = replacement.id
+      FROM ranks AS replacement
+      WHERE deprecated.code = $1
+        AND replacement.code = $2
+        AND deprecated.replaced_by IS DISTINCT FROM replacement.id
+      `,
+      mapping.deprecatedCode,
+      mapping.replacementCode
+    )
+  }
 
   const after = await prisma.rank.count()
-  return { inserted: after, existing }
+  return { inserted: Math.max(after - existing, 0), existing }
 }
 
 async function main(): Promise<void> {
