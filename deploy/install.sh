@@ -25,11 +25,26 @@ Options:
 USAGE
 }
 
+normalize_version_value() {
+  local raw="${1:-}"
+  raw="${raw%%#*}"
+  raw="$(printf '%s' "${raw}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  raw="${raw%\'}"
+  raw="${raw#\'}"
+  printf '%s\n' "${raw}"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
       VERSION="${2:-}"
       shift 2
+      ;;
+    --version=*)
+      VERSION="${1#*=}"
+      shift
       ;;
     --lan-cidr)
       LAN_CIDR_OVERRIDE="${2:-}"
@@ -63,6 +78,10 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ -n "${VERSION}" ]]; then
+  VERSION="$(normalize_version_value "${VERSION}")"
+fi
 
 if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
   if [[ "${EUID}" -eq 0 ]]; then
@@ -125,6 +144,7 @@ ensure_env_file
 if [[ -z "${VERSION}" ]]; then
   VERSION="$(grep -E '^SENTINEL_VERSION=' "${ENV_FILE}" | cut -d= -f2- || true)"
 fi
+VERSION="$(normalize_version_value "${VERSION}")"
 require_explicit_version "${VERSION}"
 upsert_env "SENTINEL_VERSION" "${VERSION}"
 

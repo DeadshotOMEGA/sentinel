@@ -127,14 +127,16 @@ HELP
 
 require_explicit_version() {
   local version="${1:-}"
+  local shown=""
   version="$(printf '%s' "${version}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
   version="${version%\"}"
   version="${version#\"}"
   version="${version%\'}"
   version="${version#\'}"
+  printf -v shown '%q' "${version}"
   [[ -n "${version}" ]] || die "SENTINEL_VERSION is required (example: v1.0.0)."
   [[ "${version}" != "latest" ]] || die "SENTINEL_VERSION must be explicit and cannot be 'latest'."
-  [[ "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || die "SENTINEL_VERSION must look like vX.Y.Z"
+  [[ "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || die "SENTINEL_VERSION must look like vX.Y.Z (got: ${shown})"
 }
 
 ensure_env_file() {

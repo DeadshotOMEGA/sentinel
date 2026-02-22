@@ -26,11 +26,26 @@ Options:
 USAGE
 }
 
+normalize_version_value() {
+  local raw="${1:-}"
+  raw="${raw%%#*}"
+  raw="$(printf '%s' "${raw}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  raw="${raw%\"}"
+  raw="${raw#\"}"
+  raw="${raw%\'}"
+  raw="${raw#\'}"
+  printf '%s\n' "${raw}"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
       TARGET_VERSION="${2:-}"
       shift 2
+      ;;
+    --version=*)
+      TARGET_VERSION="${1#*=}"
+      shift
       ;;
     --lan-cidr)
       LAN_CIDR_OVERRIDE="${2:-}"
@@ -67,6 +82,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "${TARGET_VERSION}" ]]; then
+  TARGET_VERSION="$(normalize_version_value "${TARGET_VERSION}")"
+fi
+
 ensure_docker_and_compose_v2
 
 if ! check_ghcr_reachability; then
@@ -92,6 +111,7 @@ fi
 require_explicit_version "${TARGET_VERSION}"
 
 CURRENT_VERSION="$(env_value SENTINEL_VERSION)"
+CURRENT_VERSION="$(normalize_version_value "${CURRENT_VERSION}")"
 require_explicit_version "${CURRENT_VERSION}"
 
 if [[ "${CURRENT_VERSION}" == "${TARGET_VERSION}" ]]; then
