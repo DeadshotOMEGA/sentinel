@@ -78,11 +78,24 @@ jobs:
           } > build-info.env
           cat build-info.env
 
+      - name: Build appliance .deb bundle
+        run: |
+          chmod +x deploy/deb/build-deb.sh
+          deploy/deb/build-deb.sh --version "${VERSION}" --output-dir dist
+          ls -la dist
+
       - name: Upload build-info artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-info
           path: build-info.env
+          retention-days: 30
+
+      - name: Upload appliance deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appliance-deb
+          path: dist/*.deb
           retention-days: 30
 
       - name: Create GitHub Release
@@ -92,3 +105,4 @@ jobs:
           generate_release_notes: true
           files: |
             build-info.env
+            dist/*.deb

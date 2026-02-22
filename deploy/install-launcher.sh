@@ -10,11 +10,24 @@ read_env_version() {
   fi
 }
 
+read_env_ghcr_owner() {
+  if [[ -f "${ENV_FILE}" ]]; then
+    grep -E '^GHCR_OWNER=' "${ENV_FILE}" | cut -d= -f2- || true
+  fi
+}
+
+fetch_latest_release_version() {
+  local owner="${1:-deadshotomega}"
+  curl -fsSL --max-time 8 "https://api.github.com/repos/${owner}/sentinel/releases/latest" \
+    | sed -n 's/.*"tag_name":[[:space:]]*"\(v[^"]*\)".*/\1/p' \
+    | head -n1
+}
+
 prompt_version_terminal() {
-  local default_version="${1:-v1.1.8}"
+  local default_version="${1:-v1.0.0}"
   local version=""
   printf '\nSentinel Install Launcher\n'
-  printf 'Enter release version tag (example: v1.1.8)\n'
+  printf 'Enter release version tag (example: v1.1.10)\n'
   read -r -p "Version [${default_version}]: " version
   if [[ -z "${version}" ]]; then
     version="${default_version}"
@@ -23,16 +36,23 @@ prompt_version_terminal() {
 }
 
 prompt_version_zenity() {
-  local default_version="${1:-v1.1.8}"
+  local default_version="${1:-v1.0.0}"
   zenity --entry \
     --title="Install Sentinel Appliance" \
-    --text="Enter Sentinel version tag (example: v1.1.8):" \
+    --text="Enter Sentinel version tag (example: v1.1.10):" \
     --entry-text="${default_version}"
 }
 
 DEFAULT_VERSION="$(read_env_version)"
 if [[ -z "${DEFAULT_VERSION}" ]]; then
-  DEFAULT_VERSION="v1.1.8"
+  GHCR_OWNER="$(read_env_ghcr_owner)"
+  if [[ -z "${GHCR_OWNER}" ]]; then
+    GHCR_OWNER="deadshotomega"
+  fi
+  DEFAULT_VERSION="$(fetch_latest_release_version "${GHCR_OWNER}" || true)"
+fi
+if [[ -z "${DEFAULT_VERSION}" ]]; then
+  DEFAULT_VERSION="v1.0.0"
 fi
 
 VERSION=""
