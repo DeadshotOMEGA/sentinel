@@ -330,7 +330,7 @@ run_safe_migrations() {
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
   log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-config-datasource --exit-code'
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
 
   run_bootstrap_sentinel_account
 }
@@ -348,7 +348,7 @@ run_bootstrap_schema_and_baseline() {
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
   log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-migrations prisma/migrations --to-config-datasource --exit-code'
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
 
   run_bootstrap_sentinel_account
 }
