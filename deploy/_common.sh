@@ -147,6 +147,76 @@ ensure_env_file() {
   fi
 }
 
+is_placeholder_env_value() {
+  local value="${1:-}"
+  value="$(printf '%s' "${value}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  value="${value%\"}"
+  value="${value#\"}"
+  value="${value%\'}"
+  value="${value#\'}"
+
+  case "${value}" in
+    ""|changeme|change-this-*|replace-me)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+generate_random_secret() {
+  local length="${1:-48}"
+  local value
+
+  if command -v openssl >/dev/null 2>&1; then
+    value="$(openssl rand -base64 96 | tr -dc 'A-Za-z0-9' | head -c "${length}")"
+  else
+    value="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c "${length}")"
+  fi
+
+  if [[ -z "${value}" ]]; then
+    die "Failed to generate random secret value"
+  fi
+  printf '%s\n' "${value}"
+}
+
+bootstrap_env_defaults() {
+  local keys key value generated_value generated_count
+  generated_count=0
+  keys=(
+    POSTGRES_PASSWORD
+    JWT_SECRET
+    API_KEY_SECRET
+    SESSION_SECRET
+    SOCKET_IO_SECRET
+    GRAFANA_ADMIN_PASSWORD
+    SWAGGER_PASSWORD
+  )
+
+  for key in "${keys[@]}"; do
+    value="$(env_value "${key}")"
+    if is_placeholder_env_value "${value}"; then
+      generated_value="$(generate_random_secret 40)"
+      upsert_env "${key}" "${generated_value}"
+      generated_count=$((generated_count + 1))
+    fi
+  done
+
+  if is_placeholder_env_value "$(env_value GHCR_OWNER)"; then
+    upsert_env "GHCR_OWNER" "deadshotomega"
+  fi
+
+  if is_placeholder_env_value "$(env_value APP_PUBLIC_URL)"; then
+    upsert_env "APP_PUBLIC_URL" "http://sentinel.local"
+  fi
+
+  if [[ "${generated_count}" -gt 0 ]]; then
+    log "Auto-generated ${generated_count} secure .env values for first-time setup."
+    log "Generated values were written to ${ENV_FILE}."
+  fi
+}
+
 upsert_env() {
   local key="${1}" value="${2}" file="${3:-$ENV_FILE}"
   if grep -qE "^${key}=" "${file}"; then

@@ -42,12 +42,14 @@ Canonical public routes:
 
 ```bash
 cd deploy
-cp .env.example .env
-# edit .env and set secrets/passwords before install
-nano .env
-
 ./install.sh --version vX.Y.Z
 ```
+
+Installer behavior:
+
+- If `.env` is missing, installer creates it from `.env.example`.
+- If secret fields still have placeholders (for example `change-this-...` / `changeme`), installer auto-generates secure random values.
+- You can still edit `.env` later for custom settings.
 
 If operators will browse by IP (`http://<server-ip>`), ensure `CORS_ORIGIN` in `.env` includes both hostname and IP origins, for example:
 
