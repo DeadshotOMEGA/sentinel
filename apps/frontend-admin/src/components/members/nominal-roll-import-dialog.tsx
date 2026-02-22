@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useImportPreview, useExecuteImport } from '@/hooks/use-members'
-import type { PreviewImportResponse } from '@sentinel/contracts'
+import type { ImportError, PreviewImportResponse } from '@sentinel/contracts'
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { CheckCircle2, AlertCircle, ChevronDown, ChevronUp, FolderPlus } from 'lucide-react'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
+import { toast } from 'sonner'
 
 interface NominalRollImportDialogProps {
   open: boolean
@@ -42,6 +43,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     excluded: number
     divisionsCreated: number
   } | null>(null)
+  const [executionErrors, setExecutionErrors] = useState<ImportError[]>([])
 
   const importPreview = useImportPreview()
   const executeImport = useExecuteImport()
@@ -71,9 +73,11 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     try {
       const previewResult = await importPreview.mutateAsync(csvText)
       setPreview(previewResult)
+      setExecutionErrors([])
       setStep(2)
     } catch (error) {
       console.error('Failed to preview import:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to preview import')
     }
   }
 
@@ -98,9 +102,18 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
         excluded: excludeRows.length,
         divisionsCreated: createDivisions ? divisionsToCreateCount : 0,
       })
+      setExecutionErrors(executeResult.errors ?? [])
+      if ((executeResult.errors?.length ?? 0) > 0) {
+        toast.warning(
+          `Import finished with ${executeResult.errors.length} issue${executeResult.errors.length === 1 ? '' : 's'}`
+        )
+      } else {
+        toast.success('Import completed successfully')
+      }
       setStep(3)
     } catch (error) {
       console.error('Failed to execute import:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to execute import')
     }
   }
 
@@ -112,6 +125,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     setExcludedErrorRows(new Set())
     setCreateDivisions(true)
     setResult(null)
+    setExecutionErrors([])
     setExpandedSections({
       toAdd: true,
       toUpdate: false,
@@ -130,6 +144,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
     setExcludedErrorRows(new Set())
     setCreateDivisions(true)
     setResult(null)
+    setExecutionErrors([])
     setExpandedSections({
       toAdd: true,
       toUpdate: false,
@@ -611,6 +626,28 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
                 </div>
               )}
             </div>
+            {executionErrors.length > 0 && (
+              <div className="alert alert-warning text-left mt-6">
+                <AlertCircle className="h-4 w-4" />
+                <div>
+                  <h4 className="font-semibold">
+                    Import completed with {executionErrors.length} issue
+                    {executionErrors.length === 1 ? '' : 's'}
+                  </h4>
+                  <ul className="mt-2 list-disc list-inside text-sm">
+                    {executionErrors.slice(0, 5).map((error, index) => (
+                      <li key={`${error.field}-${error.row}-${index}`}>{error.message}</li>
+                    ))}
+                  </ul>
+                  {executionErrors.length > 5 && (
+                    <p className="text-sm mt-1">
+                      ...and {executionErrors.length - 5} more issue
+                      {executionErrors.length - 5 === 1 ? '' : 's'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
