@@ -149,14 +149,16 @@ ensure_env_file() {
 
 is_placeholder_env_value() {
   local value="${1:-}"
+  local value_lower
   value="$(printf '%s' "${value}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
   value="${value%\"}"
   value="${value#\"}"
   value="${value%\'}"
   value="${value#\'}"
+  value_lower="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]')"
 
-  case "${value}" in
-    ""|changeme|change-this-*|replace-me)
+  case "${value_lower}" in
+    ""|changeme|change-this-*|replace-me|replace-this-*|replace_*)
       return 0
       ;;
     *)
@@ -215,6 +217,36 @@ bootstrap_env_defaults() {
     log "Auto-generated ${generated_count} secure .env values for first-time setup."
     log "Generated values were written to ${ENV_FILE}."
   fi
+}
+
+write_admin_credentials_snapshot() {
+  local credentials_dir="/opt/sentinel/credentials"
+  local credentials_file="${credentials_dir}/service-secrets.env"
+  local tmp_file
+  tmp_file="$(mktemp)"
+
+  cat >"${tmp_file}" <<SNAPSHOT
+# Sentinel service credentials snapshot
+# Generated (UTC): $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+# Access: root-only (chmod 600)
+
+POSTGRES_USER=$(env_value POSTGRES_USER sentinel)
+POSTGRES_PASSWORD=$(env_value POSTGRES_PASSWORD)
+JWT_SECRET=$(env_value JWT_SECRET)
+API_KEY_SECRET=$(env_value API_KEY_SECRET)
+SESSION_SECRET=$(env_value SESSION_SECRET)
+SOCKET_IO_SECRET=$(env_value SOCKET_IO_SECRET)
+SWAGGER_USERNAME=$(env_value SWAGGER_USERNAME admin)
+SWAGGER_PASSWORD=$(env_value SWAGGER_PASSWORD)
+GRAFANA_ADMIN_USER=$(env_value GRAFANA_ADMIN_USER admin)
+GRAFANA_ADMIN_PASSWORD=$(env_value GRAFANA_ADMIN_PASSWORD)
+SNAPSHOT
+
+  run_root install -d -m 700 "${credentials_dir}"
+  run_root install -m 600 "${tmp_file}" "${credentials_file}"
+  rm -f "${tmp_file}"
+
+  log "Service credential snapshot saved to ${credentials_file} (root-only)."
 }
 
 upsert_env() {
