@@ -11,6 +11,16 @@ function getAuthService(): AuthService {
   return new AuthService(getPrismaClient())
 }
 
+function shouldUseSecureSessionCookie(req: Request): boolean {
+  const forwardedProtoHeader = req.headers['x-forwarded-proto']
+  const forwardedProto = Array.isArray(forwardedProtoHeader)
+    ? forwardedProtoHeader[0]
+    : forwardedProtoHeader
+  const normalizedForwardedProto = forwardedProto?.split(',')[0]?.trim().toLowerCase()
+
+  return req.secure || normalizedForwardedProto === 'https'
+}
+
 /**
  * Extract session token from cookie or Authorization header.
  */
@@ -51,10 +61,12 @@ router.post('/login', async (req: Request, res: Response) => {
       req.headers['user-agent']
     )
 
+    const secureCookie = shouldUseSecureSessionCookie(req)
+
     // Set HTTP-only cookie
     res.cookie('sentinel-session', result.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: secureCookie,
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
@@ -97,7 +109,13 @@ router.post('/logout', async (req: Request, res: Response) => {
     const authService = getAuthService()
     await authService.logout(token)
 
-    res.clearCookie('sentinel-session', { path: '/' })
+    const secureCookie = shouldUseSecureSessionCookie(req)
+    res.clearCookie('sentinel-session', {
+      httpOnly: true,
+      secure: secureCookie,
+      sameSite: 'lax',
+      path: '/',
+    })
     return res.status(200).json({ message: 'Logged out' })
   } catch (error) {
     authLogger.error('Logout error', {
