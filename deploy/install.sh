@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="/opt/sentinel/deploy"
 
-VERSION=""
+TARGET_VERSION=""
 LAN_CIDR_OVERRIDE=""
 CLI_WITH_OBS="false"
 CLI_ALLOW_GRAFANA_LAN="false"
@@ -39,11 +39,11 @@ normalize_version_value() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version)
-      VERSION="${2:-}"
+      TARGET_VERSION="${2:-}"
       shift 2
       ;;
     --version=*)
-      VERSION="${1#*=}"
+      TARGET_VERSION="${1#*=}"
       shift
       ;;
     --lan-cidr)
@@ -79,8 +79,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -n "${VERSION}" ]]; then
-  VERSION="$(normalize_version_value "${VERSION}")"
+if [[ -n "${TARGET_VERSION}" ]]; then
+  TARGET_VERSION="$(normalize_version_value "${TARGET_VERSION}")"
 fi
 
 if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
@@ -98,8 +98,8 @@ if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
   fi
 
   reexec_args=(--synced)
-  if [[ -n "${VERSION}" ]]; then
-    reexec_args=(--version "${VERSION}" --synced)
+  if [[ -n "${TARGET_VERSION}" ]]; then
+    reexec_args=(--version "${TARGET_VERSION}" --synced)
   fi
   if [[ -n "${LAN_CIDR_OVERRIDE}" ]]; then
     reexec_args+=(--lan-cidr "${LAN_CIDR_OVERRIDE}")
@@ -141,12 +141,12 @@ fi
 
 ensure_env_file
 
-if [[ -z "${VERSION}" ]]; then
-  VERSION="$(grep -E '^SENTINEL_VERSION=' "${ENV_FILE}" | cut -d= -f2- || true)"
+if [[ -z "${TARGET_VERSION}" ]]; then
+  TARGET_VERSION="$(grep -E '^SENTINEL_VERSION=' "${ENV_FILE}" | cut -d= -f2- || true)"
 fi
-VERSION="$(normalize_version_value "${VERSION}")"
-require_explicit_version "${VERSION}"
-upsert_env "SENTINEL_VERSION" "${VERSION}"
+TARGET_VERSION="$(normalize_version_value "${TARGET_VERSION}")"
+require_explicit_version "${TARGET_VERSION}"
+upsert_env "SENTINEL_VERSION" "${TARGET_VERSION}"
 
 LAN_CIDR="${LAN_CIDR_OVERRIDE}"
 if [[ -z "${LAN_CIDR}" ]]; then
@@ -166,7 +166,7 @@ if [[ -n "${SERVER_IP}" ]]; then
   fi
 fi
 
-CURRENT_VERSION="${VERSION}"
+CURRENT_VERSION="${TARGET_VERSION}"
 PREVIOUS_VERSION=""
 save_state
 set_compose_file_args
@@ -198,7 +198,7 @@ if ! command -v avahi-daemon >/dev/null 2>&1; then
 fi
 
 log "Install complete."
-log "Version: ${VERSION}"
+log "Version: ${TARGET_VERSION}"
 log "Local URL (mDNS): http://sentinel.local"
 if [[ -n "${SERVER_IP}" ]]; then
   log "Local URL (IP fallback): http://${SERVER_IP}"
