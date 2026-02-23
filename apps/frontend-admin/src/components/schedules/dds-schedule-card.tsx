@@ -94,7 +94,10 @@ export function DdsScheduleCard({
   }) => {
     if (!ddsSchedule) {
       // Create schedule first, then assign
-      if (!ddsRole) return
+      if (!ddsRole) {
+        toast.error('DDS role is not configured. Run backend seed scripts.')
+        return
+      }
       try {
         const newSchedule = await createSchedule.mutateAsync({
           dutyRoleId: ddsRole.id,
@@ -198,6 +201,28 @@ export function DdsScheduleCard({
         </AppCardHeader>
         <AppCardContent className="flex items-center justify-center h-24">
           <LoadingSpinner size="md" />
+        </AppCardContent>
+      </AppCard>
+    )
+  }
+
+  if (!ddsRole) {
+    return (
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            DDS (Duty Day Staff)
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>DDS role is not configured</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">
+            Missing required duty role configuration. Run enum/duty-role seed on the backend.
+          </p>
         </AppCardContent>
       </AppCard>
     )
