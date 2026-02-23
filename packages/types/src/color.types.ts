@@ -27,10 +27,14 @@ export type BaseColorName =
 
 export type SemanticColorName =
   | 'default'
+  | 'neutral'
   | 'primary'
   | 'secondary'
+  | 'accent'
   | 'success'
   | 'warning'
+  | 'info'
+  | 'error'
   | 'danger'
 
 export type ColorName = BaseColorName | SemanticColorName
@@ -158,10 +162,14 @@ export const HEROUI_COLORS = {
  */
 export const SEMANTIC_COLORS: Record<SemanticColorName, string> = {
   default: HEROUI_COLORS.zinc[300],
+  neutral: HEROUI_COLORS.zinc[500],
   primary: HEROUI_COLORS.blue[500],
   secondary: HEROUI_COLORS.purple[500],
+  accent: HEROUI_COLORS.pink[500],
   success: HEROUI_COLORS.green[500],
   warning: HEROUI_COLORS.yellow[500],
+  info: HEROUI_COLORS.cyan[600],
+  error: HEROUI_COLORS.red[500],
   danger: HEROUI_COLORS.red[500],
 }
 

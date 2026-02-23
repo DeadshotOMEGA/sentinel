@@ -421,6 +421,7 @@ export class CheckinRepository {
         mess: checkin.member.mess ?? undefined,
         moc: checkin.member.moc ?? undefined,
         memberType: checkin.member.memberType as unknown as MemberType,
+        accountLevel: checkin.member.accountLevel,
         classDetails: checkin.member.classDetails ?? undefined,
         status: checkin.member.status as unknown as MemberStatus,
         email: checkin.member.email ?? undefined,
@@ -491,6 +492,7 @@ export class CheckinRepository {
               email: c.member!.email || undefined,
               mobilePhone: c.member!.mobilePhone || undefined,
               memberType: c.member!.memberType as MemberType,
+              accountLevel: c.member!.accountLevel,
               status: c.member!.status as MemberStatus,
               employeeNumber: c.member!.employeeNumber || undefined,
               initials: c.member!.initials || undefined,
@@ -595,6 +597,7 @@ export class CheckinRepository {
             email: c.member.email || undefined,
             mobilePhone: c.member.mobilePhone || undefined,
             memberType: c.member.memberType as MemberType,
+            accountLevel: c.member.accountLevel,
             status: c.member.status as MemberStatus,
             employeeNumber: c.member.employeeNumber || undefined,
             initials: c.member.initials || undefined,
@@ -842,6 +845,7 @@ export class CheckinRepository {
         mess: string | null
         moc: string | null
         member_type: string
+        account_level: number
         class_details: string | null
         status: string
         email: string | null
@@ -869,7 +873,7 @@ export class CheckinRepository {
     >`
       SELECT
         m.id, m.service_number, m.employee_number, m.first_name, m.last_name, m.initials, m.rank,
-        m.division_id, m.mess, m.moc, m.member_type, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
+        m.division_id, m.mess, m.moc, m.member_type, m.account_level, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
         m.badge_id, m.created_at as member_created_at, m.updated_at as member_updated_at,
         d.id as division_id, d.name as division_name, d.code as division_code,
         d.description as division_description, d.created_at as division_created_at,
@@ -903,6 +907,7 @@ export class CheckinRepository {
         mess: row.mess ?? undefined,
         moc: row.moc ?? undefined,
         memberType: row.member_type as unknown as MemberType,
+        accountLevel: row.account_level,
         classDetails: row.class_details ?? undefined,
         status: row.status as unknown as MemberStatus,
         email: row.email ?? undefined,

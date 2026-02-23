@@ -13,6 +13,7 @@ import { MemberRepository } from '../repositories/member-repository.js'
 import { AutoQualificationService } from '../services/auto-qualification-service.js'
 import { importService } from '../services/import-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { AccountLevel } from '../middleware/roles.js'
 
 const s = initServer()
 
@@ -80,6 +81,7 @@ export const membersRouter = s.router(memberContract, {
             phoneNumber: member.mobilePhone || member.homePhone || null,
             divisionId: member.divisionId ?? null,
             badgeId: member.badgeId || null,
+            accountLevel: member.accountLevel,
             badgeStatus: member.badge?.badgeStatusSummary
               ? {
                   name: member.badge.badgeStatusSummary.name,
@@ -159,6 +161,7 @@ export const membersRouter = s.router(memberContract, {
           phoneNumber: member.mobilePhone || member.homePhone || null,
           divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
+          accountLevel: member.accountLevel,
           memberTypeId: null,
           memberStatusId: null,
           createdAt: member.createdAt.toISOString(),
@@ -179,8 +182,46 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Create new member
    */
-  createMember: async ({ body }: { body: CreateMemberInput }) => {
+  createMember: async ({
+    body,
+    req,
+  }: {
+    body: CreateMemberInput
+    req: { member?: { id?: string; accountLevel?: number } }
+  }) => {
     try {
+      const actorLevel = req.member?.accountLevel ?? 0
+      if (!req.member) {
+        return {
+          status: 401 as const,
+          body: {
+            error: 'UNAUTHORIZED',
+            message: 'Authentication required',
+          },
+        }
+      }
+
+      if (body.accountLevel !== undefined) {
+        if (actorLevel < AccountLevel.ADMIN) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'FORBIDDEN',
+              message: 'Only admin or developer accounts can set account levels',
+            },
+          }
+        }
+        if (body.accountLevel > actorLevel) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'FORBIDDEN',
+              message: `Your account level (${actorLevel}) cannot assign level ${body.accountLevel}`,
+            },
+          }
+        }
+      }
+
       const member = await memberRepo.create({
         serviceNumber: body.serviceNumber,
         rank: body.rank,
@@ -193,6 +234,7 @@ export const membersRouter = s.router(memberContract, {
         memberType: 'class_a', // TODO: Map from memberTypeId when FK migration complete
         // memberTypeId and memberStatusId not yet supported by repository
         badgeId: body.badgeId,
+        accountLevel: body.accountLevel,
       })
 
       // Auto-sync qualifications for new member (non-blocking)
@@ -220,6 +262,7 @@ export const membersRouter = s.router(memberContract, {
           phoneNumber: member.mobilePhone || null,
           divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
+          accountLevel: member.accountLevel,
           memberTypeId: null,
           memberStatusId: null,
           createdAt: member.createdAt.toISOString(),
@@ -251,8 +294,48 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Update existing member
    */
-  updateMember: async ({ params, body }: { params: IdParam; body: UpdateMemberInput }) => {
+  updateMember: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: UpdateMemberInput
+    req: { member?: { id?: string; accountLevel?: number } }
+  }) => {
     try {
+      const actorLevel = req.member?.accountLevel ?? 0
+      if (!req.member) {
+        return {
+          status: 401 as const,
+          body: {
+            error: 'UNAUTHORIZED',
+            message: 'Authentication required',
+          },
+        }
+      }
+
+      if (body.accountLevel !== undefined) {
+        if (actorLevel < AccountLevel.ADMIN) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'FORBIDDEN',
+              message: 'Only admin or developer accounts can set account levels',
+            },
+          }
+        }
+        if (body.accountLevel > actorLevel) {
+          return {
+            status: 403 as const,
+            body: {
+              error: 'FORBIDDEN',
+              message: `Your account level (${actorLevel}) cannot assign level ${body.accountLevel}`,
+            },
+          }
+        }
+      }
+
       const member = await memberRepo.update(params.id, {
         serviceNumber: body.serviceNumber,
         rank: body.rank,
@@ -265,6 +348,7 @@ export const membersRouter = s.router(memberContract, {
         badgeId: body.badgeId,
         memberTypeId: body.memberTypeId,
         memberStatusId: body.memberStatusId,
+        accountLevel: body.accountLevel,
       })
 
       // Auto-sync qualifications if rank or division changed (non-blocking)
@@ -294,6 +378,7 @@ export const membersRouter = s.router(memberContract, {
           phoneNumber: member.mobilePhone || null,
           divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
+          accountLevel: member.accountLevel,
           memberTypeId: member.memberTypeId || null,
           memberStatusId: member.memberStatusId || null,
           createdAt: member.createdAt.toISOString(),
@@ -400,6 +485,7 @@ export const membersRouter = s.router(memberContract, {
           phoneNumber: member.mobilePhone || null,
           divisionId: member.divisionId ?? null,
           badgeId: member.badgeId || null,
+          accountLevel: member.accountLevel,
           memberTypeId: null,
           memberStatusId: null,
           createdAt: member.createdAt.toISOString(),

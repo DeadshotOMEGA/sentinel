@@ -392,6 +392,25 @@
 }
 
 /* ========================================
+   KIOSK LOCK MODE
+   Restrict browser-like interactions on kiosk route
+   ======================================== */
+
+body.kiosk-lock-mode {
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+body.kiosk-lock-mode input,
+body.kiosk-lock-mode textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ========================================
    REDUCED MOTION
    Accessibility compliance
    ======================================== */

@@ -20,10 +20,14 @@ interface ColorOption {
 const COLOR_OPTIONS: ColorOption[] = [
   // Semantic colors (most commonly used)
   { name: 'default', hex: SEMANTIC_COLORS.default, label: 'Default', category: 'semantic' },
+  { name: 'neutral', hex: SEMANTIC_COLORS.neutral, label: 'Neutral', category: 'semantic' },
   { name: 'primary', hex: SEMANTIC_COLORS.primary, label: 'Primary', category: 'semantic' },
   { name: 'secondary', hex: SEMANTIC_COLORS.secondary, label: 'Secondary', category: 'semantic' },
+  { name: 'accent', hex: SEMANTIC_COLORS.accent, label: 'Accent', category: 'semantic' },
   { name: 'success', hex: SEMANTIC_COLORS.success, label: 'Success', category: 'semantic' },
   { name: 'warning', hex: SEMANTIC_COLORS.warning, label: 'Warning', category: 'semantic' },
+  { name: 'info', hex: SEMANTIC_COLORS.info, label: 'Info', category: 'semantic' },
+  { name: 'error', hex: SEMANTIC_COLORS.error, label: 'Error', category: 'semantic' },
   { name: 'danger', hex: SEMANTIC_COLORS.danger, label: 'Danger', category: 'semantic' },
 
   // Base colors (additional options)
@@ -45,10 +49,7 @@ function ColorSwatch({ hex, size = 'sm' }: { hex: string; size?: 'sm' | 'md' }) 
 
   return (
     <div
-      className={cn(
-        'rounded-sm border border-base-300/50',
-        sizeClasses[size]
-      )}
+      className={cn('rounded-sm border border-base-300/50', sizeClasses[size])}
       style={{ backgroundColor: hex }}
     />
   )
@@ -63,7 +64,7 @@ export function ColorPicker({
   const selectedColor = COLOR_OPTIONS.find((c) => c.name === value)
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       {/* Display the color swatch next to the select */}
       {selectedColor && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
@@ -71,14 +72,13 @@ export function ColorPicker({
         </div>
       )}
       <select
-        className={cn(
-          "select select-bordered w-full",
-          selectedColor && "pl-8"
-        )}
+        className={cn('select select-bordered w-full', selectedColor && 'pl-8')}
         value={value ?? ''}
         onChange={(e) => onValueChange(e.target.value)}
       >
-        <option value="" disabled>{placeholder}</option>
+        <option value="" disabled>
+          {placeholder}
+        </option>
         <optgroup label="Semantic Colors">
           {COLOR_OPTIONS.filter((c) => c.category === 'semantic').map((color) => (
             <option key={color.name} value={color.name}>

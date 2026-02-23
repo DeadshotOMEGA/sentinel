@@ -30,6 +30,7 @@ export interface Member {
   homePhone?: string
   mobilePhone?: string
   badgeId?: string
+  accountLevel: number
   missedCheckoutCount?: number
   lastMissedCheckout?: Date
   createdAt: Date
@@ -79,6 +80,7 @@ export interface CreateMemberInput {
   homePhone?: string
   mobilePhone?: string
   badgeId?: string
+  accountLevel?: number
 }
 
 export interface UpdateMemberInput {
@@ -100,6 +102,7 @@ export interface UpdateMemberInput {
   homePhone?: string
   mobilePhone?: string
   badgeId?: string | null
+  accountLevel?: number
   tagIds?: string[]
 }
 

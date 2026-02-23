@@ -10,6 +10,7 @@ import type {
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { badgeService } from '../services/badge-service.js'
 
 const s = initServer()
 
@@ -269,12 +270,19 @@ export const badgesRouter = s.router(badgeContract, {
    */
   createBadge: async ({ body }: { body: CreateBadgeInput }) => {
     try {
-      const badge = await badgeRepo.create({
+      const initialAssignmentType =
+        body.assignmentType === 'member' ? 'unassigned' : (body.assignmentType ?? 'unassigned')
+
+      let badge = await badgeRepo.create({
         serialNumber: body.serialNumber,
-        assignmentType: body.assignmentType || 'unassigned',
-        assignedToId: body.assignedToId,
+        assignmentType: initialAssignmentType,
+        assignedToId: initialAssignmentType !== 'unassigned' ? body.assignedToId : undefined,
         status: body.status || 'active',
       })
+
+      if (body.assignmentType === 'member' && body.assignedToId) {
+        badge = await badgeService.assign(badge.id, body.assignedToId)
+      }
 
       let assignedTo = null
       if (badge.assignmentType === 'member' && badge.assignedToId) {
@@ -314,6 +322,27 @@ export const badgesRouter = s.router(badgeContract, {
           },
         }
       }
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('already assigned') || error.message.includes('already has badge'))
+      ) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
 
       return {
         status: 500 as const,
@@ -343,14 +372,24 @@ export const badgesRouter = s.router(badgeContract, {
       }
 
       if (body.status) {
-        badge = await badgeRepo.updateStatus(params.id, body.status)
+        badge = await badgeService.updateStatus(params.id, body.status)
       }
 
       // Handle assignment changes
       if (body.assignmentType && body.assignedToId) {
-        badge = await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
+        if (body.assignmentType === 'member') {
+          if (badge.assignmentType !== 'unassigned' || badge.assignedToId) {
+            await badgeService.unassign(params.id)
+          }
+          badge = await badgeService.assign(params.id, body.assignedToId)
+        } else {
+          if (badge.assignmentType === 'member' && badge.assignedToId) {
+            await badgeService.unassign(params.id)
+          }
+          badge = await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
+        }
       } else if (body.assignmentType === 'unassigned') {
-        badge = await badgeRepo.unassign(params.id)
+        badge = await badgeService.unassign(params.id)
       }
 
       let assignedTo = null
@@ -399,6 +438,18 @@ export const badgesRouter = s.router(badgeContract, {
           },
         }
       }
+      if (
+        error instanceof Error &&
+        (error.message.includes('already assigned') || error.message.includes('already has badge'))
+      ) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
 
       return {
         status: 500 as const,
@@ -429,7 +480,10 @@ export const badgesRouter = s.router(badgeContract, {
         }
       }
 
-      const badge = await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
+      const badge =
+        body.assignmentType === 'member'
+          ? await badgeService.assign(params.id, body.assignedToId)
+          : await badgeRepo.assign(params.id, body.assignedToId, body.assignmentType)
 
       let assignedTo = null
       if (badge.assignmentType === 'member' && badge.assignedToId) {
@@ -469,7 +523,12 @@ export const badgesRouter = s.router(badgeContract, {
         }
       }
 
-      if (error instanceof Error && error.message.includes('Cannot assign')) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('Cannot assign') ||
+          error.message.includes('already assigned') ||
+          error.message.includes('already has badge'))
+      ) {
         return {
           status: 409 as const,
           body: {
@@ -494,7 +553,7 @@ export const badgesRouter = s.router(badgeContract, {
    */
   unassignBadge: async ({ params }: { params: IdParam }) => {
     try {
-      const badge = await badgeRepo.unassign(params.id)
+      const badge = await badgeService.unassign(params.id)
 
       return {
         status: 200 as const,

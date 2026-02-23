@@ -10,6 +10,7 @@ const CodePattern = /^[a-z0-9_]+$/
  */
 export const ChipVariants = [
   'solid',
+  'soft',
   'bordered',
   'light',
   'flat',
@@ -25,10 +26,14 @@ export type ChipVariant = (typeof ChipVariants)[number]
 export const ChipColors = [
   // Semantic colors
   'default',
+  'neutral',
   'primary',
   'secondary',
+  'accent',
   'success',
   'warning',
+  'info',
+  'error',
   'danger',
   // Base colors
   'blue',

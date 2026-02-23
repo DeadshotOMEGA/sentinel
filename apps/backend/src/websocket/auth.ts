@@ -4,6 +4,29 @@ import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
 
+function extractSessionTokenFromCookieHeader(
+  cookieHeader: string | string[] | undefined
+): string | null {
+  if (!cookieHeader) return null
+
+  const cookieValue = Array.isArray(cookieHeader) ? cookieHeader.join(';') : cookieHeader
+  const cookies = cookieValue.split(';').map((part) => part.trim())
+
+  for (const cookie of cookies) {
+    if (!cookie.startsWith('sentinel-session=')) continue
+    const rawValue = cookie.slice('sentinel-session='.length)
+    if (!rawValue) return null
+
+    try {
+      return decodeURIComponent(rawValue)
+    } catch {
+      return rawValue
+    }
+  }
+
+  return null
+}
+
 /**
  * WebSocket authentication middleware
  * Validates session token from Socket.IO handshake
@@ -23,7 +46,9 @@ export async function authenticateSocket(socket: Socket, next: (err?: Error) => 
       return next()
     }
 
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization
+    const tokenFromAuth = socket.handshake.auth.token || socket.handshake.headers.authorization
+    const tokenFromCookie = extractSessionTokenFromCookieHeader(socket.handshake.headers.cookie)
+    const token = tokenFromAuth || tokenFromCookie
 
     if (!token) {
       logger.warn('WebSocket connection rejected: No authentication token', {

@@ -39,6 +39,14 @@ export const CreateMemberSchema = v.object({
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
   badgeId: v.optional(v.pipe(v.string(), v.uuid('Invalid badge ID'))),
+  accountLevel: v.optional(
+    v.pipe(
+      v.number('Account level is required'),
+      v.integer('Account level must be a whole number'),
+      v.minValue(1, 'Account level must be at least 1'),
+      v.maxValue(6, 'Account level must be at most 6')
+    )
+  ),
 })
 
 /**
@@ -76,6 +84,14 @@ export const UpdateMemberSchema = v.object({
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
   badgeId: v.optional(v.pipe(v.string(), v.uuid('Invalid badge ID'))),
+  accountLevel: v.optional(
+    v.pipe(
+      v.number('Account level must be a number'),
+      v.integer('Account level must be a whole number'),
+      v.minValue(1, 'Account level must be at least 1'),
+      v.maxValue(6, 'Account level must be at most 6')
+    )
+  ),
 })
 
 /**
@@ -126,6 +142,7 @@ export const MemberResponseSchema = v.object({
   phoneNumber: v.nullable(v.string()),
   divisionId: v.nullable(v.string()),
   badgeId: v.nullable(v.string()),
+  accountLevel: v.number(),
   badgeStatus: v.optional(BadgeStatusSummarySchema),
   memberTypeId: v.nullable(v.string()),
   memberStatusId: v.nullable(v.string()),
