@@ -19,12 +19,20 @@ const MODEL_TO_TABLE: Record<string, string> = {
   Event: 'events',
   EventAttendee: 'event_attendees',
   EventCheckin: 'event_checkins',
+  MissedCheckout: 'missed_checkouts',
+  UnitEventType: 'unit_event_types',
+  UnitEvent: 'unit_events',
+  UnitEventDutyPosition: 'unit_event_duty_positions',
+  UnitEventDutyAssignment: 'unit_event_duty_assignments',
   BmqCourse: 'bmq_courses',
   BmqEnrollment: 'bmq_enrollments',
   TrainingYear: 'training_years',
+  QualificationType: 'qualification_types',
+  MemberQualification: 'member_qualifications',
   AuditLog: 'audit_log',
   SecurityAlert: 'security_alerts',
   ResponsibilityAuditLog: 'responsibility_audit_log',
+  report_audit_log: 'report_audit_log',
   MemberStatus: 'member_statuses',
   MemberType: 'member_types',
   VisitType: 'visit_types',
@@ -35,7 +43,15 @@ const MODEL_TO_TABLE: Record<string, string> = {
   Setting: 'settings',
   AlertConfig: 'alert_configs',
   ReportSetting: 'report_settings',
+  StatHoliday: 'stat_holidays',
   DdsAssignment: 'dds_assignments',
+  DutyRole: 'duty_roles',
+  DutyPosition: 'duty_positions',
+  WeeklySchedule: 'weekly_schedules',
+  ScheduleAssignment: 'schedule_assignments',
+  LockupStatus: 'lockup_status',
+  LockupTransfer: 'lockup_transfers',
+  LockupExecution: 'lockup_executions',
 }
 
 // Get category for a table
@@ -115,13 +131,7 @@ export const databaseExplorerRouter = s.router(databaseExplorerContract, {
   /**
    * Get paginated data from a specific table
    */
-  getTableData: async ({
-    params,
-    query,
-  }: {
-    params: TablePathParams
-    query: TableDataQuery
-  }) => {
+  getTableData: async ({ params, query }: { params: TablePathParams; query: TableDataQuery }) => {
     try {
       const prisma = getPrismaClient()
       const { table: modelName } = params
@@ -131,7 +141,7 @@ export const databaseExplorerRouter = s.router(databaseExplorerContract, {
       const sortOrder = query.sortOrder ?? 'desc'
 
       // Verify table is in whitelist
-      if (!ALLOWED_TABLES.includes(modelName as typeof ALLOWED_TABLES[number])) {
+      if (!ALLOWED_TABLES.includes(modelName as (typeof ALLOWED_TABLES)[number])) {
         return {
           status: 400 as const,
           body: {

@@ -103,14 +103,17 @@ function PositionSlot({
           {position.code}
         </Chip>
         <div className="min-w-0">
-          <p className={cn('font-medium text-sm truncate', isUnfilled && 'line-through text-base-content/50')}>
+          <p
+            className={cn(
+              'font-medium text-sm truncate',
+              isUnfilled && 'line-through text-base-content/50'
+            )}
+          >
             {assignment
               ? `${assignment.member.rank} ${assignment.member.lastName}, ${assignment.member.firstName}`
               : position.name}
           </p>
-          {isUnfilled && (
-            <p className="text-xs text-error font-medium">Unfilled</p>
-          )}
+          {isUnfilled && <p className="text-xs text-error font-medium">Unfilled</p>}
           {!assignment && (
             <p className="text-xs text-base-content/60">
               {position.required ? 'Required' : 'Optional'}
@@ -274,7 +277,10 @@ export function DutyWatchCard({
     rank: string
     serviceNumber: string
   }) => {
-    if (!dutyWatchRole) return
+    if (!dutyWatchRole) {
+      toast.error('Duty Watch role is not configured. Run backend seed scripts.')
+      return
+    }
 
     const position = positions?.data?.find((p) => p.code === selectedPosition)
 
@@ -428,6 +434,51 @@ export function DutyWatchCard({
     )
   }
 
+  if (!dutyWatchRole) {
+    return (
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Duty Watch Team
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>Duty Watch role is not configured</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">
+            Missing required duty role configuration. Run enum/duty-role seed on the backend.
+          </p>
+        </AppCardContent>
+      </AppCard>
+    )
+  }
+
+  if (positionsList.length === 0) {
+    return (
+      <AppCard status="error">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Duty Watch Team
+          </AppCardTitle>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-2 text-error">
+            <AlertCircle className="h-5 w-5" />
+            <span>No Duty Watch positions configured</span>
+          </div>
+          <p className="text-sm text-base-content/60 mt-1">
+            Missing required duty positions for role <span className="font-mono">DUTY_WATCH</span>.
+            Run enum/duty-role seed on the backend.
+          </p>
+        </AppCardContent>
+      </AppCard>
+    )
+  }
+
   const cardStatus = dutyWatchSchedule?.status === 'draft' ? ('warning' as const) : undefined
 
   return (
@@ -523,11 +574,7 @@ export function DutyWatchCard({
               onClick={handlePublish}
               disabled={publishSchedule.isPending || missingRequired > 0}
             >
-              {publishSchedule.isPending ? (
-                <ButtonSpinner />
-              ) : (
-                <Check className="h-4 w-4 mr-2" />
-              )}
+              {publishSchedule.isPending ? <ButtonSpinner /> : <Check className="h-4 w-4 mr-2" />}
               Publish Schedule
             </button>
           </div>
@@ -540,11 +587,7 @@ export function DutyWatchCard({
               onClick={handleEdit}
               disabled={revertToDraft.isPending}
             >
-              {revertToDraft.isPending ? (
-                <ButtonSpinner />
-              ) : (
-                <Pencil className="h-4 w-4 mr-2" />
-              )}
+              {revertToDraft.isPending ? <ButtonSpinner /> : <Pencil className="h-4 w-4 mr-2" />}
               Edit Schedule
             </button>
           </div>

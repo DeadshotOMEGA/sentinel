@@ -35,6 +35,25 @@ interface QualificationTypeSeedInput {
   tagName: string
 }
 
+interface DutyRoleSeedInput {
+  code: string
+  name: string
+  description: string
+  roleType: 'single' | 'team'
+  scheduleType: 'weekly'
+  activeDays: number[]
+  displayOrder: number
+}
+
+interface DutyPositionSeedInput {
+  dutyRoleCode: 'DUTY_WATCH'
+  code: string
+  name: string
+  description: string
+  maxSlots: number
+  displayOrder: number
+}
+
 const RANKS_SEED_SQL_RELATIVE_PATH = '../../../packages/database/scripts/seed-ranks.sql'
 const RANK_INSERT_STATEMENT_REGEX = /INSERT INTO ranks[\s\S]*?;/gi
 const RANK_REPLACEMENT_MAPPINGS = [
@@ -353,6 +372,70 @@ const DEFAULT_QUALIFICATION_TYPES: ReadonlyArray<QualificationTypeSeedInput> = [
   },
 ]
 
+const DEFAULT_DUTY_ROLES: ReadonlyArray<DutyRoleSeedInput> = [
+  {
+    code: 'DDS',
+    name: 'Duty Day Staff',
+    description: 'Single person responsible for daily operations Monday through Sunday',
+    roleType: 'single',
+    scheduleType: 'weekly',
+    activeDays: [1, 2, 3, 4, 5, 6, 7],
+    displayOrder: 1,
+  },
+  {
+    code: 'DUTY_WATCH',
+    name: 'Duty Watch',
+    description: 'Evening team responsible for security on Tuesday and Thursday nights',
+    roleType: 'team',
+    scheduleType: 'weekly',
+    activeDays: [2, 4],
+    displayOrder: 2,
+  },
+]
+
+const DEFAULT_DUTY_POSITIONS: ReadonlyArray<DutyPositionSeedInput> = [
+  {
+    dutyRoleCode: 'DUTY_WATCH',
+    code: 'SWK',
+    name: 'Senior Watchkeeper',
+    description: 'Team leader, takes lockup responsibility',
+    maxSlots: 1,
+    displayOrder: 1,
+  },
+  {
+    dutyRoleCode: 'DUTY_WATCH',
+    code: 'DSWK',
+    name: 'Deputy Senior Watchkeeper',
+    description: 'Backup to SWK',
+    maxSlots: 1,
+    displayOrder: 2,
+  },
+  {
+    dutyRoleCode: 'DUTY_WATCH',
+    code: 'QM',
+    name: 'Quartermaster',
+    description: 'Watch duties',
+    maxSlots: 1,
+    displayOrder: 3,
+  },
+  {
+    dutyRoleCode: 'DUTY_WATCH',
+    code: 'BM',
+    name: "Bos'n Mate",
+    description: 'Watch duties',
+    maxSlots: 1,
+    displayOrder: 4,
+  },
+  {
+    dutyRoleCode: 'DUTY_WATCH',
+    code: 'APS',
+    name: 'Access Point Sentry',
+    description: 'Two positions for access control',
+    maxSlots: 2,
+    displayOrder: 5,
+  },
+]
+
 async function ensureMemberStatuses(): Promise<number> {
   let inserted = 0
 
@@ -514,6 +597,94 @@ async function ensureQualificationTypes(tagIdsByName: Map<string, string>): Prom
   return { inserted, linkedTagIds }
 }
 
+async function ensureDutyRoles(): Promise<{
+  inserted: number
+  roleIdsByCode: Map<string, string>
+}> {
+  let inserted = 0
+  const roleIdsByCode = new Map<string, string>()
+
+  for (const dutyRole of DEFAULT_DUTY_ROLES) {
+    const existing = await prisma.dutyRole.findUnique({
+      where: { code: dutyRole.code },
+      select: { id: true },
+    })
+
+    if (!existing) {
+      const created = await prisma.dutyRole.create({
+        data: dutyRole,
+        select: { id: true },
+      })
+      roleIdsByCode.set(dutyRole.code, created.id)
+      inserted += 1
+      continue
+    }
+
+    await prisma.dutyRole.update({
+      where: { id: existing.id },
+      data: {
+        name: dutyRole.name,
+        description: dutyRole.description,
+        roleType: dutyRole.roleType,
+        scheduleType: dutyRole.scheduleType,
+        activeDays: dutyRole.activeDays,
+        displayOrder: dutyRole.displayOrder,
+      },
+    })
+    roleIdsByCode.set(dutyRole.code, existing.id)
+  }
+
+  return { inserted, roleIdsByCode }
+}
+
+async function ensureDutyPositions(roleIdsByCode: Map<string, string>): Promise<number> {
+  let inserted = 0
+
+  for (const dutyPosition of DEFAULT_DUTY_POSITIONS) {
+    const dutyRoleId = roleIdsByCode.get(dutyPosition.dutyRoleCode)
+    if (!dutyRoleId) {
+      continue
+    }
+
+    const existing = await prisma.dutyPosition.findUnique({
+      where: {
+        dutyRoleId_code: {
+          dutyRoleId,
+          code: dutyPosition.code,
+        },
+      },
+      select: { id: true },
+    })
+
+    if (!existing) {
+      await prisma.dutyPosition.create({
+        data: {
+          dutyRoleId,
+          code: dutyPosition.code,
+          name: dutyPosition.name,
+          description: dutyPosition.description,
+          maxSlots: dutyPosition.maxSlots,
+          displayOrder: dutyPosition.displayOrder,
+        },
+      })
+      inserted += 1
+      continue
+    }
+
+    await prisma.dutyPosition.update({
+      where: { id: existing.id },
+      data: {
+        name: dutyPosition.name,
+        description: dutyPosition.description,
+        maxSlots: dutyPosition.maxSlots,
+        displayOrder: dutyPosition.displayOrder,
+      },
+    })
+  }
+
+  return inserted
+}
+
 async function ensureRanks(): Promise<{ inserted: number; existing: number }> {
   const existing = await prisma.rank.count()
   const seedPath = join(__dirname, RANKS_SEED_SQL_RELATIVE_PATH)
@@ -558,9 +729,11 @@ async function main(): Promise<void> {
     const { inserted: insertedTags, tagIdsByName } = await ensureTags()
     const { inserted: insertedQualificationTypes, linkedTagIds } =
       await ensureQualificationTypes(tagIdsByName)
+    const { inserted: insertedDutyRoles, roleIdsByCode } = await ensureDutyRoles()
+    const insertedDutyPositions = await ensureDutyPositions(roleIdsByCode)
 
     console.log(
-      `enum seed complete: ranks_seeded=${insertedRanks} ranks_existing=${existingRanks} member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags=${insertedTags} qualification_types=${insertedQualificationTypes} qualification_tag_links=${linkedTagIds}`
+      `enum seed complete: ranks_seeded=${insertedRanks} ranks_existing=${existingRanks} member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags=${insertedTags} qualification_types=${insertedQualificationTypes} qualification_tag_links=${linkedTagIds} duty_roles=${insertedDutyRoles} duty_positions=${insertedDutyPositions}`
     )
   } finally {
     await prisma.$disconnect()
