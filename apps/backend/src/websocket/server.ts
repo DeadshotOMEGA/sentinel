@@ -6,6 +6,40 @@ import { authenticateSocket } from './auth.js'
 import { registerSocketHandlers } from './handlers.js'
 import { setSocketIOServer } from './broadcast.js'
 
+const connectionAttemptsByIp = new Map<string, number[]>()
+
+function getClientIp(
+  headers: Record<string, string | string[] | undefined>,
+  fallback: string
+): string {
+  const forwardedFor = headers['x-forwarded-for']
+  const forwarded = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor
+  if (typeof forwarded === 'string' && forwarded.length > 0) {
+    return forwarded.split(',')[0]?.trim() || fallback
+  }
+  return fallback
+}
+
+function isWebSocketConnectionRateLimited(ip: string): boolean {
+  if (process.env.ENABLE_RATE_LIMITING === 'false') {
+    return false
+  }
+
+  const now = Date.now()
+  const windowMs = 60_000
+  const maxAttempts = process.env.NODE_ENV === 'production' ? 10 : 100
+  const attempts = (connectionAttemptsByIp.get(ip) ?? []).filter((ts) => now - ts <= windowMs)
+  attempts.push(now)
+
+  if (attempts.length === 0) {
+    connectionAttemptsByIp.delete(ip)
+  } else {
+    connectionAttemptsByIp.set(ip, attempts)
+  }
+
+  return attempts.length > maxAttempts
+}
+
 /**
  * Initialize Socket.IO server with authentication and rate limiting
  */
@@ -34,14 +68,15 @@ export function initializeWebSocketServer(httpServer: HTTPServer): SocketIOServe
   // Activate real-time log streaming transport
   socketIOTransport.setIO(io)
 
-  // TODO Phase 3: Apply rate limiting for connections (per IP)
-  // const connectionLimiter = rateLimit({
-  //   windowMs: 60 * 1000, // 1 minute
-  //   max: 10, // 10 connections per minute per IP
-  //   message: 'Too many WebSocket connections from this IP',
-  //   standardHeaders: true,
-  //   legacyHeaders: false,
-  // })
+  io.use((socket, next) => {
+    const ip = getClientIp(socket.handshake.headers, socket.handshake.address)
+    if (isWebSocketConnectionRateLimited(ip)) {
+      logger.warn('WebSocket connection rate limit exceeded', { ip })
+      return next(new Error('Too many WebSocket connections from this IP'))
+    }
+
+    return next()
+  })
 
   // Authentication middleware
   io.use(authenticateSocket)

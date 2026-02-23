@@ -9,6 +9,7 @@ export const TID = {
     logo: 'nav-logo',
     link: (page: string) => `nav-link-${page}`,
     backendStatus: 'nav-backend-status',
+    backendStatusDetails: 'nav-backend-status-details',
     userMenu: 'nav-user-menu',
     changePin: 'nav-change-pin',
     logout: 'nav-logout',

@@ -2,13 +2,26 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-export type ChipVariant = 'solid' | 'bordered' | 'light' | 'flat' | 'faded' | 'shadow' | 'dot'
+export type ChipVariant =
+  | 'solid'
+  | 'bordered'
+  | 'light'
+  | 'flat'
+  | 'faded'
+  | 'shadow'
+  | 'dot'
+  | 'soft'
+type ChipCanonicalVariant = Exclude<ChipVariant, 'soft'>
 export type ChipColor =
   | 'default'
+  | 'neutral'
   | 'primary'
   | 'secondary'
+  | 'accent'
   | 'success'
   | 'warning'
+  | 'info'
+  | 'error'
   | 'danger'
   | 'blue'
   | 'green'
@@ -29,7 +42,23 @@ const sizeClasses: Record<ChipSize, string> = {
   lg: 'px-3 py-1.5 text-base gap-2',
 }
 
-const variantColorClasses: Record<ChipVariant, Record<ChipColor, string>> = {
+type ChipCanonicalColor =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'blue'
+  | 'green'
+  | 'pink'
+  | 'purple'
+  | 'red'
+  | 'yellow'
+  | 'cyan'
+  | 'zinc'
+
+const variantColorClasses: Record<ChipCanonicalVariant, Record<ChipCanonicalColor, string>> = {
   solid: {
     default: 'bg-zinc-200 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200',
     primary: 'bg-primary text-primary-content',
@@ -155,7 +184,7 @@ const variantColorClasses: Record<ChipVariant, Record<ChipColor, string>> = {
   },
 }
 
-const dotColorClasses: Record<string, string> = {
+const dotColorClasses: Record<ChipCanonicalColor, string> = {
   default: 'bg-zinc-500',
   primary: 'bg-primary',
   secondary: 'bg-secondary',
@@ -195,18 +224,39 @@ function Chip({
   ...props
 }: ChipProps) {
   const shouldShowDot = showDot || variant === 'dot'
+  const normalizedVariant: ChipCanonicalVariant = variant === 'soft' ? 'faded' : variant
+  const normalizedColor: ChipCanonicalColor =
+    color === 'neutral'
+      ? 'zinc'
+      : color === 'accent'
+        ? 'purple'
+        : color === 'info'
+          ? 'cyan'
+          : color === 'error'
+            ? 'danger'
+            : color
 
   return (
     <span
       data-slot="chip"
       data-variant={variant}
       data-color={color}
-      className={cn(baseClasses, sizeClasses[size], (variantColorClasses[variant] ?? variantColorClasses.solid)[color] ?? variantColorClasses.solid.default, className)}
+      className={cn(
+        baseClasses,
+        sizeClasses[size],
+        (variantColorClasses[normalizedVariant] ?? variantColorClasses.solid)[normalizedColor] ??
+          variantColorClasses.solid.default,
+        className
+      )}
       {...props}
     >
       {shouldShowDot && (
         <span
-          className={cn('rounded-full shrink-0', dotColorClasses[color], dotSizeClasses[size])}
+          className={cn(
+            'rounded-full shrink-0',
+            dotColorClasses[normalizedColor],
+            dotSizeClasses[size]
+          )}
           aria-hidden="true"
         />
       )}

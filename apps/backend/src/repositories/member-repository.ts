@@ -57,6 +57,7 @@ function toMember(prismaMember: PrismaMember): Member {
     homePhone: prismaMember.homePhone ?? undefined,
     mobilePhone: prismaMember.mobilePhone ?? undefined,
     badgeId: prismaMember.badgeId ?? undefined,
+    accountLevel: prismaMember.accountLevel,
     missedCheckoutCount: prismaMember.missedCheckoutCount,
     lastMissedCheckout: prismaMember.lastMissedCheckout ?? undefined,
     createdAt: prismaMember.createdAt ?? new Date(),
@@ -250,7 +251,7 @@ export class MemberRepository {
       throw new Error(`Cannot ${operation} the protected Sentinel bootstrap member`)
     }
 
-    const disallowedKeys = ['status', 'serviceNumber', 'badgeId']
+    const disallowedKeys = ['status', 'serviceNumber', 'badgeId', 'accountLevel']
     if (disallowedKeys.some((key) => key in updateData)) {
       throw new Error(`Cannot ${operation} the protected Sentinel bootstrap member`)
     }
@@ -713,6 +714,7 @@ export class MemberRepository {
           homePhone: data.homePhone !== undefined ? data.homePhone : null,
           mobilePhone: data.mobilePhone !== undefined ? data.mobilePhone : null,
           badgeId: data.badgeId !== undefined ? data.badgeId : null,
+          accountLevel: data.accountLevel !== undefined ? data.accountLevel : undefined,
         },
       })
 
@@ -792,6 +794,9 @@ export class MemberRepository {
     }
     if (data.badgeId !== undefined) {
       updateData.badgeId = data.badgeId
+    }
+    if (data.accountLevel !== undefined) {
+      updateData.accountLevel = data.accountLevel
     }
     if (data.memberStatusId !== undefined) {
       updateData.memberStatusId = data.memberStatusId
@@ -1042,6 +1047,8 @@ export class MemberRepository {
             homePhone: memberData.homePhone !== undefined ? memberData.homePhone : null,
             mobilePhone: memberData.mobilePhone !== undefined ? memberData.mobilePhone : null,
             badgeId: memberData.badgeId !== undefined ? memberData.badgeId : null,
+            accountLevel:
+              memberData.accountLevel !== undefined ? memberData.accountLevel : undefined,
           },
         })
         const key = computeCollisionKey(
@@ -1175,6 +1182,9 @@ export class MemberRepository {
         }
         if (data.badgeId !== undefined) {
           updateData.badgeId = data.badgeId
+        }
+        if (data.accountLevel !== undefined) {
+          updateData.accountLevel = data.accountLevel
         }
 
         if (Object.keys(updateData).length === 0) {

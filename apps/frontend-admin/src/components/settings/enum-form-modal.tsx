@@ -50,6 +50,7 @@ const ENUM_TYPE_LABELS: Record<EnumType, string> = {
 
 const CHIP_VARIANTS: { value: ChipVariant; label: string }[] = [
   { value: 'solid', label: 'Solid' },
+  { value: 'soft', label: 'Soft' },
   { value: 'bordered', label: 'Bordered' },
   { value: 'light', label: 'Light' },
   { value: 'flat', label: 'Flat' },
@@ -61,10 +62,14 @@ const CHIP_VARIANTS: { value: ChipVariant; label: string }[] = [
 const _CHIP_COLORS: { value: ChipColor; label: string }[] = [
   // Semantic colors
   { value: 'default', label: 'Default' },
+  { value: 'neutral', label: 'Neutral' },
   { value: 'primary', label: 'Primary' },
   { value: 'secondary', label: 'Secondary' },
+  { value: 'accent', label: 'Accent' },
   { value: 'success', label: 'Success' },
   { value: 'warning', label: 'Warning' },
+  { value: 'info', label: 'Info' },
+  { value: 'error', label: 'Error' },
   { value: 'danger', label: 'Danger' },
   // Base colors
   { value: 'blue', label: 'Blue' },
@@ -326,7 +331,12 @@ export function EnumFormModal({ enumType, open, onOpenChange, item, mode }: Enum
               >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary btn-md" disabled={isPending} data-testid={TID.settings.enumForm.submit}>
+              <button
+                type="submit"
+                className="btn btn-primary btn-md"
+                disabled={isPending}
+                data-testid={TID.settings.enumForm.submit}
+              >
                 {isPending ? (
                   <>
                     <ButtonSpinner />

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { useCreateMember, useUpdateMember } from '@/hooks/use-members'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { TID } from '@/lib/test-ids'
 import {
   Dialog,
@@ -32,6 +33,7 @@ type FormData = Omit<CreateMemberInput, 'rank' | 'divisionId'> & {
 export function MemberFormModal({ open, onOpenChange, mode, member }: MemberFormModalProps) {
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
+  const signedInMember = useAuthStore((state) => state.member)
   const createMember = useCreateMember()
   const updateMember = useUpdateMember()
 
@@ -55,11 +57,15 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
       badgeId: '',
       memberTypeId: '',
       memberStatusId: '',
+      accountLevel: AccountLevel.BASIC,
     },
   })
 
   const selectedRank = watch('rank')
   const selectedDivisionId = watch('divisionId')
+  const selectedAccountLevel = watch('accountLevel')
+  const actorLevel = signedInMember?.accountLevel ?? 0
+  const canManageAccountLevel = actorLevel >= AccountLevel.ADMIN
 
   // Populate form when editing
   useEffect(() => {
@@ -76,6 +82,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         badgeId: member.badgeId ?? '',
         memberTypeId: member.memberTypeId ?? '',
         memberStatusId: member.memberStatusId ?? '',
+        accountLevel: member.accountLevel,
       })
     } else {
       reset({
@@ -90,6 +97,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         badgeId: '',
         memberTypeId: '',
         memberStatusId: '',
+        accountLevel: AccountLevel.BASIC,
       })
     }
   }, [mode, member, reset])
@@ -109,6 +117,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         badgeId: data.badgeId || undefined,
         memberTypeId: data.memberTypeId || undefined,
         memberStatusId: data.memberStatusId || undefined,
+        accountLevel: canManageAccountLevel ? data.accountLevel : undefined,
       }
 
       if (mode === 'create') {
@@ -274,6 +283,32 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 placeholder="555-1234"
               />
             </fieldset>
+
+            {/* Account Level */}
+            {canManageAccountLevel && (
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Account Level</legend>
+                <select
+                  id="accountLevel"
+                  className="select"
+                  value={selectedAccountLevel}
+                  onChange={(e) =>
+                    setValue('accountLevel', Number(e.target.value) as FormData['accountLevel'], {
+                      shouldValidate: true,
+                    })
+                  }
+                >
+                  <option value={AccountLevel.BASIC}>Basic (1)</option>
+                  <option value={AccountLevel.QUARTERMASTER}>Quartermaster (2)</option>
+                  <option value={AccountLevel.LOCKUP}>Lockup (3)</option>
+                  <option value={AccountLevel.COMMAND}>Command (4)</option>
+                  <option value={AccountLevel.ADMIN}>Admin (5)</option>
+                  {actorLevel >= AccountLevel.DEVELOPER && (
+                    <option value={AccountLevel.DEVELOPER}>Developer (6)</option>
+                  )}
+                </select>
+              </fieldset>
+            )}
           </div>
 
           <DialogFooter>
