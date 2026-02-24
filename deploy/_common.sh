@@ -143,8 +143,25 @@ require_explicit_version() {
 ensure_env_file() {
   if [[ ! -f "${ENV_FILE}" ]]; then
     [[ -f "${DEPLOY_DIR}/.env.example" ]] || die "Missing .env.example"
-    cp "${DEPLOY_DIR}/.env.example" "${ENV_FILE}"
-    chmod 600 "${ENV_FILE}"
+
+    if [[ -w "${DEPLOY_DIR}" ]]; then
+      cp "${DEPLOY_DIR}/.env.example" "${ENV_FILE}"
+      chmod 600 "${ENV_FILE}"
+    else
+      run_root install -m 600 "${DEPLOY_DIR}/.env.example" "${ENV_FILE}"
+    fi
+  fi
+
+  if [[ "${EUID}" -ne 0 ]]; then
+    if [[ ! -w "${ENV_FILE}" ]]; then
+      run_root chown "${USER}:$(id -gn "${USER}")" "${ENV_FILE}"
+      chmod 600 "${ENV_FILE}"
+    fi
+  elif [[ -n "${SUDO_USER:-}" ]]; then
+    if [[ ! -w "${ENV_FILE}" ]]; then
+      run_root chown "${SUDO_USER}:$(id -gn "${SUDO_USER}")" "${ENV_FILE}"
+      chmod 600 "${ENV_FILE}"
+    fi
   fi
 }
 
