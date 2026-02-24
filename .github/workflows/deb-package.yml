@@ -1,0 +1,60 @@
+name: Build Debian Package
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/deb-package.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/deb-package.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (optional, defaults to root package.json version)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve package version
+        id: version
+        shell: bash
+        run: |
+          VERSION_INPUT="${{ github.event.inputs.version }}"
+          if [[ -n "${VERSION_INPUT}" ]]; then
+            VERSION="${VERSION_INPUT}"
+          else
+            VERSION="$(node -p "require('./package.json').version")"
+          fi
+          VERSION="${VERSION#v}"
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Using package version: ${VERSION}"
+
+      - name: Build .deb
+        shell: bash
+        run: |
+          chmod +x deploy/deb/build-deb.sh
+          deploy/deb/build-deb.sh --version "${{ steps.version.outputs.value }}" --output-dir dist
+          ls -la dist
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-deb-${{ steps.version.outputs.value }}
+          path: dist/*.deb
+          retention-days: 30

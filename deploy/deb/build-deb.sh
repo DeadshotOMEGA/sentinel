@@ -8,6 +8,7 @@ REPO_DIR="$(cd "${DEPLOY_DIR}/.." && pwd)"
 PKG_NAME="sentinel-appliance-tools"
 VERSION_INPUT=""
 OUTPUT_DIR="${SCRIPT_DIR}/dist"
+LOGO_SOURCE="${REPO_DIR}/Logo.png"
 
 usage() {
   cat <<USAGE
@@ -83,6 +84,11 @@ trap 'rm -rf "${WORK_ROOT}"' EXIT
 mkdir -p "${PKG_ROOT}/DEBIAN"
 mkdir -p "${PKG_ROOT}/opt/sentinel/deploy"
 
+if [[ ! -f "${LOGO_SOURCE}" ]]; then
+  echo "Missing logo file: ${LOGO_SOURCE}" >&2
+  exit 1
+fi
+
 rsync -a \
   --exclude '.env' \
   --exclude '.appliance-state' \
@@ -101,6 +107,9 @@ install -D -m 644 \
 install -D -m 644 \
   "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-update.desktop" \
   "${PKG_ROOT}/usr/share/applications/sentinel-update.desktop"
+install -D -m 644 \
+  "${LOGO_SOURCE}" \
+  "${PKG_ROOT}/usr/share/icons/hicolor/1024x1024/apps/sentinel-appliance.png"
 
 cat >"${PKG_ROOT}/DEBIAN/control" <<CONTROL
 Package: ${PKG_NAME}
@@ -122,6 +131,14 @@ set -e
 if [ -d /opt/sentinel/deploy ]; then
   chmod +x /opt/sentinel/deploy/*.sh 2>/dev/null || true
   chmod +x /opt/sentinel/deploy/*.desktop 2>/dev/null || true
+fi
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database /usr/share/applications || true
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -q -f /usr/share/icons/hicolor || true
 fi
 
 exit 0
