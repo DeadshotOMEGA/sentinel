@@ -9,6 +9,8 @@ PKG_NAME="sentinel-appliance-tools"
 VERSION_INPUT=""
 OUTPUT_DIR="${SCRIPT_DIR}/dist"
 LOGO_SOURCE="${REPO_DIR}/Logo.png"
+ICON_NAME="sentinel-appliance"
+ICON_SIZES=(64 128 256 512 1024)
 
 usage() {
   cat <<USAGE
@@ -107,9 +109,12 @@ install -D -m 644 \
 install -D -m 644 \
   "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-update.desktop" \
   "${PKG_ROOT}/usr/share/applications/sentinel-update.desktop"
-install -D -m 644 \
-  "${LOGO_SOURCE}" \
-  "${PKG_ROOT}/usr/share/icons/hicolor/1024x1024/apps/sentinel-appliance.png"
+
+for size in "${ICON_SIZES[@]}"; do
+  install -D -m 644 \
+    "${LOGO_SOURCE}" \
+    "${PKG_ROOT}/usr/share/icons/hicolor/${size}x${size}/apps/${ICON_NAME}.png"
+done
 
 cat >"${PKG_ROOT}/DEBIAN/control" <<CONTROL
 Package: ${PKG_NAME}
