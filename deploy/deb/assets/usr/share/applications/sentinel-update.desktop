@@ -4,6 +4,6 @@ Type=Application
 Name=Update Sentinel Appliance
 Comment=Update Sentinel with guided prompts
 Exec=/usr/local/bin/sentinel-update
-Icon=utilities-terminal
+Icon=sentinel-appliance
 Terminal=true
 Categories=System;

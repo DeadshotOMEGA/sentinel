@@ -4,6 +4,6 @@ Type=Application
 Name=Update Sentinel Appliance
 Comment=Update Sentinel with guided prompts
 Exec=sh -c 'cd "$(dirname "%k")" && ./update-launcher.sh'
-Icon=utilities-terminal
+Icon=sentinel-appliance
 Terminal=true
 Categories=Utility;
