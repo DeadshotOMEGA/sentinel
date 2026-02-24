@@ -71,13 +71,21 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
     }
   }
 
-  // Get tags not already assigned to member and not linked to qualifications
+  // Get tags not already assigned to member.
+  // Qualification-linked tags are excluded only when they are non-positional
+  // because positional tags must remain manually assignable.
   const assignedTagIds = new Set(memberTags?.map((mt) => mt.tagId) ?? [])
-  const qualificationTagIds = new Set(
-    qualificationTypes?.filter((qt) => qt.tagId).map((qt) => qt.tagId) ?? []
+  const tagsById = new Map(allTags?.map((tag) => [tag.id, tag]) ?? [])
+  const qualificationNonPositionalTagIds = new Set(
+    qualificationTypes
+      ?.map((qt) => qt.tagId)
+      .filter((tagId): tagId is string => Boolean(tagId))
+      .filter((tagId) => !tagsById.get(tagId)?.isPositional) ?? []
   )
   const availableTags = allTags?.filter(
-    (tag) => !assignedTagIds.has(tag.id) && !qualificationTagIds.has(tag.id)
+    (tag) =>
+      !assignedTagIds.has(tag.id) &&
+      (tag.isPositional || !qualificationNonPositionalTagIds.has(tag.id))
   )
 
   if (!member) return null

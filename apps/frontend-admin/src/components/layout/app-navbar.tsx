@@ -57,7 +57,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         {/* Logo with backend status indicator */}
         <Link
           href="/dashboard"
-          className="btn btn-ghost max-w-[12rem] truncate px-2 text-lg font-bold sm:max-w-none sm:px-4 sm:text-2xl"
+          className="btn btn-ghost max-w-48 truncate px-2 text-lg font-bold sm:max-w-none sm:px-4 sm:text-2xl"
           data-testid={TID.nav.logo}
         >
           HMCS Chippawa
@@ -107,17 +107,17 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       <div className="navbar-end gap-1.5 sm:gap-2">
         <div className="dropdown dropdown-end dropdown-hover">
           <div tabIndex={0} role="button" data-testid={TID.nav.backendStatus}>
-            <AppBadge status={badgeStatus} size="md" className="badge-outline">
+            <AppBadge status={badgeStatus} size="md" className="badge-outline backend-status-badge">
               <span className={cn('status', dot)} />
               <span className="hidden sm:inline">{label}</span>
             </AppBadge>
           </div>
           <div
             tabIndex={0}
-            className="dropdown-content card card-sm mt-2 w-72 border border-base-300 bg-base-100 text-base-content shadow-xl z-[var(--z-popover)]"
+            className="dropdown-content card card-sm mt-2 w-72 border border-base-300 bg-base-100 text-base-content shadow-xl z-(--z-popover)"
             data-testid={TID.nav.backendStatusDetails}
           >
-            <div className="card-body gap-2 p-[var(--space-3)]">
+            <div className="card-body gap-2 p-(--space-3)">
               <p className="text-xs font-semibold uppercase tracking-wide">System Status</p>
               <StatusRow label="Frontend" status="success" value="Online" />
               <StatusRow
@@ -152,7 +152,9 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 <p>
                   Last Check:{' '}
                   <span className="font-mono text-base-content">
-                    {formatTimestamp(backendHealth.lastCheckedAt)}
+                    {formatTimestamp(
+                      backendHealth.details?.serviceTimestamp ?? backendHealth.lastCheckedAt
+                    )}
                   </span>
                 </p>
               </div>

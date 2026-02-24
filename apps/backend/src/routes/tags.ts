@@ -30,6 +30,7 @@ export const tagsRouter = s.router(tagContract, {
             description: tag.description ?? null,
             chipVariant: tag.chipVariant ?? 'solid',
             chipColor: tag.chipColor ?? 'default',
+            isPositional: tag.isPositional,
             createdAt: tag.createdAt.toISOString(),
             updatedAt: tag.updatedAt.toISOString(),
           })),
@@ -78,6 +79,7 @@ export const tagsRouter = s.router(tagContract, {
               description: mt.tag.description ?? null,
               chipVariant: mt.tag.chipVariant ?? 'solid',
               chipColor: mt.tag.chipColor ?? 'default',
+              isPositional: mt.tag.isPositional,
             },
             createdAt: mt.createdAt.toISOString(),
           })),
@@ -97,13 +99,7 @@ export const tagsRouter = s.router(tagContract, {
   /**
    * Assign a tag to a member
    */
-  assignTag: async ({
-    params,
-    body,
-  }: {
-    params: { memberId: string }
-    body: AssignTagInput
-  }) => {
+  assignTag: async ({ params, body }: { params: { memberId: string }; body: AssignTagInput }) => {
     try {
       // Verify member exists
       const member = await memberRepo.findById(params.memberId)
@@ -131,6 +127,7 @@ export const tagsRouter = s.router(tagContract, {
             description: memberTag.tag.description ?? null,
             chipVariant: memberTag.tag.chipVariant ?? 'solid',
             chipColor: memberTag.tag.chipColor ?? 'default',
+            isPositional: memberTag.tag.isPositional,
           },
           createdAt: memberTag.createdAt.toISOString(),
         },

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMajorReleases",
+    ":maintainLockFilesWeekly"
+  ],
+  "timezone": "America/Winnipeg",
+  "labels": ["dependencies", "renovate"],
+  "rangeStrategy": "bump",
+  "minimumReleaseAge": "3 days",
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 8,
+  "schedule": ["before 6am on monday"],
+  "ignorePaths": ["**/node_modules/**", "packages/database/generated/**"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track Docker service image versions in GitHub workflow YAML",
+      "managerFilePatterns": ["/^\\.github\\/workflows\\/test\\.yml$/"],
+      "matchStrings": ["image:\\s*(?<depName>postgres):(?<currentValue>[\\w.+-]+)"],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Keep Prisma updates visible and isolated",
+      "groupName": "prisma",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["prisma", "@prisma/client", "@prisma/adapter-pg"],
+      "automerge": false
+    },
+    {
+      "description": "Group core TypeScript and lint toolchain updates",
+      "groupName": "typescript-eslint-toolchain",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "typescript",
+        "@types/node",
+        "eslint",
+        "@eslint/js",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint-config-prettier",
+        "prettier"
+      ]
+    },
+    {
+      "description": "Group CI workflow action updates",
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "description": "Group Docker image tag updates in deploy manifests",
+      "groupName": "deploy-docker-images",
+      "matchManagers": ["docker-compose", "dockerfile"],
+      "matchFileNames": ["deploy/**", "apps/**/Dockerfile"]
+    },
+    {
+      "description": "Keep major upgrades manual",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
+}

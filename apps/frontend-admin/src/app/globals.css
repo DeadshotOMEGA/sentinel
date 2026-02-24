@@ -299,6 +299,16 @@
   box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1);
 }
 
+/* Backend status badge in navbar:
+   force solid background by active UI theme */
+.backend-status-badge {
+  background-color: #fff;
+}
+
+html[data-theme='business'] .backend-status-badge {
+  background-color: #000;
+}
+
 /* ========================================
    BUTTON ENHANCEMENTS
    Action button refinements

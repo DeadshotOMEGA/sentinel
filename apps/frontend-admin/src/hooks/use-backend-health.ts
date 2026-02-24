@@ -1,4 +1,5 @@
 'use client'
+/* global process */
 /* global Response */
 
 import { useEffect, useState } from 'react'
@@ -22,6 +23,8 @@ interface BackendHealthState {
 }
 
 const POLL_INTERVAL = 30_000 // 30 seconds
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
+const HEALTH_URL = API_BASE ? `${API_BASE}/health` : '/healthz'
 
 export function useBackendHealth() {
   const [health, setHealth] = useState<BackendHealthState>({
@@ -36,9 +39,10 @@ export function useBackendHealth() {
 
     async function checkHealth() {
       try {
-        const res = await fetch('/healthz', {
+        const res = await fetch(HEALTH_URL, {
           signal: controller.signal,
           cache: 'no-store',
+          credentials: 'include',
         })
         const details = await parseHealthResponse(res)
         const checkedAt = new Date().toISOString()

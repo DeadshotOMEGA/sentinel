@@ -36,13 +36,20 @@ export function BulkAssignTagModal({
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
-  // Filter out tags linked to qualifications (auto-assigned via qualification grants)
+  // Filter out qualification-linked tags only when they are non-positional.
+  // Positional tags still require manual assignment.
   const availableTags = useMemo(() => {
     if (!allTags) return []
-    const qualificationTagIds = new Set(
-      qualificationTypes?.filter((qt) => qt.tagId).map((qt) => qt.tagId) ?? []
+    const tagsById = new Map(allTags.map((tag) => [tag.id, tag]))
+    const qualificationNonPositionalTagIds = new Set(
+      qualificationTypes
+        ?.map((qt) => qt.tagId)
+        .filter((tagId): tagId is string => Boolean(tagId))
+        .filter((tagId) => !tagsById.get(tagId)?.isPositional) ?? []
     )
-    return allTags.filter((tag) => !qualificationTagIds.has(tag.id))
+    return allTags.filter(
+      (tag) => tag.isPositional || !qualificationNonPositionalTagIds.has(tag.id)
+    )
   }, [allTags, qualificationTypes])
 
   const selectedTag = availableTags.find((t) => t.id === tagId)
