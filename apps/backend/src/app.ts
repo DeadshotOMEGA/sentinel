@@ -42,7 +42,7 @@ import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
 import { metricsMiddleware } from './middleware/metrics.js'
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js'
-import { apiLimiter, authLimiter } from './middleware/rate-limit.js'
+import { apiLimiter, authLimiter, rfidAuthLimiter } from './middleware/rate-limit.js'
 import { healthRouter } from './routes/health.js'
 import { swaggerRouter, redocRouter, openapiRouter } from './routes/swagger.js'
 import { swaggerAuth } from './middleware/swagger-auth.js'
@@ -164,7 +164,7 @@ export function createApp(): Express {
 
   // Badge+PIN auth routes
   app.use('/api/auth/login', authLimiter)
-  app.use('/api/auth/rfid-login', authLimiter)
+  app.use('/api/auth/rfid-login', rfidAuthLimiter)
   app.use('/api/auth', authRouter)
 
   // Application routes
