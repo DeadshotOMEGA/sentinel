@@ -1,9 +1,35 @@
 import { Router } from 'express'
+import { readFileSync } from 'node:fs'
 import { getPrismaClient } from '../lib/database.js'
 import { logger } from '../lib/logger.js'
 import { register } from '../lib/metrics.js'
 
 export const healthRouter: Router = Router()
+
+function resolveServiceVersion(): string {
+  const envVersion = process.env.APP_VERSION || process.env.npm_package_version
+  if (envVersion) {
+    return envVersion
+  }
+
+  try {
+    const packageJsonPath = new globalThis.URL('../../package.json', import.meta.url)
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+      version?: unknown
+    }
+    if (typeof packageJson.version === 'string' && packageJson.version.length > 0) {
+      return packageJson.version
+    }
+  } catch (error) {
+    logger.warn('Unable to resolve backend version from package.json', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+  }
+
+  return 'unknown'
+}
+
+const SERVICE_VERSION = resolveServiceVersion()
 
 /**
  * Overall health check
@@ -38,7 +64,7 @@ healthRouter.get('/health', async (_req, res) => {
     status: healthy ? 'healthy' : 'unhealthy',
     checks,
     environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '2.0.0',
+    version: SERVICE_VERSION,
   })
 })
 
