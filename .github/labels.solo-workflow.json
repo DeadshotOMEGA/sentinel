@@ -1,0 +1,25 @@
+[
+  {"name":"bug","color":"d73a4a","description":"Type: defect or incorrect behavior"},
+  {"name":"feature","color":"0e8a16","description":"Type: user-facing capability or enhancement"},
+  {"name":"task","color":"5319e7","description":"Type: implementation task/chore"},
+  {"name":"refactor","color":"1d76db","description":"Type: internal code improvement without behavior change"},
+
+  {"name":"backend","color":"0052cc","description":"Area: backend service/API"},
+  {"name":"frontend","color":"fbca04","description":"Area: web/admin UI"},
+  {"name":"hardware","color":"c2e0c6","description":"Area: hardware/device/scanner issues"},
+  {"name":"infra","color":"6f42c1","description":"Area: CI/CD, deploy, ops"},
+  {"name":"database","color":"bfd4f2","description":"Area: schema, queries, migrations"},
+  {"name":"auth","color":"b60205","description":"Area: identity, sessions, authorization"},
+  {"name":"logging","color":"f9d0c4","description":"Area: telemetry, logs, observability"},
+
+  {"name":"P0","color":"b60205","description":"Priority: urgent / release-blocking"},
+  {"name":"P1","color":"d93f0b","description":"Priority: high"},
+  {"name":"P2","color":"fbca04","description":"Priority: normal"},
+
+  {"name":"status:triage","color":"ededed","description":"Status: new/unreviewed"},
+  {"name":"status:planned","color":"c5def5","description":"Status: accepted and queued"},
+  {"name":"status:working","color":"0e8a16","description":"Status: currently in progress"},
+  {"name":"status:blocked","color":"d876e3","description":"Status: blocked by dependency/decision"},
+
+  {"name":"needs-investigation","color":"fef2c0","description":"Special: flaky/unclear root cause"}
+]
