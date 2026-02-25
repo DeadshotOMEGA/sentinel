@@ -223,12 +223,36 @@ bootstrap_env_defaults() {
     fi
   done
 
+  if is_placeholder_env_value "$(env_value NETBIRD_AUTH_SECRET)"; then
+    generated_value="$(generate_random_secret 40)"
+    upsert_env "NETBIRD_AUTH_SECRET" "${generated_value}"
+    generated_count=$((generated_count + 1))
+  fi
+
+  if is_placeholder_env_value "$(env_value NETBIRD_ENCRYPTION_KEY)"; then
+    generated_value="$(generate_random_secret 32)"
+    upsert_env "NETBIRD_ENCRYPTION_KEY" "${generated_value}"
+    generated_count=$((generated_count + 1))
+  fi
+
   if is_placeholder_env_value "$(env_value GHCR_OWNER)"; then
     upsert_env "GHCR_OWNER" "deadshotomega"
   fi
 
   if is_placeholder_env_value "$(env_value APP_PUBLIC_URL)"; then
     upsert_env "APP_PUBLIC_URL" "http://sentinel.local"
+  fi
+
+  if is_placeholder_env_value "$(env_value NETBIRD_DOMAIN)"; then
+    upsert_env "NETBIRD_DOMAIN" "netbird.local"
+  fi
+
+  if is_placeholder_env_value "$(env_value NETBIRD_PROTOCOL)"; then
+    upsert_env "NETBIRD_PROTOCOL" "http"
+  fi
+
+  if is_placeholder_env_value "$(env_value NETBIRD_HTTP_PORT)"; then
+    upsert_env "NETBIRD_HTTP_PORT" "80"
   fi
 
   if [[ "${generated_count}" -gt 0 ]]; then
@@ -258,6 +282,8 @@ SWAGGER_USERNAME=$(env_value SWAGGER_USERNAME admin)
 SWAGGER_PASSWORD=$(env_value SWAGGER_PASSWORD)
 GRAFANA_ADMIN_USER=$(env_value GRAFANA_ADMIN_USER admin)
 GRAFANA_ADMIN_PASSWORD=$(env_value GRAFANA_ADMIN_PASSWORD)
+NETBIRD_AUTH_SECRET=$(env_value NETBIRD_AUTH_SECRET)
+NETBIRD_ENCRYPTION_KEY=$(env_value NETBIRD_ENCRYPTION_KEY)
 SNAPSHOT
 
   run_root install -d -m 700 "${credentials_dir}"
@@ -265,6 +291,75 @@ SNAPSHOT
   rm -f "${tmp_file}"
 
   log "Service credential snapshot saved to ${credentials_file} (root-only)."
+}
+
+ensure_netbird_config() {
+  local config_dir="${DEPLOY_DIR}/netbird"
+  local config_file="${config_dir}/config.yaml"
+  local dashboard_env="${config_dir}/dashboard.env"
+
+  if [[ -f "${config_file}" && -f "${dashboard_env}" ]]; then
+    return 0
+  fi
+
+  local domain protocol port auth_secret encryption_key exposed_address issuer
+  domain="$(env_value NETBIRD_DOMAIN netbird.local)"
+  protocol="$(env_value NETBIRD_PROTOCOL http)"
+  port="$(env_value NETBIRD_HTTP_PORT 80)"
+  auth_secret="$(env_value NETBIRD_AUTH_SECRET)"
+  encryption_key="$(env_value NETBIRD_ENCRYPTION_KEY)"
+
+  if [[ -z "${auth_secret}" || -z "${encryption_key}" ]]; then
+    die "NETBIRD_AUTH_SECRET and NETBIRD_ENCRYPTION_KEY must be set before generating NetBird config."
+  fi
+
+  exposed_address="${protocol}://${domain}:${port}"
+  issuer="${protocol}://${domain}:${port}/oauth2"
+
+  mkdir -p "${config_dir}"
+  if [[ ! -f "${config_file}" ]]; then
+    cat >"${config_file}" <<YAML
+server:
+  listenAddress: ":80"
+  exposedAddress: "${exposed_address}"
+  stunPorts:
+    - 3478
+  metricsPort: 9090
+  healthcheckAddress: ":9000"
+  logLevel: "info"
+  logFile: "console"
+
+  authSecret: "${auth_secret}"
+  dataDir: "/var/lib/netbird"
+
+  auth:
+    issuer: "${issuer}"
+    signKeyRefreshEnabled: true
+    dashboardRedirectURIs:
+      - "${protocol}://${domain}:${port}/nb-auth"
+      - "${protocol}://${domain}:${port}/nb-silent-auth"
+    cliRedirectURIs:
+      - "http://localhost:53000/"
+
+  store:
+    engine: "sqlite"
+    dsn: ""
+    encryptionKey: "${encryption_key}"
+YAML
+    log "Generated NetBird config at ${config_file}."
+  fi
+
+  if [[ ! -f "${dashboard_env}" ]]; then
+    cat >"${dashboard_env}" <<ENV
+# Endpoints
+NETBIRD_MGMT_API_ENDPOINT=${exposed_address}
+NETBIRD_MGMT_GRPC_API_ENDPOINT=${exposed_address}
+
+# SSL - disabled when behind reverse proxy
+LETSENCRYPT_DOMAIN=none
+ENV
+    log "Generated NetBird dashboard config at ${dashboard_env}."
+  fi
 }
 
 upsert_env() {
@@ -549,10 +644,16 @@ configure_firewall() {
   run_root ufw default deny incoming
   run_root ufw default allow outgoing
   run_root ufw allow from "${cidr}" to any port 80 proto tcp >/dev/null || true
+  local netbird_http_port
+  netbird_http_port="$(env_value NETBIRD_HTTP_PORT 80)"
+  if [[ "${netbird_http_port}" != "80" ]]; then
+    run_root ufw allow from "${cidr}" to any port "${netbird_http_port}" proto tcp >/dev/null || true
+  fi
+  run_root ufw allow from "${cidr}" to any port 3478 proto udp >/dev/null || true
   run_root ufw deny in to any port 80 proto tcp >/dev/null || true
   run_root ufw --force enable >/dev/null
 
-  log "UFW inbound policy applied: allow ${cidr} -> tcp/80, deny other inbound to tcp/80"
+  log "UFW inbound policy applied: allow ${cidr} -> tcp/80, udp/3478"
 }
 
 ensure_compose_pull_with_login_fallback() {
@@ -567,7 +668,7 @@ ensure_compose_pull_with_login_fallback() {
 
 print_health_diagnostics() {
   compose ps || true
-  compose logs --tail=80 caddy backend frontend postgres || true
+  compose logs --tail=80 caddy backend frontend postgres netbird-server netbird-dashboard || true
 }
 
 env_value() {

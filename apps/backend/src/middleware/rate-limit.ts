@@ -9,8 +9,6 @@ import { logger } from '../lib/logger.js'
  * For production with multiple instances, consider Redis store.
  */
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
-
 const API_RATE_LIMIT_EXEMPT_ROUTES = new Set([
   'POST:/api/checkins',
   'POST:/api/checkins/bulk',
@@ -67,14 +65,13 @@ function getRateLimitIdentity(req: {
 /**
  * General API rate limiter
  *
- * Limits: 100 requests per minute per identity (production)
- * Limits: 1000 requests per minute per identity (development)
+ * Limits: 1000 requests per minute per identity
  *
  * Identity priority: API key/session token, then IP fallback.
  */
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: isDevelopment ? 1000 : 100, // Higher limit in development for bulk operations
+  max: 1000,
   keyGenerator: (req) => getRateLimitIdentity(req),
   message: {
     error: 'RATE_LIMIT_EXCEEDED',

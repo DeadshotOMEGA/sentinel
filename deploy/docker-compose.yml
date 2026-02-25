@@ -100,6 +100,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    environment:
+      NETBIRD_DOMAIN: ${NETBIRD_DOMAIN:-netbird.local}
     healthcheck:
       test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1/healthz || exit 1']
       interval: 15s
@@ -132,6 +134,7 @@ services:
     volumes:
       - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
     mem_limit: 256m
     networks:
       - sentinel_net
@@ -174,6 +177,30 @@ services:
     networks:
       - sentinel_net
 
+  netbird-server:
+    image: netbirdio/netbird-server:latest
+    container_name: sentinel-netbird-server
+    restart: unless-stopped
+    command: ['--config', '/etc/netbird/config.yaml']
+    volumes:
+      - ./netbird/config.yaml:/etc/netbird/config.yaml:ro
+      - netbird_data:/var/lib/netbird
+    ports:
+      - '3478:3478/udp'
+    networks:
+      - sentinel_net
+
+  netbird-dashboard:
+    image: netbirdio/dashboard:latest
+    container_name: sentinel-netbird-dashboard
+    restart: unless-stopped
+    depends_on:
+      - netbird-server
+    env_file:
+      - ./netbird/dashboard.env
+    networks:
+      - sentinel_net
+
 volumes:
   postgres_data:
   caddy_data:
@@ -181,6 +208,7 @@ volumes:
   loki_data:
   prometheus_data:
   grafana_data:
+  netbird_data:
 
 networks:
   sentinel_net:

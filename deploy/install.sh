@@ -6,7 +6,7 @@ TARGET_DIR="/opt/sentinel/deploy"
 
 TARGET_VERSION=""
 LAN_CIDR_OVERRIDE=""
-CLI_WITH_OBS="false"
+CLI_WITH_OBS="true"
 CLI_ALLOW_GRAFANA_LAN="false"
 NO_FIREWALL="false"
 SYNCED="false"
@@ -19,6 +19,7 @@ Options:
   --version <tag>          Required explicit image tag (vX.Y.Z)
   --lan-cidr <cidr>        Override auto-detected LAN CIDR
   --with-obs               Enable observability profile
+  --without-obs            Disable observability profile
   --allow-grafana-lan      Publish Grafana on LAN (implies --with-obs)
   --no-firewall            Skip UFW LAN-only rule configuration
   --synced                 Internal flag used after copying to /opt/sentinel/deploy
@@ -52,6 +53,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-obs)
       CLI_WITH_OBS="true"
+      shift
+      ;;
+    --without-obs)
+      CLI_WITH_OBS="false"
       shift
       ;;
     --allow-grafana-lan)
@@ -141,6 +146,7 @@ fi
 
 ensure_env_file
 bootstrap_env_defaults
+ensure_netbird_config
 write_admin_credentials_snapshot
 
 if [[ -z "${TARGET_VERSION}" ]]; then
