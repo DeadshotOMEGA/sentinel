@@ -8,6 +8,7 @@ This bundle installs Sentinel as a LAN appliance using Docker Compose v2 and GHC
 - Backend API on internal Docker network (`3000`)
 - Frontend Next runtime on internal Docker network (`3001`)
 - PostgreSQL with persistent volume
+- NetBird server + dashboard (self-hosted) with STUN on `3478/udp`
 - Optional observability profile (`obs`): Loki, Prometheus, Promtail, Grafana
 
 Canonical public routes:
@@ -16,6 +17,7 @@ Canonical public routes:
 - `/api/*` -> backend (prefix preserved)
 - `/socket.io*` -> backend (path preserved)
 - `/healthz` -> backend `/health`
+- `http://netbird.local/*` -> NetBird (dashboard + API)
 
 ## Debian package launcher (recommended for non-technical users)
 
@@ -87,13 +89,17 @@ CORS_ORIGIN=http://sentinel.local,http://192.168.1.50,http://localhost,http://12
 Optional flags:
 
 - `--lan-cidr 192.168.0.0/16` override detected LAN subnet
-- `--with-obs` enable observability profile
+- `--with-obs` enable observability profile (default)
+- `--without-obs` disable observability profile
 - `--allow-grafana-lan` publish Grafana on `3002` (only with `--with-obs`)
 - `--no-firewall` skip UFW LAN-only rule setup
 
 Port defaults in `.env`:
 
 - `APP_HTTP_PORT=80` (Caddy appliance entrypoint)
+- `NETBIRD_DOMAIN=netbird.local`
+- `NETBIRD_PROTOCOL=http`
+- `NETBIRD_HTTP_PORT=80`
 - `GRAFANA_LAN_PORT=3002` (only used if `--allow-grafana-lan`)
 - `GRAFANA_ROOT_URL=http://localhost:3002` (matches Grafana LAN port when enabled)
 
@@ -178,7 +184,10 @@ sudo systemctl restart sentinel-appliance.service
 ## URLs after install
 
 - mDNS (best effort): `http://sentinel.local`
+- NetBird dashboard: `http://netbird.local`
 - LAN fallback: `http://<server-ip>`
+
+For NetBird, ensure `netbird.local` resolves to the appliance IP (use your LAN DNS or add a hosts entry on each client).
 
 ## Health check
 
@@ -190,6 +199,7 @@ curl -f http://127.0.0.1/healthz
 
 - Compose v2 is required (`docker compose`).
 - `SENTINEL_VERSION` must be explicit (never `latest`).
+- NetBird STUN listens on `3478/udp`; ensure LAN clients can reach it.
 - Installer auto-runs:
   - `sudo systemctl daemon-reload`
   - `sudo systemctl enable sentinel-appliance.service`
