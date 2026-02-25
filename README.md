@@ -216,8 +216,9 @@ docker-compose --profile backend --profile tools --profile monitoring up -d
 | PostgreSQL  | localhost:5432        | sentinel/sentinel            |
 | Redis       | localhost:6379        | -                            |
 | pgAdmin     | http://localhost:5050 | admin@sentinel.local / admin |
-| Grafana     | http://localhost:3001 | admin / changeme             |
-| Prometheus  | http://localhost:9090 | -                            |
+| Grafana     | http://localhost:3010 | admin / changeme             |
+| Prometheus  | http://localhost:3011 | -                            |
+| Loki        | http://localhost:3012 | -                            |
 
 ## Technology Stack
 

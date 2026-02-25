@@ -91,7 +91,7 @@ Optional flags:
 - `--lan-cidr 192.168.0.0/16` override detected LAN subnet
 - `--with-obs` enable observability profile (default)
 - `--without-obs` disable observability profile
-- `--allow-grafana-lan` publish Grafana on `3002` (only with `--with-obs`)
+- `--allow-grafana-lan` publish Grafana on `3010` (only with `--with-obs`)
 - `--no-firewall` skip UFW LAN-only rule setup
 
 Port defaults in `.env`:
@@ -100,8 +100,21 @@ Port defaults in `.env`:
 - `NETBIRD_DOMAIN=netbird.local`
 - `NETBIRD_PROTOCOL=http`
 - `NETBIRD_HTTP_PORT=80`
-- `GRAFANA_LAN_PORT=3002` (only used if `--allow-grafana-lan`)
-- `GRAFANA_ROOT_URL=http://localhost:3002` (matches Grafana LAN port when enabled)
+- `GRAFANA_LAN_PORT=3010` (only used if `--allow-grafana-lan`)
+- `GRAFANA_ROOT_URL=http://localhost:3010` (matches Grafana LAN port when enabled)
+
+Canonical Sentinel port allocation policy (host/LAN):
+
+- Backend API: `3000`
+- Frontend apps: `3001-3003`
+- Kiosk (future): `3004`
+- Door Scanners (future): `3005-3006`
+- Observability stack (Grafana/Prometheus/Loki/etc.): `3010-3019`
+- Additional services (Wiki and future additions): `3020-3029`
+
+Recommended initial assignment:
+
+- Wiki.js (when enabled): `3020`
 
 ## Captive portal / GHCR reachability failure
 

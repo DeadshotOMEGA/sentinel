@@ -24,6 +24,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'bottom',
           align: 'start',
         },
+        help: {
+          wikiSlug: 'operations/dashboard/security-alerts',
+        },
       },
       {
         id: 'quick-actions',
@@ -34,6 +37,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'This row contains high-frequency operations like kiosk check-in, visitor sign-in, and lockup actions.',
           side: 'bottom',
           align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/quick-actions',
         },
       },
       {
@@ -46,6 +52,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'top',
           align: 'center',
         },
+        help: {
+          wikiSlug: 'operations/dashboard/status-panel',
+        },
       },
       {
         id: 'presence-grid',
@@ -56,6 +65,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'Live on-site members and visitors are listed here. Filters and search help you quickly confirm who is present.',
           side: 'top',
           align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/presence-grid',
         },
       },
     ],
@@ -79,6 +91,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'bottom',
           align: 'start',
         },
+        help: {
+          wikiSlug: 'operations/day-duty/kiosk-check-in',
+        },
       },
       {
         id: 'visitor-signin',
@@ -89,6 +104,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'Record visitor details accurately and issue the proper category. This affects downstream audits and reports.',
           side: 'bottom',
           align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/day-duty/visitor-sign-in',
         },
       },
       {
@@ -102,6 +120,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'bottom',
           align: 'start',
         },
+        help: {
+          wikiSlug: 'operations/lockup/building-lockup-control',
+        },
       },
       {
         id: 'transfer-lockup',
@@ -112,6 +133,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'When available, use transfer to move responsibility cleanly. Verify the recipient before completing the transfer.',
           side: 'bottom',
           align: 'start',
+        },
+        help: {
+          wikiSlug: 'operations/lockup/transfer-lockup',
         },
       },
     ],
@@ -135,6 +159,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'bottom',
           align: 'center',
         },
+        help: {
+          wikiSlug: 'operations/dashboard/status/dds',
+        },
       },
       {
         id: 'duty-watch',
@@ -145,6 +172,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'Check assignment coverage and check-in count to catch operational gaps before change-of-watch windows.',
           side: 'bottom',
           align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/status/duty-watch',
         },
       },
       {
@@ -157,6 +187,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
           side: 'bottom',
           align: 'center',
         },
+        help: {
+          wikiSlug: 'operations/dashboard/status/building-state',
+        },
       },
       {
         id: 'lockup-holder',
@@ -167,6 +200,9 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
             'Always confirm current holder identity and time held before transfer or execution actions.',
           side: 'bottom',
           align: 'center',
+        },
+        help: {
+          wikiSlug: 'operations/dashboard/status/lockup-holder',
         },
       },
     ],

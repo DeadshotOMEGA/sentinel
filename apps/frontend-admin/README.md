@@ -39,6 +39,10 @@ Create `.env.local` in this directory:
 NEXT_PUBLIC_API_URL=http://localhost:3000
 NEXT_PUBLIC_WS_URL=http://localhost:3000
 NEXT_PUBLIC_APP_PORT=3001
+NEXT_PUBLIC_WIKI_BASE_URL=http://localhost:3002
+NEXT_PUBLIC_HELP_FALLBACK_MODE=hybrid
+NEXT_PUBLIC_HELP_PREVIEW_ENABLED=false
+NEXT_PUBLIC_HELP_DOCS_VERSION=latest
 ```
 
 ### Development Server

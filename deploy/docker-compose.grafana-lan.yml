@@ -1,4 +1,4 @@
 services:
   grafana:
     ports:
-      - '${GRAFANA_LAN_PORT:-3002}:3000'
+      - '${GRAFANA_LAN_PORT:-3010}:3000'

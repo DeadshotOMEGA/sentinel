@@ -6,6 +6,7 @@ import { Menu, PanelLeftOpen } from 'lucide-react'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
+import { HelpButton } from '@/components/help/HelpButton'
 import { useBackendHealth } from '@/hooks/use-backend-health'
 import { TID } from '@/lib/test-ids'
 
@@ -105,6 +106,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end gap-1.5 sm:gap-2">
+        <HelpButton />
         <div className="dropdown dropdown-end dropdown-hover">
           <div tabIndex={0} role="button" data-testid={TID.nav.backendStatus}>
             <AppBadge status={badgeStatus} size="md" className="badge-outline backend-status-badge">
