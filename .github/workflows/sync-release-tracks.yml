@@ -21,6 +21,10 @@ on:
         description: 'owner/repo target (defaults to current repository).'
         required: false
         type: string
+      project_owner:
+        description: 'Project owner login override (defaults to repo var SENTINEL_PROJECT_OWNER or repo owner).'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -35,6 +39,7 @@ jobs:
       INPUT_CURRENT_VERSION: ${{ github.event.inputs.current_version }}
       INPUT_PROJECT_NUMBER: ${{ github.event.inputs.project_number }}
       INPUT_REPOSITORY: ${{ github.event.inputs.repository }}
+      INPUT_PROJECT_OWNER: ${{ github.event.inputs.project_owner }}
       DEFAULT_REPOSITORY: ${{ github.repository }}
       SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
       SENTINEL_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
@@ -65,7 +70,9 @@ jobs:
           else
             export PROJECT_NUMBER="3"
           fi
-          if [[ -n "${SENTINEL_PROJECT_OWNER}" ]]; then
+          if [[ -n "${INPUT_PROJECT_OWNER}" ]]; then
+            export PROJECT_OWNER="${INPUT_PROJECT_OWNER}"
+          elif [[ -n "${SENTINEL_PROJECT_OWNER}" ]]; then
             export PROJECT_OWNER="${SENTINEL_PROJECT_OWNER}"
           fi
 
