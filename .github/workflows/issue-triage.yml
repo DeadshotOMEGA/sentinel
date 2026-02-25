@@ -1,0 +1,19 @@
+name: Issue triage label guard
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  ensure-triage-label:
+    name: Ensure status:triage is present
+    runs-on: ubuntu-latest
+    steps:
+      # This keeps issue intake consistent: all new/reopened issues must enter triage.
+      - name: Apply status:triage label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: status:triage
