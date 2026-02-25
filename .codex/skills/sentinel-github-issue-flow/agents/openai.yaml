@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sentinel Issue Flow"
+  short_description: "Issue lifecycle transitions with release alignment"
+  default_prompt: "Plan and apply Sentinel issue transitions with explicit confirmation, status-label hygiene, and milestone-release alignment."

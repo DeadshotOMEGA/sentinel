@@ -1,0 +1,88 @@
+name: Refactor
+description: Track internal structural improvements without changing intended behavior.
+title: "[Refactor]: "
+labels:
+  - refactor
+  - status:triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Primary domain this refactor affects.
+      options:
+        - backend
+        - frontend
+        - hardware
+        - infra
+        - database
+        - auth
+        - logging
+    validations:
+      required: true
+
+  - type: textarea
+    id: pain
+    attributes:
+      label: Current pain
+      description: What technical problem is this refactor addressing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Refactor scope
+      description: Explicit in-scope and out-of-scope boundaries.
+      placeholder: |
+        In scope:
+        - ...
+        Out of scope:
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety / behavioral guarantee
+      description: Confirm what behavior must remain unchanged.
+      placeholder: |
+        This refactor should not change runtime behavior except:
+        - ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Impact and urgency
+      options:
+        - P0
+        - P1
+        - P2
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risks
+      description: Main technical risks and likely failure modes.
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: How to revert if refactor causes regression.
+
+  - type: textarea
+    id: test-notes
+    attributes:
+      label: Test notes
+      description: Verification strategy and regression checks.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+      description: External dependencies or ordering constraints.

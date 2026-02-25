@@ -1,0 +1,74 @@
+name: Sync Release Tracks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      current_version:
+        description: 'Current release version (X.Y.Z or vX.Y.Z). Defaults to package.json/release tag.'
+        required: false
+        type: string
+      project_number:
+        description: 'GitHub Project number (defaults to repo var SENTINEL_PROJECT_NUMBER or 3).'
+        required: false
+        type: string
+      repository:
+        description: 'owner/repo target (defaults to current repository).'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync project Release options and milestones
+    runs-on: ubuntu-latest
+    env:
+      EVENT_NAME: ${{ github.event_name }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      INPUT_CURRENT_VERSION: ${{ github.event.inputs.current_version }}
+      INPUT_PROJECT_NUMBER: ${{ github.event.inputs.project_number }}
+      INPUT_REPOSITORY: ${{ github.event.inputs.repository }}
+      DEFAULT_REPOSITORY: ${{ github.repository }}
+      SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
+      PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate token
+        run: |
+          if [[ -z "${PROJECTS_TOKEN}" ]]; then
+            echo "::error::Missing secret PROJECTS_TOKEN (requires project + read:project scopes)."
+            exit 1
+          fi
+
+      - name: Sync release tracks
+        env:
+          GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          target_repo="${INPUT_REPOSITORY:-$DEFAULT_REPOSITORY}"
+          if [[ -n "${INPUT_PROJECT_NUMBER}" ]]; then
+            export PROJECT_NUMBER="${INPUT_PROJECT_NUMBER}"
+          elif [[ -n "${SENTINEL_PROJECT_NUMBER}" ]]; then
+            export PROJECT_NUMBER="${SENTINEL_PROJECT_NUMBER}"
+          else
+            export PROJECT_NUMBER="3"
+          fi
+
+          if [[ -n "${INPUT_CURRENT_VERSION}" ]]; then
+            export CURRENT_RELEASE_VERSION="${INPUT_CURRENT_VERSION}"
+          elif [[ "${EVENT_NAME}" == "release" && -n "${RELEASE_TAG}" ]]; then
+            export CURRENT_RELEASE_VERSION="${RELEASE_TAG}"
+          fi
+
+          bash scripts/github/sync-release-tracks.sh "${target_repo}"
