@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sentinel Issue Intake"
+  short_description: "Template-first issue creation with confirm-before-mutate"
+  default_prompt: "Create a Sentinel GitHub issue using the matching template contract, preview first, and mutate only after explicit confirmation."

@@ -1,0 +1,80 @@
+name: Task
+description: Track implementation work that is not a feature or refactor.
+title: "[Task]: "
+labels:
+  - task
+  - status:triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Primary domain this task affects.
+      options:
+        - backend
+        - frontend
+        - hardware
+        - infra
+        - database
+        - auth
+        - logging
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome is needed?
+      placeholder: Describe the concrete result this task should produce.
+    validations:
+      required: true
+
+  - type: textarea
+    id: work
+    attributes:
+      label: Proposed work
+      description: Implementation steps at an actionable level.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Impact and urgency
+      options:
+        - P0
+        - P1
+        - P2
+
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: Acceptance checklist
+      options:
+        - label: Scope is specific and testable.
+        - label: Owner/next action is clear.
+        - label: Docs/update notes were considered.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+      description: External dependencies, sequencing, or approvals.
+
+  - type: textarea
+    id: test-notes
+    attributes:
+      label: Test notes
+      description: How this task should be verified.
+
+  - type: textarea
+    id: release-impact
+    attributes:
+      label: Release impact
+      description: Any release/version implication if known.

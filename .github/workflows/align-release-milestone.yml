@@ -1,0 +1,233 @@
+name: Align Issue Release and Milestone
+
+on:
+  issues:
+    types: [opened, reopened, edited, milestoned, demilestoned]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to align'
+        required: true
+        type: string
+      project_number:
+        description: 'GitHub Project number (defaults to repo var SENTINEL_PROJECT_NUMBER or 3).'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  align:
+    name: Keep Release field and milestone synchronized
+    runs-on: ubuntu-latest
+    env:
+      PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      INPUT_ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
+      INPUT_PROJECT_NUMBER: ${{ github.event.inputs.project_number }}
+      DEFAULT_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
+
+    steps:
+      - name: Validate token
+        run: |
+          if [[ -z "${PROJECTS_TOKEN}" ]]; then
+            echo "::error::Missing secret PROJECTS_TOKEN (requires project + read:project scopes)."
+            exit 1
+          fi
+
+      - name: Align issue release and milestone
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_TOKEN }}
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const fallbackProjectNumber = Number(process.env.DEFAULT_PROJECT_NUMBER || 3)
+            const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER || fallbackProjectNumber)
+            const issueNumber = context.eventName === 'workflow_dispatch'
+              ? Number(process.env.INPUT_ISSUE_NUMBER)
+              : Number(context.payload.issue?.number)
+
+            if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+              core.setFailed('Could not resolve a valid issue number.')
+              return
+            }
+
+            const issueQuery = `
+              query($owner:String!, $repo:String!, $issueNumber:Int!) {
+                repository(owner:$owner, name:$repo) {
+                  issue(number:$issueNumber) {
+                    id
+                    number
+                    milestone { title number }
+                    projectItems(first:20) {
+                      nodes {
+                        id
+                        project {
+                          __typename
+                          ... on ProjectV2 {
+                            id
+                            number
+                            title
+                            owner {
+                              __typename
+                              ... on User { login }
+                              ... on Organization { login }
+                            }
+                          }
+                        }
+                        fieldValues(first:50) {
+                          nodes {
+                            ... on ProjectV2ItemFieldSingleSelectValue {
+                              name
+                              optionId
+                              field {
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `
+
+            const issueData = await github.graphql(issueQuery, { owner, repo, issueNumber })
+            const issue = issueData.repository?.issue
+            if (!issue) {
+              core.warning(`Issue #${issueNumber} not found.`)
+              return
+            }
+
+            const matchingItem = (issue.projectItems?.nodes ?? []).find((node) => {
+              const project = node.project
+              if (!project || project.__typename !== 'ProjectV2') return false
+              return Number(project.number) === projectNumber && project.owner?.login === owner
+            })
+
+            if (!matchingItem) {
+              core.info(`Issue #${issueNumber} is not in project #${projectNumber}; nothing to align.`)
+              return
+            }
+
+            const projectId = matchingItem.project.id
+            const itemId = matchingItem.id
+            const milestoneTitle = issue.milestone?.title ?? null
+
+            const releaseValue = (matchingItem.fieldValues?.nodes ?? []).find((node) => {
+              return node?.field?.name === 'Release'
+            })
+            const releaseName = releaseValue?.name ?? null
+
+            const fieldQuery = `
+              query($projectId:ID!) {
+                node(id:$projectId) {
+                  ... on ProjectV2 {
+                    fields(first:50) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `
+            const fieldData = await github.graphql(fieldQuery, { projectId })
+            const releaseField = (fieldData.node?.fields?.nodes ?? []).find((node) => node?.name === 'Release')
+            if (!releaseField) {
+              core.warning(`Project #${projectNumber} has no Release field; skipping.`)
+              return
+            }
+
+            const optionsByName = new Map((releaseField.options ?? []).map((opt) => [opt.name, opt.id]))
+            const releaseOptionId = releaseName ? optionsByName.get(releaseName) : null
+            const milestoneOptionId = milestoneTitle ? optionsByName.get(milestoneTitle) : null
+
+            const updateItemField = async (optionId) => {
+              await github.graphql(
+                `mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $optionId:String!) {
+                  updateProjectV2ItemFieldValue(input:{
+                    projectId:$projectId,
+                    itemId:$itemId,
+                    fieldId:$fieldId,
+                    value:{ singleSelectOptionId:$optionId }
+                  }) { projectV2Item { id } }
+                }`,
+                {
+                  projectId,
+                  itemId,
+                  fieldId: releaseField.id,
+                  optionId,
+                }
+              )
+            }
+
+            const listMilestones = async () => {
+              return await github.paginate(github.rest.issues.listMilestones, {
+                owner,
+                repo,
+                state: 'all',
+                per_page: 100,
+              })
+            }
+
+            const setIssueMilestoneByTitle = async (title) => {
+              const milestones = await listMilestones()
+              const target = milestones.find((ms) => ms.title === title)
+              if (!target) {
+                core.warning(`Milestone '${title}' does not exist in ${owner}/${repo}; cannot align issue milestone.`)
+                return false
+              }
+
+              if (issue.milestone?.number === target.number) {
+                return true
+              }
+
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                milestone: target.number,
+              })
+              core.info(`Aligned issue #${issueNumber} milestone -> ${title}`)
+              return true
+            }
+
+            if (milestoneTitle && milestoneOptionId) {
+              if (releaseName !== milestoneTitle) {
+                await updateItemField(milestoneOptionId)
+                core.info(`Aligned project Release field -> ${milestoneTitle}`)
+              } else {
+                core.info('Release field already matches milestone.')
+              }
+              return
+            }
+
+            if (milestoneTitle && !milestoneOptionId) {
+              core.warning(`Milestone '${milestoneTitle}' is not available in project Release options.`)
+              return
+            }
+
+            if (releaseName) {
+              if (!releaseOptionId) {
+                core.warning(`Release field value '${releaseName}' has no matching option id.`)
+                return
+              }
+              await setIssueMilestoneByTitle(releaseName)
+              return
+            }
+
+            core.info('Neither milestone nor Release field value is set; nothing to align.')
