@@ -87,20 +87,19 @@ resolve_project_owner() {
   local configured_owner="${PROJECT_OWNER}"
 
   if [[ -n "${configured_owner}" ]]; then
-    if gh project view "${PROJECT_NUMBER}" --owner "${configured_owner}" --format json >/dev/null 2>&1; then
-      RESOLVED_PROJECT_OWNER="${configured_owner}"
-      return 0
-    fi
+    # Trust explicit owner override to avoid gh project view owner-type false negatives in CI.
+    RESOLVED_PROJECT_OWNER="${configured_owner}"
+    return 0
   fi
 
   for candidate in "${OWNER,,}" "${OWNER}" "@me"; do
-    if gh project view "${PROJECT_NUMBER}" --owner "${candidate}" --format json >/dev/null 2>&1; then
+    if gh project field-list "${PROJECT_NUMBER}" --owner "${candidate}" --format json >/dev/null 2>&1; then
       RESOLVED_PROJECT_OWNER="${candidate}"
       return 0
     fi
   done
 
-  die "Unable to resolve project owner for project #${PROJECT_NUMBER}. Set PROJECT_OWNER (or repo variable SENTINEL_PROJECT_OWNER) and verify PROJECTS_TOKEN scopes."
+  die "Unable to resolve project owner for project #${PROJECT_NUMBER}. Set PROJECT_OWNER (or SENTINEL_PROJECT_OWNER) and verify PROJECTS_TOKEN scopes/SSO."
 }
 
 fetch_milestones() {

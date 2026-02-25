@@ -105,6 +105,10 @@ Optional repo variable:
 
 - `SENTINEL_PROJECT_OWNER` if your project owner differs from repository owner casing/login resolution. Example: `deadshotomega`.
 
+Workflow dispatch override:
+
+- `project_owner` input can be set at run time for one-off owner overrides.
+
 ### Option D: Codex issue-ops skills (VS Code)
 
 Repo-scoped skills:
