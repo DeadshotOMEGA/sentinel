@@ -21,10 +21,17 @@ export interface ProcedureStepTransition {
   when?: (context: ProcedureContext) => boolean
 }
 
+export interface HelpStepMeta {
+  wikiSlug?: string
+  openMode?: 'new-tab' | 'drawer'
+  label?: string
+}
+
 export interface ProcedureStep {
   id: string
   target?: string
   popover: ProcedurePopover
+  help?: HelpStepMeta
   before?: (context: ProcedureContext) => Promise<void> | void
   after?: (context: ProcedureContext) => Promise<void> | void
   next?: ProcedureStepTransition[]

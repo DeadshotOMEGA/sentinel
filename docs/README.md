@@ -9,6 +9,7 @@ This documentation system uses AI-first organization principles with the Diátax
 ## Quick Navigation
 
 ### 🏗️ Getting Started
+
 - [System Overview](CLAUDE.md) - How this documentation works (AI-first)
 - [Style Guide](meta/style-guide.md) - Writing conventions
 - [Templates](templates/CLAUDE.md) - Document templates
@@ -16,18 +17,21 @@ This documentation system uses AI-first organization principles with the Diátax
 ### 📚 Documentation by Type
 
 #### [Guides](guides/) - Diátaxis-organized documentation
+
 - **[Tutorials](guides/tutorials/)** - Learning-oriented, step-by-step
 - **[How-to Guides](guides/howto/)** - Task-oriented solutions
 - **[Reference](guides/reference/)** - Complete specifications
 - **[Explanation](guides/explanation/)** - Conceptual understanding
 
 #### [Domains](domains/) - Business domain documentation
+
 - **[Authentication](domains/authentication/)** - Auth, sessions, API keys
 - **[Personnel](domains/personnel/)** - Members, divisions, ranks
 - **[Check-in](domains/checkin/)** - Badge scanning, presence tracking
 - **[Events](domains/events/)** - Temporary access, visitors
 
 #### [Cross-Cutting](cross-cutting/) - System-wide concerns
+
 - **[Testing](cross-cutting/testing/)** - Test strategy, patterns
 - **[Deployment](cross-cutting/deployment/)** - CI/CD, infrastructure
 - **[Monitoring](cross-cutting/monitoring/)** - Logs, metrics, alerts
@@ -63,12 +67,12 @@ This documentation is optimized for both human readers and AI systems like Claud
 
 Every document fits exactly one category:
 
-| Type | Purpose | Audience | Example |
-|------|---------|----------|---------|
-| **Tutorial** | Learning-oriented | Beginners | Getting Started Guide |
-| **How-to** | Task-oriented | Practitioners | How to Add a Repository |
-| **Reference** | Information-oriented | Lookup | API Endpoints Reference |
-| **Explanation** | Understanding-oriented | Decision-makers | Testing Philosophy |
+| Type            | Purpose                | Audience        | Example                 |
+| --------------- | ---------------------- | --------------- | ----------------------- |
+| **Tutorial**    | Learning-oriented      | Beginners       | Getting Started Guide   |
+| **How-to**      | Task-oriented          | Practitioners   | How to Add a Repository |
+| **Reference**   | Information-oriented   | Lookup          | API Endpoints Reference |
+| **Explanation** | Understanding-oriented | Decision-makers | Testing Philosophy      |
 
 ---
 
@@ -120,8 +124,10 @@ Every document fits exactly one category:
 ### For Developers
 
 - [Backend Rebuild Plan](plans/active/backend-rebuild-plan.md)
+- [Wiki.js Rollout Plan](guides/reference/wiki-rollout-plan.md)
 - [Testing Strategy](cross-cutting/testing/explanation-integration-first.md) (coming soon)
 - [Repository Pattern](concepts/repository-pattern.md) (coming soon)
+- [Port Allocation Reference](guides/reference/port-allocation.md)
 - [API Reference](guides/reference/) (coming soon)
 
 ### For Documentation Writers

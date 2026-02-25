@@ -15,6 +15,19 @@ This file migrates project guidance from Claude-style rules into Codex.
 - Use Conventional Commits.
 - Never push directly to `main`; use PRs from `feature/*` to `main`.
 
+## Port Allocation Policy (Host/LAN)
+
+- MUST keep Sentinel service host ports within their assigned ranges:
+  - Backend API: `3000`
+  - Frontend apps: `3001-3003`
+  - Kiosk (future): `3004`
+  - Door Scanners (future): `3005-3006`
+  - Observability stack (Grafana/Prometheus/Loki/etc.): `3010-3019`
+  - Additional services (Wiki and future additions): `3020-3029`
+- SHOULD use `3020` as the initial Wiki.js LAN publish port when wiki LAN access is enabled.
+- MUST update deployment files and deployment docs together when adding/changing a port mapping.
+- MUST avoid assigning new services to reserved but currently unused ranges unless explicitly approved.
+
 ## High-traffic local instruction files
 
 - `apps/backend/AGENTS.md`

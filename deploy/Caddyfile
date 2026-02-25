@@ -1,3 +1,11 @@
+http://{$WIKI_DOMAIN} {
+	reverse_proxy wikijs:3000 {
+		header_up Host {host}
+		header_up X-Forwarded-Host {host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
 :80 {
 	@healthz path /healthz
 	handle @healthz {

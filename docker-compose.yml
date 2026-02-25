@@ -73,7 +73,7 @@ services:
     image: grafana/loki:3.0.0
     container_name: sentinel-loki
     ports:
-      - "3100:3100"
+      - "3012:3100"
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
       - loki_data:/loki
@@ -109,7 +109,7 @@ services:
     image: prom/prometheus:v2.48.1
     container_name: sentinel-prometheus
     ports:
-      - "9090:9090"
+      - "3011:9090"
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -134,12 +134,12 @@ services:
     image: grafana/grafana:10.2.3
     container_name: sentinel-grafana
     ports:
-      - "3002:3000"
+      - "3010:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme}
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3002
+      - GF_SERVER_ROOT_URL=http://localhost:3010
       - GF_AUTH_ANONYMOUS_ENABLED=false
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro

@@ -327,6 +327,18 @@ html[data-theme='business'] .backend-status-badge {
   pointer-events: none;
 }
 
+/* Driver.js contextual wiki CTA */
+.driver-popover-btn-help {
+  margin-right: auto;
+  border-color: oklch(from oklch(var(--color-info)) l c h / 0.45);
+  color: oklch(var(--color-info-content));
+  background-color: oklch(var(--color-info-fadded));
+}
+
+.driver-popover-btn-help:hover {
+  background-color: oklch(from oklch(var(--color-info-fadded)) calc(l - 0.02) c h);
+}
+
 /* ========================================
    PRESENCE GRID STYLING
    Personnel card grid refinements

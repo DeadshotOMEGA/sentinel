@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { HelpCircle, Play, RotateCcw } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { TID } from '@/lib/test-ids'
@@ -8,6 +8,7 @@ import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { createProcedureController } from '@/help/controller'
 import { DriverJsProcedureDriver } from '@/help/driver-adapter'
 import { dashboardProcedureDefinitions } from '@/help/dashboard-procedures'
+import { subscribeHelpTourRequest } from '@/help/help-events'
 import { loadProcedureProgress } from '@/help/persistence'
 import type { ProcedureController, ProcedureEvent, ProcedureState } from '@/help/types'
 
@@ -30,29 +31,25 @@ export function DashboardHelpLauncher() {
   const pathname = usePathname()
   const member = useAuthStore((state) => state.member)
   const [isOpen, setIsOpen] = useState(false)
-  const [controller, setController] = useState<ProcedureController | null>(null)
+  const controllerRef = useRef<ProcedureController | null>(null)
   const [controllerState, setControllerState] = useState<ProcedureState>({
     procedureId: null,
     stepIndex: -1,
     status: 'idle',
   })
-  const [lastEventAt, setLastEventAt] = useState<number>(Date.now())
 
   const isAdmin = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
+  const shouldRender = isAdmin && pathname === '/dashboard' && Boolean(member?.id)
 
-  const progressByProcedure = useMemo(() => {
-    if (!member?.id) return new Map<string, string>()
-
-    const progress = new Map<string, string>()
+  const progressByProcedure = new Map<string, string>()
+  if (member?.id) {
     for (const definition of dashboardProcedureDefinitions) {
       const saved = loadProcedureProgress(member.id, definition.id, definition.version)
       if (saved?.status) {
-        progress.set(definition.id, saved.status)
+        progressByProcedure.set(definition.id, saved.status)
       }
     }
-
-    return progress
-  }, [member?.id, lastEventAt])
+  }
 
   useEffect(() => {
     if (!member?.id || pathname !== '/dashboard') return
@@ -69,7 +66,6 @@ export function DashboardHelpLauncher() {
       },
       driver: new DriverJsProcedureDriver(),
       onEvent: (event: ProcedureEvent) => {
-        setLastEventAt(Date.now())
         setControllerState((prev) => ({
           ...prev,
           procedureId: event.procedureId,
@@ -78,42 +74,65 @@ export function DashboardHelpLauncher() {
       },
     })
 
-    setController(runtime)
+    controllerRef.current = runtime
 
     return () => {
       runtime.dispose()
-      setController(null)
+      controllerRef.current = null
     }
   }, [member?.accountLevel, member?.id, pathname])
 
-  if (!isAdmin || pathname !== '/dashboard' || !member?.id) {
-    return null
-  }
+  const handleStart = useCallback(
+    async (procedureId: string, action: 'start' | 'resume' | 'restart') => {
+      const controller = controllerRef.current
+      if (!controller) return
 
-  const handleStart = async (procedureId: string, action: 'start' | 'resume' | 'restart') => {
-    if (!controller) return
+      if (action === 'start') {
+        await controller.start(procedureId)
+      }
 
-    if (action === 'start') {
-      await controller.start(procedureId)
-    }
+      if (action === 'resume') {
+        await controller.resume(procedureId)
+      }
 
-    if (action === 'resume') {
-      await controller.resume(procedureId)
-    }
+      if (action === 'restart') {
+        await controller.restart(procedureId)
+      }
 
-    if (action === 'restart') {
-      await controller.restart(procedureId)
-    }
+      setControllerState(controller.getState())
+    },
+    []
+  )
 
-    setControllerState(controller.getState())
-    setLastEventAt(Date.now())
-  }
-
-  const handleSkip = async () => {
+  const handleSkip = useCallback(async () => {
+    const controller = controllerRef.current
     if (!controller) return
     await controller.skip()
     setControllerState(controller.getState())
-    setLastEventAt(Date.now())
+  }, [])
+
+  useEffect(() => {
+    if (!member?.id || pathname !== '/dashboard') return
+
+    return subscribeHelpTourRequest((detail) => {
+      const controller = controllerRef.current
+      if (!controller) return
+      if (detail.routeId !== 'dashboard') return
+
+      const definition = dashboardProcedureDefinitions.find(
+        (procedure) => procedure.id === detail.procedureId
+      )
+      if (!definition) return
+
+      const saved = loadProcedureProgress(member.id, definition.id, definition.version)
+      const action = saved?.status === 'in_progress' ? 'resume' : 'start'
+
+      void handleStart(definition.id, action)
+    })
+  }, [handleStart, member?.id, pathname])
+
+  if (!shouldRender) {
+    return null
   }
 
   return (

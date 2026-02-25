@@ -8,6 +8,7 @@ This bundle installs Sentinel as a LAN appliance using Docker Compose v2 and GHC
 - Backend API on internal Docker network (`3000`)
 - Frontend Next runtime on internal Docker network (`3001`)
 - PostgreSQL with persistent volume
+- Wiki.js + dedicated Wiki PostgreSQL on internal Docker network
 - NetBird server + dashboard (self-hosted) with STUN on `3478/udp`
 - Optional observability profile (`obs`): Loki, Prometheus, Promtail, Grafana
 
@@ -17,6 +18,7 @@ Canonical public routes:
 - `/api/*` -> backend (prefix preserved)
 - `/socket.io*` -> backend (path preserved)
 - `/healthz` -> backend `/health`
+- `http://docs.sentinel.local/*` -> Wiki.js
 - `http://netbird.local/*` -> NetBird (dashboard + API)
 
 ## Debian package launcher (recommended for non-technical users)
@@ -91,7 +93,8 @@ Optional flags:
 - `--lan-cidr 192.168.0.0/16` override detected LAN subnet
 - `--with-obs` enable observability profile (default)
 - `--without-obs` disable observability profile
-- `--allow-grafana-lan` publish Grafana on `3002` (only with `--with-obs`)
+- `--allow-grafana-lan` publish Grafana on `3010` (only with `--with-obs`)
+- `--allow-wiki-lan` publish Wiki.js on `3020` (optional)
 - `--no-firewall` skip UFW LAN-only rule setup
 
 Port defaults in `.env`:
@@ -100,8 +103,27 @@ Port defaults in `.env`:
 - `NETBIRD_DOMAIN=netbird.local`
 - `NETBIRD_PROTOCOL=http`
 - `NETBIRD_HTTP_PORT=80`
-- `GRAFANA_LAN_PORT=3002` (only used if `--allow-grafana-lan`)
-- `GRAFANA_ROOT_URL=http://localhost:3002` (matches Grafana LAN port when enabled)
+- `GRAFANA_LAN_PORT=3010` (only used if `--allow-grafana-lan`)
+- `GRAFANA_ROOT_URL=http://localhost:3010` (matches Grafana LAN port when enabled)
+- `WIKI_DOMAIN=docs.sentinel.local`
+- `WIKI_BASE_URL=http://docs.sentinel.local`
+- `NEXT_PUBLIC_WIKI_BASE_URL=http://docs.sentinel.local`
+- `WIKI_POSTGRES_USER`, `WIKI_POSTGRES_PASSWORD`, `WIKI_POSTGRES_DB` (dedicated Wiki DB)
+- `WIKI_IMAGE_TAG=2.5.312` (pin for reproducible deploys)
+- `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
+
+Canonical Sentinel port allocation policy (host/LAN):
+
+- Backend API: `3000`
+- Frontend apps: `3001-3003`
+- Kiosk (future): `3004`
+- Door Scanners (future): `3005-3006`
+- Observability stack (Grafana/Prometheus/Loki/etc.): `3010-3019`
+- Additional services (Wiki and future additions): `3020-3029`
+
+Recommended initial assignment:
+
+- Wiki.js (when enabled): `3020`
 
 ## Captive portal / GHCR reachability failure
 
@@ -133,6 +155,13 @@ cd /opt/sentinel/deploy
 
 This performs automatic pre-update backup, image pull, one-shot migration deploy, migration status verification, and health gate verification.
 
+Optional update flags:
+
+- `--with-obs` / `--without-obs`
+- `--allow-grafana-lan` / `--disallow-grafana-lan`
+- `--allow-wiki-lan` / `--disallow-wiki-lan`
+- `--no-firewall`
+
 ## Rollback
 
 ```bash
@@ -153,23 +182,43 @@ cd /opt/sentinel/deploy
 ./backup.sh
 ```
 
-Custom output path:
+Defaults:
+
+- Scope defaults to `all` and writes both Sentinel + Wiki dump files.
+- Output directory defaults to `/opt/sentinel/deploy/backups`.
+
+Single-scope examples:
 
 ```bash
-./backup.sh --output /opt/sentinel/backups/manual.dump
+./backup.sh --scope sentinel --output /opt/sentinel/backups/sentinel_manual.dump
+./backup.sh --scope wiki --output /opt/sentinel/backups/wikijs_manual.dump
 ```
 
 ## Restore
 
 ```bash
 cd /opt/sentinel/deploy
-./restore.sh --file /opt/sentinel/backups/sentinel_YYYYMMDD_HHMMSS.dump
+./restore.sh --scope sentinel --file /opt/sentinel/backups/sentinel_YYYYMMDD_HHMMSS.dump
+```
+
+Wiki-only restore:
+
+```bash
+./restore.sh --scope wiki --file /opt/sentinel/backups/wikijs_YYYYMMDD_HHMMSS.dump
+```
+
+Combined restore:
+
+```bash
+./restore.sh --scope all \
+  --sentinel-file /opt/sentinel/backups/sentinel_YYYYMMDD_HHMMSS.dump \
+  --wiki-file /opt/sentinel/backups/wikijs_YYYYMMDD_HHMMSS.dump
 ```
 
 Non-interactive restore:
 
 ```bash
-./restore.sh --file /opt/sentinel/backups/file.dump --yes
+./restore.sh --scope sentinel --file /opt/sentinel/backups/file.dump --yes
 ```
 
 ## Service management
@@ -184,8 +233,10 @@ sudo systemctl restart sentinel-appliance.service
 ## URLs after install
 
 - mDNS (best effort): `http://sentinel.local`
+- Wiki docs host: `http://docs.sentinel.local`
 - NetBird dashboard: `http://netbird.local`
 - LAN fallback: `http://<server-ip>`
+- Optional direct Wiki LAN URL (if enabled): `http://<server-ip>:3020`
 
 For NetBird, ensure `netbird.local` resolves to the appliance IP (use your LAN DNS or add a hosts entry on each client).
 

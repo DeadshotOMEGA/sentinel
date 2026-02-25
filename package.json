@@ -16,6 +16,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
+    "check:help-slugs": "node scripts/check-help-slugs.mjs",
     "lint:fix": "pnpm -r lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "prisma:generate": "pnpm --filter @sentinel/database prisma:generate",
