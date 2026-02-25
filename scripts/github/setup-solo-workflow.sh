@@ -12,6 +12,7 @@ REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)
 PROJECT_TITLE="Sentinel Development"
 PRUNE_UNUSED="${PRUNE_UNUSED:-false}"
 CURRENT_RELEASE_VERSION="${CURRENT_RELEASE_VERSION:-}"
+PROJECT_OWNER="${PROJECT_OWNER:-}"
 RELEASE_MILESTONES=()
 
 require() {
@@ -68,6 +69,9 @@ build_release_milestones
 
 REPO="${1:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"
 OWNER="${REPO%%/*}"
+if [[ -z "${PROJECT_OWNER}" ]]; then
+  PROJECT_OWNER="${OWNER,,}"
+fi
 LABELS_FILE="${REPO_ROOT}/.github/labels.solo-workflow.json"
 
 if [[ ! -f "$LABELS_FILE" ]]; then
@@ -83,6 +87,7 @@ if ! jq -e 'type == "array"' "$LABELS_FILE" >/dev/null 2>&1; then
 fi
 
 info "Configuring repo: $REPO"
+info "Project owner: $PROJECT_OWNER"
 info "Release set: $(IFS=', '; echo "${RELEASE_MILESTONES[*]}")"
 
 fetch_existing_labels() {
@@ -187,16 +192,16 @@ for ms in "${RELEASE_MILESTONES[@]}"; do
 done
 
 # Project (idempotent)
-project_number="$(gh project list --owner "$OWNER" --limit 100 --format json --jq ".projects[] | select(.title == \"$PROJECT_TITLE\") | .number" | head -n1 || true)"
+project_number="$(gh project list --owner "$PROJECT_OWNER" --limit 100 --format json --jq ".projects[] | select(.title == \"$PROJECT_TITLE\") | .number" | head -n1 || true)"
 if [[ -z "${project_number:-}" ]]; then
-  gh project create --owner "$OWNER" --title "$PROJECT_TITLE" >/dev/null
-  project_number="$(gh project list --owner "$OWNER" --limit 100 --format json --jq ".projects[] | select(.title == \"$PROJECT_TITLE\") | .number" | head -n1)"
+  gh project create --owner "$PROJECT_OWNER" --title "$PROJECT_TITLE" >/dev/null
+  project_number="$(gh project list --owner "$PROJECT_OWNER" --limit 100 --format json --jq ".projects[] | select(.title == \"$PROJECT_TITLE\") | .number" | head -n1)"
   info "Created project: $PROJECT_TITLE (#$project_number)"
 else
   info "Project exists: $PROJECT_TITLE (#$project_number)"
 fi
 
-if gh project link "$project_number" --owner "$OWNER" --repo "$REPO" >/dev/null 2>&1; then
+if gh project link "$project_number" --owner "$PROJECT_OWNER" --repo "$REPO" >/dev/null 2>&1; then
   info "Linked project #$project_number to repo: $REPO"
 else
   warn "Could not link project #$project_number to $REPO (may already be linked or missing permissions)"
@@ -204,7 +209,7 @@ fi
 
 # Best-effort field creation (safe if command unavailable on older gh versions)
 fetch_project_fields() {
-  gh project field-list "$project_number" --owner "$OWNER" --format json --jq '.fields[]?.name'
+  gh project field-list "$project_number" --owner "$PROJECT_OWNER" --format json --jq '.fields[]?.name'
 }
 
 ensure_project_field() {
@@ -215,7 +220,7 @@ ensure_project_field() {
     return 0
   fi
 
-  if gh project field-create "$project_number" --owner "$OWNER" --name "$field_name" --data-type "SINGLE_SELECT" --single-select-options "$field_options" >/dev/null 2>&1; then
+  if gh project field-create "$project_number" --owner "$PROJECT_OWNER" --name "$field_name" --data-type "SINGLE_SELECT" --single-select-options "$field_options" >/dev/null 2>&1; then
     info "Created project field: $field_name"
     PROJECT_FIELDS+=$'\n'"$field_name"
     return 0
@@ -238,7 +243,7 @@ sync_release_field_options() {
   next_minor="${RELEASE_MILESTONES[2]}"
   next_major="${RELEASE_MILESTONES[3]}"
   release_field_id="$(
-    gh project field-list "$project_number" --owner "$OWNER" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
+    gh project field-list "$project_number" --owner "$PROJECT_OWNER" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
   )"
 
   if [[ -z "${release_field_id}" ]]; then
@@ -281,7 +286,7 @@ GRAPHQL
   fi
 }
 
-if gh project field-list "$project_number" --owner "$OWNER" >/dev/null 2>&1; then
+if gh project field-list "$project_number" --owner "$PROJECT_OWNER" >/dev/null 2>&1; then
   PROJECT_FIELDS="$(fetch_project_fields || true)"
   ensure_project_field "Priority" "P0,P1,P2"
   ensure_project_field "Area" "backend,frontend,hardware,infra,database,auth,logging,unknown"

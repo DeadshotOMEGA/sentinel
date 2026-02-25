@@ -101,6 +101,10 @@ Required secret:
 
 - `PROJECTS_TOKEN` with scopes: `project`, `read:project` (and repo issue write access for alignment updates).
 
+Optional repo variable:
+
+- `SENTINEL_PROJECT_OWNER` if your project owner differs from repository owner casing/login resolution. Example: `deadshotomega`.
+
 ### Option D: Codex issue-ops skills (VS Code)
 
 Repo-scoped skills:
