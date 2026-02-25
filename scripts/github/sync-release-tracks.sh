@@ -9,11 +9,14 @@ set -euo pipefail
 # - arg1: owner/repo (optional; defaults to current gh repo)
 # - env CURRENT_RELEASE_VERSION: X.Y.Z or vX.Y.Z (optional; defaults to package.json version)
 # - env PROJECT_NUMBER: GitHub project number (default: 3)
+# - env PROJECT_OWNER: GitHub project owner login (optional; defaults to repo owner lowercase)
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
 CURRENT_RELEASE_VERSION="${CURRENT_RELEASE_VERSION:-}"
 PROJECT_NUMBER="${PROJECT_NUMBER:-3}"
+PROJECT_OWNER="${PROJECT_OWNER:-}"
+RESOLVED_PROJECT_OWNER=""
 
 require() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -79,6 +82,27 @@ info "Repo: ${REPO}"
 info "Project number: ${PROJECT_NUMBER}"
 info "Release tracks: $(IFS=', '; echo "${RELEASE_TRACKS[*]}")"
 
+resolve_project_owner() {
+  local candidate
+  local configured_owner="${PROJECT_OWNER}"
+
+  if [[ -n "${configured_owner}" ]]; then
+    if gh project view "${PROJECT_NUMBER}" --owner "${configured_owner}" --format json >/dev/null 2>&1; then
+      RESOLVED_PROJECT_OWNER="${configured_owner}"
+      return 0
+    fi
+  fi
+
+  for candidate in "${OWNER,,}" "${OWNER}" "@me"; do
+    if gh project view "${PROJECT_NUMBER}" --owner "${candidate}" --format json >/dev/null 2>&1; then
+      RESOLVED_PROJECT_OWNER="${candidate}"
+      return 0
+    fi
+  done
+
+  die "Unable to resolve project owner for project #${PROJECT_NUMBER}. Set PROJECT_OWNER (or repo variable SENTINEL_PROJECT_OWNER) and verify PROJECTS_TOKEN scopes."
+}
+
 fetch_milestones() {
   gh api --paginate "repos/${REPO}/milestones?state=all&per_page=100" --jq '.[].title'
 }
@@ -94,14 +118,17 @@ for milestone in "${RELEASE_TRACKS[@]}"; do
   fi
 done
 
+resolve_project_owner
+info "Project owner: ${RESOLVED_PROJECT_OWNER}"
+
 RELEASE_FIELD_ID="$(
-  gh project field-list "${PROJECT_NUMBER}" --owner "${OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
+  gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
 )"
 
 if [[ -z "${RELEASE_FIELD_ID}" ]]; then
-  gh project field-create "${PROJECT_NUMBER}" --owner "${OWNER}" --name "Release" --data-type "SINGLE_SELECT" --single-select-options "$(IFS=,; echo "${RELEASE_TRACKS[*]}")" >/dev/null
+  gh project field-create "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --name "Release" --data-type "SINGLE_SELECT" --single-select-options "$(IFS=,; echo "${RELEASE_TRACKS[*]}")" >/dev/null
   RELEASE_FIELD_ID="$(
-    gh project field-list "${PROJECT_NUMBER}" --owner "${OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
+    gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
   )"
 fi
 

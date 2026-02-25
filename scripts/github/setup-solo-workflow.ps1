@@ -21,6 +21,7 @@ if ([string]::IsNullOrWhiteSpace($Repo)) {
 }
 
 $Owner = $Repo.Split('/')[0]
+$ProjectOwner = if ($env:PROJECT_OWNER) { $env:PROJECT_OWNER } else { $Owner.ToLowerInvariant() }
 $ProjectTitle = 'Sentinel Development'
 $LabelsPath = Join-Path $RepoRoot '.github/labels.solo-workflow.json'
 $CurrentReleaseVersion = if ($env:CURRENT_RELEASE_VERSION) { $env:CURRENT_RELEASE_VERSION } else { (Get-Content package.json | ConvertFrom-Json).version }
@@ -44,6 +45,7 @@ if (-not (Test-Path $LabelsPath)) {
 }
 
 Write-Host "Configuring repo: $Repo"
+Write-Host "Project owner: $ProjectOwner"
 Write-Host "Release set: $($ReleaseMilestones -join ', ')"
 
 $labels = Get-Content $LabelsPath | ConvertFrom-Json
@@ -71,21 +73,21 @@ foreach ($ms in $ReleaseMilestones) {
   }
 }
 
-$projectNumber = gh project list --owner $Owner --limit 100 --format json --jq ".projects[] | select(.title == \"$ProjectTitle\") | .number" | Select-Object -First 1
+$projectNumber = gh project list --owner $ProjectOwner --limit 100 --format json --jq ".projects[] | select(.title == \"$ProjectTitle\") | .number" | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($projectNumber)) {
-  gh project create --owner $Owner --title $ProjectTitle | Out-Null
-  $projectNumber = gh project list --owner $Owner --limit 100 --format json --jq ".projects[] | select(.title == \"$ProjectTitle\") | .number" | Select-Object -First 1
+  gh project create --owner $ProjectOwner --title $ProjectTitle | Out-Null
+  $projectNumber = gh project list --owner $ProjectOwner --limit 100 --format json --jq ".projects[] | select(.title == \"$ProjectTitle\") | .number" | Select-Object -First 1
   Write-Host "Created project: $ProjectTitle (#$projectNumber)"
 } else {
   Write-Host "Project exists: $ProjectTitle (#$projectNumber)"
 }
 
-gh project link $projectNumber --owner $Owner --repo $Repo | Out-Null
+gh project link $projectNumber --owner $ProjectOwner --repo $Repo | Out-Null
 
-$releaseFieldId = gh project field-list $projectNumber --owner $Owner --format json --jq '.fields[] | select(.name == "Release") | .id' | Select-Object -First 1
+$releaseFieldId = gh project field-list $projectNumber --owner $ProjectOwner --format json --jq '.fields[] | select(.name == "Release") | .id' | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($releaseFieldId)) {
-  gh project field-create $projectNumber --owner $Owner --name 'Release' --data-type 'SINGLE_SELECT' --single-select-options ($ReleaseMilestones -join ',') | Out-Null
-  $releaseFieldId = gh project field-list $projectNumber --owner $Owner --format json --jq '.fields[] | select(.name == "Release") | .id' | Select-Object -First 1
+  gh project field-create $projectNumber --owner $ProjectOwner --name 'Release' --data-type 'SINGLE_SELECT' --single-select-options ($ReleaseMilestones -join ',') | Out-Null
+  $releaseFieldId = gh project field-list $projectNumber --owner $ProjectOwner --format json --jq '.fields[] | select(.name == "Release") | .id' | Select-Object -First 1
 }
 
 if (-not [string]::IsNullOrWhiteSpace($releaseFieldId)) {

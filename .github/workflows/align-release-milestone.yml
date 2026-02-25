@@ -27,6 +27,7 @@ jobs:
       INPUT_ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
       INPUT_PROJECT_NUMBER: ${{ github.event.inputs.project_number }}
       DEFAULT_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
+      DEFAULT_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
 
     steps:
       - name: Validate token
@@ -42,6 +43,10 @@ jobs:
           github-token: ${{ secrets.PROJECTS_TOKEN }}
           script: |
             const owner = context.repo.owner
+            const normalizedRepoOwner = owner.toLowerCase()
+            const configuredProjectOwner = process.env.DEFAULT_PROJECT_OWNER
+              ? process.env.DEFAULT_PROJECT_OWNER.toLowerCase()
+              : normalizedRepoOwner
             const repo = context.repo.repo
             const fallbackProjectNumber = Number(process.env.DEFAULT_PROJECT_NUMBER || 3)
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER || fallbackProjectNumber)
@@ -108,11 +113,12 @@ jobs:
             const matchingItem = (issue.projectItems?.nodes ?? []).find((node) => {
               const project = node.project
               if (!project || project.__typename !== 'ProjectV2') return false
-              return Number(project.number) === projectNumber && project.owner?.login === owner
+              const itemOwner = project.owner?.login?.toLowerCase()
+              return Number(project.number) === projectNumber && itemOwner === configuredProjectOwner
             })
 
             if (!matchingItem) {
-              core.info(`Issue #${issueNumber} is not in project #${projectNumber}; nothing to align.`)
+              core.info(`Issue #${issueNumber} is not in project #${projectNumber} (owner: ${configuredProjectOwner}); nothing to align.`)
               return
             }
 

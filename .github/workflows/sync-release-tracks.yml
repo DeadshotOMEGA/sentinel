@@ -37,6 +37,7 @@ jobs:
       INPUT_REPOSITORY: ${{ github.event.inputs.repository }}
       DEFAULT_REPOSITORY: ${{ github.repository }}
       SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
+      SENTINEL_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
 
     steps:
@@ -63,6 +64,9 @@ jobs:
             export PROJECT_NUMBER="${SENTINEL_PROJECT_NUMBER}"
           else
             export PROJECT_NUMBER="3"
+          fi
+          if [[ -n "${SENTINEL_PROJECT_OWNER}" ]]; then
+            export PROJECT_OWNER="${SENTINEL_PROJECT_OWNER}"
           fi
 
           if [[ -n "${INPUT_CURRENT_VERSION}" ]]; then
