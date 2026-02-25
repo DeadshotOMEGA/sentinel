@@ -25,4 +25,5 @@ This document defines the canonical host/LAN port allocation policy for Sentinel
 - Grafana LAN publish (optional): `3010`
 - Prometheus (local compose profile): `3011`
 - Loki (local compose profile): `3012`
+- Wiki docs host via Caddy: `80` (`docs.sentinel.local`)
 - Wiki.js (recommended when enabled): `3020`

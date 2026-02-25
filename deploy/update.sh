@@ -10,6 +10,7 @@ LAN_CIDR_OVERRIDE=""
 NO_FIREWALL="false"
 CLI_WITH_OBS=""
 CLI_ALLOW_GRAFANA_LAN=""
+CLI_ALLOW_WIKI_LAN=""
 
 usage() {
   cat <<USAGE
@@ -22,6 +23,8 @@ Options:
   --without-obs            Disable observability profile
   --allow-grafana-lan      Publish Grafana on LAN (implies --with-obs)
   --disallow-grafana-lan   Disable Grafana LAN publish override
+  --allow-wiki-lan         Publish Wiki.js on LAN (port defaults to 3020)
+  --disallow-wiki-lan      Disable Wiki.js LAN publish override
   --no-firewall            Skip UFW update
 USAGE
 }
@@ -68,6 +71,14 @@ while [[ $# -gt 0 ]]; do
       CLI_ALLOW_GRAFANA_LAN="false"
       shift
       ;;
+    --allow-wiki-lan)
+      CLI_ALLOW_WIKI_LAN="true"
+      shift
+      ;;
+    --disallow-wiki-lan)
+      CLI_ALLOW_WIKI_LAN="false"
+      shift
+      ;;
     --no-firewall)
       NO_FIREWALL="true"
       shift
@@ -104,6 +115,9 @@ if [[ -n "${CLI_WITH_OBS}" ]]; then
 fi
 if [[ -n "${CLI_ALLOW_GRAFANA_LAN}" ]]; then
   ALLOW_GRAFANA_LAN="${CLI_ALLOW_GRAFANA_LAN}"
+fi
+if [[ -n "${CLI_ALLOW_WIKI_LAN}" ]]; then
+  ALLOW_WIKI_LAN="${CLI_ALLOW_WIKI_LAN}"
 fi
 
 set_compose_file_args

@@ -24,6 +24,7 @@ This file migrates project guidance from Claude-style rules into Codex.
   - Door Scanners (future): `3005-3006`
   - Observability stack (Grafana/Prometheus/Loki/etc.): `3010-3019`
   - Additional services (Wiki and future additions): `3020-3029`
+- SHOULD use `3020` as the initial Wiki.js LAN publish port when wiki LAN access is enabled.
 - MUST update deployment files and deployment docs together when adding/changing a port mapping.
 - MUST avoid assigning new services to reserved but currently unused ranges unless explicitly approved.
 

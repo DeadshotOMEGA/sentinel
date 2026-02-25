@@ -17,6 +17,28 @@ services:
     networks:
       - sentinel_net
 
+  wikijs-postgres:
+    image: postgres:16.4-alpine
+    container_name: sentinel-wikijs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${WIKI_POSTGRES_USER:-wikijs}
+      POSTGRES_PASSWORD: ${WIKI_POSTGRES_PASSWORD:?WIKI_POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${WIKI_POSTGRES_DB:-wikijs}
+    volumes:
+      - wikijs_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${WIKI_POSTGRES_USER:-wikijs} -d ${WIKI_POSTGRES_DB:-wikijs}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
   backend:
     image: ghcr.io/${GHCR_OWNER:-deadshotomega}/sentinel/backend:${SENTINEL_VERSION:?SENTINEL_VERSION is required}
     container_name: sentinel-backend
@@ -70,6 +92,11 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
       NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-}
       BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:3000}
+      WIKI_BASE_URL: ${WIKI_BASE_URL:-http://docs.sentinel.local}
+      NEXT_PUBLIC_WIKI_BASE_URL: ${NEXT_PUBLIC_WIKI_BASE_URL:-http://docs.sentinel.local}
+      NEXT_PUBLIC_HELP_FALLBACK_MODE: ${NEXT_PUBLIC_HELP_FALLBACK_MODE:-hybrid}
+      NEXT_PUBLIC_HELP_PREVIEW_ENABLED: ${NEXT_PUBLIC_HELP_PREVIEW_ENABLED:-false}
+      NEXT_PUBLIC_HELP_DOCS_VERSION: ${NEXT_PUBLIC_HELP_DOCS_VERSION:-latest}
     depends_on:
       backend:
         condition: service_healthy
@@ -78,6 +105,38 @@ services:
         [
           'CMD-SHELL',
           'wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/ || exit 1',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentinel_net
+
+  wikijs:
+    image: requarks/wiki:${WIKI_IMAGE_TAG:-2.5.312}
+    container_name: sentinel-wikijs
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_TYPE: postgres
+      DB_HOST: wikijs-postgres
+      DB_PORT: 5432
+      DB_USER: ${WIKI_POSTGRES_USER:-wikijs}
+      DB_PASS: ${WIKI_POSTGRES_PASSWORD:?WIKI_POSTGRES_PASSWORD is required}
+      DB_NAME: ${WIKI_POSTGRES_DB:-wikijs}
+    depends_on:
+      wikijs-postgres:
+        condition: service_healthy
+    volumes:
+      - wikijs_data:/wiki/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 15s
       timeout: 5s
@@ -102,6 +161,7 @@ services:
       - caddy_config:/config
     environment:
       NETBIRD_DOMAIN: ${NETBIRD_DOMAIN:-netbird.local}
+      WIKI_DOMAIN: ${WIKI_DOMAIN:-docs.sentinel.local}
     healthcheck:
       test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1/healthz || exit 1']
       interval: 15s
@@ -203,6 +263,8 @@ services:
 
 volumes:
   postgres_data:
+  wikijs_postgres_data:
+  wikijs_data:
   caddy_data:
   caddy_config:
   loki_data:

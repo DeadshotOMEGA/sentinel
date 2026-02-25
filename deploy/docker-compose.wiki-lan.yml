@@ -1,0 +1,4 @@
+services:
+  wikijs:
+    ports:
+      - '${WIKI_LAN_PORT:-3020}:3000'

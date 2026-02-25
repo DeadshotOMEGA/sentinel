@@ -124,6 +124,7 @@ Every document fits exactly one category:
 ### For Developers
 
 - [Backend Rebuild Plan](plans/active/backend-rebuild-plan.md)
+- [Wiki.js Rollout Plan](guides/reference/wiki-rollout-plan.md)
 - [Testing Strategy](cross-cutting/testing/explanation-integration-first.md) (coming soon)
 - [Repository Pattern](concepts/repository-pattern.md) (coming soon)
 - [Port Allocation Reference](guides/reference/port-allocation.md)

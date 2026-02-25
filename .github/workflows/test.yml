@@ -68,3 +68,6 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Validate help wiki slug index
+        run: pnpm check:help-slugs

@@ -6,11 +6,13 @@ ENV_FILE="${DEPLOY_DIR}/.env"
 STATE_FILE="${DEPLOY_DIR}/.appliance-state"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
 GRAFANA_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.grafana-lan.yml"
+WIKI_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.wiki-lan.yml"
 
 DOCKER_CMD=(docker)
 COMPOSE_FILE_ARGS=()
 WITH_OBS="false"
 ALLOW_GRAFANA_LAN="false"
+ALLOW_WIKI_LAN="false"
 
 log() {
   printf '[sentinel] %s\n' "$*"
@@ -206,6 +208,7 @@ bootstrap_env_defaults() {
   generated_count=0
   keys=(
     POSTGRES_PASSWORD
+    WIKI_POSTGRES_PASSWORD
     JWT_SECRET
     API_KEY_SECRET
     SESSION_SECRET
@@ -247,6 +250,34 @@ bootstrap_env_defaults() {
     upsert_env "NETBIRD_DOMAIN" "netbird.local"
   fi
 
+  if is_placeholder_env_value "$(env_value WIKI_DOMAIN)"; then
+    upsert_env "WIKI_DOMAIN" "docs.sentinel.local"
+  fi
+
+  if is_placeholder_env_value "$(env_value WIKI_BASE_URL)"; then
+    upsert_env "WIKI_BASE_URL" "http://$(env_value WIKI_DOMAIN docs.sentinel.local)"
+  fi
+
+  if is_placeholder_env_value "$(env_value NEXT_PUBLIC_WIKI_BASE_URL)"; then
+    upsert_env "NEXT_PUBLIC_WIKI_BASE_URL" "$(env_value WIKI_BASE_URL)"
+  fi
+
+  if is_placeholder_env_value "$(env_value NEXT_PUBLIC_HELP_FALLBACK_MODE)"; then
+    upsert_env "NEXT_PUBLIC_HELP_FALLBACK_MODE" "hybrid"
+  fi
+
+  if is_placeholder_env_value "$(env_value NEXT_PUBLIC_HELP_PREVIEW_ENABLED)"; then
+    upsert_env "NEXT_PUBLIC_HELP_PREVIEW_ENABLED" "false"
+  fi
+
+  if is_placeholder_env_value "$(env_value WIKI_IMAGE_TAG)"; then
+    upsert_env "WIKI_IMAGE_TAG" "2.5.312"
+  fi
+
+  if is_placeholder_env_value "$(env_value WIKI_LAN_PORT)"; then
+    upsert_env "WIKI_LAN_PORT" "3020"
+  fi
+
   if is_placeholder_env_value "$(env_value NETBIRD_PROTOCOL)"; then
     upsert_env "NETBIRD_PROTOCOL" "http"
   fi
@@ -274,6 +305,8 @@ write_admin_credentials_snapshot() {
 
 POSTGRES_USER=$(env_value POSTGRES_USER sentinel)
 POSTGRES_PASSWORD=$(env_value POSTGRES_PASSWORD)
+WIKI_POSTGRES_USER=$(env_value WIKI_POSTGRES_USER wikijs)
+WIKI_POSTGRES_PASSWORD=$(env_value WIKI_POSTGRES_PASSWORD)
 JWT_SECRET=$(env_value JWT_SECRET)
 API_KEY_SECRET=$(env_value API_KEY_SECRET)
 SESSION_SECRET=$(env_value SESSION_SECRET)
@@ -379,12 +412,14 @@ load_state() {
 
   WITH_OBS="${WITH_OBS:-false}"
   ALLOW_GRAFANA_LAN="${ALLOW_GRAFANA_LAN:-false}"
+  ALLOW_WIKI_LAN="${ALLOW_WIKI_LAN:-false}"
 }
 
 save_state() {
   cat >"${STATE_FILE}" <<STATE
 WITH_OBS=${WITH_OBS}
 ALLOW_GRAFANA_LAN=${ALLOW_GRAFANA_LAN}
+ALLOW_WIKI_LAN=${ALLOW_WIKI_LAN}
 LAN_CIDR=${LAN_CIDR:-}
 CURRENT_VERSION=${CURRENT_VERSION:-}
 PREVIOUS_VERSION=${PREVIOUS_VERSION:-}
@@ -395,6 +430,9 @@ set_compose_file_args() {
   COMPOSE_FILE_ARGS=(-f "${BASE_COMPOSE_FILE}")
   if [[ "${ALLOW_GRAFANA_LAN}" == "true" ]]; then
     COMPOSE_FILE_ARGS+=(-f "${GRAFANA_OVERRIDE_FILE}")
+  fi
+  if [[ "${ALLOW_WIKI_LAN}" == "true" ]]; then
+    COMPOSE_FILE_ARGS+=(-f "${WIKI_OVERRIDE_FILE}")
   fi
 }
 
@@ -644,6 +682,22 @@ configure_firewall() {
   run_root ufw default deny incoming
   run_root ufw default allow outgoing
   run_root ufw allow from "${cidr}" to any port 80 proto tcp >/dev/null || true
+  local grafana_lan_port
+  grafana_lan_port="$(env_value GRAFANA_LAN_PORT 3010)"
+  run_root ufw --force delete allow from "${cidr}" to any port "${grafana_lan_port}" proto tcp >/dev/null || true
+  run_root ufw --force delete deny in to any port "${grafana_lan_port}" proto tcp >/dev/null || true
+  if [[ "${ALLOW_GRAFANA_LAN}" == "true" ]]; then
+    run_root ufw allow from "${cidr}" to any port "${grafana_lan_port}" proto tcp >/dev/null || true
+    run_root ufw deny in to any port "${grafana_lan_port}" proto tcp >/dev/null || true
+  fi
+  local wiki_lan_port
+  wiki_lan_port="$(env_value WIKI_LAN_PORT 3020)"
+  run_root ufw --force delete allow from "${cidr}" to any port "${wiki_lan_port}" proto tcp >/dev/null || true
+  run_root ufw --force delete deny in to any port "${wiki_lan_port}" proto tcp >/dev/null || true
+  if [[ "${ALLOW_WIKI_LAN}" == "true" ]]; then
+    run_root ufw allow from "${cidr}" to any port "${wiki_lan_port}" proto tcp >/dev/null || true
+    run_root ufw deny in to any port "${wiki_lan_port}" proto tcp >/dev/null || true
+  fi
   local netbird_http_port
   netbird_http_port="$(env_value NETBIRD_HTTP_PORT 80)"
   if [[ "${netbird_http_port}" != "80" ]]; then
@@ -653,7 +707,15 @@ configure_firewall() {
   run_root ufw deny in to any port 80 proto tcp >/dev/null || true
   run_root ufw --force enable >/dev/null
 
-  log "UFW inbound policy applied: allow ${cidr} -> tcp/80, udp/3478"
+  local firewall_extras=""
+  if [[ "${ALLOW_GRAFANA_LAN}" == "true" ]]; then
+    firewall_extras+=", optional Grafana LAN"
+  fi
+  if [[ "${ALLOW_WIKI_LAN}" == "true" ]]; then
+    firewall_extras+=", optional Wiki LAN"
+  fi
+
+  log "UFW inbound policy applied: allow ${cidr} -> tcp/80, udp/3478${firewall_extras}"
 }
 
 ensure_compose_pull_with_login_fallback() {
@@ -668,7 +730,7 @@ ensure_compose_pull_with_login_fallback() {
 
 print_health_diagnostics() {
   compose ps || true
-  compose logs --tail=80 caddy backend frontend postgres netbird-server netbird-dashboard || true
+  compose logs --tail=80 caddy backend frontend postgres wikijs-postgres wikijs netbird-server netbird-dashboard || true
 }
 
 env_value() {
@@ -688,6 +750,9 @@ write_systemd_unit() {
 
   if [[ "${ALLOW_GRAFANA_LAN}" == "true" ]]; then
     compose_args+=" -f ${GRAFANA_OVERRIDE_FILE}"
+  fi
+  if [[ "${ALLOW_WIKI_LAN}" == "true" ]]; then
+    compose_args+=" -f ${WIKI_OVERRIDE_FILE}"
   fi
   if [[ "${WITH_OBS}" == "true" ]]; then
     profile_args="--profile obs"

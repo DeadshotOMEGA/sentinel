@@ -8,6 +8,7 @@ TARGET_VERSION=""
 LAN_CIDR_OVERRIDE=""
 CLI_WITH_OBS="true"
 CLI_ALLOW_GRAFANA_LAN="false"
+CLI_ALLOW_WIKI_LAN="false"
 NO_FIREWALL="false"
 SYNCED="false"
 
@@ -21,6 +22,7 @@ Options:
   --with-obs               Enable observability profile
   --without-obs            Disable observability profile
   --allow-grafana-lan      Publish Grafana on LAN (implies --with-obs)
+  --allow-wiki-lan         Publish Wiki.js on LAN (port defaults to 3020)
   --no-firewall            Skip UFW LAN-only rule configuration
   --synced                 Internal flag used after copying to /opt/sentinel/deploy
 USAGE
@@ -62,6 +64,10 @@ while [[ $# -gt 0 ]]; do
     --allow-grafana-lan)
       CLI_ALLOW_GRAFANA_LAN="true"
       CLI_WITH_OBS="true"
+      shift
+      ;;
+    --allow-wiki-lan)
+      CLI_ALLOW_WIKI_LAN="true"
       shift
       ;;
     --no-firewall)
@@ -115,6 +121,9 @@ if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
   if [[ "${CLI_ALLOW_GRAFANA_LAN}" == "true" ]]; then
     reexec_args+=(--allow-grafana-lan)
   fi
+  if [[ "${CLI_ALLOW_WIKI_LAN}" == "true" ]]; then
+    reexec_args+=(--allow-wiki-lan)
+  fi
   if [[ "${NO_FIREWALL}" == "true" ]]; then
     reexec_args+=(--no-firewall)
   fi
@@ -126,6 +135,7 @@ fi
 source "${TARGET_DIR}/_common.sh"
 WITH_OBS="${CLI_WITH_OBS}"
 ALLOW_GRAFANA_LAN="${CLI_ALLOW_GRAFANA_LAN}"
+ALLOW_WIKI_LAN="${CLI_ALLOW_WIKI_LAN}"
 
 log "Starting Sentinel appliance install"
 
