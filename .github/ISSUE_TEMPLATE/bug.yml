@@ -1,0 +1,109 @@
+name: Bug report
+description: Track a defect so it never gets lost while features are in flight.
+title: "[Bug]: "
+labels:
+  - bug
+  - status:triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Where is the bug happening?
+      options:
+        - backend
+        - frontend
+        - hardware
+        - infra
+        - database
+        - auth
+        - logging
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Impact and urgency
+      options:
+        - P0
+        - P1
+        - P2
+    validations:
+      required: true
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: Actual behavior observed.
+      placeholder: A clear description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: Describe the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Keep this deterministic if possible.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace / screenshots
+      description: Paste logs and any relevant output.
+      render: shell
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: App version/commit, OS, browser, runtime, and anything relevant.
+      placeholder: |
+        - Sentinel version:
+        - Commit SHA:
+        - OS:
+        - Browser:
+        - Node:
+
+  - type: input
+    id: hardware-model
+    attributes:
+      label: Hardware model (if applicable)
+      description: Device, scanner, MCU, board, etc.
+      placeholder: e.g., Zebra DS2208 / Raspberry Pi 5
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware/driver version (if applicable)
+      placeholder: e.g., FW 2.3.1 / driver 1.9.0
+
+  - type: input
+    id: connection
+    attributes:
+      label: Hardware connection details (if applicable)
+      description: USB/serial/Bluetooth/network, baud rate, cable notes, etc.
+      placeholder: e.g., USB CDC @ 115200 baud
+
+  - type: checkboxes
+    id: investigation
+    attributes:
+      label: Investigation hint
+      options:
+        - label: This issue is flaky, intermittent, or root cause is unclear; add the `needs-investigation` label.

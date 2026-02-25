@@ -1,0 +1,60 @@
+name: Feature request
+description: Capture feature work in the same system as bugs.
+title: "[Feature]: "
+labels:
+  - feature
+  - status:triage
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - backend
+        - frontend
+        - hardware
+        - infra
+        - database
+        - auth
+        - logging
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or developer problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Smallest useful implementation first.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Check all that apply.
+      options:
+        - label: Scope is clear and testable.
+        - label: Success criteria are measurable.
+        - label: Backward-compatibility impact is identified.
+        - label: Docs/update notes are identified if needed.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional; list rejected options and why.
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / dependencies
+      description: Technical risks, sequencing concerns, blockers.

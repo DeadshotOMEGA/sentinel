@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sentinel workflow guide
+    url: https://github.com/DeadshotOMEGA/sentinel/blob/main/docs/WORKFLOW.md
+    about: Read triage and planning rules before opening non-standard issues.
