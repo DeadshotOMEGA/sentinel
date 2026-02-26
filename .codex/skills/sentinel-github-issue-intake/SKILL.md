@@ -30,17 +30,20 @@ description: Create Sentinel issues using strict GitHub templates (bug/feature/t
 ## Script Workflow
 
 ```bash
+# Ensure local temp payload directory exists
+mkdir -p .codex/tmp
+
 # 1) Read template contract (source of truth)
 .codex/skills/sentinel-github-issue-intake/scripts/extract-template-requirements.sh \
   --type task
 
 # 2) Preview issue creation plan (no mutation)
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json
+  --payload-file .codex/tmp/intake.json
 
 # 3) Execute creation only after explicit confirmation
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json \
+  --payload-file .codex/tmp/intake.json \
   --confirm
 ```
 

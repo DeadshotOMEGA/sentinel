@@ -136,24 +136,27 @@ Expected behavior:
 Quick usage examples (from repo root):
 
 ```bash
+# create local temp directory once
+mkdir -p .codex/tmp
+
 # Intake preview
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json \
+  --payload-file .codex/tmp/intake.json \
   --dry-run
 
 # Intake execute (explicit confirmation)
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json \
+  --payload-file .codex/tmp/intake.json \
   --confirm
 
 # Transition preview
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json \
+  --payload-file .codex/tmp/transition.json \
   --dry-run
 
 # Transition execute (explicit confirmation)
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json \
+  --payload-file .codex/tmp/transition.json \
   --confirm
 ```
 
