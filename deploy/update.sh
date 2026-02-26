@@ -106,7 +106,6 @@ fi
 
 ensure_env_file
 bootstrap_env_defaults
-ensure_netbird_config
 write_admin_credentials_snapshot
 load_state
 
