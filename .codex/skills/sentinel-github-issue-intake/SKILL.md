@@ -54,8 +54,8 @@ description: Create Sentinel issues using strict GitHub templates (bug/feature/t
   "type": "bug|feature|task|refactor",
   "title": "string",
   "fields": {
-    "area": "backend|frontend|hardware|infra|database|auth|logging",
-    "priority": "P0|P1|P2"
+    "area": "area:backend|area:frontend|area:hardware|area:infra|area:database|area:auth|area:logging",
+    "priority": "priority:p0|priority:p1|priority:p2"
   },
   "projectTitle": "Sentinel Development",
   "milestone": "vX.Y.Z|null",

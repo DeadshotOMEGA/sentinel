@@ -1,0 +1,29 @@
+name: Stale Issues
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark stale issues
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-issue-stale: 30
+          days-before-issue-close: -1
+          days-before-pr-stale: -1
+          stale-issue-label: bot:stale
+          stale-issue-message: >-
+            This issue has been inactive for 30 days. Remove `bot:stale` or comment with an update to keep it active.
+          exempt-issue-labels: status:working,priority:p0
+          remove-issue-stale-when-updated: true
+          operations-per-run: 200

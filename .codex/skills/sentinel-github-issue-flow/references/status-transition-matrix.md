@@ -4,7 +4,7 @@
 
 - Set label: `status:triage`
 - Remove other status labels.
-- Require one type label (`bug|feature|task|refactor`).
+- Require one type label (`type:bug|type:feature|type:task|type:refactor`).
 - Project status: `🧪 Inbox`
 
 ## planned
@@ -26,6 +26,7 @@
 - Set label: `status:blocked`
 - Remove other status labels.
 - Require blocker note.
+- Require exactly one blocked reason label: `blocked:external|blocked:dependency|blocked:decision`.
 - Project status: `🚧 Blocked`
 
 ## done

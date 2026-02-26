@@ -1,8 +1,8 @@
 name: Task
 description: Track implementation work that is not a feature or refactor.
-title: "[Task]: "
+title: '[Task]: '
 labels:
-  - task
+  - type:task
   - status:triage
 body:
   - type: dropdown
@@ -11,13 +11,13 @@ body:
       label: Area
       description: Primary domain this task affects.
       options:
-        - backend
-        - frontend
-        - hardware
-        - infra
-        - database
-        - auth
-        - logging
+        - area:backend
+        - area:frontend
+        - area:hardware
+        - area:infra
+        - area:database
+        - area:auth
+        - area:logging
     validations:
       required: true
 
@@ -48,9 +48,9 @@ body:
       label: Priority
       description: Impact and urgency
       options:
-        - P0
-        - P1
-        - P2
+        - priority:p0
+        - priority:p1
+        - priority:p2
 
   - type: checkboxes
     id: acceptance

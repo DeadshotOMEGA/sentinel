@@ -11,22 +11,22 @@ The parser script `scripts/extract-template-requirements.sh` is authoritative fo
 
 ## Bug
 
-- Default labels: `bug`, `status:triage`
+- Default labels: `type:bug`, `status:triage`
 - Required fields: `area`, `priority`, `happened`, `expected`, `repro`
 
 ## Feature
 
-- Default labels: `feature`, `status:triage`
+- Default labels: `type:feature`, `status:triage`
 - Required fields: `area`, `problem`, `proposal`
 
 ## Task
 
-- Default labels: `task`, `status:triage`
+- Default labels: `type:task`, `status:triage`
 - Required fields: `area`, `goal`, `work`
 
 ## Refactor
 
-- Default labels: `refactor`, `status:triage`
+- Default labels: `type:refactor`, `status:triage`
 - Required fields: `area`, `pain`, `scope`, `safety`
 
 ## No-Drift Rule

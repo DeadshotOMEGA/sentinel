@@ -1,0 +1,50 @@
+area:backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/backend/**'
+          - 'packages/contracts/**'
+
+area:frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/frontend-admin/**'
+          - 'tests/**'
+          - 'playwright.config.ts'
+
+area:database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'packages/database/**'
+          - '**/prisma/**'
+
+area:infra:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - 'deploy/**'
+          - 'docker-compose.yml'
+          - 'monitoring/**'
+          - 'renovate.json'
+          - 'scripts/github/**'
+
+area:auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/backend/src/**/*auth*'
+          - 'packages/contracts/src/**/*auth*'
+          - 'docs/domains/authentication/**'
+
+area:logging:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/backend/src/**/*log*'
+          - 'monitoring/**'
+          - 'docs/cross-cutting/monitoring/**'
+
+area:hardware:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/backend/src/**/*scan*'
+          - 'apps/backend/src/**/*badge*'
+          - 'docs/mermaid/scan-system/**'
+          - 'docs/Import/**'

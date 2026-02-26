@@ -43,6 +43,8 @@ description: Manage Sentinel issue lifecycle transitions (triage/planned/working
   "issueNumber": 123,
   "targetState": "triage|planned|working|blocked|done",
   "warnOnlyWorkingLimit": true,
+  "blockedLabel": "blocked:external|blocked:dependency|blocked:decision|null",
+  "blockerNote": "string|null",
   "milestone": "vX.Y.Z|null",
   "release": "vX.Y.Z|null",
   "confirm": false

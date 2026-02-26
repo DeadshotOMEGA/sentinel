@@ -12,10 +12,10 @@ Payload shape:
   "type": "bug|feature|task|refactor",
   "title": "string",
   "body": "string",
-  "area": "backend|frontend|hardware|infra|database|auth|logging",
-  "priority": "P0|P1|P2|null",
+  "area": "area:backend|area:frontend|area:hardware|area:infra|area:database|area:auth|area:logging",
+  "priority": "priority:p0|priority:p1|priority:p2|null",
   "labels": ["string"],
-  "fields": { "area": "frontend", "...": "..." },
+  "fields": { "area": "area:frontend", "...": "..." },
   "projectTitle": "Sentinel Development",
   "milestone": "vX.Y.Z|null",
   "release": "vX.Y.Z|null",
@@ -69,6 +69,54 @@ done
 
 command -v gh >/dev/null 2>&1 || { echo "Missing dependency: gh" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "Missing dependency: jq" >&2; exit 1; }
+
+normalize_area_label() {
+  case "$1" in
+    area:backend|backend) echo "area:backend" ;;
+    area:frontend|frontend) echo "area:frontend" ;;
+    area:hardware|hardware) echo "area:hardware" ;;
+    area:infra|infra) echo "area:infra" ;;
+    area:database|database) echo "area:database" ;;
+    area:auth|auth) echo "area:auth" ;;
+    area:logging|logging) echo "area:logging" ;;
+    "") echo "" ;;
+    *) echo "" ;;
+  esac
+}
+
+normalize_priority_label() {
+  case "$1" in
+    priority:p0|P0|p0) echo "priority:p0" ;;
+    priority:p1|P1|p1) echo "priority:p1" ;;
+    priority:p2|P2|p2) echo "priority:p2" ;;
+    "") echo "" ;;
+    *) echo "" ;;
+  esac
+}
+
+project_area_from_label() {
+  case "$1" in
+    area:backend|backend) echo "backend" ;;
+    area:frontend|frontend) echo "frontend" ;;
+    area:hardware|hardware) echo "hardware" ;;
+    area:infra|infra) echo "infra" ;;
+    area:database|database) echo "database" ;;
+    area:auth|auth) echo "auth" ;;
+    area:logging|logging) echo "logging" ;;
+    "") echo "" ;;
+    *) echo "" ;;
+  esac
+}
+
+project_priority_from_label() {
+  case "$1" in
+    priority:p0|P0|p0) echo "P0" ;;
+    priority:p1|P1|p1) echo "P1" ;;
+    priority:p2|P2|p2) echo "P2" ;;
+    "") echo "" ;;
+    *) echo "" ;;
+  esac
+}
 
 if [[ -n "${PAYLOAD_FILE}" ]]; then
   [[ -f "${PAYLOAD_FILE}" ]] || { echo "Payload file not found: ${PAYLOAD_FILE}" >&2; exit 1; }
@@ -149,15 +197,28 @@ if [[ -n "${MILESTONE}" && -n "${RELEASE}" && "${MILESTONE}" != "${RELEASE}" ]];
   exit 1
 fi
 
-AREA_VALUE="$(jq -r '.fields.area // .area // empty' <<<"${PAYLOAD_JSON}")"
-PRIORITY_VALUE="$(jq -r '.fields.priority // .priority // empty' <<<"${PAYLOAD_JSON}")"
+AREA_RAW="$(jq -r '.fields.area // .area // empty' <<<"${PAYLOAD_JSON}")"
+PRIORITY_RAW="$(jq -r '.fields.priority // .priority // empty' <<<"${PAYLOAD_JSON}")"
+AREA_VALUE="$(normalize_area_label "${AREA_RAW}")"
+PRIORITY_VALUE="$(normalize_priority_label "${PRIORITY_RAW}")"
+PROJECT_AREA_VALUE="$(project_area_from_label "${AREA_VALUE}")"
+PROJECT_PRIORITY_VALUE="$(project_priority_from_label "${PRIORITY_VALUE}")"
 EXTRA_LABELS_JSON="$(jq -c '((.labels // []) + (.additionalLabels // []))' <<<"${PAYLOAD_JSON}")"
+
+if [[ -n "${AREA_RAW}" && -z "${AREA_VALUE}" ]]; then
+  echo "Unsupported area value: ${AREA_RAW}" >&2
+  exit 1
+fi
+if [[ -n "${PRIORITY_RAW}" && -z "${PRIORITY_VALUE}" ]]; then
+  echo "Unsupported priority value: ${PRIORITY_RAW}" >&2
+  exit 1
+fi
 
 LABELS_JSON="$(jq -n --argjson defaults "$(jq -c '.defaultLabels' <<<"${TEMPLATE_META}")" --arg area "${AREA_VALUE}" --arg priority "${PRIORITY_VALUE}" --arg needsInvestigation "${NEEDS_INVESTIGATION}" --argjson extra "${EXTRA_LABELS_JSON}" '
   (
     ($defaults +
       (if ($area | length) > 0 then [$area] else [] end) +
-      (if ($priority | test("^P[0-9]+$")) then [$priority] else [] end) +
+      (if ($priority | length) > 0 then [$priority] else [] end) +
       (if $needsInvestigation == "true" then ["needs-investigation"] else [] end) +
       $extra
     )
@@ -239,8 +300,8 @@ STATUS_OPTION="🧪 Inbox"
   --issue-number "${ISSUE_NUMBER}" \
   --project-title "${PROJECT_TITLE}" \
   --status "${STATUS_OPTION}" \
-  --area "${AREA_VALUE}" \
-  --priority "${PRIORITY_VALUE}" \
+  --area "${PROJECT_AREA_VALUE}" \
+  --priority "${PROJECT_PRIORITY_VALUE}" \
   --release "${RELEASE}" \
   --confirm >/dev/null
 

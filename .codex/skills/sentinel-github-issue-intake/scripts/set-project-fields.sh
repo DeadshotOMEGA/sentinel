@@ -10,8 +10,8 @@ Options:
   --project-number <number>         Defaults to 3
   --project-title <title>           Defaults to "Sentinel Development"
   --status <status-option-name>
-  --priority <P0|P1|P2>
-  --area <backend|frontend|hardware|infra|database|auth|logging|unknown>
+  --priority <priority:p0|priority:p1|priority:p2|P0|P1|P2>
+  --area <area:backend|area:frontend|area:hardware|area:infra|area:database|area:auth|area:logging|backend|frontend|...>
   --release <vX.Y.Z>
   --dry-run                         Print planned actions only
   --confirm                         Execute mutations
@@ -91,6 +91,31 @@ done
 command -v gh >/dev/null 2>&1 || { echo "Missing dependency: gh" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "Missing dependency: jq" >&2; exit 1; }
 
+normalize_area_field_value() {
+  case "$1" in
+    area:backend|backend) echo "backend" ;;
+    area:frontend|frontend) echo "frontend" ;;
+    area:hardware|hardware) echo "hardware" ;;
+    area:infra|infra) echo "infra" ;;
+    area:database|database) echo "database" ;;
+    area:auth|auth) echo "auth" ;;
+    area:logging|logging) echo "logging" ;;
+    area:unknown|unknown) echo "unknown" ;;
+    "") echo "" ;;
+    *) echo "$1" ;;
+  esac
+}
+
+normalize_priority_field_value() {
+  case "$1" in
+    priority:p0|p0|P0) echo "P0" ;;
+    priority:p1|p1|P1) echo "P1" ;;
+    priority:p2|p2|P2) echo "P2" ;;
+    "") echo "" ;;
+    *) echo "$1" ;;
+  esac
+}
+
 [[ -n "${REPO}" ]] || { echo "--repo is required" >&2; exit 1; }
 [[ -n "${ISSUE_NUMBER}" ]] || { echo "--issue-number is required" >&2; exit 1; }
 
@@ -101,6 +126,9 @@ fi
 if [[ "${DRY_RUN}" == "true" ]]; then
   CONFIRM="false"
 fi
+
+AREA_VALUE="$(normalize_area_field_value "${AREA_VALUE}")"
+PRIORITY_VALUE="$(normalize_priority_field_value "${PRIORITY_VALUE}")"
 
 PROJECT_VIEW_JSON="$(gh project view "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --format json)"
 PROJECT_ID="$(jq -r '.id' <<<"${PROJECT_VIEW_JSON}")"
