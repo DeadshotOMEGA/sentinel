@@ -4,12 +4,11 @@ This bundle installs Sentinel as a LAN appliance using Docker Compose v2 and GHC
 
 ## What gets deployed
 
-- Caddy reverse proxy on `80:80` (only published service)
+- Caddy reverse proxy on `80:80` + `443:443`
 - Backend API on internal Docker network (`3000`)
 - Frontend Next runtime on internal Docker network (`3001`)
 - PostgreSQL with persistent volume
 - Wiki.js + dedicated Wiki PostgreSQL on internal Docker network
-- NetBird server + dashboard (self-hosted) with STUN on `3478/udp`
 - Optional observability profile (`obs`): Loki, Prometheus, Promtail, Grafana
 
 Canonical public routes:
@@ -19,7 +18,6 @@ Canonical public routes:
 - `/socket.io*` -> backend (path preserved)
 - `/healthz` -> backend `/health`
 - `http://docs.sentinel.local/*` -> Wiki.js
-- `http://netbird.local/*` -> NetBird (dashboard + API)
 
 ## Debian package launcher (recommended for non-technical users)
 
@@ -100,9 +98,7 @@ Optional flags:
 Port defaults in `.env`:
 
 - `APP_HTTP_PORT=80` (Caddy appliance entrypoint)
-- `NETBIRD_DOMAIN=netbird.local`
-- `NETBIRD_PROTOCOL=http`
-- `NETBIRD_HTTP_PORT=80`
+- `APP_HTTPS_PORT=443` (Caddy HTTPS bind port)
 - `GRAFANA_LAN_PORT=3010` (only used if `--allow-grafana-lan`)
 - `GRAFANA_ROOT_URL=http://localhost:3010` (matches Grafana LAN port when enabled)
 - `WIKI_DOMAIN=docs.sentinel.local`
@@ -234,11 +230,8 @@ sudo systemctl restart sentinel-appliance.service
 
 - mDNS (best effort): `http://sentinel.local`
 - Wiki docs host: `http://docs.sentinel.local`
-- NetBird dashboard: `http://netbird.local`
 - LAN fallback: `http://<server-ip>`
 - Optional direct Wiki LAN URL (if enabled): `http://<server-ip>:3020`
-
-For NetBird, ensure `netbird.local` resolves to the appliance IP (use your LAN DNS or add a hosts entry on each client).
 
 ## Health check
 
@@ -250,7 +243,6 @@ curl -f http://127.0.0.1/healthz
 
 - Compose v2 is required (`docker compose`).
 - `SENTINEL_VERSION` must be explicit (never `latest`).
-- NetBird STUN listens on `3478/udp`; ensure LAN clients can reach it.
 - Installer auto-runs:
   - `sudo systemctl daemon-reload`
   - `sudo systemctl enable sentinel-appliance.service`

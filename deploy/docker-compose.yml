@@ -155,12 +155,12 @@ services:
         condition: service_healthy
     ports:
       - '${APP_HTTP_PORT:-80}:80'
+      - '${APP_HTTPS_PORT:-443}:443'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      NETBIRD_DOMAIN: ${NETBIRD_DOMAIN:-netbird.local}
       WIKI_DOMAIN: ${WIKI_DOMAIN:-docs.sentinel.local}
     healthcheck:
       test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1/healthz || exit 1']
@@ -237,30 +237,6 @@ services:
     networks:
       - sentinel_net
 
-  netbird-server:
-    image: netbirdio/netbird-server:latest
-    container_name: sentinel-netbird-server
-    restart: unless-stopped
-    command: ['--config', '/etc/netbird/config.yaml']
-    volumes:
-      - ./netbird/config.yaml:/etc/netbird/config.yaml:ro
-      - netbird_data:/var/lib/netbird
-    ports:
-      - '3478:3478/udp'
-    networks:
-      - sentinel_net
-
-  netbird-dashboard:
-    image: netbirdio/dashboard:latest
-    container_name: sentinel-netbird-dashboard
-    restart: unless-stopped
-    depends_on:
-      - netbird-server
-    env_file:
-      - ./netbird/dashboard.env
-    networks:
-      - sentinel_net
-
 volumes:
   postgres_data:
   wikijs_postgres_data:
@@ -270,7 +246,6 @@ volumes:
   loki_data:
   prometheus_data:
   grafana_data:
-  netbird_data:
 
 networks:
   sentinel_net:

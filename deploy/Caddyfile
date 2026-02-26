@@ -43,26 +43,3 @@ http://{$WIKI_DOMAIN} {
 		}
 	}
 }
-
-http://{$NETBIRD_DOMAIN} {
-	# Relay (WebSocket)
-	reverse_proxy /relay* netbird-server:80
-
-	# WebSocket proxy
-	reverse_proxy /ws-proxy/* netbird-server:80
-
-	# Signal gRPC (h2c for plaintext HTTP/2)
-	reverse_proxy /signalexchange.SignalExchange/* h2c://netbird-server:80
-
-	# Management API
-	reverse_proxy /api/* netbird-server:80
-
-	# Management gRPC
-	reverse_proxy /management.ManagementService/* h2c://netbird-server:80
-
-	# Embedded IdP OAuth2
-	reverse_proxy /oauth2/* netbird-server:80
-
-	# Dashboard (catch-all)
-	reverse_proxy /* netbird-dashboard:80
-}
