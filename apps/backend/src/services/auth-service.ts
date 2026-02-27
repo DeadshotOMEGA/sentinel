@@ -49,8 +49,11 @@ export class AuthService {
       where: { serialNumber },
       select: {
         id: true,
+        assignedToId: true,
         status: true,
         members: {
+          where: { status: 'active' },
+          orderBy: { updatedAt: 'desc' },
           select: {
             id: true,
             firstName: true,
@@ -74,7 +77,24 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
-    const member = badge.members[0]
+    const assignedMember = badge.assignedToId
+      ? await this.prisma.member.findUnique({
+          where: { id: badge.assignedToId },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            rank: true,
+            serviceNumber: true,
+            accountLevel: true,
+            mustChangePin: true,
+            status: true,
+            pinHash: true,
+          },
+        })
+      : null
+
+    const member = assignedMember ?? badge.members[0]
     if (!member || member.status !== 'active') {
       authLogger.warn('Login failed: no active member for badge', {
         serialNumber,
