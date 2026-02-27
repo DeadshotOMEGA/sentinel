@@ -7,6 +7,7 @@ import { logger, logStartup, logShutdown, logUnhandledError } from './lib/logger
 import { configurePrismaLogging } from './lib/database.js'
 import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
 import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
+import { tailscaleDeviceService } from './services/tailscale-device-service.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -183,6 +184,8 @@ async function main() {
           error: error instanceof Error ? error.message : 'Unknown error',
         })
       }
+
+      tailscaleDeviceService.stop()
 
       // Shutdown WebSocket server
       await shutdownWebSocketServer(io)
