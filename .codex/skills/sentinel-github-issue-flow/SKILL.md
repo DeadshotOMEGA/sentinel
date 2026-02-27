@@ -25,13 +25,16 @@ description: Manage Sentinel issue lifecycle transitions (triage/planned/working
 ## Script Workflow
 
 ```bash
+# Ensure local temp payload directory exists
+mkdir -p .codex/tmp
+
 # 1) Preview transition
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json
+  --payload-file .codex/tmp/transition.json
 
 # 2) Execute transition on confirmation
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json \
+  --payload-file .codex/tmp/transition.json \
   --confirm
 ```
 
@@ -43,6 +46,8 @@ description: Manage Sentinel issue lifecycle transitions (triage/planned/working
   "issueNumber": 123,
   "targetState": "triage|planned|working|blocked|done",
   "warnOnlyWorkingLimit": true,
+  "blockedLabel": "blocked:external|blocked:dependency|blocked:decision|null",
+  "blockerNote": "string|null",
   "milestone": "vX.Y.Z|null",
   "release": "vX.Y.Z|null",
   "confirm": false

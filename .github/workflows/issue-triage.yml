@@ -9,11 +9,33 @@ permissions:
 
 jobs:
   ensure-triage-label:
-    name: Ensure status:triage is present
+    name: Ensure status:triage is the only status label
     runs-on: ubuntu-latest
     steps:
       # This keeps issue intake consistent: all new/reopened issues must enter triage.
-      - name: Apply status:triage label
-        uses: actions-ecosystem/action-add-labels@v1
+      - name: Normalize issue status labels to triage
+        uses: actions/github-script@v7
         with:
-          labels: status:triage
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const issue_number = context.payload.issue.number
+            const issue = context.payload.issue
+            const labels = (issue.labels || []).map((label) => label.name)
+            const statusLabels = labels.filter((name) => name.startsWith('status:'))
+
+            for (const label of statusLabels) {
+              if (label === 'status:triage') continue
+              await github.rest.issues.removeLabel({ owner, repo, issue_number, name: label })
+            }
+
+            if (!labels.includes('status:triage')) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: ['status:triage'],
+              })
+            }
+
+            core.info('Issue status labels normalized to status:triage')

@@ -1,8 +1,8 @@
 name: Refactor
 description: Track internal structural improvements without changing intended behavior.
-title: "[Refactor]: "
+title: '[Refactor]: '
 labels:
-  - refactor
+  - type:refactor
   - status:triage
 body:
   - type: dropdown
@@ -11,13 +11,13 @@ body:
       label: Area
       description: Primary domain this refactor affects.
       options:
-        - backend
-        - frontend
-        - hardware
-        - infra
-        - database
-        - auth
-        - logging
+        - area:backend
+        - area:frontend
+        - area:hardware
+        - area:infra
+        - area:database
+        - area:auth
+        - area:logging
     validations:
       required: true
 
@@ -59,9 +59,9 @@ body:
       label: Priority
       description: Impact and urgency
       options:
-        - P0
-        - P1
-        - P2
+        - priority:p0
+        - priority:p1
+        - priority:p2
 
   - type: textarea
     id: risk

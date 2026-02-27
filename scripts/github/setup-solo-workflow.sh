@@ -99,11 +99,25 @@ label_exists() {
   grep -Fxq "$label_name" <<<"$EXISTING_LABELS"
 }
 
-# Optional conservative remaps from common old labels.
+# Optional conservative remaps from unprefixed to prefixed labels.
 declare -A REMAP=(
-  [enhancement]=feature
-  [chore]=task
-  [tech-debt]=refactor
+  [bug]=type:bug
+  [feature]=type:feature
+  [task]=type:task
+  [refactor]=type:refactor
+  [backend]=area:backend
+  [frontend]=area:frontend
+  [hardware]=area:hardware
+  [infra]=area:infra
+  [database]=area:database
+  [auth]=area:auth
+  [logging]=area:logging
+  [P0]=priority:p0
+  [P1]=priority:p1
+  [P2]=priority:p2
+  [enhancement]=type:feature
+  [chore]=type:task
+  [tech-debt]=type:refactor
   [investigate]=needs-investigation
 )
 
@@ -152,7 +166,7 @@ if [[ "$PRUNE_UNUSED" == "true" ]]; then
       continue
     fi
     case "$existing" in
-      "good first issue"|"help wanted") continue ;;
+      "good first issue"|"help wanted"|"documentation"|"duplicate"|"enhancement"|"invalid"|"question"|"wontfix") continue ;;
     esac
     gh label delete "$existing" --repo "$REPO" --yes >/dev/null || true
     info "Deleted label: $existing"

@@ -54,6 +54,16 @@ command -v jq >/dev/null 2>&1 || { echo "Missing dependency: jq" >&2; exit 1; }
 [[ -x "${ALIGN_SCRIPT}" ]] || { echo "Missing helper script: ${ALIGN_SCRIPT}" >&2; exit 1; }
 [[ -x "${SET_FIELDS_SCRIPT}" ]] || { echo "Missing helper script: ${SET_FIELDS_SCRIPT}" >&2; exit 1; }
 
+normalize_blocked_label() {
+  case "$1" in
+    blocked:external|external) echo "blocked:external" ;;
+    blocked:dependency|dependency) echo "blocked:dependency" ;;
+    blocked:decision|decision) echo "blocked:decision" ;;
+    "") echo "" ;;
+    *) echo "" ;;
+  esac
+}
+
 if [[ -n "${PAYLOAD_FILE}" ]]; then
   [[ -f "${PAYLOAD_FILE}" ]] || { echo "Payload file not found: ${PAYLOAD_FILE}" >&2; exit 1; }
   PAYLOAD_JSON="$(cat "${PAYLOAD_FILE}")"
@@ -79,6 +89,7 @@ PROJECT_NUMBER="$(jq -r '.projectNumber // 3' <<<"${PAYLOAD_JSON}")"
 PROJECT_OWNER="$(jq -r '.projectOwner // empty' <<<"${PAYLOAD_JSON}")"
 WARN_ONLY_WORKING_LIMIT="$(jq -r '.warnOnlyWorkingLimit // true' <<<"${PAYLOAD_JSON}")"
 BLOCKER_NOTE="$(jq -r '.blockerNote // empty' <<<"${PAYLOAD_JSON}")"
+BLOCKED_LABEL="$(jq -r '.blockedLabel // .blockedReason // .blocked // empty' <<<"${PAYLOAD_JSON}")"
 MILESTONE_VALUE="$(jq -r '.milestone // empty' <<<"${PAYLOAD_JSON}")"
 RELEASE_VALUE="$(jq -r '.release // empty' <<<"${PAYLOAD_JSON}")"
 PREFER_SOURCE="$(jq -r '.preferSource // "milestone"' <<<"${PAYLOAD_JSON}")"
@@ -112,7 +123,7 @@ fi
 ISSUE_JSON="$(gh issue view "${ISSUE_NUMBER}" --repo "${REPO}" --json number,title,url,labels,milestone)"
 
 mapfile -t CURRENT_LABELS < <(jq -r '.labels[].name' <<<"${ISSUE_JSON}")
-TYPE_LABELS=(bug feature task refactor)
+TYPE_LABELS=(type:bug type:feature type:task type:refactor bug feature task refactor)
 
 has_label() {
   local label="${1}"
@@ -152,14 +163,36 @@ if [[ "${TARGET_STATE}" == "triage" ]]; then
     fi
   done
   if [[ "${HAS_TYPE}" != "true" ]]; then
-    echo "Issue lacks a type label (bug|feature|task|refactor); triage transition requires one." >&2
+    echo "Issue lacks a type label (type:bug|type:feature|type:task|type:refactor)." >&2
     exit 1
   fi
 fi
 
-if [[ "${TARGET_STATE}" == "blocked" && -z "${BLOCKER_NOTE}" ]]; then
-  echo "blocked transition requires blockerNote" >&2
-  exit 1
+CURRENT_BLOCKED_LABELS=()
+for existing in "${CURRENT_LABELS[@]:-}"; do
+  case "${existing}" in
+    blocked:external|blocked:dependency|blocked:decision)
+      CURRENT_BLOCKED_LABELS+=("${existing}")
+      ;;
+  esac
+done
+
+if [[ "${TARGET_STATE}" == "blocked" ]]; then
+  BLOCKED_LABEL="$(normalize_blocked_label "${BLOCKED_LABEL}")"
+
+  if [[ -z "${BLOCKED_LABEL}" ]]; then
+    if [[ "${#CURRENT_BLOCKED_LABELS[@]}" -eq 1 ]]; then
+      BLOCKED_LABEL="${CURRENT_BLOCKED_LABELS[0]}"
+    else
+      echo "blocked transition requires blockedLabel (blocked:external|blocked:dependency|blocked:decision)." >&2
+      exit 1
+    fi
+  fi
+
+  if [[ -z "${BLOCKER_NOTE}" ]]; then
+    echo "blocked transition requires blockerNote" >&2
+    exit 1
+  fi
 fi
 
 if [[ "${TARGET_STATE}" == "planned" ]]; then
@@ -205,7 +238,7 @@ fi
 STATUS_LABELS_TO_REMOVE=()
 for existing in "${CURRENT_LABELS[@]:-}"; do
   case "${existing}" in
-    status:triage|status:planned|status:working|status:blocked)
+    status:triage|status:planned|status:working|status:blocked|status:done)
       if [[ -n "${DESIRED_STATUS_LABEL}" && "${existing}" == "${DESIRED_STATUS_LABEL}" ]]; then
         continue
       fi
@@ -214,15 +247,58 @@ for existing in "${CURRENT_LABELS[@]:-}"; do
   esac
 done
 
+BLOCKED_LABELS_TO_REMOVE=()
+for existing in "${CURRENT_LABELS[@]:-}"; do
+  case "${existing}" in
+    blocked:external|blocked:dependency|blocked:decision)
+      if [[ "${TARGET_STATE}" == "blocked" && "${existing}" == "${BLOCKED_LABEL}" ]]; then
+        continue
+      fi
+      BLOCKED_LABELS_TO_REMOVE+=("${existing}")
+      ;;
+  esac
+done
+
+ADD_BLOCKED_LABEL="false"
+if [[ "${TARGET_STATE}" == "blocked" && -n "${BLOCKED_LABEL}" ]]; then
+  if ! has_label "${BLOCKED_LABEL}"; then
+    ADD_BLOCKED_LABEL="true"
+  fi
+fi
+
 AREA_VALUE=""
 PRIORITY_VALUE=""
 for existing in "${CURRENT_LABELS[@]:-}"; do
   case "${existing}" in
-    backend|frontend|hardware|infra|database|auth|logging|unknown)
-      AREA_VALUE="${existing}"
+    area:backend|backend)
+      AREA_VALUE="backend"
       ;;
-    P0|P1|P2)
-      PRIORITY_VALUE="${existing}"
+    area:frontend|frontend)
+      AREA_VALUE="frontend"
+      ;;
+    area:hardware|hardware)
+      AREA_VALUE="hardware"
+      ;;
+    area:infra|infra)
+      AREA_VALUE="infra"
+      ;;
+    area:database|database)
+      AREA_VALUE="database"
+      ;;
+    area:auth|auth)
+      AREA_VALUE="auth"
+      ;;
+    area:logging|logging)
+      AREA_VALUE="logging"
+      ;;
+    priority:p0|P0|p0)
+      PRIORITY_VALUE="P0"
+      ;;
+    priority:p1|P1|p1)
+      PRIORITY_VALUE="P1"
+      ;;
+    priority:p2|P2|p2)
+      PRIORITY_VALUE="P2"
       ;;
   esac
 done
@@ -236,10 +312,13 @@ PLAN_JSON="$(jq -n \
   --arg milestone "${MILESTONE_VALUE}" \
   --arg release "${RELEASE_VALUE}" \
   --arg mismatchRepair "${MISMATCH_REPAIR}" \
+  --arg blockedLabel "${BLOCKED_LABEL}" \
+  --arg addBlocked "${ADD_BLOCKED_LABEL}" \
   --arg workingWarning "${WORKING_WARNING}" \
   --arg dryRun "${DRY_RUN}" \
   --arg confirm "${CONFIRM}" \
   --argjson removeLabels "$(printf '%s\n' "${STATUS_LABELS_TO_REMOVE[@]:-}" | sed '/^$/d' | jq -R . | jq -s .)" \
+  --argjson removeBlockedLabels "$(printf '%s\n' "${BLOCKED_LABELS_TO_REMOVE[@]:-}" | sed '/^$/d' | jq -R . | jq -s .)" \
   --argjson workingLoad "${WORKING_LOAD_JSON}" \
   '{
     repo: $repo,
@@ -250,7 +329,10 @@ PLAN_JSON="$(jq -n \
     milestone: (if ($milestone|length)>0 then $milestone else null end),
     release: (if ($release|length)>0 then $release else null end),
     mismatchRepair: (if ($mismatchRepair|length)>0 then $mismatchRepair else null end),
+    blockedLabel: (if ($blockedLabel|length)>0 then $blockedLabel else null end),
+    addBlockedLabel: ($addBlocked == "true"),
     removeLabels: $removeLabels,
+    removeBlockedLabels: $removeBlockedLabels,
     workingLoad: $workingLoad,
     warnings: ( [($workingWarning|select(length>0))] ),
     dryRun: ($dryRun == "true"),
@@ -278,6 +360,15 @@ for remove_label in "${STATUS_LABELS_TO_REMOVE[@]:-}"; do
   edit_cmd+=(--remove-label "${remove_label}")
   HAS_ISSUE_EDIT_MUTATION="true"
 done
+for remove_label in "${BLOCKED_LABELS_TO_REMOVE[@]:-}"; do
+  [[ -n "${remove_label}" ]] || continue
+  edit_cmd+=(--remove-label "${remove_label}")
+  HAS_ISSUE_EDIT_MUTATION="true"
+done
+if [[ "${ADD_BLOCKED_LABEL}" == "true" && -n "${BLOCKED_LABEL}" ]]; then
+  edit_cmd+=(--add-label "${BLOCKED_LABEL}")
+  HAS_ISSUE_EDIT_MUTATION="true"
+fi
 if [[ -n "${MILESTONE_VALUE}" ]]; then
   edit_cmd+=(--milestone "${MILESTONE_VALUE}")
   HAS_ISSUE_EDIT_MUTATION="true"

@@ -6,9 +6,9 @@ Derived from `docs/WORKFLOW.md`.
 
 1. Every bug becomes an issue.
 2. New issues start in triage (`status:triage` / project `🧪 Inbox`).
-3. Type labels are mandatory: `bug|feature|task|refactor`.
-4. Area labels should match domain: `backend|frontend|hardware|infra|database|auth|logging`.
-5. Priority labels use `P0|P1|P2`.
+3. Type labels are mandatory: `type:bug|type:feature|type:task|type:refactor`.
+4. Area labels should match domain: `area:backend|area:frontend|area:hardware|area:infra|area:database|area:auth|area:logging`.
+5. Priority labels use `priority:p0|priority:p1|priority:p2`.
 6. Use `needs-investigation` for unclear/flaky/intermittent cases.
 
 ## Release Alignment

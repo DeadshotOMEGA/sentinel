@@ -1,8 +1,8 @@
 name: Bug report
 description: Track a defect so it never gets lost while features are in flight.
-title: "[Bug]: "
+title: '[Bug]: '
 labels:
-  - bug
+  - type:bug
   - status:triage
 body:
   - type: dropdown
@@ -11,13 +11,13 @@ body:
       label: Area
       description: Where is the bug happening?
       options:
-        - backend
-        - frontend
-        - hardware
-        - infra
-        - database
-        - auth
-        - logging
+        - area:backend
+        - area:frontend
+        - area:hardware
+        - area:infra
+        - area:database
+        - area:auth
+        - area:logging
     validations:
       required: true
 
@@ -27,9 +27,9 @@ body:
       label: Priority
       description: Impact and urgency
       options:
-        - P0
-        - P1
-        - P2
+        - priority:p0
+        - priority:p1
+        - priority:p2
     validations:
       required: true
 

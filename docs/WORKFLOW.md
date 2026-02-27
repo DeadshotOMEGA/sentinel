@@ -12,15 +12,19 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 
 ---
 
-## Label system (minimal + consistent)
+## Label system (lean + prefixed)
 
-- **Type**: `bug`, `feature`, `task`, `refactor`
-- **Area**: `backend`, `frontend`, `hardware`, `infra`, `database`, `auth`, `logging`
-- **Priority**: `P0`, `P1`, `P2`
-- **Status**: `status:triage`, `status:planned`, `status:working`, `status:blocked`
+- **Type**: `type:bug`, `type:feature`, `type:task`, `type:refactor`
+- **Area**: `area:backend`, `area:frontend`, `area:hardware`, `area:infra`, `area:database`, `area:auth`, `area:logging`
+- **Priority**: `priority:p0`, `priority:p1`, `priority:p2`
+- **Status**: `status:triage`, `status:planned`, `status:working`, `status:blocked`, `status:done`
+- **Blocked reason** (required with `status:blocked`): `blocked:external`, `blocked:dependency`, `blocked:decision`
 - **Special**: `needs-investigation`
+- **Bot-managed**: `bot:stale`, `bot:conflict`
 
 Source-of-truth file: `.github/labels.solo-workflow.json`
+Canonical policy pages live in GitHub Wiki under **Labeling and Automation**.
+Repo drafts for those pages are kept in `docs/wiki/labeling-and-automation/`.
 
 ---
 
@@ -58,7 +62,7 @@ Use milestones as release containers:
 Rules:
 
 - Every planned issue should have one milestone (or explicit reason it does not).
-- P0 bugs always get assigned to the nearest viable release milestone.
+- `priority:p0` bugs always get assigned to the nearest viable release milestone.
 - During release planning, triage Inbox first, then set milestone as item moves to Planned.
 - At release cut: close milestone when all critical items are done or intentionally deferred.
 
@@ -87,6 +91,12 @@ What scripts do:
 - Create matching milestones (idempotent)
 - Create/link project `Sentinel Development` (idempotent)
 - Sync `Release` field options to match the same release set
+
+Hard-cut migration helper:
+
+```bash
+scripts/github/migrate-prefixed-labels.sh DeadshotOMEGA/sentinel --confirm
+```
 
 ### Option C: automated sync workflows (recommended once configured)
 
@@ -118,7 +128,7 @@ Repo-scoped skills:
 
 Expected behavior:
 
-- Template-first strict for `bug|feature|task|refactor`.
+- Template-first strict for `bug|feature|task|refactor` issue templates and prefixed type labels.
 - Default mode is plan/preview first.
 - GitHub state changes only after explicit confirmation.
 - Moving to `working` warns if another issue is already in `status:working` (warn-only policy).
@@ -126,24 +136,27 @@ Expected behavior:
 Quick usage examples (from repo root):
 
 ```bash
+# create local temp directory once
+mkdir -p .codex/tmp
+
 # Intake preview
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json \
+  --payload-file .codex/tmp/intake.json \
   --dry-run
 
 # Intake execute (explicit confirmation)
 .codex/skills/sentinel-github-issue-intake/scripts/create-issue.sh \
-  --payload-file /tmp/intake.json \
+  --payload-file .codex/tmp/intake.json \
   --confirm
 
 # Transition preview
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json \
+  --payload-file .codex/tmp/transition.json \
   --dry-run
 
 # Transition execute (explicit confirmation)
 .codex/skills/sentinel-github-issue-flow/scripts/transition-issue.sh \
-  --payload-file /tmp/transition.json \
+  --payload-file .codex/tmp/transition.json \
   --confirm
 ```
 
@@ -164,7 +177,7 @@ Use this for project board details that are easier in UI.
    - `Release` (single-select synced by automation: current + next patch/minor/major)
 4. Enable **Auto-add** workflow: auto-add issues from `DeadshotOMEGA/sentinel`.
 5. Create saved views:
-   - **Bug Hotlist**: `label:bug is:open`, sort by Priority, show Area + Release
+   - **Bug Hotlist**: `label:type:bug is:open`, sort by Priority, show Area + Release
    - **Release View (next patch)**: `is:open milestone:<next-patch-version> -status:Done`
    - **Weird stuff**: `label:needs-investigation is:open`
    - **Inbox**: `label:status:triage is:open`
@@ -219,11 +232,11 @@ fi
 ## Verification checklist
 
 1. Open a test bug via **Bug report** template.
-2. Confirm issue starts with labels: `bug` + `status:triage`.
+2. Confirm issue starts with labels: `type:bug` + `status:triage`.
 3. Reopen the issue; confirm triage workflow re-applies `status:triage` if removed.
 4. Confirm issue is auto-added to **Sentinel Development** project.
 5. Set Priority/Area/Release; confirm item appears in:
-   - Bug Hotlist (for bug label)
+   - Bug Hotlist (for `type:bug` label)
    - Release View (next patch milestone) when milestone/release matches
    - Weird stuff when `needs-investigation` is applied
 6. Move item through Inbox → Planned → Working → Done to confirm board behavior.

@@ -1,0 +1,81 @@
+name: Label Policy
+
+on:
+  issues:
+    types: [opened, reopened, edited, labeled, unlabeled]
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      LABEL_POLICY_ENFORCE: ${{ vars.LABEL_POLICY_ENFORCE || 'false' }}
+    steps:
+      - name: Validate label policy
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const enforce = String(process.env.LABEL_POLICY_ENFORCE || 'false').toLowerCase() === 'true'
+            const findings = []
+
+            const isIssueEvent = context.eventName === 'issues'
+            const isPrEvent = context.eventName === 'pull_request_target'
+            const item = isIssueEvent ? context.payload.issue : context.payload.pull_request
+
+            if (!item) {
+              core.warning('No issue/pull_request payload found; skipping label checks.')
+              return
+            }
+
+            const labels = (item.labels || []).map((label) => label.name)
+            const countByPrefix = (prefix) => labels.filter((name) => name.startsWith(prefix)).length
+            const hasLabel = (name) => labels.includes(name)
+
+            if (isIssueEvent && item.state === 'open') {
+              const typeCount = countByPrefix('type:')
+              const areaCount = countByPrefix('area:')
+              const priorityCount = countByPrefix('priority:')
+              const statusCount = countByPrefix('status:')
+              const blockedCount = countByPrefix('blocked:')
+
+              if (typeCount !== 1) findings.push(`Expected exactly 1 type:* label, found ${typeCount}.`)
+              if (areaCount < 1) findings.push('Expected at least 1 area:* label.')
+              if (priorityCount > 1) findings.push(`Expected at most 1 priority:* label, found ${priorityCount}.`)
+              if (statusCount !== 1) findings.push(`Expected exactly 1 status:* label while open, found ${statusCount}.`)
+
+              if (hasLabel('status:blocked') && blockedCount !== 1) {
+                findings.push(`status:blocked requires exactly 1 blocked:* label, found ${blockedCount}.`)
+              }
+
+              if (hasLabel('status:done') && (hasLabel('status:working') || hasLabel('status:blocked'))) {
+                findings.push('status:done must not coexist with status:working or status:blocked.')
+              }
+            }
+
+            if (isPrEvent) {
+              const areaCount = countByPrefix('area:')
+              if (areaCount < 1) {
+                findings.push('PR should have at least 1 area:* label (autolabel expected).')
+              }
+            }
+
+            if (findings.length === 0) {
+              core.info('Label policy checks passed.')
+              return
+            }
+
+            for (const finding of findings) {
+              core.warning(finding)
+            }
+
+            if (enforce) {
+              core.setFailed(`Label policy violations detected (${findings.length}).`)
+            } else {
+              core.info('LABEL_POLICY_ENFORCE=false; reporting warnings only.')
+            }

@@ -1,8 +1,8 @@
 name: Feature request
 description: Capture feature work in the same system as bugs.
-title: "[Feature]: "
+title: '[Feature]: '
 labels:
-  - feature
+  - type:feature
   - status:triage
 body:
   - type: dropdown
@@ -10,13 +10,13 @@ body:
     attributes:
       label: Area
       options:
-        - backend
-        - frontend
-        - hardware
-        - infra
-        - database
-        - auth
-        - logging
+        - area:backend
+        - area:frontend
+        - area:hardware
+        - area:infra
+        - area:database
+        - area:auth
+        - area:logging
     validations:
       required: true
 

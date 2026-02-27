@@ -7,7 +7,7 @@ Derived from `docs/WORKFLOW.md`.
 - `status:triage` -> issue is in Inbox.
 - `status:planned` -> issue is scoped and queued with release target.
 - `status:working` -> active implementation.
-- `status:blocked` -> blocked by external dependency/decision.
+- `status:blocked` -> blocked by external dependency/decision and must include one `blocked:*` label.
 - `✅ Done` -> completion state in project field (issue may then be closed).
 
 ## Working-Limit Policy
