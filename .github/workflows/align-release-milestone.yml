@@ -59,6 +59,11 @@ jobs:
               return
             }
 
+            if (context.eventName === 'issues' && context.payload.issue?.pull_request) {
+              core.info(`Issue event refers to PR #${issueNumber}; skipping issue/project alignment.`)
+              return
+            }
+
             const issueQuery = `
               query($owner:String!, $repo:String!, $issueNumber:Int!) {
                 repository(owner:$owner, name:$repo) {
@@ -103,8 +108,14 @@ jobs:
               }
             `
 
-            const issueData = await github.graphql(issueQuery, { owner, repo, issueNumber })
-            const issue = issueData.repository?.issue
+            let issue
+            try {
+              const issueData = await github.graphql(issueQuery, { owner, repo, issueNumber })
+              issue = issueData.repository?.issue
+            } catch (error) {
+              core.warning(`Unable to load issue #${issueNumber}: ${error.message}`)
+              return
+            }
             if (!issue) {
               core.warning(`Issue #${issueNumber} not found.`)
               return

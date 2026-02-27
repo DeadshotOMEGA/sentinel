@@ -152,6 +152,7 @@ cd /opt/sentinel/deploy
 ```
 
 This performs automatic pre-update backup, image pull, one-shot migration deploy, migration status verification, and health gate verification.
+When update is launched from a newer deploy bundle outside `/opt/sentinel/deploy`, it now auto-syncs scripts into `/opt/sentinel/deploy` first (while preserving `.env` and `.appliance-state`) and then re-runs from the synced location.
 
 Optional update flags:
 

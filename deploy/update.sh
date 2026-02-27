@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_DIR="/opt/sentinel/deploy"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/_common.sh"
 
@@ -11,6 +12,7 @@ NO_FIREWALL="false"
 CLI_WITH_OBS=""
 CLI_ALLOW_GRAFANA_LAN=""
 CLI_ALLOW_WIKI_LAN=""
+SYNCED="false"
 
 usage() {
   cat <<USAGE
@@ -26,6 +28,7 @@ Options:
   --allow-wiki-lan         Publish Wiki.js on LAN (port defaults to 3020)
   --disallow-wiki-lan      Disable Wiki.js LAN publish override
   --no-firewall            Skip UFW update
+  --synced                 Internal flag used after syncing to /opt/sentinel/deploy
 USAGE
 }
 
@@ -83,6 +86,10 @@ while [[ $# -gt 0 ]]; do
       NO_FIREWALL="true"
       shift
       ;;
+    --synced)
+      SYNCED="true"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -95,6 +102,102 @@ done
 
 if [[ -n "${TARGET_VERSION}" ]]; then
   TARGET_VERSION="$(normalize_version_value "${TARGET_VERSION}")"
+fi
+
+if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
+  preserved_env=""
+  preserved_state=""
+  had_target_env="false"
+  had_target_state="false"
+  if [[ -f "${TARGET_DIR}/.env" ]]; then
+    had_target_env="true"
+    preserved_env="$(mktemp)"
+    if [[ "${EUID}" -eq 0 ]]; then
+      cp -a "${TARGET_DIR}/.env" "${preserved_env}"
+    else
+      sudo cp -a "${TARGET_DIR}/.env" "${preserved_env}"
+    fi
+  fi
+  if [[ -f "${TARGET_DIR}/.appliance-state" ]]; then
+    had_target_state="true"
+    preserved_state="$(mktemp)"
+    if [[ "${EUID}" -eq 0 ]]; then
+      cp -a "${TARGET_DIR}/.appliance-state" "${preserved_state}"
+    else
+      sudo cp -a "${TARGET_DIR}/.appliance-state" "${preserved_state}"
+    fi
+  fi
+
+  if [[ "${EUID}" -eq 0 ]]; then
+    mkdir -p "${TARGET_DIR}"
+    cp -a "${SCRIPT_DIR}/." "${TARGET_DIR}/"
+    if [[ -n "${preserved_env}" ]]; then
+      cp -a "${preserved_env}" "${TARGET_DIR}/.env"
+      rm -f "${preserved_env}"
+    fi
+    if [[ -n "${preserved_state}" ]]; then
+      cp -a "${preserved_state}" "${TARGET_DIR}/.appliance-state"
+      rm -f "${preserved_state}"
+    fi
+    if [[ "${had_target_env}" != "true" ]]; then
+      rm -f "${TARGET_DIR}/.env"
+    fi
+    if [[ "${had_target_state}" != "true" ]]; then
+      rm -f "${TARGET_DIR}/.appliance-state"
+    fi
+  else
+    sudo mkdir -p "${TARGET_DIR}"
+    sudo cp -a "${SCRIPT_DIR}/." "${TARGET_DIR}/"
+    if [[ -n "${preserved_env}" ]]; then
+      sudo cp -a "${preserved_env}" "${TARGET_DIR}/.env"
+      rm -f "${preserved_env}"
+    fi
+    if [[ -n "${preserved_state}" ]]; then
+      sudo cp -a "${preserved_state}" "${TARGET_DIR}/.appliance-state"
+      rm -f "${preserved_state}"
+    fi
+    if [[ "${had_target_env}" != "true" ]]; then
+      sudo rm -f "${TARGET_DIR}/.env"
+    fi
+    if [[ "${had_target_state}" != "true" ]]; then
+      sudo rm -f "${TARGET_DIR}/.appliance-state"
+    fi
+    sudo chown -R "${USER}:${USER}" "${TARGET_DIR}"
+  fi
+
+  reexec_args=(--synced)
+  if [[ -n "${TARGET_VERSION}" ]]; then
+    reexec_args=(--version "${TARGET_VERSION}" --synced)
+  fi
+  if [[ -n "${LAN_CIDR_OVERRIDE}" ]]; then
+    reexec_args+=(--lan-cidr "${LAN_CIDR_OVERRIDE}")
+  fi
+  if [[ -n "${CLI_WITH_OBS}" ]]; then
+    if [[ "${CLI_WITH_OBS}" == "true" ]]; then
+      reexec_args+=(--with-obs)
+    else
+      reexec_args+=(--without-obs)
+    fi
+  fi
+  if [[ -n "${CLI_ALLOW_GRAFANA_LAN}" ]]; then
+    if [[ "${CLI_ALLOW_GRAFANA_LAN}" == "true" ]]; then
+      reexec_args+=(--allow-grafana-lan)
+    else
+      reexec_args+=(--disallow-grafana-lan)
+    fi
+  fi
+  if [[ -n "${CLI_ALLOW_WIKI_LAN}" ]]; then
+    if [[ "${CLI_ALLOW_WIKI_LAN}" == "true" ]]; then
+      reexec_args+=(--allow-wiki-lan)
+    else
+      reexec_args+=(--disallow-wiki-lan)
+    fi
+  fi
+  if [[ "${NO_FIREWALL}" == "true" ]]; then
+    reexec_args+=(--no-firewall)
+  fi
+
+  exec "${TARGET_DIR}/update.sh" "${reexec_args[@]}"
 fi
 
 ensure_docker_and_compose_v2
