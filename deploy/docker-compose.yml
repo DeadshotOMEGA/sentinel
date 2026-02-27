@@ -47,6 +47,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
+      APP_VERSION: ${SENTINEL_VERSION:?SENTINEL_VERSION is required}
       BASE_URL: ${APP_PUBLIC_URL:-http://sentinel.local}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://sentinel.local,http://localhost,http://127.0.0.1}
       DATABASE_URL: postgresql://${POSTGRES_USER:-sentinel}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-sentinel}?schema=public

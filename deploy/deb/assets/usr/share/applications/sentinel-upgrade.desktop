@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Upgrade Sentinel
+Comment=Upgrade Sentinel with guided prompts
+Exec=/usr/local/bin/sentinel-upgrade
+Icon=sentinel-appliance
+Terminal=true
+Categories=System;
