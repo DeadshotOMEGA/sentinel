@@ -52,9 +52,16 @@ interface TailscaleApiDevicesPayload {
   devices?: TailscaleApiDevice[]
 }
 
+interface TailscaleTokenPayload {
+  access_token?: string
+  expires_in?: number
+}
+
 const TAILSCALE_MAPPING_KEY = 'tailscale.deviceMappings'
 const SENTINEL_DEVICE_CATALOG_KEY = 'tailscale.sentinelDevices'
 const DEFAULT_REFRESH_INTERVAL_SECONDS = 45
+// Refresh access tokens slightly early to avoid edge-expiry races during API calls.
+const TOKEN_EXPIRY_BUFFER_SECONDS = 30
 
 function normalizeRefreshInterval(raw: string | undefined): number {
   const parsed = Number.parseInt(raw ?? '', 10)
@@ -170,6 +177,7 @@ export class TailscaleDeviceService {
 
   private refreshPromise: Promise<void> | null = null
   private scheduler: ReturnType<typeof setInterval> | null = null
+  private oauthToken: { value: string; expiresAtMs: number } | null = null
 
   start(): void {
     if (this.scheduler) {
@@ -186,10 +194,21 @@ export class TailscaleDeviceService {
     }
 
     this.scheduler = setInterval(() => {
-      this.refreshFromTailscale('scheduled').catch(() => {
-        // Error is already logged in refreshFromTailscale
+      this.refreshFromTailscale('scheduled').catch((error) => {
+        serviceLogger.error('Unexpected Tailscale background refresh error', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        })
       })
     }, this.refreshIntervalSeconds * 1000)
+  }
+
+  stop(): void {
+    if (!this.scheduler) {
+      return
+    }
+
+    clearInterval(this.scheduler)
+    this.scheduler = null
   }
 
   async getDevices(): Promise<TailscaleDevicesResponse> {
@@ -248,7 +267,7 @@ export class TailscaleDeviceService {
         deviceCount: mappedDevices.length,
       })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown tailscale refresh error'
+      const message = error instanceof Error ? error.message : 'Unknown Tailscale refresh error'
 
       this.cachedResponse = {
         ...this.cachedResponse,
@@ -287,7 +306,10 @@ export class TailscaleDeviceService {
     )
 
     if (!response.ok) {
-      throw new Error(`Tailscale devices request failed: ${response.status}`)
+      const errorBody = await response.text()
+      throw new Error(
+        `Tailscale devices request failed: ${response.status} ${response.statusText} ${errorBody}`.trim()
+      )
     }
 
     const payload = (await response.json()) as TailscaleApiDevicesPayload
@@ -295,6 +317,10 @@ export class TailscaleDeviceService {
   }
 
   private async getAccessToken(): Promise<string> {
+    if (this.oauthToken && Date.now() < this.oauthToken.expiresAtMs) {
+      return this.oauthToken.value
+    }
+
     const clientId = process.env.TAILSCALE_OAUTH_CLIENT_ID
     const clientSecret = process.env.TAILSCALE_OAUTH_CLIENT_SECRET
 
@@ -315,13 +341,25 @@ export class TailscaleDeviceService {
     })
 
     if (!response.ok) {
-      throw new Error(`Tailscale OAuth token request failed: ${response.status}`)
+      const errorBody = await response.text()
+      throw new Error(
+        `Tailscale OAuth token request failed: ${response.status} ${response.statusText} ${errorBody}`.trim()
+      )
     }
 
-    const payload = (await response.json()) as { access_token?: string }
+    const payload = (await response.json()) as TailscaleTokenPayload
 
     if (!payload.access_token) {
       throw new Error('Tailscale OAuth token response missing access_token')
+    }
+
+    const expiresInSeconds = typeof payload.expires_in === 'number' ? payload.expires_in : 300
+    this.oauthToken = {
+      value: payload.access_token,
+      expiresAtMs:
+        Date.now() +
+        Math.max(expiresInSeconds - TOKEN_EXPIRY_BUFFER_SECONDS, TOKEN_EXPIRY_BUFFER_SECONDS) *
+          1000,
     }
 
     return payload.access_token
@@ -337,7 +375,7 @@ export class TailscaleDeviceService {
     let mappingsChanged = false
 
     const normalizedDevices = devices.map((device) => {
-      const deviceId = device.id ?? normalizeDeviceName(device)
+      const deviceId = this.getStableDeviceId(device)
       const existingMapping = persistedMappings.byDeviceId[deviceId]
 
       let sentinelDeviceId = existingMapping?.sentinelDeviceId ?? null
@@ -402,6 +440,24 @@ export class TailscaleDeviceService {
     })
 
     return tagMatch?.id ?? null
+  }
+
+  private getStableDeviceId(device: TailscaleApiDevice): string {
+    if (device.id) {
+      return device.id
+    }
+
+    const addresses = Array.isArray(device.addresses)
+      ? device.addresses.filter((ip): ip is string => typeof ip === 'string')
+      : []
+
+    const fallbackSeed = JSON.stringify({
+      hostname: normalizeDeviceName(device),
+      addresses,
+      name: device.name ?? '',
+    })
+
+    return `fallback:${Buffer.from(fallbackSeed).toString('base64url')}`
   }
 
   private async persistMappings(

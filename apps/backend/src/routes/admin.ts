@@ -24,14 +24,17 @@ router.get(
 
       return res.status(200).json(result)
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
       authLogger.error('Fetch tailscale devices error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: message,
         requestedBy: req.member?.id,
       })
 
       return res.status(503).json({
         error: 'Service Unavailable',
-        message: 'Unable to fetch tailscale devices',
+        message: message.includes('required')
+          ? 'Tailscale integration is not configured'
+          : 'Unable to fetch Tailscale devices from Tailscale API',
       })
     }
   }
