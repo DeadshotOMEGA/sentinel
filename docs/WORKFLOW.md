@@ -9,7 +9,8 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 3. **Target one issue in ⚙️ Working at a time** (Codex automation is warn-only, not hard-blocking).
 4. Move finished implementation to 🧪 Testing until validation is complete; only then mark ✅ Done.
 5. If you task-switch: move current work back to 📌 Planned, pull the next item into ⚙️ Working.
-6. Use `needs-investigation` when root cause is unclear, flaky, or hardware behavior is intermittent.
+6. Keep the protected Sentinel bootstrap setup account reserved for install/recovery workflows.
+7. Use `needs-investigation` when root cause is unclear, flaky, or hardware behavior is intermittent.
 
 ---
 
@@ -22,6 +23,14 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 - **Blocked reason** (required with `status:blocked`): `blocked:external`, `blocked:dependency`, `blocked:decision`
 - **Special**: `needs-investigation`
 - **Bot-managed**: `bot:stale`, `bot:conflict`
+
+## Bootstrap Account Guardrail
+
+- Sentinel reserves a protected bootstrap account for install/recovery:
+  - Badge: `0000000000`
+  - PIN: `0000`
+- The bootstrap credential is runtime-enforced and immutable through auth PIN-change endpoints.
+- The bootstrap account bypasses forced PIN-change gating to avoid lockout during setup/recovery.
 
 Source-of-truth file: `.github/labels.solo-workflow.json`
 Canonical policy pages live in GitHub Wiki under **Labeling and Automation**.

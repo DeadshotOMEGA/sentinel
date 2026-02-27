@@ -1,7 +1,12 @@
 import { Router, type Request, type Response } from 'express'
 import * as v from 'valibot'
 import { LoginRequestSchema, ChangePinSchema, SetPinSchema } from '@sentinel/contracts'
-import { AuthService, AuthenticationError, NotFoundError } from '../services/auth-service.js'
+import {
+  AuthService,
+  AuthenticationError,
+  ForbiddenError,
+  NotFoundError,
+} from '../services/auth-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
 
@@ -212,6 +217,12 @@ router.post('/change-pin', async (req: Request, res: Response) => {
         message: error.message,
       })
     }
+    if (error instanceof ForbiddenError) {
+      return res.status(403).json({
+        error: 'FORBIDDEN',
+        message: error.message,
+      })
+    }
     authLogger.error('Change PIN error', {
       error: error instanceof Error ? error.message : 'Unknown error',
     })
@@ -266,6 +277,12 @@ router.post('/set-pin', async (req: Request, res: Response) => {
     if (error instanceof NotFoundError) {
       return res.status(404).json({
         error: 'NOT_FOUND',
+        message: error.message,
+      })
+    }
+    if (error instanceof ForbiddenError) {
+      return res.status(403).json({
+        error: 'FORBIDDEN',
         message: error.message,
       })
     }

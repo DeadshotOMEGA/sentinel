@@ -8,6 +8,8 @@ import { configurePrismaLogging } from './lib/database.js'
 import { initializeWebSocketServer, shutdownWebSocketServer } from './websocket/server.js'
 import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
 import { tailscaleDeviceService } from './services/tailscale-device-service.js'
+import { SentinelBootstrapIntegrityService } from './services/sentinel-bootstrap-integrity-service.js'
+import { getPrismaClient } from './lib/database.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -132,6 +134,19 @@ async function main() {
     }
 
     await runStartupEnumSeed()
+    try {
+      const bootstrapIntegrityService = new SentinelBootstrapIntegrityService(getPrismaClient())
+      const identity = await bootstrapIntegrityService.ensureIntegrity()
+      logger.info('Sentinel bootstrap account integrity verified', {
+        memberId: identity.memberId,
+        badgeId: identity.badgeId,
+        badgeSerial: identity.badgeSerial,
+      })
+    } catch (error) {
+      logger.warn('Sentinel bootstrap account integrity check failed; continuing startup', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
 
     // Create Express app
     const app = createApp()

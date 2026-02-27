@@ -49,3 +49,9 @@ export async function getSentinelBootstrapIdentity(
 
   return parseSentinelBootstrapIdentity(setting.value)
 }
+
+export function isSentinelBootstrapServiceNumber(
+  serviceNumber: string | null | undefined
+): boolean {
+  return serviceNumber === SENTINEL_BOOTSTRAP_SERVICE_NUMBER
+}
