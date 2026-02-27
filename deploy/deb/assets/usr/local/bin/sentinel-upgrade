@@ -2,10 +2,10 @@
 set -euo pipefail
 
 DEPLOY_DIR="/opt/sentinel/deploy"
-LAUNCHER="${DEPLOY_DIR}/install-launcher.sh"
+LAUNCHER="${DEPLOY_DIR}/upgrade-launcher.sh"
 
 if [[ ! -x "${LAUNCHER}" ]]; then
-  echo "Sentinel install launcher not found: ${LAUNCHER}" >&2
+  echo "Sentinel upgrade launcher not found: ${LAUNCHER}" >&2
   echo "Reinstall sentinel package." >&2
   exit 1
 fi

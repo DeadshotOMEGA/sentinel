@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Upgrade Sentinel
+Comment=Upgrade Sentinel with guided prompts
+Exec=sh -c 'cd "$(dirname "%k")" && ./upgrade-launcher.sh'
+Icon=sentinel-appliance
+Terminal=true
+Categories=Utility;

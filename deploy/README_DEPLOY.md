@@ -23,24 +23,26 @@ Canonical public routes:
 
 Release assets now include a Debian package:
 
-- `sentinel-appliance-tools_<version>_all.deb`
+- `sentinel_<version>_all.deb`
 
 Install it on Ubuntu:
 
 ```bash
-sudo apt install ./sentinel-appliance-tools_<version>_all.deb
+sudo apt install ./sentinel_<version>_all.deb
 ```
 
 Then launch from app menu:
 
 - `Install Sentinel Appliance`
 - `Update Sentinel Appliance`
+- `Upgrade Sentinel`
 
 Or run directly:
 
 ```bash
 sentinel-install
 sentinel-update
+sentinel-upgrade
 ```
 
 ## If your laptop currently runs Windows
@@ -154,6 +156,44 @@ cd /opt/sentinel/deploy
 This performs automatic pre-update backup, image pull, one-shot migration deploy, migration status verification, and health gate verification.
 When update is launched from a newer deploy bundle outside `/opt/sentinel/deploy`, it now auto-syncs scripts into `/opt/sentinel/deploy` first (while preserving `.env` and `.appliance-state`) and then re-runs from the synced location.
 
+## Upgrade Sentinel (recommended patch workflow)
+
+Use the new upgrade flow when you want to:
+
+- upgrade to latest stable quickly,
+- upgrade or downgrade to a specific release tag,
+- refresh `/opt/sentinel/deploy` from the new package before running update logic.
+
+Desktop:
+
+1. Open `/opt/sentinel/deploy`.
+2. Double-click `Upgrade Sentinel.desktop`.
+3. Choose one:
+   - latest stable,
+   - a recent release from list,
+   - or manual `vX.Y.Z` entry.
+4. Review advanced options:
+   - Observability stack (`--with-obs`) default ON
+   - Publish Grafana on LAN (`--allow-grafana-lan`) default ON
+   - Publish Wiki on LAN (`--allow-wiki-lan`) default ON
+   - Dry run (validation only) default OFF
+
+CLI:
+
+```bash
+sentinel-upgrade
+```
+
+or for explicit targets:
+
+```bash
+sentinel-upgrade --latest
+sentinel-upgrade --version v1.4.4
+```
+
+The upgrade launcher verifies package checksums before install, installs the selected `.deb`, then executes the updated `/opt/sentinel/deploy/update.sh`.
+This deployment-tooling change is released as a patch update (for example `v1.4.4`), not a minor release.
+
 Optional update flags:
 
 - `--with-obs` / `--without-obs`
@@ -241,6 +281,14 @@ sudo systemctl restart sentinel-appliance.service
 ```bash
 curl -f http://127.0.0.1/healthz
 ```
+
+Post-upgrade UI smoke checks (recommended):
+
+- Dashboard Presence loads.
+- Members and Badges pages load.
+- Admin > User Accounts loads for admin/developer.
+- Logs page (`/logs`) opens without 404.
+- System Status shows the deployed version (for example `v1.4.4`).
 
 ## Notes
 
