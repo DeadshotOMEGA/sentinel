@@ -4,6 +4,7 @@ import { requireMinimumLevel, AccountLevel } from '../middleware/roles.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
+import { tailscaleDeviceService } from '../services/tailscale-device-service.js'
 
 const router: Router = Router()
 
@@ -13,6 +14,29 @@ const router: Router = Router()
  * List active member sessions
  * Requires: Admin (level 5+)
  */
+router.get(
+  '/tailscale/devices',
+  requireAuth(),
+  requireMinimumLevel(AccountLevel.ADMIN),
+  async (req: Request, res: Response) => {
+    try {
+      const result = await tailscaleDeviceService.getDevices()
+
+      return res.status(200).json(result)
+    } catch (error) {
+      authLogger.error('Fetch tailscale devices error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestedBy: req.member?.id,
+      })
+
+      return res.status(503).json({
+        error: 'Service Unavailable',
+        message: 'Unable to fetch tailscale devices',
+      })
+    }
+  }
+)
+
 router.get(
   '/sessions',
   requireAuth(),
