@@ -21,4 +21,4 @@
 
 - Add `bot:stale` after 30 days of issue inactivity.
 - Do not auto-close.
-- Exempt labels: `status:working`, `priority:p0`.
+- Exempt labels: `status:working`, `status:testing`, `priority:p0`.

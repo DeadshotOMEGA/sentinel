@@ -24,6 +24,6 @@ jobs:
           stale-issue-label: bot:stale
           stale-issue-message: >-
             This issue has been inactive for 30 days. Remove `bot:stale` or comment with an update to keep it active.
-          exempt-issue-labels: status:working,priority:p0
+          exempt-issue-labels: status:working,status:testing,priority:p0
           remove-issue-stale-when-updated: true
           operations-per-run: 200
