@@ -3,6 +3,7 @@ import { authLogger } from '../lib/logger.js'
 import { requestContext } from '../lib/logger.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { isSentinelBootstrapServiceNumber } from '../lib/system-bootstrap.js'
 
 /**
  * Extend Express Request type to include authentication data
@@ -120,7 +121,8 @@ export function requireAuth(required: boolean = true) {
             mustChangePin: session.member.mustChangePin,
           }
 
-          if (session.member.mustChangePin && !isPinChangeExemptPath(req)) {
+          const isBootstrapMember = isSentinelBootstrapServiceNumber(session.member.serviceNumber)
+          if (session.member.mustChangePin && !isBootstrapMember && !isPinChangeExemptPath(req)) {
             return res.status(403).json({
               error: 'PIN_CHANGE_REQUIRED',
               message: 'PIN change required before accessing this resource',
