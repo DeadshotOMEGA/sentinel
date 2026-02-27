@@ -151,13 +151,17 @@ fi
 [[ -n "${LAN_CIDR}" ]] || LAN_CIDR="192.168.0.0/16"
 upsert_env "LAN_CIDR" "${LAN_CIDR}"
 
-SERVER_IP="$(detect_server_ip || true)"
-if [[ -n "${SERVER_IP}" ]]; then
-  CURRENT_CORS="$(env_value CORS_ORIGIN "http://sentinel.local,http://localhost,http://127.0.0.1")"
-  if [[ ",${CURRENT_CORS}," != *",http://${SERVER_IP},"* ]]; then
-    upsert_env "CORS_ORIGIN" "${CURRENT_CORS},http://${SERVER_IP}"
-  fi
+APP_PUBLIC_URL_VALUE="$(env_value APP_PUBLIC_URL "http://$(env_value MDNS_HOSTNAME sentinel).local")"
+CURRENT_CORS="$(env_value CORS_ORIGIN "${APP_PUBLIC_URL_VALUE},http://localhost,http://127.0.0.1")"
+if [[ ",${CURRENT_CORS}," != *",${APP_PUBLIC_URL_VALUE},"* ]]; then
+  CURRENT_CORS="${CURRENT_CORS},${APP_PUBLIC_URL_VALUE}"
 fi
+
+SERVER_IP="$(detect_server_ip || true)"
+if [[ -n "${SERVER_IP}" && ",${CURRENT_CORS}," != *",http://${SERVER_IP},"* ]]; then
+  CURRENT_CORS="${CURRENT_CORS},http://${SERVER_IP}"
+fi
+upsert_env "CORS_ORIGIN" "${CURRENT_CORS}"
 
 save_state
 
@@ -182,4 +186,8 @@ if [[ "${NO_FIREWALL}" != "true" ]]; then
   configure_firewall "${LAN_CIDR}"
 fi
 
+ensure_mdns_hostname
+MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
+
 log "Update complete: ${PREVIOUS_VERSION} -> ${CURRENT_VERSION}"
+log "Local URL (mDNS): http://${MDNS_HOSTNAME}.local"

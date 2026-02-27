@@ -230,8 +230,12 @@ bootstrap_env_defaults() {
     upsert_env "GHCR_OWNER" "deadshotomega"
   fi
 
+  if is_placeholder_env_value "$(env_value MDNS_HOSTNAME)"; then
+    upsert_env "MDNS_HOSTNAME" "sentinel"
+  fi
+
   if is_placeholder_env_value "$(env_value APP_PUBLIC_URL)"; then
-    upsert_env "APP_PUBLIC_URL" "http://sentinel.local"
+    upsert_env "APP_PUBLIC_URL" "http://$(env_value MDNS_HOSTNAME sentinel).local"
   fi
 
   if is_placeholder_env_value "$(env_value APP_HTTPS_PORT)"; then
@@ -560,6 +564,55 @@ detect_lan_cidr() {
 
 detect_server_ip() {
   ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}'
+}
+
+normalize_mdns_hostname() {
+  local raw="${1:-}"
+  raw="$(printf '%s' "${raw}" | tr -d '\r' | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  raw="${raw%.local}"
+  [[ -n "${raw}" ]] || die "MDNS_HOSTNAME must not be empty"
+  [[ "${raw}" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]] \
+    || die "MDNS_HOSTNAME must be a valid single-label hostname (letters, numbers, hyphens)"
+  printf '%s\n' "${raw}"
+}
+
+ensure_mdns_hostname() {
+  local mdns_hostname current_hostname
+  mdns_hostname="$(normalize_mdns_hostname "$(env_value MDNS_HOSTNAME sentinel)")"
+  upsert_env "MDNS_HOSTNAME" "${mdns_hostname}"
+
+  if ! command -v avahi-daemon >/dev/null 2>&1 || ! dpkg -s libnss-mdns >/dev/null 2>&1; then
+    log "Installing mDNS support packages (avahi-daemon, libnss-mdns)"
+    if ! run_root apt-get update -y >/dev/null 2>&1; then
+      warn "Failed to run apt-get update while preparing mDNS packages."
+    fi
+    if ! run_root apt-get install -y avahi-daemon libnss-mdns >/dev/null 2>&1; then
+      warn "Failed to install avahi-daemon/libnss-mdns; mDNS hostname may not resolve."
+    fi
+  fi
+
+  current_hostname="$(hostnamectl --static 2>/dev/null || hostname 2>/dev/null || true)"
+  current_hostname="$(printf '%s' "${current_hostname%%.*}" | tr '[:upper:]' '[:lower:]')"
+
+  if [[ "${current_hostname}" != "${mdns_hostname}" ]]; then
+    log "Setting appliance hostname to '${mdns_hostname}' for mDNS (${mdns_hostname}.local)"
+    if command -v hostnamectl >/dev/null 2>&1; then
+      if ! run_root hostnamectl set-hostname "${mdns_hostname}"; then
+        run_root hostname "${mdns_hostname}" || true
+      fi
+    else
+      run_root hostname "${mdns_hostname}" || true
+      run_root sh -c "printf '%s\n' '${mdns_hostname}' >/etc/hostname" || true
+    fi
+  fi
+
+  if command -v systemctl >/dev/null 2>&1; then
+    if ! run_root systemctl enable --now avahi-daemon >/dev/null 2>&1; then
+      warn "Unable to enable/start avahi-daemon; mDNS may not be available."
+    fi
+    run_root systemctl restart avahi-daemon >/dev/null 2>&1 || true
+  fi
+
 }
 
 detect_ssh_port() {
