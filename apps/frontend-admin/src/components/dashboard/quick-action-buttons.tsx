@@ -13,6 +13,7 @@ import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import { KioskCheckinModal } from '@/components/dashboard/kiosk-checkin-modal'
 import { useLockupStatus, useCheckoutOptions } from '@/hooks/use-lockup'
 import { TID } from '@/lib/test-ids'
+import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
 
 export function QuickActionButtons() {
   const member = useAuthStore((state) => state.member)
@@ -24,6 +25,7 @@ export function QuickActionButtons() {
   const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
   const [isTransferScanModalOpen, setIsTransferScanModalOpen] = useState(false)
   const isDevMode = process.env.NODE_ENV === 'development'
+  const isSentinelSystem = isSentinelBootstrapServiceNumber(member?.serviceNumber)
 
   const { data: lockupStatus } = useLockupStatus()
   const currentHolder = lockupStatus?.currentHolder
@@ -73,10 +75,7 @@ export function QuickActionButtons() {
         </button>
       </div>
 
-      <button
-        className={`${actionBaseClass} btn-outline btn-primary`}
-        disabled
-      >
+      <button className={`${actionBaseClass} btn-outline btn-primary`} disabled>
         <FileText className="h-4 w-4" />
         Reports
       </button>
@@ -127,7 +126,7 @@ export function QuickActionButtons() {
         </div>
       )}
 
-      {isDevMode && (
+      {(isDevMode || isSentinelSystem) && (
         <button
           className={`${actionBaseClass} btn-outline btn-accent`}
           onClick={() => setIsScanModalOpen(true)}
@@ -159,7 +158,9 @@ export function QuickActionButtons() {
           onComplete={() => setIsTransferScanModalOpen(false)}
         />
       )}
-      {isDevMode && <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />}
+      {(isDevMode || isSentinelSystem) && (
+        <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
+      )}
       <KioskCheckinModal open={isKioskModalOpen} onOpenChange={setIsKioskModalOpen} />
     </div>
   )
