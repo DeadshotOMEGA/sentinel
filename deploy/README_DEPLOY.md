@@ -269,3 +269,34 @@ curl -f http://127.0.0.1/healthz
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Installer/update then verifies schema parity with migration files:
   `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`
+
+## Members + badges transfer (local -> deployed)
+
+Use the backend import/export scripts to move member + badge records without manual re-entry.
+
+### 1) Export from local Sentinel
+
+```bash
+pnpm --filter @sentinel/backend sentinel:export-members-badges --output ./members-badges-export.json
+```
+
+### 2) Copy export file to deployed appliance
+
+Example (adjust host/path):
+
+```bash
+scp ./members-badges-export.json user@sentinel-host:/opt/sentinel/deploy/members-badges-export.json
+```
+
+### 3) Import on deployed Sentinel
+
+```bash
+cd /opt/sentinel/deploy
+docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:import-members-badges --input /opt/sentinel/deploy/members-badges-export.json"
+```
+
+Notes:
+
+- Protected Sentinel bootstrap account is excluded from transfer.
+- Import upserts by `serviceNumber` (members) and `serialNumber` (badges).
+- Members with rank codes missing on target are skipped and reported.

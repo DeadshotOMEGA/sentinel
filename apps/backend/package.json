@@ -10,6 +10,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "sentinel:bootstrap-account": "tsx scripts/bootstrap-sentinel-account.ts",
+    "sentinel:export-members-badges": "tsx scripts/export-members-badges.ts",
+    "sentinel:import-members-badges": "tsx scripts/import-members-badges.ts",
     "sentinel:seed-default-enums": "tsx scripts/seed-default-enums.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
