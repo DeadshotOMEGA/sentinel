@@ -48,6 +48,11 @@
   { "name": "status:planned", "color": "c5def5", "description": "Status: accepted and queued" },
   { "name": "status:working", "color": "0e8a16", "description": "Status: currently in progress" },
   {
+    "name": "status:testing",
+    "color": "1d76db",
+    "description": "Status: in validation/testing before final completion"
+  },
+  {
     "name": "status:blocked",
     "color": "d876e3",
     "description": "Status: blocked by dependency/decision"

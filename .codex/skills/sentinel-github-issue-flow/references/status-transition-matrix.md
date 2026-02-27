@@ -21,6 +21,13 @@
 - Run working-load check and warn if another issue is already working.
 - Project status: `⚙️ Working`
 
+## testing
+
+- Set label: `status:testing`
+- Remove other status labels.
+- Keep milestone/release aligned for follow-up fixes in same release cycle.
+- Project status: `🧪 Testing`
+
 ## blocked
 
 - Set label: `status:blocked`
