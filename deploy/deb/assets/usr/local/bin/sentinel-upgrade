@@ -10,4 +10,8 @@ if [[ ! -x "${LAUNCHER}" ]]; then
   exit 1
 fi
 
-exec "${LAUNCHER}"
+set +e
+"${LAUNCHER}" "$@"
+exit_code=$?
+set -e
+exit "${exit_code}"

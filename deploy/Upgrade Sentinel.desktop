@@ -3,7 +3,7 @@ Version=1.0
 Type=Application
 Name=Upgrade Sentinel
 Comment=Upgrade Sentinel with guided prompts
-Exec=sh -c 'cd "$(dirname "%k")" && ./upgrade-launcher.sh'
+Exec=sh -c 'cd "$(dirname "%k")" && UPGRADE_SENTINEL_HOLD=1 ./upgrade-launcher.sh'
 Icon=sentinel-appliance
 Terminal=true
 Categories=Utility;

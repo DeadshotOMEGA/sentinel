@@ -19,6 +19,8 @@ RELEASE_PUBLISHED_AT=""
 RELEASE_URL=""
 RELEASE_HIGHLIGHTS=""
 DEPLOYMENT_NOTES=""
+LOG_DIR="${SCRIPT_DIR}/logs"
+LOG_FILE=""
 
 usage() {
   cat <<USAGE
@@ -49,6 +51,35 @@ warn() {
 
 log() {
   echo "[upgrade] $*"
+}
+
+setup_logging() {
+  mkdir -p "${LOG_DIR}"
+  LOG_FILE="${LOG_DIR}/upgrade-$(date +%Y%m%d-%H%M%S).log"
+  exec > >(tee -a "${LOG_FILE}") 2>&1
+  log "Log file: ${LOG_FILE}"
+}
+
+hold_before_exit_if_requested() {
+  local exit_code="${1:-0}"
+  if [[ -z "${UPGRADE_SENTINEL_HOLD:-}" ]]; then
+    return 0
+  fi
+  if [[ ! -t 0 ]]; then
+    return 0
+  fi
+
+  echo
+  if [[ "${exit_code}" -eq 0 ]]; then
+    echo "[upgrade] Completed successfully."
+  else
+    echo "[upgrade] Failed with exit code ${exit_code}."
+  fi
+  if [[ -n "${LOG_FILE}" ]]; then
+    echo "[upgrade] See log: ${LOG_FILE}"
+  fi
+  echo "[upgrade] Press Enter to close."
+  read -r _
 }
 
 command_exists() {
@@ -525,6 +556,9 @@ confirm_summary_zenity() {
     --height=560 \
     --text="${text}" || exit 1
 }
+
+setup_logging
+trap 'exit_code=$?; hold_before_exit_if_requested "${exit_code}"' EXIT
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
