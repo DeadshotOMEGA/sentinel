@@ -16,6 +16,7 @@ export interface LoginResult {
     rank: string
     serviceNumber: string
     accountLevel: number
+    mustChangePin: boolean
   }
 }
 
@@ -53,6 +54,7 @@ export class AuthService {
             rank: true,
             serviceNumber: true,
             accountLevel: true,
+            mustChangePin: true,
             status: true,
             pinHash: true,
           },
@@ -112,6 +114,7 @@ export class AuthService {
         rank: member.rank,
         serviceNumber: member.serviceNumber,
         accountLevel: member.accountLevel,
+        mustChangePin: member.mustChangePin,
       },
     }
   }
@@ -151,7 +154,7 @@ export class AuthService {
     const hash = await bcrypt.hash(newPin, BCRYPT_COST)
     await this.prisma.member.update({
       where: { id: memberId },
-      data: { pinHash: hash },
+      data: { pinHash: hash, mustChangePin: false },
     })
 
     authLogger.info('PIN changed', { memberId })
@@ -173,7 +176,7 @@ export class AuthService {
     const hash = await bcrypt.hash(newPin, BCRYPT_COST)
     await this.prisma.member.update({
       where: { id: memberId },
-      data: { pinHash: hash },
+      data: { pinHash: hash, mustChangePin: false },
     })
 
     authLogger.info('PIN set by admin', { memberId })
