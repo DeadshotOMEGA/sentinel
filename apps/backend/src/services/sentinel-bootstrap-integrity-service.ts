@@ -133,6 +133,16 @@ export class SentinelBootstrapIntegrityService {
         },
       })
 
+      await tx.member.updateMany({
+        where: {
+          badgeId: badgeRecord.id,
+          NOT: { id: memberRecord.id },
+        },
+        data: {
+          badgeId: null,
+        },
+      })
+
       await tx.member.update({
         where: { id: memberRecord.id },
         data: { badgeId: badgeRecord.id },
