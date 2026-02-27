@@ -54,20 +54,26 @@ When splitting commits:
 
 ## Branch Policy (Git Flow)
 
-- Treat these as protected by default: `main`, `master`, `production`, `release/*`.
+- Treat these as protected by default: `main`, `master`, `production`.
 - Do not push directly to protected branches unless the user explicitly asks for a direct push.
+- Treat `release/*` as stabilization branches: avoid direct commits when possible and prefer PRs from `feature/*`/`fix/*` into `release/*`.
 - Allow normal push flow on working branches such as `rebuild`, `develop`, `feature/*`, `bugfix/*`, and `hotfix/*`.
 - If currently on a protected branch and direct push was not explicitly requested, stop and ask how to proceed.
 
 ```bash
 branch="$(git branch --show-current)"
 case "$branch" in
-  main|master|production|release/*)
+  main|master|production)
     echo "Protected branch detected: $branch. Ask for explicit direct-push approval."
     exit 1
     ;;
 esac
 ```
+
+Release branch note:
+
+- Use `release/vX.Y.Z` only for short-lived release coordination.
+- Merge release PRs into `release/vX.Y.Z`, then merge `release/vX.Y.Z` to `main`, then tag `vX.Y.Z`.
 
 ## Commit Signing Preference
 
