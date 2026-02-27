@@ -76,6 +76,7 @@ Installer behavior:
 - If `.env` is missing, installer creates it from `.env.example`.
 - If secret fields still have placeholders (for example `change-this-...`, `replace-this-...`, or `changeme`), installer auto-generates secure random values.
 - Installer writes a root-only snapshot of service credentials to `/opt/sentinel/credentials/service-secrets.env`.
+- Installer enforces appliance mDNS hostname from `MDNS_HOSTNAME` (default `sentinel`) and ensures mDNS packages/services are present.
 - You can still edit `.env` later for custom settings.
 
 If operators will browse by IP (`http://<server-ip>`), ensure `CORS_ORIGIN` in `.env` includes both hostname and IP origins, for example:
@@ -99,6 +100,7 @@ Port defaults in `.env`:
 
 - `APP_HTTP_PORT=80` (Caddy appliance entrypoint)
 - `APP_HTTPS_PORT=443` (Caddy HTTPS bind port)
+- `MDNS_HOSTNAME=sentinel` (published as `http://sentinel.local`)
 - `GRAFANA_LAN_PORT=3010` (only used if `--allow-grafana-lan`)
 - `GRAFANA_ROOT_URL=http://localhost:3010` (matches Grafana LAN port when enabled)
 - `WIKI_DOMAIN=docs.sentinel.local`
@@ -228,7 +230,7 @@ sudo systemctl restart sentinel-appliance.service
 
 ## URLs after install
 
-- mDNS (best effort): `http://sentinel.local`
+- mDNS (best effort): `http://<MDNS_HOSTNAME>.local` (default `http://sentinel.local`)
 - Wiki docs host: `http://docs.sentinel.local`
 - LAN fallback: `http://<server-ip>`
 - Optional direct Wiki LAN URL (if enabled): `http://<server-ip>:3020`
