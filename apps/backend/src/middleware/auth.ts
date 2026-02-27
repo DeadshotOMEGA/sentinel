@@ -18,6 +18,7 @@ declare global {
         rank: string
         serviceNumber: string
         accountLevel: number
+        mustChangePin: boolean
       }
       apiKey?: {
         id: string
@@ -77,6 +78,18 @@ function extractApiKey(req: Request): string | null {
   return null
 }
 
+function isPinChangeExemptPath(req: Request): boolean {
+  const method = req.method.toUpperCase()
+  const path = req.path
+
+  if (method === 'POST' && path === '/auth/change-pin') return true
+  if (method === 'POST' && path === '/auth/logout') return true
+  if (method === 'GET' && path === '/auth/session') return true
+  if (method === 'POST' && path === '/auth/login') return true
+
+  return false
+}
+
 /**
  * Authenticate request using session token or API key
  *
@@ -104,6 +117,14 @@ export function requireAuth(required: boolean = true) {
             rank: session.member.rank,
             serviceNumber: session.member.serviceNumber,
             accountLevel: session.member.accountLevel,
+            mustChangePin: session.member.mustChangePin,
+          }
+
+          if (session.member.mustChangePin && !isPinChangeExemptPath(req)) {
+            return res.status(403).json({
+              error: 'PIN_CHANGE_REQUIRED',
+              message: 'PIN change required before accessing this resource',
+            })
           }
 
           // Add user ID to request context for logging

@@ -158,6 +158,7 @@ router.get('/session', async (req: Request, res: Response) => {
         rank: session.member.rank,
         serviceNumber: session.member.serviceNumber,
         accountLevel: session.member.accountLevel,
+        mustChangePin: session.member.mustChangePin,
       },
       expiresAt: session.expiresAt.toISOString(),
     })

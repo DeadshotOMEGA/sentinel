@@ -87,6 +87,55 @@ function toApiFormat(user: {
   }
 }
 
+type MemberRequestContext = {
+  member?: {
+    id?: string
+    accountLevel?: number
+  }
+}
+
+function requireAdminActor(req: MemberRequestContext):
+  | { ok: true; actorId: string; actorLevel: number }
+  | {
+      ok: false
+      response: {
+        status: 401 | 403
+        body: {
+          error: 'UNAUTHORIZED' | 'FORBIDDEN'
+          message: string
+        }
+      }
+    } {
+  if (!req.member?.id) {
+    return {
+      ok: false,
+      response: {
+        status: 401,
+        body: {
+          error: 'UNAUTHORIZED',
+          message: 'Authentication required',
+        },
+      },
+    }
+  }
+
+  const actorLevel = req.member.accountLevel ?? 0
+  if (actorLevel < 5) {
+    return {
+      ok: false,
+      response: {
+        status: 403,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Requires admin or developer access',
+        },
+      },
+    }
+  }
+
+  return { ok: true, actorId: req.member.id, actorLevel }
+}
+
 /**
  * Admin user management routes
  */
@@ -94,8 +143,13 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * GET /api/admin-users - List all admin users (including disabled)
    */
-  getAdminUsers: async () => {
+  getAdminUsers: async ({ req }: { req: MemberRequestContext }) => {
     try {
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+
       const users = await adminUserRepo.findAllIncludingDisabled()
 
       return {
@@ -121,8 +175,19 @@ export const adminUsersRouter = s.router(adminUserContract, {
   /**
    * GET /api/admin-users/:id - Get admin user by ID
    */
-  getAdminUserById: async ({ params }: { params: { id: string } }) => {
+  getAdminUserById: async ({
+    params,
+    req,
+  }: {
+    params: { id: string }
+    req: MemberRequestContext
+  }) => {
     try {
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+
       const user = await adminUserRepo.findById(params.id)
 
       if (!user) {
@@ -159,12 +224,16 @@ export const adminUsersRouter = s.router(adminUserContract, {
    */
   createAdminUser: async ({ body, req }) => {
     try {
-      const actorLevel = req.member?.accountLevel ?? 0
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+      const actorLevel = actor.actorLevel
 
       apiLogger.info('Creating new admin user', {
         username: body.username,
         role: body.role,
-        actorId: req.member?.id,
+        actorId: actor.actorId,
       })
 
       // Privilege escalation check
@@ -213,7 +282,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: 'user_created',
         entityType: 'admin_user',
         entityId: user.id,
@@ -259,10 +328,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
   }: {
     params: { id: string }
     body: UpdateAdminUser
-    req: { member?: { id?: string; accountLevel?: number } }
+    req: MemberRequestContext
   }) => {
     try {
-      const actorLevel = req.member?.accountLevel ?? 0
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+      const actorLevel = actor.actorLevel
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -334,11 +407,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       const roleChanged = body.role && body.role !== existingUser.role
 
       // Update user
-      const user = await adminUserRepo.update(params.id, body, req.member?.id)
+      const user = await adminUserRepo.update(params.id, body, actor.actorId)
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: roleChanged ? 'role_changed' : 'user_updated',
         entityType: 'admin_user',
         entityId: user.id,
@@ -380,10 +453,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
   }: {
     params: { id: string }
     body: ResetPassword
-    req: { member?: { id?: string; accountLevel?: number } }
+    req: MemberRequestContext
   }) => {
     try {
-      const actorLevel = req.member?.accountLevel ?? 0
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+      const actorLevel = actor.actorLevel
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -412,11 +489,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       const passwordHash = await hashPassword(body.newPassword)
 
       // Reset password
-      await adminUserRepo.resetPassword(params.id, passwordHash, req.member?.id ?? 'unknown')
+      await adminUserRepo.resetPassword(params.id, passwordHash, actor.actorId)
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: 'password_reset',
         entityType: 'admin_user',
         entityId: params.id,
@@ -456,13 +533,17 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req,
   }: {
     params: { id: string }
-    req: { member?: { id?: string; accountLevel?: number } }
+    req: MemberRequestContext
   }) => {
     try {
-      const actorLevel = req.member?.accountLevel ?? 0
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+      const actorLevel = actor.actorLevel
 
       // Cannot disable yourself
-      if (req.member?.id === params.id) {
+      if (actor.actorId === params.id) {
         return {
           status: 403 as const,
           body: {
@@ -527,11 +608,11 @@ export const adminUsersRouter = s.router(adminUserContract, {
       }
 
       // Disable user
-      await adminUserRepo.disable(params.id, req.member?.id ?? 'unknown')
+      await adminUserRepo.disable(params.id, actor.actorId)
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: 'user_disabled',
         entityType: 'admin_user',
         entityId: params.id,
@@ -571,10 +652,14 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req,
   }: {
     params: { id: string }
-    req: { member?: { id?: string; accountLevel?: number } }
+    req: MemberRequestContext
   }) => {
     try {
-      const actorLevel = req.member?.accountLevel ?? 0
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+      const actorLevel = actor.actorLevel
 
       // Check if user exists
       const existingUser = await adminUserRepo.findById(params.id)
@@ -615,7 +700,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: 'user_enabled',
         entityType: 'admin_user',
         entityId: params.id,
@@ -655,11 +740,26 @@ export const adminUsersRouter = s.router(adminUserContract, {
     req,
   }: {
     params: { id: string }
-    req: { member?: { id?: string } }
+    req: MemberRequestContext
   }) => {
     try {
+      const actor = requireAdminActor(req)
+      if (!actor.ok) {
+        return actor.response
+      }
+
+      if (actor.actorLevel < 6) {
+        return {
+          status: 403 as const,
+          body: {
+            error: 'FORBIDDEN',
+            message: 'Only developers can delete admin users',
+          },
+        }
+      }
+
       // Cannot delete yourself
-      if (req.member?.id === params.id) {
+      if (actor.actorId === params.id) {
         return {
           status: 403 as const,
           body: {
@@ -706,7 +806,7 @@ export const adminUsersRouter = s.router(adminUserContract, {
 
       // Audit log
       await auditRepo.log({
-        adminUserId: req.member?.id ?? null,
+        adminUserId: actor.actorId,
         action: 'user_deleted',
         entityType: 'admin_user',
         entityId: params.id,

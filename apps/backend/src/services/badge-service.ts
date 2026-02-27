@@ -2,6 +2,7 @@ import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
+import { MemberAuthProvisioningService } from './member-auth-provisioning-service.js'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
 import type {
   Badge,
@@ -25,11 +26,13 @@ interface BadgeValidationResult {
 export class BadgeService {
   private badgeRepo: BadgeRepository
   private memberRepo: MemberRepository
+  private memberAuthProvisioningService: MemberAuthProvisioningService
 
   constructor(prismaClient?: PrismaClient) {
     const prisma = prismaClient || getPrismaClient()
     this.badgeRepo = new BadgeRepository(prisma)
     this.memberRepo = new MemberRepository(prisma)
+    this.memberAuthProvisioningService = new MemberAuthProvisioningService(prisma)
   }
 
   /**
@@ -74,9 +77,7 @@ export class BadgeService {
     // Check if serial number already exists
     const existing = await this.badgeRepo.findBySerialNumber(data.serialNumber)
     if (existing) {
-      throw new ConflictError(
-        `Badge with serial number ${data.serialNumber} already exists`
-      )
+      throw new ConflictError(`Badge with serial number ${data.serialNumber} already exists`)
     }
 
     // Create badge with explicit defaults
@@ -121,6 +122,7 @@ export class BadgeService {
 
     // Update member record with badge ID
     await this.memberRepo.update(memberId, { badgeId })
+    await this.memberAuthProvisioningService.provisionForBadgeAssignment(memberId)
 
     // Broadcast badge assignment
     broadcastBadgeAssignment({
