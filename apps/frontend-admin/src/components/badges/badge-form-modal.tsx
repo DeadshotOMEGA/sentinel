@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateBadge, useUpdateBadge } from '@/hooks/use-badges'
 import { useMembers } from '@/hooks/use-members'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
+import { SetPinModal } from '@/components/members/set-pin-modal'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,7 @@ interface BadgeFormModalProps {
 }
 
 export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormModalProps) {
+  const queryClient = useQueryClient()
   const createBadge = useCreateBadge()
   const updateBadge = useUpdateBadge()
   const { data: membersData, isLoading: isMembersLoading } = useMembers({
@@ -39,6 +42,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
   const [assignmentType, setAssignmentType] = useState<'unassigned' | 'member'>('unassigned')
   const [assignedToId, setAssignedToId] = useState('')
   const [memberSearch, setMemberSearch] = useState('')
+  const [pinModalOpen, setPinModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -61,6 +65,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
     setAssignmentType('unassigned')
     setAssignedToId('')
     setMemberSearch('')
+    setPinModalOpen(false)
     setError(null)
   }, [mode, badge, open])
 
@@ -86,6 +91,11 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
       return fullName.includes(search) || reverseName.includes(search)
     })
   }, [membersData, memberSearch])
+
+  const selectedMember = useMemo(
+    () => membersData?.members.find((member) => member.id === assignedToId),
+    [assignedToId, membersData?.members]
+  )
 
   const isMemberAssignmentInvalid = assignmentType === 'member' && !assignedToId
   const isSerialInvalid = !serialNumber.trim()
@@ -229,6 +239,45 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                   Select an assigned member to enable saving.
                 </span>
               )}
+
+              <div className="mt-(--space-3) rounded-box border border-base-300 p-(--space-3)">
+                <div className="flex items-center justify-between gap-(--space-2)">
+                  <p className="text-sm font-medium">PIN setup</p>
+                  <span
+                    className={`badge ${
+                      selectedMember?.mustChangePin ? 'badge-warning' : 'badge-success'
+                    }`}
+                  >
+                    {selectedMember
+                      ? selectedMember.mustChangePin
+                        ? 'PIN setup required'
+                        : 'PIN configured'
+                      : 'No member selected'}
+                  </span>
+                </div>
+
+                {selectedMember?.mustChangePin && (
+                  <p className="mt-(--space-2) text-sm text-warning">
+                    This member currently requires PIN setup/change.
+                  </p>
+                )}
+                {!selectedMember && (
+                  <p className="mt-(--space-2) text-sm text-base-content/70">
+                    Select a member to enable PIN setup before saving this badge assignment.
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  className={`mt-(--space-2) btn btn-sm ${
+                    selectedMember?.mustChangePin ? 'btn-warning' : 'btn-primary'
+                  }`}
+                  disabled={!selectedMember}
+                  onClick={() => setPinModalOpen(true)}
+                >
+                  Setup PIN
+                </button>
+              </div>
             </fieldset>
           )}
 
@@ -260,6 +309,17 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
           </DialogFooter>
         </form>
       </DialogContent>
+      {selectedMember && (
+        <SetPinModal
+          open={pinModalOpen}
+          onOpenChange={setPinModalOpen}
+          memberId={selectedMember.id}
+          memberName={`${selectedMember.rank} ${selectedMember.lastName}`.trim()}
+          onSuccess={async () => {
+            await queryClient.invalidateQueries({ queryKey: ['members'] })
+          }}
+        />
+      )}
     </Dialog>
   )
 }
