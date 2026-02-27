@@ -280,9 +280,6 @@ create_cmd=(gh issue create --repo "${REPO}" --title "${TITLE}" --body-file "${T
 if [[ -n "${MILESTONE}" ]]; then
   create_cmd+=(--milestone "${MILESTONE}")
 fi
-if [[ -n "${PROJECT_TITLE}" ]]; then
-  create_cmd+=(--project "${PROJECT_TITLE}")
-fi
 while IFS= read -r label; do
   [[ -n "${label}" ]] || continue
   create_cmd+=(--label "${label}")
@@ -293,25 +290,32 @@ rm -f "${TMP_BODY_FILE}"
 
 ISSUE_NUMBER="${ISSUE_URL##*/}"
 
-STATUS_OPTION="🧪 Inbox"
+STATUS_OPTION="📥 Inbox"
 
-"${SCRIPT_DIR}"/set-project-fields.sh \
-  --repo "${REPO}" \
-  --issue-number "${ISSUE_NUMBER}" \
-  --project-title "${PROJECT_TITLE}" \
-  --status "${STATUS_OPTION}" \
-  --area "${PROJECT_AREA_VALUE}" \
-  --priority "${PROJECT_PRIORITY_VALUE}" \
-  --release "${RELEASE}" \
-  --confirm >/dev/null
+PROJECT_FIELDS_RESULT=""
+PROJECT_FIELDS_WARNING=""
+if [[ -n "${PROJECT_TITLE}" ]]; then
+  if ! PROJECT_FIELDS_RESULT="$("${SCRIPT_DIR}"/set-project-fields.sh \
+    --repo "${REPO}" \
+    --issue-number "${ISSUE_NUMBER}" \
+    --project-title "${PROJECT_TITLE}" \
+    --status "${STATUS_OPTION}" \
+    --area "${PROJECT_AREA_VALUE}" \
+    --priority "${PROJECT_PRIORITY_VALUE}" \
+    --release "${RELEASE}" \
+    --confirm 2>&1)"; then
+    PROJECT_FIELDS_WARNING="${PROJECT_FIELDS_RESULT}"
+  fi
+fi
 
 jq -n \
   --argjson plan "${PLAN_JSON}" \
   --arg issueUrl "${ISSUE_URL}" \
   --arg issueNumber "${ISSUE_NUMBER}" \
+  --arg projectWarning "${PROJECT_FIELDS_WARNING}" \
   '{
     mutated: true,
     issueUrl: $issueUrl,
     issueNumber: ($issueNumber|tonumber),
     applied: $plan
-  }'
+  } + (if ($projectWarning | length) > 0 then {projectWarning: $projectWarning} else {} end)'

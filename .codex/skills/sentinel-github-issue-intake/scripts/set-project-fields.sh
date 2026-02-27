@@ -130,14 +130,58 @@ fi
 AREA_VALUE="$(normalize_area_field_value "${AREA_VALUE}")"
 PRIORITY_VALUE="$(normalize_priority_field_value "${PRIORITY_VALUE}")"
 
-PROJECT_VIEW_JSON="$(gh project view "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --format json)"
+PROJECT_VIEW_JSON=""
+if ! PROJECT_VIEW_JSON="$(gh project view "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --format json 2>&1)"; then
+  jq -n \
+    --arg repo "${REPO}" \
+    --arg issueNumber "${ISSUE_NUMBER}" \
+    --arg projectOwner "${PROJECT_OWNER}" \
+    --arg projectNumber "${PROJECT_NUMBER}" \
+    --arg projectTitle "${PROJECT_TITLE}" \
+    --arg dryRun "${DRY_RUN}" \
+    --arg confirm "${CONFIRM}" \
+    --arg warning "${PROJECT_VIEW_JSON}" \
+    '{
+      repo: $repo,
+      issueNumber: ($issueNumber | tonumber),
+      projectOwner: $projectOwner,
+      projectNumber: ($projectNumber | tonumber),
+      projectTitle: $projectTitle,
+      dryRun: ($dryRun == "true"),
+      confirm: ($confirm == "true"),
+      changed: false,
+      warnings: [$warning]
+    }'
+  exit 0
+fi
 PROJECT_ID="$(jq -r '.id' <<<"${PROJECT_VIEW_JSON}")"
 [[ -n "${PROJECT_ID}" && "${PROJECT_ID}" != "null" ]] || {
   echo "Unable to resolve project id for owner=${PROJECT_OWNER} number=${PROJECT_NUMBER}" >&2
   exit 1
 }
 
-PROJECT_FIELDS_JSON="$(gh project field-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --format json)"
+PROJECT_FIELDS_JSON=""
+if ! PROJECT_FIELDS_JSON="$(gh project field-list "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --format json 2>&1)"; then
+  jq -n \
+    --arg repo "${REPO}" \
+    --arg issueNumber "${ISSUE_NUMBER}" \
+    --arg projectOwner "${PROJECT_OWNER}" \
+    --arg projectNumber "${PROJECT_NUMBER}" \
+    --arg dryRun "${DRY_RUN}" \
+    --arg confirm "${CONFIRM}" \
+    --arg warning "${PROJECT_FIELDS_JSON}" \
+    '{
+      repo: $repo,
+      issueNumber: ($issueNumber | tonumber),
+      projectOwner: $projectOwner,
+      projectNumber: ($projectNumber | tonumber),
+      dryRun: ($dryRun == "true"),
+      confirm: ($confirm == "true"),
+      changed: false,
+      warnings: [$warning]
+    }'
+  exit 0
+fi
 
 # shellcheck disable=SC2016
 ISSUE_ITEM_QUERY='query($owner:String!, $repo:String!, $issue:Int!){repository(owner:$owner,name:$repo){issue(number:$issue){projectItems(first:50){nodes{id project{__typename ... on ProjectV2{id number owner{__typename ... on User{login} ... on Organization{login}}}}}}}}}'
@@ -158,7 +202,46 @@ ISSUE_ITEM_ID="$(fetch_issue_item_id || true)"
 
 if [[ -z "${ISSUE_ITEM_ID}" ]]; then
   if [[ "${CONFIRM}" == "true" ]]; then
-    gh issue edit "${ISSUE_NUMBER}" --repo "${REPO}" --add-project "${PROJECT_TITLE}" >/dev/null
+    ISSUE_URL="$(gh issue view "${ISSUE_NUMBER}" --repo "${REPO}" --json url --jq '.url' 2>/dev/null || true)"
+    if [[ -z "${ISSUE_URL}" ]]; then
+      jq -n \
+        --arg repo "${REPO}" \
+        --arg issueNumber "${ISSUE_NUMBER}" \
+        --arg projectTitle "${PROJECT_TITLE}" \
+        --arg dryRun "${DRY_RUN}" \
+        --arg confirm "${CONFIRM}" \
+        '{
+          repo: $repo,
+          issueNumber: ($issueNumber | tonumber),
+          projectTitle: $projectTitle,
+          dryRun: ($dryRun == "true"),
+          confirm: ($confirm == "true"),
+          changed: false,
+          warning: "Unable to resolve issue URL for project linkage; field updates skipped"
+        }'
+      exit 0
+    fi
+
+    # Prefer Projects v2 command path to avoid legacy classic-project APIs.
+    if ! gh project item-add "${PROJECT_NUMBER}" --owner "${PROJECT_OWNER}" --url "${ISSUE_URL}" >/dev/null 2>&1; then
+      jq -n \
+        --arg repo "${REPO}" \
+        --arg issueNumber "${ISSUE_NUMBER}" \
+        --arg projectTitle "${PROJECT_TITLE}" \
+        --arg dryRun "${DRY_RUN}" \
+        --arg confirm "${CONFIRM}" \
+        '{
+          repo: $repo,
+          issueNumber: ($issueNumber | tonumber),
+          projectTitle: $projectTitle,
+          dryRun: ($dryRun == "true"),
+          confirm: ($confirm == "true"),
+          changed: false,
+          warning: "Issue project linkage failed via gh project item-add; field updates skipped"
+        }'
+      exit 0
+    fi
+
     ISSUE_ITEM_ID="$(fetch_issue_item_id || true)"
   fi
 fi
