@@ -1,6 +1,6 @@
 ---
 name: sentinel-github-issue-flow
-description: Manage Sentinel issue lifecycle transitions (triage/planned/working/blocked/done) with release-milestone alignment and warn-only working-limit policy.
+description: Manage Sentinel issue lifecycle transitions (triage/planned/working/testing/blocked/done) with release-milestone alignment and warn-only working-limit policy.
 ---
 
 # Sentinel GitHub Issue Flow
@@ -8,7 +8,7 @@ description: Manage Sentinel issue lifecycle transitions (triage/planned/working
 ## Use This Skill When
 
 - A user asks to triage/reprioritize/release-align/update issue status.
-- A user asks to move an issue to planned, working, blocked, or done.
+- A user asks to move an issue to planned, working, testing, blocked, or done.
 - A user asks to repair milestone/release mismatch.
 
 ## Required Behavior
@@ -44,7 +44,7 @@ mkdir -p .codex/tmp
 {
   "repo": "DeadshotOMEGA/sentinel",
   "issueNumber": 123,
-  "targetState": "triage|planned|working|blocked|done",
+  "targetState": "triage|planned|working|testing|blocked|done",
   "warnOnlyWorkingLimit": true,
   "blockedLabel": "blocked:external|blocked:dependency|blocked:decision|null",
   "blockerNote": "string|null",

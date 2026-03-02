@@ -19,9 +19,16 @@ interface SetPinModalProps {
   onOpenChange: (open: boolean) => void
   memberId: string
   memberName: string
+  onSuccess?: () => void | Promise<void>
 }
 
-export function SetPinModal({ open, onOpenChange, memberId, memberName }: SetPinModalProps) {
+export function SetPinModal({
+  open,
+  onOpenChange,
+  memberId,
+  memberName,
+  onSuccess,
+}: SetPinModalProps) {
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [loading, setLoading] = useState(false)
@@ -65,6 +72,10 @@ export function SetPinModal({ open, onOpenChange, memberId, memberName }: SetPin
         const data = await res.json()
         setError(data.message || 'Failed to set PIN')
         return
+      }
+
+      if (onSuccess) {
+        await onSuccess()
       }
 
       toast.success(`PIN set for ${memberName}`)

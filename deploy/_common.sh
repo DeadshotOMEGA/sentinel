@@ -266,6 +266,14 @@ bootstrap_env_defaults() {
     upsert_env "WIKI_IMAGE_TAG" "2.5.312"
   fi
 
+  if is_placeholder_env_value "$(env_value KROKI_IMAGE_TAG)"; then
+    upsert_env "KROKI_IMAGE_TAG" "0.30.0"
+  fi
+
+  if is_placeholder_env_value "$(env_value KROKI_SERVER_URL)"; then
+    upsert_env "KROKI_SERVER_URL" "http://kroki:8000"
+  fi
+
   if is_placeholder_env_value "$(env_value WIKI_LAN_PORT)"; then
     upsert_env "WIKI_LAN_PORT" "3020"
   fi

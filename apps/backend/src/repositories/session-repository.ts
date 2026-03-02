@@ -13,6 +13,7 @@ export interface SessionWithMember {
     rank: string
     serviceNumber: string
     accountLevel: number
+    mustChangePin: boolean
     status: string
     pinHash: string | null
   }
@@ -75,6 +76,7 @@ export class SessionRepository {
             rank: true,
             serviceNumber: true,
             accountLevel: true,
+            mustChangePin: true,
             status: true,
             pinHash: true,
           },

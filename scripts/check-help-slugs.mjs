@@ -9,6 +9,10 @@ const SLUG_PATTERN = /^[a-z0-9][a-z0-9/-]*$/
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(scriptDir, '..')
 const registryPath = resolve(repoRoot, 'apps/frontend-admin/src/help/help-registry.ts')
+const dashboardProceduresPath = resolve(
+  repoRoot,
+  'apps/frontend-admin/src/help/dashboard-procedures.ts'
+)
 const indexPath = resolve(repoRoot, 'docs/guides/reference/wiki-slug-index.json')
 
 function extractWikiSlugsFromRegistry(content) {
@@ -59,8 +63,17 @@ function collectDuplicates(values) {
 
 function main() {
   const registrySource = readFileSync(registryPath, 'utf8')
+  const dashboardProceduresSource = readFileSync(dashboardProceduresPath, 'utf8')
   const indexSource = readFileSync(indexPath, 'utf8')
-  const slugIndex = JSON.parse(indexSource)
+  let slugIndex
+
+  try {
+    slugIndex = JSON.parse(indexSource)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown JSON parse error'
+    console.error(`[help-slugs] Invalid wiki slug index JSON: ${message}`)
+    process.exit(1)
+  }
 
   if (!Array.isArray(slugIndex.slugs)) {
     console.error('[help-slugs] Invalid wiki slug index: expected "slugs" array.')
@@ -68,23 +81,31 @@ function main() {
   }
 
   const { slugs: registrySlugs, unresolvedConstants } = extractWikiSlugsFromRegistry(registrySource)
+  const { slugs: procedureSlugs } = extractWikiSlugsFromRegistry(dashboardProceduresSource)
+  const combinedSourceSlugs = [...registrySlugs, ...procedureSlugs]
   const registryUnique = [...new Set(registrySlugs)]
+  const procedureUnique = [...new Set(procedureSlugs)]
+  const sourceUnique = [...new Set(combinedSourceSlugs)]
   const indexUnique = [...new Set(slugIndex.slugs)]
   const indexSet = new Set(indexUnique)
 
   const invalidRegistrySlugs = registryUnique.filter((slug) => !SLUG_PATTERN.test(slug))
+  const invalidProcedureSlugs = procedureUnique.filter((slug) => !SLUG_PATTERN.test(slug))
   const invalidIndexSlugs = indexUnique.filter(
     (slug) => typeof slug !== 'string' || !SLUG_PATTERN.test(slug)
   )
   const duplicateRegistrySlugs = collectDuplicates(registrySlugs)
+  const duplicateProcedureSlugs = collectDuplicates(procedureSlugs)
   const duplicateIndexSlugs = collectDuplicates(slugIndex.slugs)
-  const missingFromIndex = registryUnique.filter((slug) => !indexSet.has(slug))
+  const missingFromIndex = sourceUnique.filter((slug) => !indexSet.has(slug))
 
   const hasErrors =
     unresolvedConstants.length > 0 ||
     invalidRegistrySlugs.length > 0 ||
+    invalidProcedureSlugs.length > 0 ||
     invalidIndexSlugs.length > 0 ||
     duplicateRegistrySlugs.length > 0 ||
+    duplicateProcedureSlugs.length > 0 ||
     duplicateIndexSlugs.length > 0 ||
     missingFromIndex.length > 0
 
@@ -100,12 +121,22 @@ function main() {
         `[help-slugs] Invalid wikiSlug values in help registry: ${invalidRegistrySlugs.join(', ')}`
       )
     }
+    if (invalidProcedureSlugs.length > 0) {
+      console.error(
+        `[help-slugs] Invalid wikiSlug values in dashboard procedures: ${invalidProcedureSlugs.join(', ')}`
+      )
+    }
     if (invalidIndexSlugs.length > 0) {
       console.error(`[help-slugs] Invalid slug values in index: ${invalidIndexSlugs.join(', ')}`)
     }
     if (duplicateRegistrySlugs.length > 0) {
       console.error(
         `[help-slugs] Duplicate wikiSlug values in help registry: ${duplicateRegistrySlugs.join(', ')}`
+      )
+    }
+    if (duplicateProcedureSlugs.length > 0) {
+      console.error(
+        `[help-slugs] Duplicate wikiSlug values in dashboard procedures: ${duplicateProcedureSlugs.join(', ')}`
       )
     }
     if (duplicateIndexSlugs.length > 0) {
@@ -120,7 +151,7 @@ function main() {
   }
 
   console.log(
-    `[help-slugs] OK. ${registryUnique.length} help-registry wiki slugs validated against wiki slug index.`
+    `[help-slugs] OK. ${registryUnique.length} help-registry + ${procedureUnique.length} dashboard-procedure wiki slugs validated against wiki slug index.`
   )
 }
 

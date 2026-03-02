@@ -6,7 +6,7 @@ LAUNCHER="${DEPLOY_DIR}/update-launcher.sh"
 
 if [[ ! -x "${LAUNCHER}" ]]; then
   echo "Sentinel update launcher not found: ${LAUNCHER}" >&2
-  echo "Reinstall sentinel-appliance-tools package." >&2
+  echo "Reinstall sentinel package." >&2
   exit 1
 fi
 

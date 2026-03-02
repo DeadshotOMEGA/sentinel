@@ -143,6 +143,7 @@ export const MemberResponseSchema = v.object({
   divisionId: v.nullable(v.string()),
   badgeId: v.nullable(v.string()),
   accountLevel: v.number(),
+  mustChangePin: v.boolean(),
   badgeStatus: v.optional(BadgeStatusSummarySchema),
   memberTypeId: v.nullable(v.string()),
   memberStatusId: v.nullable(v.string()),

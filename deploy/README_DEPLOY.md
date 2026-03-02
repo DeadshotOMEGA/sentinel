@@ -9,6 +9,7 @@ This bundle installs Sentinel as a LAN appliance using Docker Compose v2 and GHC
 - Frontend Next runtime on internal Docker network (`3001`)
 - PostgreSQL with persistent volume
 - Wiki.js + dedicated Wiki PostgreSQL on internal Docker network
+- Kroki diagram rendering service on internal Docker network
 - Optional observability profile (`obs`): Loki, Prometheus, Promtail, Grafana
 
 Canonical public routes:
@@ -23,24 +24,26 @@ Canonical public routes:
 
 Release assets now include a Debian package:
 
-- `sentinel-appliance-tools_<version>_all.deb`
+- `sentinel_<version>_all.deb`
 
 Install it on Ubuntu:
 
 ```bash
-sudo apt install ./sentinel-appliance-tools_<version>_all.deb
+sudo apt install ./sentinel_<version>_all.deb
 ```
 
 Then launch from app menu:
 
 - `Install Sentinel Appliance`
 - `Update Sentinel Appliance`
+- `Upgrade Sentinel`
 
 Or run directly:
 
 ```bash
 sentinel-install
 sentinel-update
+sentinel-upgrade
 ```
 
 ## If your laptop currently runs Windows
@@ -108,6 +111,8 @@ Port defaults in `.env`:
 - `NEXT_PUBLIC_WIKI_BASE_URL=http://docs.sentinel.local`
 - `WIKI_POSTGRES_USER`, `WIKI_POSTGRES_PASSWORD`, `WIKI_POSTGRES_DB` (dedicated Wiki DB)
 - `WIKI_IMAGE_TAG=2.5.312` (pin for reproducible deploys)
+- `KROKI_IMAGE_TAG=0.30.0` (pin for reproducible self-hosted Kroki)
+- `KROKI_SERVER_URL=http://kroki:8000` (internal Wiki.js renderer target)
 - `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
 
 Canonical Sentinel port allocation policy (host/LAN):
@@ -122,6 +127,12 @@ Canonical Sentinel port allocation policy (host/LAN):
 Recommended initial assignment:
 
 - Wiki.js (when enabled): `3020`
+
+Kroki is internal-only by default:
+
+- no host/LAN port is published
+- Wiki.js reaches it over Docker network at `http://kroki:8000`
+- this keeps diagram source content inside the appliance network boundary
 
 ## Captive portal / GHCR reachability failure
 
@@ -153,6 +164,44 @@ cd /opt/sentinel/deploy
 
 This performs automatic pre-update backup, image pull, one-shot migration deploy, migration status verification, and health gate verification.
 When update is launched from a newer deploy bundle outside `/opt/sentinel/deploy`, it now auto-syncs scripts into `/opt/sentinel/deploy` first (while preserving `.env` and `.appliance-state`) and then re-runs from the synced location.
+
+## Upgrade Sentinel (recommended patch workflow)
+
+Use the new upgrade flow when you want to:
+
+- upgrade to latest stable quickly,
+- upgrade or downgrade to a specific release tag,
+- refresh `/opt/sentinel/deploy` from the new package before running update logic.
+
+Desktop:
+
+1. Open `/opt/sentinel/deploy`.
+2. Double-click `Upgrade Sentinel.desktop`.
+3. Choose one:
+   - latest stable,
+   - a recent release from list,
+   - or manual `vX.Y.Z` entry.
+4. Review advanced options:
+   - Observability stack (`--with-obs`) default ON
+   - Publish Grafana on LAN (`--allow-grafana-lan`) default ON
+   - Publish Wiki on LAN (`--allow-wiki-lan`) default ON
+   - Dry run (validation only) default OFF
+
+CLI:
+
+```bash
+sentinel-upgrade
+```
+
+or for explicit targets:
+
+```bash
+sentinel-upgrade --latest
+sentinel-upgrade --version v1.4.4
+```
+
+The upgrade launcher verifies package checksums before install, installs the selected `.deb`, then executes the updated `/opt/sentinel/deploy/update.sh`.
+This deployment-tooling change is released as a patch update (for example `v1.4.4`), not a minor release.
 
 Optional update flags:
 
@@ -242,6 +291,14 @@ sudo systemctl restart sentinel-appliance.service
 curl -f http://127.0.0.1/healthz
 ```
 
+Post-upgrade UI smoke checks (recommended):
+
+- Dashboard Presence loads.
+- Members and Badges pages load.
+- Admin > User Accounts loads for admin/developer.
+- Logs page (`/logs`) opens without 404.
+- System Status shows the deployed version (for example `v1.4.4`).
+
 ## Notes
 
 - Compose v2 is required (`docker compose`).
@@ -254,6 +311,9 @@ curl -f http://127.0.0.1/healthz
   - Badge: `0000000000`
   - PIN: `0000`
   - This record is guarded in API/repository paths and by DB delete triggers.
+  - Runtime integrity checks enforce the bootstrap account state on backend startup.
+  - The bootstrap PIN is fixed (`0000`) and cannot be changed through auth APIs.
+  - The bootstrap account bypasses forced PIN-change gating to guarantee setup/recovery access.
 - Fresh install now forces bootstrap mode to create all tables first and keep them empty:
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma db push"`
   - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database prisma:baseline"`
@@ -266,3 +326,34 @@ curl -f http://127.0.0.1/healthz
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Installer/update then verifies schema parity with migration files:
   `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`
+
+## Members + badges transfer (local -> deployed)
+
+Use the backend import/export scripts to move member + badge records without manual re-entry.
+
+### 1) Export from local Sentinel
+
+```bash
+pnpm --filter @sentinel/backend sentinel:export-members-badges --output ./members-badges-export.json
+```
+
+### 2) Copy export file to deployed appliance
+
+Example (adjust host/path):
+
+```bash
+scp ./members-badges-export.json user@sentinel-host:/opt/sentinel/deploy/members-badges-export.json
+```
+
+### 3) Import on deployed Sentinel
+
+```bash
+cd /opt/sentinel/deploy
+docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/backend sentinel:import-members-badges --input /opt/sentinel/deploy/members-badges-export.json"
+```
+
+Notes:
+
+- Protected Sentinel bootstrap account is excluded from transfer.
+- Import upserts by `serviceNumber` (members) and `serialNumber` (badges).
+- Members with rank codes missing on target are skipped and reported.

@@ -43,6 +43,10 @@ export default function LoginPage() {
       }
 
       setAuth(data.member, data.token)
+      if (data.member?.mustChangePin) {
+        router.push('/change-pin-required')
+        return
+      }
       router.push('/dashboard')
     } catch {
       setError('Unable to connect to server')

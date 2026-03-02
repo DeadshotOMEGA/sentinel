@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCreateMember, useUpdateMember } from '@/hooks/use-members'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { TID } from '@/lib/test-ids'
+import { SetPinModal } from './set-pin-modal'
 import {
   Dialog,
   DialogContent,
@@ -31,6 +33,7 @@ type FormData = Omit<CreateMemberInput, 'rank' | 'divisionId'> & {
 }
 
 export function MemberFormModal({ open, onOpenChange, mode, member }: MemberFormModalProps) {
+  const queryClient = useQueryClient()
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
   const signedInMember = useAuthStore((state) => state.member)
@@ -66,6 +69,8 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
   const selectedAccountLevel = watch('accountLevel')
   const actorLevel = signedInMember?.accountLevel ?? 0
   const canManageAccountLevel = actorLevel >= AccountLevel.ADMIN
+  const canManagePin = actorLevel >= AccountLevel.ADMIN
+  const canShowPinSection = mode === 'edit' && Boolean(member) && canManagePin
 
   // Populate form when editing
   useEffect(() => {
@@ -311,6 +316,35 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             )}
           </div>
 
+          {canShowPinSection && member && (
+            <div className="rounded-box border border-base-300 p-(--space-3)">
+              <div className="mb-(--space-2) flex items-center justify-between gap-(--space-2)">
+                <h3 className="font-medium">PIN Access</h3>
+                <span
+                  className={`badge ${member.mustChangePin ? 'badge-warning' : 'badge-success'}`}
+                >
+                  {member.mustChangePin ? 'PIN setup required' : 'PIN configured'}
+                </span>
+              </div>
+              {member.mustChangePin && (
+                <div role="alert" className="alert alert-warning mb-(--space-3) text-sm">
+                  <span>
+                    This member currently requires PIN setup/change before regular protected access.
+                  </span>
+                </div>
+              )}
+              <SetPinModalTrigger
+                memberId={member.id}
+                memberName={`${member.rank} ${member.lastName}`.trim()}
+                required={member.mustChangePin}
+                onPinSet={async () => {
+                  await queryClient.invalidateQueries({ queryKey: ['members'] })
+                  await queryClient.invalidateQueries({ queryKey: ['member', member.id] })
+                }}
+              />
+            </div>
+          )}
+
           <DialogFooter>
             <button
               type="button"
@@ -334,5 +368,38 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function SetPinModalTrigger({
+  memberId,
+  memberName,
+  required,
+  onPinSet,
+}: {
+  memberId: string
+  memberName: string
+  required: boolean
+  onPinSet: () => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`btn btn-sm ${required ? 'btn-warning' : 'btn-primary'}`}
+        onClick={() => setOpen(true)}
+      >
+        {required ? 'Set PIN Now' : 'Change PIN'}
+      </button>
+      <SetPinModal
+        open={open}
+        onOpenChange={setOpen}
+        memberId={memberId}
+        memberName={memberName}
+        onSuccess={onPinSet}
+      />
+    </>
   )
 }
