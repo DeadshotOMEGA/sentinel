@@ -145,6 +145,13 @@ services:
     networks:
       - sentinel_net
 
+  kroki:
+    image: yuzutech/kroki:${KROKI_IMAGE_TAG:-0.30.0}
+    container_name: sentinel-kroki
+    restart: unless-stopped
+    networks:
+      - sentinel_net
+
   caddy:
     image: caddy:2.9.1-alpine
     container_name: sentinel-caddy

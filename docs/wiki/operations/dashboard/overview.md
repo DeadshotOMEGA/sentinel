@@ -1,6 +1,6 @@
 # Dashboard Overview
 
-> Audience: Day Duty staff, duty supervisors, operations admins
+> Audience: Duty Day Staff (DDS), duty supervisors, operations admins
 
 [Open Dashboard](http://sentinel.local/dashboard)
 
@@ -16,7 +16,15 @@ The Dashboard is Sentinel’s operational control surface for real-time attendan
 
 ## At-a-Glance Layout
 
-![Dashboard Overview](dashboard-full-default.png)
+![TODO: Dashboard Overview Main](https://placehold.co/1600x900?text=TODO+dashboard-overview-main)
+
+**Capture note**
+
+- Screen/state: Full dashboard with Security Alerts, Quick Actions, Status Panel, and Presence Grid.
+- Preconditions: Operational account logged in; system in normal active state.
+- Suggested filename: `dashboard-overview-main.png`
+- Target Wiki.js asset path: `wiki-dashboard/operations/dashboard-overview-main.png`
+- Replacement: Replace this placeholder with uploaded Wiki.js asset URL after capture.
 
 Use this page to orient yourself, then continue to section pages for detailed procedures.
 
@@ -34,7 +42,7 @@ Use this page to orient yourself, then continue to section pages for detailed pr
 
 ## Security Alerts (Summary)
 
-![Security Alerts](dashboard-security-alerts-focus.png)
+![TODO: Security Alerts Focus](https://placehold.co/1600x900?text=TODO+dashboard-security-alerts-focus)
 
 - Treat critical alerts as priority work.
 - Acknowledge alerts with a clear operational note.
@@ -44,7 +52,7 @@ See full detail: `operations/dashboard/security-alerts`
 
 ## Quick Actions (Summary)
 
-![Quick Actions](dashboard-quick-actions-focus.png)
+![TODO: Quick Actions Focus](https://placehold.co/1600x900?text=TODO+dashboard-quick-actions-focus)
 
 - Kiosk check-in and visitor sign-in are high-frequency operations.
 - Lockup/open-building controls must be aligned with current holder/state.
@@ -54,7 +62,7 @@ See full detail: `operations/dashboard/quick-actions`
 
 ## Status Panel (Summary)
 
-![Status Panel](dashboard-status-panel-focus.png)
+![TODO: Status Panel Focus](https://placehold.co/1600x900?text=TODO+dashboard-status-panel-focus)
 
 Validate these before any control action:
 
@@ -67,7 +75,7 @@ See full detail: `operations/dashboard/status-panel`
 
 ## Presence Grid (Summary)
 
-![Presence Grid](dashboard-presence-grid-focus.png)
+![TODO: Presence Grid Focus](https://placehold.co/1600x900?text=TODO+dashboard-presence-grid-focus)
 
 - Confirm who is on site (members and visitors).
 - Use filters/search to quickly validate the expected person.
@@ -77,11 +85,11 @@ See full detail: `operations/dashboard/presence-grid`
 
 ## State Variants (Reference Visuals)
 
-![Alerts Active Variant](dashboard-state-alerts-active.png)
+![TODO: Alerts Active Variant](https://placehold.co/1600x900?text=TODO+dashboard-state-alerts-active)
 
-![Duty Watch Gap Variant](dashboard-state-duty-watch-gap.png)
+![TODO: Duty Watch Gap Variant](https://placehold.co/1600x900?text=TODO+dashboard-state-duty-watch-gap)
 
-![Lockup Holder Variant](dashboard-state-lockup-held.png)
+![TODO: Lockup Holder Variant](https://placehold.co/1600x900?text=TODO+dashboard-state-lockup-held)
 
 Use these images to recognize degraded/critical conditions quickly during operations.
 

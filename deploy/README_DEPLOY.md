@@ -9,6 +9,7 @@ This bundle installs Sentinel as a LAN appliance using Docker Compose v2 and GHC
 - Frontend Next runtime on internal Docker network (`3001`)
 - PostgreSQL with persistent volume
 - Wiki.js + dedicated Wiki PostgreSQL on internal Docker network
+- Kroki diagram rendering service on internal Docker network
 - Optional observability profile (`obs`): Loki, Prometheus, Promtail, Grafana
 
 Canonical public routes:
@@ -110,6 +111,8 @@ Port defaults in `.env`:
 - `NEXT_PUBLIC_WIKI_BASE_URL=http://docs.sentinel.local`
 - `WIKI_POSTGRES_USER`, `WIKI_POSTGRES_PASSWORD`, `WIKI_POSTGRES_DB` (dedicated Wiki DB)
 - `WIKI_IMAGE_TAG=2.5.312` (pin for reproducible deploys)
+- `KROKI_IMAGE_TAG=0.30.0` (pin for reproducible self-hosted Kroki)
+- `KROKI_SERVER_URL=http://kroki:8000` (internal Wiki.js renderer target)
 - `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
 
 Canonical Sentinel port allocation policy (host/LAN):
@@ -124,6 +127,12 @@ Canonical Sentinel port allocation policy (host/LAN):
 Recommended initial assignment:
 
 - Wiki.js (when enabled): `3020`
+
+Kroki is internal-only by default:
+
+- no host/LAN port is published
+- Wiki.js reaches it over Docker network at `http://kroki:8000`
+- this keeps diagram source content inside the appliance network boundary
 
 ## Captive portal / GHCR reachability failure
 
