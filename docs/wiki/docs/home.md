@@ -1,7 +1,7 @@
 > This documentation site is using Wiki.js!
 {.is-success}
 
-# Fast Actions
+# Getting Started
 
 - [Dashboard Overview](/operations/dashboard/overview)
 - [Security Alerts](/operations/dashboard/security-alerts)
