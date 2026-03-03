@@ -1,5 +1,3 @@
-[Start Here](/docs/start-here) | [Open Sentinel Dashboard](http://sentinel.local/dashboard)
-
 > This documentation site is using Wiki.js!
 {.is-success}
 
