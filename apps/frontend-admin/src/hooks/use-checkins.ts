@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
 import type { CreateCheckinInput, UpdateCheckinInput } from '@sentinel/contracts'
 
@@ -93,12 +94,10 @@ export function useRecentCheckins() {
       refetch()
     }
 
-    websocketManager.on('checkins:in', handleCheckinUpdate)
-    websocketManager.on('checkins:out', handleCheckinUpdate)
+    websocketManager.on('checkin:new', handleCheckinUpdate)
 
     return () => {
-      websocketManager.off('checkins:in', handleCheckinUpdate)
-      websocketManager.off('checkins:out', handleCheckinUpdate)
+      websocketManager.off('checkin:new', handleCheckinUpdate)
       websocketManager.unsubscribe('checkins')
     }
   }, [refetch])
@@ -166,6 +165,7 @@ export function useCreateCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
       queryClient.invalidateQueries({ queryKey: ['recent-checkins'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -190,6 +190,7 @@ export function useUpdateCheckin() {
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -213,6 +214,7 @@ export function useDeleteCheckin() {
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

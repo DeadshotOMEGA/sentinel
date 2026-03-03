@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { CreateBadgeInput, UpdateBadgeInput } from '@sentinel/contracts'
 
 interface BadgesQueryParams {
@@ -67,6 +68,7 @@ export function useCreateBadge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['badges'] })
       queryClient.invalidateQueries({ queryKey: ['badge-stats'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -90,6 +92,7 @@ export function useUpdateBadge() {
       queryClient.invalidateQueries({ queryKey: ['badges'] })
       queryClient.invalidateQueries({ queryKey: ['badge', variables.id] })
       queryClient.invalidateQueries({ queryKey: ['badge-stats'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -111,6 +114,7 @@ export function useDeleteBadge() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['badges'] })
       queryClient.invalidateQueries({ queryKey: ['badge-stats'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

@@ -17,6 +17,7 @@ import { useDdsStatus } from '@/hooks/use-dds'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import { DevToolsPanel } from '@/components/dev/dev-tools-panel'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { MockScanResponse, DevMember, CheckoutOptionsResponse } from '@sentinel/contracts'
 
 interface SimulateScanModalProps {
@@ -61,9 +62,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
       return response.body
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dds-status'] })
-      queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
-      queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 
@@ -87,6 +86,16 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     ddsData.assignment.status === 'pending' &&
     !ddsHandled
 
+  const resetAndClose = useCallback(() => {
+    setStep('pick-member')
+    setSearch('')
+    setScanResult(null)
+    setScanTime('')
+    setShowLockupOptions(false)
+    setDdsHandled(false)
+    setLockupBlockedMember(null)
+  }, [])
+
   // Auto-dismiss timer for confirmation screens
   useEffect(() => {
     if (step !== 'kiosk-result' || !scanResult) return
@@ -100,17 +109,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [step, scanResult, isDdsPending, loadingCheckoutOptions, checkoutOptions])
-
-  const resetAndClose = useCallback(() => {
-    setStep('pick-member')
-    setSearch('')
-    setScanResult(null)
-    setScanTime('')
-    setShowLockupOptions(false)
-    setDdsHandled(false)
-    setLockupBlockedMember(null)
-  }, [])
+  }, [step, scanResult, isDdsPending, loadingCheckoutOptions, checkoutOptions, resetAndClose])
 
   const handleClose = () => {
     resetAndClose()
@@ -228,7 +227,10 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <label className="text-xs text-base-content/50 whitespace-nowrap" htmlFor="scan-time">
+                <label
+                  className="text-xs text-base-content/50 whitespace-nowrap"
+                  htmlFor="scan-time"
+                >
                   Time
                 </label>
                 <input

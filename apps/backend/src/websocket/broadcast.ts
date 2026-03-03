@@ -165,8 +165,38 @@ export function broadcastSecurityAlert(alert: {
   }
 
   io.to('alerts').emit('alert:new', alert)
+  io.to('alerts').emit('alerts:new', alert)
 
   logger.info('Broadcasted security alert', {
+    alertId: alert.id,
+    alertType: alert.alertType,
+    severity: alert.severity,
+  })
+}
+
+/**
+ * Broadcast security alert acknowledgement
+ */
+export function broadcastSecurityAlertAcknowledged(alert: {
+  id: string
+  alertType: SecurityAlertType
+  severity: 'critical' | 'warning' | 'info'
+  message: string
+  status: 'active' | 'acknowledged' | 'dismissed'
+  timestamp: string
+  acknowledgedAt: string | null
+  badgeSerial?: string | null
+  kioskId?: string
+}) {
+  if (!io) {
+    logger.warn('Cannot broadcast security alert acknowledgement: Socket.IO not initialized')
+    return
+  }
+
+  io.to('alerts').emit('alert:acknowledged', alert)
+  io.to('alerts').emit('alerts:acknowledged', alert)
+
+  logger.info('Broadcasted security alert acknowledgement', {
     alertId: alert.id,
     alertType: alert.alertType,
     severity: alert.severity,
@@ -193,6 +223,7 @@ export function broadcastDdsUpdate(update: {
   }
 
   io.to('dds').emit('dds:update', update)
+  io.to('dds').emit('dds:updated', update)
 
   logger.debug('Broadcasted DDS update', {
     action: update.action,
@@ -271,6 +302,7 @@ export function broadcastLockupStatusUpdate(data: {
   }
 
   io.to('lockup').emit('lockup:status', data)
+  io.to('lockup').emit('lockup:statusChanged', data)
 
   logger.debug('Broadcasted lockup status update', {
     date: data.date,
@@ -364,6 +396,7 @@ export function broadcastScheduleUpdate(data: {
   }
 
   io.to('schedules').emit('schedule:update', data)
+  io.to('schedules').emit('schedules:updated', data)
 
   logger.debug('Broadcasted schedule update', {
     action: data.action,
@@ -391,6 +424,7 @@ export function broadcastScheduleAssignmentUpdate(data: {
   }
 
   io.to('schedules').emit('schedule:assignment', data)
+  io.to('schedules').emit('schedules:updated', data)
 
   logger.debug('Broadcasted schedule assignment update', {
     action: data.action,

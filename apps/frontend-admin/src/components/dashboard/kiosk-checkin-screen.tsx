@@ -8,6 +8,7 @@ import { AppBadge } from '@/components/ui/AppBadge'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { TID } from '@/lib/test-ids'
 import type { CheckinWithMemberResponse, CreateCheckinInput } from '@sentinel/contracts'
 
@@ -329,6 +330,14 @@ export function KioskCheckinScreen({
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
+  const invalidateKioskQueries = () => {
+    void Promise.allSettled([
+      queryClient.invalidateQueries({ queryKey: ['checkins'] }),
+      queryClient.invalidateQueries({ queryKey: ['recent-checkins'] }),
+      invalidateDashboardQueries(queryClient),
+    ])
+  }
+
   useEffect(() => {
     if (!isActive) return
     const timer = setInterval(() => setNow(new Date()), 1000)
@@ -504,12 +513,7 @@ export function KioskCheckinScreen({
         insights,
       })
 
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['recent-checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['presence'] }),
-        queryClient.invalidateQueries({ queryKey: ['present-people'] }),
-      ])
+      invalidateKioskQueries()
     },
     onError: (error) => {
       setSerial('')
@@ -550,12 +554,7 @@ export function KioskCheckinScreen({
         insights,
       })
       refocusBadgeInput()
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['recent-checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['presence'] }),
-        queryClient.invalidateQueries({ queryKey: ['present-people'] }),
-      ])
+      invalidateKioskQueries()
       return
     }
 
@@ -596,12 +595,7 @@ export function KioskCheckinScreen({
         insights,
       })
       refocusBadgeInput()
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['recent-checkins'] }),
-        queryClient.invalidateQueries({ queryKey: ['presence'] }),
-        queryClient.invalidateQueries({ queryKey: ['present-people'] }),
-      ])
+      invalidateKioskQueries()
     } catch (error) {
       setPendingLockup(null)
       setShowLockupOptions(false)

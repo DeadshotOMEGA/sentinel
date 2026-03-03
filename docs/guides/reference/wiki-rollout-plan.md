@@ -31,7 +31,7 @@ Deployment topology:
 - `wikijs-postgres` (dedicated Wiki DB).
 - `wikijs` (Wiki.js runtime).
 - `kroki` (internal diagram rendering service for Wiki.js).
-- Caddy host route for `docs.sentinel.local`.
+- Caddy host route for `docs.sentinel.local`, with appliance-local `/etc/hosts` alias management during install/update.
 
 Storage:
 
@@ -40,7 +40,7 @@ Storage:
 
 Host/LAN exposure:
 
-- Default access: `http://docs.sentinel.local` (via Caddy on host `80`).
+- Default access on the appliance: `http://docs.sentinel.local` (via Caddy on host `80`, resolved by deploy-managed local hosts alias).
 - Optional direct LAN publish: `3020` (enabled with `--allow-wiki-lan`).
 
 ## Port Policy
@@ -137,7 +137,7 @@ PR expectations:
 ## Acceptance Gates
 
 1. `wikijs` and `wikijs-postgres` healthy in compose.
-2. `http://docs.sentinel.local` serves Wiki.js.
+2. `http://docs.sentinel.local` serves Wiki.js on the appliance without manual host-file edits.
 3. Optional LAN wiki exposure works on `3020` only when enabled.
 4. Scoped backup/restore works for sentinel-only, wiki-only, and combined scenarios.
 5. Help slug CI check passes with no missing registry mappings.

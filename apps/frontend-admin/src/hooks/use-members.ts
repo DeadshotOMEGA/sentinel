@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { CreateMemberInput, UpdateMemberInput } from '@sentinel/contracts'
 
 interface MembersQueryParams {
@@ -83,6 +84,7 @@ export function useCreateMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -104,6 +106,7 @@ export function useUpdateMember() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
       queryClient.invalidateQueries({ queryKey: ['member', variables.id] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -123,6 +126,7 @@ export function useDeleteMember() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -162,6 +166,7 @@ export function useExecuteImport() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
       queryClient.invalidateQueries({ queryKey: ['divisions'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

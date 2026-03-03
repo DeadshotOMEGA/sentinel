@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
 import type {
   TransferLockupInput,
@@ -34,11 +35,13 @@ export function useLockupStatus() {
       refetch()
     }
 
+    websocketManager.on('lockup:status', handleLockupUpdate)
     websocketManager.on('lockup:statusChanged', handleLockupUpdate)
     websocketManager.on('lockup:transferred', handleLockupUpdate)
     websocketManager.on('lockup:executed', handleLockupUpdate)
 
     return () => {
+      websocketManager.off('lockup:status', handleLockupUpdate)
       websocketManager.off('lockup:statusChanged', handleLockupUpdate)
       websocketManager.off('lockup:transferred', handleLockupUpdate)
       websocketManager.off('lockup:executed', handleLockupUpdate)
@@ -123,6 +126,7 @@ export function useTransferLockup() {
       queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
       queryClient.invalidateQueries({ queryKey: ['checkout-options'] })
       queryClient.invalidateQueries({ queryKey: ['lockup-present'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -150,6 +154,7 @@ export function useExecuteLockup() {
       queryClient.invalidateQueries({ queryKey: ['lockup-present'] })
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -157,7 +162,7 @@ export function useExecuteLockup() {
 /**
  * Get members eligible to open the building
  */
-export function useEligibleOpeners() {
+export function useEligibleOpeners(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['eligible-openers'],
     queryFn: async () => {
@@ -167,6 +172,9 @@ export function useEligibleOpeners() {
       }
       return response.body.openers
     },
+    enabled: options?.enabled ?? true,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 }
 
@@ -213,6 +221,8 @@ export function useOpenBuilding() {
       queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
       queryClient.invalidateQueries({ queryKey: ['presence'] })
       queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

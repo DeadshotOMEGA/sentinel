@@ -213,11 +213,14 @@ else
 fi
 
 ensure_mdns_hostname
+ensure_local_wiki_host_alias
 MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
+WIKI_DOMAIN="$(env_value WIKI_DOMAIN docs.sentinel.local)"
 
 log "Install complete."
 log "Version: ${TARGET_VERSION}"
 log "Local URL (mDNS): http://${MDNS_HOSTNAME}.local"
+log "Wiki URL (local alias): http://${WIKI_DOMAIN}"
 if [[ -n "${SERVER_IP}" ]]; then
   log "Local URL (IP fallback): http://${SERVER_IP}"
 fi

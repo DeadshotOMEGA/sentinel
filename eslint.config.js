@@ -1,8 +1,12 @@
 // ESLint 9 Flat Config
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
+
+const repoRoot = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -32,6 +36,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        tsconfigRootDir: repoRoot,
         project: [
           './tsconfig.json',
           './apps/*/tsconfig.json',
@@ -82,6 +87,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        tsconfigRootDir: repoRoot,
         project: ['./tsconfig.json', './apps/*/tsconfig.json'],
       },
       globals: {

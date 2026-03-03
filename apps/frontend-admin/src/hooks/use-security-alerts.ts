@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
 import { useAuthStore } from '@/store/auth-store'
 
@@ -31,10 +32,14 @@ export function useSecurityAlerts() {
       refetch()
     }
 
+    websocketManager.on('alert:new', handleAlertUpdate)
+    websocketManager.on('alert:acknowledged', handleAlertUpdate)
     websocketManager.on('alerts:new', handleAlertUpdate)
     websocketManager.on('alerts:acknowledged', handleAlertUpdate)
 
     return () => {
+      websocketManager.off('alert:new', handleAlertUpdate)
+      websocketManager.off('alert:acknowledged', handleAlertUpdate)
       websocketManager.off('alerts:new', handleAlertUpdate)
       websocketManager.off('alerts:acknowledged', handleAlertUpdate)
       websocketManager.unsubscribe('alerts')
@@ -64,6 +69,7 @@ export function useAcknowledgeAlert() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['security-alerts'] })
+      void invalidateDashboardQueries(queryClient)
       toast.success('Alert acknowledged')
     },
     onError: (error) => {

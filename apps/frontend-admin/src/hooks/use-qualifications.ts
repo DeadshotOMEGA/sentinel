@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { GrantQualificationInput, RevokeQualificationInput } from '@sentinel/contracts'
 
 // ============================================================================
@@ -60,6 +61,7 @@ export function useGrantQualification() {
       queryClient.invalidateQueries({ queryKey: ['member-qualifications', variables.memberId] })
       queryClient.invalidateQueries({ queryKey: ['lockup-eligible'] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -90,6 +92,7 @@ export function useRevokeQualification() {
       queryClient.invalidateQueries({ queryKey: ['member-qualifications', variables.memberId] })
       queryClient.invalidateQueries({ queryKey: ['lockup-eligible'] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -113,6 +116,7 @@ export function useSyncAllAutoQualifications() {
       queryClient.invalidateQueries({ queryKey: ['member-qualifications'] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
       queryClient.invalidateQueries({ queryKey: ['lockup-eligible'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

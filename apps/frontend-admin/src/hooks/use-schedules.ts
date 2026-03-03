@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
 import type {
   CreateScheduleInput,
@@ -188,6 +189,7 @@ export function useCreateSchedule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -209,6 +211,7 @@ export function useUpdateSchedule() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.id) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -229,6 +232,7 @@ export function usePublishSchedule() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(id) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -249,6 +253,7 @@ export function useRevertToDraft() {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(id) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -268,6 +273,7 @@ export function useDeleteSchedule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -299,6 +305,7 @@ export function useCreateAssignment() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -328,6 +335,7 @@ export function useUpdateAssignment() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -354,6 +362,7 @@ export function useDeleteAssignment() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
       queryClient.invalidateQueries({ queryKey: scheduleKeys.detail(variables.scheduleId) })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -454,6 +463,7 @@ export function useCreateDwOverride() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -462,13 +472,7 @@ export function useDeleteDwOverride() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      scheduleId,
-      overrideId,
-    }: {
-      scheduleId: string
-      overrideId: string
-    }) => {
+    mutationFn: async ({ scheduleId, overrideId }: { scheduleId: string; overrideId: string }) => {
       const response = await apiClient.schedules.deleteDwOverride({
         params: { id: scheduleId, overrideId },
       })
@@ -479,6 +483,7 @@ export function useDeleteDwOverride() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scheduleKeys.all })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -510,10 +515,14 @@ export function useTonightDutyWatch() {
     }
 
     websocketManager.on('presence:update', handleUpdate)
+    websocketManager.on('schedule:update', handleUpdate)
+    websocketManager.on('schedule:assignment', handleUpdate)
     websocketManager.on('schedules:updated', handleUpdate)
 
     return () => {
       websocketManager.off('presence:update', handleUpdate)
+      websocketManager.off('schedule:update', handleUpdate)
+      websocketManager.off('schedule:assignment', handleUpdate)
       websocketManager.off('schedules:updated', handleUpdate)
       websocketManager.unsubscribe('presence')
       websocketManager.unsubscribe('schedules')
