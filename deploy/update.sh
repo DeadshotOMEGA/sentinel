@@ -290,7 +290,10 @@ if [[ "${NO_FIREWALL}" != "true" ]]; then
 fi
 
 ensure_mdns_hostname
+ensure_local_wiki_host_alias
 MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
+WIKI_DOMAIN="$(env_value WIKI_DOMAIN docs.sentinel.local)"
 
 log "Update complete: ${PREVIOUS_VERSION} -> ${CURRENT_VERSION}"
 log "Local URL (mDNS): http://${MDNS_HOSTNAME}.local"
+log "Wiki URL (local alias): http://${WIKI_DOMAIN}"

@@ -80,6 +80,7 @@ Installer behavior:
 - If secret fields still have placeholders (for example `change-this-...`, `replace-this-...`, or `changeme`), installer auto-generates secure random values.
 - Installer writes a root-only snapshot of service credentials to `/opt/sentinel/credentials/service-secrets.env`.
 - Installer enforces appliance mDNS hostname from `MDNS_HOSTNAME` (default `sentinel`) and ensures mDNS packages/services are present.
+- Installer/update also maintain a local `/etc/hosts` alias so `docs.sentinel.local` resolves on the appliance itself without manual host-file edits.
 - You can still edit `.env` later for custom settings.
 
 If operators will browse by IP (`http://<server-ip>`), ensure `CORS_ORIGIN` in `.env` includes both hostname and IP origins, for example:
@@ -281,7 +282,7 @@ sudo systemctl restart sentinel-appliance.service
 ## URLs after install
 
 - mDNS (best effort): `http://<MDNS_HOSTNAME>.local` (default `http://sentinel.local`)
-- Wiki docs host: `http://docs.sentinel.local`
+- Wiki docs host: `http://docs.sentinel.local` (appliance-local alias maintained automatically)
 - LAN fallback: `http://<server-ip>`
 - Optional direct Wiki LAN URL (if enabled): `http://<server-ip>:3020`
 

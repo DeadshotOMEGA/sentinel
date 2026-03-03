@@ -623,6 +623,39 @@ ensure_mdns_hostname() {
 
 }
 
+ensure_local_wiki_host_alias() {
+  local wiki_domain tmp_file
+  wiki_domain="$(env_value WIKI_DOMAIN docs.sentinel.local)"
+  wiki_domain="$(printf '%s' "${wiki_domain}" | tr -d '\r' | tr '[:upper:]' '[:lower:]' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  [[ -n "${wiki_domain}" ]] || die "WIKI_DOMAIN must not be empty"
+
+  tmp_file="$(mktemp)"
+  awk -v domain="${wiki_domain}" '
+    BEGIN {
+      marker = "# sentinel-wiki-host-alias"
+    }
+    {
+      skip = index($0, marker) > 0
+      if (!skip) {
+        for (i = 1; i <= NF; i++) {
+          if ($i == domain) {
+            skip = 1
+            break
+          }
+        }
+      }
+      if (!skip) {
+        print
+      }
+    }
+  ' /etc/hosts >"${tmp_file}"
+  printf '127.0.0.1\t%s %s\n' "${wiki_domain}" "# sentinel-wiki-host-alias" >>"${tmp_file}"
+  run_root install -m 644 "${tmp_file}" /etc/hosts
+  rm -f "${tmp_file}"
+
+  log "Ensured local hosts alias for Wiki.js: http://${wiki_domain}"
+}
+
 detect_ssh_port() {
   local port
   port="$(sshd -T 2>/dev/null | awk '/^port / {print $2; exit}' || true)"
