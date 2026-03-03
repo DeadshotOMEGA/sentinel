@@ -10,6 +10,7 @@ Welcome to Sentinel's operational knowledge base. This home page is the fastest 
 - [Security Alerts](/operations/dashboard/security-alerts)
 - [Quick Actions](/operations/dashboard/quick-actions)
 - [Presence Grid](/operations/dashboard/presence-grid)
+{.links-list}
 
 ## Screenshot Placeholder: Dashboard At-a-Glance
 
