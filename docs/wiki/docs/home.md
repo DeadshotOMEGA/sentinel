@@ -1,7 +1,3 @@
-# Sentinel Operations Wiki Home
-
-Welcome to Sentinel's operational knowledge base. This home page is the fastest path to current workflows, response procedures, and technical references.
-
 [Start Here](/docs/start-here) | [Open Sentinel Dashboard](http://sentinel.local/dashboard)
 
 ## Fast Actions
