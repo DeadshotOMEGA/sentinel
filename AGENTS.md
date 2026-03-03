@@ -15,6 +15,29 @@ This file migrates project guidance from Claude-style rules into Codex.
 - Use Conventional Commits.
 - Never push directly to `main`; use PRs from `feature/*` to `main`.
 
+## Release Branch Policy
+
+- MUST keep `main` as the long-lived integration branch.
+- MUST NOT create long-lived `major/*` or `minor/*` lanes.
+- MAY create short-lived release stabilization branches named `release/vX.Y.Z` when a release needs batching or hardening.
+- MUST branch `release/vX.Y.Z` from the current `main`.
+- MUST target `release/vX.Y.Z` (not `main`) for PRs intended for that specific release while stabilization is active.
+- SHOULD keep release-branch PRs narrowly scoped to release readiness (fixes, docs, versioning, deploy scripts, tests).
+- MUST merge `release/vX.Y.Z` back to `main` through a PR before tagging.
+- MUST create and push tag `vX.Y.Z` from the merge result on `main`.
+- SHOULD delete `release/vX.Y.Z` after successful merge/tag to avoid branch drift.
+- MUST continue using `feature/*` (or `fix/*`/`hotfix/*`) as working branches; release branches are aggregation branches, not daily development branches.
+
+### Branch Lifecycle and Retention
+
+- MUST treat `main` as the only permanent branch.
+- MUST treat `release/vX.Y.Z` branches as temporary stabilization branches that exist only for an active release.
+- MUST treat `feature/*`, `fix/*`, `hotfix/*`, and `rebuild` branches as disposable working branches.
+- MUST delete local and remote working branches after they are fully merged into `main` or fully contained in the active release branch.
+- MUST preserve historical branch tips with annotated tags when retention is needed.
+- MUST NOT use `archive/*` branches for routine historical retention going forward.
+- SHOULD replace any existing `archive/*` branches with annotated `archive/*` tags during cleanup.
+
 ## Port Allocation Policy (Host/LAN)
 
 - MUST keep Sentinel service host ports within their assigned ranges:

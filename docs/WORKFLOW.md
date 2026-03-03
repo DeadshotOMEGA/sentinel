@@ -68,6 +68,49 @@ Rules:
 
 ---
 
+## Git Branch Lifecycle
+
+### Branch sources and PR targets
+
+- Branch from `main` for normal feature, fix, task, and refactor work that is not part of active release stabilization.
+- Branch from `release/vX.Y.Z` only when the work is specifically intended for that active release.
+- Target `main` for normal development PRs.
+- Target `release/vX.Y.Z` for release-readiness PRs while that release branch is active.
+
+### Long-lived vs temporary branches
+
+- `main` is the only long-lived branch.
+- `release/vX.Y.Z` is temporary and exists only while that exact release is being stabilized.
+- `feature/*`, `fix/*`, `hotfix/*`, and `rebuild` are disposable working branches and should not be retained as history markers.
+- Keep at most one active `release/vX.Y.Z` branch at a time unless an exceptional overlap is explicitly planned.
+
+### Release closure sequence
+
+1. Merge `release/vX.Y.Z` back into `main` through a PR.
+2. Create and push tag `vX.Y.Z` from the merge result on `main`.
+3. Delete the remote `release/vX.Y.Z` branch after the merge/tag is verified.
+4. Delete the local `release/vX.Y.Z` branch on the next sync.
+
+### Branch deletion expectations
+
+- Delete local and remote working branches after they are fully merged into `main`.
+- Delete local and remote working branches after they are fully contained in an active release branch and no longer needed for review or release work.
+- Use GitHub automatic head-branch deletion after PR merge where possible.
+- Use `git fetch --prune` regularly so local branch lists match remote reality.
+
+### Historical retention
+
+- Do not keep old work as long-lived `archive/*` branches.
+- If an exact branch tip must be preserved for recovery or future reference, convert it to an annotated tag instead.
+- Use `archive/*` tag names for preserved snapshots, for example:
+  - `archive/legacy-main-2026-02-20`
+  - `archive/legacy-develop-2026-02-20`
+  - `archive/rebuild-2026-02-20`
+  - `archive/<branch-name>-<cleanup-date>`
+- Archive branches are deprecated; archive tags replace them.
+
+---
+
 ## Setup options
 
 ### Option A: one-command setup (recommended)
