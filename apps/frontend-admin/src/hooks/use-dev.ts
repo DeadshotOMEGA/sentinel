@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { MockScanRequest, SetBuildingStatusRequest } from '@sentinel/contracts'
 
 export class LockupHeldError extends Error {
@@ -38,7 +39,11 @@ export function useMockScan() {
       const response = await apiClient.dev.mockScan({
         body: data,
       })
-      if (response.status === 403 && 'error' in response.body && response.body.error === 'LOCKUP_HELD') {
+      if (
+        response.status === 403 &&
+        'error' in response.body &&
+        response.body.error === 'LOCKUP_HELD'
+      ) {
         throw new LockupHeldError(response.body.message)
       }
       if (response.status !== 200) {
@@ -54,6 +59,7 @@ export function useMockScan() {
       queryClient.invalidateQueries({ queryKey: ['dev-members'] })
       queryClient.invalidateQueries({ queryKey: ['duty-watch'] })
       queryClient.invalidateQueries({ queryKey: ['eligible-openers'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -76,6 +82,7 @@ export function useSetBuildingStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -103,6 +110,7 @@ export function useClearAllCheckins() {
       queryClient.invalidateQueries({ queryKey: ['duty-watch'] })
       queryClient.invalidateQueries({ queryKey: ['dds-status'] })
       queryClient.invalidateQueries({ queryKey: ['lockup-status'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

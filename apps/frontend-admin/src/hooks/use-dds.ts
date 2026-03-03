@@ -24,16 +24,22 @@ export function useDdsStatus() {
     // Connect WebSocket and subscribe to DDS updates
     websocketManager.connect()
     websocketManager.subscribe('dds')
+    websocketManager.subscribe('presence')
 
     const handleDdsUpdate = () => {
       refetch()
     }
 
+    websocketManager.on('dds:update', handleDdsUpdate)
     websocketManager.on('dds:updated', handleDdsUpdate)
+    websocketManager.on('presence:update', handleDdsUpdate)
 
     return () => {
+      websocketManager.off('dds:update', handleDdsUpdate)
       websocketManager.off('dds:updated', handleDdsUpdate)
+      websocketManager.off('presence:update', handleDdsUpdate)
       websocketManager.unsubscribe('dds')
+      websocketManager.unsubscribe('presence')
     }
   }, [refetch])
 

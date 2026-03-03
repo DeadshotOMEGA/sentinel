@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { AssignTagInput } from '@sentinel/contracts'
 
 // ============================================================================
@@ -59,6 +60,7 @@ export function useAssignTag() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['member-tags', variables.memberId] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -79,6 +81,7 @@ export function useRemoveTag() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['member-tags', variables.memberId] })
       queryClient.invalidateQueries({ queryKey: ['members'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { DoorOpen, Search, X } from 'lucide-react'
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useOpenBuilding, useEligibleOpeners } from '@/hooks/use-lockup'
+import { useEligibleOpeners, useLockupStatus, useOpenBuilding } from '@/hooks/use-lockup'
 
 interface SelectedMember {
   id: string
@@ -29,8 +29,13 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
   const [memberSearch, setMemberSearch] = useState('')
   const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null)
 
-  const { data: eligibleOpeners, isLoading: isLoadingOpeners } = useEligibleOpeners()
+  const { data: lockupStatus, isLoading: isLoadingLockupStatus } = useLockupStatus()
+  const { data: eligibleOpeners, isLoading: isLoadingOpeners } = useEligibleOpeners({
+    enabled: open,
+  })
   const openBuildingMutation = useOpenBuilding()
+  const isBuildingSecured = lockupStatus?.buildingStatus === 'secured'
+  const showNonSecuredState = Boolean(lockupStatus && !isBuildingSecured)
 
   const filteredOpeners = useMemo(() => {
     if (!eligibleOpeners) return []
@@ -73,7 +78,14 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          handleClose()
+        }
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -85,114 +97,147 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
           </DialogDescription>
         </DialogHeader>
 
-        {/* Member selector */}
-        <div className="form-control mb-4">
-          <label className="label">
-            <span className="label-text">Opening Member</span>
-          </label>
-
-          {selectedMember ? (
-            <div className="flex items-center gap-2 p-3 bg-base-200 rounded-lg">
-              <div className="flex-1">
-                <span className="font-medium">
-                  {selectedMember.rank} {selectedMember.firstName} {selectedMember.lastName}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm btn-circle"
-                onClick={() => setSelectedMember(null)}
-              >
-                <X className="h-4 w-4" />
-              </button>
+        {showNonSecuredState ? (
+          <div className="alert alert-info mb-4">
+            <div className="space-y-1">
+              <p className="font-medium">
+                {lockupStatus?.buildingStatus === 'locking_up'
+                  ? 'The building is currently locking up.'
+                  : 'The building is already open.'}
+              </p>
+              {lockupStatus?.currentHolder ? (
+                <p>
+                  Current lockup holder: {lockupStatus.currentHolder.rank}{' '}
+                  {lockupStatus.currentHolder.firstName} {lockupStatus.currentHolder.lastName}
+                </p>
+              ) : (
+                <p>No lockup holder is currently assigned.</p>
+              )}
             </div>
-          ) : (
-            <div className="relative">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/50" />
-                <input
-                  type="text"
-                  className="input input-bordered w-full pl-10"
-                  placeholder="Search by name, rank, or service number..."
-                  value={memberSearch}
-                  onChange={(e) => setMemberSearch(e.target.value)}
-                />
-              </div>
+          </div>
+        ) : (
+          <>
+            {/* Member selector */}
+            <div className="form-control mb-4">
+              <label className="label">
+                <span className="label-text">Opening Member</span>
+              </label>
 
-              {/* Search results dropdown */}
-              {memberSearch.trim() && (
-                <div className="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {isLoadingOpeners ? (
-                    <div className="p-3 text-center">
-                      <span
-                        className="loading loading-spinner loading-sm"
-                        role="status"
-                        aria-label="Loading"
-                      ></span>
-                    </div>
-                  ) : filteredOpeners.length === 0 ? (
-                    <div className="p-3 text-center text-base-content/60">
-                      No eligible members found
-                    </div>
-                  ) : (
-                    filteredOpeners.map((member) => (
-                      <button
-                        key={member.id}
-                        type="button"
-                        className="w-full p-3 text-left hover:bg-base-200 transition-colors border-b border-base-200 last:border-b-0"
-                        onClick={() => handleSelectMember(member)}
-                      >
-                        <div className="font-medium">
-                          {member.rank} {member.firstName} {member.lastName}
+              {selectedMember ? (
+                <div className="flex items-center gap-2 p-3 bg-base-200 rounded-lg">
+                  <div className="flex-1">
+                    <span className="font-medium">
+                      {selectedMember.rank} {selectedMember.firstName} {selectedMember.lastName}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm btn-circle"
+                    onClick={() => setSelectedMember(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/50" />
+                    <input
+                      type="text"
+                      className="input input-bordered w-full pl-10"
+                      placeholder="Search by name, rank, or service number..."
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Search results dropdown */}
+                  {memberSearch.trim() && (
+                    <div className="absolute z-10 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {isLoadingOpeners || isLoadingLockupStatus ? (
+                        <div className="p-3 text-center">
+                          <span
+                            className="loading loading-spinner loading-sm"
+                            role="status"
+                            aria-label="Loading"
+                          ></span>
                         </div>
-                        <div className="text-sm text-base-content/60">{member.serviceNumber}</div>
-                      </button>
-                    ))
+                      ) : filteredOpeners.length === 0 ? (
+                        <div className="p-3 text-center text-base-content/60">
+                          No eligible members found
+                        </div>
+                      ) : (
+                        filteredOpeners.map((member) => (
+                          <button
+                            key={member.id}
+                            type="button"
+                            className="w-full p-3 text-left hover:bg-base-200 transition-colors border-b border-base-200 last:border-b-0"
+                            onClick={() => handleSelectMember(member)}
+                          >
+                            <div className="font-medium">
+                              {member.rank} {member.firstName} {member.lastName}
+                            </div>
+                            <div className="text-sm text-base-content/60">
+                              {member.serviceNumber}
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
 
-              {/* Show all eligible when not searching */}
-              {!memberSearch.trim() && eligibleOpeners && eligibleOpeners.length > 0 && (
-                <div className="mt-2 max-h-48 overflow-y-auto border border-base-200 rounded-lg">
-                  {eligibleOpeners.map((member) => (
-                    <button
-                      key={member.id}
-                      type="button"
-                      className="w-full p-3 text-left hover:bg-base-200 transition-colors border-b border-base-200 last:border-b-0"
-                      onClick={() => handleSelectMember(member)}
-                    >
-                      <div className="font-medium">
-                        {member.rank} {member.firstName} {member.lastName}
+                  {/* Show all eligible when not searching */}
+                  {!memberSearch.trim() && eligibleOpeners && eligibleOpeners.length > 0 && (
+                    <div className="mt-2 max-h-48 overflow-y-auto border border-base-200 rounded-lg">
+                      {eligibleOpeners.map((member) => (
+                        <button
+                          key={member.id}
+                          type="button"
+                          className="w-full p-3 text-left hover:bg-base-200 transition-colors border-b border-base-200 last:border-b-0"
+                          onClick={() => handleSelectMember(member)}
+                        >
+                          <div className="font-medium">
+                            {member.rank} {member.firstName} {member.lastName}
+                          </div>
+                          <div className="text-sm text-base-content/60">{member.serviceNumber}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {!memberSearch.trim() &&
+                    eligibleOpeners &&
+                    eligibleOpeners.length === 0 &&
+                    !isLoadingOpeners && (
+                      <div className="mt-2 p-3 text-center text-warning bg-warning/10 rounded-lg">
+                        No eligible members checked in with lockup qualification
                       </div>
-                      <div className="text-sm text-base-content/60">{member.serviceNumber}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {!memberSearch.trim() && eligibleOpeners && eligibleOpeners.length === 0 && (
-                <div className="mt-2 p-3 text-center text-warning bg-warning/10 rounded-lg">
-                  No eligible members checked in with lockup qualification
+                    )}
                 </div>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Note field */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Note (optional)</span>
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            placeholder="e.g., Alarm disarmed, rounds complete"
-            value={openBuildingNote}
-            onChange={(e) => setOpenBuildingNote(e.target.value)}
-          />
-        </div>
+            {/* Note field */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Note (optional)</span>
+              </label>
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="e.g., Alarm disarmed, rounds complete"
+                value={openBuildingNote}
+                onChange={(e) => setOpenBuildingNote(e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        {!showNonSecuredState && isLoadingLockupStatus && (
+          <div className="alert alert-info mt-4">
+            <span>Checking the latest building status...</span>
+          </div>
+        )}
 
         {openBuildingMutation.isError && (
           <div className="alert alert-error mt-4">
@@ -206,7 +251,7 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
           </button>
           <button
             className="btn btn-success"
-            disabled={!selectedMember || openBuildingMutation.isPending}
+            disabled={!selectedMember || !isBuildingSecured || openBuildingMutation.isPending}
             onClick={handleOpenBuilding}
           >
             {openBuildingMutation.isPending ? (

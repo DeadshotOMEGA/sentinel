@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { CreateVisitorInput, UpdateVisitorInput } from '@sentinel/contracts'
 
 export function useActiveVisitors() {
@@ -34,6 +35,7 @@ export function useCreateVisitor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -54,6 +56,7 @@ export function useCheckoutVisitor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
@@ -96,6 +99,7 @@ export function useUpdateVisitor() {
       queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }

@@ -3,7 +3,11 @@ import { getPrismaClient } from '../lib/database.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { Prisma } from '@sentinel/database'
 
-import { broadcastSecurityAlert, type SecurityAlertType } from '../websocket/broadcast.js'
+import {
+  broadcastSecurityAlert,
+  broadcastSecurityAlertAcknowledged,
+  type SecurityAlertType,
+} from '../websocket/broadcast.js'
 
 type AlertType = SecurityAlertType
 type AlertSeverity = 'critical' | 'warning' | 'info'
@@ -148,6 +152,18 @@ export class SecurityAlertService {
         acknowledgedAt: new Date(),
         acknowledgeNote: note ?? null,
       },
+    })
+
+    broadcastSecurityAlertAcknowledged({
+      id: alert.id,
+      alertType: alert.alertType as AlertType,
+      severity: alert.severity as AlertSeverity,
+      message: alert.message,
+      status: 'acknowledged',
+      timestamp: alert.acknowledgedAt?.toISOString() ?? new Date().toISOString(),
+      acknowledgedAt: alert.acknowledgedAt?.toISOString() ?? null,
+      badgeSerial: alert.badgeSerial,
+      kioskId: alert.kioskId,
     })
 
     return {
