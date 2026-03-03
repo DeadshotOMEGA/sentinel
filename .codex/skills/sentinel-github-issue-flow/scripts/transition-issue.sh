@@ -108,7 +108,7 @@ fi
 [[ -n "${TARGET_STATE}" ]] || { echo "Payload.targetState is required" >&2; exit 1; }
 
 case "${TARGET_STATE}" in
-  triage|planned|working|blocked|done)
+  triage|planned|working|testing|blocked|done)
     ;;
   *)
     echo "Unsupported targetState: ${TARGET_STATE}" >&2
@@ -144,6 +144,10 @@ case "${TARGET_STATE}" in
   working)
     DESIRED_STATUS_LABEL="status:working"
     DESIRED_PROJECT_STATUS="⚙️ Working"
+    ;;
+  testing)
+    DESIRED_STATUS_LABEL="status:testing"
+    DESIRED_PROJECT_STATUS="🧪 Testing"
     ;;
   blocked)
     DESIRED_STATUS_LABEL="status:blocked"
@@ -238,7 +242,7 @@ fi
 STATUS_LABELS_TO_REMOVE=()
 for existing in "${CURRENT_LABELS[@]:-}"; do
   case "${existing}" in
-    status:triage|status:planned|status:working|status:blocked|status:done)
+    status:triage|status:planned|status:working|status:testing|status:blocked|status:done)
       if [[ -n "${DESIRED_STATUS_LABEL}" && "${existing}" == "${DESIRED_STATUS_LABEL}" ]]; then
         continue
       fi

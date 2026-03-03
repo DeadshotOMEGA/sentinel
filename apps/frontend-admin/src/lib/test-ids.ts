@@ -87,6 +87,44 @@ export const TID = {
       submit: 'badge-form-submit',
     },
   },
+  adminUsers: {
+    newUserBtn: 'admin-users-new-user-btn',
+    errorAlert: 'admin-users-error-alert',
+    filter: {
+      search: 'admin-users-filter-search',
+      role: 'admin-users-filter-role',
+      status: 'admin-users-filter-status',
+    },
+    table: 'admin-users-table',
+    row: (id: string) => `admin-users-row-${id}`,
+    rowAction: (id: string, action: string) => `admin-users-row-${id}-${action}`,
+    pagination: {
+      prev: 'admin-users-page-prev',
+      next: 'admin-users-page-next',
+      rowsPerPage: 'admin-users-rows-per-page',
+    },
+    form: {
+      username: 'admin-users-form-username',
+      displayName: 'admin-users-form-display-name',
+      role: 'admin-users-form-role',
+      email: 'admin-users-form-email',
+      firstName: 'admin-users-form-first-name',
+      lastName: 'admin-users-form-last-name',
+      password: 'admin-users-form-password',
+      cancel: 'admin-users-form-cancel',
+      submit: 'admin-users-form-submit',
+    },
+    resetPassword: {
+      newPassword: 'admin-users-reset-password-new',
+      confirmPassword: 'admin-users-reset-password-confirm',
+      cancel: 'admin-users-reset-password-cancel',
+      submit: 'admin-users-reset-password-submit',
+    },
+    status: {
+      cancel: 'admin-users-status-cancel',
+      confirm: 'admin-users-status-confirm',
+    },
+  },
   checkins: {
     manualCheckinBtn: 'checkins-manual-checkin-btn',
     filter: {

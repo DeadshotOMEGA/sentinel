@@ -262,6 +262,7 @@ exports.Prisma.MemberScalarFieldEnum = {
   missedCheckoutCount: 'missedCheckoutCount',
   lastMissedCheckout: 'lastMissedCheckout',
   pinHash: 'pinHash',
+  mustChangePin: 'mustChangePin',
   accountLevel: 'accountLevel'
 };
 

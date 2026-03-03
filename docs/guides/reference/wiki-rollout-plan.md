@@ -30,6 +30,7 @@ Deployment topology:
 
 - `wikijs-postgres` (dedicated Wiki DB).
 - `wikijs` (Wiki.js runtime).
+- `kroki` (internal diagram rendering service for Wiki.js).
 - Caddy host route for `docs.sentinel.local`.
 
 Storage:
@@ -72,6 +73,11 @@ Updated deployment/runtime files:
 - `deploy/backup.sh`
 - `deploy/restore.sh`
 
+Diagram rendering support:
+
+- Wiki.js `markdownKroki` renderer can be pointed at `http://kroki:8000`.
+- Kroki remains internal-only by default; no additional LAN port is assigned.
+
 Operational behavior:
 
 - `ALLOW_WIKI_LAN` state persisted in `.appliance-state`.
@@ -100,7 +106,7 @@ Canonical top-level Wiki tree:
 MVP routes/pages (high support impact):
 
 1. Dashboard
-2. DDS / Day Duty
+2. DDS
 3. Checkins
 4. Schedules
 5. Members

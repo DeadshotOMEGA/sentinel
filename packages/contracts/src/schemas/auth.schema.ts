@@ -8,10 +8,7 @@ export const LoginRequestSchema = v.object({
     v.string('Badge serial number is required'),
     v.minLength(1, 'Badge serial number must not be empty')
   ),
-  pin: v.pipe(
-    v.string('PIN is required'),
-    v.regex(/^\d{4}$/, 'PIN must be exactly 4 digits')
-  ),
+  pin: v.pipe(v.string('PIN is required'), v.regex(/^\d{4}$/, 'PIN must be exactly 4 digits')),
 })
 
 export type LoginRequest = v.InferOutput<typeof LoginRequestSchema>
@@ -26,6 +23,7 @@ export const AuthMemberSchema = v.object({
   rank: v.string(),
   serviceNumber: v.string(),
   accountLevel: v.number(),
+  mustChangePin: v.boolean(),
 })
 
 export type AuthMember = v.InferOutput<typeof AuthMemberSchema>

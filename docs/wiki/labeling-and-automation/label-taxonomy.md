@@ -4,7 +4,7 @@
 
 - `type:*`: `type:bug`, `type:feature`, `type:task`, `type:refactor`
 - `area:*`: `area:backend`, `area:frontend`, `area:database`, `area:infra`, `area:auth`, `area:logging`, `area:hardware`
-- `status:*`: `status:triage`, `status:planned`, `status:working`, `status:blocked`, `status:done`
+- `status:*`: `status:triage`, `status:planned`, `status:working`, `status:testing`, `status:blocked`, `status:done`
 - `priority:*`: `priority:p0`, `priority:p1`, `priority:p2`
 
 ## Special labels

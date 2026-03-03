@@ -20,6 +20,7 @@ const navLinks = [
 ]
 
 const adminLinks = [
+  { href: '/admin-users', label: 'User Accounts' },
   { href: '/kiosk', label: 'Kiosk' },
   { href: '/checkins', label: 'History' },
   { href: '/database', label: 'Database' },
