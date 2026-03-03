@@ -4,6 +4,10 @@ import { prisma as defaultPrisma } from '@sentinel/database'
 import { SessionRepository } from '../repositories/session-repository.js'
 import type { SessionWithMember } from '../repositories/session-repository.js'
 import { authLogger } from '../lib/logger.js'
+import {
+  getSentinelBootstrapIdentity,
+  isSentinelBootstrapServiceNumber,
+} from '../lib/system-bootstrap.js'
 
 const BCRYPT_COST = 12
 
@@ -16,6 +20,7 @@ export interface LoginResult {
     rank: string
     serviceNumber: string
     accountLevel: number
+    mustChangePin: boolean
   }
 }
 
@@ -44,8 +49,11 @@ export class AuthService {
       where: { serialNumber },
       select: {
         id: true,
+        assignedToId: true,
         status: true,
         members: {
+          where: { status: 'active' },
+          orderBy: { updatedAt: 'desc' },
           select: {
             id: true,
             firstName: true,
@@ -53,6 +61,7 @@ export class AuthService {
             rank: true,
             serviceNumber: true,
             accountLevel: true,
+            mustChangePin: true,
             status: true,
             pinHash: true,
           },
@@ -68,7 +77,24 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
-    const member = badge.members[0]
+    const assignedMember = badge.assignedToId
+      ? await this.prisma.member.findUnique({
+          where: { id: badge.assignedToId },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            rank: true,
+            serviceNumber: true,
+            accountLevel: true,
+            mustChangePin: true,
+            status: true,
+            pinHash: true,
+          },
+        })
+      : null
+
+    const member = assignedMember ?? badge.members[0]
     if (!member || member.status !== 'active') {
       authLogger.warn('Login failed: no active member for badge', {
         serialNumber,
@@ -112,6 +138,7 @@ export class AuthService {
         rank: member.rank,
         serviceNumber: member.serviceNumber,
         accountLevel: member.accountLevel,
+        mustChangePin: member.mustChangePin,
       },
     }
   }
@@ -134,6 +161,10 @@ export class AuthService {
    * Change own PIN (verify old PIN first).
    */
   async changePin(memberId: string, oldPin: string, newPin: string): Promise<void> {
+    if (await this.isProtectedBootstrapMember(memberId)) {
+      throw new ForbiddenError('Cannot change PIN for the protected Sentinel bootstrap account')
+    }
+
     const member = await this.prisma.member.findUnique({
       where: { id: memberId },
       select: { pinHash: true },
@@ -151,7 +182,7 @@ export class AuthService {
     const hash = await bcrypt.hash(newPin, BCRYPT_COST)
     await this.prisma.member.update({
       where: { id: memberId },
-      data: { pinHash: hash },
+      data: { pinHash: hash, mustChangePin: false },
     })
 
     authLogger.info('PIN changed', { memberId })
@@ -161,6 +192,10 @@ export class AuthService {
    * Admin set/reset a member's PIN (no old PIN required).
    */
   async setPin(memberId: string, newPin: string): Promise<void> {
+    if (await this.isProtectedBootstrapMember(memberId)) {
+      throw new ForbiddenError('Cannot set PIN for the protected Sentinel bootstrap account')
+    }
+
     const member = await this.prisma.member.findUnique({
       where: { id: memberId },
       select: { id: true },
@@ -173,10 +208,24 @@ export class AuthService {
     const hash = await bcrypt.hash(newPin, BCRYPT_COST)
     await this.prisma.member.update({
       where: { id: memberId },
-      data: { pinHash: hash },
+      data: { pinHash: hash, mustChangePin: false },
     })
 
     authLogger.info('PIN set by admin', { memberId })
+  }
+
+  private async isProtectedBootstrapMember(memberId: string): Promise<boolean> {
+    const identity = await getSentinelBootstrapIdentity(this.prisma)
+    if (identity && identity.memberId === memberId) {
+      return true
+    }
+
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { serviceNumber: true },
+    })
+
+    return isSentinelBootstrapServiceNumber(member?.serviceNumber)
   }
 }
 
@@ -195,5 +244,14 @@ export class NotFoundError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'NotFoundError'
+  }
+}
+
+export class ForbiddenError extends Error {
+  public statusCode = 403
+  public code = 'FORBIDDEN'
+  constructor(message: string) {
+    super(message)
+    this.name = 'ForbiddenError'
   }
 }

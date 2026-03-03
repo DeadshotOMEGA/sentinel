@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { TID } from '@/lib/test-ids'
 import {
   createColumnHelper,
@@ -84,6 +85,7 @@ export function MembersTable({
   onPageChange,
   onLimitChange,
 }: MembersTableProps) {
+  const queryClient = useQueryClient()
   // Hidden members toggle (admin+ only)
   const [includeHidden, setIncludeHidden] = useState(false)
   const { data, isLoading, isError } = useMembers({ ...filters, page, limit, includeHidden })
@@ -766,6 +768,10 @@ export function MembersTable({
           onOpenChange={(open) => !open && setPinMember(null)}
           memberId={pinMember.id}
           memberName={`${pinMember.rank ?? ''} ${pinMember.lastName}`.trim()}
+          onSuccess={async () => {
+            await queryClient.invalidateQueries({ queryKey: ['members'] })
+            await queryClient.invalidateQueries({ queryKey: ['member', pinMember.id] })
+          }}
         />
       )}
     </>

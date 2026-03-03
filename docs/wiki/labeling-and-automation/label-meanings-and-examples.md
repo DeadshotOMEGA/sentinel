@@ -22,6 +22,7 @@
 - `status:triage`: new/reopened intake.
 - `status:planned`: accepted and queued.
 - `status:working`: currently being implemented.
+- `status:testing`: implementation complete and under validation before final close-out.
 - `status:blocked`: cannot proceed due blocker.
 - `status:done`: implementation complete.
 

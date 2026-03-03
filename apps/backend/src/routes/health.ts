@@ -7,7 +7,8 @@ import { register } from '../lib/metrics.js'
 export const healthRouter: Router = Router()
 
 function resolveServiceVersion(): string {
-  const envVersion = process.env.APP_VERSION || process.env.npm_package_version
+  const envVersion =
+    process.env.APP_VERSION || process.env.SENTINEL_VERSION || process.env.npm_package_version
   if (envVersion) {
     return envVersion
   }

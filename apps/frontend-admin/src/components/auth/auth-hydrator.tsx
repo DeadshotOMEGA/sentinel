@@ -2,6 +2,7 @@
 /* global process */
 
 import { useEffect, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth-store'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
@@ -12,6 +13,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
  * If the cookie is invalid/expired, clears the store so middleware handles redirect.
  */
 export function AuthHydrator() {
+  const router = useRouter()
+  const pathname = usePathname()
   const { isAuthenticated, setAuth, logout } = useAuthStore()
   const hasValidated = useRef(false)
 
@@ -29,10 +32,25 @@ export function AuthHydrator() {
           const data = await res.json()
           if (data.member) {
             setAuth(data.member, data.token ?? '')
+            if (
+              data.member.mustChangePin &&
+              pathname !== '/change-pin-required' &&
+              pathname !== '/login'
+            ) {
+              router.replace('/change-pin-required')
+              return
+            }
+            if (!data.member.mustChangePin && pathname === '/change-pin-required') {
+              router.replace('/dashboard')
+              return
+            }
           }
         } else if (isAuthenticated) {
           // Cookie expired but store thinks we're authenticated
           logout()
+          if (pathname === '/change-pin-required') {
+            router.replace('/login')
+          }
         }
       } catch {
         // Network error — keep existing store state, don't force logout
@@ -40,7 +58,7 @@ export function AuthHydrator() {
     }
 
     validateSession()
-  }, [isAuthenticated, setAuth, logout])
+  }, [isAuthenticated, setAuth, logout, pathname, router])
 
   return null
 }

@@ -7,8 +7,10 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 1. **Every bug becomes an issue** (even tiny bugs).
 2. **Everything starts in 🧪 Inbox** (new issues always get `status:triage`).
 3. **Target one issue in ⚙️ Working at a time** (Codex automation is warn-only, not hard-blocking).
-4. If you task-switch: move current work back to 📌 Planned, pull the next item into ⚙️ Working.
-5. Use `needs-investigation` when root cause is unclear, flaky, or hardware behavior is intermittent.
+4. Move finished implementation to 🧪 Testing until validation is complete; only then mark ✅ Done.
+5. If you task-switch: move current work back to 📌 Planned, pull the next item into ⚙️ Working.
+6. Keep the protected Sentinel bootstrap setup account reserved for install/recovery workflows.
+7. Use `needs-investigation` when root cause is unclear, flaky, or hardware behavior is intermittent.
 
 ---
 
@@ -17,10 +19,18 @@ A lightweight workflow designed to keep bugs from disappearing while you continu
 - **Type**: `type:bug`, `type:feature`, `type:task`, `type:refactor`
 - **Area**: `area:backend`, `area:frontend`, `area:hardware`, `area:infra`, `area:database`, `area:auth`, `area:logging`
 - **Priority**: `priority:p0`, `priority:p1`, `priority:p2`
-- **Status**: `status:triage`, `status:planned`, `status:working`, `status:blocked`, `status:done`
+- **Status**: `status:triage`, `status:planned`, `status:working`, `status:testing`, `status:blocked`, `status:done`
 - **Blocked reason** (required with `status:blocked`): `blocked:external`, `blocked:dependency`, `blocked:decision`
 - **Special**: `needs-investigation`
 - **Bot-managed**: `bot:stale`, `bot:conflict`
+
+## Bootstrap Account Guardrail
+
+- Sentinel reserves a protected bootstrap account for install/recovery:
+  - Badge: `0000000000`
+  - PIN: `0000`
+- The bootstrap credential is runtime-enforced and immutable through auth PIN-change endpoints.
+- The bootstrap account bypasses forced PIN-change gating to avoid lockout during setup/recovery.
 
 Source-of-truth file: `.github/labels.solo-workflow.json`
 Canonical policy pages live in GitHub Wiki under **Labeling and Automation**.
@@ -169,6 +179,7 @@ Use this for project board details that are easier in UI.
    - `🧪 Inbox`
    - `📌 Planned`
    - `⚙️ Working`
+   - `🧪 Testing`
    - `🚧 Blocked`
    - `✅ Done`
 3. Add custom fields:
@@ -191,8 +202,9 @@ Use this for project board details that are easier in UI.
    - Add `Type`, `Area`, `Priority`
    - If ready, move to **Planned** and set milestone/release.
 3. Keep only one **Working** item.
-4. When blocked, move to **Blocked** and note blocker in issue.
-5. Close completed work and move to **Done**.
+4. Move completed implementation to **Testing** while you validate.
+5. When blocked, move to **Blocked** and note blocker in issue.
+6. Close completed/validated work and move to **Done**.
 
 ---
 
@@ -239,4 +251,4 @@ fi
    - Bug Hotlist (for `type:bug` label)
    - Release View (next patch milestone) when milestone/release matches
    - Weird stuff when `needs-investigation` is applied
-6. Move item through Inbox → Planned → Working → Done to confirm board behavior.
+6. Move item through Inbox → Planned → Working → Testing → Done to confirm board behavior.

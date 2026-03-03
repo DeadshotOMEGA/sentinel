@@ -1,11 +1,21 @@
 import { initServer } from '@ts-rest/express'
 import { devContract } from '@sentinel/contracts'
 import type { MockScanRequest } from '@sentinel/contracts'
+import type { Request } from 'express'
 import { getPrismaClient } from '../lib/database.js'
 import { LockupService } from '../services/lockup-service.js'
+import { isSentinelBootstrapServiceNumber } from '../lib/system-bootstrap.js'
 
 const s = initServer()
 const prisma = getPrismaClient()
+
+function isDevForbidden(req?: Request): boolean {
+  if (process.env.NODE_ENV !== 'production') {
+    return false
+  }
+
+  return !isSentinelBootstrapServiceNumber(req?.member?.serviceNumber)
+}
 
 /**
  * Dev Mode routes
@@ -19,10 +29,10 @@ export const devRouter = s.router(devContract, {
   /**
    * GET /api/dev/members - Get all active members with badge and presence
    */
-  getMembers: async () => {
+  getMembers: async ({ req }) => {
     try {
-      // Block in production
-      if (process.env.NODE_ENV === 'production') {
+      // Block in production except for protected Sentinel bootstrap account
+      if (isDevForbidden(req)) {
         return {
           status: 403 as const,
           body: {
@@ -89,10 +99,10 @@ export const devRouter = s.router(devContract, {
   /**
    * DELETE /api/dev/checkins/clear-all - Check out all currently present members
    */
-  clearAllCheckins: async () => {
+  clearAllCheckins: async ({ req }) => {
     try {
-      // Block in production
-      if (process.env.NODE_ENV === 'production') {
+      // Block in production except for protected Sentinel bootstrap account
+      if (isDevForbidden(req)) {
         return {
           status: 403 as const,
           body: {
@@ -198,9 +208,9 @@ export const devRouter = s.router(devContract, {
   /**
    * POST /api/dev/building-status - Set building lockup status
    */
-  setBuildingStatus: async ({ body }) => {
+  setBuildingStatus: async ({ body, req }) => {
     try {
-      if (process.env.NODE_ENV === 'production') {
+      if (isDevForbidden(req)) {
         return {
           status: 403 as const,
           body: {
@@ -260,10 +270,10 @@ export const devRouter = s.router(devContract, {
   /**
    * POST /api/dev/mock-scan - Simulate RFID badge scan
    */
-  mockScan: async ({ body }) => {
+  mockScan: async ({ body, req }) => {
     try {
-      // Block in production
-      if (process.env.NODE_ENV === 'production') {
+      // Block in production except for protected Sentinel bootstrap account
+      if (isDevForbidden(req)) {
         return {
           status: 403 as const,
           body: {
@@ -328,7 +338,26 @@ export const devRouter = s.router(devContract, {
         }
       }
 
-      const member = badge.members[0]
+      const assignedMember = badge.assignedToId
+        ? await prisma.member.findUnique({
+            where: { id: badge.assignedToId },
+            include: {
+              division: {
+                select: {
+                  name: true,
+                },
+              },
+              checkins: {
+                orderBy: {
+                  timestamp: 'desc',
+                },
+                take: 1,
+              },
+            },
+          })
+        : null
+
+      const member = assignedMember ?? badge.members[0]
       if (!member) {
         return {
           status: 400 as const,

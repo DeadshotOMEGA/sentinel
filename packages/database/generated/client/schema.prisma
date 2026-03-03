@@ -238,6 +238,7 @@ model Member {
   lockupTransfersTo          LockupTransfer[]          @relation("LockupTransferTo")
   lockupExecutions           LockupExecution[]
   pinHash                    String?                   @map("pin_hash") @db.VarChar(255)
+  mustChangePin              Boolean                   @default(false) @map("must_change_pin")
   accountLevel               Int                       @default(1) @map("account_level")
   missedCheckouts            MissedCheckout[]
   unitEventDutyAssignments   UnitEventDutyAssignment[]
