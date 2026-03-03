@@ -1,6 +1,9 @@
 [Start Here](/docs/start-here) | [Open Sentinel Dashboard](http://sentinel.local/dashboard)
 
-## Fast Actions
+> This documentation site is using Wiki.js!
+{.is-success}
+
+# Fast Actions
 
 - [Dashboard Overview](/operations/dashboard/overview)
 - [Security Alerts](/operations/dashboard/security-alerts)
@@ -8,7 +11,7 @@
 - [Presence Grid](/operations/dashboard/presence-grid)
 {.links-list}
 
-## Screenshot Placeholder: Dashboard At-a-Glance
+# Screenshot Placeholder: Dashboard At-a-Glance
 
 ![TODO: Dashboard At-a-Glance](https://placehold.co/1600x900?text=TODO+dashboard-at-a-glance)
 
