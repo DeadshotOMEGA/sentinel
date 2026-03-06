@@ -30,11 +30,11 @@ export function UuidCell({ value }: CellRendererProps) {
       <span className="text-base-content/60">{truncated}...</span>
       <button
         type="button"
-        className="btn btn-ghost btn-square btn-md h-5 w-5"
+        className="btn btn-ghost btn-square btn-xs"
         onClick={handleCopy}
         title="Copy full UUID"
       >
-        {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        {copied ? <Check className="size-[1em] text-green-500" /> : <Copy className="size-[1em]" />}
       </button>
     </div>
   )

@@ -12,7 +12,11 @@ import { QualificationService } from './qualification-service.js'
 import { PresenceService } from './presence-service.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { getOperationalDate } from '../utils/operational-date.js'
-import { broadcastLockupExecution, broadcastLockupTransfer, broadcastLockupStatusUpdate } from '../websocket/broadcast.js'
+import {
+  broadcastLockupExecution,
+  broadcastLockupTransfer,
+  broadcastLockupStatusUpdate,
+} from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
 
 // ============================================================================
@@ -273,6 +277,25 @@ export class LockupService {
           performedByType: 'member',
           notes,
         },
+      })
+    }
+
+    const holder = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { id: true, firstName: true, lastName: true, rank: true },
+    })
+
+    if (holder) {
+      broadcastLockupStatusUpdate({
+        date: updatedStatus.date.toISOString().split('T')[0] ?? '',
+        buildingStatus: updatedStatus.buildingStatus as 'secured' | 'open' | 'locking_up',
+        currentHolder: {
+          id: holder.id,
+          firstName: holder.firstName,
+          lastName: holder.lastName,
+          rank: holder.rank,
+        },
+        timestamp: new Date().toISOString(),
       })
     }
 
@@ -638,7 +661,10 @@ export class LockupService {
           name: `${memberData.rank} ${memberData.firstName} ${memberData.lastName}`,
         })
       } catch (error) {
-        serviceLogger.error('Failed to checkout member during lockup', { memberId: member.id, error: error instanceof Error ? error.message : String(error) })
+        serviceLogger.error('Failed to checkout member during lockup', {
+          memberId: member.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
 
@@ -652,7 +678,10 @@ export class LockupService {
           name: visitor.name,
         })
       } catch (error) {
-        serviceLogger.error('Failed to checkout visitor during lockup', { visitorId: visitor.id, error: error instanceof Error ? error.message : String(error) })
+        serviceLogger.error('Failed to checkout visitor during lockup', {
+          visitorId: visitor.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
 
@@ -683,7 +712,10 @@ export class LockupService {
           })
         }
       } catch (error) {
-        serviceLogger.error('Failed to checkout performer during lockup', { performedById, error: error instanceof Error ? error.message : String(error) })
+        serviceLogger.error('Failed to checkout performer during lockup', {
+          performedById,
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     }
 

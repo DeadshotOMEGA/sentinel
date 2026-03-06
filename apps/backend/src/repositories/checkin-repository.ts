@@ -12,7 +12,7 @@ import type {
 } from '@sentinel/types'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
-import { DEFAULT_TIMEZONE, OPERATIONAL_DAY_START_HOUR } from '../utils/operational-date.js'
+import { DEFAULT_TIMEZONE, getOperationalDayStartTime } from '../utils/operational-date.js'
 
 // TODO: Implement Redis caching when infrastructure is ready
 // import { redis } from '../redis';
@@ -979,15 +979,24 @@ export class CheckinRepository {
    * Get recent activity (checkins + visitors) for display
    */
   async getRecentActivity(limit: number = 10): Promise<RecentActivityItem[]> {
-    // Calculate the operational day cutoff (3am today in local timezone)
+    // Calculate the operational-day cutoff in local timezone.
     // Activity before this cutoff belongs to a previous operational day
+    const dayStart = getOperationalDayStartTime()
     const now = DateTime.now().setZone(DEFAULT_TIMEZONE)
     const cutoff =
-      now.hour < OPERATIONAL_DAY_START_HOUR
-        ? now
-            .minus({ days: 1 })
-            .set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
-        : now.set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+      now.hour < dayStart.hour || (now.hour === dayStart.hour && now.minute < dayStart.minute)
+        ? now.minus({ days: 1 }).set({
+            hour: dayStart.hour,
+            minute: dayStart.minute,
+            second: 0,
+            millisecond: 0,
+          })
+        : now.set({
+            hour: dayStart.hour,
+            minute: dayStart.minute,
+            second: 0,
+            millisecond: 0,
+          })
     const cutoffDate = cutoff.toJSDate()
 
     // Use raw query for UNION (not supported in Prisma)

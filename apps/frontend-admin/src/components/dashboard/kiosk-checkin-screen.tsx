@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CalendarDays, Clock3, IdCard, ScanLine, Shield, Users } from 'lucide-react'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
+import { KioskResponsibilityPrompt } from '@/components/kiosk/kiosk-responsibility-prompt'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
-import { useCheckoutOptions } from '@/hooks/use-lockup'
+import { useAcceptDds, useDdsStatus, useKioskResponsibilityState } from '@/hooks/use-dds'
+import { useCheckoutOptions, useLockupStatus, useOpenBuilding } from '@/hooks/use-lockup'
+import { usePresentPeople } from '@/hooks/use-present-people'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { TID } from '@/lib/test-ids'
@@ -44,6 +47,11 @@ interface PendingLockupCheckout {
   memberName: string
   badgeId: string
   serial: string
+}
+
+interface ResponsibilityContext {
+  memberId: string
+  memberName: string
 }
 
 interface SuccessfulScan {
@@ -321,10 +329,44 @@ export function KioskCheckinScreen({
   const [screenState, setScreenState] = useState<ScreenState>(INITIAL_SCREEN_STATE)
   const [showLockupOptions, setShowLockupOptions] = useState(false)
   const [pendingLockup, setPendingLockup] = useState<PendingLockupCheckout | null>(null)
+  const [responsibilityContext, setResponsibilityContext] = useState<ResponsibilityContext | null>(
+    null
+  )
+  const [responsibilityDismissed, setResponsibilityDismissed] = useState(false)
+  const [responsibilityError, setResponsibilityError] = useState<string | null>(null)
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
   )
+  const { data: liveDdsStatus } = useDdsStatus()
+  const { data: liveLockupStatus } = useLockupStatus()
+  const { data: presentPeopleData } = usePresentPeople()
+  const responsibilityStateQuery = useKioskResponsibilityState(
+    responsibilityContext?.memberId ?? '',
+    Boolean(responsibilityContext)
+  )
+  const acceptDdsMutation = useAcceptDds()
+  const openBuildingMutation = useOpenBuilding()
+
+  const resetResponsibilityState = () => {
+    startTransition(() => {
+      setResponsibilityContext(null)
+      setResponsibilityDismissed(false)
+      setResponsibilityError(null)
+    })
+  }
+
+  const resetKioskState = () => {
+    startTransition(() => {
+      setSerial('')
+      setScreenState(INITIAL_SCREEN_STATE)
+      setShowLockupOptions(false)
+      setPendingLockup(null)
+      setResponsibilityContext(null)
+      setResponsibilityDismissed(false)
+      setResponsibilityError(null)
+    })
+  }
 
   const refocusBadgeInput = () => {
     setTimeout(() => inputRef.current?.focus(), 0)
@@ -338,6 +380,25 @@ export function KioskCheckinScreen({
     ])
   }
 
+  const liveNeedsDds = !liveDdsStatus?.assignment || liveDdsStatus.assignment.status !== 'active'
+  const liveNeedsBuildingOpen = liveLockupStatus?.buildingStatus === 'secured'
+  const presentMemberCount =
+    presentPeopleData?.people.filter((person) => person.type === 'member').length ?? 0
+  const showUnresolvedStandby = presentMemberCount > 0 && (liveNeedsDds || liveNeedsBuildingOpen)
+  const responsibilityPromptVisible = Boolean(
+    responsibilityContext &&
+    responsibilityStateQuery.data?.shouldPrompt &&
+    !responsibilityDismissed &&
+    !pendingLockup
+  )
+  const responsibilityPending = acceptDdsMutation.isPending || openBuildingMutation.isPending
+  const unresolvedMessage =
+    liveNeedsBuildingOpen && liveNeedsDds
+      ? 'Building still secured and DDS still unclaimed. Next qualified member please scan.'
+      : liveNeedsDds
+        ? 'Building is open. DDS still needs to be accepted for today.'
+        : 'Building still needs to be opened for today.'
+
   useEffect(() => {
     if (!isActive) return
     const timer = setInterval(() => setNow(new Date()), 1000)
@@ -346,15 +407,28 @@ export function KioskCheckinScreen({
 
   useEffect(() => {
     if (!isActive) {
-      setSerial('')
-      setScreenState(INITIAL_SCREEN_STATE)
-      setShowLockupOptions(false)
-      setPendingLockup(null)
+      resetKioskState()
       return
     }
 
     refocusBadgeInput()
   }, [isActive])
+
+  useEffect(() => {
+    if (!responsibilityContext) return
+    if (!responsibilityStateQuery.data) return
+
+    if (!responsibilityStateQuery.data.shouldPrompt) {
+      resetResponsibilityState()
+    }
+  }, [responsibilityContext, responsibilityStateQuery.data])
+
+  useEffect(() => {
+    if (!responsibilityContext) return
+    if (!liveNeedsDds && !liveNeedsBuildingOpen) {
+      resetResponsibilityState()
+    }
+  }, [responsibilityContext, liveNeedsBuildingOpen, liveNeedsDds])
 
   const createMemberCheckin = async (payload: CreateCheckinInput): Promise<CreateCheckinResult> => {
     const createResponse = await apiClient.checkins.createCheckin({
@@ -465,6 +539,9 @@ export function KioskCheckinScreen({
     onSuccess: async (result) => {
       setSerial('')
       refocusBadgeInput()
+      setResponsibilityError(null)
+      setResponsibilityDismissed(false)
+      setResponsibilityContext(null)
 
       if (result.type === 'visitor') {
         setPendingLockup(null)
@@ -502,6 +579,12 @@ export function KioskCheckinScreen({
       const insights = await buildMemberInsights(result.memberId)
       setPendingLockup(null)
       setShowLockupOptions(false)
+      if (result.direction === 'in') {
+        setResponsibilityContext({
+          memberId: result.memberId,
+          memberName: result.memberName,
+        })
+      }
       setScreenState({
         status: 'success',
         title: result.direction === 'in' ? 'Welcome to the Unit' : 'Safe Travels',
@@ -519,6 +602,9 @@ export function KioskCheckinScreen({
       setSerial('')
       setPendingLockup(null)
       setShowLockupOptions(false)
+      setResponsibilityContext(null)
+      setResponsibilityDismissed(false)
+      setResponsibilityError(null)
       setScreenState({
         status: 'error',
         title: 'Scan Not Accepted',
@@ -612,6 +698,67 @@ export function KioskCheckinScreen({
     }
   }
 
+  const handleResponsibilitySubmit = async (selection: {
+    openBuilding: boolean
+    takeDds: boolean
+  }) => {
+    if (!responsibilityContext) return
+
+    setResponsibilityError(null)
+
+    try {
+      if (selection.takeDds) {
+        await acceptDdsMutation.mutateAsync(responsibilityContext.memberId)
+        setScreenState({
+          status: 'success',
+          title: 'DDS Accepted',
+          message: `${responsibilityContext.memberName} is now today's DDS and the building has been opened.`,
+          memberName: responsibilityContext.memberName,
+          direction: 'in',
+          scannedAt: new Date().toISOString(),
+        })
+        setResponsibilityContext(null)
+        setResponsibilityDismissed(false)
+      } else if (selection.openBuilding) {
+        await openBuildingMutation.mutateAsync({
+          memberId: responsibilityContext.memberId,
+        })
+        setScreenState({
+          status: 'success',
+          title: 'Building Opened',
+          message: `${responsibilityContext.memberName} opened the building. DDS still needs to be accepted for today.`,
+          memberName: responsibilityContext.memberName,
+          direction: 'in',
+          scannedAt: new Date().toISOString(),
+        })
+        setResponsibilityDismissed(true)
+      }
+
+      invalidateKioskQueries()
+      await responsibilityStateQuery.refetch()
+    } catch (error) {
+      setResponsibilityError(
+        error instanceof Error ? error.message : 'Failed to update building responsibility.'
+      )
+    }
+  }
+
+  const handleResponsibilityDecline = () => {
+    setResponsibilityDismissed(true)
+    setResponsibilityError(null)
+
+    if (responsibilityContext) {
+      setScreenState({
+        status: 'warning',
+        title: 'Responsibility Still Needed',
+        message: `${responsibilityContext.memberName} checked IN. The next qualified member will be asked to open the building or take DDS.`,
+        memberName: responsibilityContext.memberName,
+        direction: 'in',
+        scannedAt: new Date().toISOString(),
+      })
+    }
+  }
+
   const badgeStatus =
     screenState.status === 'success'
       ? 'success'
@@ -665,7 +812,7 @@ export function KioskCheckinScreen({
 
   return (
     <>
-      <div className={contentContainerClass}>
+      <div className={`${contentContainerClass} relative`}>
         <header className="mb-0 border-b border-base-300 bg-gradient-to-r from-base-200 via-base-200 to-base-100 p-4 lg:p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -695,6 +842,14 @@ export function KioskCheckinScreen({
               )}
             </div>
           </div>
+          {showUnresolvedStandby && !responsibilityPromptVisible && (
+            <div className="mt-4">
+              <div className="alert alert-warning alert-soft">
+                <AlertTriangle className="h-4 w-4" />
+                <span>{unresolvedMessage}</span>
+              </div>
+            </div>
+          )}
         </header>
 
         <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-[1.45fr_1fr]">
@@ -981,6 +1136,16 @@ export function KioskCheckinScreen({
             </div>
           </aside>
         </div>
+
+        {responsibilityPromptVisible && responsibilityStateQuery.data && (
+          <KioskResponsibilityPrompt
+            state={responsibilityStateQuery.data}
+            isPending={responsibilityPending}
+            errorMessage={responsibilityError}
+            onDecline={handleResponsibilityDecline}
+            onSubmit={handleResponsibilitySubmit}
+          />
+        )}
       </div>
 
       {pendingLockup && checkoutOptions && (

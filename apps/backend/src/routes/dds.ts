@@ -3,13 +3,16 @@ import { ddsContract } from '@sentinel/contracts'
 import type {
   DdsAuditLogQuery,
   AssignDdsInput,
+  SetTodayDdsInput,
   TransferDdsInput,
   ReleaseDdsInput,
   IdParam,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
 import { DdsService } from '../services/dds-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { AccountLevel } from '../middleware/roles.js'
 
 const s = initServer()
 
@@ -172,6 +175,46 @@ export const ddsRouter = s.router(ddsContract, {
     }
   },
 
+  getKioskResponsibilityState: async ({ params }: { params: IdParam }) => {
+    try {
+      const state = await ddsService.getKioskResponsibilityState(params.id)
+
+      return {
+        status: 200 as const,
+        body: state,
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+
+      if (error instanceof Error && error.message.includes('Invalid')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to fetch kiosk responsibility state',
+        },
+      }
+    }
+  },
+
   /**
    * Member self-accepts DDS at kiosk
    */
@@ -198,11 +241,28 @@ export const ddsRouter = s.router(ddsContract, {
         }
       }
 
-      if (error instanceof Error && error.message.includes('already been assigned')) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('already been assigned') ||
+          error.message.includes('already been accepted'))
+      ) {
         return {
           status: 409 as const,
           body: {
             error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
+
+      if (
+        error instanceof Error &&
+        (error.message.includes('must be checked in') || error.message.includes('qualification'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
             message: error.message,
           },
         }
@@ -218,14 +278,88 @@ export const ddsRouter = s.router(ddsContract, {
     }
   },
 
+  setTodayDds: async ({ body, req }: { body: SetTodayDdsInput; req: Request }) => {
+    try {
+      if (!req.member) {
+        return {
+          status: 401 as const,
+          body: {
+            error: 'UNAUTHORIZED',
+            message: 'Authentication required',
+          },
+        }
+      }
+
+      if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
+        return {
+          status: 403 as const,
+          body: {
+            error: 'FORBIDDEN',
+            message: 'Admin access required',
+          },
+        }
+      }
+
+      const assignment = await ddsService.setTodayDds(body.memberId, req.member.id, body.notes)
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: "Today's DDS updated successfully",
+          assignment: toApiFormat(assignment),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+
+      if (
+        error instanceof Error &&
+        (error.message.includes('must be checked in') || error.message.includes('qualification'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
+      if (error instanceof Error && error.message.includes('already been accepted')) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : "Failed to update today's DDS",
+        },
+      }
+    }
+  },
+
   /**
    * Admin assigns DDS to a member
    */
-  assignDds: async ({ body }: { body: AssignDdsInput }) => {
+  assignDds: async ({ body, req }: { body: AssignDdsInput; req: Request }) => {
     try {
-      // Get admin ID from request context (would be from auth middleware)
-      // For now, using placeholder until auth is implemented
-      const adminId = 'system'
+      const adminId = req.member?.id ?? 'system'
 
       const assignment = await ddsService.assignDds(body.memberId, adminId, body.notes)
 
@@ -258,6 +392,19 @@ export const ddsRouter = s.router(ddsContract, {
         }
       }
 
+      if (
+        error instanceof Error &&
+        (error.message.includes('must be checked in') || error.message.includes('qualification'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
       return {
         status: 500 as const,
         body: {
@@ -271,11 +418,9 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Transfer DDS to another member
    */
-  transferDds: async ({ body }: { body: TransferDdsInput }) => {
+  transferDds: async ({ body, req }: { body: TransferDdsInput; req: Request }) => {
     try {
-      // Get admin ID from request context (would be from auth middleware)
-      // For now, using placeholder until auth is implemented
-      const adminId = 'system'
+      const adminId = req.member?.id ?? 'system'
 
       const assignment = await ddsService.transferDds(body.toMemberId, adminId, body.notes)
 
@@ -308,6 +453,19 @@ export const ddsRouter = s.router(ddsContract, {
         }
       }
 
+      if (
+        error instanceof Error &&
+        (error.message.includes('must be checked in') || error.message.includes('qualification'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
       return {
         status: 500 as const,
         body: {
@@ -321,11 +479,9 @@ export const ddsRouter = s.router(ddsContract, {
   /**
    * Release DDS role
    */
-  releaseDds: async ({ body }: { body: ReleaseDdsInput }) => {
+  releaseDds: async ({ body, req }: { body: ReleaseDdsInput; req: Request }) => {
     try {
-      // Get admin ID from request context (would be from auth middleware)
-      // For now, using placeholder until auth is implemented
-      const adminId = 'system'
+      const adminId = req.member?.id ?? 'system'
 
       await ddsService.releaseDds(adminId, body.notes)
       const nextDds = await ddsService.getNextWeekDds()

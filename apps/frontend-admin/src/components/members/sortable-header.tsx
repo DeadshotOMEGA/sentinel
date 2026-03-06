@@ -13,7 +13,7 @@ export function SortableHeader({ column, label, className }: SortableHeaderProps
     <div className={className}>
       <button
         type="button"
-        className="btn btn-ghost btn-sm -ml-3 h-8"
+        className="btn btn-ghost btn-sm -ml-3"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
         {label}

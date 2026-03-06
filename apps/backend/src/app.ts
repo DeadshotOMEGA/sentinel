@@ -37,6 +37,7 @@ import {
   unitEventContract,
   statHolidayContract,
   tagContract,
+  operationalTimingContract,
 } from '@sentinel/contracts'
 import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
@@ -80,6 +81,7 @@ import { schedulesRouter } from './routes/schedules.js'
 import { unitEventsRouter } from './routes/unit-events.js'
 import { statHolidaysRouter } from './routes/stat-holidays.js'
 import { tagsRouter } from './routes/tags.js'
+import { operationalTimingsRouter } from './routes/operational-timings.js'
 import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
@@ -296,6 +298,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(settingContract, settingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(operationalTimingContract, operationalTimingsRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

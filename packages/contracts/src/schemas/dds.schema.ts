@@ -44,6 +44,14 @@ export const AssignDdsSchema = v.object({
 })
 
 /**
+ * Set today's live DDS request schema
+ */
+export const SetTodayDdsSchema = v.object({
+  memberId: v.pipe(v.string('Member ID is required'), v.uuid('Invalid member ID')),
+  notes: v.optional(v.string()),
+})
+
+/**
  * Transfer DDS request schema
  */
 export const TransferDdsSchema = v.object({
@@ -85,6 +93,41 @@ export const NextDdsMemberSchema = v.object({
 })
 
 /**
+ * Shared lightweight member schema for kiosk responsibility state
+ */
+export const KioskResponsibilityStateMemberSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+})
+
+/**
+ * Kiosk responsibility prompt state schema
+ */
+export const KioskResponsibilityStateResponseSchema = v.object({
+  shouldPrompt: v.boolean(),
+  isFirstMemberCheckin: v.boolean(),
+  needsDds: v.boolean(),
+  needsBuildingOpen: v.boolean(),
+  buildingStatus: v.picklist(['secured', 'open', 'locking_up']),
+  canAcceptDds: v.boolean(),
+  canOpenBuilding: v.boolean(),
+  member: KioskResponsibilityStateMemberSchema,
+  scheduledDds: v.nullable(KioskResponsibilityStateMemberSchema),
+  currentDds: v.nullable(
+    v.object({
+      id: v.string(),
+      firstName: v.string(),
+      lastName: v.string(),
+      rank: v.string(),
+      status: v.picklist(['pending', 'active']),
+    })
+  ),
+  currentLockupHolder: v.nullable(KioskResponsibilityStateMemberSchema),
+})
+
+/**
  * Get current DDS response schema
  */
 export const GetCurrentDdsResponseSchema = v.object({
@@ -122,16 +165,25 @@ export const DdsAuditLogResponseSchema = v.object({
  */
 export const DdsAuditLogQuerySchema = v.object({
   memberId: v.optional(v.pipe(v.string(), v.uuid('Invalid member ID'))),
-  limit: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))),
+  limit: v.optional(
+    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))
+  ),
 })
 
 // Type exports
 export type DdsAssignmentResponse = v.InferOutput<typeof DdsAssignmentResponseSchema>
 export type AssignDdsInput = v.InferOutput<typeof AssignDdsSchema>
+export type SetTodayDdsInput = v.InferOutput<typeof SetTodayDdsSchema>
 export type TransferDdsInput = v.InferOutput<typeof TransferDdsSchema>
 export type ReleaseDdsInput = v.InferOutput<typeof ReleaseDdsSchema>
 export type ResponsibilityAuditLog = v.InferOutput<typeof ResponsibilityAuditLogSchema>
 export type NextDdsMember = v.InferOutput<typeof NextDdsMemberSchema>
+export type KioskResponsibilityStateMember = v.InferOutput<
+  typeof KioskResponsibilityStateMemberSchema
+>
+export type KioskResponsibilityStateResponse = v.InferOutput<
+  typeof KioskResponsibilityStateResponseSchema
+>
 export type GetCurrentDdsResponse = v.InferOutput<typeof GetCurrentDdsResponseSchema>
 export type DdsOperationResponse = v.InferOutput<typeof DdsOperationResponseSchema>
 export type CheckDdsExistsResponse = v.InferOutput<typeof CheckDdsExistsResponseSchema>

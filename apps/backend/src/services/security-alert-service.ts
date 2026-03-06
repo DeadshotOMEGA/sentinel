@@ -2,6 +2,7 @@ import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { Prisma } from '@sentinel/database'
+import { getRuntimeAlertRateLimit } from '../lib/operational-timings-runtime.js'
 
 import {
   broadcastSecurityAlert,
@@ -46,6 +47,42 @@ export class SecurityAlertService {
    * Create a new security alert and broadcast it via WebSocket
    */
   async createAlert(data: CreateAlertData): Promise<ActiveAlert> {
+    const rateLimitRule = getRuntimeAlertRateLimit(data.alertType)
+    if (rateLimitRule) {
+      const windowStart = new Date(Date.now() - rateLimitRule.timeWindowMinutes * 60 * 1000)
+      const recentCount = await this.prisma.securityAlert.count({
+        where: {
+          alertType: data.alertType,
+          createdAt: { gte: windowStart },
+        },
+      })
+
+      if (recentCount >= rateLimitRule.threshold) {
+        const latest = await this.prisma.securityAlert.findFirst({
+          where: {
+            alertType: data.alertType,
+            createdAt: { gte: windowStart },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+
+        if (latest) {
+          return {
+            id: latest.id,
+            alertType: latest.alertType,
+            severity: latest.severity,
+            badgeSerial: latest.badgeSerial,
+            memberId: latest.memberId,
+            kioskId: latest.kioskId,
+            message: latest.message,
+            details: latest.details,
+            status: latest.status,
+            createdAt: latest.createdAt,
+          }
+        }
+      }
+    }
+
     const alert = await this.prisma.securityAlert.create({
       data: {
         alertType: data.alertType,

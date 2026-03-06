@@ -26,6 +26,7 @@ import { visitorContract } from './visitor.contract.js'
 import { statHolidayContract } from './stat-holiday.contract.js'
 import { tagContract } from './tag.contract.js'
 import { settingContract } from './setting.contract.js'
+import { operationalTimingContract } from './operational-timing.contract.js'
 
 const c = initContract()
 
@@ -64,6 +65,7 @@ export const apiContract = c.router(
     statHolidays: statHolidayContract,
     tags: tagContract,
     settings: settingContract,
+    operationalTimings: operationalTimingContract,
   },
   {
     pathPrefix: '',

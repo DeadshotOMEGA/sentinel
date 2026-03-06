@@ -1,13 +1,13 @@
+import { Prisma } from '@sentinel/database'
 import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
-import { Prisma } from '@sentinel/database'
-import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
+import { ConflictError, NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { LockupService } from './lockup-service.js'
+import { PresenceService } from './presence-service.js'
+import { QualificationService } from './qualification-service.js'
 import { ScheduleService } from './schedule-service.js'
 import { StatHolidayService } from './stat-holiday-service.js'
-
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
-import { serviceLogger } from '../lib/logger.js'
 
 interface DdsAssignmentWithMember {
   id: string
@@ -44,9 +44,50 @@ interface ResponsibilityAuditLogEntry {
   notes: string | null
 }
 
-/**
- * Get today's date at midnight in local timezone
- */
+interface DdsResponsibilityState {
+  shouldPrompt: boolean
+  isFirstMemberCheckin: boolean
+  needsDds: boolean
+  needsBuildingOpen: boolean
+  buildingStatus: 'secured' | 'open' | 'locking_up'
+  canAcceptDds: boolean
+  canOpenBuilding: boolean
+  member: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+  }
+  scheduledDds: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+  } | null
+  currentDds: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    status: 'pending' | 'active'
+  } | null
+  currentLockupHolder: {
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+  } | null
+}
+
+type DdsActorType = 'member' | 'admin'
+
+type MemberSummary = {
+  id: string
+  firstName: string
+  lastName: string
+  rank: string
+}
+
 function getTodayDate(): Date {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -76,12 +117,16 @@ const memberInclude = {
 export class DdsService {
   private prisma: PrismaClient
   private lockupService: LockupService
+  private presenceService: PresenceService
+  private qualificationService: QualificationService
   private scheduleService: ScheduleService
   private statHolidayService: StatHolidayService
 
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
     this.lockupService = new LockupService(this.prisma)
+    this.presenceService = new PresenceService(this.prisma)
+    this.qualificationService = new QualificationService(this.prisma)
     this.scheduleService = new ScheduleService(this.prisma)
     this.statHolidayService = new StatHolidayService(this.prisma)
   }
@@ -112,13 +157,14 @@ export class DdsService {
     }
   }
 
-  /**
-   * Get today's active DDS assignment with member details
-   */
-  async getCurrentDds(): Promise<DdsAssignmentWithMember | null> {
-    const today = getTodayDate()
+  private formatBroadcastMemberName(member: DdsAssignmentWithMember['member']): string {
+    return `${member.rank} ${member.lastName} ${member.firstName.charAt(0)}.`
+  }
 
-    const assignment = await this.prisma.ddsAssignment.findFirst({
+  private async getPersistedCurrentAssignment(
+    today: Date
+  ): Promise<Prisma.DdsAssignmentGetPayload<{ include: typeof memberInclude }> | null> {
+    return this.prisma.ddsAssignment.findFirst({
       where: {
         assignedDate: today,
         status: {
@@ -130,12 +176,111 @@ export class DdsService {
         createdAt: 'desc',
       },
     })
+  }
+
+  private async getRequiredMemberSummary(memberId: string): Promise<MemberSummary> {
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: { id: true, firstName: true, lastName: true, rank: true },
+    })
+
+    if (!member) {
+      throw new NotFoundError('Member', memberId)
+    }
+
+    return member
+  }
+
+  private async ensureDdsCandidateIsPresentAndQualified(memberId: string): Promise<MemberSummary> {
+    const [member, isPresent, hasDdsQualification] = await Promise.all([
+      this.getRequiredMemberSummary(memberId),
+      this.presenceService.isMemberPresent(memberId),
+      this.qualificationService.memberHasActiveQualificationCode(memberId, 'DDS'),
+    ])
+
+    if (!isPresent) {
+      throw new ValidationError('Member must be checked in to take DDS responsibility')
+    }
+
+    if (!hasDdsQualification) {
+      throw new ValidationError('Member must hold an active DDS qualification')
+    }
+
+    return member
+  }
+
+  private async ensureLockupAlignedToDds(memberId: string, actionLabel: string): Promise<void> {
+    const lockupStatus = await this.lockupService.getCurrentStatus()
+
+    if (lockupStatus.currentHolderId && lockupStatus.currentHolderId !== memberId) {
+      await this.lockupService.transferLockup(
+        memberId,
+        'dds_handoff',
+        `Auto-transferred on ${actionLabel}`
+      )
+    } else if (!lockupStatus.currentHolderId) {
+      await this.lockupService.acquireLockup(memberId, `Auto-acquired on ${actionLabel}`)
+    }
+
+    const updatedStatus = await this.lockupService.getCurrentStatus()
+    if (updatedStatus.buildingStatus === 'secured') {
+      await this.lockupService.openBuilding(memberId, `Auto-opened on ${actionLabel}`)
+    }
+  }
+
+  private async broadcastAssignment(
+    action: 'accepted' | 'assigned' | 'transferred' | 'released',
+    assignment: DdsAssignmentWithMember | null
+  ): Promise<void> {
+    broadcastDdsUpdate({
+      action,
+      assignment: assignment
+        ? {
+            id: assignment.id,
+            memberId: assignment.memberId,
+            memberName: this.formatBroadcastMemberName(assignment.member),
+            rank: assignment.member.rank,
+            status: assignment.status,
+          }
+        : null,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  private async createAuditLog(input: {
+    memberId: string
+    action: string
+    performedBy: string | null
+    performedByType: DdsActorType
+    fromMemberId?: string | null
+    toMemberId?: string | null
+    notes?: string | null
+  }): Promise<void> {
+    await this.prisma.responsibilityAuditLog.create({
+      data: {
+        memberId: input.memberId,
+        tagName: 'DDS',
+        action: input.action,
+        fromMemberId: input.fromMemberId ?? null,
+        toMemberId: input.toMemberId ?? null,
+        performedBy: input.performedBy,
+        performedByType: input.performedByType,
+        notes: input.notes ?? null,
+      },
+    })
+  }
+
+  /**
+   * Get today's active or pending DDS assignment with member details.
+   */
+  async getCurrentDds(): Promise<DdsAssignmentWithMember | null> {
+    const today = getTodayDate()
+    const assignment = await this.getPersistedCurrentAssignment(today)
 
     if (assignment) {
       return this.transformAssignment(assignment)
     }
 
-    // Fall back to published weekly schedule
     const { dds } = await this.scheduleService.getCurrentDdsFromSchedule()
 
     if (!dds || dds.status === 'released') {
@@ -165,36 +310,93 @@ export class DdsService {
     }
   }
 
+  async getKioskResponsibilityState(memberId: string): Promise<DdsResponsibilityState> {
+    const [
+      member,
+      currentDds,
+      scheduledDdsResult,
+      lockupStatus,
+      presentMembers,
+      hasDdsQual,
+      canOpen,
+    ] = await Promise.all([
+      this.getRequiredMemberSummary(memberId),
+      this.getCurrentDds(),
+      this.scheduleService.getCurrentDdsFromSchedule(),
+      this.lockupService.getCurrentStatus(),
+      this.presenceService.getPresentMembers(),
+      this.qualificationService.memberHasActiveQualificationCode(memberId, 'DDS'),
+      this.qualificationService.canMemberReceiveLockup(memberId),
+    ])
+
+    const isPresent = presentMembers.some((presentMember) => presentMember.id === memberId)
+    const isFirstMemberCheckin = presentMembers.length === 1 && isPresent
+    const needsDds = currentDds?.status !== 'active'
+    const needsBuildingOpen = lockupStatus.buildingStatus === 'secured'
+    const canAcceptDds =
+      isPresent &&
+      hasDdsQual &&
+      (!currentDds || currentDds.status !== 'active' || currentDds.memberId === memberId)
+    const canOpenBuilding = isPresent && canOpen && lockupStatus.buildingStatus === 'secured'
+
+    return {
+      shouldPrompt: needsDds || needsBuildingOpen,
+      isFirstMemberCheckin,
+      needsDds,
+      needsBuildingOpen,
+      buildingStatus: lockupStatus.buildingStatus as 'secured' | 'open' | 'locking_up',
+      canAcceptDds,
+      canOpenBuilding,
+      member,
+      scheduledDds: scheduledDdsResult.dds
+        ? {
+            id: scheduledDdsResult.dds.member.id,
+            firstName: scheduledDdsResult.dds.member.firstName,
+            lastName: scheduledDdsResult.dds.member.lastName,
+            rank: scheduledDdsResult.dds.member.rank,
+          }
+        : null,
+      currentDds: currentDds
+        ? {
+            id: currentDds.member.id,
+            firstName: currentDds.member.firstName,
+            lastName: currentDds.member.lastName,
+            rank: currentDds.member.rank,
+            status: currentDds.status === 'active' ? 'active' : 'pending',
+          }
+        : null,
+      currentLockupHolder: lockupStatus.currentHolder
+        ? {
+            id: lockupStatus.currentHolder.id,
+            firstName: lockupStatus.currentHolder.firstName,
+            lastName: lockupStatus.currentHolder.lastName,
+            rank: lockupStatus.currentHolder.rank,
+          }
+        : null,
+    }
+  }
+
   /**
-   * Member self-accepts DDS at kiosk (first check-in of day)
+   * Member explicitly accepts or takes DDS for today.
    */
   async acceptDds(memberId: string): Promise<DdsAssignmentWithMember> {
     const today = getTodayDate()
+    await this.ensureDdsCandidateIsPresentAndQualified(memberId)
 
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { id: true, firstName: true, lastName: true },
-    })
+    const existingDds = await this.getPersistedCurrentAssignment(today)
 
-    if (!member) {
-      throw new NotFoundError('Member', memberId)
+    if (existingDds?.status === 'active' && existingDds.memberId === memberId) {
+      return this.transformAssignment(existingDds)
     }
 
-    const existingDds = await this.prisma.ddsAssignment.findFirst({
-      where: {
-        assignedDate: today,
-        status: {
-          in: ['pending', 'active'],
-        },
-      },
-    })
-
-    if (existingDds && existingDds.status === 'active') {
+    if (existingDds?.status === 'active' && existingDds.memberId !== memberId) {
       throw new ConflictError('A DDS has already been accepted for today')
     }
 
-    // If a pending assignment exists for this member, activate it instead of creating a new one
-    let assignment
+    let assignment: Prisma.DdsAssignmentGetPayload<{ include: typeof memberInclude }>
+    let auditAction: 'self_accepted' | 'transferred' = 'self_accepted'
+    let auditNotes: string | null = null
+
     if (existingDds && existingDds.memberId === memberId && existingDds.status === 'pending') {
       assignment = await this.prisma.ddsAssignment.update({
         where: { id: existingDds.id },
@@ -204,9 +406,36 @@ export class DdsService {
         },
         include: memberInclude,
       })
-    } else if (existingDds) {
-      // Pending assignment for a different member
-      throw new ConflictError('A DDS has already been assigned for today')
+    } else if (
+      existingDds &&
+      existingDds.memberId !== memberId &&
+      existingDds.status === 'pending'
+    ) {
+      auditAction = 'transferred'
+      auditNotes = 'Same-day kiosk DDS takeover from scheduled member'
+
+      const [, newAssignment] = await this.prisma.$transaction([
+        this.prisma.ddsAssignment.update({
+          where: { id: existingDds.id },
+          data: {
+            status: 'transferred',
+            transferredTo: memberId,
+            releasedAt: new Date(),
+          },
+        }),
+        this.prisma.ddsAssignment.create({
+          data: {
+            memberId,
+            assignedDate: today,
+            acceptedAt: new Date(),
+            status: 'active',
+            notes: auditNotes,
+          },
+          include: memberInclude,
+        }),
+      ])
+
+      assignment = newAssignment
     } else {
       assignment = await this.prisma.ddsAssignment.create({
         data: {
@@ -219,68 +448,124 @@ export class DdsService {
       })
     }
 
-    await this.prisma.responsibilityAuditLog.create({
-      data: {
-        memberId,
-        tagName: 'DDS',
-        action: 'self_accepted',
-        performedBy: memberId,
-        performedByType: 'member',
-      },
-    })
-
-    // Auto-assign lockup and open building for accepted DDS
-    try {
-      const lockupStatus = await this.lockupService.getCurrentStatus()
-
-      if (lockupStatus.currentHolderId && lockupStatus.currentHolderId !== memberId) {
-        // Transfer from current holder to DDS
-        await this.lockupService.transferLockup(
-          memberId,
-          'dds_handoff',
-          'Auto-transferred on DDS acceptance'
-        )
-      } else if (!lockupStatus.currentHolderId) {
-        // No one holds lockup — DDS acquires it directly
-        await this.lockupService.acquireLockup(
-          memberId,
-          'Auto-acquired on DDS acceptance'
-        )
-      }
-      // If currentHolderId === memberId, they already hold lockup — skip
-
-      // Open building if still secured (DDS acceptance implies building should open)
-      const updatedStatus = await this.lockupService.getCurrentStatus()
-      if (updatedStatus.buildingStatus === 'secured') {
-        await this.lockupService.openBuilding(
-          memberId,
-          'Auto-opened on DDS acceptance'
-        )
-      }
-    } catch (error) {
-      serviceLogger.error('Failed to auto-assign lockup on DDS acceptance', { memberId, error: error instanceof Error ? error.message : String(error) })
-    }
-
     const result = this.transformAssignment(assignment)
 
-    // Broadcast DDS update
-    broadcastDdsUpdate({
-      action: 'accepted',
-      assignment: {
-        id: result.id,
-        memberId: result.memberId,
-        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
-        rank: result.member.rank,
-        status: result.status,
-      },
-      timestamp: new Date().toISOString(),
+    await this.ensureLockupAlignedToDds(memberId, 'DDS acceptance')
+
+    await this.createAuditLog({
+      memberId,
+      action: auditAction,
+      fromMemberId: existingDds && existingDds.memberId !== memberId ? existingDds.memberId : null,
+      toMemberId: auditAction === 'transferred' ? memberId : null,
+      performedBy: memberId,
+      performedByType: 'member',
+      notes: auditNotes,
     })
+
+    await this.broadcastAssignment(
+      auditAction === 'transferred' ? 'transferred' : 'accepted',
+      result
+    )
 
     return result
   }
 
   /**
-   * Admin assigns DDS to a member
+   * Admin sets or replaces today's live DDS.
+   */
+  async setTodayDds(
+    memberId: string,
+    adminId: string,
+    notes?: string
+  ): Promise<DdsAssignmentWithMember> {
+    const today = getTodayDate()
+    await this.ensureDdsCandidateIsPresentAndQualified(memberId)
+
+    const existingDds = await this.getPersistedCurrentAssignment(today)
+
+    if (existingDds?.status === 'active' && existingDds.memberId === memberId) {
+      return this.transformAssignment(existingDds)
+    }
+
+    let assignment: Prisma.DdsAssignmentGetPayload<{ include: typeof memberInclude }>
+    let broadcastAction: 'assigned' | 'transferred' = 'assigned'
+    let auditAction: 'assigned' | 'transferred' = 'assigned'
+    let fromMemberId: string | null = null
+
+    if (existingDds && existingDds.memberId === memberId && existingDds.status === 'pending') {
+      assignment = await this.prisma.ddsAssignment.update({
+        where: { id: existingDds.id },
+        data: {
+          acceptedAt: new Date(),
+          status: 'active',
+          assignedBy: adminId,
+          notes: notes ?? existingDds.notes,
+        },
+        include: memberInclude,
+      })
+    } else if (existingDds && existingDds.memberId !== memberId) {
+      broadcastAction = 'transferred'
+      auditAction = 'transferred'
+      fromMemberId = existingDds.memberId
+
+      const [, newAssignment] = await this.prisma.$transaction([
+        this.prisma.ddsAssignment.update({
+          where: { id: existingDds.id },
+          data: {
+            status: 'transferred',
+            transferredTo: memberId,
+            releasedAt: new Date(),
+          },
+        }),
+        this.prisma.ddsAssignment.create({
+          data: {
+            memberId,
+            assignedDate: today,
+            acceptedAt: new Date(),
+            assignedBy: adminId,
+            status: 'active',
+            notes: notes ?? null,
+          },
+          include: memberInclude,
+        }),
+      ])
+
+      assignment = newAssignment
+    } else {
+      assignment = await this.prisma.ddsAssignment.create({
+        data: {
+          memberId,
+          assignedDate: today,
+          acceptedAt: new Date(),
+          assignedBy: adminId,
+          status: 'active',
+          notes: notes ?? null,
+        },
+        include: memberInclude,
+      })
+    }
+
+    const result = this.transformAssignment(assignment)
+
+    await this.ensureLockupAlignedToDds(memberId, 'admin DDS assignment')
+
+    await this.createAuditLog({
+      memberId,
+      action: auditAction,
+      fromMemberId,
+      toMemberId: auditAction === 'transferred' || auditAction === 'assigned' ? memberId : null,
+      performedBy: adminId,
+      performedByType: 'admin',
+      notes: notes ?? null,
+    })
+
+    await this.broadcastAssignment(broadcastAction, result)
+
+    return result
+  }
+
+  /**
+   * Admin assigns DDS to a member.
    */
   async assignDds(
     memberId: string,
@@ -288,73 +573,17 @@ export class DdsService {
     notes?: string
   ): Promise<DdsAssignmentWithMember> {
     const today = getTodayDate()
-
-    const member = await this.prisma.member.findUnique({
-      where: { id: memberId },
-      select: { id: true, firstName: true, lastName: true },
-    })
-
-    if (!member) {
-      throw new NotFoundError('Member', memberId)
-    }
-
-    const existingDds = await this.prisma.ddsAssignment.findFirst({
-      where: {
-        assignedDate: today,
-        status: {
-          in: ['pending', 'active'],
-        },
-      },
-    })
+    const existingDds = await this.getPersistedCurrentAssignment(today)
 
     if (existingDds) {
       throw new ConflictError('A DDS has already been assigned for today')
     }
 
-    const assignment = await this.prisma.ddsAssignment.create({
-      data: {
-        memberId,
-        assignedDate: today,
-        acceptedAt: new Date(),
-        assignedBy: adminId,
-        status: 'active',
-        notes: notes ?? null,
-      },
-      include: memberInclude,
-    })
-
-    await this.prisma.responsibilityAuditLog.create({
-      data: {
-        memberId,
-        tagName: 'DDS',
-        action: 'assigned',
-        toMemberId: memberId,
-        performedBy: adminId,
-        performedByType: 'admin',
-        notes: notes ?? null,
-      },
-    })
-
-    const result = this.transformAssignment(assignment)
-
-    // Broadcast DDS update
-    broadcastDdsUpdate({
-      action: 'assigned',
-      assignment: {
-        id: result.id,
-        memberId: result.memberId,
-        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
-        rank: result.member.rank,
-        status: result.status,
-      },
-      timestamp: new Date().toISOString(),
-    })
-
-    return result
+    return this.setTodayDds(memberId, adminId, notes)
   }
 
   /**
-   * Admin transfers DDS from current holder to another member
+   * Admin transfers DDS from current holder to another member.
    */
   async transferDds(
     toMemberId: string,
@@ -362,24 +591,7 @@ export class DdsService {
     notes?: string
   ): Promise<DdsAssignmentWithMember> {
     const today = getTodayDate()
-
-    const targetMember = await this.prisma.member.findUnique({
-      where: { id: toMemberId },
-      select: { id: true, firstName: true, lastName: true },
-    })
-
-    if (!targetMember) {
-      throw new NotFoundError('Member', toMemberId)
-    }
-
-    const currentDds = await this.prisma.ddsAssignment.findFirst({
-      where: {
-        assignedDate: today,
-        status: {
-          in: ['pending', 'active'],
-        },
-      },
-    })
+    const currentDds = await this.getPersistedCurrentAssignment(today)
 
     if (!currentDds) {
       throw new NotFoundError('DDS Assignment', 'today')
@@ -389,61 +601,11 @@ export class DdsService {
       throw new ValidationError('Cannot transfer DDS to the same member')
     }
 
-    const [, newAssignment] = await this.prisma.$transaction([
-      this.prisma.ddsAssignment.update({
-        where: { id: currentDds.id },
-        data: {
-          status: 'transferred',
-          transferredTo: toMemberId,
-          releasedAt: new Date(),
-        },
-      }),
-      this.prisma.ddsAssignment.create({
-        data: {
-          memberId: toMemberId,
-          assignedDate: today,
-          acceptedAt: new Date(),
-          assignedBy: adminId,
-          status: 'active',
-          notes: notes ?? null,
-        },
-        include: memberInclude,
-      }),
-    ])
-
-    await this.prisma.responsibilityAuditLog.create({
-      data: {
-        memberId: toMemberId,
-        tagName: 'DDS',
-        action: 'transferred',
-        fromMemberId: currentDds.memberId,
-        toMemberId: toMemberId,
-        performedBy: adminId,
-        performedByType: 'admin',
-        notes: notes ?? null,
-      },
-    })
-
-    const result = this.transformAssignment(newAssignment)
-
-    // Broadcast DDS update
-    broadcastDdsUpdate({
-      action: 'transferred',
-      assignment: {
-        id: result.id,
-        memberId: result.memberId,
-        memberName: `${result.member.rank} ${result.member.lastName} ${result.member.firstName.charAt(0)}.`,
-        rank: result.member.rank,
-        status: result.status,
-      },
-      timestamp: new Date().toISOString(),
-    })
-
-    return result
+    return this.setTodayDds(toMemberId, adminId, notes)
   }
 
   /**
-   * Release DDS role (during checkout or by admin)
+   * Release DDS role (during checkout or by admin).
    */
   async releaseDds(adminId?: string, notes?: string): Promise<void> {
     const today = getTodayDate()
@@ -470,28 +632,20 @@ export class DdsService {
       },
     })
 
-    await this.prisma.responsibilityAuditLog.create({
-      data: {
-        memberId: currentDds.memberId,
-        tagName: 'DDS',
-        action: 'released',
-        fromMemberId: currentDds.memberId,
-        performedBy: adminId ?? currentDds.memberId,
-        performedByType: adminId ? 'admin' : 'member',
-        notes: notes ?? null,
-      },
+    await this.createAuditLog({
+      memberId: currentDds.memberId,
+      action: 'released',
+      fromMemberId: currentDds.memberId,
+      performedBy: adminId ?? currentDds.memberId,
+      performedByType: adminId ? 'admin' : 'member',
+      notes: notes ?? null,
     })
 
-    // Broadcast DDS update
-    broadcastDdsUpdate({
-      action: 'released',
-      assignment: null,
-      timestamp: new Date().toISOString(),
-    })
+    await this.broadcastAssignment('released', null)
   }
 
   /**
-   * Get next week's DDS from the schedule
+   * Get next week's DDS from the schedule.
    */
   async getNextWeekDds(): Promise<{
     id: string
@@ -499,9 +653,8 @@ export class DdsService {
     lastName: string
     rank: string
   } | null> {
-    // Get next Monday (start of next week)
     const today = new Date()
-    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, ...
+    const dayOfWeek = today.getDay()
     const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek
     const nextMonday = new Date(today)
     nextMonday.setDate(today.getDate() + daysUntilNextMonday)
@@ -521,35 +674,21 @@ export class DdsService {
     }
   }
 
-  /**
-   * Check if today is the first operational day of the week (handover day)
-   *
-   * This accounts for statutory holidays - if Monday is a holiday,
-   * handover happens on Tuesday instead.
-   */
   async isHandoverDay(): Promise<boolean> {
     const today = getTodayDate()
     return this.statHolidayService.isFirstOperationalDayOfWeek(today)
   }
 
-  /**
-   * Get the first operational day of the current week
-   *
-   * This is the day when DDS handover should occur, accounting for holidays.
-   */
   async getFirstOperationalDayOfCurrentWeek(): Promise<Date> {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, ...
+    const dayOfWeek = today.getDay()
     const monday = new Date(today)
     monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
 
     return this.statHolidayService.getFirstOperationalDay(monday)
   }
 
-  /**
-   * Check if DDS exists for today
-   */
   async hasDdsForToday(): Promise<boolean> {
     const today = getTodayDate()
 
@@ -566,23 +705,13 @@ export class DdsService {
     return assignment !== null
   }
 
-  /**
-   * Get audit log entries for DDS responsibility
-   */
-  async getAuditLog(
-    memberId?: string,
-    limit: number = 50
-  ): Promise<ResponsibilityAuditLogEntry[]> {
+  async getAuditLog(memberId?: string, limit: number = 50): Promise<ResponsibilityAuditLogEntry[]> {
     const whereClause: Prisma.ResponsibilityAuditLogWhereInput = {
       tagName: 'DDS',
     }
 
     if (memberId) {
-      whereClause.OR = [
-        { memberId },
-        { fromMemberId: memberId },
-        { toMemberId: memberId },
-      ]
+      whereClause.OR = [{ memberId }, { fromMemberId: memberId }, { toMemberId: memberId }]
     }
 
     const logs = await this.prisma.responsibilityAuditLog.findMany({

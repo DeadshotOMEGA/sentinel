@@ -28,6 +28,7 @@ export * from './unit-event.contract.js'
 export * from './stat-holiday.contract.js'
 export * from './tag.contract.js'
 export * from './auth.contract.js'
+export * from './operational-timing.contract.js'
 
 // Main API contract
 export * from './api.contract.js'

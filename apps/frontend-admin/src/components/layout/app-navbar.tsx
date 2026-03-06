@@ -59,10 +59,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         {/* Logo with backend status indicator */}
         <Link
           href="/dashboard"
-          className="btn btn-ghost max-w-48 truncate px-2 text-lg font-bold sm:max-w-none sm:px-4 sm:text-2xl"
+          className="btn btn-ghost max-w-48 truncate sm:max-w-none"
           data-testid={TID.nav.logo}
         >
-          HMCS Chippawa
+          <span className="px-2 text-lg font-bold sm:px-4 sm:text-2xl">HMCS Chippawa</span>
         </Link>
       </div>
 

@@ -294,6 +294,13 @@ export class QualificationService {
   }
 
   /**
+   * Check if a member has an active qualification by code.
+   */
+  async memberHasActiveQualificationCode(memberId: string, code: string): Promise<boolean> {
+    return this.repository.memberHasActiveQualificationCode(memberId, code)
+  }
+
+  /**
    * Get all members eligible to receive lockup responsibility
    *
    * @param checkedInOnly - Only include members currently checked in

@@ -14,7 +14,6 @@ import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { PresenceService } from '../services/presence-service.js'
 import { LockupService } from '../services/lockup-service.js'
-import { DdsService } from '../services/dds-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
@@ -476,36 +475,6 @@ export const checkinsRouter = s.router(checkinContract, {
         timestamp: body.timestamp ? new Date(body.timestamp) : new Date(),
         synced: true,
       })
-
-      // DDS check-in gating: auto-accept DDS when building is secured
-      // Runs after check-in creation so the member is present for lockup acquisition
-      if (body.direction === 'in' && body.memberId) {
-        try {
-          const ddsService = new DdsService(getPrismaClient())
-          const lockupService = new LockupService(getPrismaClient())
-          const currentDds = await ddsService.getCurrentDds()
-
-          if (currentDds && currentDds.memberId === body.memberId) {
-            const lockupStatus = await lockupService.getCurrentStatus()
-            if (lockupStatus.buildingStatus === 'secured') {
-              try {
-                await ddsService.acceptDds(body.memberId)
-                serviceLogger.info('DDS auto-accepted on check-in', { memberId: body.memberId })
-              } catch (acceptError) {
-                serviceLogger.warn('DDS acceptance failed during check-in (non-blocking)', {
-                  memberId: body.memberId,
-                  error: acceptError instanceof Error ? acceptError.message : String(acceptError),
-                })
-              }
-            }
-          }
-        } catch (ddsError) {
-          serviceLogger.warn('DDS gating lookup failed during check-in (non-blocking)', {
-            memberId: body.memberId,
-            error: ddsError instanceof Error ? ddsError.message : String(ddsError),
-          })
-        }
-      }
 
       // Fetch with member details for response
       const checkinWithMember = await checkinRepo.findByIdWithMember(checkin.id)

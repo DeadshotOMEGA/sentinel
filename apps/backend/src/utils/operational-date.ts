@@ -1,21 +1,25 @@
 /**
  * Operational Date Utilities
  *
- * Handles the concept of an "operational day" which runs from 3am to 3am
- * instead of midnight to midnight. This allows late-night events (finishing
- * at 1-2am) to be counted as part of the previous day's operations.
- *
- * Example: A Tuesday event running until 2am Wednesday is still "Tuesday"
- * operationally until 3am Wednesday.
+ * Handles the concept of an "operational day" that rolls over at a configured
+ * HH:MM local time instead of midnight.
  */
 
 import { DateTime } from 'luxon'
+import {
+  DEFAULT_BACKEND_TIMEZONE,
+  getDefaultOperationalTimingsSettings,
+  getOperationalTimingsRuntimeState,
+} from '../lib/operational-timings-runtime.js'
 
 // Default timezone for HMCS Chippawa
-export const DEFAULT_TIMEZONE = 'America/Winnipeg'
+export const DEFAULT_TIMEZONE = DEFAULT_BACKEND_TIMEZONE
 
-// The hour at which a new operational day begins (3am)
-export const OPERATIONAL_DAY_START_HOUR = 3
+// Kept for backward compatibility with existing imports.
+// Runtime logic now uses configurable day rollover time.
+export const OPERATIONAL_DAY_START_HOUR = Number(
+  getDefaultOperationalTimingsSettings().operational.dayRolloverTime.split(':')[0] || '3'
+)
 
 /**
  * Configuration for operational date calculations
@@ -23,39 +27,82 @@ export const OPERATIONAL_DAY_START_HOUR = 3
 export interface OperationalDateConfig {
   timezone?: string
   dayStartHour?: number
+  dayStartTime?: string
+  dutyWatchDays?: number[]
+}
+
+function parseTime(time: string): { hour: number; minute: number } {
+  const [hourText, minuteText] = time.split(':')
+  const hour = Number(hourText)
+  const minute = Number(minuteText)
+
+  if (
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    throw new Error(`Invalid HH:MM time: ${time}`)
+  }
+
+  return { hour, minute }
+}
+
+function resolveDayStart(config: OperationalDateConfig): { hour: number; minute: number } {
+  if (config.dayStartTime) {
+    return parseTime(config.dayStartTime)
+  }
+
+  if (typeof config.dayStartHour === 'number') {
+    return {
+      hour: config.dayStartHour,
+      minute: 0,
+    }
+  }
+
+  const runtime = getOperationalTimingsRuntimeState().settings
+  return parseTime(runtime.operational.dayRolloverTime)
+}
+
+function resolveDutyWatchDays(config: OperationalDateConfig): number[] {
+  if (Array.isArray(config.dutyWatchDays) && config.dutyWatchDays.length > 0) {
+    return config.dutyWatchDays
+  }
+  return getOperationalTimingsRuntimeState().settings.operational.dutyWatchDays
+}
+
+function toRolloverDateTime(dt: DateTime, dayStart: { hour: number; minute: number }): DateTime {
+  return dt.set({
+    hour: dayStart.hour,
+    minute: dayStart.minute,
+    second: 0,
+    millisecond: 0,
+  })
+}
+
+export function getOperationalDayStartTime(config: OperationalDateConfig = {}): {
+  hour: number
+  minute: number
+} {
+  return resolveDayStart(config)
 }
 
 /**
- * Get the current operational date based on 3am rollover
- *
- * If the current time is before 3am, the operational date is the previous
- * calendar day. This allows events running past midnight to still be
- * considered part of the previous day's operations.
- *
- * @param timestamp - The timestamp to calculate operational date for (defaults to now)
- * @param config - Configuration options (timezone, day start hour)
- * @returns The operational date as a Date object (midnight UTC of that day)
- *
- * @example
- * // At 2am on January 15, returns January 14 (still "yesterday" operationally)
- * getOperationalDate(new Date('2026-01-15T02:00:00'))
- *
- * // At 4am on January 15, returns January 15 (new operational day has started)
- * getOperationalDate(new Date('2026-01-15T04:00:00'))
+ * Get the current operational date based on configured rollover time.
  */
-export function getOperationalDate(
-  timestamp?: Date,
-  config: OperationalDateConfig = {}
-): Date {
-  const { timezone = DEFAULT_TIMEZONE, dayStartHour = OPERATIONAL_DAY_START_HOUR } = config
+export function getOperationalDate(timestamp?: Date, config: OperationalDateConfig = {}): Date {
+  const { timezone = DEFAULT_TIMEZONE } = config
+  const dayStart = resolveDayStart(config)
 
   const dt = timestamp
     ? DateTime.fromJSDate(timestamp, { zone: timezone })
     : DateTime.now().setZone(timezone)
 
-  // If current hour is before the operational day start hour,
-  // the operational date is the previous calendar day
-  if (dt.hour < dayStartHour) {
+  const rollover = toRolloverDateTime(dt, dayStart)
+
+  if (dt < rollover) {
     return dt.minus({ days: 1 }).startOf('day').toJSDate()
   }
 
@@ -64,32 +111,16 @@ export function getOperationalDate(
 
 /**
  * Get the operational week boundaries (Monday to Monday)
- *
- * @param date - Any date within the week (defaults to now)
- * @param config - Configuration options
- * @returns Object containing the week start (Monday 00:00) and end (next Monday 00:00)
- *
- * @example
- * // For any date in the week of Jan 13-19, 2026:
- * getOperationalWeek(new Date('2026-01-15'))
- * // Returns: { start: Jan 13 00:00, end: Jan 20 00:00 }
  */
 export function getOperationalWeek(
   date?: Date,
   config: OperationalDateConfig = {}
 ): { start: Date; end: Date } {
   const { timezone = DEFAULT_TIMEZONE } = config
-
-  // First get the operational date for the timestamp
   const operationalDate = getOperationalDate(date, config)
-
   const dt = DateTime.fromJSDate(operationalDate, { zone: timezone })
 
-  // Get the Monday of the current week
-  // Luxon uses 1 for Monday, 7 for Sunday
-  const weekStart = dt.startOf('week') // Luxon starts weeks on Monday by default
-
-  // End is the next Monday (start of next week)
+  const weekStart = dt.startOf('week')
   const weekEnd = weekStart.plus({ weeks: 1 })
 
   return {
@@ -100,15 +131,6 @@ export function getOperationalWeek(
 
 /**
  * Check if the operational date matches a specific day of week
- *
- * @param date - The date to check
- * @param dayOfWeek - Day of week (1=Monday, 7=Sunday)
- * @param config - Configuration options
- * @returns True if the operational date falls on the specified day
- *
- * @example
- * // Check if today is operationally a Tuesday (day 2)
- * isOperationalDay(new Date(), 2)
  */
 export function isOperationalDay(
   date: Date,
@@ -124,41 +146,29 @@ export function isOperationalDay(
 }
 
 /**
- * Check if the current operational date is a Duty Watch night (Tuesday or Thursday)
- *
- * @param date - The date to check (defaults to now)
- * @param config - Configuration options
- * @returns True if today is a Duty Watch night
+ * Check if the current operational date is a configured Duty Watch night.
  */
-export function isDutyWatchNight(
-  date?: Date,
-  config: OperationalDateConfig = {}
-): boolean {
+export function isDutyWatchNight(date?: Date, config: OperationalDateConfig = {}): boolean {
   const { timezone = DEFAULT_TIMEZONE } = config
+  const dutyWatchDays = resolveDutyWatchDays(config)
 
   const operationalDate = getOperationalDate(date, config)
   const dt = DateTime.fromJSDate(operationalDate, { zone: timezone })
 
-  // Tuesday (2) or Thursday (4)
-  return dt.weekday === 2 || dt.weekday === 4
+  return dutyWatchDays.includes(dt.weekday)
 }
 
 /**
- * Get the time until the next 3am rollover
- *
- * @param config - Configuration options
- * @returns Duration in milliseconds until the next rollover
+ * Get the time until the next configured rollover.
  */
 export function getTimeUntilRollover(config: OperationalDateConfig = {}): number {
-  const { timezone = DEFAULT_TIMEZONE, dayStartHour = OPERATIONAL_DAY_START_HOUR } = config
+  const { timezone = DEFAULT_TIMEZONE } = config
+  const dayStart = resolveDayStart(config)
 
   const now = DateTime.now().setZone(timezone)
+  let nextRollover = toRolloverDateTime(now, dayStart)
 
-  // Calculate next 3am
-  let nextRollover = now.set({ hour: dayStartHour, minute: 0, second: 0, millisecond: 0 })
-
-  // If we're past 3am today, the next rollover is tomorrow
-  if (now.hour >= dayStartHour) {
+  if (now >= nextRollover) {
     nextRollover = nextRollover.plus({ days: 1 })
   }
 
@@ -167,15 +177,8 @@ export function getTimeUntilRollover(config: OperationalDateConfig = {}): number
 
 /**
  * Format an operational date for display
- *
- * @param date - The operational date
- * @param config - Configuration options
- * @returns Formatted string like "Monday, January 15, 2026"
  */
-export function formatOperationalDate(
-  date: Date,
-  config: OperationalDateConfig = {}
-): string {
+export function formatOperationalDate(date: Date, config: OperationalDateConfig = {}): string {
   const { timezone = DEFAULT_TIMEZONE } = config
 
   const dt = DateTime.fromJSDate(date, { zone: timezone })
@@ -184,17 +187,8 @@ export function formatOperationalDate(
 
 /**
  * Get the operational date as an ISO date string (YYYY-MM-DD)
- *
- * This is useful for database queries and API responses
- *
- * @param date - The timestamp to get operational date for
- * @param config - Configuration options
- * @returns ISO date string
  */
-export function getOperationalDateISO(
-  date?: Date,
-  config: OperationalDateConfig = {}
-): string {
+export function getOperationalDateISO(date?: Date, config: OperationalDateConfig = {}): string {
   const { timezone = DEFAULT_TIMEZONE } = config
 
   const operationalDate = getOperationalDate(date, config)
@@ -205,15 +199,8 @@ export function getOperationalDateISO(
 
 /**
  * Parse an ISO date string as an operational date
- *
- * @param isoDate - ISO date string (YYYY-MM-DD)
- * @param config - Configuration options
- * @returns Date object at midnight in the configured timezone
  */
-export function parseOperationalDate(
-  isoDate: string,
-  config: OperationalDateConfig = {}
-): Date {
+export function parseOperationalDate(isoDate: string, config: OperationalDateConfig = {}): Date {
   const { timezone = DEFAULT_TIMEZONE } = config
 
   const dt = DateTime.fromISO(isoDate, { zone: timezone })
@@ -225,33 +212,20 @@ export function parseOperationalDate(
 }
 
 /**
- * Check if a given time is within the "dangerous" period (midnight to 3am)
- *
- * This period is when the operational date differs from the calendar date.
- * Useful for warnings and confirmations.
- *
- * @param date - The date to check (defaults to now)
- * @param config - Configuration options
- * @returns True if in the midnight-to-3am window
+ * Check if a given time is before operational rollover for that date.
  */
-export function isInRolloverPeriod(
-  date?: Date,
-  config: OperationalDateConfig = {}
-): boolean {
-  const { timezone = DEFAULT_TIMEZONE, dayStartHour = OPERATIONAL_DAY_START_HOUR } = config
+export function isInRolloverPeriod(date?: Date, config: OperationalDateConfig = {}): boolean {
+  const { timezone = DEFAULT_TIMEZONE } = config
+  const dayStart = resolveDayStart(config)
 
-  const dt = date
-    ? DateTime.fromJSDate(date, { zone: timezone })
-    : DateTime.now().setZone(timezone)
+  const dt = date ? DateTime.fromJSDate(date, { zone: timezone }) : DateTime.now().setZone(timezone)
 
-  return dt.hour < dayStartHour
+  const rollover = toRolloverDateTime(dt, dayStart)
+  return dt < rollover
 }
 
 /**
  * Get detailed information about the current operational state
- *
- * @param config - Configuration options
- * @returns Object with operational date info and status
  */
 export function getOperationalStatus(config: OperationalDateConfig = {}): {
   operationalDate: Date

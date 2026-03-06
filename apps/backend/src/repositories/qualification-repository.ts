@@ -427,6 +427,23 @@ export class QualificationRepository {
   }
 
   /**
+   * Check if a member has a specific active qualification code.
+   */
+  async memberHasActiveQualificationCode(memberId: string, code: string): Promise<boolean> {
+    const count = await this.prisma.memberQualification.count({
+      where: {
+        memberId,
+        status: 'active',
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        qualificationType: {
+          code,
+        },
+      },
+    })
+    return count > 0
+  }
+
+  /**
    * Check if a member can receive lockup (has at least one lockup-eligible qualification)
    */
   async canMemberReceiveLockup(memberId: string): Promise<boolean> {

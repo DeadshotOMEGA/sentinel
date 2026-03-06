@@ -12,6 +12,7 @@ export interface JobScheduleConfig {
   dayRolloverTime: string // HH:MM format, e.g., "03:00"
   timezone: string // IANA timezone, e.g., "America/Winnipeg"
   dutyWatchAlertTime: string // HH:MM format, e.g., "19:00"
+  dutyWatchDays: number[] // ISO weekdays (1=Mon ... 7=Sun)
   lockupWarningTime: string // HH:MM format, e.g., "22:00"
   lockupCriticalTime: string // HH:MM format, e.g., "23:00"
 }
@@ -20,6 +21,7 @@ const DEFAULT_CONFIG: JobScheduleConfig = {
   dayRolloverTime: '03:00',
   timezone: 'America/Winnipeg',
   dutyWatchAlertTime: '19:00',
+  dutyWatchDays: [2, 4],
   lockupWarningTime: '22:00',
   lockupCriticalTime: '23:00',
 }
@@ -51,11 +53,21 @@ function wrapJob(name: string, fn: () => Promise<void>): () => void {
 
 /**
  * Build cron expression from HH:MM time string
- * Optional dayOfWeek for day-specific schedules (e.g., "2,4" for Tue/Thu)
+ * Optional dayOfWeek for day-specific schedules (e.g., "1,3,5")
  */
 function toCron(time: string, dayOfWeek = '*'): string {
   const [hour, minute] = time.split(':')
   return `${minute} ${hour} * * ${dayOfWeek}`
+}
+
+function isoWeekdaysToCron(days: number[]): string {
+  const uniqueSorted = [...new Set(days)]
+    .filter((day) => Number.isInteger(day) && day >= 1 && day <= 7)
+    .sort((left, right) => left - right)
+  if (uniqueSorted.length === 0) {
+    return '2,4'
+  }
+  return uniqueSorted.map((day) => (day === 7 ? '0' : String(day))).join(',')
 }
 
 /**
@@ -85,7 +97,7 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
       },
       {
         name: 'duty-watch-alerts',
-        cronExpr: toCron(config.dutyWatchAlertTime, '2,4'),
+        cronExpr: toCron(config.dutyWatchAlertTime, isoWeekdaysToCron(config.dutyWatchDays)),
         fn: runDutyWatchAlerts,
       },
       {
@@ -188,6 +200,30 @@ export function getJobConfig(): JobScheduleConfig {
 export function updateJobConfig(newConfig: Partial<JobScheduleConfig>): void {
   config = { ...config, ...newConfig }
   logger.info('Job config updated (restart required for changes to take effect)', { config })
+}
+
+/**
+ * Reconfigure scheduler in-place.
+ * If scheduler is running, tasks are restarted immediately with the new config.
+ * If scheduler is not running, config is updated and used on the next start.
+ */
+export async function reconfigureJobScheduler(
+  newConfig: Partial<JobScheduleConfig>
+): Promise<void> {
+  const nextConfig = { ...config, ...newConfig }
+  const wasRunning = isJobSchedulerRunning()
+
+  config = nextConfig
+
+  if (!wasRunning || process.env.NODE_ENV === 'test') {
+    logger.info('Job scheduler config updated (scheduler not running)', { config: nextConfig })
+    return
+  }
+
+  await stopJobScheduler()
+  await startJobScheduler(nextConfig)
+
+  logger.info('Job scheduler reconfigured', { config: nextConfig })
 }
 
 /**
