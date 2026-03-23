@@ -244,30 +244,6 @@
 }
 
 /* ========================================
-   STATS PANEL STYLING
-   Command center display aesthetic
-   ======================================== */
-
-.stats-panel {
-  background: linear-gradient(135deg, oklch(99% 0 0) 0%, oklch(97% 0 0) 100%);
-  border: 1px solid oklch(92% 0 0);
-  border-radius: 0.75rem;
-  overflow: hidden;
-}
-
-.stats-panel .stat {
-  border-color: oklch(94% 0 0);
-  min-height: 104px;
-}
-
-.stats-panel .stat-value {
-  letter-spacing: -0.025em;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-}
-
-/* ========================================
    AVATAR ENHANCEMENTS
    Refined avatar presentation
    ======================================== */
