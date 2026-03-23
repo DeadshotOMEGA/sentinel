@@ -7,7 +7,7 @@ import { LockupService } from '../services/lockup-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import {
   DEFAULT_TIMEZONE,
-  OPERATIONAL_DAY_START_HOUR,
+  getOperationalDayStartTime,
   getOperationalDate,
   getOperationalDateISO,
   getOperationalWeek,
@@ -17,7 +17,7 @@ import { broadcastCheckin } from '../websocket/broadcast.js'
 /**
  * Daily Reset Job
  *
- * Runs at 3:00 AM (operational day boundary) to:
+ * Runs at the configured operational-day boundary to:
  * 1. Check if building was secured (alert if not)
  * 2. Force-checkout any remaining members (create MissedCheckout records)
  * 3. Create new LockupStatus for new operational day
@@ -49,9 +49,10 @@ export async function runDailyReset(): Promise<void> {
     }
 
     // Step 2: Force-checkout remaining members
-    // Use 3am of the operational date as the checkout time, not "now"
+    // Use the configured day-start time of the operational date as checkout time, not "now".
+    const dayStart = getOperationalDayStartTime()
     const resetTimestamp = DateTime.fromISO(operationalDate, { zone: DEFAULT_TIMEZONE })
-      .set({ hour: OPERATIONAL_DAY_START_HOUR, minute: 0, second: 0, millisecond: 0 })
+      .set({ hour: dayStart.hour, minute: dayStart.minute, second: 0, millisecond: 0 })
       .toJSDate()
 
     const presentMembers = await presenceService.getPresentMembers()
@@ -85,7 +86,7 @@ export async function runDailyReset(): Promise<void> {
               date: new Date(operationalDate),
               originalCheckinAt: lastCheckin?.timestamp || new Date(),
               resolvedBy: 'daily_reset',
-              notes: 'Automatically force-checked out during 3am daily reset',
+              notes: 'Automatically force-checked out during daily reset',
             },
           })
 
@@ -257,7 +258,7 @@ export async function runDailyReset(): Promise<void> {
 }
 
 /**
- * Check if the daily reset was missed (e.g., server was down at 3am)
+ * Check if the daily reset was missed (e.g., server was down at rollover)
  * and run a catch-up reset if needed.
  *
  * Uses the presence of a LockupStatus record for today's operational date
@@ -268,10 +269,20 @@ export async function checkMissedDailyReset(): Promise<void> {
   const operationalDate = getOperationalDateISO()
   const jobLogger = logger.child({ job: 'daily-reset-catchup', operationalDate })
 
-  // Only run catch-up if we're past the rollover hour
+  // Only run catch-up if we're past the configured rollover time.
+  const dayStart = getOperationalDayStartTime()
   const now = DateTime.now().setZone(DEFAULT_TIMEZONE)
-  if (now.hour < OPERATIONAL_DAY_START_HOUR) {
-    jobLogger.info('Before rollover hour, skipping catch-up')
+  const rollover = now.set({
+    hour: dayStart.hour,
+    minute: dayStart.minute,
+    second: 0,
+    millisecond: 0,
+  })
+
+  if (now < rollover) {
+    jobLogger.info('Before rollover time, skipping catch-up', {
+      rolloverTime: `${String(dayStart.hour).padStart(2, '0')}:${String(dayStart.minute).padStart(2, '0')}`,
+    })
     return
   }
 

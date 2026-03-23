@@ -25,6 +25,7 @@ import {
   reportContract,
   devToolsContract,
   devContract,
+  operationalTimingContract,
 } from '@sentinel/contracts'
 import { initContract } from '@ts-rest/core'
 
@@ -55,6 +56,7 @@ const apiContract = c.router({
   reports: reportContract,
   devTools: devToolsContract,
   dev: devContract,
+  operationalTimings: operationalTimingContract,
 })
 
 // Generate OpenAPI specification
@@ -113,6 +115,7 @@ const openApiDocument = generateOpenApi(
         description: 'Development utilities (database reset, simulation, scenarios)',
       },
       { name: 'dev', description: 'Development endpoints for testing and debugging' },
+      { name: 'operational-timings', description: 'Operational timings and alert rate-limits' },
     ],
     components: {
       securitySchemes: {

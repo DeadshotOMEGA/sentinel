@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core'
 import {
   AssignDdsSchema,
+  SetTodayDdsSchema,
   TransferDdsSchema,
   ReleaseDdsSchema,
   GetCurrentDdsResponseSchema,
@@ -8,6 +9,7 @@ import {
   CheckDdsExistsResponseSchema,
   DdsAuditLogResponseSchema,
   DdsAuditLogQuerySchema,
+  KioskResponsibilityStateResponseSchema,
   ErrorResponseSchema,
   IdParamSchema,
 } from '../schemas/index.js'
@@ -68,6 +70,25 @@ export const ddsContract = c.router({
   },
 
   /**
+   * Get kiosk responsibility state for a checked-in member
+   */
+  getKioskResponsibilityState: {
+    method: 'GET',
+    path: '/api/dds/kiosk-state/:id',
+    pathParams: IdParamSchema,
+    responses: {
+      200: KioskResponsibilityStateResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get kiosk DDS responsibility state',
+    description:
+      'Get whether the scanned member should be prompted to open the building and/or take DDS for today',
+  },
+
+  /**
    * Member self-accepts DDS at kiosk
    */
   acceptDds: {
@@ -84,7 +105,28 @@ export const ddsContract = c.router({
       500: ErrorResponseSchema,
     },
     summary: 'Accept DDS',
-    description: 'Member self-accepts DDS role (first check-in of day)',
+    description: 'Member explicitly accepts or takes DDS responsibility for the current day',
+  },
+
+  /**
+   * Admin assigns or replaces today's live DDS
+   */
+  setTodayDds: {
+    method: 'POST',
+    path: '/api/dds/set-today',
+    body: SetTodayDdsSchema,
+    responses: {
+      200: DdsOperationResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: "Set today's DDS",
+    description:
+      "Admin assigns or replaces today's live DDS without modifying the weekly duty schedule",
   },
 
   /**

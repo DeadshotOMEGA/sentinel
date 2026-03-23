@@ -24,6 +24,7 @@ interface DayCellProps {
   date: Date
   currentMonth: Date
   events: EventData[]
+  isDutyWatchNight: boolean
   dutyWatch: DutyWatchInfo | null
   focusedWeek: number
   focusedDay: number
@@ -38,6 +39,7 @@ export const DayCell = memo(function DayCell({
   date,
   currentMonth,
   events,
+  isDutyWatchNight,
   dutyWatch,
   focusedWeek,
   focusedDay,
@@ -46,10 +48,9 @@ export const DayCell = memo(function DayCell({
   const { openDutyWatchModal } = useModalContext()
   const isTodayDate = isToday(date)
   const isCurrentMonthDate = isSameMonth(date, currentMonth)
-  const isDutyWatchNight = dayOffset === 1 || dayOffset === 3 // Tue or Thu
   const dateStr = format(date, 'yyyy-MM-dd')
 
-  // Count items: DW button (if Tue/Thu) counts as 1
+  // Count items: Duty Watch badge/button (if configured for this day) counts as 1.
   const dwItem = isDutyWatchNight ? 1 : 0
   const totalItems = dwItem + events.length
   const overflow = totalItems > MAX_VISIBLE_ITEMS ? totalItems - MAX_VISIBLE_ITEMS + 1 : 0

@@ -91,7 +91,11 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
-        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)} data-testid={TID.settings.enumTable.addBtn}>
+        <button
+          className="btn btn-primary btn-md"
+          onClick={() => setIsCreateModalOpen(true)}
+          data-testid={TID.settings.enumTable.addBtn}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add New
         </button>
@@ -132,20 +136,20 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
                       <td className="whitespace-nowrap">
                         <div className="flex items-center gap-1">
                           <button
-                            className="btn btn-ghost btn-square btn-md h-7 w-7"
+                            className="btn btn-ghost btn-square btn-sm"
                             onClick={() => handleMoveUp(index)}
                             disabled={index === 0 || reorderTags.isPending}
                             data-testid={TID.settings.enumTable.moveUpBtn(item.id)}
                           >
-                            <ChevronUp className="h-4 w-4" />
+                            <ChevronUp className="size-[1.1em]" />
                           </button>
                           <button
-                            className="btn btn-ghost btn-square btn-md h-7 w-7"
+                            className="btn btn-ghost btn-square btn-sm"
                             onClick={() => handleMoveDown(index)}
                             disabled={index === items.length - 1 || reorderTags.isPending}
                             data-testid={TID.settings.enumTable.moveDownBtn(item.id)}
                           >
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="size-[1.1em]" />
                           </button>
                         </div>
                       </td>
@@ -243,7 +247,9 @@ export function EnumTable({ enumType, title, description }: EnumTableProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid={TID.settings.enumTable.deleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid={TID.settings.enumTable.deleteCancel}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-error text-error-content hover:bg-error/90"

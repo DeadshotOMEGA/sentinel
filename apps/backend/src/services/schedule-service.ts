@@ -17,6 +17,10 @@ import {
   getOperationalDateISO,
   isDutyWatchNight,
 } from '../utils/operational-date.js'
+import {
+  getRuntimeDutyWatchDays,
+  jsWeekdayToIsoWeekday,
+} from '../lib/operational-timings-runtime.js'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
 import {
   broadcastScheduleUpdate,
@@ -74,6 +78,16 @@ export interface DutyWatchTeamResult {
   operationalDate: string
   isDutyWatchNight: boolean
   team: DutyWatchTeamMember[]
+}
+
+const ISO_WEEKDAY_LABELS: Record<number, string> = {
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
+  7: 'Sunday',
 }
 
 // ============================================================================
@@ -273,7 +287,9 @@ export class ScheduleService {
     }
 
     if (schedule.status !== 'published') {
-      throw new ValidationError(`Can only revert published schedules to draft, current status is '${schedule.status}'`)
+      throw new ValidationError(
+        `Can only revert published schedules to draft, current status is '${schedule.status}'`
+      )
     }
 
     const reverted = await this.repository.revertToDraft(id)
@@ -335,11 +351,16 @@ export class ScheduleService {
 
     // Check if schedule is still editable
     if (schedule.status !== 'draft' && schedule.status !== 'published') {
-      throw new ValidationError(`Cannot add assignments to schedule with status '${schedule.status}'`)
+      throw new ValidationError(
+        `Cannot add assignments to schedule with status '${schedule.status}'`
+      )
     }
 
     // Check if member already assigned
-    const alreadyAssigned = await this.repository.memberHasAssignmentInSchedule(scheduleId, memberId)
+    const alreadyAssigned = await this.repository.memberHasAssignmentInSchedule(
+      scheduleId,
+      memberId
+    )
     if (alreadyAssigned) {
       throw new ConflictError('Member is already assigned to this schedule')
     }
@@ -556,7 +577,7 @@ export class ScheduleService {
   }
 
   /**
-   * Get tonight's Duty Watch team (only meaningful on Tue/Thu)
+   * Get tonight's Duty Watch team (only meaningful on configured Duty Watch nights)
    */
   async getTonightDutyWatch(): Promise<DutyWatchTeamResult> {
     return this.getCurrentDutyWatch()
@@ -569,10 +590,7 @@ export class ScheduleService {
   /**
    * List overrides for a schedule
    */
-  async listDwOverrides(
-    scheduleId: string,
-    nightDate?: string
-  ): Promise<DwNightOverrideEntity[]> {
+  async listDwOverrides(scheduleId: string, nightDate?: string): Promise<DwNightOverrideEntity[]> {
     const schedule = await this.repository.findScheduleById(scheduleId)
     if (!schedule) {
       throw new NotFoundError('Schedule', scheduleId)
@@ -615,11 +633,16 @@ export class ScheduleService {
 
     // Parse and validate night date
     const nightDateObj = new Date(input.nightDate + 'T00:00:00Z')
-    const dayOfWeek = nightDateObj.getUTCDay() // 0=Sun, 1=Mon, 2=Tue, ..., 6=Sat
+    const isoWeekday = jsWeekdayToIsoWeekday(nightDateObj.getUTCDay())
+    const dutyWatchDays = getRuntimeDutyWatchDays()
 
-    // Must be Tuesday (2) or Thursday (4)
-    if (dayOfWeek !== 2 && dayOfWeek !== 4) {
-      throw new ValidationError('Night date must be a Tuesday or Thursday')
+    if (!dutyWatchDays.includes(isoWeekday)) {
+      const allowedDays = dutyWatchDays
+        .map((day) => ISO_WEEKDAY_LABELS[day] ?? String(day))
+        .join(', ')
+      throw new ValidationError(
+        `Night date must be one of the configured Duty Watch days: ${allowedDays}`
+      )
     }
 
     // Validate nightDate falls within the schedule's week (Mon–Sun)

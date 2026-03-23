@@ -14,13 +14,23 @@ vi.mock('../websocket/broadcast.js', async () => {
 })
 
 import { SecurityAlertService } from './security-alert-service.js'
-import { broadcastSecurityAlertAcknowledged } from '../websocket/broadcast.js'
+import {
+  broadcastSecurityAlert,
+  broadcastSecurityAlertAcknowledged,
+} from '../websocket/broadcast.js'
+import {
+  applyOperationalTimingsRuntimeState,
+  getDefaultOperationalTimingsSettings,
+} from '../lib/operational-timings-runtime.js'
 
 interface PrismaMock {
   member: {
     findUnique: ReturnType<typeof vi.fn>
   }
   securityAlert: {
+    count: ReturnType<typeof vi.fn>
+    findFirst: ReturnType<typeof vi.fn>
+    create: ReturnType<typeof vi.fn>
     findUnique: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
   }
@@ -32,6 +42,9 @@ function createPrismaMock(): PrismaMock {
       findUnique: vi.fn(),
     },
     securityAlert: {
+      count: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
     },
@@ -45,7 +58,13 @@ describe('SecurityAlertService.acknowledgeAlert', () => {
 
   beforeEach(() => {
     prismaMock = createPrismaMock()
+    vi.mocked(broadcastSecurityAlert).mockReset()
     vi.mocked(broadcastSecurityAlertAcknowledged).mockReset()
+    applyOperationalTimingsRuntimeState({
+      settings: getDefaultOperationalTimingsSettings(),
+      source: 'default',
+      updatedAt: null,
+    })
   })
 
   it('broadcasts alert acknowledgement after the database update succeeds', async () => {
@@ -105,5 +124,77 @@ describe('SecurityAlertService.acknowledgeAlert', () => {
     if (updateOrder !== undefined && broadcastOrder !== undefined) {
       expect(updateOrder).toBeLessThan(broadcastOrder)
     }
+  })
+})
+
+describe('SecurityAlertService.createAlert rate-limit behavior', () => {
+  let prismaMock: PrismaMock
+
+  beforeEach(() => {
+    prismaMock = createPrismaMock()
+    vi.mocked(broadcastSecurityAlert).mockReset()
+    applyOperationalTimingsRuntimeState({
+      settings: getDefaultOperationalTimingsSettings(),
+      source: 'default',
+      updatedAt: null,
+    })
+  })
+
+  it('suppresses duplicate security alerts when threshold is reached', async () => {
+    prismaMock.securityAlert.count.mockResolvedValue(1)
+    prismaMock.securityAlert.findFirst.mockResolvedValue({
+      id: 'security-existing',
+      alertType: 'badge_disabled',
+      severity: 'warning',
+      badgeSerial: 'A123',
+      memberId: null,
+      kioskId: 'playwright-e2e',
+      message: 'Existing security alert',
+      details: null,
+      status: 'active',
+      createdAt: new Date('2026-03-06T12:00:00.000Z'),
+    })
+
+    const service = new SecurityAlertService(prismaMock as unknown as PrismaClient)
+    const result = await service.createAlert({
+      alertType: 'badge_disabled',
+      severity: 'warning',
+      badgeSerial: 'A123',
+      kioskId: 'playwright-e2e',
+      message: 'Badge is disabled',
+    })
+
+    expect(result.id).toBe('security-existing')
+    expect(prismaMock.securityAlert.create).not.toHaveBeenCalled()
+    expect(vi.mocked(broadcastSecurityAlert)).not.toHaveBeenCalled()
+  })
+
+  it('creates and broadcasts when duplicate threshold is not reached', async () => {
+    prismaMock.securityAlert.count.mockResolvedValue(0)
+    prismaMock.securityAlert.create.mockResolvedValue({
+      id: 'security-new',
+      alertType: 'badge_disabled',
+      severity: 'warning',
+      badgeSerial: 'A123',
+      memberId: null,
+      kioskId: 'playwright-e2e',
+      message: 'Badge is disabled',
+      details: null,
+      status: 'active',
+      createdAt: new Date('2026-03-06T12:30:00.000Z'),
+    })
+
+    const service = new SecurityAlertService(prismaMock as unknown as PrismaClient)
+    const result = await service.createAlert({
+      alertType: 'badge_disabled',
+      severity: 'warning',
+      badgeSerial: 'A123',
+      kioskId: 'playwright-e2e',
+      message: 'Badge is disabled',
+    })
+
+    expect(result.id).toBe('security-new')
+    expect(prismaMock.securityAlert.create).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(broadcastSecurityAlert)).toHaveBeenCalledTimes(1)
   })
 })

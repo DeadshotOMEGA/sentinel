@@ -10,6 +10,11 @@ import { startJobScheduler, stopJobScheduler } from './jobs/index.js'
 import { tailscaleDeviceService } from './services/tailscale-device-service.js'
 import { SentinelBootstrapIntegrityService } from './services/sentinel-bootstrap-integrity-service.js'
 import { getPrismaClient } from './lib/database.js'
+import { OperationalTimingsService } from './services/operational-timings-service.js'
+import {
+  getOperationalTimingsRuntimeState,
+  DEFAULT_BACKEND_TIMEZONE,
+} from './lib/operational-timings-runtime.js'
 
 const execFileAsync = promisify(execFile)
 
@@ -148,6 +153,15 @@ async function main() {
       })
     }
 
+    try {
+      const operationalTimingsService = new OperationalTimingsService(getPrismaClient())
+      await operationalTimingsService.getOperationalTimings()
+    } catch (error) {
+      logger.warn('Failed to initialize operational timings; defaults will be used', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+
     // Create Express app
     const app = createApp()
 
@@ -172,12 +186,14 @@ async function main() {
 
       // Start job scheduler (after server is listening)
       try {
+        const runtimeSettings = getOperationalTimingsRuntimeState().settings
         await startJobScheduler({
-          timezone: process.env.TIMEZONE || 'America/Winnipeg',
-          dayRolloverTime: process.env.DAY_ROLLOVER_TIME || '03:00',
-          dutyWatchAlertTime: process.env.DUTY_WATCH_ALERT_TIME || '19:00',
-          lockupWarningTime: process.env.LOCKUP_WARNING_TIME || '22:00',
-          lockupCriticalTime: process.env.LOCKUP_CRITICAL_TIME || '23:00',
+          timezone: DEFAULT_BACKEND_TIMEZONE,
+          dayRolloverTime: runtimeSettings.operational.dayRolloverTime,
+          dutyWatchAlertTime: runtimeSettings.operational.dutyWatchAlertTime,
+          dutyWatchDays: runtimeSettings.operational.dutyWatchDays,
+          lockupWarningTime: runtimeSettings.operational.lockupWarningTime,
+          lockupCriticalTime: runtimeSettings.operational.lockupCriticalTime,
         })
       } catch (error) {
         logger.error('Failed to start job scheduler', {

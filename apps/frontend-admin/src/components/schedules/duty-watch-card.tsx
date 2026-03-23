@@ -6,6 +6,7 @@ import { Users, Plus, X, Check, Pencil, AlertCircle, UserX, UserCheck } from 'lu
 import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import { cn } from '@/lib/utils'
 import { useQualificationTypes } from '@/hooks/use-qualifications'
+import { useOperationalTimings } from '@/hooks/use-operational-timings'
 import type { ChipVariant, ChipColor } from '@/components/ui/chip'
 import {
   AppCard,
@@ -40,6 +41,7 @@ import {
   useDutyRoles,
   useDutyRolePositions,
 } from '@/hooks/use-schedules'
+import { formatIsoWeekdayList, sortIsoWeekdays } from '@/lib/iso-weekday'
 
 interface DutyWatchCardProps {
   weekStartDate: string
@@ -181,6 +183,7 @@ export function DutyWatchCard({
   dutyRoles: externalDutyRoles,
   isLoading: externalLoading,
 }: DutyWatchCardProps) {
+  const { data: timingsData } = useOperationalTimings()
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null)
   const [isMemberPickerOpen, setIsMemberPickerOpen] = useState(false)
   const [removeAssignmentId, setRemoveAssignmentId] = useState<string | null>(null)
@@ -480,6 +483,8 @@ export function DutyWatchCard({
   }
 
   const cardStatus = dutyWatchSchedule?.status === 'draft' ? ('warning' as const) : undefined
+  const dutyWatchDays = sortIsoWeekdays(timingsData?.settings.operational.dutyWatchDays ?? [2, 4])
+  const dutyWatchDaySummary = formatIsoWeekdayList(dutyWatchDays, 'long')
 
   return (
     <AppCard status={cardStatus}>
@@ -491,7 +496,7 @@ export function DutyWatchCard({
               Duty Watch Team
             </AppCardTitle>
             <AppCardDescription>
-              Tuesday &amp; Thursday evening watch. Responsible for lockup on those nights.
+              {dutyWatchDaySummary} evening watch. Responsible for lockup on selected nights.
             </AppCardDescription>
           </div>
           <AppCardAction>

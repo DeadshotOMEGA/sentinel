@@ -2,6 +2,7 @@ import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import { broadcastSecurityAlert } from '../websocket/broadcast.js'
 import { logger } from '../lib/logger.js'
+import { getRuntimeAlertRateLimit } from '../lib/operational-timings-runtime.js'
 
 // ============================================================================
 // Alert Types
@@ -51,6 +52,13 @@ export class AlertService {
     this.prisma = prisma
   }
 
+  private toRecord(value: unknown): Record<string, unknown> | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return undefined
+    }
+    return value as Record<string, unknown>
+  }
+
   /**
    * Create and broadcast an alert
    */
@@ -60,6 +68,49 @@ export class AlertService {
       severity: alert.severity,
       title: alert.title,
     })
+
+    const rateLimitRule = getRuntimeAlertRateLimit(alert.type)
+    if (rateLimitRule) {
+      const windowStart = new Date(Date.now() - rateLimitRule.timeWindowMinutes * 60 * 1000)
+      const recentCount = await this.prisma.securityAlert.count({
+        where: {
+          alertType: alert.type,
+          createdAt: { gte: windowStart },
+        },
+      })
+
+      if (recentCount >= rateLimitRule.threshold) {
+        logger.info('Alert suppressed by operational timing rate-limit rule', {
+          type: alert.type,
+          threshold: rateLimitRule.threshold,
+          timeWindowMinutes: rateLimitRule.timeWindowMinutes,
+          recentCount,
+        })
+
+        const latest = await this.prisma.securityAlert.findFirst({
+          where: {
+            alertType: alert.type,
+            createdAt: { gte: windowStart },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+
+        if (latest) {
+          return {
+            id: latest.id,
+            type: alert.type,
+            severity: latest.severity as AlertSeverity,
+            title: this.getAlertTitle(alert.type),
+            message: latest.message || alert.message,
+            data: this.toRecord(latest.details),
+            status: latest.status as 'active' | 'acknowledged' | 'dismissed',
+            createdAt: latest.createdAt,
+            acknowledgedAt: latest.acknowledgedAt,
+            acknowledgedBy: latest.acknowledgedBy,
+          }
+        }
+      }
+    }
 
     // Store alert in database
     // Note: alertType is cast because the database schema supports any string up to 50 chars,
@@ -148,7 +199,7 @@ export class AlertService {
   }
 
   /**
-   * Emit building not secured alert (after 3am reset)
+   * Emit building not secured alert (after operational-day reset)
    */
   async emitBuildingNotSecuredAlert(): Promise<StoredAlert> {
     return this.createAlert({
@@ -162,7 +213,9 @@ export class AlertService {
   /**
    * Emit missed checkout alert
    */
-  async emitMissedCheckoutAlert(members: Array<{ name: string; id: string }>): Promise<StoredAlert> {
+  async emitMissedCheckoutAlert(
+    members: Array<{ name: string; id: string }>
+  ): Promise<StoredAlert> {
     const names = members.map((m) => m.name).join(', ')
 
     return this.createAlert({

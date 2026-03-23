@@ -1,19 +1,28 @@
 'use client'
 
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Users,
   Lock,
   Unlock,
+  DoorOpen,
   ShieldEllipsis,
   ShieldAlert,
   ShieldCheck,
   Clock,
   KeyRound,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { useDdsStatus } from '@/hooks/use-dds'
-import { useLockupStatus } from '@/hooks/use-lockup'
+import { useCheckoutOptions, useLockupStatus } from '@/hooks/use-lockup'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
+import { SetTodayDdsModal } from '@/components/dashboard/set-today-dds-modal'
+import { TransferLockupScanModal } from '@/components/lockup/transfer-lockup-scan-modal'
+import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
+import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
+import { TID } from '@/lib/test-ids'
 
 function formatTime(dateStr: string | null): string {
   if (!dateStr) return 'N/A'
@@ -332,12 +341,122 @@ function DutyWatchStat() {
   )
 }
 
+function StatusActionsStat({
+  isAdmin,
+  isSecured,
+  isOpenWithHolder,
+  isOpenNoHolder,
+  onOpenBuilding,
+  onExecuteLockup,
+  onSetTodayDds,
+  onTransferLockup,
+}: {
+  isAdmin: boolean
+  isSecured: boolean
+  isOpenWithHolder: boolean
+  isOpenNoHolder: boolean
+  onOpenBuilding: () => void
+  onExecuteLockup: () => void
+  onSetTodayDds: () => void
+  onTransferLockup: () => void
+}) {
+  const actionBaseClass =
+    'btn btn-xs w-fit font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action disabled:opacity-40'
+
+  return (
+    <StatContainer helpId="dashboard.stat.actions">
+      <div className="stat-desc">
+        <div className="mt-1 flex flex-col items-start gap-1">
+          {isSecured ? (
+            <div
+              className={!isAdmin ? 'tooltip tooltip-right' : ''}
+              data-tip="Requires Admin level or higher"
+            >
+              <button
+                className={`${actionBaseClass} btn-success justify-start`}
+                disabled={!isAdmin}
+                onClick={onOpenBuilding}
+                data-testid={TID.dashboard.quickAction.openBuilding}
+                data-help-id="dashboard.quick-actions.open-building"
+              >
+                <DoorOpen className="size-[1.1em] shrink-0" />
+                Open Building
+              </button>
+            </div>
+          ) : (
+            <div
+              className={!isAdmin || isOpenNoHolder ? 'tooltip tooltip-right' : ''}
+              data-tip={!isAdmin ? 'Requires admin role' : 'No lockup holder assigned'}
+            >
+              <button
+                className={`${actionBaseClass} btn-warning justify-start`}
+                disabled={!isAdmin || isOpenNoHolder}
+                onClick={onExecuteLockup}
+                data-testid={TID.dashboard.quickAction.executeLockup}
+                data-help-id="dashboard.quick-actions.execute-lockup"
+              >
+                <Lock className="size-[1.1em] shrink-0" />
+                Execute Lockup
+              </button>
+            </div>
+          )}
+
+          <div
+            className={!isAdmin ? 'tooltip tooltip-right' : ''}
+            data-tip="Requires Admin level or higher"
+          >
+            <button
+              className={`${actionBaseClass} btn-error justify-start`}
+              disabled={!isAdmin}
+              onClick={onSetTodayDds}
+              data-testid={TID.dashboard.quickAction.setTodayDds}
+            >
+              <ShieldCheck className="size-[1.1em] shrink-0" />
+              Transfer DDS
+            </button>
+          </div>
+
+          {isOpenWithHolder && (
+            <div
+              className={!isAdmin ? 'tooltip tooltip-right' : ''}
+              data-tip="Requires Admin level or higher"
+            >
+              <button
+                className={`${actionBaseClass} btn-error justify-start`}
+                disabled={!isAdmin}
+                onClick={onTransferLockup}
+                data-testid={TID.dashboard.quickAction.transferLockup}
+                data-help-id="dashboard.quick-actions.transfer-lockup"
+              >
+                <ArrowRightLeft className="size-[1.1em] shrink-0" />
+                Transfer Lockup
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </StatContainer>
+  )
+}
+
 export function StatusStats() {
+  const member = useAuthStore((state) => state.member)
+  const [isTransferScanModalOpen, setIsTransferScanModalOpen] = useState(false)
+  const [isSetTodayDdsOpen, setIsSetTodayDdsOpen] = useState(false)
+  const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
+  const [isLockupModalOpen, setIsLockupModalOpen] = useState(false)
   const { data: lockupStatus, isLoading: lockupLoading } = useLockupStatus()
+  const currentHolder = lockupStatus?.currentHolder
+  const buildingStatus = lockupStatus?.buildingStatus
+  const { data: checkoutOptions } = useCheckoutOptions(currentHolder?.id ?? '')
+  const isAdmin = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
+  const isSecured = buildingStatus === 'secured'
+  const isOpenWithHolder = buildingStatus === 'open' && !!currentHolder
+  const isOpenNoHolder = buildingStatus === 'open' && !currentHolder
 
   return (
     <div
-      className="stats stats-vertical lg:stats-horizontal w-full lg:w-fit shadow-md stats-panel animate-fade-in"
+      className="stats stats-vertical 2xl:stats-horizontal w-full shadow-md stats-panel animate-fade-in"
       aria-live="polite"
       data-help-id="dashboard.status-stats"
     >
@@ -345,6 +464,37 @@ export function StatusStats() {
       <DutyWatchStat />
       <BuildingStat lockupStatus={lockupStatus} isLoading={lockupLoading} />
       <LockupHolderStat lockupStatus={lockupStatus} isLoading={lockupLoading} />
+      <StatusActionsStat
+        isAdmin={isAdmin}
+        isSecured={isSecured}
+        isOpenWithHolder={isOpenWithHolder}
+        isOpenNoHolder={isOpenNoHolder}
+        onOpenBuilding={() => setIsOpenBuildingOpen(true)}
+        onExecuteLockup={() => setIsLockupModalOpen(true)}
+        onSetTodayDds={() => setIsSetTodayDdsOpen(true)}
+        onTransferLockup={() => setIsTransferScanModalOpen(true)}
+      />
+
+      {isOpenWithHolder && currentHolder && (
+        <ExecuteLockupModal
+          open={isLockupModalOpen}
+          onOpenChange={setIsLockupModalOpen}
+          memberId={currentHolder.id}
+          memberName={`${currentHolder.rank} ${currentHolder.firstName} ${currentHolder.lastName}`}
+          onComplete={() => setIsLockupModalOpen(false)}
+        />
+      )}
+      <OpenBuildingModal open={isOpenBuildingOpen} onOpenChange={setIsOpenBuildingOpen} />
+      {isOpenWithHolder && currentHolder && (
+        <TransferLockupScanModal
+          open={isTransferScanModalOpen}
+          onOpenChange={setIsTransferScanModalOpen}
+          currentHolder={currentHolder}
+          eligibleRecipients={checkoutOptions?.eligibleRecipients ?? []}
+          onComplete={() => setIsTransferScanModalOpen(false)}
+        />
+      )}
+      <SetTodayDdsModal open={isSetTodayDdsOpen} onOpenChange={setIsSetTodayDdsOpen} />
     </div>
   )
 }

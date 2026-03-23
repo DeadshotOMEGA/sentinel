@@ -79,7 +79,7 @@ function SortableHeader({
   state: false | 'asc' | 'desc'
 }) {
   return (
-    <button type="button" className="btn btn-ghost btn-sm -ml-3 h-8" onClick={onToggle}>
+    <button type="button" className="btn btn-ghost btn-sm -ml-3" onClick={onToggle}>
       {label}
       <span className="ml-1 text-xs opacity-60">
         {state === 'asc' ? '▲' : state === 'desc' ? '▼' : '↕'}

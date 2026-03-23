@@ -6,6 +6,7 @@ import { useQueries } from '@tanstack/react-query'
 import { AlertCircle } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { scheduleKeys } from '@/hooks/use-schedules'
+import { useOperationalTimings } from '@/hooks/use-operational-timings'
 import { useUnitEvents } from '@/hooks/use-events'
 import { apiClient } from '@/lib/api-client'
 import { AppCard, AppCardHeader, AppCardTitle, AppCardContent } from '@/components/ui/AppCard'
@@ -31,12 +32,10 @@ interface EventData {
 
 export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarViewProps) {
   const { startStr, endStr, weeks } = useCalendarDates(currentMonth)
+  const { data: timingsData } = useOperationalTimings()
 
   // Fetch each week individually using getSchedulesByWeek (includes assignments)
-  const weekDateStrings = useMemo(
-    () => weeks.map((w) => format(w, 'yyyy-MM-dd')),
-    [weeks]
-  )
+  const weekDateStrings = useMemo(() => weeks.map((w) => format(w, 'yyyy-MM-dd')), [weeks])
 
   const weekQueries = useQueries({
     queries: weekDateStrings.map((date) => ({
@@ -59,8 +58,9 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
   const schedError = schedulesError?.error
 
   // Build schedulesByWeek map from individual week queries
-  const schedulesByWeek = useMemo(() => {
-    const map = new Map<string, Array<{
+  const schedulesByWeek = new Map<
+    string,
+    Array<{
       id: string
       weekStartDate: string
       status: string
@@ -79,17 +79,15 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
         memberId: string | null
       }>
       [key: string]: unknown
-    }>>()
-    for (let i = 0; i < weekDateStrings.length; i++) {
-      const date = weekDateStrings[i]
-      const data = weekQueries[i]?.data?.data
-      if (data) {
-        map.set(date, data)
-      }
+    }>
+  >()
+  for (let i = 0; i < weekDateStrings.length; i++) {
+    const date = weekDateStrings[i]
+    const data = weekQueries[i]?.data?.data
+    if (data) {
+      schedulesByWeek.set(date, data)
     }
-    return map
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekDateStrings, ...weekQueries.map((q) => q.data)])
+  }
 
   const {
     data: eventsData,
@@ -110,6 +108,8 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
     }
     return map
   }, [eventsData])
+
+  const dutyWatchDays = timingsData?.settings.operational.dutyWatchDays ?? [2, 4]
 
   if (schedulesError || eventsError) {
     const errMsg = schedError?.message ?? evtError?.message ?? 'Unknown error'
@@ -144,6 +144,7 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
         currentMonth={currentMonth}
         schedulesByWeek={schedulesByWeek}
         eventsByDate={eventsByDate}
+        dutyWatchDays={dutyWatchDays}
         onWeekClick={onWeekClick}
       />
       <DdsModal />

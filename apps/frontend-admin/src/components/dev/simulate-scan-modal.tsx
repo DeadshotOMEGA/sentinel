@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Search, Radio, CheckCircle, LogIn, LogOut, Shield, Trash2 } from 'lucide-react'
 import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
@@ -12,12 +11,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useDevMembers, useMockScan, useClearAllCheckins, LockupHeldError } from '@/hooks/use-dev'
+import { useAcceptDds } from '@/hooks/use-dds'
 import { useCheckoutOptions } from '@/hooks/use-lockup'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import { DevToolsPanel } from '@/components/dev/dev-tools-panel'
-import { apiClient } from '@/lib/api-client'
-import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import type { MockScanResponse, DevMember, CheckoutOptionsResponse } from '@sentinel/contracts'
 
 interface SimulateScanModalProps {
@@ -49,22 +47,7 @@ export function SimulateScanModal({ open, onOpenChange }: SimulateScanModalProps
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } =
     useCheckoutOptions(scannedMemberId)
 
-  // Accept DDS mutation
-  const queryClient = useQueryClient()
-  const acceptDds = useMutation({
-    mutationFn: async (memberId: string) => {
-      const response = await apiClient.dds.acceptDds({
-        params: { id: memberId },
-      })
-      if (response.status !== 200) {
-        throw new Error('Failed to accept DDS')
-      }
-      return response.body
-    },
-    onSuccess: () => {
-      void invalidateDashboardQueries(queryClient)
-    },
-  })
+  const acceptDds = useAcceptDds()
 
   // Filter members by search
   const filteredMembers = membersData?.members.filter((m) => {

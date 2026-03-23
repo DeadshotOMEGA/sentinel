@@ -1,6 +1,8 @@
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import { format } from 'date-fns'
+import type { IsoWeekday } from '@sentinel/contracts'
 import { WeekRow } from './week-row'
+import { sortIsoWeekdays } from '@/lib/iso-weekday'
 
 interface ScheduleData {
   id: string
@@ -45,19 +47,11 @@ interface CalendarGridProps {
   currentMonth: Date
   schedulesByWeek: Map<string, ScheduleData[]>
   eventsByDate: Map<string, EventData[]>
+  dutyWatchDays: number[]
   onWeekClick?: (weekStartDate: string) => void
 }
 
-const COLUMN_HEADERS = [
-  { key: 'week', label: 'Week / DDS', sublabel: null },
-  { key: 'mon', label: 'Mon', sublabel: null },
-  { key: 'tue', label: 'Tue', sublabel: '(Trn)' },
-  { key: 'wed', label: 'Wed', sublabel: null },
-  { key: 'thu', label: 'Thu', sublabel: '(Adm)' },
-  { key: 'fri', label: 'Fri', sublabel: null },
-  { key: 'sat', label: 'Sat', sublabel: null },
-  { key: 'sun', label: 'Sun', sublabel: null },
-]
+const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const TOTAL_COLS = 8 // Week/DDS + 7 days
 
@@ -66,6 +60,7 @@ export const CalendarGrid = memo(function CalendarGrid({
   currentMonth,
   schedulesByWeek,
   eventsByDate,
+  dutyWatchDays,
   onWeekClick,
 }: CalendarGridProps) {
   const [focusedCell, setFocusedCell] = useState<{ week: number; day: number }>({
@@ -106,6 +101,21 @@ export const CalendarGrid = memo(function CalendarGrid({
     [focusedCell, weeks.length]
   )
 
+  const columnHeaders = useMemo(() => {
+    const normalizedDutyWatchDays = sortIsoWeekdays(dutyWatchDays)
+    return [
+      { key: 'week', label: 'Week / DDS', sublabel: null as string | null },
+      ...DAY_HEADERS.map((label, index) => {
+        const isoDay = (index + 1) as IsoWeekday
+        return {
+          key: label.toLowerCase(),
+          label,
+          sublabel: normalizedDutyWatchDays.includes(isoDay) ? '(DW)' : null,
+        }
+      }),
+    ]
+  }, [dutyWatchDays])
+
   return (
     <div className="overflow-x-auto">
       <table
@@ -115,7 +125,7 @@ export const CalendarGrid = memo(function CalendarGrid({
       >
         <thead>
           <tr>
-            {COLUMN_HEADERS.map((col) => (
+            {columnHeaders.map((col) => (
               <th
                 key={col.key}
                 className={`text-center font-semibold p-2 bg-base-200 border-b-2 border-r${col.key === 'week' ? ' sticky left-0 z-10' : ''}`}
@@ -147,6 +157,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                 ddsSchedule={ddsSchedule}
                 dutyWatchSchedule={dutyWatchSchedule}
                 eventsByDate={eventsByDate}
+                dutyWatchDays={dutyWatchDays}
                 focusedWeek={focusedCell.week}
                 focusedDay={focusedCell.day}
                 onWeekClick={onWeekClick}

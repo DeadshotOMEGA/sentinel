@@ -8,7 +8,7 @@ import { getOperationalDateISO, isDutyWatchNight } from '../utils/operational-da
 /**
  * Duty Watch Alerts Job
  *
- * Runs at 7:00 PM on Tuesday and Thursday to:
+ * Runs at the configured duty-watch alert time on configured duty-watch days to:
  * 1. Check if SWK or DSWK has taken lockup
  * 2. Check if all Duty Watch members are checked in
  * 3. Emit critical alerts via Socket.IO if conditions not met
@@ -17,7 +17,7 @@ export async function runDutyWatchAlerts(): Promise<void> {
   const operationalDate = getOperationalDateISO()
   const jobLogger = logger.child({ job: 'duty-watch-alerts', operationalDate })
 
-  // Only run on Duty Watch nights (Tuesday/Thursday)
+  // Only run on configured Duty Watch nights.
   if (!isDutyWatchNight()) {
     jobLogger.info('Not a Duty Watch night, skipping alerts')
     return

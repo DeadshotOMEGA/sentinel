@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { addDays, format } from 'date-fns'
+import type { IsoWeekday } from '@sentinel/contracts'
 import { Users, Check, Pencil, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
@@ -39,10 +40,12 @@ import {
   useCreateDwOverride,
   useDeleteDwOverride,
 } from '@/hooks/use-schedules'
+import { useOperationalTimings } from '@/hooks/use-operational-timings'
+import { getIsoWeekdayLongLabel, getIsoWeekdayShortLabel, sortIsoWeekdays } from '@/lib/iso-weekday'
 import { useModalContext } from './modal-context'
 import { parseDateString } from '@/lib/date-utils'
 
-type TabKey = 'base' | 'tuesday' | 'thursday'
+type TabKey = 'base' | `night-${IsoWeekday}`
 
 export function DutyWatchModal() {
   const { modal, closeModal } = useModalContext()
@@ -54,6 +57,32 @@ export function DutyWatchModal() {
   const [isMemberPickerOpen, setIsMemberPickerOpen] = useState(false)
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [removeType, setRemoveType] = useState<'assignment' | 'override'>('assignment')
+  const { data: timingsData } = useOperationalTimings()
+
+  const dutyWatchDays = useMemo(() => {
+    return sortIsoWeekdays(timingsData?.settings.operational.dutyWatchDays ?? [2, 4])
+  }, [timingsData?.settings.operational.dutyWatchDays])
+
+  const nightTabs = useMemo(() => {
+    if (!weekStartDate) {
+      return [] as Array<{
+        key: `night-${IsoWeekday}`
+        isoDay: IsoWeekday
+        label: string
+        shortLabel: string
+        date: string
+      }>
+    }
+
+    const start = parseDateString(weekStartDate)
+    return dutyWatchDays.map((isoDay) => ({
+      key: `night-${isoDay}` as const,
+      isoDay,
+      label: getIsoWeekdayLongLabel(isoDay),
+      shortLabel: getIsoWeekdayShortLabel(isoDay),
+      date: format(addDays(start, isoDay - 1), 'yyyy-MM-dd'),
+    }))
+  }, [dutyWatchDays, weekStartDate])
 
   // Auto-select tab from nightDate
   useEffect(() => {
@@ -61,12 +90,27 @@ export function DutyWatchModal() {
       setActiveTab('base')
       return
     }
+
     const d = parseDateString(modal.nightDate)
-    const day = d.getDay()
-    if (day === 2) setActiveTab('tuesday')
-    else if (day === 4) setActiveTab('thursday')
-    else setActiveTab('base')
-  }, [modal.nightDate, modal.weekStartDate])
+    const isoDay = (d.getDay() === 0 ? 7 : d.getDay()) as IsoWeekday
+    if (dutyWatchDays.includes(isoDay)) {
+      setActiveTab(`night-${isoDay}`)
+      return
+    }
+
+    setActiveTab('base')
+  }, [dutyWatchDays, modal.nightDate, modal.weekStartDate])
+
+  useEffect(() => {
+    if (activeTab === 'base') {
+      return
+    }
+
+    const hasTab = nightTabs.some((tab) => tab.key === activeTab)
+    if (!hasTab) {
+      setActiveTab('base')
+    }
+  }, [activeTab, nightTabs])
 
   const { data: dutyRolesData } = useDutyRoles()
   const { data: schedulesData } = useSchedulesByWeek(weekStartDate)
@@ -75,16 +119,9 @@ export function DutyWatchModal() {
   const dutyWatchSchedule = schedulesData?.data?.find((s) => s.dutyRole.code === 'DUTY_WATCH')
   const { data: positions } = useDutyRolePositions(dutyWatchRole?.id ?? '')
 
-  // Compute Tuesday/Thursday dates from weekStartDate
-  const tuesdayDate = weekStartDate
-    ? format(addDays(parseDateString(weekStartDate), 1), 'yyyy-MM-dd')
-    : ''
-  const thursdayDate = weekStartDate
-    ? format(addDays(parseDateString(weekStartDate), 3), 'yyyy-MM-dd')
-    : ''
-
-  const activeNightDate =
-    activeTab === 'tuesday' ? tuesdayDate : activeTab === 'thursday' ? thursdayDate : ''
+  const activeNightTab =
+    activeTab === 'base' ? null : (nightTabs.find((tab) => tab.key === activeTab) ?? null)
+  const activeNightDate = activeNightTab?.date ?? ''
 
   // Fetch overrides for the active night tab
   const { data: overridesData } = useDwOverrides(
@@ -206,6 +243,8 @@ export function DutyWatchModal() {
 
   const assignedMemberIds =
     dutyWatchSchedule?.assignments?.map((a) => (a as { memberId: string }).memberId) ?? []
+  const baseTabLabel = nightTabs.map((tab) => tab.shortLabel).join('+')
+  const activeNightLabel = activeNightTab?.label ?? 'Selected night'
 
   const handleAssignPosition = (positionCode: string) => {
     setSelectedPosition(positionCode)
@@ -253,7 +292,7 @@ export function DutyWatchModal() {
             memberId: member.id,
           },
         })
-        toast.success(`Added ${member.rank} ${member.lastName} for ${activeTab}`)
+        toast.success(`Added ${member.rank} ${member.lastName} for ${activeNightLabel}`)
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to assign member'
@@ -336,7 +375,7 @@ export function DutyWatchModal() {
           memberId: member.id,
         },
       })
-      toast.success(`Replaced member for ${activeTab}`)
+      toast.success(`Replaced member for ${activeNightLabel}`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to replace'
       toast.error(message)
@@ -403,36 +442,31 @@ export function DutyWatchModal() {
               className={`tab ${activeTab === 'base' ? 'tab-active' : ''}`}
               onClick={() => setActiveTab('base')}
             >
-              Base (Tue+Thu)
+              Base ({baseTabLabel || 'No nights'})
             </button>
-            <button
-              type="button"
-              role="tab"
-              id="tab-tuesday"
-              aria-selected={activeTab === 'tuesday'}
-              aria-controls="tabpanel-dw"
-              className={`tab ${activeTab === 'tuesday' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('tuesday')}
-              disabled={!dutyWatchSchedule}
-            >
-              Tuesday
-            </button>
-            <button
-              type="button"
-              role="tab"
-              id="tab-thursday"
-              aria-selected={activeTab === 'thursday'}
-              aria-controls="tabpanel-dw"
-              className={`tab ${activeTab === 'thursday' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('thursday')}
-              disabled={!dutyWatchSchedule}
-            >
-              Thursday
-            </button>
+            {nightTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                id={`tab-${tab.key}`}
+                aria-selected={activeTab === tab.key}
+                aria-controls="tabpanel-dw"
+                className={`tab ${activeTab === tab.key ? 'tab-active' : ''}`}
+                onClick={() => setActiveTab(tab.key)}
+                disabled={!dutyWatchSchedule}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Tab content */}
-          <div id="tabpanel-dw" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+          <div
+            id="tabpanel-dw"
+            role="tabpanel"
+            aria-labelledby={activeTab === 'base' ? 'tab-base' : `tab-${activeTab}`}
+          >
             {activeTab === 'base' ? (
               <DwPositionGrid
                 positions={positionsList}
@@ -449,9 +483,8 @@ export function DutyWatchModal() {
             ) : (
               <>
                 <p className="text-xs text-base-content/60 mb-2">
-                  Showing effective roster for{' '}
-                  {activeTab === 'tuesday' ? `Tuesday ${tuesdayDate}` : `Thursday ${thursdayDate}`}.
-                  Overrides are shown with dashed borders.
+                  Showing effective roster for {activeNightLabel} {activeNightDate}. Overrides are
+                  shown with dashed borders.
                 </p>
                 <DwPositionGrid
                   positions={positionsList}
@@ -524,11 +557,7 @@ export function DutyWatchModal() {
                 onClick={handlePublish}
                 disabled={publishSchedule.isPending}
               >
-                {publishSchedule.isPending ? (
-                  <ButtonSpinner />
-                ) : (
-                  <Check className="h-4 w-4 mr-2" />
-                )}
+                {publishSchedule.isPending ? <ButtonSpinner /> : <Check className="h-4 w-4 mr-2" />}
                 Publish Schedule
               </button>
             </div>
@@ -541,11 +570,7 @@ export function DutyWatchModal() {
                 onClick={handleEdit}
                 disabled={revertToDraft.isPending}
               >
-                {revertToDraft.isPending ? (
-                  <ButtonSpinner />
-                ) : (
-                  <Pencil className="h-4 w-4 mr-2" />
-                )}
+                {revertToDraft.isPending ? <ButtonSpinner /> : <Pencil className="h-4 w-4 mr-2" />}
                 Edit Schedule
               </button>
             </div>
@@ -566,7 +591,7 @@ export function DutyWatchModal() {
           if (!open) setReplaceContext(null)
         }}
         onSelect={replaceContext ? handleMemberSelectForReplace : handleMemberSelect}
-        title={replaceContext ? `Replace for ${activeTab}` : `Assign ${selectedPosition}`}
+        title={replaceContext ? `Replace for ${activeNightLabel}` : `Assign ${selectedPosition}`}
         description={
           replaceContext
             ? 'Select a replacement member for this night'

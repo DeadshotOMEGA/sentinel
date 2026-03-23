@@ -49,6 +49,7 @@ interface WeekRowProps {
   ddsSchedule: ScheduleData | undefined
   dutyWatchSchedule: ScheduleData | undefined
   eventsByDate: Map<string, EventData[]>
+  dutyWatchDays: number[]
   focusedWeek: number
   focusedDay: number
   onWeekClick?: (weekStartDate: string) => void
@@ -61,6 +62,7 @@ export const WeekRow = memo(function WeekRow({
   ddsSchedule,
   dutyWatchSchedule,
   eventsByDate,
+  dutyWatchDays,
   focusedWeek,
   focusedDay,
   onWeekClick,
@@ -84,14 +86,14 @@ export const WeekRow = memo(function WeekRow({
         onWeekClick={onWeekClick}
         isPastWeek={isPastWeek}
       />
-      {/* Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6 */}
+      {/* Mon=0 ... Sun=6 */}
       {Array.from({ length: 7 }, (_, dayOffset) => {
         const date = addDays(weekStart, dayOffset)
         const dateStr = format(date, 'yyyy-MM-dd')
         const dayEvents = eventsByDate.get(dateStr) ?? []
 
-        // Only Tue (offset 1) and Thu (offset 3) are duty watch nights
-        const isDwNight = dayOffset === 1 || dayOffset === 3
+        const isoDay = dayOffset + 1
+        const isDwNight = dutyWatchDays.includes(isoDay)
         let dutyWatch: {
           assignmentCount: number
           hasOverrides: boolean
@@ -114,6 +116,7 @@ export const WeekRow = memo(function WeekRow({
             date={date}
             currentMonth={currentMonth}
             events={dayEvents}
+            isDutyWatchNight={isDwNight}
             dutyWatch={dutyWatch}
             focusedWeek={focusedWeek}
             focusedDay={focusedDay}
