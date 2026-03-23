@@ -456,7 +456,7 @@ export function StatusStats() {
 
   return (
     <div
-      className="stats stats-vertical 2xl:stats-horizontal w-full shadow-md stats-panel animate-fade-in"
+      className="stats stats-vertical 2xl:stats-horizontal w-full shadow-md animate-fade-in"
       aria-live="polite"
       data-help-id="dashboard.status-stats"
     >

@@ -14,10 +14,8 @@ import {
  * AppCard Variants
  * - default: Standard card styling
  * - elevated: Subtle gradient background with hover lift effect
- * - panel: Statistics panel styling
- * - stats: Alias for panel
  */
-type AppCardVariant = 'default' | 'elevated' | 'panel' | 'stats'
+type AppCardVariant = 'default' | 'elevated'
 
 /**
  * AppCard Status
@@ -33,8 +31,6 @@ interface AppCardProps extends React.ComponentProps<typeof Card> {
 const variantClasses: Record<AppCardVariant, string> = {
   default: '',
   elevated: 'card-elevated',
-  panel: 'stats-panel',
-  stats: 'stats-panel',
 }
 
 const statusClasses: Record<AppCardStatus, string> = {

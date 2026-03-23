@@ -296,7 +296,6 @@ Post-upgrade UI smoke checks (recommended):
 
 - Dashboard Presence loads.
 - Members and Badges pages load.
-- Admin > User Accounts loads for admin/developer.
 - Logs page (`/logs`) opens without 404.
 - System Status shows the deployed version (for example `v1.4.4`).
 

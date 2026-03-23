@@ -627,7 +627,7 @@ export function NominalRollImportDialog({ open, onOpenChange }: NominalRollImpor
               )}
             </div>
             {executionErrors.length > 0 && (
-              <div className="alert alert-warning text-left mt-6">
+              <div className="alert alert-warning mt-6 text-left text-base-content">
                 <AlertCircle className="h-4 w-4" />
                 <div>
                   <h4 className="font-semibold">

@@ -291,7 +291,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
 
             {/* Lockup Warning */}
             {selectedDirection === 'out' && selectedMemberId && holdsLockup && (
-              <div role="alert" className="alert alert-warning">
+              <div role="alert" className="alert alert-warning text-base-content">
                 <AlertTriangle className="h-5 w-5 shrink-0" />
                 <div>
                   <h4 className="font-bold">Lockup Holder</h4>

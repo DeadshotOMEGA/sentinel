@@ -237,7 +237,7 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
                       {selectedMember.rank} {selectedMember.firstName} {selectedMember.lastName}
                     </p>
                     {isAlreadyCurrentDds && (
-                      <p className="text-sm text-warning-fadded-content">
+                      <p className="text-sm text-base-content/70">
                         This member is already today&apos;s DDS.
                       </p>
                     )}
