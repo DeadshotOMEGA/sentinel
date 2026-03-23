@@ -71,6 +71,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
   const canManageAccountLevel = actorLevel >= AccountLevel.ADMIN
   const canManagePin = actorLevel >= AccountLevel.ADMIN
   const canShowPinSection = mode === 'edit' && Boolean(member) && canManagePin
+  const [pinModalOpen, setPinModalOpen] = useState(false)
 
   // Populate form when editing
   useEffect(() => {
@@ -333,15 +334,13 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                   </span>
                 </div>
               )}
-              <SetPinModalTrigger
-                memberId={member.id}
-                memberName={`${member.rank} ${member.lastName}`.trim()}
-                required={member.mustChangePin}
-                onPinSet={async () => {
-                  await queryClient.invalidateQueries({ queryKey: ['members'] })
-                  await queryClient.invalidateQueries({ queryKey: ['member', member.id] })
-                }}
-              />
+              <button
+                type="button"
+                className={`btn btn-sm ${member.mustChangePin ? 'btn-warning' : 'btn-primary'}`}
+                onClick={() => setPinModalOpen(true)}
+              >
+                {member.mustChangePin ? 'Set PIN Now' : 'Change PIN'}
+              </button>
             </div>
           )}
 
@@ -366,40 +365,20 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
             </button>
           </DialogFooter>
         </form>
+
+        {member && (
+          <SetPinModal
+            open={pinModalOpen}
+            onOpenChange={setPinModalOpen}
+            memberId={member.id}
+            memberName={`${member.rank} ${member.lastName}`.trim()}
+            onSuccess={async () => {
+              await queryClient.invalidateQueries({ queryKey: ['members'] })
+              await queryClient.invalidateQueries({ queryKey: ['member', member.id] })
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
-  )
-}
-
-function SetPinModalTrigger({
-  memberId,
-  memberName,
-  required,
-  onPinSet,
-}: {
-  memberId: string
-  memberName: string
-  required: boolean
-  onPinSet: () => Promise<void>
-}) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <>
-      <button
-        type="button"
-        className={`btn btn-sm ${required ? 'btn-warning' : 'btn-primary'}`}
-        onClick={() => setOpen(true)}
-      >
-        {required ? 'Set PIN Now' : 'Change PIN'}
-      </button>
-      <SetPinModal
-        open={open}
-        onOpenChange={setOpen}
-        memberId={memberId}
-        memberName={memberName}
-        onSuccess={onPinSet}
-      />
-    </>
   )
 }
