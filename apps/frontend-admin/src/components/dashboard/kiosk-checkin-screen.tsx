@@ -813,7 +813,7 @@ export function KioskCheckinScreen({
   return (
     <>
       <div className={`${contentContainerClass} relative`}>
-        <header className="mb-0 border-b border-base-300 bg-gradient-to-r from-base-200 via-base-200 to-base-100 p-4 lg:p-5 shadow-sm">
+        <header className="mb-0 border-b border-base-300 bg-linear-to-r from-base-200 via-base-200 to-base-100 p-4 lg:p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="font-display text-2xl sm:text-3xl flex items-center gap-3">
@@ -969,16 +969,16 @@ export function KioskCheckinScreen({
 
                   <div>
                     <p
-                      className={`font-display leading-tight ${isReadyState ? 'text-[1.8rem] sm:text-[2.1rem]' : 'text-2xl sm:text-3xl'} break-words`}
+                      className={`font-display leading-tight ${isReadyState ? 'text-[1.8rem] sm:text-[2.1rem]' : 'text-2xl sm:text-3xl'} wrap-break-word`}
                     >
                       {screenState.title}
                     </p>
                     {screenState.memberName && (
-                      <p className="text-lg sm:text-xl font-semibold mt-1 leading-tight break-words">
+                      <p className="text-lg sm:text-xl font-semibold mt-1 leading-tight wrap-break-word">
                         {screenState.memberName}
                       </p>
                     )}
-                    <p className="text-sm mt-3 leading-relaxed break-words font-medium">
+                    <p className="text-sm mt-3 leading-relaxed wrap-break-word font-medium">
                       {screenState.message}
                     </p>
                     {screenState.serial && (
