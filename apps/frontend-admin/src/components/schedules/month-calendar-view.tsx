@@ -58,39 +58,36 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
   const schedError = schedulesError?.error
 
   // Build schedulesByWeek map from individual week queries
-  const schedulesByWeek = useMemo(() => {
-    const map = new Map<
-      string,
-      Array<{
+  const schedulesByWeek = new Map<
+    string,
+    Array<{
+      id: string
+      weekStartDate: string
+      status: string
+      dutyRole: { id: string; code: string; name: string }
+      assignments?: Array<{
         id: string
-        weekStartDate: string
-        status: string
-        dutyRole: { id: string; code: string; name: string }
-        assignments?: Array<{
-          id: string
-          memberId: string
-          member: { id: string; rank: string; firstName: string; lastName: string }
-          dutyPosition?: { id: string; code: string; name: string } | null
-          [key: string]: unknown
-        }>
-        nightOverrides?: Array<{
-          nightDate: string
-          overrideType: 'replace' | 'add' | 'remove'
-          baseMemberId: string | null
-          memberId: string | null
-        }>
+        memberId: string
+        member: { id: string; rank: string; firstName: string; lastName: string }
+        dutyPosition?: { id: string; code: string; name: string } | null
         [key: string]: unknown
       }>
-    >()
-    for (let i = 0; i < weekDateStrings.length; i++) {
-      const date = weekDateStrings[i]
-      const data = weekQueries[i]?.data?.data
-      if (data) {
-        map.set(date, data)
-      }
+      nightOverrides?: Array<{
+        nightDate: string
+        overrideType: 'replace' | 'add' | 'remove'
+        baseMemberId: string | null
+        memberId: string | null
+      }>
+      [key: string]: unknown
+    }>
+  >()
+  for (let i = 0; i < weekDateStrings.length; i++) {
+    const date = weekDateStrings[i]
+    const data = weekQueries[i]?.data?.data
+    if (data) {
+      schedulesByWeek.set(date, data)
     }
-    return map
-  }, [weekDateStrings, ...weekQueries.map((q) => q.data)])
+  }
 
   const {
     data: eventsData,
