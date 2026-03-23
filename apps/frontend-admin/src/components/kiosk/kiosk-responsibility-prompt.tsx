@@ -64,7 +64,7 @@ export function KioskResponsibilityPrompt({
 
   return (
     <div
-      className="absolute inset-0 z-[var(--z-modal)] bg-base-100/98"
+      className="absolute inset-0 z-(--z-modal) bg-base-100/98"
       data-testid={TID.dashboard.kiosk.responsibilityPrompt}
     >
       <div
@@ -74,7 +74,7 @@ export function KioskResponsibilityPrompt({
         <AppCard
           variant="elevated"
           status="warning"
-          className="w-full max-w-4xl border border-warning/30 bg-warning-fadded/30"
+          className="w-full max-w-4xl border border-warning/30 bg-warning-fadded/30 text-base-content"
         >
           <AppCardHeader
             className="border-b border-base-300"
@@ -98,11 +98,14 @@ export function KioskResponsibilityPrompt({
             style={{ padding: 'var(--space-6)' }}
           >
             <div className="space-y-5">
-              <div role="alert" className="alert alert-warning alert-soft">
+              <div
+                role="alert"
+                className="alert alert-soft border border-warning/30 bg-warning-fadded text-base-content"
+              >
                 <AlertTriangle className="h-5 w-5" />
                 <div>
                   <p className="font-semibold">Responsibility confirmation required</p>
-                  <p className="text-sm">
+                  <p className="text-sm text-base-content/80">
                     The kiosk will continue asking later arrivals until the building is open and a
                     DDS is active for today.
                   </p>
@@ -131,7 +134,7 @@ export function KioskResponsibilityPrompt({
                   />
                 </label>
                 {!state.canOpenBuilding && (
-                  <p className="label px-4 pb-4 text-warning-fadded-content">
+                  <p className="label px-4 pb-4 text-base-content/70">
                     You must be checked in and lockup-qualified to open the building.
                   </p>
                 )}
@@ -159,7 +162,7 @@ export function KioskResponsibilityPrompt({
                   />
                 </label>
                 {!state.canAcceptDds && (
-                  <p className="label px-4 pb-4 text-warning-fadded-content">
+                  <p className="label px-4 pb-4 text-base-content/70">
                     You must be checked in and hold an active DDS qualification to take DDS.
                   </p>
                 )}

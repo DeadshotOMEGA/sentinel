@@ -383,8 +383,7 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
                       const rowBgClass = cn({
                         'bg-success-fadded text-success-fadded-content':
                           ddsSchedule?.status === 'published',
-                        'bg-warning-fadded text-warning-fadded-content':
-                          ddsSchedule?.status === 'draft',
+                        'bg-warning-fadded text-base-content': ddsSchedule?.status === 'draft',
                       })
 
                       return (

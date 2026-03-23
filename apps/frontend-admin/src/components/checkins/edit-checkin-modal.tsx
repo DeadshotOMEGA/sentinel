@@ -127,7 +127,7 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
 
         {/* Audit warning — informational banner uses fadded variant */}
         <div
-          className="bg-warning-fadded text-warning-fadded-content flex items-start rounded text-sm"
+          className="flex items-start rounded border border-warning/30 bg-warning-fadded text-base-content text-sm"
           role="note"
           aria-label="Audit log notice"
           style={{

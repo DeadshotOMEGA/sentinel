@@ -80,7 +80,7 @@ export function LockupOptionsModal({
                 className="flex items-start"
                 style={{ gap: 'var(--space-3)', padding: 'var(--space-4)' }}
               >
-                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-warning-fadded p-2 text-warning-fadded-content">
+                <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-warning-fadded p-2 text-base-content">
                   <User className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
@@ -93,7 +93,10 @@ export function LockupOptionsModal({
             </AppCard>
 
             {checkoutOptions.blockReason && (
-              <div role="alert" className="alert alert-warning alert-soft text-sm">
+              <div
+                role="alert"
+                className="alert alert-warning alert-soft text-base-content text-sm"
+              >
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span>{checkoutOptions.blockReason}</span>
               </div>

@@ -209,7 +209,7 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
                     eligibleOpeners &&
                     eligibleOpeners.length === 0 &&
                     !isLoadingOpeners && (
-                      <div className="mt-2 p-3 text-center text-warning bg-warning/10 rounded-lg">
+                      <div className="mt-2 rounded-lg border border-warning/30 bg-warning-fadded p-3 text-center text-base-content">
                         No eligible members checked in with lockup qualification
                       </div>
                     )}

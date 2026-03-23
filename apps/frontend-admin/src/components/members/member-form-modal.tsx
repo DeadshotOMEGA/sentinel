@@ -328,7 +328,10 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                 </span>
               </div>
               {member.mustChangePin && (
-                <div role="alert" className="alert alert-warning mb-(--space-3) text-sm">
+                <div
+                  role="alert"
+                  className="alert alert-warning mb-(--space-3) text-base-content text-sm"
+                >
                   <span>
                     This member currently requires PIN setup/change before regular protected access.
                   </span>

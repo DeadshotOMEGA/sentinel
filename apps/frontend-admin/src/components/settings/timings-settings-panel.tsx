@@ -273,7 +273,7 @@ export function TimingsSettingsPanel() {
             </span>
           </div>
           {!canEdit && (
-            <div role="alert" className="alert alert-warning alert-soft">
+            <div role="alert" className="alert alert-warning alert-soft text-base-content">
               <span>Admin or Developer account level is required to save timing changes.</span>
             </div>
           )}
@@ -584,7 +584,7 @@ export function TimingsSettingsPanel() {
             </div>
           </div>
 
-          <div role="alert" className="alert alert-warning alert-soft">
+          <div role="alert" className="alert alert-warning alert-soft text-base-content">
             <span className="text-sm">
               Example: threshold <strong>1</strong> + window <strong>60</strong> means the first
               alert emits, then matching duplicates are suppressed for 60 minutes.

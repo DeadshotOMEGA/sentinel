@@ -126,11 +126,9 @@ export function ExecuteLockupModal({
 
                   {/* Warning */}
                   {totalCount > 0 && (
-                    <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm">
+                    <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning-fadded p-3 text-base-content text-sm">
                       <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-                      <span className="text-warning">
-                        People still checked in will receive a missed checkout record
-                      </span>
+                      <span>People still checked in will receive a missed checkout record</span>
                     </div>
                   )}
                 </>

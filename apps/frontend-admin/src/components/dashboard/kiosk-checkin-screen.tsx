@@ -772,7 +772,7 @@ export function KioskCheckinScreen({
     screenState.status === 'success'
       ? 'bg-success-fadded text-success-fadded-content border-success/30'
       : screenState.status === 'warning'
-        ? 'bg-warning-fadded text-warning-fadded-content border-warning/30'
+        ? 'bg-warning-fadded text-base-content border-warning/30'
         : screenState.status === 'error'
           ? 'bg-error-fadded text-error-fadded-content border-error/30'
           : 'bg-base-100 text-base-content border-base-300'
@@ -844,7 +844,7 @@ export function KioskCheckinScreen({
           </div>
           {showUnresolvedStandby && !responsibilityPromptVisible && (
             <div className="mt-4">
-              <div className="alert alert-warning alert-soft">
+              <div className="alert alert-warning alert-soft text-base-content">
                 <AlertTriangle className="h-4 w-4" />
                 <span>{unresolvedMessage}</span>
               </div>
@@ -992,7 +992,7 @@ export function KioskCheckinScreen({
             </div>
 
             {pendingLockup && loadingCheckoutOptions && (
-              <div className="alert alert-warning alert-soft text-sm">
+              <div className="alert alert-warning alert-soft text-base-content text-sm">
                 <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>Loading lockup options for {pendingLockup.memberName}...</span>
               </div>
@@ -1036,7 +1036,7 @@ export function KioskCheckinScreen({
                       {screenState.insights.recentIssues.map((issue) => (
                         <li
                           key={issue}
-                          className="rounded bg-warning-fadded text-warning-fadded-content px-2 py-1"
+                          className="rounded bg-warning-fadded px-2 py-1 text-base-content"
                         >
                           {issue}
                         </li>
