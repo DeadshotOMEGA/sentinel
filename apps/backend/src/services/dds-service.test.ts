@@ -16,6 +16,9 @@ import { DdsService } from './dds-service.js'
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
 
 interface PrismaMock {
+  adminUser: {
+    findUnique: ReturnType<typeof vi.fn>
+  }
   member: {
     findUnique: ReturnType<typeof vi.fn>
   }
@@ -32,6 +35,9 @@ interface PrismaMock {
 
 function createPrismaMock(): PrismaMock {
   return {
+    adminUser: {
+      findUnique: vi.fn(),
+    },
     member: {
       findUnique: vi.fn(),
     },
@@ -242,6 +248,7 @@ describe('DdsService', () => {
   })
 
   it('lets an admin replace the live DDS and moves lockup to the replacement', async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue({ id: 'admin-1' })
     prismaMock.member.findUnique.mockResolvedValue(createMemberSummary({ id: 'member-2' }))
     prismaMock.ddsAssignment.findFirst.mockResolvedValue(
       createAssignment({
@@ -317,6 +324,83 @@ describe('DdsService', () => {
           fromMemberId: 'member-1',
           toMemberId: 'member-2',
           performedBy: 'admin-1',
+        }),
+      })
+    )
+  })
+
+  it('allows member-session admin actions without writing an invalid assignedBy foreign key', async () => {
+    prismaMock.adminUser.findUnique.mockResolvedValue(null)
+    prismaMock.member.findUnique.mockResolvedValue(createMemberSummary({ id: 'member-2' }))
+    prismaMock.ddsAssignment.findFirst.mockResolvedValue(null)
+    prismaMock.ddsAssignment.create.mockResolvedValue(
+      createAssignment({
+        id: 'dds-2',
+        memberId: 'member-2',
+        status: 'active',
+        assignedBy: null,
+        acceptedAt: new Date('2026-03-04T09:00:00.000Z'),
+        member: {
+          id: 'member-2',
+          firstName: 'Casey',
+          lastName: 'Wright',
+          rank: 'PO2',
+          division: {
+            name: 'Operations',
+          },
+        },
+      })
+    )
+    prismaMock.responsibilityAuditLog.create.mockResolvedValue({})
+
+    const service = new DdsService(prismaMock as unknown as PrismaClient)
+    const lockupService = {
+      getCurrentStatus: vi.fn().mockResolvedValue({
+        currentHolderId: 'member-2',
+        buildingStatus: 'open',
+      }),
+      transferLockup: vi.fn(),
+      acquireLockup: vi.fn(),
+      openBuilding: vi.fn(),
+    }
+
+    ;(service as unknown as { lockupService: typeof lockupService }).lockupService = lockupService
+    ;(
+      service as unknown as {
+        presenceService: { isMemberPresent: ReturnType<typeof vi.fn> }
+      }
+    ).presenceService = {
+      isMemberPresent: vi.fn().mockResolvedValue(true),
+    }
+    ;(
+      service as unknown as {
+        qualificationService: { memberHasActiveQualificationCode: ReturnType<typeof vi.fn> }
+      }
+    ).qualificationService = {
+      memberHasActiveQualificationCode: vi.fn().mockResolvedValue(true),
+    }
+
+    const assignment = await service.setTodayDds('member-2', 'member-acting-admin')
+
+    expect(assignment.memberId).toBe('member-2')
+    expect(prismaMock.adminUser.findUnique).toHaveBeenCalledWith({
+      where: { id: 'member-acting-admin' },
+      select: { id: true },
+    })
+    expect(prismaMock.ddsAssignment.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          memberId: 'member-2',
+          assignedBy: null,
+          status: 'active',
+        }),
+      })
+    )
+    expect(prismaMock.responsibilityAuditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          performedBy: 'member-acting-admin',
+          performedByType: 'admin',
         }),
       })
     )

@@ -65,7 +65,13 @@ function StatContainer({
   )
 }
 
-function DdsStat() {
+function DdsStat({
+  isAdmin,
+  onResolvePendingDds,
+}: {
+  isAdmin: boolean
+  onResolvePendingDds: () => void
+}) {
   const { data: ddsStatus, isLoading } = useDdsStatus()
 
   const formatNextDds = (nextDds: { rank: string; lastName: string; firstName: string } | null) => {
@@ -109,12 +115,20 @@ function DdsStat() {
     )
   }
 
+  const assignmentStatus = ddsStatus.assignment.status
   const onSite = ddsStatus.isDdsOnSite
-  const nameColor = onSite ? 'text-success' : 'text-error'
-  const subHeading = onSite ? 'DDS On Site' : 'Contact DDS Cell 204-612-4621'
+  const isAccepted = assignmentStatus === 'active'
+  const isPendingDds = assignmentStatus === 'pending'
+  const accentColor = isAccepted ? (onSite ? 'success' : 'error') : 'warning'
+  const nameColor = isAccepted ? (onSite ? 'text-success' : 'text-error') : 'text-warning'
+  const subHeading = isAccepted
+    ? onSite
+      ? 'DDS On Site'
+      : 'Contact DDS Cell 204-612-4621'
+    : 'DDS Scheduled, Awaiting Acceptance'
 
   return (
-    <StatContainer accentColor={onSite ? 'success' : 'error'} helpId="dashboard.stat.dds">
+    <StatContainer accentColor={accentColor} helpId="dashboard.stat.dds">
       <div className={`stat-figure ${nameColor}`}>
         <ShieldCheck size={32} strokeWidth={2} />
       </div>
@@ -123,7 +137,23 @@ function DdsStat() {
         {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName}{' '}
         {ddsStatus.assignment.member.firstName.charAt(0)}
       </div>
-      <div className="stat-desc">{subHeading}</div>
+      <div className="stat-desc flex w-full items-center justify-between gap-3">
+        <span className="min-w-0">{subHeading}</span>
+        {isPendingDds && (
+          <div
+            className={!isAdmin ? 'tooltip tooltip-right' : ''}
+            data-tip="Requires Admin level or higher"
+          >
+            <button
+              className="btn btn-xs border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
+              disabled={!isAdmin}
+              onClick={onResolvePendingDds}
+            >
+              Accept DDS
+            </button>
+          </div>
+        )}
+      </div>
     </StatContainer>
   )
 }
@@ -361,7 +391,7 @@ function StatusActionsStat({
   onTransferLockup: () => void
 }) {
   const actionBaseClass =
-    'btn btn-xs w-fit font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action disabled:opacity-40'
+    'btn btn-xs w-fit border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button disabled:opacity-40'
 
   return (
     <StatContainer helpId="dashboard.stat.actions">
@@ -373,7 +403,7 @@ function StatusActionsStat({
               data-tip="Requires Admin level or higher"
             >
               <button
-                className={`${actionBaseClass} btn-success justify-start`}
+                className={`${actionBaseClass} stats-action-success justify-start`}
                 disabled={!isAdmin}
                 onClick={onOpenBuilding}
                 data-testid={TID.dashboard.quickAction.openBuilding}
@@ -389,7 +419,7 @@ function StatusActionsStat({
               data-tip={!isAdmin ? 'Requires admin role' : 'No lockup holder assigned'}
             >
               <button
-                className={`${actionBaseClass} btn-warning justify-start`}
+                className={`${actionBaseClass} stats-action-error justify-start`}
                 disabled={!isAdmin || isOpenNoHolder}
                 onClick={onExecuteLockup}
                 data-testid={TID.dashboard.quickAction.executeLockup}
@@ -406,7 +436,7 @@ function StatusActionsStat({
             data-tip="Requires Admin level or higher"
           >
             <button
-              className={`${actionBaseClass} btn-error justify-start`}
+              className={`${actionBaseClass} stats-action-warning justify-start`}
               disabled={!isAdmin}
               onClick={onSetTodayDds}
               data-testid={TID.dashboard.quickAction.setTodayDds}
@@ -422,7 +452,7 @@ function StatusActionsStat({
               data-tip="Requires Admin level or higher"
             >
               <button
-                className={`${actionBaseClass} btn-error justify-start`}
+                className={`${actionBaseClass} stats-action-warning justify-start`}
                 disabled={!isAdmin}
                 onClick={onTransferLockup}
                 data-testid={TID.dashboard.quickAction.transferLockup}
@@ -460,7 +490,7 @@ export function StatusStats() {
       aria-live="polite"
       data-help-id="dashboard.status-stats"
     >
-      <DdsStat />
+      <DdsStat isAdmin={isAdmin} onResolvePendingDds={() => setIsSetTodayDdsOpen(true)} />
       <DutyWatchStat />
       <BuildingStat lockupStatus={lockupStatus} isLoading={lockupLoading} />
       <LockupHolderStat lockupStatus={lockupStatus} isLoading={lockupLoading} />

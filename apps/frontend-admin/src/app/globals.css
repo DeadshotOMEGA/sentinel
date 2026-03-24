@@ -303,6 +303,42 @@ html[data-theme='business'] .backend-status-badge {
   pointer-events: none;
 }
 
+.stats-action-button {
+  --btn-bg: var(--color-base-100);
+  --btn-border: var(--color-base-300);
+  --btn-fg: var(--color-base-content);
+  --btn-noise: none;
+  border-color: var(--btn-border);
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+.stats-action-button:hover:not(:disabled),
+.stats-action-button:focus-visible:not(:disabled) {
+  color: var(--btn-fg);
+}
+
+.stats-action-success:hover:not(:disabled),
+.stats-action-success:focus-visible:not(:disabled) {
+  --btn-bg: var(--color-success);
+  --btn-border: var(--color-success);
+  --btn-fg: var(--color-success-content);
+}
+
+.stats-action-warning:hover:not(:disabled),
+.stats-action-warning:focus-visible:not(:disabled) {
+  --btn-bg: var(--color-warning);
+  --btn-border: var(--color-warning);
+  --btn-fg: var(--color-warning-content);
+}
+
+.stats-action-error:hover:not(:disabled),
+.stats-action-error:focus-visible:not(:disabled) {
+  --btn-bg: var(--color-error);
+  --btn-border: var(--color-error);
+  --btn-fg: var(--color-error-content);
+}
+
 /* Driver.js contextual wiki CTA */
 .driver-popover-btn-help {
   margin-right: auto;

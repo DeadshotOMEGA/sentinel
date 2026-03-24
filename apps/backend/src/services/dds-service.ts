@@ -191,6 +191,15 @@ export class DdsService {
     return member
   }
 
+  private async resolveAssignedByAdminId(actorId: string): Promise<string | null> {
+    const adminUser = await this.prisma.adminUser.findUnique({
+      where: { id: actorId },
+      select: { id: true },
+    })
+
+    return adminUser?.id ?? null
+  }
+
   private async ensureDdsCandidateIsPresentAndQualified(memberId: string): Promise<MemberSummary> {
     const [member, isPresent, hasDdsQualification] = await Promise.all([
       this.getRequiredMemberSummary(memberId),
@@ -482,6 +491,7 @@ export class DdsService {
     await this.ensureDdsCandidateIsPresentAndQualified(memberId)
 
     const existingDds = await this.getPersistedCurrentAssignment(today)
+    const assignedByAdminId = await this.resolveAssignedByAdminId(adminId)
 
     if (existingDds?.status === 'active' && existingDds.memberId === memberId) {
       return this.transformAssignment(existingDds)
@@ -498,7 +508,7 @@ export class DdsService {
         data: {
           acceptedAt: new Date(),
           status: 'active',
-          assignedBy: adminId,
+          assignedBy: assignedByAdminId,
           notes: notes ?? existingDds.notes,
         },
         include: memberInclude,
@@ -522,7 +532,7 @@ export class DdsService {
             memberId,
             assignedDate: today,
             acceptedAt: new Date(),
-            assignedBy: adminId,
+            assignedBy: assignedByAdminId,
             status: 'active',
             notes: notes ?? null,
           },
@@ -537,7 +547,7 @@ export class DdsService {
           memberId,
           assignedDate: today,
           acceptedAt: new Date(),
-          assignedBy: adminId,
+          assignedBy: assignedByAdminId,
           status: 'active',
           notes: notes ?? null,
         },
