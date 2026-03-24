@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Users,
+  CheckCircle2,
   Lock,
   Unlock,
   DoorOpen,
@@ -14,6 +15,7 @@ import {
   KeyRound,
   ArrowRightLeft,
 } from 'lucide-react'
+import type { DutyWatchTeamResponse } from '@sentinel/contracts'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useCheckoutOptions, useLockupStatus } from '@/hooks/use-lockup'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
@@ -22,6 +24,8 @@ import { SetTodayDdsModal } from '@/components/dashboard/set-today-dds-modal'
 import { TransferLockupScanModal } from '@/components/lockup/transfer-lockup-scan-modal'
 import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
 import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
+import { AppBadge } from '@/components/ui/AppBadge'
+import { Chip } from '@/components/ui/chip'
 import { TID } from '@/lib/test-ids'
 
 function formatTime(dateStr: string | null): string {
@@ -34,6 +38,29 @@ function formatMemberName(
 ): string {
   if (!member) return 'Unknown'
   return `${member.rank} ${member.lastName} ${member.firstName.charAt(0)}`
+}
+
+function formatDutyWatchMemberName(
+  member: DutyWatchTeamResponse['team'][number]['member']
+): string {
+  return `${member.rank} ${member.firstName} ${member.lastName}`
+}
+
+function getDutyWatchPositionLabel(position: DutyWatchTeamResponse['team'][number]['position']): {
+  shortLabel: string
+  fullLabel: string
+} {
+  if (!position) {
+    return {
+      shortLabel: 'Duty',
+      fullLabel: 'Duty Watch',
+    }
+  }
+
+  return {
+    shortLabel: position.code || position.name,
+    fullLabel: position.name,
+  }
 }
 
 // Accent border color mapping (Tailwind requires static classes)
@@ -49,15 +76,17 @@ function StatContainer({
   children,
   accentColor,
   helpId,
+  className,
 }: {
   children: ReactNode
   accentColor?: 'error' | 'warning' | 'success' | 'info'
   helpId?: string
+  className?: string
 }) {
   const borderClass = accentColor ? ACCENT_BORDER_CLASSES[accentColor] : ''
   return (
     <div
-      className={`stat bg-linear-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass}`}
+      className={`stat relative overflow-visible bg-linear-to-br from-base-100 to-base-200 hover:from-base-200 hover:to-base-300/50 transition-all duration-200 ${borderClass} ${className ?? ''}`}
       data-help-id={helpId}
     >
       {children}
@@ -305,7 +334,10 @@ function DutyWatchStat() {
 
   if (isLoading) {
     return (
-      <StatContainer helpId="dashboard.stat.duty-watch">
+      <StatContainer
+        helpId="dashboard.stat.duty-watch"
+        className="hover:z-(--z-tooltip) focus-within:z-(--z-tooltip)"
+      >
         <div className="stat-figure text-primary">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -332,7 +364,11 @@ function DutyWatchStat() {
 
   if (team.length === 0) {
     return (
-      <StatContainer accentColor="warning" helpId="dashboard.stat.duty-watch">
+      <StatContainer
+        accentColor="warning"
+        helpId="dashboard.stat.duty-watch"
+        className="hover:z-(--z-tooltip) focus-within:z-(--z-tooltip)"
+      >
         <div className="stat-figure text-warning">
           <Users size={32} strokeWidth={2} />
         </div>
@@ -347,6 +383,7 @@ function DutyWatchStat() {
     <StatContainer
       accentColor={allCheckedIn ? undefined : 'warning'}
       helpId="dashboard.stat.duty-watch"
+      className="hover:z-(--z-tooltip) focus-within:z-(--z-tooltip)"
     >
       <div className={`stat-figure ${allCheckedIn ? 'text-primary' : 'text-warning'}`}>
         <Users size={32} strokeWidth={2} />
@@ -355,7 +392,77 @@ function DutyWatchStat() {
       <div
         className={`stat-value font-display text-3xl ${allCheckedIn ? 'text-primary' : 'text-warning'}`}
       >
-        {checkedInCount}/{team.length}
+        <div className="dropdown dropdown-hover dropdown-bottom dropdown-start w-full">
+          <div
+            tabIndex={0}
+            role="button"
+            className="inline-flex cursor-help items-center"
+            aria-label="View tonight's Duty Watch team"
+          >
+            {checkedInCount}/{team.length}
+          </div>
+          <div
+            tabIndex={0}
+            className="dropdown-content z-(--z-tooltip) mt-3 w-96 max-w-[calc(100vw-var(--space-8))] whitespace-normal rounded-box border border-base-300 bg-base-100 p-0 font-sans text-base-content normal-case shadow-xl"
+          >
+            <div className="space-y-1 border-b border-base-300 px-4 py-3">
+              <p className="text-sm leading-tight font-semibold text-base-content">
+                Tonight&apos;s Duty Watch
+              </p>
+              <p className="text-xs leading-5 font-normal text-base-content/60">
+                Scheduled members, their assigned watch positions, and who is currently present at
+                the unit.
+              </p>
+            </div>
+            <ul className="list rounded-box bg-base-100">
+              {team.map((assignment) => {
+                const positionLabel = getDutyWatchPositionLabel(assignment.position)
+
+                return (
+                  <li
+                    key={assignment.assignmentId}
+                    className="list-row grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 px-4 py-3"
+                  >
+                    <div className="min-w-20 shrink-0">
+                      <Chip
+                        size="sm"
+                        variant="faded"
+                        color="secondary"
+                        className="font-mono uppercase tracking-wide"
+                        title={positionLabel.fullLabel}
+                      >
+                        {positionLabel.shortLabel}
+                      </Chip>
+                    </div>
+                    <div className="list-col-grow min-w-0">
+                      <p className="truncate text-sm font-medium text-base-content">
+                        {formatDutyWatchMemberName(assignment.member)}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-base-content/60">
+                        {positionLabel.fullLabel}
+                      </p>
+                      <p className="mt-0.5 font-mono text-xs text-base-content/50">
+                        {assignment.member.serviceNumber}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-end pt-0.5">
+                      {assignment.isCheckedIn ? (
+                        <AppBadge status="success" size="sm" className="gap-1">
+                          <CheckCircle2 className="size-3.5" />
+                          Present
+                        </AppBadge>
+                      ) : (
+                        <AppBadge status="neutral" size="sm">
+                          Not In
+                        </AppBadge>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </div>
       </div>
       <div className="stat-desc flex items-center gap-1">
         {allCheckedIn ? (
@@ -486,7 +593,7 @@ export function StatusStats() {
 
   return (
     <div
-      className="stats stats-vertical 2xl:stats-horizontal w-full shadow-md animate-fade-in"
+      className="stats stats-vertical 2xl:stats-horizontal relative isolate z-(--z-dropdown) w-full overflow-visible shadow-md animate-fade-in"
       aria-live="polite"
       data-help-id="dashboard.status-stats"
     >
