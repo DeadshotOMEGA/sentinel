@@ -2,11 +2,15 @@ import * as v from 'valibot'
 import {
   AlertRuleConfigSchema,
   WorkingHoursSettingsValueSchema,
+  LegacyOperationalTimingsSettingsSchema,
   OperationalTimingsSettingsSchema,
   type OperationalTimingsResponse,
   type OperationalTimingsSettings,
-  type IsoWeekday,
   type DayOfWeek,
+  type DutyWatchRule,
+  type IsoWeekday,
+  type LegacyOperationalTimingsSettings,
+  type LocalDate,
 } from '@sentinel/contracts'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
@@ -14,13 +18,12 @@ import { logger } from '../lib/logger.js'
 import {
   applyOperationalTimingsRuntimeState,
   getDefaultOperationalTimingsSettings,
-  toCompactMilitaryTime,
   DEFAULT_BACKEND_TIMEZONE,
 } from '../lib/operational-timings-runtime.js'
 import { OperationalTimingsRepository } from '../repositories/operational-timings-repository.js'
 import { isJobSchedulerRunning, reconfigureJobScheduler, updateJobConfig } from '../jobs/index.js'
 
-const dayNameToIsoWeekday: Record<DayOfWeek, IsoWeekday> = {
+const dayNameToIsoWeekday: Record<DayOfWeek, 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   monday: 1,
   tuesday: 2,
   wednesday: 3,
@@ -33,6 +36,47 @@ const dayNameToIsoWeekday: Record<DayOfWeek, IsoWeekday> = {
 function mapLegacyDayList(days: DayOfWeek[]): IsoWeekday[] {
   const mapped = days.map((day) => dayNameToIsoWeekday[day])
   return [...new Set(mapped)].sort((left, right) => left - right)
+}
+
+const LEGACY_DUTY_WATCH_ANCHOR_MONDAY = '2026-01-05'
+
+function addDaysToLocalDate(date: string, days: number): LocalDate {
+  const [yearText, monthText, dayText] = date.split('-')
+  const next = new Date(Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText)))
+  next.setUTCDate(next.getUTCDate() + days)
+  return next.toISOString().slice(0, 10) as LocalDate
+}
+
+function convertLegacyDutyWatchRule(day: IsoWeekday, time: string): DutyWatchRule {
+  return {
+    id: `legacy-duty-watch-${day}`,
+    name: 'Duty Watch',
+    effectiveStartDate: addDaysToLocalDate(LEGACY_DUTY_WATCH_ANCHOR_MONDAY, day - 1),
+    startTime: time,
+    endTime: time,
+    recurrence: {
+      type: 'weekly',
+      weekday: day,
+      intervalWeeks: 1,
+    },
+  }
+}
+
+function migrateLegacyOperationalTimingsSettings(
+  legacySettings: LegacyOperationalTimingsSettings
+): OperationalTimingsSettings {
+  return {
+    operational: {
+      dayRolloverTime: legacySettings.operational.dayRolloverTime,
+      lockupWarningTime: legacySettings.operational.lockupWarningTime,
+      lockupCriticalTime: legacySettings.operational.lockupCriticalTime,
+      dutyWatchRules: legacySettings.operational.dutyWatchDays.map((day) =>
+        convertLegacyDutyWatchRule(day, legacySettings.operational.dutyWatchAlertTime)
+      ),
+    },
+    workingHours: legacySettings.workingHours,
+    alertRateLimits: legacySettings.alertRateLimits,
+  }
 }
 
 function parseAlertConfigRule(value: unknown): { threshold?: number; timeWindowMinutes?: number } {
@@ -67,21 +111,9 @@ function updateDdsTemplateFromTimings(
     checklistBlocks?: Array<{ id?: string; timeLabel?: string; tasks?: string[] }>
   }
 
-  const dutyWatchStart = toCompactMilitaryTime(settings.operational.dutyWatchAlertTime)
-  const regularStart = toCompactMilitaryTime(settings.workingHours.regularWeekdayStart)
-  const regularEnd = toCompactMilitaryTime(settings.workingHours.regularWeekdayEnd)
-  const summerEnd = toCompactMilitaryTime(settings.workingHours.summerWeekdayEnd)
-
-  const handoffSection = clone.responsibilitySections?.find(
-    (section) => section.id === 'handoff-duty-watch'
-  )
-  if (handoffSection?.items) {
-    handoffSection.items = handoffSection.items.map((item) =>
-      item.includes('Duty Watch starts at')
-        ? item.replace(/Duty Watch starts at\s+\d{4}/i, `Duty Watch starts at ${dutyWatchStart}`)
-        : item
-    )
-  }
+  const regularStart = settings.workingHours.regularWeekdayStart.replace(':', '')
+  const regularEnd = settings.workingHours.regularWeekdayEnd.replace(':', '')
+  const summerEnd = settings.workingHours.summerWeekdayEnd.replace(':', '')
 
   const daytimeBlock = clone.checklistBlocks?.find((block) => block.id === 'daytime-routine')
   if (daytimeBlock) {
@@ -180,10 +212,9 @@ export class OperationalTimingsService {
     const schedulerConfig = {
       timezone: DEFAULT_BACKEND_TIMEZONE,
       dayRolloverTime: settings.operational.dayRolloverTime,
-      dutyWatchAlertTime: settings.operational.dutyWatchAlertTime,
       lockupWarningTime: settings.operational.lockupWarningTime,
       lockupCriticalTime: settings.operational.lockupCriticalTime,
-      dutyWatchDays: settings.operational.dutyWatchDays,
+      dutyWatchRules: settings.operational.dutyWatchRules,
     }
 
     if (isJobSchedulerRunning()) {
@@ -229,6 +260,21 @@ export class OperationalTimingsService {
 
       logger.warn('Stored operational timings invalid, rebuilding from backfill/default sources', {
         issueCount: parsed.issues.length,
+      })
+    }
+
+    const legacyStored = await this.repository.findLegacyStoredSetting()
+    if (legacyStored) {
+      const parsedLegacy = v.safeParse(LegacyOperationalTimingsSettingsSchema, legacyStored.value)
+      if (parsedLegacy.success) {
+        const migratedSettings = migrateLegacyOperationalTimingsSettings(parsedLegacy.output)
+        const persisted = await this.repository.upsertStoredSetting(migratedSettings)
+        await this.applyRuntimeSettings(migratedSettings, 'stored', persisted.updatedAt)
+        return this.toResponse(migratedSettings, 'stored', persisted.updatedAt)
+      }
+
+      logger.warn('Legacy operational timings invalid, rebuilding from backfill/default sources', {
+        issueCount: parsedLegacy.issues.length,
       })
     }
 

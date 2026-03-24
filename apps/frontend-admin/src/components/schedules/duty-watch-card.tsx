@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/AppCard'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
+import { formatDutyWatchOccurrenceLabel, getWeekDutyWatchOccurrences } from '@/lib/duty-watch'
 
 import {
   AlertDialog,
@@ -41,7 +42,6 @@ import {
   useDutyRoles,
   useDutyRolePositions,
 } from '@/hooks/use-schedules'
-import { formatIsoWeekdayList, sortIsoWeekdays } from '@/lib/iso-weekday'
 
 interface DutyWatchCardProps {
   weekStartDate: string
@@ -483,8 +483,12 @@ export function DutyWatchCard({
   }
 
   const cardStatus = dutyWatchSchedule?.status === 'draft' ? ('warning' as const) : undefined
-  const dutyWatchDays = sortIsoWeekdays(timingsData?.settings.operational.dutyWatchDays ?? [2, 4])
-  const dutyWatchDaySummary = formatIsoWeekdayList(dutyWatchDays, 'long')
+  const dutyWatchRules = timingsData?.settings.operational.dutyWatchRules ?? []
+  const weekOccurrences = getWeekDutyWatchOccurrences(dutyWatchRules, weekStartDate)
+  const dutyWatchSummary =
+    weekOccurrences.length > 0
+      ? weekOccurrences.map((occurrence) => formatDutyWatchOccurrenceLabel(occurrence)).join(' | ')
+      : 'No Duty Watch occurrence configured for this week.'
 
   return (
     <AppCard status={cardStatus}>
@@ -495,9 +499,7 @@ export function DutyWatchCard({
               <Users className="h-5 w-5" />
               Duty Watch Team
             </AppCardTitle>
-            <AppCardDescription>
-              {dutyWatchDaySummary} evening watch. Responsible for lockup on selected nights.
-            </AppCardDescription>
+            <AppCardDescription>{dutyWatchSummary}</AppCardDescription>
           </div>
           <AppCardAction>
             <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import type { PrismaClientInstance } from '@sentinel/database'
+import { listDutyWatchOccurrencesInRange } from '@sentinel/contracts'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import {
   ScheduleRepository,
@@ -17,10 +18,7 @@ import {
   getOperationalDateISO,
   isDutyWatchNight,
 } from '../utils/operational-date.js'
-import {
-  getRuntimeDutyWatchDays,
-  jsWeekdayToIsoWeekday,
-} from '../lib/operational-timings-runtime.js'
+import { getRuntimeDutyWatchRules } from '../lib/operational-timings-runtime.js'
 import { NotFoundError, ValidationError, ConflictError } from '../middleware/error-handler.js'
 import {
   broadcastScheduleUpdate,
@@ -78,16 +76,6 @@ export interface DutyWatchTeamResult {
   operationalDate: string
   isDutyWatchNight: boolean
   team: DutyWatchTeamMember[]
-}
-
-const ISO_WEEKDAY_LABELS: Record<number, string> = {
-  1: 'Monday',
-  2: 'Tuesday',
-  3: 'Wednesday',
-  4: 'Thursday',
-  5: 'Friday',
-  6: 'Saturday',
-  7: 'Sunday',
 }
 
 // ============================================================================
@@ -633,15 +621,19 @@ export class ScheduleService {
 
     // Parse and validate night date
     const nightDateObj = new Date(input.nightDate + 'T00:00:00Z')
-    const isoWeekday = jsWeekdayToIsoWeekday(nightDateObj.getUTCDay())
-    const dutyWatchDays = getRuntimeDutyWatchDays()
+    const weekStartDate = schedule.weekStartDate.toISOString().substring(0, 10)
+    const weekEndDate = new Date(schedule.weekStartDate)
+    weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6)
+    const allowedOccurrences = listDutyWatchOccurrencesInRange(
+      getRuntimeDutyWatchRules(),
+      weekStartDate,
+      weekEndDate.toISOString().substring(0, 10)
+    )
 
-    if (!dutyWatchDays.includes(isoWeekday)) {
-      const allowedDays = dutyWatchDays
-        .map((day) => ISO_WEEKDAY_LABELS[day] ?? String(day))
-        .join(', ')
+    if (!allowedOccurrences.some((occurrence) => occurrence.date === input.nightDate)) {
+      const allowedDates = allowedOccurrences.map((occurrence) => occurrence.date).join(', ')
       throw new ValidationError(
-        `Night date must be one of the configured Duty Watch days: ${allowedDays}`
+        `Night date must match a configured Duty Watch occurrence for this week: ${allowedDates || 'none configured'}`
       )
     }
 

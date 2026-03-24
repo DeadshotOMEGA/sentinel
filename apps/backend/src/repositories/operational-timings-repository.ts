@@ -4,7 +4,8 @@ import { SettingRepository } from './setting-repository.js'
 import { ReportSettingRepository } from './report-setting-repository.js'
 import { AlertConfigRepository } from './alert-config-repository.js'
 
-export const OPERATIONAL_TIMINGS_SETTING_KEY = 'operational.timings.v1'
+export const OPERATIONAL_TIMINGS_SETTING_KEY_V1 = 'operational.timings.v1'
+export const OPERATIONAL_TIMINGS_SETTING_KEY_V2 = 'operational.timings.v2'
 
 export class OperationalTimingsRepository {
   private readonly settingRepository: SettingRepository
@@ -19,21 +20,25 @@ export class OperationalTimingsRepository {
   }
 
   async findStoredSetting() {
-    return this.settingRepository.findByKey(OPERATIONAL_TIMINGS_SETTING_KEY)
+    return this.settingRepository.findByKey(OPERATIONAL_TIMINGS_SETTING_KEY_V2)
+  }
+
+  async findLegacyStoredSetting() {
+    return this.settingRepository.findByKey(OPERATIONAL_TIMINGS_SETTING_KEY_V1)
   }
 
   async upsertStoredSetting(value: unknown) {
     const existing = await this.findStoredSetting()
 
     if (existing) {
-      return this.settingRepository.updateByKey(OPERATIONAL_TIMINGS_SETTING_KEY, {
+      return this.settingRepository.updateByKey(OPERATIONAL_TIMINGS_SETTING_KEY_V2, {
         value,
         description: 'Operational timings and alert rate-limit settings',
       })
     }
 
     return this.settingRepository.create({
-      key: OPERATIONAL_TIMINGS_SETTING_KEY,
+      key: OPERATIONAL_TIMINGS_SETTING_KEY_V2,
       value,
       category: 'app_config',
       description: 'Operational timings and alert rate-limit settings',

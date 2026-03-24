@@ -109,7 +109,7 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
     return map
   }, [eventsData])
 
-  const dutyWatchDays = timingsData?.settings.operational.dutyWatchDays ?? [2, 4]
+  const dutyWatchRules = timingsData?.settings.operational.dutyWatchRules ?? []
 
   if (schedulesError || eventsError) {
     const errMsg = schedError?.message ?? evtError?.message ?? 'Unknown error'
@@ -144,7 +144,7 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
         currentMonth={currentMonth}
         schedulesByWeek={schedulesByWeek}
         eventsByDate={eventsByDate}
-        dutyWatchDays={dutyWatchDays}
+        dutyWatchRules={dutyWatchRules}
         onWeekClick={onWeekClick}
       />
       <DdsModal />

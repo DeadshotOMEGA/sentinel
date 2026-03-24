@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type {
-  IsoWeekday,
   OperationalAlertRateLimitKey,
   OperationalTimingsSettings,
   SecurityAlertRateLimitKey,
@@ -19,8 +18,8 @@ import {
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useOperationalTimings, useUpdateOperationalTimings } from '@/hooks/use-operational-timings'
 import { TID } from '@/lib/test-ids'
-import { ISO_WEEKDAY_OPTIONS, formatIsoWeekdayList, sortIsoWeekdays } from '@/lib/iso-weekday'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
+import { DutyWatchRulesSection } from './duty-watch-rules-section'
 
 const OPERATIONAL_ALERT_FIELDS: Array<{
   key: OperationalAlertRateLimitKey
@@ -128,23 +127,6 @@ export function TimingsSettingsPanel() {
     setValidationMessage(null)
   }
 
-  const toggleDutyWatchDay = (day: IsoWeekday, checked: boolean) => {
-    updateDraft((current) => {
-      const existing = current.operational.dutyWatchDays
-      const nextDays = checked
-        ? sortIsoWeekdays([...existing, day])
-        : sortIsoWeekdays(existing.filter((value) => value !== day))
-
-      return {
-        ...current,
-        operational: {
-          ...current.operational,
-          dutyWatchDays: nextDays,
-        },
-      }
-    })
-  }
-
   const setOperationalAlertRule = (
     key: OperationalAlertRateLimitKey,
     field: 'threshold' | 'timeWindowMinutes',
@@ -198,8 +180,8 @@ export function TimingsSettingsPanel() {
       return
     }
 
-    if (draft.operational.dutyWatchDays.length < 1) {
-      setValidationMessage('Select at least one Duty Watch day.')
+    if (draft.operational.dutyWatchRules.length < 1) {
+      setValidationMessage('Add at least one Duty Watch rule.')
       return
     }
 
@@ -312,9 +294,9 @@ export function TimingsSettingsPanel() {
       <AppCard>
         <AppCardHeader>
           <AppCardTitle>Operational Clock</AppCardTitle>
-          <AppCardDescription>Day rollover and lockup/Duty Watch trigger times.</AppCardDescription>
+          <AppCardDescription>Day rollover and lockup alert trigger times.</AppCardDescription>
         </AppCardHeader>
-        <AppCardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AppCardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <fieldset className="fieldset">
             <legend className="fieldset-legend">Day rollover</legend>
             <input
@@ -377,29 +359,22 @@ export function TimingsSettingsPanel() {
             />
             <p className="label">Critical alert trigger.</p>
           </fieldset>
-
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Duty Watch alert</legend>
-            <input
-              type="time"
-              className="input input-bordered input-sm w-full"
-              value={draft.operational.dutyWatchAlertTime}
-              onChange={(event) =>
-                updateDraft((current) => ({
-                  ...current,
-                  operational: {
-                    ...current.operational,
-                    dutyWatchAlertTime: event.target.value,
-                  },
-                }))
-              }
-              disabled={isDisabled}
-              data-testid={TID.settings.timings.dutyWatchAlertTime}
-            />
-            <p className="label">Duty Watch readiness check time.</p>
-          </fieldset>
         </AppCardContent>
       </AppCard>
+
+      <DutyWatchRulesSection
+        rules={draft.operational.dutyWatchRules}
+        disabled={isDisabled}
+        onChange={(rules) =>
+          updateDraft((current) => ({
+            ...current,
+            operational: {
+              ...current.operational,
+              dutyWatchRules: rules,
+            },
+          }))
+        }
+      />
 
       <AppCard>
         <AppCardHeader>
@@ -528,34 +503,6 @@ export function TimingsSettingsPanel() {
                 disabled={isDisabled}
                 data-testid={TID.settings.timings.summerEnd}
               />
-            </fieldset>
-
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Duty Watch days</legend>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {ISO_WEEKDAY_OPTIONS.map((day) => {
-                  const checked = draft.operational.dutyWatchDays.includes(day.value)
-                  return (
-                    <label
-                      key={day.value}
-                      className="label cursor-pointer justify-start gap-2 border border-base-300 bg-base-100 px-2 py-1"
-                    >
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-sm"
-                        checked={checked}
-                        onChange={(event) => toggleDutyWatchDay(day.value, event.target.checked)}
-                        disabled={isDisabled}
-                        data-testid={TID.settings.timings.dutyWatchDay(day.value)}
-                      />
-                      <span>{day.shortLabel}</span>
-                    </label>
-                  )
-                })}
-              </div>
-              <p className="label">
-                Selected: {formatIsoWeekdayList(draft.operational.dutyWatchDays, 'long') || 'None'}
-              </p>
             </fieldset>
           </div>
         </AppCardContent>

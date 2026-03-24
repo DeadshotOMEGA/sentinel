@@ -190,8 +190,7 @@ async function main() {
         await startJobScheduler({
           timezone: DEFAULT_BACKEND_TIMEZONE,
           dayRolloverTime: runtimeSettings.operational.dayRolloverTime,
-          dutyWatchAlertTime: runtimeSettings.operational.dutyWatchAlertTime,
-          dutyWatchDays: runtimeSettings.operational.dutyWatchDays,
+          dutyWatchRules: runtimeSettings.operational.dutyWatchRules,
           lockupWarningTime: runtimeSettings.operational.lockupWarningTime,
           lockupCriticalTime: runtimeSettings.operational.lockupCriticalTime,
         })

@@ -33,7 +33,32 @@ describe('operational-date runtime timing behavior', () => {
 
   it('uses configured duty-watch days', () => {
     const settings = getDefaultOperationalTimingsSettings()
-    settings.operational.dutyWatchDays = [1, 3, 5]
+    settings.operational.dutyWatchRules = [
+      {
+        id: 'dw-mon',
+        name: 'Monday Duty Watch',
+        effectiveStartDate: '2026-03-02',
+        startTime: '19:00',
+        endTime: '22:00',
+        recurrence: { type: 'weekly', weekday: 1, intervalWeeks: 1 },
+      },
+      {
+        id: 'dw-wed',
+        name: 'Wednesday Duty Watch',
+        effectiveStartDate: '2026-03-04',
+        startTime: '19:00',
+        endTime: '22:00',
+        recurrence: { type: 'weekly', weekday: 3, intervalWeeks: 1 },
+      },
+      {
+        id: 'dw-fri',
+        name: 'Friday Duty Watch',
+        effectiveStartDate: '2026-03-06',
+        startTime: '19:00',
+        endTime: '22:00',
+        recurrence: { type: 'weekly', weekday: 5, intervalWeeks: 1 },
+      },
+    ]
 
     applyOperationalTimingsRuntimeState({
       settings,

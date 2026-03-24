@@ -1,10 +1,13 @@
 import type {
+  DutyWatchRule,
   IsoWeekday,
+  LocalDate,
   OperationalTimingsSettings,
   OperationalTimingsSource,
   OperationalAlertRateLimitKey,
   SecurityAlertRateLimitKey,
 } from '@sentinel/contracts'
+import { getDutyWatchOccurrenceForDate } from '@sentinel/contracts'
 
 export const DEFAULT_BACKEND_TIMEZONE = process.env.TIMEZONE || 'America/Winnipeg'
 
@@ -36,6 +39,37 @@ const DEFAULT_SECURITY_ALERT_RATE_LIMIT: Record<
 
 function cloneSettings(settings: OperationalTimingsSettings): OperationalTimingsSettings {
   return deepClone(settings)
+}
+
+const LEGACY_DUTY_WATCH_ANCHOR_MONDAY = '2026-01-05'
+
+function addDaysToLocalDate(date: string, days: number): string {
+  const [yearText, monthText, dayText] = date.split('-')
+  const next = new Date(Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText)))
+  next.setUTCDate(next.getUTCDate() + days)
+  return next.toISOString().slice(0, 10)
+}
+
+function createDefaultDutyWatchRule(
+  id: string,
+  name: string,
+  weekday: 1 | 2 | 3 | 4 | 5 | 6 | 7
+): DutyWatchRule {
+  return {
+    id,
+    name,
+    effectiveStartDate: addDaysToLocalDate(
+      LEGACY_DUTY_WATCH_ANCHOR_MONDAY,
+      weekday - 1
+    ) as LocalDate,
+    startTime: process.env.DUTY_WATCH_ALERT_TIME || '19:00',
+    endTime: process.env.DUTY_WATCH_ALERT_TIME || '19:00',
+    recurrence: {
+      type: 'weekly',
+      weekday,
+      intervalWeeks: 1,
+    },
+  }
 }
 
 function parseHourMinute(time: string): { hour: number; minute: number } {
@@ -81,8 +115,10 @@ export function getDefaultOperationalTimingsSettings(): OperationalTimingsSettin
       dayRolloverTime: process.env.DAY_ROLLOVER_TIME || '03:00',
       lockupWarningTime: process.env.LOCKUP_WARNING_TIME || '22:00',
       lockupCriticalTime: process.env.LOCKUP_CRITICAL_TIME || '23:00',
-      dutyWatchAlertTime: process.env.DUTY_WATCH_ALERT_TIME || '19:00',
-      dutyWatchDays: [2, 4],
+      dutyWatchRules: [
+        createDefaultDutyWatchRule('duty-watch-tuesday', 'Duty Watch', 2),
+        createDefaultDutyWatchRule('duty-watch-thursday', 'Duty Watch', 4),
+      ],
     },
     workingHours: {
       regularWeekdayStart: '08:00',
@@ -130,12 +166,19 @@ export function getRuntimeDayRolloverTime(): { hour: number; minute: number } {
   return parseHourMinute(runtimeSettings.operational.dayRolloverTime)
 }
 
-export function getRuntimeDutyWatchDays(): IsoWeekday[] {
-  return [...runtimeSettings.operational.dutyWatchDays]
+export function getRuntimeDutyWatchRules(): DutyWatchRule[] {
+  return runtimeSettings.operational.dutyWatchRules.map((rule) => ({
+    ...rule,
+    recurrence: { ...rule.recurrence },
+  }))
 }
 
-export function isRuntimeDutyWatchIsoDay(isoWeekday: number): boolean {
-  return runtimeSettings.operational.dutyWatchDays.includes(isoWeekday as IsoWeekday)
+export function getRuntimeDutyWatchOccurrence(date: LocalDate) {
+  return getDutyWatchOccurrenceForDate(runtimeSettings.operational.dutyWatchRules, date)
+}
+
+export function isRuntimeDutyWatchDate(date: LocalDate): boolean {
+  return getRuntimeDutyWatchOccurrence(date) !== null
 }
 
 export function getRuntimeAlertRateLimit(

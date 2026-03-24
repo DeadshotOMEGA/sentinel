@@ -1,4 +1,5 @@
 import cron, { type ScheduledTask } from 'node-cron'
+import type { DutyWatchRule } from '@sentinel/contracts'
 import { logger } from '../lib/logger.js'
 import { checkMissedDailyReset, runDailyReset } from './daily-reset.js'
 import { runDutyWatchAlerts } from './duty-watch-alerts.js'
@@ -11,8 +12,7 @@ import { runLockupAlerts } from './lockup-alerts.js'
 export interface JobScheduleConfig {
   dayRolloverTime: string // HH:MM format, e.g., "03:00"
   timezone: string // IANA timezone, e.g., "America/Winnipeg"
-  dutyWatchAlertTime: string // HH:MM format, e.g., "19:00"
-  dutyWatchDays: number[] // ISO weekdays (1=Mon ... 7=Sun)
+  dutyWatchRules: DutyWatchRule[]
   lockupWarningTime: string // HH:MM format, e.g., "22:00"
   lockupCriticalTime: string // HH:MM format, e.g., "23:00"
 }
@@ -20,8 +20,7 @@ export interface JobScheduleConfig {
 const DEFAULT_CONFIG: JobScheduleConfig = {
   dayRolloverTime: '03:00',
   timezone: 'America/Winnipeg',
-  dutyWatchAlertTime: '19:00',
-  dutyWatchDays: [2, 4],
+  dutyWatchRules: [],
   lockupWarningTime: '22:00',
   lockupCriticalTime: '23:00',
 }
@@ -60,16 +59,6 @@ function toCron(time: string, dayOfWeek = '*'): string {
   return `${minute} ${hour} * * ${dayOfWeek}`
 }
 
-function isoWeekdaysToCron(days: number[]): string {
-  const uniqueSorted = [...new Set(days)]
-    .filter((day) => Number.isInteger(day) && day >= 1 && day <= 7)
-    .sort((left, right) => left - right)
-  if (uniqueSorted.length === 0) {
-    return '2,4'
-  }
-  return uniqueSorted.map((day) => (day === 7 ? '0' : String(day))).join(',')
-}
-
 /**
  * Initialize and start the job scheduler
  */
@@ -97,7 +86,7 @@ export async function startJobScheduler(customConfig?: Partial<JobScheduleConfig
       },
       {
         name: 'duty-watch-alerts',
-        cronExpr: toCron(config.dutyWatchAlertTime, isoWeekdaysToCron(config.dutyWatchDays)),
+        cronExpr: '* * * * *',
         fn: runDutyWatchAlerts,
       },
       {
