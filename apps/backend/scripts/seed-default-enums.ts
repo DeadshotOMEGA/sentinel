@@ -584,8 +584,6 @@ async function ensureTags(): Promise<{
       const needsUpdate =
         existing.description !== tag.description ||
         existing.displayOrder !== tag.displayOrder ||
-        existing.chipVariant !== tag.chipVariant ||
-        existing.chipColor !== tag.chipColor ||
         existing.isPositional !== tag.isPositional
 
       if (needsUpdate) {
@@ -594,8 +592,6 @@ async function ensureTags(): Promise<{
           data: {
             description: tag.description,
             displayOrder: tag.displayOrder,
-            chipVariant: tag.chipVariant,
-            chipColor: tag.chipColor,
             isPositional: tag.isPositional,
           },
         })

@@ -226,6 +226,9 @@ export class PresenceService {
         type: 'visitor' as const,
         name: v.displayName ?? v.name,
         displayName: v.displayName ?? v.name,
+        rank: v.rankPrefix,
+        firstName: v.firstName,
+        lastName: v.lastName,
         organization: v.organization,
         visitType: v.visitTypeInfo ?? {
           id: '',
