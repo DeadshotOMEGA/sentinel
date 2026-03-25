@@ -29,20 +29,6 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
         },
       },
       {
-        id: 'quick-actions',
-        target: '[data-help-id="dashboard.quick-actions"]',
-        popover: {
-          title: 'Quick Actions',
-          description:
-            'This row contains high-frequency operations like kiosk check-in, visitor sign-in, and lockup actions.',
-          side: 'bottom',
-          align: 'start',
-        },
-        help: {
-          wikiSlug: 'operations/dashboard/quick-actions',
-        },
-      },
-      {
         id: 'status-panel',
         target: '[data-help-id="dashboard.status-stats"]',
         popover: {
@@ -75,40 +61,12 @@ export const dashboardProcedureDefinitions: ProcedureDefinition[] = [
   {
     id: 'dashboard.admin.actions.v1',
     version: 1,
-    title: 'Quick Action Safety Procedure',
-    summary: 'Follow the safe sequence for lockup and check-in actions.',
+    title: 'Dashboard Action Safety Procedure',
+    summary: 'Follow the safe sequence for dashboard control actions.',
     route: '/dashboard',
     personas: ['admin'],
     guards: [(context) => adminGuard(context.accountLevel)],
     steps: [
-      {
-        id: 'kiosk-checkin',
-        target: '[data-help-id="dashboard.quick-actions.kiosk-checkin"]',
-        popover: {
-          title: 'Kiosk Check-In',
-          description:
-            'Use this for attended kiosk intake. Confirm member/visitor identity before submitting a scan.',
-          side: 'bottom',
-          align: 'start',
-        },
-        help: {
-          wikiSlug: 'operations/day-duty/kiosk-check-in',
-        },
-      },
-      {
-        id: 'visitor-signin',
-        target: '[data-help-id="dashboard.quick-actions.visitor-signin"]',
-        popover: {
-          title: 'Visitor Sign-In',
-          description:
-            'Record visitor details accurately and issue the proper category. This affects downstream audits and reports.',
-          side: 'bottom',
-          align: 'start',
-        },
-        help: {
-          wikiSlug: 'operations/day-duty/visitor-sign-in',
-        },
-      },
       {
         id: 'lockup-action',
         target:

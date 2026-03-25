@@ -1,14 +1,18 @@
+/* global process */
 'use client'
 
 import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react'
-import { UsersRound, Search } from 'lucide-react'
+import { UsersRound, Search, Radio } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
+import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
+import { TID } from '@/lib/test-ids'
+import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
 
 type FilterType = 'all' | 'member' | 'visitor'
 
@@ -19,8 +23,11 @@ export function PersonCardGrid() {
   const checkoutVisitor = useCheckoutVisitor()
   const member = useAuthStore((state) => state.member)
   const canCheckout = (member?.accountLevel ?? 0) >= AccountLevel.QUARTERMASTER
+  const isDevMode = process.env.NODE_ENV === 'development'
+  const isSentinelSystem = isSentinelBootstrapServiceNumber(member?.serviceNumber)
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   // Create lookup map: memberId -> position code
@@ -154,7 +161,7 @@ export function PersonCardGrid() {
         </div>
 
         {/* Filters + Search */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <div className="flex flex-wrap gap-1">
             <button
               className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
@@ -178,6 +185,16 @@ export function PersonCardGrid() {
               Visitors ({visitorCount})
             </button>
           </div>
+          {(isDevMode || isSentinelSystem) && (
+            <button
+              className="btn btn-xs btn-ghost border-base-300 text-base-content/70 hover:text-base-content"
+              onClick={() => setIsScanModalOpen(true)}
+              data-testid={TID.dashboard.quickAction.simulateScan}
+            >
+              <Radio className="size-[1em] shrink-0" />
+              Simulate Scan
+            </button>
+          )}
           <div className="relative w-full sm:w-auto">
             <Search
               size={14}
@@ -195,6 +212,10 @@ export function PersonCardGrid() {
           </div>
         </div>
       </div>
+
+      {(isDevMode || isSentinelSystem) && (
+        <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
+      )}
 
       {/* Grid or empty state */}
       <div aria-live="polite" aria-atomic="false">

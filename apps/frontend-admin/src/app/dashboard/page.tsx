@@ -1,5 +1,4 @@
 import { SecurityAlertsBar } from '@/components/dashboard/security-alerts-bar'
-import { QuickActionButtons } from '@/components/dashboard/quick-action-buttons'
 import { StatusStats } from '@/components/dashboard/status-stats'
 import { PersonCardGrid } from '@/components/dashboard/person-card-grid'
 import { DashboardHelpLauncher } from '@/components/help/dashboard-help-launcher'
@@ -19,11 +18,6 @@ export default function DashboardPage() {
       <section>
         <StatusStats />
       </section>
-
-      <section>
-        <QuickActionButtons />
-      </section>
-
       {/* Presence Card Grid */}
       <section>
         <PersonCardGrid />
