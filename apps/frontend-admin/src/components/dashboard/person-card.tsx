@@ -2,7 +2,13 @@
 
 import { memo } from 'react'
 import { Clock, User, Building2, LogOut } from 'lucide-react'
-import { Chip, fadedColorClasses, type ChipColor, type ChipVariant } from '@/components/ui/chip'
+import {
+  Chip,
+  fadedColorClasses,
+  normalizeChipColor,
+  type ChipColor,
+  type ChipVariant,
+} from '@/components/ui/chip'
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { formatPersonLabel } from '@/lib/name-format'
@@ -47,12 +53,90 @@ function getOptionalString(person: PresentPerson, key: string): string | undefin
   return typeof value === 'string' && value.trim() ? value : undefined
 }
 
+function getAvatarColorClass(chipColor?: string): string {
+  if (!chipColor) {
+    return CHIP_COLOR_AVATAR_CLASSES.default
+  }
+
+  const normalized = normalizeChipColor(chipColor as ChipColor)
+  return CHIP_COLOR_AVATAR_CLASSES[normalized] || CHIP_COLOR_AVATAR_CLASSES.default
+}
+
+function getVisitorTypeName(person: PresentPerson): string | undefined {
+  return person.visitType?.name?.trim().toLowerCase()
+}
+
+function getVisitorTitle(person: PresentPerson, displayName: string): string {
+  const visitorType = getVisitorTypeName(person)
+  const firstName = getOptionalString(person, 'firstName')
+  const lastName = getOptionalString(person, 'lastName')
+
+  if (visitorType !== 'military' && firstName && lastName) {
+    return `${firstName} ${lastName}`
+  }
+
+  return displayName
+}
+
+function getVisitorSubtitle(person: PresentPerson): string | undefined {
+  if (person.organization) {
+    return person.organization
+  }
+
+  const visitReason = person.visitReason?.trim()
+  if (!visitReason) return undefined
+
+  const firstSegment = visitReason
+    .split('|')
+    .map((segment) => segment.trim())
+    .find(Boolean)
+
+  if (!firstSegment) return undefined
+
+  const militaryMatch = firstSegment.match(/^Military visitor from\s+(.+)$/i)
+  return militaryMatch?.[1]?.trim() || undefined
+}
+
+function getVisitorSummary(person: PresentPerson): string | undefined {
+  const visitReason = person.visitReason?.trim()
+  if (!visitReason) return undefined
+
+  const segments = visitReason
+    .split('|')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+
+  if (segments.length === 0) return undefined
+
+  const organization = person.organization?.trim()
+  const firstSegment = segments[0]
+
+  if (
+    organization &&
+    firstSegment.localeCompare(`Contractor visit for ${organization}`, undefined, {
+      sensitivity: 'accent',
+    }) === 0
+  ) {
+    segments.shift()
+  } else if (/^Military visitor from\s+.+$/i.test(firstSegment)) {
+    segments.shift()
+  }
+
+  if (segments[0]?.localeCompare('Other', undefined, { sensitivity: 'accent' }) === 0) {
+    segments.shift()
+  }
+
+  if (segments.length === 0) return undefined
+
+  return segments.join(' • ')
+}
+
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   // Priority 1: Active DDS
   if (isDds) {
     const ddsTag = person.tags?.find((t) => t.name === 'DDS')
     const colorClass = ddsTag?.chipColor
-      ? CHIP_COLOR_AVATAR_CLASSES[ddsTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
+      ? getAvatarColorClass(ddsTag.chipColor)
       : 'border border-error bg-error/10 text-error'
     return (
       <div className="avatar avatar-placeholder" aria-label="Duty Day Staff">
@@ -66,9 +150,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
   // Priority 2: Duty Watch position (qualification tag, like DDS)
   if (dutyPosition) {
     const posTag = person.tags?.find((t) => t.name === dutyPosition)
-    const colorClass = posTag?.chipColor
-      ? CHIP_COLOR_AVATAR_CLASSES[posTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
-      : POSITION_COLOR
+    const colorClass = posTag?.chipColor ? getAvatarColorClass(posTag.chipColor) : POSITION_COLOR
     return (
       <div className="avatar avatar-placeholder" aria-label={`On duty as ${dutyPosition}`}>
         <div className={`w-10 rounded-full ${colorClass}`}>
@@ -93,7 +175,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
       const abbrev =
         displayTag.name.match(/[A-Z]/g)?.join('') || displayTag.name.slice(0, 2).toUpperCase()
       const colorClass = displayTag.chipColor
-        ? CHIP_COLOR_AVATAR_CLASSES[displayTag.chipColor] || CHIP_COLOR_AVATAR_CLASSES.default
+        ? getAvatarColorClass(displayTag.chipColor)
         : CHIP_COLOR_AVATAR_CLASSES.default
       return (
         <div className="avatar avatar-placeholder" aria-label={`Tagged as ${displayTag.name}`}>
@@ -113,7 +195,10 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
     .slice(0, 2)
     .toUpperCase()
   return (
-    <div className="avatar avatar-placeholder" aria-label={getOptionalDisplayName(person) ?? person.name}>
+    <div
+      className="avatar avatar-placeholder"
+      aria-label={getOptionalDisplayName(person) ?? person.name}
+    >
       <div className="w-10 rounded-full border border-base-300 bg-base-200 text-base-content/60">
         <span className="text-xs font-bold">{initials}</span>
       </div>
@@ -147,11 +232,15 @@ export const PersonCard = memo(function PersonCard({
   const divisionCode = getOptionalString(person, 'divisionCode') ?? person.division
 
   const fallbackSplit = displayName.split(',')
-  const memberTitle = person.rank && memberLastName
-    ? `${person.rank} ${memberLastName}`
-    : fallbackSplit[0]?.trim() || displayName
+  const memberTitle =
+    person.rank && memberLastName
+      ? `${person.rank} ${memberLastName}`
+      : fallbackSplit[0]?.trim() || displayName
   const memberSubtitle = memberFirstName ?? memberInitials
   const memberFallbackSubtitle = fallbackSplit.slice(1).join(',').trim()
+  const visitorTitle = getVisitorTitle(person, displayName)
+  const visitorSubtitle = getVisitorSubtitle(person)
+  const visitorSummary = getVisitorSummary(person)
 
   // Determine which tag the avatar is displaying (if any) to suppress from chip row
   const avatarTagId = (() => {
@@ -168,10 +257,10 @@ export const PersonCard = memo(function PersonCard({
 
   return (
     <div
-      className={`card card-elevated border h-full ${cardBorderClass}`}
+      className={`card card-elevated border h-full min-w-0 ${cardBorderClass}`}
       data-testid={TID.dashboard.personCard(person.id)}
     >
-      <div className="card-body p-3.5 gap-2.5">
+      <div className="card-body min-w-0 p-3.5 gap-2.5">
         {/* Header - different layout for member vs visitor */}
         {isMember ? (
           <div className="flex items-start gap-2">
@@ -184,14 +273,16 @@ export const PersonCard = memo(function PersonCard({
                 </p>
               )}
             </div>
-            {divisionCode && <span className="badge badge-outline badge-sm shrink-0">{divisionCode}</span>}
+            {divisionCode && (
+              <span className="badge badge-outline badge-sm shrink-0">{divisionCode}</span>
+            )}
           </div>
         ) : (
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-[0.95rem] leading-tight truncate">{displayName}</h3>
-              {person.organization && (
-                <p className="text-xs text-base-content/60 truncate">{person.organization}</p>
+              <h3 className="font-bold text-[0.95rem] leading-tight truncate">{visitorTitle}</h3>
+              {visitorSubtitle && (
+                <p className="text-xs text-base-content/60 truncate">{visitorSubtitle}</p>
               )}
             </div>
             {person.visitType && (
@@ -231,20 +322,20 @@ export const PersonCard = memo(function PersonCard({
                 ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-1 text-xs text-base-content/70">
+            <div className="flex min-w-0 flex-col gap-1 text-xs text-base-content/70">
               {person.hostName && (
-                <span className="flex items-center gap-1">
-                  <User size={10} />
+                <span className="flex min-w-0 items-start gap-1">
+                  <User size={10} className="mt-0.5 shrink-0" />
                   <span className="truncate">
                     <span className="text-base-content/55">Host:</span> {person.hostName}
                   </span>
                 </span>
               )}
-              {person.visitReason && (
-                <span className="flex items-center gap-1">
-                  <Building2 size={10} />
-                  <span className="truncate">
-                    <span className="text-base-content/55">Note:</span> {person.visitReason}
+              {visitorSummary && (
+                <span className="flex min-w-0 items-start gap-1">
+                  <Building2 size={10} className="mt-0.5 shrink-0" />
+                  <span className="line-clamp-2 break-words">
+                    <span className="text-base-content/55">Details:</span> {visitorSummary}
                   </span>
                 </span>
               )}

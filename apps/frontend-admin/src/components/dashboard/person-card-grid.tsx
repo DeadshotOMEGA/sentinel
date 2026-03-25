@@ -205,7 +205,7 @@ export function PersonCardGrid() {
             {filteredPeople.map((person: PresentPerson, index: number) => (
               <div
                 key={`${person.type}-${person.id}`}
-                className={`h-full${hasAnimated.current ? '' : ' animate-fade-in-up'}`}
+                className={`h-full min-w-0${hasAnimated.current ? '' : ' animate-fade-in-up'}`}
                 style={
                   hasAnimated.current
                     ? undefined
