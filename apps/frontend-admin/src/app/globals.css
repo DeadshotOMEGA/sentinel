@@ -2,25 +2,29 @@
 
 @import '../styles/tokens.css';
 @import 'driver.js/dist/driver.css';
+@import 'react-simple-keyboard/build/css/index.css';
 
 @import 'tailwindcss';
 
 @plugin "daisyui" {
-  themes: sentinel --default, emerald, business --prefersdark;
+  themes:
+    sentinel --default,
+    emerald,
+    business --prefersdark;
 }
 
 @plugin "daisyui/theme" {
-  name: "Sentinel";
+  name: 'Sentinel';
   default: true;
   prefersdark: false;
-  color-scheme: "light";
+  color-scheme: 'light';
   --color-base-100: oklch(100% 0 0);
   --color-base-200: oklch(98% 0.001 106.423);
   --color-base-300: oklch(97% 0.001 106.424);
   --color-base-400: oklch(92% 0.003 48.717);
   --color-base-500: oklch(86% 0.005 56.366);
   --color-base-content: oklch(20% 0.042 265.755);
-  --color-primary: oklch(60.5% 0.216 257.160);
+  --color-primary: oklch(60.5% 0.216 257.16);
   --color-primary-content: oklch(97% 0.014 254.604);
   --color-primary-fadded: oklch(93% 0.032 255.585);
   --color-primary-fadded-content: oklch(37% 0.146 265.522);
@@ -76,11 +80,15 @@
     font-family: var(--font-sans);
   }
 
-  h1, h2 {
+  h1,
+  h2 {
     font-family: var(--font-display);
   }
 
-  code, kbd, pre, samp {
+  code,
+  kbd,
+  pre,
+  samp {
     font-family: var(--font-mono);
   }
 }
@@ -122,7 +130,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 currentColor;
   }
   50% {
@@ -131,7 +140,8 @@
 }
 
 @keyframes status-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -166,6 +176,65 @@
 
 .animate-status-pulse {
   animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* ========================================
+   SIMPLE KEYBOARD KIOSK STYLING
+   Dense, touch-first keyboard for the visitor modal
+   ======================================== */
+
+.kiosk-simple-keyboard.hg-theme-default {
+  background: transparent;
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-row {
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button {
+  height: clamp(2.75rem, 4.6vh, 3.25rem);
+  border: 1px solid oklch(86% 0.005 56.366);
+  border-radius: 0.625rem;
+  background: oklch(100% 0 0);
+  box-shadow: var(--shadow-0);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.7vw + 0.85rem, 1.125rem);
+  font-weight: 500;
+  color: oklch(20% 0.042 265.755);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button:active,
+.kiosk-simple-keyboard.hg-theme-default .hg-button.hg-activeButton {
+  background: oklch(93% 0.032 255.585);
+  color: oklch(37% 0.146 265.522);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{enter}'] {
+  background: oklch(60.5% 0.216 257.16);
+  color: oklch(97% 0.014 254.604);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{bksp}'] {
+  background: oklch(96% 0.001 286.375);
+  color: oklch(21% 0.006 285.885);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{next}'] {
+  background: oklch(95% 0.045 203.388);
+  color: oklch(39% 0.07 227.392);
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{space}'] {
+  flex: 1.35;
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{next}'] {
+  flex: 1.05;
+}
+
+.kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{enter}'] {
+  flex: 1.2;
 }
 
 /* ========================================
@@ -233,12 +302,7 @@
    ======================================== */
 
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(95% 0 0) 0%,
-    oklch(98% 0 0) 50%,
-    oklch(95% 0 0) 100%
-  );
+  background: linear-gradient(90deg, oklch(95% 0 0) 0%, oklch(98% 0 0) 50%, oklch(95% 0 0) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -371,23 +435,33 @@ html[data-theme='business'] .backend-status-badge {
 }
 
 @container (min-width: 640px) {
-  .presence-card-grid { grid-template-columns: repeat(2, 1fr); }
+  .presence-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @container (min-width: 900px) {
-  .presence-card-grid { grid-template-columns: repeat(3, 1fr); }
+  .presence-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @container (min-width: 1100px) {
-  .presence-card-grid { grid-template-columns: repeat(4, 1fr); }
+  .presence-card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @container (min-width: 1350px) {
-  .presence-card-grid { grid-template-columns: repeat(5, 1fr); }
+  .presence-card-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 @container (min-width: 1650px) {
-  .presence-card-grid { grid-template-columns: repeat(6, 1fr); }
+  .presence-card-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 .presence-section-header {

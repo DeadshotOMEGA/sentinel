@@ -1,5 +1,24 @@
 // Visitor-related types
 
+export type VisitorVisitType =
+  | 'contractor'
+  | 'guest'
+  | 'official'
+  | 'other'
+  | 'military'
+  | 'recruitment'
+
+export type VisitorVisitPurpose = 'member_invited' | 'appointment' | 'information' | 'other'
+
+export type VisitorRecruitmentStep =
+  | 'information'
+  | 'testing'
+  | 'interview'
+  | 'medical_admin'
+  | 'other'
+
+export type VisitorCheckInMethod = 'kiosk' | 'admin_manual' | 'kiosk_self_service'
+
 export interface Visitor {
   id: string
   name: string
@@ -8,9 +27,14 @@ export interface Visitor {
   lastName?: string
   displayName?: string
   organization?: string
-  visitType: string
+  unit?: string
+  mobilePhone?: string
+  visitType: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
+  visitPurpose?: VisitorVisitPurpose
+  purposeDetails?: string
+  recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
   hostMemberId?: string
   checkInTime: Date
@@ -19,7 +43,7 @@ export interface Visitor {
   kioskId: string
   createdAt: Date
   adminNotes?: string
-  checkInMethod?: string
+  checkInMethod?: VisitorCheckInMethod
   createdByAdmin?: string
 }
 
@@ -29,9 +53,14 @@ export interface CreateVisitorInput {
   firstName?: string
   lastName?: string
   organization?: string
-  visitType: string
+  unit?: string
+  mobilePhone?: string
+  visitType: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
+  visitPurpose?: VisitorVisitPurpose
+  purposeDetails?: string
+  recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
   hostMemberId?: string
   checkInTime?: Date
@@ -39,7 +68,7 @@ export interface CreateVisitorInput {
   temporaryBadgeId?: string
   kioskId: string
   adminNotes?: string
-  checkInMethod?: string
+  checkInMethod?: VisitorCheckInMethod
   createdByAdmin?: string
 }
 
@@ -49,9 +78,14 @@ export interface UpdateVisitorInput {
   firstName?: string
   lastName?: string
   organization?: string
-  visitType?: string
+  unit?: string
+  mobilePhone?: string
+  visitType?: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
+  visitPurpose?: VisitorVisitPurpose
+  purposeDetails?: string
+  recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
   hostMemberId?: string
   checkInTime?: Date
@@ -59,5 +93,6 @@ export interface UpdateVisitorInput {
   temporaryBadgeId?: string
   kioskId?: string
   adminNotes?: string
-  checkInMethod?: string
+  checkInMethod?: VisitorCheckInMethod
+  createdByAdmin?: string
 }

@@ -2,9 +2,26 @@
 
 import { startTransition, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CalendarDays, Clock3, IdCard, ScanLine, Shield, Users } from 'lucide-react'
+import {
+  AlertTriangle,
+  CalendarDays,
+  ChevronRight,
+  Clock3,
+  IdCard,
+  ScanLine,
+  Shield,
+  Users,
+} from 'lucide-react'
+import { VisitorSelfSigninModal } from '@/components/kiosk/visitor-self-signin-modal'
 import { LockupOptionsModal } from '@/components/lockup/lockup-options-modal'
 import { KioskResponsibilityPrompt } from '@/components/kiosk/kiosk-responsibility-prompt'
+import {
+  AppCard,
+  AppCardContent,
+  AppCardDescription,
+  AppCardHeader,
+  AppCardTitle,
+} from '@/components/ui/AppCard'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { useAcceptDds, useDdsStatus, useKioskResponsibilityState } from '@/hooks/use-dds'
@@ -101,7 +118,7 @@ const INITIAL_SCREEN_STATE: ScreenState = {
   status: 'neutral',
   title: 'Welcome Aboard',
   message:
-    'Members: scan your badge to check in or out. Visitors: please report to the Quartermaster desk.',
+    'Members: scan your badge to check in or out. Visitors: tap Visitor Sign-In to start the guided check-in process.',
 }
 
 function toLocalIsoDate(date: Date): string {
@@ -334,6 +351,7 @@ export function KioskCheckinScreen({
   )
   const [responsibilityDismissed, setResponsibilityDismissed] = useState(false)
   const [responsibilityError, setResponsibilityError] = useState<string | null>(null)
+  const [showVisitorSelfSignin, setShowVisitorSelfSignin] = useState(false)
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
@@ -361,6 +379,7 @@ export function KioskCheckinScreen({
       setSerial('')
       setScreenState(INITIAL_SCREEN_STATE)
       setShowLockupOptions(false)
+      setShowVisitorSelfSignin(false)
       setPendingLockup(null)
       setResponsibilityContext(null)
       setResponsibilityDismissed(false)
@@ -616,10 +635,10 @@ export function KioskCheckinScreen({
   })
 
   useEffect(() => {
-    if (isActive && !showLockupOptions && !scanMutation.isPending) {
+    if (isActive && !showLockupOptions && !showVisitorSelfSignin && !scanMutation.isPending) {
       refocusBadgeInput()
     }
-  }, [isActive, showLockupOptions, scanMutation.isPending])
+  }, [isActive, showLockupOptions, showVisitorSelfSignin, scanMutation.isPending])
 
   const resolveLockupCheckout = async (action: 'transfer' | 'execute') => {
     if (!pendingLockup) return
@@ -821,7 +840,8 @@ export function KioskCheckinScreen({
                 Front Entrance Kiosk
               </h1>
               <p className="mt-2 text-sm sm:text-base text-base-content/80">
-                Welcome to the Unit. Scan your badge for check-in and check-out.
+                Welcome to the Unit. Members scan badges here. Visitors can use the self sign-in
+                touch flow.
               </p>
             </div>
 
@@ -914,6 +934,34 @@ export function KioskCheckinScreen({
                 </form>
               </div>
             </div>
+
+            <AppCard status="info">
+              <AppCardHeader>
+                <AppCardTitle className="font-display flex items-center gap-2 text-xl">
+                  <Users className="h-5 w-5 text-info" />
+                  Visitor Self Sign-In
+                </AppCardTitle>
+                <AppCardDescription>
+                  Visitors can check into the Unit here without staff using the physical keyboard.
+                </AppCardDescription>
+              </AppCardHeader>
+              <AppCardContent>
+                <div className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-xl w-full justify-between"
+                    onClick={() => setShowVisitorSelfSignin(true)}
+                  >
+                    <span className="text-left">Visitor Sign-In</span>
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                  <p className="text-sm text-base-content/70">
+                    Guests, military visitors, recruitment visitors, and contractors can complete a
+                    guided touch-screen check-in here.
+                  </p>
+                </div>
+              </AppCardContent>
+            </AppCard>
 
             <div
               className={`card card-border border-l-8 rounded-box flex-1 ${isReadyState ? 'min-h-40 sm:min-h-44' : 'min-h-52 sm:min-h-56'} ${statusSurfaceClass} ${statusAccentClass}`}
@@ -1066,7 +1114,8 @@ export function KioskCheckinScreen({
                   <div className="text-sm leading-snug text-base-content/70 space-y-2">
                     <p>Shows DDS and Duty Watch obligations for current/upcoming weeks.</p>
                     <p className="rounded bg-info-fadded text-info-fadded-content px-2 py-1">
-                      Visitors are processed with staff assistance.
+                      Visitors can use the self sign-in flow on the kiosk or speak to staff for
+                      assistance.
                     </p>
                   </div>
                 ) : (
@@ -1164,6 +1213,11 @@ export function KioskCheckinScreen({
           onCheckoutComplete={resolveLockupCheckout}
         />
       )}
+      <VisitorSelfSigninModal
+        open={showVisitorSelfSignin}
+        onOpenChange={setShowVisitorSelfSignin}
+        kioskId={KIOSK_ID}
+      />
     </>
   )
 }

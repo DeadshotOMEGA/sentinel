@@ -22882,9 +22882,14 @@ export namespace Prisma {
     lastName: string | null
     displayName: string | null
     organization: string | null
+    unit: string | null
+    mobilePhone: string | null
     visitType: string | null
     visitTypeId: string | null
     visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    recruitmentStep: string | null
     eventId: string | null
     hostMemberId: string | null
     checkInTime: Date | null
@@ -22905,9 +22910,14 @@ export namespace Prisma {
     lastName: string | null
     displayName: string | null
     organization: string | null
+    unit: string | null
+    mobilePhone: string | null
     visitType: string | null
     visitTypeId: string | null
     visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    recruitmentStep: string | null
     eventId: string | null
     hostMemberId: string | null
     checkInTime: Date | null
@@ -22928,9 +22938,14 @@ export namespace Prisma {
     lastName: number
     displayName: number
     organization: number
+    unit: number
+    mobilePhone: number
     visitType: number
     visitTypeId: number
     visitReason: number
+    visitPurpose: number
+    purposeDetails: number
+    recruitmentStep: number
     eventId: number
     hostMemberId: number
     checkInTime: number
@@ -22953,9 +22968,14 @@ export namespace Prisma {
     lastName?: true
     displayName?: true
     organization?: true
+    unit?: true
+    mobilePhone?: true
     visitType?: true
     visitTypeId?: true
     visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    recruitmentStep?: true
     eventId?: true
     hostMemberId?: true
     checkInTime?: true
@@ -22976,9 +22996,14 @@ export namespace Prisma {
     lastName?: true
     displayName?: true
     organization?: true
+    unit?: true
+    mobilePhone?: true
     visitType?: true
     visitTypeId?: true
     visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    recruitmentStep?: true
     eventId?: true
     hostMemberId?: true
     checkInTime?: true
@@ -22999,9 +23024,14 @@ export namespace Prisma {
     lastName?: true
     displayName?: true
     organization?: true
+    unit?: true
+    mobilePhone?: true
     visitType?: true
     visitTypeId?: true
     visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    recruitmentStep?: true
     eventId?: true
     hostMemberId?: true
     checkInTime?: true
@@ -23095,9 +23125,14 @@ export namespace Prisma {
     lastName: string | null
     displayName: string | null
     organization: string | null
+    unit: string | null
+    mobilePhone: string | null
     visitType: string
     visitTypeId: string | null
     visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    recruitmentStep: string | null
     eventId: string | null
     hostMemberId: string | null
     checkInTime: Date
@@ -23135,9 +23170,14 @@ export namespace Prisma {
     lastName?: boolean
     displayName?: boolean
     organization?: boolean
+    unit?: boolean
+    mobilePhone?: boolean
     visitType?: boolean
     visitTypeId?: boolean
     visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    recruitmentStep?: boolean
     eventId?: boolean
     hostMemberId?: boolean
     checkInTime?: boolean
@@ -23163,9 +23203,14 @@ export namespace Prisma {
     lastName?: boolean
     displayName?: boolean
     organization?: boolean
+    unit?: boolean
+    mobilePhone?: boolean
     visitType?: boolean
     visitTypeId?: boolean
     visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    recruitmentStep?: boolean
     eventId?: boolean
     hostMemberId?: boolean
     checkInTime?: boolean
@@ -23191,9 +23236,14 @@ export namespace Prisma {
     lastName?: boolean
     displayName?: boolean
     organization?: boolean
+    unit?: boolean
+    mobilePhone?: boolean
     visitType?: boolean
     visitTypeId?: boolean
     visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    recruitmentStep?: boolean
     eventId?: boolean
     hostMemberId?: boolean
     checkInTime?: boolean
@@ -23219,9 +23269,14 @@ export namespace Prisma {
     lastName?: boolean
     displayName?: boolean
     organization?: boolean
+    unit?: boolean
+    mobilePhone?: boolean
     visitType?: boolean
     visitTypeId?: boolean
     visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    recruitmentStep?: boolean
     eventId?: boolean
     hostMemberId?: boolean
     checkInTime?: boolean
@@ -23234,7 +23289,7 @@ export namespace Prisma {
     createdByAdmin?: boolean
   }
 
-  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "rankPrefix" | "firstName" | "lastName" | "displayName" | "organization" | "visitType" | "visitTypeId" | "visitReason" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
+  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "rankPrefix" | "firstName" | "lastName" | "displayName" | "organization" | "unit" | "mobilePhone" | "visitType" | "visitTypeId" | "visitReason" | "visitPurpose" | "purposeDetails" | "recruitmentStep" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
   export type VisitorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
@@ -23274,9 +23329,14 @@ export namespace Prisma {
       lastName: string | null
       displayName: string | null
       organization: string | null
+      unit: string | null
+      mobilePhone: string | null
       visitType: string
       visitTypeId: string | null
       visitReason: string | null
+      visitPurpose: string | null
+      purposeDetails: string | null
+      recruitmentStep: string | null
       eventId: string | null
       hostMemberId: string | null
       checkInTime: Date
@@ -23722,9 +23782,14 @@ export namespace Prisma {
     readonly lastName: FieldRef<"Visitor", 'String'>
     readonly displayName: FieldRef<"Visitor", 'String'>
     readonly organization: FieldRef<"Visitor", 'String'>
+    readonly unit: FieldRef<"Visitor", 'String'>
+    readonly mobilePhone: FieldRef<"Visitor", 'String'>
     readonly visitType: FieldRef<"Visitor", 'String'>
     readonly visitTypeId: FieldRef<"Visitor", 'String'>
     readonly visitReason: FieldRef<"Visitor", 'String'>
+    readonly visitPurpose: FieldRef<"Visitor", 'String'>
+    readonly purposeDetails: FieldRef<"Visitor", 'String'>
+    readonly recruitmentStep: FieldRef<"Visitor", 'String'>
     readonly eventId: FieldRef<"Visitor", 'String'>
     readonly hostMemberId: FieldRef<"Visitor", 'String'>
     readonly checkInTime: FieldRef<"Visitor", 'DateTime'>
@@ -65453,9 +65518,14 @@ export namespace Prisma {
     lastName: 'lastName',
     displayName: 'displayName',
     organization: 'organization',
+    unit: 'unit',
+    mobilePhone: 'mobilePhone',
     visitType: 'visitType',
     visitTypeId: 'visitTypeId',
     visitReason: 'visitReason',
+    visitPurpose: 'visitPurpose',
+    purposeDetails: 'purposeDetails',
+    recruitmentStep: 'recruitmentStep',
     eventId: 'eventId',
     hostMemberId: 'hostMemberId',
     checkInTime: 'checkInTime',
@@ -67432,9 +67502,14 @@ export namespace Prisma {
     lastName?: StringNullableFilter<"Visitor"> | string | null
     displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
+    unit?: StringNullableFilter<"Visitor"> | string | null
+    mobilePhone?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
     visitReason?: StringNullableFilter<"Visitor"> | string | null
+    visitPurpose?: StringNullableFilter<"Visitor"> | string | null
+    purposeDetails?: StringNullableFilter<"Visitor"> | string | null
+    recruitmentStep?: StringNullableFilter<"Visitor"> | string | null
     eventId?: UuidNullableFilter<"Visitor"> | string | null
     hostMemberId?: UuidNullableFilter<"Visitor"> | string | null
     checkInTime?: DateTimeFilter<"Visitor"> | Date | string
@@ -67460,9 +67535,14 @@ export namespace Prisma {
     lastName?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     organization?: SortOrderInput | SortOrder
+    unit?: SortOrderInput | SortOrder
+    mobilePhone?: SortOrderInput | SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrderInput | SortOrder
     visitReason?: SortOrderInput | SortOrder
+    visitPurpose?: SortOrderInput | SortOrder
+    purposeDetails?: SortOrderInput | SortOrder
+    recruitmentStep?: SortOrderInput | SortOrder
     eventId?: SortOrderInput | SortOrder
     hostMemberId?: SortOrderInput | SortOrder
     checkInTime?: SortOrder
@@ -67491,9 +67571,14 @@ export namespace Prisma {
     lastName?: StringNullableFilter<"Visitor"> | string | null
     displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
+    unit?: StringNullableFilter<"Visitor"> | string | null
+    mobilePhone?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
     visitReason?: StringNullableFilter<"Visitor"> | string | null
+    visitPurpose?: StringNullableFilter<"Visitor"> | string | null
+    purposeDetails?: StringNullableFilter<"Visitor"> | string | null
+    recruitmentStep?: StringNullableFilter<"Visitor"> | string | null
     eventId?: UuidNullableFilter<"Visitor"> | string | null
     hostMemberId?: UuidNullableFilter<"Visitor"> | string | null
     checkInTime?: DateTimeFilter<"Visitor"> | Date | string
@@ -67519,9 +67604,14 @@ export namespace Prisma {
     lastName?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     organization?: SortOrderInput | SortOrder
+    unit?: SortOrderInput | SortOrder
+    mobilePhone?: SortOrderInput | SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrderInput | SortOrder
     visitReason?: SortOrderInput | SortOrder
+    visitPurpose?: SortOrderInput | SortOrder
+    purposeDetails?: SortOrderInput | SortOrder
+    recruitmentStep?: SortOrderInput | SortOrder
     eventId?: SortOrderInput | SortOrder
     hostMemberId?: SortOrderInput | SortOrder
     checkInTime?: SortOrder
@@ -67548,9 +67638,14 @@ export namespace Prisma {
     lastName?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     displayName?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     organization?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    unit?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    mobilePhone?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     visitType?: StringWithAggregatesFilter<"Visitor"> | string
     visitTypeId?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
     visitReason?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    visitPurpose?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    purposeDetails?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
+    recruitmentStep?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     eventId?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
     hostMemberId?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
     checkInTime?: DateTimeWithAggregatesFilter<"Visitor"> | Date | string
@@ -71808,8 +71903,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -71831,9 +71931,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -71854,8 +71959,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -71877,9 +71987,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71900,9 +72015,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -71923,8 +72043,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -71941,9 +72066,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -76159,9 +76289,14 @@ export namespace Prisma {
     lastName?: SortOrder
     displayName?: SortOrder
     organization?: SortOrder
+    unit?: SortOrder
+    mobilePhone?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
     visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    recruitmentStep?: SortOrder
     eventId?: SortOrder
     hostMemberId?: SortOrder
     checkInTime?: SortOrder
@@ -76182,9 +76317,14 @@ export namespace Prisma {
     lastName?: SortOrder
     displayName?: SortOrder
     organization?: SortOrder
+    unit?: SortOrder
+    mobilePhone?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
     visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    recruitmentStep?: SortOrder
     eventId?: SortOrder
     hostMemberId?: SortOrder
     checkInTime?: SortOrder
@@ -76205,9 +76345,14 @@ export namespace Prisma {
     lastName?: SortOrder
     displayName?: SortOrder
     organization?: SortOrder
+    unit?: SortOrder
+    mobilePhone?: SortOrder
     visitType?: SortOrder
     visitTypeId?: SortOrder
     visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    recruitmentStep?: SortOrder
     eventId?: SortOrder
     hostMemberId?: SortOrder
     checkInTime?: SortOrder
@@ -83264,8 +83409,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -83286,9 +83436,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -83497,9 +83652,14 @@ export namespace Prisma {
     lastName?: StringNullableFilter<"Visitor"> | string | null
     displayName?: StringNullableFilter<"Visitor"> | string | null
     organization?: StringNullableFilter<"Visitor"> | string | null
+    unit?: StringNullableFilter<"Visitor"> | string | null
+    mobilePhone?: StringNullableFilter<"Visitor"> | string | null
     visitType?: StringFilter<"Visitor"> | string
     visitTypeId?: UuidNullableFilter<"Visitor"> | string | null
     visitReason?: StringNullableFilter<"Visitor"> | string | null
+    visitPurpose?: StringNullableFilter<"Visitor"> | string | null
+    purposeDetails?: StringNullableFilter<"Visitor"> | string | null
+    recruitmentStep?: StringNullableFilter<"Visitor"> | string | null
     eventId?: UuidNullableFilter<"Visitor"> | string | null
     hostMemberId?: UuidNullableFilter<"Visitor"> | string | null
     checkInTime?: DateTimeFilter<"Visitor"> | Date | string
@@ -84531,8 +84691,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -84553,9 +84718,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
@@ -84774,8 +84944,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -84796,9 +84971,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
@@ -84828,8 +85008,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -84850,9 +85035,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -88986,8 +89176,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
     kioskId: string
@@ -89008,8 +89203,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -95330,9 +95530,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -95607,8 +95812,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -95629,9 +95839,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -95651,9 +95866,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -95896,9 +96116,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
@@ -95965,8 +96190,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -95987,9 +96217,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96009,9 +96244,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96053,9 +96293,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     checkInTime?: Date | string
     checkOutTime?: Date | string | null
@@ -96075,9 +96320,14 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitTypeId?: string | null
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -96351,8 +96601,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -96373,9 +96628,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96395,9 +96655,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96417,8 +96682,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -96439,9 +96709,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96461,9 +96736,14 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -97505,8 +97785,13 @@ export namespace Prisma {
     lastName?: string | null
     displayName?: string | null
     organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
     visitType: string
     visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
     eventId?: string | null
     hostMemberId?: string | null
     checkInTime?: Date | string
@@ -97527,8 +97812,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     kioskId?: StringFieldUpdateOperationsInput | string
@@ -97549,8 +97839,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -97571,8 +97866,13 @@ export namespace Prisma {
     lastName?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
     visitType?: StringFieldUpdateOperationsInput | string
     visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
     hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string

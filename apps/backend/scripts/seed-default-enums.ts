@@ -148,6 +148,20 @@ const DEFAULT_VISIT_TYPES: ReadonlyArray<EnumSeedInput> = [
     chipColor: 'success',
   },
   {
+    code: 'military',
+    name: 'Military',
+    description: 'Military visitor from another unit or formation',
+    chipVariant: 'shadow',
+    chipColor: 'warning',
+  },
+  {
+    code: 'recruitment',
+    name: 'Recruitment',
+    description: 'Prospective member visiting for recruiting or intake steps',
+    chipVariant: 'shadow',
+    chipColor: 'info',
+  },
+  {
     code: 'official',
     name: 'Official',
     description: 'Official visit or inspection',

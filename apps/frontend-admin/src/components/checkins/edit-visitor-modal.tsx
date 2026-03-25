@@ -20,12 +20,14 @@ interface EditVisitorModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-const VISIT_TYPES = ['guest', 'contractor', 'official', 'other'] as const
+const VISIT_TYPES = ['guest', 'contractor', 'military', 'recruitment', 'official', 'other'] as const
 type VisitType = (typeof VISIT_TYPES)[number]
 
 const VISIT_TYPE_LABELS: Record<VisitType, string> = {
   guest: 'Guest',
   contractor: 'Contractor',
+  military: 'Military',
+  recruitment: 'Recruitment',
   official: 'Official',
   other: 'Other',
 }
