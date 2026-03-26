@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Seed script for test badges
- * Creates temporary badges (TEST-BADGE-0001..N) and assigns one to each member
+ * Creates member badges (TEST-BADGE-0001..N) and assigns one to each member
  */
 import { Pool } from 'pg'
 import { readFileSync } from 'fs'
@@ -11,7 +11,8 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://sentinel:sentinel@localhost:5432/sentinel'
+const DATABASE_URL =
+  process.env.DATABASE_URL || 'postgresql://sentinel:sentinel@localhost:5432/sentinel'
 
 async function main() {
   const pool = new Pool({ connectionString: DATABASE_URL })
@@ -32,7 +33,9 @@ async function main() {
     console.log(`✓ Found ${memberTotal} members`)
 
     // Check if badges already exist
-    const badgesCount = await client.query("SELECT COUNT(*) FROM badges WHERE serial_number LIKE 'TEST-BADGE-%'")
+    const badgesCount = await client.query(
+      "SELECT COUNT(*) FROM badges WHERE serial_number LIKE 'TEST-BADGE-%'"
+    )
     const existingBadges = parseInt(badgesCount.rows[0].count)
 
     if (existingBadges > 0) {
@@ -49,10 +52,7 @@ async function main() {
 
     console.log('🌱 Seeding test badges...')
 
-    const seedSQL = readFileSync(
-      join(__dirname, 'seed-badges.sql'),
-      'utf-8'
-    )
+    const seedSQL = readFileSync(join(__dirname, 'seed-badges.sql'), 'utf-8')
 
     await client.query(seedSQL)
     console.log('✓ Seed SQL executed')
@@ -63,7 +63,9 @@ async function main() {
     const totalBadges = await client.query('SELECT COUNT(*) FROM badges')
     console.log(`  Total badges: ${totalBadges.rows[0].count}`)
 
-    const assignedMembers = await client.query('SELECT COUNT(*) FROM members WHERE badge_id IS NOT NULL')
+    const assignedMembers = await client.query(
+      'SELECT COUNT(*) FROM members WHERE badge_id IS NOT NULL'
+    )
     console.log(`  Members with badges: ${assignedMembers.rows[0].count} / ${memberTotal}`)
 
     const sampleResult = await client.query(`
@@ -80,7 +82,6 @@ async function main() {
     }
 
     console.log('\n✅ Badge seeding complete!')
-
   } catch (error) {
     console.error('❌ Error:', error)
     throw error
@@ -90,7 +91,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error(error)
   process.exit(1)
 })

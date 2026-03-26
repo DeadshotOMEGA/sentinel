@@ -37,6 +37,9 @@ export interface BadgeWithDetails extends Badge {
     id: string
     firstName: string
     lastName: string
+    rank?: string
+    initials?: string
+    displayName?: string
     serviceNumber?: string
   }
   lastScan?: {

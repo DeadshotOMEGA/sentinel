@@ -11,6 +11,7 @@ import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { badgeService } from '../services/badge-service.js'
+import { formatAssignedMemberName, matchesBadgeSearch } from '../lib/badge-search.js'
 
 const s = initServer()
 
@@ -44,9 +45,9 @@ export const badgesRouter = s.router(badgeContract, {
       if (query.unassignedOnly) {
         badges = badges.filter((b) => b.assignmentType === 'unassigned')
       }
-      if (query.search) {
-        const searchLower = query.search.toLowerCase()
-        badges = badges.filter((b) => b.serialNumber.toLowerCase().includes(searchLower))
+      const searchQuery = query.search?.trim()
+      if (searchQuery) {
+        badges = badges.filter((badge) => matchesBadgeSearch(badge, searchQuery))
       }
 
       // Paginate
@@ -60,14 +61,11 @@ export const badgesRouter = s.router(badgeContract, {
         paginatedBadges.map(async (badge) => {
           let assignedTo = null
 
-          if (badge.assignmentType === 'member' && badge.assignedToId) {
-            const member = await memberRepo.findById(badge.assignedToId)
-            if (member) {
-              assignedTo = {
-                id: member.id,
-                name: `${member.rank} ${member.firstName} ${member.lastName}`,
-                type: 'member',
-              }
+          if (badge.assignmentType === 'member' && badge.assignedMember) {
+            assignedTo = {
+              id: badge.assignedMember.id,
+              name: formatAssignedMemberName(badge.assignedMember),
+              type: 'member',
             }
           }
 

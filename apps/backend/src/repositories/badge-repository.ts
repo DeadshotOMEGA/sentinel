@@ -10,6 +10,7 @@ import type {
   MemberWithDivision,
 } from '@sentinel/types'
 import { getSentinelBootstrapIdentity } from '../lib/system-bootstrap.js'
+import { normalizeBadgeAssignmentType } from '../lib/badge-state.js'
 
 interface BadgeFilters {
   status?: BadgeStatus
@@ -24,12 +25,32 @@ function toBadge(prismaBadge: PrismaBadge): Badge {
   return {
     id: prismaBadge.id,
     serialNumber: prismaBadge.serialNumber,
-    assignmentType: prismaBadge.assignmentType as BadgeAssignmentType,
+    assignmentType: normalizeBadgeAssignmentType(prismaBadge.assignmentType),
     assignedToId: prismaBadge.assignedToId ?? undefined,
     status: prismaBadge.status as BadgeStatus,
     lastUsed: prismaBadge.lastUsed ?? undefined,
     createdAt: prismaBadge.createdAt ?? new Date(),
     updatedAt: prismaBadge.updatedAt ?? new Date(),
+  }
+}
+
+function toAssignedMember(member: {
+  id: string
+  firstName: string
+  lastName: string
+  rank: string
+  initials: string | null
+  displayName: string | null
+  serviceNumber: string
+}) {
+  return {
+    id: member.id,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    rank: member.rank,
+    initials: member.initials ?? undefined,
+    displayName: member.displayName ?? undefined,
+    serviceNumber: member.serviceNumber,
   }
 }
 
@@ -102,6 +123,9 @@ export class BadgeRepository {
             id: true,
             firstName: true,
             lastName: true,
+            rank: true,
+            initials: true,
+            displayName: true,
             serviceNumber: true,
           },
           take: 1,
@@ -125,9 +149,10 @@ export class BadgeRepository {
       const baseBadge = toBadge(badgeData)
 
       const result: BadgeWithDetails = { ...baseBadge }
+      const firstMember = members[0]
 
-      if (members.length > 0 && badge.assignmentType === 'member') {
-        result.assignedMember = members[0]
+      if (firstMember && baseBadge.assignmentType === 'member') {
+        result.assignedMember = toAssignedMember(firstMember)
       }
 
       if (checkins.length > 0 && checkins[0]) {
@@ -169,6 +194,9 @@ export class BadgeRepository {
             id: true,
             firstName: true,
             lastName: true,
+            rank: true,
+            initials: true,
+            displayName: true,
             serviceNumber: true,
           },
           take: 1,
@@ -195,9 +223,10 @@ export class BadgeRepository {
     const baseBadge = toBadge(badgeData)
 
     const result: BadgeWithDetails = { ...baseBadge }
+    const firstMember = members[0]
 
-    if (members.length > 0 && badge.assignmentType === 'member') {
-      result.assignedMember = members[0]
+    if (firstMember && baseBadge.assignmentType === 'member') {
+      result.assignedMember = toAssignedMember(firstMember)
     }
 
     if (checkins.length > 0 && checkins[0]) {
@@ -272,17 +301,16 @@ export class BadgeRepository {
       return null
     }
 
-    // Extract member from the array (take 1 ensures max one member)
+    // Remove the members array from badge before returning
+    const { members: _, ...badgeData } = badge
+    const normalizedBadge = toBadge(badgeData)
     const member =
-      badge.members.length > 0 && badge.assignmentType === 'member'
+      badge.members.length > 0 && normalizedBadge.assignmentType === 'member'
         ? (badge.members[0] as MemberWithDivision)
         : null
 
-    // Remove the members array from badge before returning
-    const { members: _, ...badgeData } = badge
-
     return {
-      badge: toBadge(badgeData),
+      badge: normalizedBadge,
       member,
     }
   }

@@ -27,10 +27,15 @@ Applies when editing files under: `apps/frontend-admin/`
   - `Chip` for decorative tags/categories
   - `Dialog` primitives for modal behavior
 - MUST use token-based styling (`--space-*`, z-index tokens, duration tokens); no magic-number spacing for new changes.
+- MUST perform a post-change visual sanity check for frontend layout/UX work before considering the task complete.
+- MUST check for obvious overflow, clipping, awkward density, duplicate action bands, hidden controls, and unnecessary scrollbars.
+- MUST inspect the rendered UI at the user-reported problem viewport when one is provided; otherwise use at least one desktop viewport and one narrower viewport that could expose layout stress.
+- MUST use `playwright-cli` for the visual sanity check when the task is primarily about frontend layout/UX, when the user reports a visual defect, or when a local route is available and the change materially affects layout.
 - MUST include frontend evidence sections in completion responses:
   - `DaisyUI Fit Check`
   - `Research Notes`
   - `Design Compliance Checklist`
+- MUST include a brief visual sanity-check result in the completion response for frontend layout/UX work, even when full visual QA is not requested.
 - MUST use `playwright-cli` for visual verification when the user explicitly requests visual QA.
 
 ## Defaults (SHOULD)

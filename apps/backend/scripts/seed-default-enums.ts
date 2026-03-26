@@ -193,13 +193,6 @@ const DEFAULT_BADGE_STATUSES: ReadonlyArray<EnumSeedInput> = [
     chipColor: 'warning',
   },
   {
-    code: 'disabled',
-    name: 'Disabled',
-    description: 'Badge has been disabled by an Admin',
-    chipVariant: 'bordered',
-    chipColor: 'danger',
-  },
-  {
     code: 'inactive',
     name: 'Inactive',
     description: 'Badge is inactive and should not be used',

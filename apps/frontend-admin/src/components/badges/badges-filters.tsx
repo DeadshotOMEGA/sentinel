@@ -47,7 +47,7 @@ export function BadgesFilters({ filters, onFilterChange }: BadgesFiltersProps) {
             <input
               className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-9"
               id="badge-search"
-              placeholder="Search by serial number..."
+              placeholder="Search by serial number, member name, or service number..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               data-testid={TID.badges.filter.search}

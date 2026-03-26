@@ -11,9 +11,11 @@ import type {
 import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { AutoQualificationService } from '../services/auto-qualification-service.js'
+import { badgeService } from '../services/badge-service.js'
 import { importService } from '../services/import-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { ConflictError, NotFoundError } from '../middleware/error-handler.js'
 
 const s = initServer()
 
@@ -164,8 +166,15 @@ export const membersRouter = s.router(memberContract, {
           badgeId: member.badgeId || null,
           accountLevel: member.accountLevel,
           mustChangePin: member.mustChangePin,
-          memberTypeId: null,
-          memberStatusId: null,
+          memberTypeId: member.memberTypeId || null,
+          memberStatusId: member.memberStatusId || null,
+          badgeStatus: member.badge?.badgeStatusSummary
+            ? {
+                name: member.badge.badgeStatusSummary.name,
+                chipVariant: member.badge.badgeStatusSummary.chipVariant,
+                chipColor: member.badge.badgeStatusSummary.chipColor,
+              }
+            : undefined,
           createdAt: member.createdAt.toISOString(),
           updatedAt: member.updatedAt?.toISOString() || null,
         },
@@ -234,7 +243,8 @@ export const membersRouter = s.router(memberContract, {
         email: body.email,
         mobilePhone: body.phoneNumber,
         memberType: 'class_a', // TODO: Map from memberTypeId when FK migration complete
-        // memberTypeId and memberStatusId not yet supported by repository
+        memberTypeId: body.memberTypeId,
+        memberStatusId: body.memberStatusId,
         badgeId: body.badgeId,
         accountLevel: body.accountLevel,
       })
@@ -339,7 +349,7 @@ export const membersRouter = s.router(memberContract, {
         }
       }
 
-      const member = await memberRepo.update(params.id, {
+      await memberRepo.update(params.id, {
         serviceNumber: body.serviceNumber,
         rank: body.rank,
         firstName: body.firstName,
@@ -348,11 +358,25 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
-        badgeId: body.badgeId,
         memberTypeId: body.memberTypeId,
         memberStatusId: body.memberStatusId,
         accountLevel: body.accountLevel,
       })
+
+      if (body.badgeId !== undefined) {
+        await badgeService.replaceMemberBadge(params.id, body.badgeId ?? null)
+      }
+
+      const finalMember = await memberRepo.findById(params.id)
+      if (!finalMember) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Member with ID '${params.id}' not found`,
+          },
+        }
+      }
 
       // Auto-sync qualifications if rank or division changed (non-blocking)
       if (body.rank !== undefined || body.divisionId !== undefined) {
@@ -366,30 +390,56 @@ export const membersRouter = s.router(memberContract, {
       return {
         status: 200 as const,
         body: {
-          id: member.id,
-          serviceNumber: member.serviceNumber,
-          rank: member.rank,
+          id: finalMember.id,
+          serviceNumber: finalMember.serviceNumber,
+          rank: finalMember.rank,
           displayName:
-            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          middleInitial: member.initials || null,
-          moc: member.moc || null,
-          classDetails: member.classDetails || null,
-          memberType: member.memberType,
-          email: member.email || null,
-          phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId ?? null,
-          badgeId: member.badgeId || null,
-          accountLevel: member.accountLevel,
-          mustChangePin: member.mustChangePin,
-          memberTypeId: member.memberTypeId || null,
-          memberStatusId: member.memberStatusId || null,
-          createdAt: member.createdAt.toISOString(),
-          updatedAt: member.updatedAt?.toISOString() || null,
+            finalMember.displayName ??
+            `${finalMember.rank} ${finalMember.lastName}, ${finalMember.firstName}`,
+          firstName: finalMember.firstName,
+          lastName: finalMember.lastName,
+          middleInitial: finalMember.initials || null,
+          moc: finalMember.moc || null,
+          classDetails: finalMember.classDetails || null,
+          memberType: finalMember.memberType,
+          email: finalMember.email || null,
+          phoneNumber: finalMember.mobilePhone || null,
+          divisionId: finalMember.divisionId ?? null,
+          badgeId: finalMember.badgeId || null,
+          accountLevel: finalMember.accountLevel,
+          mustChangePin: finalMember.mustChangePin,
+          memberStatusId: finalMember.memberStatusId || null,
+          memberTypeId: finalMember.memberTypeId || null,
+          badgeStatus: finalMember.badge?.badgeStatusSummary
+            ? {
+                name: finalMember.badge.badgeStatusSummary.name,
+                chipVariant: finalMember.badge.badgeStatusSummary.chipVariant,
+                chipColor: finalMember.badge.badgeStatusSummary.chipColor,
+              }
+            : undefined,
+          createdAt: finalMember.createdAt.toISOString(),
+          updatedAt: finalMember.updatedAt?.toISOString() || null,
         },
       }
     } catch (error) {
+      if (error instanceof ConflictError) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
+      if (error instanceof NotFoundError) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
       if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,
@@ -430,7 +480,7 @@ export const membersRouter = s.router(memberContract, {
         status: 200 as const,
         body: {
           success: true,
-          message: 'Member deleted successfully',
+          message: 'Member deactivated successfully',
         },
       }
     } catch (error) {

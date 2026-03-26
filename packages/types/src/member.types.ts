@@ -75,6 +75,7 @@ export interface CreateMemberInput {
   moc?: string
   memberType: MemberType
   memberTypeId?: string
+  memberStatusId?: string
   classDetails?: string
   status?: MemberStatus
   email?: string

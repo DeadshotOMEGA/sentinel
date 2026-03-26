@@ -83,7 +83,7 @@ export const UpdateMemberSchema = v.object({
   phoneNumber: v.optional(v.string()),
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
-  badgeId: v.optional(v.pipe(v.string(), v.uuid('Invalid badge ID'))),
+  badgeId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid badge ID')))),
   accountLevel: v.optional(
     v.pipe(
       v.number('Account level must be a number'),

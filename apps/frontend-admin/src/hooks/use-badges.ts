@@ -38,6 +38,22 @@ export function useBadges(params: BadgesQueryParams = {}) {
   })
 }
 
+export function useBadge(id: string) {
+  return useQuery({
+    queryKey: ['badge', id],
+    queryFn: async () => {
+      const response = await apiClient.badges.getBadgeById({
+        params: { id },
+      })
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch badge')
+      }
+      return response.body
+    },
+    enabled: !!id,
+  })
+}
+
 export function useBadgeStats() {
   return useQuery({
     queryKey: ['badge-stats'],

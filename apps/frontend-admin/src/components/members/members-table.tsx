@@ -316,31 +316,22 @@ export function MembersTable({
         ),
         cell: (info) => {
           const member = info.row.original
-          if (!member.badgeId)
+          const badgeStatus = member.badgeStatus
+          if (!badgeStatus)
             return (
               <div className="flex justify-center">
                 <span className="text-base-content/60">—</span>
               </div>
             )
-          const badgeStatus = member.badgeStatus
-          if (badgeStatus) {
-            return (
-              <div className="flex justify-center">
-                <Chip
-                  variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
-                  color={(badgeStatus.chipColor as ChipColor) || 'default'}
-                  size="sm"
-                >
-                  {badgeStatus.name}
-                </Chip>
-              </div>
-            )
-          }
-          // Fallback if no badge status but badge is assigned
+
           return (
             <div className="flex justify-center">
-              <Chip variant="solid" color="success" size="sm">
-                Assigned
+              <Chip
+                variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
+                color={(badgeStatus.chipColor as ChipColor) || 'default'}
+                size="sm"
+              >
+                {badgeStatus.name}
               </Chip>
             </div>
           )

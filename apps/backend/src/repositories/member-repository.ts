@@ -18,6 +18,11 @@ import {
   normalizeNamePart,
 } from '../utils/display-name.js'
 import { getSentinelBootstrapIdentity } from '../lib/system-bootstrap.js'
+import {
+  getBadgeStatusSummary,
+  hasValidMemberBadgeAssignment,
+  normalizeBadgeAssignmentType,
+} from '../lib/badge-state.js'
 
 interface MemberFilters extends MemberFilterParams {
   divisionId?: string
@@ -88,13 +93,6 @@ function toMemberWithDivision(
       lastUsed: Date | null
       createdAt: Date | null
       updatedAt: Date | null
-      badgeStatusRef?: {
-        id: string
-        code: string
-        name: string
-        chipVariant: string
-        chipColor: string
-      } | null
     } | null
     rankRef?: {
       id: string
@@ -149,23 +147,26 @@ function toMemberWithDivision(
 
   // Add badge if included and exists
   if (prismaMember.badge) {
+    const normalizedAssignmentType = normalizeBadgeAssignmentType(prismaMember.badge.assignmentType)
+    const badgeStatusSummary = hasValidMemberBadgeAssignment(
+      normalizedAssignmentType,
+      prismaMember.badge.assignedToId,
+      prismaMember.id
+    )
+      ? getBadgeStatusSummary(prismaMember.badge.status)
+      : undefined
+
     Object.assign(base, {
       badge: {
         id: prismaMember.badge.id,
         serialNumber: prismaMember.badge.serialNumber,
-        assignmentType: prismaMember.badge.assignmentType,
+        assignmentType: normalizedAssignmentType,
         assignedToId: prismaMember.badge.assignedToId ?? undefined,
         status: prismaMember.badge.status,
         lastUsed: prismaMember.badge.lastUsed ?? undefined,
         createdAt: prismaMember.badge.createdAt ?? new Date(),
         updatedAt: prismaMember.badge.updatedAt ?? new Date(),
-        badgeStatusSummary: prismaMember.badge.badgeStatusRef
-          ? {
-              name: prismaMember.badge.badgeStatusRef.name,
-              chipVariant: prismaMember.badge.badgeStatusRef.chipVariant,
-              chipColor: prismaMember.badge.badgeStatusRef.chipColor,
-            }
-          : undefined,
+        badgeStatusSummary,
       },
     })
   }
@@ -429,8 +430,15 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-          include: {
-            badgeStatusRef: true,
+          select: {
+            id: true,
+            serialNumber: true,
+            assignmentType: true,
+            assignedToId: true,
+            status: true,
+            lastUsed: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         rankRef: true,
@@ -611,8 +619,15 @@ export class MemberRepository {
         include: {
           division: true,
           badge: {
-            include: {
-              badgeStatusRef: true,
+            select: {
+              id: true,
+              serialNumber: true,
+              assignmentType: true,
+              assignedToId: true,
+              status: true,
+              lastUsed: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
           rankRef: true,
@@ -658,8 +673,15 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-          include: {
-            badgeStatusRef: true,
+          select: {
+            id: true,
+            serialNumber: true,
+            assignmentType: true,
+            assignedToId: true,
+            status: true,
+            lastUsed: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         memberTags: {
@@ -709,6 +731,7 @@ export class MemberRepository {
           moc: data.moc !== undefined ? data.moc : null,
           memberType: data.memberType !== undefined ? data.memberType : 'regular',
           memberTypeId: data.memberTypeId !== undefined ? data.memberTypeId : null,
+          memberStatusId: data.memberStatusId !== undefined ? data.memberStatusId : null,
           classDetails: data.classDetails !== undefined ? data.classDetails : null,
           status: data.status !== undefined ? data.status : 'active',
           email: data.email !== undefined ? data.email : null,
@@ -872,7 +895,7 @@ export class MemberRepository {
   }
 
   /**
-   * Delete (soft delete) a member
+   * Deactivate a member while preserving historical records
    */
   async delete(id: string): Promise<void> {
     await this.assertNotProtectedSentinelMember(id, 'deactivate')
@@ -929,8 +952,15 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-          include: {
-            badgeStatusRef: true,
+          select: {
+            id: true,
+            serialNumber: true,
+            assignmentType: true,
+            assignedToId: true,
+            status: true,
+            lastUsed: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         memberTags: {
@@ -980,8 +1010,15 @@ export class MemberRepository {
       include: {
         division: true,
         badge: {
-          include: {
-            badgeStatusRef: true,
+          select: {
+            id: true,
+            serialNumber: true,
+            assignmentType: true,
+            assignedToId: true,
+            status: true,
+            lastUsed: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
         memberTags: {

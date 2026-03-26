@@ -138,6 +138,48 @@ export class BadgeService {
   }
 
   /**
+   * Replace or clear a member badge assignment while keeping badge and member records in sync.
+   */
+  async replaceMemberBadge(memberId: string, nextBadgeId: string | null): Promise<void> {
+    const member = await this.memberRepo.findById(memberId)
+    if (!member) {
+      throw new NotFoundError('Member', memberId)
+    }
+
+    const currentBadgeId = member.badgeId ?? null
+    if (nextBadgeId === currentBadgeId) {
+      return
+    }
+
+    if (!nextBadgeId) {
+      if (currentBadgeId) {
+        await this.unassign(currentBadgeId)
+      }
+      return
+    }
+
+    const targetBadge = await this.badgeRepo.findById(nextBadgeId)
+    if (!targetBadge) {
+      throw new NotFoundError('Badge', nextBadgeId)
+    }
+
+    if (targetBadge.assignmentType === 'member' && targetBadge.assignedToId === memberId) {
+      await this.memberRepo.update(memberId, { badgeId: nextBadgeId })
+      return
+    }
+
+    if (targetBadge.assignmentType !== 'unassigned') {
+      throw new ConflictError(`Badge is already assigned to ${targetBadge.assignedToId}`)
+    }
+
+    if (currentBadgeId) {
+      await this.unassign(currentBadgeId)
+    }
+
+    await this.assign(nextBadgeId, memberId)
+  }
+
+  /**
    * Unassign badge
    */
   async unassign(badgeId: string): Promise<Badge> {
@@ -182,8 +224,7 @@ export class BadgeService {
 
   /**
    * Update badge status
-   * Auto-unassigns badge when marked as 'returned'
-   * Lost and disabled badges remain assigned to track who had them
+   * Auto-unassigns badges when marked inactive
    */
   async updateStatus(badgeId: string, status: BadgeStatus): Promise<Badge> {
     // Verify badge exists
@@ -192,10 +233,6 @@ export class BadgeService {
       throw new NotFoundError('Badge', badgeId)
     }
 
-    // TODO: Determine correct status for "returned" badges
-    // BadgeStatus type is 'active' | 'inactive' | 'lost' | 'damaged'
-    // 'returned' is not a valid status - should this be 'inactive'?
-    // Auto-unassign when marking as 'inactive' (assuming inactive means returned)
     if (status === 'inactive' && badge.assignmentType !== 'unassigned') {
       await this.unassign(badgeId)
     }
@@ -228,14 +265,6 @@ export class BadgeService {
     // Check badge status
     if (badge.status === 'lost') {
       throw new ValidationError(`Badge ${serialNumber} has been reported lost`)
-    }
-
-    if (badge.status === 'disabled') {
-      throw new ValidationError(`Badge ${serialNumber} has been disabled`)
-    }
-
-    if (badge.status === 'returned') {
-      throw new ValidationError(`Badge ${serialNumber} has been returned`)
     }
 
     if (badge.status !== 'active') {
