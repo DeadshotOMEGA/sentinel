@@ -451,9 +451,11 @@ export const lockupRouter = s.router(lockupContract, {
   /**
    * Get all present people for lockup confirmation
    */
-  getPresentForLockup: async () => {
+  getPresentForLockup: async ({ query }) => {
     try {
-      const presentData = await lockupService.getPresentMembersForLockup()
+      const presentData = await lockupService.getPresentMembersForLockup({
+        excludeMemberId: query.excludeMemberId,
+      })
 
       const membersFormatted = presentData.members.map((m) => ({
         id: m.id,

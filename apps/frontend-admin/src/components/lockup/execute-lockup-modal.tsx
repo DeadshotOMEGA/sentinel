@@ -31,7 +31,7 @@ export function ExecuteLockupModal({
   const [note, setNote] = useState('')
   const [step, setStep] = useState<'confirm' | 'success'>('confirm')
 
-  const { data: presentData, isLoading: loadingPresent } = usePresentForLockup()
+  const { data: presentData, isLoading: loadingPresent } = usePresentForLockup(memberId)
   const executeLockup = useExecuteLockup()
 
   const handleExecute = async () => {
@@ -70,7 +70,7 @@ export function ExecuteLockupModal({
                 Lock Up Building
               </DialogTitle>
               <DialogDescription>
-                This will check out all remaining people and secure the building
+                This will check you out, clear any remaining people, and secure the building
               </DialogDescription>
             </DialogHeader>
 
@@ -97,7 +97,14 @@ export function ExecuteLockupModal({
                     </div>
                     {totalCount > 0 && (
                       <p className="text-xs text-base-content/60 mt-2">
-                        These {totalCount} people will be force checked out
+                        These {totalCount} remaining people will be force checked out after your
+                        checkout is recorded
+                      </p>
+                    )}
+                    {totalCount === 0 && (
+                      <p className="text-xs text-base-content/60 mt-2">
+                        Everyone else is already clear. Your checkout will be recorded before the
+                        building is secured.
                       </p>
                     )}
                   </div>
@@ -128,7 +135,10 @@ export function ExecuteLockupModal({
                   {totalCount > 0 && (
                     <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning-fadded p-3 text-base-content text-sm">
                       <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-                      <span>People still checked in will receive a missed checkout record</span>
+                      <span>
+                        Remaining people still checked in will receive a missed checkout record.
+                        Your own checkout will be logged separately.
+                      </span>
                     </div>
                   )}
                 </>

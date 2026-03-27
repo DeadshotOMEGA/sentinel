@@ -236,6 +236,13 @@ export const LockupPresentDataResponseSchema = v.object({
 })
 
 /**
+ * Lockup present data query schema
+ */
+export const LockupPresentDataQuerySchema = v.object({
+  excludeMemberId: v.optional(v.pipe(v.string(), v.uuid())),
+})
+
+/**
  * Execute lockup request schema
  */
 export const ExecuteLockupSchema = v.object({
@@ -344,6 +351,7 @@ export type LockupHistoryResponse = v.InferOutput<typeof LockupHistoryResponseSc
 export type PresentMemberForLockup = v.InferOutput<typeof PresentMemberForLockupSchema>
 export type PresentVisitorForLockup = v.InferOutput<typeof PresentVisitorForLockupSchema>
 export type LockupPresentDataResponse = v.InferOutput<typeof LockupPresentDataResponseSchema>
+export type LockupPresentDataQuery = v.InferOutput<typeof LockupPresentDataQuerySchema>
 export type ExecuteLockupInput = v.InferOutput<typeof ExecuteLockupSchema>
 export type ExecuteLockupResponse = v.InferOutput<typeof ExecuteLockupResponseSchema>
 export type OpenBuildingInput = v.InferOutput<typeof OpenBuildingSchema>
