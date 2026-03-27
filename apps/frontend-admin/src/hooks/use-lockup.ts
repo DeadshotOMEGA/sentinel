@@ -93,11 +93,13 @@ export function useCheckoutOptions(memberId: string) {
 /**
  * Get present people for lockup confirmation
  */
-export function usePresentForLockup() {
+export function usePresentForLockup(excludeMemberId?: string) {
   return useQuery({
-    queryKey: ['lockup-present'],
+    queryKey: ['lockup-present', excludeMemberId ?? null],
     queryFn: async () => {
-      const response = await apiClient.lockup.getPresentForLockup()
+      const response = await apiClient.lockup.getPresentForLockup({
+        query: excludeMemberId ? { excludeMemberId } : {},
+      })
       if (response.status !== 200) {
         throw new Error('Failed to fetch present people')
       }

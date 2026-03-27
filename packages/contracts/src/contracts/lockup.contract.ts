@@ -2,6 +2,7 @@ import { initContract } from '@ts-rest/core'
 import {
   ExecuteLockupSchema,
   LockupPresentDataResponseSchema,
+  LockupPresentDataQuerySchema,
   ExecuteLockupResponseSchema,
   CheckLockupAuthResponseSchema,
   ErrorResponseSchema,
@@ -210,6 +211,7 @@ export const lockupContract = c.router({
   getPresentForLockup: {
     method: 'GET',
     path: '/api/lockup/present',
+    query: LockupPresentDataQuerySchema,
     responses: {
       200: LockupPresentDataResponseSchema,
       401: ErrorResponseSchema,

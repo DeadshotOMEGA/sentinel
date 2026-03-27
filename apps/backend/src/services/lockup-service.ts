@@ -53,6 +53,10 @@ interface LockupExecutionResult {
   executionId: string
 }
 
+interface LockupPresentOptions {
+  excludeMemberId?: string
+}
+
 export interface CheckoutOptions {
   memberId: string
   holdsLockup: boolean
@@ -583,14 +587,18 @@ export class LockupService {
   /**
    * Get all currently present members and visitors for lockup confirmation screen
    */
-  async getPresentMembersForLockup(): Promise<LockupPresentData> {
+  async getPresentMembersForLockup(options?: LockupPresentOptions): Promise<LockupPresentData> {
     const [members, visitors] = await Promise.all([
       this.checkinRepo.getPresentMembers(),
       this.visitorRepo.findActive(),
     ])
 
+    const filteredMembers = options?.excludeMemberId
+      ? members.filter((member) => member.id !== options.excludeMemberId)
+      : members
+
     return {
-      members,
+      members: filteredMembers,
       visitors: visitors.map((v) => ({
         id: v.id,
         name: v.name,
@@ -629,7 +637,41 @@ export class LockupService {
     const checkedOutVisitors: Array<{ id: string; name: string }> = []
     const now = new Date()
 
-    // Process member checkouts
+    // Check out the lockup holder first so their exit is recorded normally.
+    const performer = members.find((member) => member.id === performedById)
+    if (performer) {
+      try {
+        const performerData = await this.prisma.member.findUnique({
+          where: { id: performedById },
+          select: { badgeId: true, firstName: true, lastName: true, rank: true },
+        })
+
+        if (performerData?.badgeId) {
+          await this.checkinRepo.create({
+            memberId: performedById,
+            badgeId: performerData.badgeId,
+            direction: 'out',
+            timestamp: now,
+            kioskId: 'lockup-self-checkout',
+            synced: true,
+          })
+
+          await this.presenceService.setMemberDirection(performedById, 'out')
+
+          checkedOutMembers.push({
+            id: performedById,
+            name: `${performerData.rank} ${performerData.firstName} ${performerData.lastName}`,
+          })
+        }
+      } catch (error) {
+        serviceLogger.error('Failed to checkout performer during lockup', {
+          performedById,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+
+    // Process forced member checkouts for everyone still inside.
     for (const member of members) {
       try {
         if (member.id === performedById) {
@@ -650,7 +692,7 @@ export class LockupService {
           badgeId: memberData.badgeId,
           direction: 'out',
           timestamp: now,
-          kioskId: 'lockup-checkout',
+          kioskId: 'lockup-force-checkout',
           synced: true,
         })
 
@@ -680,40 +722,6 @@ export class LockupService {
       } catch (error) {
         serviceLogger.error('Failed to checkout visitor during lockup', {
           visitorId: visitor.id,
-          error: error instanceof Error ? error.message : String(error),
-        })
-      }
-    }
-
-    // Checkout performer last
-    const performer = members.find((m) => m.id === performedById)
-    if (performer) {
-      try {
-        const performerData = await this.prisma.member.findUnique({
-          where: { id: performedById },
-          select: { badgeId: true, firstName: true, lastName: true, rank: true },
-        })
-
-        if (performerData?.badgeId) {
-          await this.checkinRepo.create({
-            memberId: performedById,
-            badgeId: performerData.badgeId,
-            direction: 'out',
-            timestamp: now,
-            kioskId: 'lockup-checkout',
-            synced: true,
-          })
-
-          await this.presenceService.setMemberDirection(performedById, 'out')
-
-          checkedOutMembers.push({
-            id: performedById,
-            name: `${performerData.rank} ${performerData.firstName} ${performerData.lastName}`,
-          })
-        }
-      } catch (error) {
-        serviceLogger.error('Failed to checkout performer during lockup', {
-          performedById,
           error: error instanceof Error ? error.message : String(error),
         })
       }
