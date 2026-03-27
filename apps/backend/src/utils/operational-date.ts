@@ -5,6 +5,7 @@
  * HH:MM local time instead of midnight.
  */
 
+import { isDutyWatchActiveOnDate, type DutyWatchRule, type LocalDate } from '@sentinel/contracts'
 import { DateTime } from 'luxon'
 import {
   DEFAULT_BACKEND_TIMEZONE,
@@ -28,7 +29,7 @@ export interface OperationalDateConfig {
   timezone?: string
   dayStartHour?: number
   dayStartTime?: string
-  dutyWatchDays?: number[]
+  dutyWatchRules?: DutyWatchRule[]
 }
 
 function parseTime(time: string): { hour: number; minute: number } {
@@ -66,11 +67,11 @@ function resolveDayStart(config: OperationalDateConfig): { hour: number; minute:
   return parseTime(runtime.operational.dayRolloverTime)
 }
 
-function resolveDutyWatchDays(config: OperationalDateConfig): number[] {
-  if (Array.isArray(config.dutyWatchDays) && config.dutyWatchDays.length > 0) {
-    return config.dutyWatchDays
+function resolveDutyWatchRules(config: OperationalDateConfig): DutyWatchRule[] {
+  if (Array.isArray(config.dutyWatchRules) && config.dutyWatchRules.length > 0) {
+    return config.dutyWatchRules
   }
-  return getOperationalTimingsRuntimeState().settings.operational.dutyWatchDays
+  return getOperationalTimingsRuntimeState().settings.operational.dutyWatchRules
 }
 
 function toRolloverDateTime(dt: DateTime, dayStart: { hour: number; minute: number }): DateTime {
@@ -150,12 +151,12 @@ export function isOperationalDay(
  */
 export function isDutyWatchNight(date?: Date, config: OperationalDateConfig = {}): boolean {
   const { timezone = DEFAULT_TIMEZONE } = config
-  const dutyWatchDays = resolveDutyWatchDays(config)
+  const dutyWatchRules = resolveDutyWatchRules(config)
 
   const operationalDate = getOperationalDate(date, config)
   const dt = DateTime.fromJSDate(operationalDate, { zone: timezone })
 
-  return dutyWatchDays.includes(dt.weekday)
+  return isDutyWatchActiveOnDate(dutyWatchRules, dt.toISODate() as LocalDate)
 }
 
 /**

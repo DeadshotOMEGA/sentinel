@@ -1,9 +1,14 @@
 import { prisma } from '@sentinel/database'
+import { DateTime } from 'luxon'
 import { logger } from '../lib/logger.js'
 import { AlertService } from '../services/alert-service.js'
 import { ScheduleService } from '../services/schedule-service.js'
 import { LockupService } from '../services/lockup-service.js'
-import { getOperationalDateISO, isDutyWatchNight } from '../utils/operational-date.js'
+import { getOperationalDateISO } from '../utils/operational-date.js'
+import {
+  DEFAULT_BACKEND_TIMEZONE,
+  getRuntimeDutyWatchOccurrence,
+} from '../lib/operational-timings-runtime.js'
 
 /**
  * Duty Watch Alerts Job
@@ -16,10 +21,20 @@ import { getOperationalDateISO, isDutyWatchNight } from '../utils/operational-da
 export async function runDutyWatchAlerts(): Promise<void> {
   const operationalDate = getOperationalDateISO()
   const jobLogger = logger.child({ job: 'duty-watch-alerts', operationalDate })
+  const localTime = DateTime.now().setZone(DEFAULT_BACKEND_TIMEZONE).toFormat('HH:mm')
+  const occurrence = getRuntimeDutyWatchOccurrence(operationalDate)
 
-  // Only run on configured Duty Watch nights.
-  if (!isDutyWatchNight()) {
-    jobLogger.info('Not a Duty Watch night, skipping alerts')
+  if (!occurrence) {
+    jobLogger.info('No Duty Watch occurrence for operational date, skipping alerts')
+    return
+  }
+
+  if (localTime !== occurrence.startTime) {
+    jobLogger.debug('Duty Watch occurrence exists, but current time does not match start time', {
+      localTime,
+      expectedStartTime: occurrence.startTime,
+      ruleIds: occurrence.rules.map((rule) => rule.id),
+    })
     return
   }
 

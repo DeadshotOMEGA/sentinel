@@ -52,7 +52,32 @@ describe('ScheduleService.createDwOverride configured day validation', () => {
         ...getDefaultOperationalTimingsSettings(),
         operational: {
           ...getDefaultOperationalTimingsSettings().operational,
-          dutyWatchDays: [1, 3, 5],
+          dutyWatchRules: [
+            {
+              id: 'dw-mon',
+              name: 'Monday Duty Watch',
+              effectiveStartDate: '2026-03-02',
+              startTime: '19:00',
+              endTime: '22:00',
+              recurrence: { type: 'weekly', weekday: 1, intervalWeeks: 1 },
+            },
+            {
+              id: 'dw-wed',
+              name: 'Wednesday Duty Watch',
+              effectiveStartDate: '2026-03-04',
+              startTime: '19:00',
+              endTime: '22:00',
+              recurrence: { type: 'weekly', weekday: 3, intervalWeeks: 1 },
+            },
+            {
+              id: 'dw-fri',
+              name: 'Friday Duty Watch',
+              effectiveStartDate: '2026-03-06',
+              startTime: '19:00',
+              endTime: '22:00',
+              recurrence: { type: 'weekly', weekday: 5, intervalWeeks: 1 },
+            },
+          ],
         },
       },
       source: 'stored',
@@ -78,7 +103,7 @@ describe('ScheduleService.createDwOverride configured day validation', () => {
         overrideType: 'add',
         memberId: 'member-1',
       })
-    ).rejects.toThrow('configured Duty Watch days')
+    ).rejects.toThrow('configured Duty Watch occurrence')
 
     expect(repositoryMock.createOverride).not.toHaveBeenCalled()
   })

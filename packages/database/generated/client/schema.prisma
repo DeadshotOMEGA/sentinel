@@ -339,9 +339,14 @@ model Visitor {
   lastName         String?    @map("last_name") @db.VarChar(100)
   displayName      String?    @map("display_name") @db.VarChar(200)
   organization     String?    @db.VarChar(200)
+  unit             String?    @db.VarChar(200)
+  mobilePhone      String?    @map("mobile_phone") @db.VarChar(25)
   visitType        String     @map("visit_type") @db.VarChar(50)
   visitTypeId      String?    @map("visit_type_id") @db.Uuid
   visitReason      String?    @map("visit_reason")
+  visitPurpose     String?    @map("visit_purpose") @db.VarChar(50)
+  purposeDetails   String?    @map("purpose_details")
+  recruitmentStep  String?    @map("recruitment_step") @db.VarChar(50)
   eventId          String?    @map("event_id") @db.Uuid
   hostMemberId     String?    @map("host_member_id") @db.Uuid
   checkInTime      DateTime   @default(now()) @map("check_in_time") @db.Timestamp(6)

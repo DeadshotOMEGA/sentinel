@@ -188,7 +188,7 @@ export function MembersTable({
       }
       setRowSelection(newSelection)
       setBulkDeleteError(
-        `${failedCount} of ${selectedMemberIds.length} deletions failed. ${succeededCount} succeeded.`
+        `${failedCount} of ${selectedMemberIds.length} archives failed. ${succeededCount} succeeded.`
       )
     }
 
@@ -316,31 +316,22 @@ export function MembersTable({
         ),
         cell: (info) => {
           const member = info.row.original
-          if (!member.badgeId)
+          const badgeStatus = member.badgeStatus
+          if (!badgeStatus)
             return (
               <div className="flex justify-center">
                 <span className="text-base-content/60">—</span>
               </div>
             )
-          const badgeStatus = member.badgeStatus
-          if (badgeStatus) {
-            return (
-              <div className="flex justify-center">
-                <Chip
-                  variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
-                  color={(badgeStatus.chipColor as ChipColor) || 'default'}
-                  size="sm"
-                >
-                  {badgeStatus.name}
-                </Chip>
-              </div>
-            )
-          }
-          // Fallback if no badge status but badge is assigned
+
           return (
             <div className="flex justify-center">
-              <Chip variant="solid" color="success" size="sm">
-                Assigned
+              <Chip
+                variant={(badgeStatus.chipVariant as ChipVariant) || 'solid'}
+                color={(badgeStatus.chipColor as ChipColor) || 'default'}
+                size="sm"
+              >
+                {badgeStatus.name}
               </Chip>
             </div>
           )
@@ -554,7 +545,7 @@ export function MembersTable({
                 data-testid={TID.members.bulk.delete}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete {selectedCount > 1 ? `(${selectedCount})` : ''}
+                Archive {selectedCount > 1 ? `(${selectedCount})` : ''}
               </button>
             </div>
           )}
@@ -620,9 +611,9 @@ export function MembersTable({
                   className="toggle toggle-sm"
                   checked={includeHidden}
                   onChange={(e) => setIncludeHidden(e.target.checked)}
-                  data-testid={TID.members.pagination.showDeployed}
+                  data-testid={TID.members.pagination.showHidden}
                 />
-                <span className="text-sm text-base-content/60">Show deployed</span>
+                <span className="text-sm text-base-content/60">Show hidden</span>
               </label>
             )}
             <div className="flex items-center gap-2">
@@ -699,10 +690,10 @@ export function MembersTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedCount} members?</AlertDialogTitle>
+            <AlertDialogTitle>Archive {selectedCount} members?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected members and
-              remove their data from the system.
+              Historical records will be preserved. The selected members will be hidden from the
+              default roster and any current badge assignments will be cleared.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {bulkDeleteError && (
@@ -717,7 +708,7 @@ export function MembersTable({
               disabled={isBulkDeleting}
               className="bg-error text-error-content hover:bg-error/90"
             >
-              {isBulkDeleting ? 'Deleting...' : 'Delete'}
+              {isBulkDeleting ? 'Archiving...' : 'Archive'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

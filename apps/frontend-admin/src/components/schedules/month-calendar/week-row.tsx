@@ -1,5 +1,6 @@
 import React, { memo } from 'react'
 import { addDays, format, isBefore, startOfWeek } from 'date-fns'
+import { listDutyWatchOccurrencesInRange, type DutyWatchRule } from '@sentinel/contracts'
 import { WeekDdsCell } from './week-dds-cell'
 import { DayCell } from './day-cell'
 import { computeEffectiveCount } from '@/lib/merge-duty-watch'
@@ -49,7 +50,7 @@ interface WeekRowProps {
   ddsSchedule: ScheduleData | undefined
   dutyWatchSchedule: ScheduleData | undefined
   eventsByDate: Map<string, EventData[]>
-  dutyWatchDays: number[]
+  dutyWatchRules: DutyWatchRule[]
   focusedWeek: number
   focusedDay: number
   onWeekClick?: (weekStartDate: string) => void
@@ -62,7 +63,7 @@ export const WeekRow = memo(function WeekRow({
   ddsSchedule,
   dutyWatchSchedule,
   eventsByDate,
-  dutyWatchDays,
+  dutyWatchRules,
   focusedWeek,
   focusedDay,
   onWeekClick,
@@ -72,6 +73,12 @@ export const WeekRow = memo(function WeekRow({
   const nightOverrides = dutyWatchSchedule?.nightOverrides ?? []
   const currentWeekMonday = startOfWeek(new Date(), { weekStartsOn: 1 })
   const isPastWeek = isBefore(weekStart, currentWeekMonday)
+  const weekOccurrences = listDutyWatchOccurrencesInRange(
+    dutyWatchRules,
+    weekStartStr,
+    format(addDays(weekStart, 6), 'yyyy-MM-dd')
+  )
+  const occurrenceDates = new Set(weekOccurrences.map((occurrence) => occurrence.date))
 
   return (
     <tr>
@@ -92,8 +99,7 @@ export const WeekRow = memo(function WeekRow({
         const dateStr = format(date, 'yyyy-MM-dd')
         const dayEvents = eventsByDate.get(dateStr) ?? []
 
-        const isoDay = dayOffset + 1
-        const isDwNight = dutyWatchDays.includes(isoDay)
+        const isDwNight = occurrenceDates.has(dateStr)
         let dutyWatch: {
           assignmentCount: number
           hasOverrides: boolean

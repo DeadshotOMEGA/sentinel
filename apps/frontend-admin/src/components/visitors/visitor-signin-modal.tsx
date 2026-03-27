@@ -19,7 +19,7 @@ interface FormData {
   firstName: string
   lastName: string
   organization: string
-  visitType: 'contractor' | 'guest' | 'official' | 'other'
+  visitType: 'contractor' | 'guest' | 'official' | 'other' | 'military' | 'recruitment'
   visitReason: string
   hostMemberId: string
   eventId: string
@@ -227,6 +227,8 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
             >
               <option value="guest">Guest</option>
               <option value="contractor">Contractor</option>
+              <option value="military">Military</option>
+              <option value="recruitment">Recruitment</option>
               <option value="official">Official</option>
               <option value="other">Other</option>
             </select>

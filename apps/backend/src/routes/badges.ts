@@ -5,12 +5,14 @@ import type {
   CreateBadgeInput,
   UpdateBadgeInput,
   AssignBadgeInput,
+  DeleteBadgeInput,
   IdParam,
 } from '@sentinel/contracts'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { badgeService } from '../services/badge-service.js'
+import { formatAssignedMemberName, matchesBadgeSearch } from '../lib/badge-search.js'
 
 const s = initServer()
 
@@ -37,6 +39,10 @@ export const badgesRouter = s.router(badgeContract, {
       // Get all badges with details
       let badges = await badgeRepo.findAllWithDetails(filters)
 
+      if (!query.includeDecommissioned && query.status !== 'decommissioned') {
+        badges = badges.filter((badge) => badge.status !== 'decommissioned')
+      }
+
       // Apply additional filters
       if (query.assignedOnly) {
         badges = badges.filter((b) => b.assignmentType !== 'unassigned')
@@ -44,9 +50,9 @@ export const badgesRouter = s.router(badgeContract, {
       if (query.unassignedOnly) {
         badges = badges.filter((b) => b.assignmentType === 'unassigned')
       }
-      if (query.search) {
-        const searchLower = query.search.toLowerCase()
-        badges = badges.filter((b) => b.serialNumber.toLowerCase().includes(searchLower))
+      const searchQuery = query.search?.trim()
+      if (searchQuery) {
+        badges = badges.filter((badge) => matchesBadgeSearch(badge, searchQuery))
       }
 
       // Paginate
@@ -60,14 +66,11 @@ export const badgesRouter = s.router(badgeContract, {
         paginatedBadges.map(async (badge) => {
           let assignedTo = null
 
-          if (badge.assignmentType === 'member' && badge.assignedToId) {
-            const member = await memberRepo.findById(badge.assignedToId)
-            if (member) {
-              assignedTo = {
-                id: member.id,
-                name: `${member.rank} ${member.firstName} ${member.lastName}`,
-                type: 'member',
-              }
+          if (badge.assignmentType === 'member' && badge.assignedMember) {
+            assignedTo = {
+              id: badge.assignedMember.id,
+              name: formatAssignedMemberName(badge.assignedMember),
+              type: 'member',
             }
           }
 
@@ -333,7 +336,9 @@ export const badgesRouter = s.router(badgeContract, {
       }
       if (
         error instanceof Error &&
-        (error.message.includes('already assigned') || error.message.includes('already has badge'))
+        (error.message.includes('already assigned') ||
+          error.message.includes('already has badge') ||
+          error.message.includes('cannot be assigned'))
       ) {
         return {
           status: 409 as const,
@@ -440,7 +445,9 @@ export const badgesRouter = s.router(badgeContract, {
       }
       if (
         error instanceof Error &&
-        (error.message.includes('already assigned') || error.message.includes('already has badge'))
+        (error.message.includes('already assigned') ||
+          error.message.includes('already has badge') ||
+          error.message.includes('cannot be assigned'))
       ) {
         return {
           status: 409 as const,
@@ -526,6 +533,7 @@ export const badgesRouter = s.router(badgeContract, {
       if (
         error instanceof Error &&
         (error.message.includes('Cannot assign') ||
+          error.message.includes('cannot be assigned') ||
           error.message.includes('already assigned') ||
           error.message.includes('already has badge'))
       ) {
@@ -594,9 +602,9 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Delete badge
    */
-  deleteBadge: async ({ params }: { params: IdParam }) => {
+  deleteBadge: async ({ params, body }: { params: IdParam; body: DeleteBadgeInput }) => {
     try {
-      await badgeRepo.delete(params.id)
+      await badgeService.delete(params.id, body)
 
       return {
         status: 200 as const,
@@ -612,6 +620,20 @@ export const badgesRouter = s.router(badgeContract, {
           body: {
             error: 'NOT_FOUND',
             message: `Badge with ID '${params.id}' not found`,
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('historical activity') ||
+          error.message.includes('currently assigned') ||
+          error.message.includes('protected Sentinel bootstrap badge'))
+      ) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
           },
         }
       }

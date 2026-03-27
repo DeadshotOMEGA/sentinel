@@ -18,7 +18,7 @@ export type PaginatedResponse<T> = {
 }
 
 // Common enums
-export type BadgeStatus = 'active' | 'inactive' | 'lost' | 'damaged'
+export type BadgeStatus = 'active' | 'inactive' | 'lost' | 'damaged' | 'decommissioned'
 export type CheckinDirection = 'in' | 'out'
 export type UserRole = 'quartermaster' | 'admin' | 'developer'
 

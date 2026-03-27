@@ -1,6 +1,7 @@
 'use client'
 
 import { useDeleteMember, useMember } from '@/hooks/use-members'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +26,11 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
   const handleDelete = async () => {
     try {
       await deleteMember.mutateAsync(memberId)
+      toast.success(member ? `${member.firstName} ${member.lastName} archived` : 'Member archived')
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to delete member:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to archive member')
     }
   }
 
@@ -35,13 +38,14 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
     <AlertDialog open={true} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Member</AlertDialogTitle>
+          <AlertDialogTitle>Archive Member</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete{' '}
+            Are you sure you want to archive{' '}
             <span className="font-semibold">
               {member ? `${member.firstName} ${member.lastName}` : 'this member'}
             </span>
-            ? This action cannot be undone.
+            ? Historical records will be preserved, the member will be hidden from the default
+            roster, and their current badge assignment will be cleared.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -52,7 +56,7 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
             className="bg-error hover:bg-error/90"
           >
             {deleteMember.isPending && <ButtonSpinner />}
-            Delete
+            Archive
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -89,6 +89,14 @@ const DEFAULT_MEMBER_STATUSES: ReadonlyArray<EnumSeedInput> = [
     isHidden: false,
   },
   {
+    code: 'archived',
+    name: 'Archived',
+    description: 'Former member record retained for history and audit purposes',
+    chipVariant: 'dot',
+    chipColor: 'neutral',
+    isHidden: true,
+  },
+  {
     code: 'suspended',
     name: 'Suspended',
     description: null,
@@ -148,6 +156,20 @@ const DEFAULT_VISIT_TYPES: ReadonlyArray<EnumSeedInput> = [
     chipColor: 'success',
   },
   {
+    code: 'military',
+    name: 'Military',
+    description: 'Military visitor from another unit or formation',
+    chipVariant: 'shadow',
+    chipColor: 'warning',
+  },
+  {
+    code: 'recruitment',
+    name: 'Recruitment',
+    description: 'Prospective member visiting for recruiting or intake steps',
+    chipVariant: 'shadow',
+    chipColor: 'info',
+  },
+  {
     code: 'official',
     name: 'Official',
     description: 'Official visit or inspection',
@@ -179,13 +201,6 @@ const DEFAULT_BADGE_STATUSES: ReadonlyArray<EnumSeedInput> = [
     chipColor: 'warning',
   },
   {
-    code: 'disabled',
-    name: 'Disabled',
-    description: 'Badge has been disabled by an Admin',
-    chipVariant: 'bordered',
-    chipColor: 'danger',
-  },
-  {
     code: 'inactive',
     name: 'Inactive',
     description: 'Badge is inactive and should not be used',
@@ -198,6 +213,13 @@ const DEFAULT_BADGE_STATUSES: ReadonlyArray<EnumSeedInput> = [
     description: 'Badge has been lost or misplaced',
     chipVariant: 'bordered',
     chipColor: 'warning',
+  },
+  {
+    code: 'decommissioned',
+    name: 'Decommissioned',
+    description: 'Badge has been permanently retired from service',
+    chipVariant: 'bordered',
+    chipColor: 'neutral',
   },
 ]
 
@@ -570,8 +592,6 @@ async function ensureTags(): Promise<{
       const needsUpdate =
         existing.description !== tag.description ||
         existing.displayOrder !== tag.displayOrder ||
-        existing.chipVariant !== tag.chipVariant ||
-        existing.chipColor !== tag.chipColor ||
         existing.isPositional !== tag.isPositional
 
       if (needsUpdate) {
@@ -580,8 +600,6 @@ async function ensureTags(): Promise<{
           data: {
             description: tag.description,
             displayOrder: tag.displayOrder,
-            chipVariant: tag.chipVariant,
-            chipColor: tag.chipColor,
             isPositional: tag.isPositional,
           },
         })

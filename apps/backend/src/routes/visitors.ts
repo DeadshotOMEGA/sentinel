@@ -5,11 +5,14 @@ import type {
   CreateVisitorInput,
   UpdateVisitorInput,
   IdParam,
+  VisitType,
+  VisitorCheckInMethod,
 } from '@sentinel/contracts'
 import type { Visitor } from '@sentinel/types'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/broadcast.js'
+import { resolveVisitReason } from '../utils/visitor-intake.js'
 
 const s = initServer()
 
@@ -24,9 +27,14 @@ function toVisitorResponse(v: Visitor) {
     lastName: v.lastName ?? null,
     displayName: v.displayName ?? v.name,
     organization: v.organization ?? null,
-    visitType: v.visitType as 'contractor' | 'guest' | 'official' | 'other',
+    unit: v.unit ?? null,
+    mobilePhone: v.mobilePhone ?? null,
+    visitType: v.visitType as VisitType,
     visitTypeId: v.visitTypeId ?? null,
     visitReason: v.visitReason ?? null,
+    visitPurpose: v.visitPurpose ?? null,
+    purposeDetails: v.purposeDetails ?? null,
+    recruitmentStep: v.recruitmentStep ?? null,
     eventId: v.eventId ?? null,
     hostMemberId: v.hostMemberId ?? null,
     checkInTime: v.checkInTime.toISOString(),
@@ -34,7 +42,7 @@ function toVisitorResponse(v: Visitor) {
     temporaryBadgeId: v.temporaryBadgeId ?? null,
     kioskId: v.kioskId,
     adminNotes: v.adminNotes ?? null,
-    checkInMethod: (v.checkInMethod || 'kiosk') as 'kiosk' | 'admin_manual',
+    checkInMethod: (v.checkInMethod || 'kiosk') as VisitorCheckInMethod,
     createdByAdmin: v.createdByAdmin ?? null,
     createdAt: v.createdAt.toISOString(),
   }
@@ -141,9 +149,14 @@ export const visitorsRouter = s.router(visitorContract, {
         firstName: body.firstName,
         lastName: body.lastName,
         organization: body.organization,
+        unit: body.unit,
+        mobilePhone: body.mobilePhone,
         visitType: body.visitType,
         visitTypeId: body.visitTypeId,
-        visitReason: body.visitReason,
+        visitReason: resolveVisitReason(body),
+        visitPurpose: body.visitPurpose,
+        purposeDetails: body.purposeDetails,
+        recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,
@@ -268,9 +281,14 @@ export const visitorsRouter = s.router(visitorContract, {
         firstName: body.firstName,
         lastName: body.lastName,
         organization: body.organization,
+        unit: body.unit,
+        mobilePhone: body.mobilePhone,
         visitType: body.visitType,
         visitTypeId: body.visitTypeId,
-        visitReason: body.visitReason,
+        visitReason: resolveVisitReason(body),
+        visitPurpose: body.visitPurpose,
+        purposeDetails: body.purposeDetails,
+        recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,

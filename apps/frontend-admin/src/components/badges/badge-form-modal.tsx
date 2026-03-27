@@ -28,6 +28,8 @@ interface BadgeFormModalProps {
   badge?: BadgeWithAssignmentResponse
 }
 
+type BadgeLifecycleStatus = 'active' | 'inactive' | 'lost' | 'damaged' | 'decommissioned'
+
 export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormModalProps) {
   const queryClient = useQueryClient()
   const createBadge = useCreateBadge()
@@ -38,7 +40,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
   })
 
   const [serialNumber, setSerialNumber] = useState('')
-  const [status, setStatus] = useState<'active' | 'inactive' | 'lost' | 'damaged'>('active')
+  const [status, setStatus] = useState<BadgeLifecycleStatus>('active')
   const [assignmentType, setAssignmentType] = useState<'unassigned' | 'member'>('unassigned')
   const [assignedToId, setAssignedToId] = useState('')
   const [memberSearch, setMemberSearch] = useState('')
@@ -48,7 +50,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
   useEffect(() => {
     if (mode === 'edit' && badge) {
       setSerialNumber(badge.serialNumber)
-      setStatus((badge.status as 'active' | 'inactive' | 'lost' | 'damaged') || 'active')
+      setStatus((badge.status as BadgeLifecycleStatus) || 'active')
       if (badge.assignmentType === 'member') {
         setAssignmentType('member')
         setAssignedToId(badge.assignedToId ?? '')
@@ -70,6 +72,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
   }, [mode, badge, open])
 
   const isSubmitting = createBadge.isPending || updateBadge.isPending
+  const isDecommissioned = status === 'decommissioned'
 
   const memberOptions = useMemo(() => {
     const members = [...(membersData?.members ?? [])]
@@ -169,15 +172,22 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 id="badge-status"
                 className="select"
                 value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as 'active' | 'inactive' | 'lost' | 'damaged')
-                }
+                onChange={(e) => {
+                  const nextStatus = e.target.value as BadgeLifecycleStatus
+                  setStatus(nextStatus)
+                  if (nextStatus === 'decommissioned') {
+                    setAssignmentType('unassigned')
+                    setAssignedToId('')
+                    setMemberSearch('')
+                  }
+                }}
                 data-testid={TID.badges.form.status}
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="lost">Lost</option>
                 <option value="damaged">Damaged</option>
+                <option value="decommissioned">Decommissioned</option>
               </select>
             </fieldset>
 
@@ -187,6 +197,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 id="badge-assignment"
                 className="select"
                 value={assignmentType}
+                disabled={isDecommissioned}
                 onChange={(e) => {
                   const value = e.target.value as 'member' | 'unassigned'
                   setAssignmentType(value)
@@ -200,10 +211,15 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 <option value="unassigned">Unassigned</option>
                 <option value="member">Member</option>
               </select>
+              {isDecommissioned && (
+                <span className="label text-base-content/60">
+                  Decommissioned badges stay unassigned and hidden from normal operations.
+                </span>
+              )}
             </fieldset>
           </div>
 
-          {assignmentType === 'member' && (
+          {assignmentType === 'member' && !isDecommissioned && (
             <fieldset className="fieldset">
               <legend className="fieldset-legend">Assigned Member</legend>
               <input

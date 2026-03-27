@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { addDays, format } from 'date-fns'
-import type { IsoWeekday } from '@sentinel/contracts'
+import { format } from 'date-fns'
 import { Users, Check, Pencil, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
@@ -41,11 +40,11 @@ import {
   useDeleteDwOverride,
 } from '@/hooks/use-schedules'
 import { useOperationalTimings } from '@/hooks/use-operational-timings'
-import { getIsoWeekdayLongLabel, getIsoWeekdayShortLabel, sortIsoWeekdays } from '@/lib/iso-weekday'
+import { getWeekDutyWatchOccurrences } from '@/lib/duty-watch'
 import { useModalContext } from './modal-context'
 import { parseDateString } from '@/lib/date-utils'
 
-type TabKey = 'base' | `night-${IsoWeekday}`
+type TabKey = 'base' | `night-${string}`
 
 export function DutyWatchModal() {
   const { modal, closeModal } = useModalContext()
@@ -58,31 +57,25 @@ export function DutyWatchModal() {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [removeType, setRemoveType] = useState<'assignment' | 'override'>('assignment')
   const { data: timingsData } = useOperationalTimings()
-
-  const dutyWatchDays = useMemo(() => {
-    return sortIsoWeekdays(timingsData?.settings.operational.dutyWatchDays ?? [2, 4])
-  }, [timingsData?.settings.operational.dutyWatchDays])
+  const dutyWatchRules = timingsData?.settings.operational.dutyWatchRules ?? []
 
   const nightTabs = useMemo(() => {
     if (!weekStartDate) {
       return [] as Array<{
-        key: `night-${IsoWeekday}`
-        isoDay: IsoWeekday
+        key: `night-${string}`
         label: string
         shortLabel: string
         date: string
       }>
     }
 
-    const start = parseDateString(weekStartDate)
-    return dutyWatchDays.map((isoDay) => ({
-      key: `night-${isoDay}` as const,
-      isoDay,
-      label: getIsoWeekdayLongLabel(isoDay),
-      shortLabel: getIsoWeekdayShortLabel(isoDay),
-      date: format(addDays(start, isoDay - 1), 'yyyy-MM-dd'),
+    return getWeekDutyWatchOccurrences(dutyWatchRules, weekStartDate).map((occurrence) => ({
+      key: `night-${occurrence.date}` as const,
+      label: format(parseDateString(occurrence.date), 'EEEE, MMM d'),
+      shortLabel: format(parseDateString(occurrence.date), 'EEE'),
+      date: occurrence.date,
     }))
-  }, [dutyWatchDays, weekStartDate])
+  }, [dutyWatchRules, weekStartDate])
 
   // Auto-select tab from nightDate
   useEffect(() => {
@@ -91,15 +84,14 @@ export function DutyWatchModal() {
       return
     }
 
-    const d = parseDateString(modal.nightDate)
-    const isoDay = (d.getDay() === 0 ? 7 : d.getDay()) as IsoWeekday
-    if (dutyWatchDays.includes(isoDay)) {
-      setActiveTab(`night-${isoDay}`)
+    const matchingTab = nightTabs.find((tab) => tab.date === modal.nightDate)
+    if (matchingTab) {
+      setActiveTab(matchingTab.key)
       return
     }
 
     setActiveTab('base')
-  }, [dutyWatchDays, modal.nightDate, modal.weekStartDate])
+  }, [modal.nightDate, modal.weekStartDate, nightTabs])
 
   useEffect(() => {
     if (activeTab === 'base') {
@@ -243,7 +235,7 @@ export function DutyWatchModal() {
 
   const assignedMemberIds =
     dutyWatchSchedule?.assignments?.map((a) => (a as { memberId: string }).memberId) ?? []
-  const baseTabLabel = nightTabs.map((tab) => tab.shortLabel).join('+')
+  const baseTabLabel = `${nightTabs.length} configured night${nightTabs.length === 1 ? '' : 's'}`
   const activeNightLabel = activeNightTab?.label ?? 'Selected night'
 
   const handleAssignPosition = (positionCode: string) => {

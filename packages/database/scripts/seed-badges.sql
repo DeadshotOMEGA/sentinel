@@ -1,4 +1,4 @@
--- Seed temporary test badges and assign to members
+-- Seed test member badges and assign to members
 -- Creates one badge per member with serial numbers TEST-BADGE-0001 through TEST-BADGE-0160
 
 DO $$
@@ -29,7 +29,7 @@ BEGIN
     VALUES (
       gen_random_uuid(),
       serial,
-      'permanent',
+      'member',
       member_rec.id,
       'active',
       active_status_id,

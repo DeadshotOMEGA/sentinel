@@ -28,7 +28,7 @@ function MembersPageContent() {
   const [filters, setFilters] = useState({
     divisionId: searchParams.get('divisionId') || undefined,
     rank: searchParams.get('rank') || undefined,
-    status: searchParams.get('status') || undefined,
+    status: searchParams.get('status') || 'active',
     search: searchParams.get('search') || undefined,
     qualificationCode: searchParams.get('qualificationCode') || undefined,
   })
@@ -41,7 +41,7 @@ function MembersPageContent() {
     if (limit !== 200) params.set('limit', limit.toString())
     if (filters.divisionId) params.set('divisionId', filters.divisionId)
     if (filters.rank) params.set('rank', filters.rank)
-    if (filters.status) params.set('status', filters.status)
+    if (filters.status && filters.status !== 'active') params.set('status', filters.status)
     if (filters.search) params.set('search', filters.search)
     if (filters.qualificationCode) params.set('qualificationCode', filters.qualificationCode)
 
@@ -81,34 +81,36 @@ function MembersPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-        <button
-          className="btn btn-outline btn-md"
-          onClick={() => {
-            syncAutoQuals.mutate(undefined, {
-              onSuccess: (data) => {
-                toast.success(
-                  `Sync complete: ${data.granted} granted, ${data.revoked} revoked, ${data.unchanged} unchanged` +
-                    (data.errors.length > 0 ? `, ${data.errors.length} errors` : '')
-                )
-              },
-              onError: () => {
-                toast.error('Failed to sync auto-qualifications')
-              },
-            })
-          }}
-          disabled={syncAutoQuals.isPending}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${syncAutoQuals.isPending ? 'animate-spin' : ''}`} />
-          Sync Qualifications
-        </button>
-        <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
-          <Upload className="h-4 w-4 mr-2" />
-          Import CSV
-        </button>
-        <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Member
-        </button>
+          <button
+            className="btn btn-outline btn-md"
+            onClick={() => {
+              syncAutoQuals.mutate(undefined, {
+                onSuccess: (data) => {
+                  toast.success(
+                    `Sync complete: ${data.granted} granted, ${data.revoked} revoked, ${data.unchanged} unchanged` +
+                      (data.errors.length > 0 ? `, ${data.errors.length} errors` : '')
+                  )
+                },
+                onError: () => {
+                  toast.error('Failed to sync auto-qualifications')
+                },
+              })
+            }}
+            disabled={syncAutoQuals.isPending}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${syncAutoQuals.isPending ? 'animate-spin' : ''}`}
+            />
+            Sync Qualifications
+          </button>
+          <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import CSV
+          </button>
+          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Member
+          </button>
         </div>
       </div>
 

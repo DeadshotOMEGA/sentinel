@@ -217,11 +217,16 @@ export class VisitorRepository {
           firstName: firstName || null,
           lastName: lastName || null,
           organization: data.organization,
+          unit: data.unit ?? null,
+          mobilePhone: data.mobilePhone ?? null,
           visitType: data.visitType,
           visitTypeId: data.visitTypeId ?? null,
           hostMemberId: data.hostMemberId ?? null,
           eventId: data.eventId ?? null,
           visitReason: data.visitReason ?? null,
+          visitPurpose: data.visitPurpose ?? null,
+          purposeDetails: data.purposeDetails ?? null,
+          recruitmentStep: data.recruitmentStep ?? null,
           checkInTime: data.checkInTime ?? new Date(),
           checkOutTime: data.checkOutTime ?? null,
           temporaryBadgeId: data.temporaryBadgeId ?? null,
@@ -314,11 +319,16 @@ export class VisitorRepository {
           firstName: firstName || null,
           lastName: lastName || null,
           organization: data.organization !== undefined ? data.organization : undefined,
+          unit: data.unit !== undefined ? data.unit : undefined,
+          mobilePhone: data.mobilePhone !== undefined ? data.mobilePhone : undefined,
           visitType: data.visitType !== undefined ? data.visitType : undefined,
           visitTypeId: data.visitTypeId !== undefined ? data.visitTypeId : undefined,
           eventId: data.eventId !== undefined ? data.eventId : undefined,
           hostMemberId: data.hostMemberId !== undefined ? data.hostMemberId : undefined,
           visitReason: data.visitReason !== undefined ? data.visitReason : undefined,
+          visitPurpose: data.visitPurpose !== undefined ? data.visitPurpose : undefined,
+          purposeDetails: data.purposeDetails !== undefined ? data.purposeDetails : undefined,
+          recruitmentStep: data.recruitmentStep !== undefined ? data.recruitmentStep : undefined,
           checkInTime: data.checkInTime !== undefined ? data.checkInTime : undefined,
           checkOutTime: data.checkOutTime !== undefined ? data.checkOutTime : undefined,
           temporaryBadgeId: data.temporaryBadgeId !== undefined ? data.temporaryBadgeId : undefined,
@@ -498,7 +508,7 @@ export class VisitorRepository {
    */
   private toVisitorType(visitor: PrismaVisitor): Visitor {
     const checkInMethod = visitor.checkInMethod
-      ? (visitor.checkInMethod as 'kiosk' | 'admin_manual')
+      ? (visitor.checkInMethod as Visitor['checkInMethod'])
       : 'kiosk'
 
     return {
@@ -516,10 +526,20 @@ export class VisitorRepository {
           legacyName: visitor.name,
         }),
       organization: visitor.organization || undefined,
+      unit: visitor.unit || undefined,
+      mobilePhone: visitor.mobilePhone || undefined,
       visitType: visitor.visitType as Visitor['visitType'],
+      visitTypeId: visitor.visitTypeId ? visitor.visitTypeId : undefined,
       hostMemberId: visitor.hostMemberId ? visitor.hostMemberId : undefined,
       eventId: visitor.eventId ? visitor.eventId : undefined,
       visitReason: visitor.visitReason ? visitor.visitReason : undefined,
+      visitPurpose: visitor.visitPurpose
+        ? (visitor.visitPurpose as Visitor['visitPurpose'])
+        : undefined,
+      purposeDetails: visitor.purposeDetails ? visitor.purposeDetails : undefined,
+      recruitmentStep: visitor.recruitmentStep
+        ? (visitor.recruitmentStep as Visitor['recruitmentStep'])
+        : undefined,
       checkInTime: visitor.checkInTime,
       checkOutTime: visitor.checkOutTime ? visitor.checkOutTime : undefined,
       temporaryBadgeId: visitor.temporaryBadgeId ? visitor.temporaryBadgeId : undefined,

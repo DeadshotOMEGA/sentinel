@@ -8,7 +8,13 @@ export const BadgeAssignmentTypeEnum = v.picklist(['member', 'visitor', 'unassig
 /**
  * Badge status enum
  */
-export const BadgeStatusEnum = v.picklist(['active', 'inactive', 'lost', 'damaged'])
+export const BadgeStatusEnum = v.picklist([
+  'active',
+  'inactive',
+  'lost',
+  'damaged',
+  'decommissioned',
+])
 
 /**
  * Create badge request schema
@@ -48,6 +54,13 @@ export const UpdateBadgeSchema = v.object({
 export const AssignBadgeSchema = v.object({
   assignmentType: BadgeAssignmentTypeEnum,
   assignedToId: v.pipe(v.string('Assigned to ID is required'), v.uuid('Invalid assigned to ID')),
+})
+
+/**
+ * Delete badge request schema
+ */
+export const DeleteBadgeSchema = v.object({
+  unassignFirst: v.optional(v.boolean()),
 })
 
 /**
@@ -98,8 +111,24 @@ export const BadgeListQuerySchema = v.object({
   search: v.optional(v.string()),
   assignmentType: v.optional(v.string()),
   status: v.optional(v.string()),
-  assignedOnly: v.optional(v.pipe(v.string(), v.transform((val) => val === 'true'))),
-  unassignedOnly: v.optional(v.pipe(v.string(), v.transform((val) => val === 'true'))),
+  assignedOnly: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => val === 'true')
+    )
+  ),
+  unassignedOnly: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => val === 'true')
+    )
+  ),
+  includeDecommissioned: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((val) => val === 'true')
+    )
+  ),
 })
 
 /**
@@ -130,6 +159,7 @@ export const BadgeStatsResponseSchema = v.object({
 export type CreateBadgeInput = v.InferOutput<typeof CreateBadgeSchema>
 export type UpdateBadgeInput = v.InferOutput<typeof UpdateBadgeSchema>
 export type AssignBadgeInput = v.InferOutput<typeof AssignBadgeSchema>
+export type DeleteBadgeInput = v.InferOutput<typeof DeleteBadgeSchema>
 export type BadgeResponse = v.InferOutput<typeof BadgeResponseSchema>
 export type BadgeWithAssignmentResponse = v.InferOutput<typeof BadgeWithAssignmentResponseSchema>
 export type BadgeListQuery = v.InferOutput<typeof BadgeListQuerySchema>

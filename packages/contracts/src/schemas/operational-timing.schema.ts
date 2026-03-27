@@ -2,6 +2,7 @@ import * as v from 'valibot'
 
 const TIME_REGEX = /^\d{2}:\d{2}$/
 const MONTH_DAY_REGEX = /^\d{2}-\d{2}$/
+const LOCAL_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/
 
 export const IsoWeekdaySchema = v.pipe(
   v.number('Weekday is required'),
@@ -48,10 +49,92 @@ export const MonthDaySchema = v.pipe(
 )
 export type MonthDay = v.InferOutput<typeof MonthDaySchema>
 
+export const LocalDateSchema = v.pipe(
+  v.string('Date is required'),
+  v.regex(LOCAL_DATE_REGEX, 'Date must be in YYYY-MM-DD format'),
+  v.check((value) => {
+    const [yearText, monthText, dayText] = value.split('-')
+    const year = Number(yearText)
+    const month = Number(monthText)
+    const day = Number(dayText)
+
+    if (
+      !Number.isInteger(year) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(day) ||
+      month < 1 ||
+      month > 12 ||
+      day < 1
+    ) {
+      return false
+    }
+
+    const utcDate = new Date(Date.UTC(year, month - 1, day))
+    return (
+      utcDate.getUTCFullYear() === year &&
+      utcDate.getUTCMonth() === month - 1 &&
+      utcDate.getUTCDate() === day
+    )
+  }, 'Date must be a valid YYYY-MM-DD value')
+)
+export type LocalDate = v.InferOutput<typeof LocalDateSchema>
+
 const UniqueWeekdaysSchema = v.pipe(
   v.array(IsoWeekdaySchema),
   v.minLength(1, 'At least one weekday is required'),
   v.check((days) => new Set(days).size === days.length, 'Weekdays must be unique')
+)
+
+export const DutyWatchMonthlyOrdinalSchema = v.picklist(
+  ['first', 'second', 'third', 'fourth', 'last'],
+  'Ordinal must be first, second, third, fourth, or last'
+)
+export type DutyWatchMonthlyOrdinal = v.InferOutput<typeof DutyWatchMonthlyOrdinalSchema>
+
+export const DutyWatchWeeklyRecurrenceSchema = v.object({
+  type: v.literal('weekly'),
+  weekday: IsoWeekdaySchema,
+  intervalWeeks: v.pipe(
+    v.number('Week interval is required'),
+    v.integer('Week interval must be an integer'),
+    v.minValue(1, 'Week interval must be at least 1'),
+    v.maxValue(52, 'Week interval must be at most 52')
+  ),
+})
+export type DutyWatchWeeklyRecurrence = v.InferOutput<typeof DutyWatchWeeklyRecurrenceSchema>
+
+export const DutyWatchMonthlyNthWeekdayRecurrenceSchema = v.object({
+  type: v.literal('monthly_nth_weekday'),
+  weekday: IsoWeekdaySchema,
+  ordinal: DutyWatchMonthlyOrdinalSchema,
+})
+export type DutyWatchMonthlyNthWeekdayRecurrence = v.InferOutput<
+  typeof DutyWatchMonthlyNthWeekdayRecurrenceSchema
+>
+
+export const DutyWatchRecurrenceSchema = v.variant('type', [
+  DutyWatchWeeklyRecurrenceSchema,
+  DutyWatchMonthlyNthWeekdayRecurrenceSchema,
+])
+export type DutyWatchRecurrence = v.InferOutput<typeof DutyWatchRecurrenceSchema>
+
+export const DutyWatchRuleSchema = v.object({
+  id: v.pipe(v.string('Rule id is required'), v.minLength(1, 'Rule id is required')),
+  name: v.pipe(v.string('Rule name is required'), v.minLength(1, 'Rule name is required')),
+  effectiveStartDate: LocalDateSchema,
+  startTime: TimeOfDaySchema,
+  endTime: TimeOfDaySchema,
+  recurrence: DutyWatchRecurrenceSchema,
+})
+export type DutyWatchRule = v.InferOutput<typeof DutyWatchRuleSchema>
+
+const DutyWatchRulesSchema = v.pipe(
+  v.array(DutyWatchRuleSchema),
+  v.minLength(1, 'At least one Duty Watch rule is required'),
+  v.check(
+    (rules) => new Set(rules.map((rule) => rule.id)).size === rules.length,
+    'Duty Watch rule ids must be unique'
+  )
 )
 
 function compareMonthDay(left: string, right: string): number {
@@ -125,11 +208,21 @@ export const OperationalTimingsOperationalSettingsSchema = v.object({
   dayRolloverTime: TimeOfDaySchema,
   lockupWarningTime: TimeOfDaySchema,
   lockupCriticalTime: TimeOfDaySchema,
-  dutyWatchAlertTime: TimeOfDaySchema,
-  dutyWatchDays: UniqueWeekdaysSchema,
+  dutyWatchRules: DutyWatchRulesSchema,
 })
 export type OperationalTimingsOperationalSettings = v.InferOutput<
   typeof OperationalTimingsOperationalSettingsSchema
+>
+
+export const LegacyOperationalTimingsOperationalSettingsSchema = v.object({
+  dayRolloverTime: TimeOfDaySchema,
+  lockupWarningTime: TimeOfDaySchema,
+  lockupCriticalTime: TimeOfDaySchema,
+  dutyWatchAlertTime: TimeOfDaySchema,
+  dutyWatchDays: UniqueWeekdaysSchema,
+})
+export type LegacyOperationalTimingsOperationalSettings = v.InferOutput<
+  typeof LegacyOperationalTimingsOperationalSettingsSchema
 >
 
 export const OperationalTimingsWorkingHoursSchema = v.pipe(
@@ -165,6 +258,15 @@ export const OperationalTimingsSettingsSchema = v.object({
   alertRateLimits: OperationalTimingsAlertRateLimitsSchema,
 })
 export type OperationalTimingsSettings = v.InferOutput<typeof OperationalTimingsSettingsSchema>
+
+export const LegacyOperationalTimingsSettingsSchema = v.object({
+  operational: LegacyOperationalTimingsOperationalSettingsSchema,
+  workingHours: OperationalTimingsWorkingHoursSchema,
+  alertRateLimits: OperationalTimingsAlertRateLimitsSchema,
+})
+export type LegacyOperationalTimingsSettings = v.InferOutput<
+  typeof LegacyOperationalTimingsSettingsSchema
+>
 
 export const OperationalTimingsSourceSchema = v.picklist(
   ['default', 'stored', 'backfilled'],

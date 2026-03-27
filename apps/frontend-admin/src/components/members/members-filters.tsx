@@ -41,7 +41,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
     onFilterChange({
       divisionId: undefined,
       rank: undefined,
-      status: undefined,
+      status: 'active',
       search: undefined,
       qualificationCode: undefined,
     })
@@ -50,7 +50,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
   const hasActiveFilters =
     filters.divisionId ||
     filters.rank ||
-    filters.status ||
+    (filters.status && filters.status !== 'active') ||
     filters.search ||
     filters.qualificationCode
 
@@ -121,7 +121,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
           <select
             id="status"
             className="select"
-            value={filters.status ?? 'all'}
+            value={filters.status ?? 'active'}
             onChange={(e) =>
               onFilterChange({ status: e.target.value === 'all' ? undefined : e.target.value })
             }
@@ -159,7 +159,11 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters} data-testid={TID.members.filter.clear}>
+            <button
+              className="btn btn-outline btn-sm w-full"
+              onClick={handleClearFilters}
+              data-testid={TID.members.filter.clear}
+            >
               <X className="h-4 w-4 mr-2" />
               Clear Filters
             </button>

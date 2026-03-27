@@ -214,6 +214,18 @@ export interface ChipProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, '
   showDot?: boolean
 }
 
+export function normalizeChipColor(color: ChipColor): ChipCanonicalColor {
+  return color === 'neutral'
+    ? 'zinc'
+    : color === 'accent'
+      ? 'purple'
+      : color === 'info'
+        ? 'cyan'
+        : color === 'error'
+          ? 'danger'
+          : color
+}
+
 function Chip({
   className,
   variant = 'solid',
@@ -225,16 +237,7 @@ function Chip({
 }: ChipProps) {
   const shouldShowDot = showDot || variant === 'dot'
   const normalizedVariant: ChipCanonicalVariant = variant === 'soft' ? 'faded' : variant
-  const normalizedColor: ChipCanonicalColor =
-    color === 'neutral'
-      ? 'zinc'
-      : color === 'accent'
-        ? 'purple'
-        : color === 'info'
-          ? 'cyan'
-          : color === 'error'
-            ? 'danger'
-            : color
+  const normalizedColor = normalizeChipColor(color)
 
   return (
     <span

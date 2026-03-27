@@ -34,15 +34,26 @@ description: Enforces Sentinel frontend design quality for apps/frontend-admin w
 - Use `Chip` for decorative labels/tags.
 - Use token-based spacing/elevation/timing and avoid magic numbers.
 
-4. Perform visual QA using `playwright-cli` only when explicitly requested:
+4. Perform a post-change visual sanity pass before finishing any layout/UX work:
 
+- Inspect the rendered UI after implementation, not just the code and build output.
+- Check for overflow, clipped focus rings, hidden inputs/actions, duplicate control bands, awkward spacing, unnecessary scrollbars, and broken responsive behavior.
+- When the user reported a specific viewport or attached a screenshot, verify against that case first.
+- Otherwise inspect at least one desktop viewport and one narrower viewport likely to expose layout stress.
+- If the result looks wrong, iterate before presenting the work as complete.
+
+5. Use `playwright-cli` for rendered verification when the change materially affects layout or when the user reports a visual problem:
+
+- Prefer route-level verification with screenshots or direct observations when the route is available locally.
+- Treat `playwright-cli` as required for layout-heavy modal/page work unless the route is inaccessible; if inaccessible, state the limitation explicitly.
 - Use `references/three-round-visual-qa.md` when the request specifically asks for a three-round visual QA pass.
 
-5. Required completion evidence (frontend tasks):
+6. Required completion evidence (frontend tasks):
 
 - `DaisyUI Fit Check`
 - `Research Notes`
 - `Design Compliance Checklist`
+- `Visual Sanity Check`
 
 ## Required outputs format
 
@@ -66,6 +77,13 @@ For every frontend change, include:
 - Token usage compliance
 - Semantic color usage compliance
 - Motion/accessibility compliance
+
+### Visual Sanity Check
+
+- Route or UI surface reviewed
+- Viewport(s) checked
+- What was inspected
+- Result or remaining issue
 
 ### Visual QA Evidence (Only if requested)
 

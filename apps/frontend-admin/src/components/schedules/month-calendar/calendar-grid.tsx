@@ -1,8 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import type { IsoWeekday } from '@sentinel/contracts'
+import type { DutyWatchRule } from '@sentinel/contracts'
 import { WeekRow } from './week-row'
-import { sortIsoWeekdays } from '@/lib/iso-weekday'
 
 interface ScheduleData {
   id: string
@@ -47,7 +46,7 @@ interface CalendarGridProps {
   currentMonth: Date
   schedulesByWeek: Map<string, ScheduleData[]>
   eventsByDate: Map<string, EventData[]>
-  dutyWatchDays: number[]
+  dutyWatchRules: DutyWatchRule[]
   onWeekClick?: (weekStartDate: string) => void
 }
 
@@ -60,7 +59,7 @@ export const CalendarGrid = memo(function CalendarGrid({
   currentMonth,
   schedulesByWeek,
   eventsByDate,
-  dutyWatchDays,
+  dutyWatchRules,
   onWeekClick,
 }: CalendarGridProps) {
   const [focusedCell, setFocusedCell] = useState<{ week: number; day: number }>({
@@ -101,20 +100,17 @@ export const CalendarGrid = memo(function CalendarGrid({
     [focusedCell, weeks.length]
   )
 
-  const columnHeaders = useMemo(() => {
-    const normalizedDutyWatchDays = sortIsoWeekdays(dutyWatchDays)
-    return [
+  const columnHeaders = useMemo(
+    () => [
       { key: 'week', label: 'Week / DDS', sublabel: null as string | null },
-      ...DAY_HEADERS.map((label, index) => {
-        const isoDay = (index + 1) as IsoWeekday
-        return {
-          key: label.toLowerCase(),
-          label,
-          sublabel: normalizedDutyWatchDays.includes(isoDay) ? '(DW)' : null,
-        }
-      }),
-    ]
-  }, [dutyWatchDays])
+      ...DAY_HEADERS.map((label) => ({
+        key: label.toLowerCase(),
+        label,
+        sublabel: null as string | null,
+      })),
+    ],
+    []
+  )
 
   return (
     <div className="overflow-x-auto">
@@ -157,7 +153,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                 ddsSchedule={ddsSchedule}
                 dutyWatchSchedule={dutyWatchSchedule}
                 eventsByDate={eventsByDate}
-                dutyWatchDays={dutyWatchDays}
+                dutyWatchRules={dutyWatchRules}
                 focusedWeek={focusedCell.week}
                 focusedDay={focusedCell.day}
                 onWeekClick={onWeekClick}

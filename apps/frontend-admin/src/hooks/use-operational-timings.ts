@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { OperationalTimingsResponse, OperationalTimingsSettings } from '@sentinel/contracts'
 import { apiClient } from '@/lib/api-client'
+import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 
 const operationalTimingsQueryKey = ['operational-timings'] as const
 
@@ -72,6 +73,7 @@ export function useUpdateOperationalTimings() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(operationalTimingsQueryKey, data)
+      void invalidateDashboardQueries(queryClient)
     },
   })
 }
