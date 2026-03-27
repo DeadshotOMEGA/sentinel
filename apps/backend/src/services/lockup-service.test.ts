@@ -39,21 +39,38 @@ function createService() {
   }
 
   const lockupRepo = {
+    createStatus: vi.fn(),
     markLockingUp: vi.fn(),
     createExecution: vi.fn(),
     markSecured: vi.fn(),
+    updateHolder: vi.fn(),
+    markOpen: vi.fn(),
   }
 
   const presenceService = {
     setMemberDirection: vi.fn(),
+    isMemberPresent: vi.fn(),
+  }
+
+  const qualificationService = {
+    canMemberReceiveLockup: vi.fn(),
   }
 
   Reflect.set(service, 'checkinRepo', checkinRepo)
   Reflect.set(service, 'visitorRepo', visitorRepo)
   Reflect.set(service, 'lockupRepo', lockupRepo)
   Reflect.set(service, 'presenceService', presenceService)
+  Reflect.set(service, 'qualificationService', qualificationService)
 
-  return { service, prisma, checkinRepo, visitorRepo, lockupRepo, presenceService }
+  return {
+    service,
+    prisma,
+    checkinRepo,
+    visitorRepo,
+    lockupRepo,
+    presenceService,
+    qualificationService,
+  }
 }
 
 describe('LockupService.getPresentMembersForLockup', () => {
@@ -216,5 +233,110 @@ describe('LockupService.executeLockup', () => {
         ],
       })
     )
+  })
+})
+
+describe('LockupService same-day reopen flow', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('creates a fresh open status when reopening after a completed same-day lockup', async () => {
+    const { service, prisma, lockupRepo, presenceService, qualificationService } = createService()
+
+    vi.spyOn(service, 'getCurrentStatus').mockResolvedValue({
+      id: 'status-closed',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: null,
+      acquiredAt: null,
+      buildingStatus: 'secured',
+      securedAt: new Date('2026-03-27T01:00:00.000Z'),
+      securedBy: 'member-9',
+      isActive: false,
+      createdAt: new Date('2026-03-26T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-27T01:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+
+    prisma.member.findUnique.mockResolvedValue({
+      id: 'member-1',
+      firstName: 'Pat',
+      lastName: 'Holder',
+      rank: 'Capt',
+    })
+    qualificationService.canMemberReceiveLockup.mockResolvedValue(true)
+    presenceService.isMemberPresent.mockResolvedValue(true)
+    lockupRepo.createStatus.mockResolvedValue({
+      id: 'status-open',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-1',
+      acquiredAt: new Date('2026-03-27T02:00:00.000Z'),
+      buildingStatus: 'open',
+      securedAt: null,
+      securedBy: null,
+      isActive: true,
+      createdAt: new Date('2026-03-27T02:00:00.000Z'),
+      updatedAt: new Date('2026-03-27T02:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+    prisma.responsibilityAuditLog.create.mockResolvedValue({})
+
+    await service.openBuilding('member-1', 'Re-open after prior lockup')
+
+    expect(lockupRepo.createStatus).toHaveBeenCalledWith({
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-1',
+      buildingStatus: 'open',
+    })
+    expect(lockupRepo.markOpen).not.toHaveBeenCalled()
+  })
+
+  it('creates a fresh secured cycle when acquiring lockup after a completed same-day lockup', async () => {
+    const { service, prisma, lockupRepo, presenceService, qualificationService } = createService()
+
+    vi.spyOn(service, 'getCurrentStatus').mockResolvedValue({
+      id: 'status-closed',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: null,
+      acquiredAt: null,
+      buildingStatus: 'secured',
+      securedAt: new Date('2026-03-27T01:00:00.000Z'),
+      securedBy: 'member-9',
+      isActive: false,
+      createdAt: new Date('2026-03-26T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-27T01:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+
+    prisma.member.findUnique.mockResolvedValue({ id: 'member-1' })
+    qualificationService.canMemberReceiveLockup.mockResolvedValue(true)
+    presenceService.isMemberPresent.mockResolvedValue(true)
+    lockupRepo.createStatus.mockResolvedValue({
+      id: 'status-new',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-1',
+      acquiredAt: new Date('2026-03-27T02:05:00.000Z'),
+      buildingStatus: 'secured',
+      securedAt: null,
+      securedBy: null,
+      isActive: true,
+      createdAt: new Date('2026-03-27T02:05:00.000Z'),
+      updatedAt: new Date('2026-03-27T02:05:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+    prisma.responsibilityAuditLog.create.mockResolvedValue({})
+
+    await service.acquireLockup('member-1', 'Re-acquire after prior cycle')
+
+    expect(lockupRepo.createStatus).toHaveBeenCalledWith({
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-1',
+      buildingStatus: 'secured',
+    })
+    expect(lockupRepo.updateHolder).not.toHaveBeenCalled()
   })
 })

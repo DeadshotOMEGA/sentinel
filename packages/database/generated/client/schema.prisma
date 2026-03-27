@@ -893,7 +893,7 @@ model DutyWatchNightOverride {
 
 model LockupStatus {
   id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  date            DateTime         @unique @db.Date // Operational date (3am rollover)
+  date            DateTime         @db.Date // Operational date (3am rollover)
   currentHolderId String?          @map("current_holder_id") @db.Uuid
   acquiredAt      DateTime?        @map("acquired_at") @db.Timestamp(6)
   buildingStatus  String           @default("secured") @map("building_status") @db.VarChar(20) // secured, open, locking_up

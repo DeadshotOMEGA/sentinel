@@ -70,7 +70,7 @@ export function LockupOptionsModal({
               </AppBadge>
             </div>
             <DialogDescription>
-              {memberName} currently holds lockup responsibility
+              {memberName} is holding lockup. Complete one of these actions to finish checkout.
             </DialogDescription>
           </DialogHeader>
 
@@ -86,7 +86,7 @@ export function LockupOptionsModal({
                 <div className="min-w-0">
                   <p className="font-semibold leading-tight text-base-content">{memberName}</p>
                   <p className="text-sm text-base-content/70">
-                    You must transfer lockup or lock up the building before checking out
+                    Transfer lockup or execute building lockup to complete this checkout
                   </p>
                 </div>
               </AppCardContent>

@@ -146,7 +146,8 @@ export function useExecuteLockup() {
         body: data,
       })
       if (response.status !== 200) {
-        throw new Error('Failed to execute lockup')
+        const body = response.body as { message?: string }
+        throw new Error(body.message ?? 'Failed to execute lockup')
       }
       return response.body
     },

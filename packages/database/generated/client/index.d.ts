@@ -69778,10 +69778,10 @@ export namespace Prisma {
 
   export type LockupStatusWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    date?: Date | string
     AND?: LockupStatusWhereInput | LockupStatusWhereInput[]
     OR?: LockupStatusWhereInput[]
     NOT?: LockupStatusWhereInput | LockupStatusWhereInput[]
+    date?: DateTimeFilter<"LockupStatus"> | Date | string
     currentHolderId?: UuidNullableFilter<"LockupStatus"> | string | null
     acquiredAt?: DateTimeNullableFilter<"LockupStatus"> | Date | string | null
     buildingStatus?: StringFilter<"LockupStatus"> | string
@@ -69794,7 +69794,7 @@ export namespace Prisma {
     securedByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     transfers?: LockupTransferListRelationFilter
     execution?: XOR<LockupExecutionNullableScalarRelationFilter, LockupExecutionWhereInput> | null
-  }, "id" | "date">
+  }, "id">
 
   export type LockupStatusOrderByWithAggregationInput = {
     id?: SortOrder

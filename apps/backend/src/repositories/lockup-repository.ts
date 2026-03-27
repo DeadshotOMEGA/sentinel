@@ -114,13 +114,19 @@ export class LockupRepository {
   // Lockup Status
   // ============================================================================
 
+  private normalizeOperationalDate(date: Date): Date {
+    const normalizedDate = new Date(date)
+    normalizedDate.setHours(0, 0, 0, 0)
+    return normalizedDate
+  }
+
   /**
    * Get lockup status for today's operational date
    */
   async findCurrentStatus(): Promise<LockupStatusEntity | null> {
     const status = await this.prisma.lockupStatus.findFirst({
       where: { isActive: true },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       include: {
         currentHolder: { select: memberSelect },
         securedByMember: { select: memberSelect },
@@ -133,15 +139,37 @@ export class LockupRepository {
   }
 
   /**
-   * Get lockup status by operational date
+   * Get the active lockup status for an operational date.
+   */
+  async findActiveStatusByDate(date: Date): Promise<LockupStatusEntity | null> {
+    const normalizedDate = this.normalizeOperationalDate(date)
+
+    const status = await this.prisma.lockupStatus.findFirst({
+      where: {
+        date: normalizedDate,
+        isActive: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        currentHolder: { select: memberSelect },
+        securedByMember: { select: memberSelect },
+      },
+    })
+
+    if (!status) return null
+
+    return this.mapStatusEntity(status)
+  }
+
+  /**
+   * Get the latest lockup status by operational date.
    */
   async findStatusByDate(date: Date): Promise<LockupStatusEntity | null> {
-    // Normalize to start of day
-    const normalizedDate = new Date(date)
-    normalizedDate.setHours(0, 0, 0, 0)
+    const normalizedDate = this.normalizeOperationalDate(date)
 
-    const status = await this.prisma.lockupStatus.findUnique({
+    const status = await this.prisma.lockupStatus.findFirst({
       where: { date: normalizedDate },
+      orderBy: { createdAt: 'desc' },
       include: {
         currentHolder: { select: memberSelect },
         securedByMember: { select: memberSelect },
@@ -178,8 +206,11 @@ export class LockupRepository {
    * Get or create lockup status for a date
    */
   async getOrCreateStatus(date: Date): Promise<LockupStatusEntity> {
-    const existing = await this.findStatusByDate(date)
-    if (existing) return existing
+    const active = await this.findActiveStatusByDate(date)
+    if (active) return active
+
+    const latest = await this.findStatusByDate(date)
+    if (latest) return latest
 
     return this.createStatus({ date, buildingStatus: 'secured' })
   }
@@ -356,12 +387,13 @@ export class LockupRepository {
   async countTransfers(startDate?: Date, endDate?: Date): Promise<number> {
     return this.prisma.lockupTransfer.count({
       where: {
-        ...(startDate && endDate && {
-          transferredAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        }),
+        ...(startDate &&
+          endDate && {
+            transferredAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
       },
     })
   }
@@ -456,12 +488,13 @@ export class LockupRepository {
   async countExecutions(startDate?: Date, endDate?: Date): Promise<number> {
     return this.prisma.lockupExecution.count({
       where: {
-        ...(startDate && endDate && {
-          executedAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        }),
+        ...(startDate &&
+          endDate && {
+            executedAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
       },
     })
   }
