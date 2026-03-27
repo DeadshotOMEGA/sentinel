@@ -349,6 +349,19 @@ export class BadgeRepository {
       throw new Error('Cannot assign badge with type "unassigned"')
     }
 
+    const existingBadge = await this.prisma.badge.findUnique({
+      where: { id: badgeId },
+      select: { status: true },
+    })
+
+    if (!existingBadge) {
+      throw new Error(`Badge not found: ${badgeId}`)
+    }
+
+    if (existingBadge.status === 'decommissioned') {
+      throw new Error('Decommissioned badges cannot be assigned')
+    }
+
     const badge = await this.prisma.badge.update({
       where: { id: badgeId },
       data: {
@@ -377,6 +390,47 @@ export class BadgeRepository {
     })
 
     return toBadge(badge)
+  }
+
+  /**
+   * Clear any current live assignment references before changing badge lifecycle state.
+   */
+  async clearAssignmentReferences(badgeId: string): Promise<void> {
+    await this.assertNotProtectedSentinelBadge(badgeId, 'clear assignment references for')
+
+    await this.prisma.$transaction([
+      this.prisma.member.updateMany({
+        where: { badgeId },
+        data: { badgeId: null },
+      }),
+      this.prisma.visitor.updateMany({
+        where: { temporaryBadgeId: badgeId },
+        data: { temporaryBadgeId: null },
+      }),
+      this.prisma.eventAttendee.updateMany({
+        where: { badgeId },
+        data: {
+          badgeId: null,
+          badgeAssignedAt: null,
+        },
+      }),
+    ])
+  }
+
+  /**
+   * Count historical references that make a badge unsafe to hard-delete.
+   */
+  async getHistoricalUsage(badgeId: string): Promise<{ checkins: number; eventCheckins: number }> {
+    const [checkins, eventCheckins] = await Promise.all([
+      this.prisma.checkin.count({
+        where: { badgeId },
+      }),
+      this.prisma.eventCheckin.count({
+        where: { badgeId },
+      }),
+    ])
+
+    return { checkins, eventCheckins }
   }
 
   /**

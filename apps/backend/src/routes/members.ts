@@ -13,6 +13,7 @@ import { MemberRepository } from '../repositories/member-repository.js'
 import { AutoQualificationService } from '../services/auto-qualification-service.js'
 import { badgeService } from '../services/badge-service.js'
 import { importService } from '../services/import-service.js'
+import { memberService } from '../services/member-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
 import { ConflictError, NotFoundError } from '../middleware/error-handler.js'
@@ -474,13 +475,13 @@ export const membersRouter = s.router(memberContract, {
    */
   deleteMember: async ({ params }: { params: IdParam }) => {
     try {
-      await memberRepo.delete(params.id)
+      await memberService.deactivate(params.id)
 
       return {
         status: 200 as const,
         body: {
           success: true,
-          message: 'Member deactivated successfully',
+          message: 'Member archived successfully',
         },
       }
     } catch (error) {
@@ -490,6 +491,15 @@ export const membersRouter = s.router(memberContract, {
           body: {
             error: 'NOT_FOUND',
             message: `Member with ID '${params.id}' not found`,
+          },
+        }
+      }
+      if (error instanceof Error && error.message.includes('protected Sentinel bootstrap member')) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
           },
         }
       }

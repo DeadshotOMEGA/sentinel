@@ -26,15 +26,11 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
   const handleDelete = async () => {
     try {
       await deleteMember.mutateAsync(memberId)
-      toast.success(
-        member
-          ? `${member.firstName} ${member.lastName} moved to inactive members`
-          : 'Member deactivated'
-      )
+      toast.success(member ? `${member.firstName} ${member.lastName} archived` : 'Member archived')
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to delete member:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to deactivate member')
+      toast.error(error instanceof Error ? error.message : 'Failed to archive member')
     }
   }
 
@@ -42,14 +38,14 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
     <AlertDialog open={true} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Deactivate Member</AlertDialogTitle>
+          <AlertDialogTitle>Archive Member</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to deactivate{' '}
+            Are you sure you want to archive{' '}
             <span className="font-semibold">
               {member ? `${member.firstName} ${member.lastName}` : 'this member'}
             </span>
-            ? Historical records will be preserved, the member will be removed from the default
-            active roster, and protected access will no longer be treated as active.
+            ? Historical records will be preserved, the member will be hidden from the default
+            roster, and their current badge assignment will be cleared.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -60,7 +56,7 @@ export function DeleteMemberDialog({ memberId, onOpenChange }: DeleteMemberDialo
             className="bg-error hover:bg-error/90"
           >
             {deleteMember.isPending && <ButtonSpinner />}
-            Deactivate
+            Archive
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

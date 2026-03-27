@@ -895,14 +895,26 @@ export class MemberRepository {
   }
 
   /**
-   * Deactivate a member while preserving historical records
+   * Archive a member while preserving historical records.
    */
   async delete(id: string): Promise<void> {
-    await this.assertNotProtectedSentinelMember(id, 'deactivate')
+    await this.assertNotProtectedSentinelMember(id, 'archive')
+
+    const archivedStatus = await this.prisma.memberStatus.findUnique({
+      where: { code: 'archived' },
+      select: { id: true },
+    })
+
+    if (!archivedStatus) {
+      throw new Error('Archived member status is not configured')
+    }
 
     const result = await this.prisma.member.updateMany({
       where: { id },
-      data: { status: 'inactive' },
+      data: {
+        status: 'inactive',
+        memberStatusId: archivedStatus.id,
+      },
     })
 
     if (result.count === 0) {

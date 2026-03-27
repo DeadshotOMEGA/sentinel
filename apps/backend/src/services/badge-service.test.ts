@@ -12,6 +12,11 @@ function createService() {
   }
   const badgeRepo = {
     findById: vi.fn<(...args: [string]) => Promise<Badge | null>>(),
+    clearAssignmentReferences: vi.fn<(...args: [string]) => Promise<void>>(),
+    updateStatus: vi.fn<(...args: [string, string]) => Promise<Badge>>(),
+    getHistoricalUsage:
+      vi.fn<(...args: [string]) => Promise<{ checkins: number; eventCheckins: number }>>(),
+    delete: vi.fn<(...args: [string]) => Promise<void>>(),
   }
 
   Reflect.set(service, 'memberRepo', memberRepo)
@@ -84,5 +89,80 @@ describe('BadgeService.replaceMemberBadge', () => {
       ConflictError
     )
     expect(unassignSpy).not.toHaveBeenCalled()
+  })
+})
+
+describe('BadgeService badge lifecycle', () => {
+  it('unassigns a badge before decommissioning it', async () => {
+    const { service, badgeRepo } = createService()
+    badgeRepo.findById.mockResolvedValue({
+      id: 'badge-1',
+      assignmentType: 'member',
+      assignedToId: 'member-1',
+      status: 'active',
+    } as Badge)
+    badgeRepo.updateStatus.mockResolvedValue({
+      id: 'badge-1',
+      status: 'decommissioned',
+    } as Badge)
+
+    const unassignSpy = vi.spyOn(service, 'unassign').mockResolvedValue({} as Badge)
+
+    await service.updateStatus('badge-1', 'decommissioned')
+
+    expect(unassignSpy).toHaveBeenCalledWith('badge-1')
+    expect(badgeRepo.updateStatus).toHaveBeenCalledWith('badge-1', 'decommissioned')
+  })
+
+  it('blocks deleting an assigned badge unless current assignments are cleared first', async () => {
+    const { service, badgeRepo } = createService()
+    badgeRepo.findById.mockResolvedValue({
+      id: 'badge-1',
+      assignmentType: 'member',
+      assignedToId: 'member-1',
+      status: 'active',
+    } as Badge)
+
+    await expect(service.delete('badge-1')).rejects.toBeInstanceOf(ConflictError)
+    expect(badgeRepo.delete).not.toHaveBeenCalled()
+  })
+
+  it('deletes an assigned badge after unassigning when requested and no history exists', async () => {
+    const { service, badgeRepo } = createService()
+    badgeRepo.findById.mockResolvedValue({
+      id: 'badge-1',
+      assignmentType: 'member',
+      assignedToId: 'member-1',
+      status: 'active',
+    } as Badge)
+    badgeRepo.getHistoricalUsage.mockResolvedValue({
+      checkins: 0,
+      eventCheckins: 0,
+    })
+
+    const unassignSpy = vi.spyOn(service, 'unassign').mockResolvedValue({} as Badge)
+
+    await service.delete('badge-1', { unassignFirst: true })
+
+    expect(unassignSpy).toHaveBeenCalledWith('badge-1')
+    expect(badgeRepo.delete).toHaveBeenCalledWith('badge-1')
+  })
+
+  it('blocks deleting a badge with historical activity', async () => {
+    const { service, badgeRepo } = createService()
+    badgeRepo.findById.mockResolvedValue({
+      id: 'badge-1',
+      assignmentType: 'unassigned',
+      status: 'active',
+    } as Badge)
+    badgeRepo.getHistoricalUsage.mockResolvedValue({
+      checkins: 2,
+      eventCheckins: 0,
+    })
+
+    await expect(service.delete('badge-1')).rejects.toBeInstanceOf(ConflictError)
+
+    expect(badgeRepo.clearAssignmentReferences).toHaveBeenCalledWith('badge-1')
+    expect(badgeRepo.delete).not.toHaveBeenCalled()
   })
 })

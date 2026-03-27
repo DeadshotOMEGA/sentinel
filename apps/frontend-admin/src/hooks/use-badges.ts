@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
-import type { CreateBadgeInput, UpdateBadgeInput } from '@sentinel/contracts'
+import type { CreateBadgeInput, DeleteBadgeInput, UpdateBadgeInput } from '@sentinel/contracts'
 
 interface BadgesQueryParams {
   page?: number
@@ -13,6 +13,20 @@ interface BadgesQueryParams {
   assignmentType?: string
   assignedOnly?: boolean
   unassignedOnly?: boolean
+  includeDecommissioned?: boolean
+}
+
+function getApiErrorMessage(body: unknown, fallback: string): string {
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'message' in body &&
+    typeof (body as { message?: unknown }).message === 'string'
+  ) {
+    return (body as { message: string }).message
+  }
+
+  return fallback
 }
 
 export function useBadges(params: BadgesQueryParams = {}) {
@@ -28,6 +42,7 @@ export function useBadges(params: BadgesQueryParams = {}) {
           assignmentType: params.assignmentType,
           assignedOnly: params.assignedOnly ? 'true' : undefined,
           unassignedOnly: params.unassignedOnly ? 'true' : undefined,
+          includeDecommissioned: params.includeDecommissioned ? 'true' : undefined,
         },
       })
       if (response.status !== 200) {
@@ -117,13 +132,15 @@ export function useDeleteBadge() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, unassignFirst }: { id: string } & DeleteBadgeInput) => {
       const response = await apiClient.badges.deleteBadge({
         params: { id },
+        body: { unassignFirst },
       })
       if (response.status !== 200) {
-        const errorBody = response.body as { error?: string; message?: string }
-        throw new Error(errorBody?.message || `Failed to delete badge (${response.status})`)
+        throw new Error(
+          getApiErrorMessage(response.body, `Failed to delete badge (${response.status})`)
+        )
       }
       return response.body
     },

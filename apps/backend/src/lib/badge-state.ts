@@ -17,6 +17,11 @@ const BADGE_STATUS_SUMMARIES: Record<string, BadgeStatusSummary> = {
     chipVariant: 'bordered',
     chipColor: 'warning',
   },
+  decommissioned: {
+    name: 'Decommissioned',
+    chipVariant: 'bordered',
+    chipColor: 'neutral',
+  },
   inactive: {
     name: 'Inactive',
     chipVariant: 'bordered',

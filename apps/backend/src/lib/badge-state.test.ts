@@ -23,6 +23,12 @@ describe('badge-state helpers', () => {
       chipVariant: 'bordered',
       chipColor: 'warning',
     })
+
+    expect(getBadgeStatusSummary('decommissioned')).toEqual({
+      name: 'Decommissioned',
+      chipVariant: 'bordered',
+      chipColor: 'neutral',
+    })
   })
 
   it('only treats a badge as valid for a member when assignment matches the member id', () => {

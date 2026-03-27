@@ -48,6 +48,7 @@ export const TID = {
       next: 'members-page-next',
       rowsPerPage: 'members-rows-per-page',
       showDeployed: 'members-show-deployed',
+      showHidden: 'members-show-hidden',
     },
     form: {
       modal: 'member-form-modal',
@@ -71,10 +72,16 @@ export const TID = {
     table: 'badges-table',
     row: (id: string) => `badges-row-${id}`,
     rowAction: (id: string, action: string) => `badges-row-${id}-${action}`,
+    bulk: {
+      clear: 'badges-bulk-clear',
+      delete: 'badges-bulk-delete',
+      decommission: 'badges-bulk-decommission',
+    },
     pagination: {
       prev: 'badges-page-prev',
       next: 'badges-page-next',
       rowsPerPage: 'badges-rows-per-page',
+      showDecommissioned: 'badges-show-decommissioned',
     },
     form: {
       modal: 'badge-form-modal',

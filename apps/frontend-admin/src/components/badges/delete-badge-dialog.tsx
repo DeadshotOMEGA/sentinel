@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useDeleteBadge } from '@/hooks/use-badges'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,13 +23,24 @@ interface DeleteBadgeDialogProps {
 
 export function DeleteBadgeDialog({ badge, onOpenChange }: DeleteBadgeDialogProps) {
   const deleteBadge = useDeleteBadge()
+  const [unassignFirst, setUnassignFirst] = useState(badge.assignmentType !== 'unassigned')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setUnassignFirst(badge.assignmentType !== 'unassigned')
+    setError(null)
+  }, [badge.assignmentType, badge.id])
 
   const handleDelete = async () => {
     try {
-      await deleteBadge.mutateAsync(badge.id)
+      setError(null)
+      await deleteBadge.mutateAsync({
+        id: badge.id,
+        unassignFirst,
+      })
       onOpenChange(false)
-    } catch (error) {
-      console.error('Failed to delete badge:', error)
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Failed to delete badge')
     }
   }
 
@@ -37,11 +50,28 @@ export function DeleteBadgeDialog({ badge, onOpenChange }: DeleteBadgeDialogProp
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Badge</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete{' '}
-            <span className="font-semibold">{badge.serialNumber}</span>? This action cannot be
-            undone.
+            Delete <span className="font-semibold">{badge.serialNumber}</span> only if it has no
+            historical check-in or event activity. Otherwise, decommission it instead.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        {badge.assignmentType !== 'unassigned' && (
+          <label className="flex items-start gap-3 rounded-box border border-base-300 px-4 py-3 text-sm">
+            <Checkbox
+              checked={unassignFirst}
+              onCheckedChange={setUnassignFirst}
+              aria-label="Remove current assignments before deleting badge"
+            />
+            <span>Remove the current assignment before attempting to delete this badge.</span>
+          </label>
+        )}
+
+        {error && (
+          <div role="alert" className="alert alert-error">
+            <div className="text-sm">{error}</div>
+          </div>
+        )}
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={deleteBadge.isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction

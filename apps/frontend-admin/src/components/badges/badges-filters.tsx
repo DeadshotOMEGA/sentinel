@@ -71,6 +71,7 @@ export function BadgesFilters({ filters, onFilterChange }: BadgesFiltersProps) {
             <option value="inactive">Inactive</option>
             <option value="lost">Lost</option>
             <option value="damaged">Damaged</option>
+            <option value="decommissioned">Decommissioned</option>
           </select>
         </fieldset>
 

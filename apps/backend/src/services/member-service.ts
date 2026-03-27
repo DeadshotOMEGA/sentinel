@@ -221,7 +221,7 @@ export class MemberService {
   }
 
   /**
-   * Deactivate a member (soft delete - set status to inactive)
+   * Archive a member while preserving history and clearing active badge assignment.
    */
   async deactivate(id: string): Promise<void> {
     // Validate ID
@@ -235,15 +235,16 @@ export class MemberService {
       throw new NotFoundError('Member', id)
     }
 
-    // Deactivate member (sets status to inactive)
+    // Archive member into the hidden archived lifecycle state.
     await this.memberRepo.delete(id)
 
     // Unassign badge if exists
     if (existing.badgeId) {
       await this.badgeRepo.unassign(existing.badgeId)
+      await this.memberRepo.update(id, { badgeId: null })
     }
 
-    serviceLogger.info(`Member deactivated: ${existing.rank} ${existing.lastName}`, {
+    serviceLogger.info(`Member archived: ${existing.rank} ${existing.lastName}`, {
       memberId: id,
     })
   }
@@ -346,3 +347,5 @@ export class MemberService {
     await this.memberRepo.update(memberId, { badgeId: null })
   }
 }
+
+export const memberService = new MemberService()

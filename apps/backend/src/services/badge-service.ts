@@ -13,6 +13,10 @@ import type {
 } from '@sentinel/types'
 import { broadcastBadgeAssignment } from '../websocket/broadcast.js'
 
+interface DeleteBadgeOptions {
+  unassignFirst?: boolean
+}
+
 interface BadgeFilters {
   status?: BadgeStatus
   assignmentType?: BadgeAssignmentType
@@ -106,6 +110,10 @@ export class BadgeService {
       throw new ConflictError(`Badge is already assigned to ${badge.assignedToId}`)
     }
 
+    if (badge.status === 'decommissioned') {
+      throw new ConflictError('Decommissioned badges cannot be assigned')
+    }
+
     // Verify member exists
     const member = await this.memberRepo.findById(memberId)
     if (!member) {
@@ -189,17 +197,7 @@ export class BadgeService {
       throw new NotFoundError('Badge', badgeId)
     }
 
-    // Clean up any member that has this badge assigned (handles orphaned references)
-    // First try badge.assignedToId, then search by badgeId directly
-    if (badge.assignedToId) {
-      const member = await this.memberRepo.findById(badge.assignedToId)
-      if (member && member.badgeId === badgeId) {
-        await this.memberRepo.update(badge.assignedToId, { badgeId: null })
-      }
-    }
-
-    // Also clear any orphaned member references (badge unassigned but member still has badgeId)
-    await this.memberRepo.clearBadgeReference(badgeId)
+    await this.badgeRepo.clearAssignmentReferences(badgeId)
 
     // If badge is already unassigned, just return it (cleanup above still runs)
     if (badge.assignmentType === 'unassigned') {
@@ -224,7 +222,6 @@ export class BadgeService {
 
   /**
    * Update badge status
-   * Auto-unassigns badges when marked inactive
    */
   async updateStatus(badgeId: string, status: BadgeStatus): Promise<Badge> {
     // Verify badge exists
@@ -233,14 +230,49 @@ export class BadgeService {
       throw new NotFoundError('Badge', badgeId)
     }
 
-    if (status === 'inactive' && badge.assignmentType !== 'unassigned') {
-      await this.unassign(badgeId)
+    if (status === 'decommissioned') {
+      if (badge.assignmentType !== 'unassigned' || badge.assignedToId) {
+        await this.unassign(badgeId)
+      } else {
+        await this.badgeRepo.clearAssignmentReferences(badgeId)
+      }
     }
 
     // Update status
     const updatedBadge = await this.badgeRepo.updateStatus(badgeId, status)
 
     return updatedBadge
+  }
+
+  /**
+   * Delete a badge only when it has no historical usage.
+   */
+  async delete(badgeId: string, options: DeleteBadgeOptions = {}): Promise<void> {
+    const badge = await this.badgeRepo.findById(badgeId)
+    if (!badge) {
+      throw new NotFoundError('Badge', badgeId)
+    }
+
+    if (badge.assignmentType !== 'unassigned' || badge.assignedToId) {
+      if (!options.unassignFirst) {
+        throw new ConflictError(
+          'Badge is currently assigned. Unassign it first or choose to remove current assignments before deleting.'
+        )
+      }
+
+      await this.unassign(badgeId)
+    } else {
+      await this.badgeRepo.clearAssignmentReferences(badgeId)
+    }
+
+    const historicalUsage = await this.badgeRepo.getHistoricalUsage(badgeId)
+    if (historicalUsage.checkins > 0 || historicalUsage.eventCheckins > 0) {
+      throw new ConflictError(
+        'Badge has historical activity and cannot be deleted. Decommission it instead.'
+      )
+    }
+
+    await this.badgeRepo.delete(badgeId)
   }
 
   /**
