@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Lock, User, Users, CheckCircle, AlertTriangle } from 'lucide-react'
 import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import {
@@ -30,19 +30,28 @@ export function ExecuteLockupModal({
 }: ExecuteLockupModalProps) {
   const [note, setNote] = useState('')
   const [step, setStep] = useState<'confirm' | 'success'>('confirm')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const { data: presentData, isLoading: loadingPresent } = usePresentForLockup(memberId)
   const executeLockup = useExecuteLockup()
 
+  useEffect(() => {
+    if (open) {
+      setErrorMessage(null)
+      setStep('confirm')
+    }
+  }, [open])
+
   const handleExecute = async () => {
     try {
+      setErrorMessage(null)
       await executeLockup.mutateAsync({
         memberId,
         data: { note: note || undefined },
       })
       setStep('success')
     } catch (error) {
-      console.error('Failed to execute lockup:', error)
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to execute lockup')
     }
   }
 
@@ -139,6 +148,16 @@ export function ExecuteLockupModal({
                         Remaining people still checked in will receive a missed checkout record.
                         Your own checkout will be logged separately.
                       </span>
+                    </div>
+                  )}
+
+                  {errorMessage && (
+                    <div
+                      role="alert"
+                      className="alert alert-error alert-soft text-sm text-base-content"
+                    >
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>{errorMessage}</span>
                     </div>
                   )}
                 </>

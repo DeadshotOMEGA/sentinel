@@ -267,8 +267,13 @@ export class LockupService {
       throw new ValidationError('Member must be checked in to acquire lockup responsibility')
     }
 
-    // Update status with new holder
-    const updatedStatus = await this.lockupRepo.updateHolder(status.id, memberId)
+    const updatedStatus = status.isActive
+      ? await this.lockupRepo.updateHolder(status.id, memberId)
+      : await this.lockupRepo.createStatus({
+          date: status.date,
+          currentHolderId: memberId,
+          buildingStatus: 'secured',
+        })
 
     // Create audit record if notes provided
     if (notes) {
@@ -376,8 +381,14 @@ export class LockupService {
       throw new ValidationError('Member must be checked in to open building')
     }
 
-    // Mark building as open with member as holder
-    const updatedStatus = await this.lockupRepo.markOpen(status.id, memberId)
+    // Re-opening after a completed same-day lockup needs a fresh cycle/status row.
+    const updatedStatus = status.isActive
+      ? await this.lockupRepo.markOpen(status.id, memberId)
+      : await this.lockupRepo.createStatus({
+          date: status.date,
+          currentHolderId: memberId,
+          buildingStatus: 'open',
+        })
 
     // Create audit record
     await this.prisma.responsibilityAuditLog.create({
@@ -470,7 +481,7 @@ export class LockupService {
       memberId,
       holdsLockup: true,
       canCheckout: false, // Cannot do normal checkout while holding lockup
-      blockReason: 'You must transfer or execute lockup before checking out',
+      blockReason: 'Finish transferring lockup or execute building lockup to complete checkout',
       availableOptions: options,
       eligibleRecipients,
     }

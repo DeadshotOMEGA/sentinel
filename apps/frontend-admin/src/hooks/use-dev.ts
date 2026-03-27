@@ -47,7 +47,8 @@ export function useMockScan() {
         throw new LockupHeldError(response.body.message)
       }
       if (response.status !== 200) {
-        throw new Error('Failed to simulate scan')
+        const body = response.body as { message?: string }
+        throw new Error(body.message ?? 'Failed to simulate scan')
       }
       return response.body
     },

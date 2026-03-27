@@ -455,7 +455,7 @@ export const checkinsRouter = s.router(checkinContract, {
               error: 'LOCKUP_HELD',
               message:
                 checkoutOptions.blockReason ??
-                'You must transfer or execute lockup before checking out',
+                'Finish transferring lockup or execute building lockup to complete checkout',
               details: {
                 holdsLockup: checkoutOptions.holdsLockup,
                 availableOptions: checkoutOptions.availableOptions,

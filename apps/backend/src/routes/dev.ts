@@ -382,7 +382,9 @@ export const devRouter = s.router(devContract, {
             status: 403 as const,
             body: {
               error: 'LOCKUP_HELD',
-              message: `${member.firstName} ${member.lastName} holds lockup and must transfer or execute before checking out`,
+              message:
+                checkoutOptions.blockReason ??
+                `${member.firstName} ${member.lastName} must finish transferring or executing lockup to complete checkout`,
             },
           }
         }
