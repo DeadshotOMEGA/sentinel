@@ -10,6 +10,7 @@ set -euo pipefail
 # - env CURRENT_RELEASE_VERSION: X.Y.Z or vX.Y.Z (optional; defaults to package.json version)
 # - env PROJECT_NUMBER: GitHub project number (default: 3)
 # - env PROJECT_OWNER: GitHub project owner login (optional; defaults to repo owner lowercase)
+# - env PROJECTS_TOKEN: optional PAT used for GitHub Project operations when Actions' default token lacks project scopes
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
@@ -28,6 +29,10 @@ require() {
 die() {
   echo "Error: $*" >&2
   exit 1
+}
+
+warn() {
+  echo "Warning: $*" >&2
 }
 
 info() {
@@ -99,23 +104,34 @@ resolve_project_owner() {
   local configured_owner="${PROJECT_OWNER}"
 
   if [[ -n "${configured_owner}" ]]; then
-    # Trust explicit owner override to avoid gh project view owner-type false negatives in CI.
-    RESOLVED_PROJECT_OWNER="${configured_owner}"
-    return 0
+    if run_project_gh project field-list "${PROJECT_NUMBER}" --owner "${configured_owner}" --format json >/dev/null 2>&1; then
+      RESOLVED_PROJECT_OWNER="${configured_owner}"
+      return 0
+    fi
+    return 1
   fi
 
   for candidate in "${OWNER,,}" "${OWNER}" "@me"; do
-    if gh project field-list "${PROJECT_NUMBER}" --owner "${candidate}" --format json >/dev/null 2>&1; then
+    if run_project_gh project field-list "${PROJECT_NUMBER}" --owner "${candidate}" --format json >/dev/null 2>&1; then
       RESOLVED_PROJECT_OWNER="${candidate}"
       return 0
     fi
   done
 
-  die "Unable to resolve project owner for project #${PROJECT_NUMBER}. Set PROJECT_OWNER (or SENTINEL_PROJECT_OWNER) and verify PROJECTS_TOKEN scopes/SSO."
+  return 1
 }
 
 fetch_milestones() {
   gh api --paginate "repos/${REPO}/milestones?state=all&per_page=100" --jq '.[].title'
+}
+
+run_project_gh() {
+  if [[ -n "${PROJECTS_TOKEN:-}" ]]; then
+    GH_TOKEN="${PROJECTS_TOKEN}" GITHUB_TOKEN="${PROJECTS_TOKEN}" gh "$@"
+    return $?
+  fi
+
+  gh "$@"
 }
 
 MILESTONES="$(fetch_milestones)"
@@ -129,23 +145,28 @@ for milestone in "${RELEASE_TRACKS[@]}"; do
   fi
 done
 
-resolve_project_owner
-info "Project owner: ${RESOLVED_PROJECT_OWNER}"
+sync_project_release_field() {
+  local release_field_id release_mutation
 
-RELEASE_FIELD_ID="$(
-  gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
-)"
+  if ! resolve_project_owner; then
+    return 1
+  fi
+  info "Project owner: ${RESOLVED_PROJECT_OWNER}"
 
-if [[ -z "${RELEASE_FIELD_ID}" ]]; then
-  gh project field-create "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --name "Release" --data-type "SINGLE_SELECT" --single-select-options "$(IFS=,; echo "${RELEASE_TRACKS[*]}")" >/dev/null
-  RELEASE_FIELD_ID="$(
-    gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
+  release_field_id="$(
+    run_project_gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
   )"
-fi
 
-[[ -n "${RELEASE_FIELD_ID}" ]] || die "Release field not found and could not be created."
+  if [[ -z "${release_field_id}" ]]; then
+    run_project_gh project field-create "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --name "Release" --data-type "SINGLE_SELECT" --single-select-options "$(IFS=,; echo "${RELEASE_TRACKS[*]}")" >/dev/null
+    release_field_id="$(
+      run_project_gh project field-list "${PROJECT_NUMBER}" --owner "${RESOLVED_PROJECT_OWNER}" --format json --jq '.fields[] | select(.name == "Release") | .id' | head -n1
+    )"
+  fi
 
-RELEASE_MUTATION="$(cat <<GRAPHQL
+  [[ -n "${release_field_id}" ]] || return 1
+
+  release_mutation="$(cat <<GRAPHQL
 mutation(\$fieldId:ID!){
   updateProjectV2Field(input:{
     fieldId:\$fieldId,
@@ -172,6 +193,13 @@ mutation(\$fieldId:ID!){
 GRAPHQL
 )"
 
-gh api graphql -f query="${RELEASE_MUTATION}" -f fieldId="${RELEASE_FIELD_ID}" >/dev/null
-info "Synced project Release options."
+  run_project_gh api graphql -f query="${release_mutation}" -f fieldId="${release_field_id}" >/dev/null
+}
+
+if sync_project_release_field; then
+  info "Synced project Release options."
+else
+  warn "Skipping GitHub Project Release sync. Verify PROJECTS_TOKEN scopes/SSO or set PROJECT_OWNER explicitly if needed."
+fi
+
 info "Done."

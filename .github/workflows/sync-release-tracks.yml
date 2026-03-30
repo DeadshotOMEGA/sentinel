@@ -28,6 +28,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   sync:
@@ -44,8 +45,7 @@ jobs:
       SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
       SENTINEL_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
-      GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
@@ -54,8 +54,7 @@ jobs:
       - name: Validate token
         run: |
           if [[ -z "${PROJECTS_TOKEN}" ]]; then
-            echo "::error::Missing secret PROJECTS_TOKEN (requires project + read:project scopes)."
-            exit 1
+            echo "::warning::PROJECTS_TOKEN is missing. Milestones will still sync; GitHub Project Release field sync will be skipped."
           fi
 
       - name: Sync release tracks
