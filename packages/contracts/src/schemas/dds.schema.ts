@@ -92,6 +92,13 @@ export const NextDdsMemberSchema = v.object({
   rank: v.string(),
 })
 
+export const DdsHandoverStateSchema = v.object({
+  isPending: v.boolean(),
+  firstOperationalDay: v.nullable(v.string()),
+  outgoingDds: v.nullable(NextDdsMemberSchema),
+  incomingDds: v.nullable(NextDdsMemberSchema),
+})
+
 /**
  * Shared lightweight member schema for kiosk responsibility state
  */
@@ -134,6 +141,7 @@ export const GetCurrentDdsResponseSchema = v.object({
   assignment: v.nullable(DdsAssignmentResponseSchema),
   nextDds: v.nullable(NextDdsMemberSchema),
   isDdsOnSite: v.boolean(),
+  handover: DdsHandoverStateSchema,
 })
 
 /**
@@ -178,6 +186,7 @@ export type TransferDdsInput = v.InferOutput<typeof TransferDdsSchema>
 export type ReleaseDdsInput = v.InferOutput<typeof ReleaseDdsSchema>
 export type ResponsibilityAuditLog = v.InferOutput<typeof ResponsibilityAuditLogSchema>
 export type NextDdsMember = v.InferOutput<typeof NextDdsMemberSchema>
+export type DdsHandoverState = v.InferOutput<typeof DdsHandoverStateSchema>
 export type KioskResponsibilityStateMember = v.InferOutput<
   typeof KioskResponsibilityStateMemberSchema
 >

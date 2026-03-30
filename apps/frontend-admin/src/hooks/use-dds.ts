@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
-import type { SetTodayDdsInput } from '@sentinel/contracts'
+import type { SetTodayDdsInput, TransferDdsInput } from '@sentinel/contracts'
 
 function extractErrorMessage(body: unknown, fallback: string) {
   if (body && typeof body === 'object' && 'message' in body) {
@@ -109,6 +109,30 @@ export function useSetTodayDds() {
       })
       if (response.status !== 200) {
         throw new Error(extractErrorMessage(response.body, "Failed to update today's DDS"))
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      void Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ['dds-status'] }),
+        queryClient.invalidateQueries({ queryKey: ['dds', 'current'] }),
+        queryClient.invalidateQueries({ queryKey: ['dds', 'kiosk-state'] }),
+        invalidateDashboardQueries(queryClient),
+      ])
+    },
+  })
+}
+
+export function useTransferDds() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: TransferDdsInput) => {
+      const response = await apiClient.dds.transferDds({
+        body: data,
+      })
+      if (response.status !== 200) {
+        throw new Error(extractErrorMessage(response.body, 'Failed to transfer DDS'))
       }
       return response.body
     },

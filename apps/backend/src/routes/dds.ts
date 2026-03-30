@@ -86,9 +86,10 @@ export const ddsRouter = s.router(ddsContract, {
    */
   getCurrentDds: async () => {
     try {
-      const [assignment, nextDds] = await Promise.all([
+      const [assignment, nextDds, handover] = await Promise.all([
         ddsService.getCurrentDds(),
         ddsService.getNextWeekDds(),
+        ddsService.getCurrentHandoverStatus(),
       ])
 
       const isDdsOnSite = assignment
@@ -101,6 +102,12 @@ export const ddsRouter = s.router(ddsContract, {
           assignment: assignment ? toApiFormat(assignment) : null,
           nextDds,
           isDdsOnSite,
+          handover: {
+            isPending: handover.isPending,
+            firstOperationalDay: handover.firstOperationalDay?.toISOString() ?? null,
+            outgoingDds: handover.outgoingDds,
+            incomingDds: handover.incomingDds,
+          },
         },
       }
     } catch (error) {
@@ -484,7 +491,10 @@ export const ddsRouter = s.router(ddsContract, {
       const adminId = req.member?.id ?? 'system'
 
       await ddsService.releaseDds(adminId, body.notes)
-      const nextDds = await ddsService.getNextWeekDds()
+      const [nextDds, handover] = await Promise.all([
+        ddsService.getNextWeekDds(),
+        ddsService.getCurrentHandoverStatus(),
+      ])
 
       return {
         status: 200 as const,
@@ -492,6 +502,12 @@ export const ddsRouter = s.router(ddsContract, {
           assignment: null,
           nextDds,
           isDdsOnSite: false,
+          handover: {
+            isPending: handover.isPending,
+            firstOperationalDay: handover.firstOperationalDay?.toISOString() ?? null,
+            outgoingDds: handover.outgoingDds,
+            incomingDds: handover.incomingDds,
+          },
         },
       }
     } catch (error) {
