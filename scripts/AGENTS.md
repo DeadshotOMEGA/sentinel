@@ -15,7 +15,7 @@ Applies when editing files under: `scripts/`
 - For Codex-driven browser QA, use the Sentinel bootstrap account:
   - Badge: `0000000000`
   - PIN: `0000`
-- Default browser size for Codex Playwright work is `1920x1080` unless the user explicitly requests another size.
+- Codex Playwright work in this repo must use `1920x1080`.
 - Do not use Playwright MCP tools when `playwright-cli` is available.
 
 ## Editing Guidance

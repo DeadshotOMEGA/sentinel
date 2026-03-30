@@ -26,7 +26,7 @@ These scripts are the maintained Playwright CLI utilities for:
   - Badge: `0000000000`
   - PIN: `0000`
 - Support overrides via environment variables when a different account is intentionally required.
-- Default browser size is `1920x1080`.
+- Browser size for Codex Playwright work in this repo must be `1920x1080`.
 - Close sessions when capture is complete.
 - Save authenticated state to `.playwright-cli/auth/bootstrap.json` unless the task explicitly overrides it.
 - Prefer deterministic captures over exploratory flows; load auth state or log in directly instead of relying on leftover local browser state.
