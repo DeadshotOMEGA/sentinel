@@ -91,10 +91,6 @@ interface VisitorCompletionState extends VisitorSelfSigninCompletion {
   completedAt: string
 }
 
-interface FocusableRef {
-  focus: () => void
-}
-
 interface DisplayMember {
   rank: string
   firstName: string
@@ -123,7 +119,8 @@ type CreateCheckinResult =
   | { kind: 'lockup'; message: string }
 
 const KIOSK_ID = 'DASHBOARD_KIOSK'
-const VISITOR_RESULT_RESET_MS = 15000
+const BADGE_FOCUS_REQUEST_EVENT = 'kiosk-request-badge-focus'
+const KIOSK_RESULT_RESET_MS = 5000
 const MOTION_TIMING = {
   fast: 0.15,
   normal: 0.2,
@@ -245,7 +242,9 @@ function SkeletonStrip({ title }: { title: string }) {
 }
 
 export function KioskCommandDeck() {
-  const inputRef = useRef<FocusableRef | null>(null)
+  const inputRef = useRef<{
+    focus: (options?: { preventScroll?: boolean }) => void
+  } | null>(null)
   const queryClient = useQueryClient()
   const prefersReducedMotion = useReducedMotion()
   const [now, setNow] = useState(() => new Date())
@@ -351,7 +350,7 @@ export function KioskCommandDeck() {
   }
 
   const refocusBadgeInput = () => {
-    window.setTimeout(() => inputRef.current?.focus(), 0)
+    window.setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 0)
   }
 
   const refreshOperationalData = async () => {
@@ -388,16 +387,22 @@ export function KioskCommandDeck() {
   }, [responsibilityContext, liveNeedsBuildingOpen, liveNeedsDds])
 
   useEffect(() => {
-    if (!visitorCompletion) return
+    const handleBadgeFocusRequest = () => {
+      if (
+        fatalOperationalOutage ||
+        visitorFlowActive ||
+        showLockupOptions ||
+        responsibilityPromptVisible
+      ) {
+        return
+      }
 
-    const timer = window.setTimeout(() => {
-      setVisitorCompletion(null)
-      setResult(INITIAL_RESULT)
       refocusBadgeInput()
-    }, VISITOR_RESULT_RESET_MS)
+    }
 
-    return () => window.clearTimeout(timer)
-  }, [visitorCompletion])
+    window.addEventListener(BADGE_FOCUS_REQUEST_EVENT, handleBadgeFocusRequest)
+    return () => window.removeEventListener(BADGE_FOCUS_REQUEST_EVENT, handleBadgeFocusRequest)
+  }, [fatalOperationalOutage, responsibilityPromptVisible, showLockupOptions, visitorFlowActive])
 
   const createMemberCheckin = async (payload: CreateCheckinInput): Promise<CreateCheckinResult> => {
     const createResponse = await apiClient.checkins.createCheckin({
@@ -588,6 +593,34 @@ export function KioskCommandDeck() {
       refocusBadgeInput()
     },
   })
+
+  useEffect(() => {
+    const hasResultToReset = Boolean(visitorCompletion) || result.tone !== 'neutral'
+    if (!hasResultToReset) return
+    if (
+      visitorFlowActive ||
+      showLockupOptions ||
+      responsibilityPromptVisible ||
+      scanMutation.isPending
+    ) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setVisitorCompletion(null)
+      setResult(INITIAL_RESULT)
+      refocusBadgeInput()
+    }, KIOSK_RESULT_RESET_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [
+    result.tone,
+    scanMutation.isPending,
+    responsibilityPromptVisible,
+    showLockupOptions,
+    visitorCompletion,
+    visitorFlowActive,
+  ])
 
   const resultTone = visitorCompletion ? 'success' : visitorFlowActive ? 'info' : result.tone
   const stageBadgeStatus = resultToneToBadgeStatus(resultTone)

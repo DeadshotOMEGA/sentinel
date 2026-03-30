@@ -6,6 +6,7 @@ import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-ale
 import { useAuthStore } from '@/store/auth-store'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
+import { MotionButton } from '@/components/ui/motion-button'
 import {
   Dialog,
   DialogContent,
@@ -76,7 +77,7 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
           <p className="text-xs mt-1">{alert.message}</p>
         </div>
         <div>
-          <button
+          <MotionButton
             className="btn btn-sm"
             data-help-id="dashboard.security-alerts.acknowledge"
             disabled={!canAcknowledge}
@@ -90,7 +91,7 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
             }
           >
             Acknowledge
-          </button>
+          </MotionButton>
         </div>
       </div>
 
@@ -117,13 +118,13 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
           </div>
           <DialogFooter>
             <DialogClose className="btn btn-outline">Cancel</DialogClose>
-            <button
+            <MotionButton
               className="btn btn-error"
               disabled={acknowledge.isPending}
               onClick={handleAcknowledge}
             >
               {acknowledge.isPending ? 'Acknowledging...' : 'Acknowledge'}
-            </button>
+            </MotionButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

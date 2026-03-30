@@ -217,6 +217,11 @@ export const TID = {
     row: 'log-row',
   },
   dashboard: {
+    ddsDrawer: {
+      open: 'dashboard-dds-drawer-open',
+      close: 'dashboard-dds-drawer-close',
+      infoLink: 'dashboard-dds-drawer-info-link',
+    },
     help: {
       launcher: 'dashboard-help-launcher',
       toggle: 'dashboard-help-toggle',
@@ -233,6 +238,7 @@ export const TID = {
       simulateScan: 'quick-action-simulate-scan',
     },
     kiosk: {
+      launchTab: 'dashboard-kiosk-launch-tab',
       badgeInput: 'kiosk-badge-input',
       scanSubmit: 'kiosk-scan-submit',
       responsibilityPrompt: 'kiosk-responsibility-prompt',

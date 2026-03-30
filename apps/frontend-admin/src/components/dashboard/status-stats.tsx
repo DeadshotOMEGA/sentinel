@@ -26,6 +26,7 @@ import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
 import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
+import { MotionButton } from '@/components/ui/motion-button'
 import { TID } from '@/lib/test-ids'
 
 function formatTime(dateStr: string | null): string {
@@ -191,13 +192,13 @@ function DdsStat({
               className={!isAdmin ? 'tooltip tooltip-right' : ''}
               data-tip="Requires Admin level or higher"
             >
-              <button
+              <MotionButton
                 className="btn btn-xs border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
                 disabled={!isAdmin}
                 onClick={onResolvePendingDds}
               >
                 {isHandoverPending ? 'Complete Handover' : 'Accept DDS'}
-              </button>
+              </MotionButton>
             </div>
           )}
         </div>
@@ -540,7 +541,7 @@ function StatusActionsStat({
               className={!isAdmin ? 'tooltip tooltip-right' : ''}
               data-tip="Requires Admin level or higher"
             >
-              <button
+              <MotionButton
                 className={`${actionBaseClass} stats-action-success justify-start`}
                 disabled={!isAdmin}
                 onClick={onOpenBuilding}
@@ -549,14 +550,14 @@ function StatusActionsStat({
               >
                 <DoorOpen className="size-[1.1em] shrink-0" />
                 Open Building
-              </button>
+              </MotionButton>
             </div>
           ) : (
             <div
               className={!isAdmin || isOpenNoHolder ? 'tooltip tooltip-right' : ''}
               data-tip={!isAdmin ? 'Requires admin role' : 'No lockup holder assigned'}
             >
-              <button
+              <MotionButton
                 className={`${actionBaseClass} stats-action-error justify-start`}
                 disabled={!isAdmin || isOpenNoHolder}
                 onClick={onExecuteLockup}
@@ -565,7 +566,7 @@ function StatusActionsStat({
               >
                 <Lock className="size-[1.1em] shrink-0" />
                 Execute Lockup
-              </button>
+              </MotionButton>
             </div>
           )}
 
@@ -573,7 +574,7 @@ function StatusActionsStat({
             className={!isAdmin ? 'tooltip tooltip-right' : ''}
             data-tip="Requires Admin level or higher"
           >
-            <button
+            <MotionButton
               className={`${actionBaseClass} stats-action-warning justify-start`}
               disabled={!isAdmin}
               onClick={onSetTodayDds}
@@ -581,7 +582,7 @@ function StatusActionsStat({
             >
               <ShieldCheck className="size-[1.1em] shrink-0" />
               {ddsActionLabel}
-            </button>
+            </MotionButton>
           </div>
 
           {isOpenWithHolder && (
@@ -589,7 +590,7 @@ function StatusActionsStat({
               className={!isAdmin ? 'tooltip tooltip-right' : ''}
               data-tip="Requires Admin level or higher"
             >
-              <button
+              <MotionButton
                 className={`${actionBaseClass} stats-action-warning justify-start`}
                 disabled={!isAdmin}
                 onClick={onTransferLockup}
@@ -598,7 +599,7 @@ function StatusActionsStat({
               >
                 <ArrowRightLeft className="size-[1.1em] shrink-0" />
                 Transfer Lockup
-              </button>
+              </MotionButton>
             </div>
           )}
         </div>

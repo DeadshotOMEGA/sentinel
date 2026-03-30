@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { HelpCircle, Play, RotateCcw } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { MotionButton } from '@/components/ui/motion-button'
 import { TID } from '@/lib/test-ids'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { createProcedureController } from '@/help/controller'
@@ -137,12 +138,12 @@ export function DashboardHelpLauncher() {
 
   return (
     <div
-      className="fixed bottom-3 left-3 right-3 z-[70] hidden sm:block sm:bottom-6 sm:left-auto sm:right-6"
+      className="fixed bottom-3 left-3 right-3 z-(--z-sticky) hidden sm:block sm:bottom-6 sm:left-auto sm:right-6"
       data-testid={TID.dashboard.help.launcher}
     >
       <div className="card bg-base-100 border border-base-300 shadow-xl w-full sm:w-96">
         <div className="card-body p-3">
-          <button
+          <MotionButton
             className="btn btn-primary btn-sm justify-start"
             onClick={() => setIsOpen((prev) => !prev)}
             aria-expanded={isOpen}
@@ -150,7 +151,7 @@ export function DashboardHelpLauncher() {
           >
             <HelpCircle className="h-4 w-4" />
             Dashboard Help Procedures
-          </button>
+          </MotionButton>
 
           {isOpen && (
             <div className="mt-3 space-y-3" data-testid={TID.dashboard.help.panel}>
@@ -172,7 +173,7 @@ export function DashboardHelpLauncher() {
                       </div>
                       <p className="text-xs text-base-content/70 mt-1">{definition.summary}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <button
+                        <MotionButton
                           className="btn btn-xs btn-primary"
                           onClick={() =>
                             void handleStart(definition.id, canResume ? 'resume' : 'start')
@@ -180,20 +181,20 @@ export function DashboardHelpLauncher() {
                         >
                           <Play className="h-3 w-3" />
                           {canResume ? 'Resume' : 'Start'}
-                        </button>
-                        <button
+                        </MotionButton>
+                        <MotionButton
                           className="btn btn-xs btn-outline"
                           onClick={() => void handleStart(definition.id, 'restart')}
                         >
                           <RotateCcw className="h-3 w-3" /> Restart
-                        </button>
+                        </MotionButton>
                         {isActive && (
-                          <button
+                          <MotionButton
                             className="btn btn-xs btn-ghost"
                             onClick={() => void handleSkip()}
                           >
                             Skip
-                          </button>
+                          </MotionButton>
                         )}
                       </div>
                     </li>

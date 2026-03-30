@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   BookOpenCheck,
   CheckCircle2,
@@ -11,13 +11,13 @@ import {
   Phone,
   PhoneCall,
   Plus,
-  RotateCcw,
   Save,
   ShieldCheck,
   Trash2,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { DdsChecklistCard } from '@/components/dds/dds-checklist-card'
 import {
   AppCard,
   AppCardAction,
@@ -26,21 +26,14 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
-import { AppBadge } from '@/components/ui/AppBadge'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useDdsChecklist } from '@/hooks/use-dds-checklist'
+import { useOperationalDateKey } from '@/hooks/use-operational-date-key'
+import { useOperationalTimings } from '@/hooks/use-operational-timings'
 import { useDdsPageContent } from '@/hooks/use-dds-page-content'
 import { cloneDdsPageContent, parseDdsPageContent, type DdsPageContent } from '@/lib/dds-content'
-import { formatDateISO } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
-
-const CHECKOFF_STORAGE_PREFIX = 'dds.checkoff.v1'
-
-type TaskCheckoffMap = Record<string, boolean>
-
-function getTaskKey(blockId: string, taskIndex: number): string {
-  return `${blockId}:${taskIndex}`
-}
 
 function normalizeMultiline(value: string): string[] {
   return value
@@ -58,24 +51,6 @@ function normalizeOptionalInput(value: string): string | null {
   return next.length > 0 ? next : null
 }
 
-function parseStoredCheckoff(value: string | null): TaskCheckoffMap {
-  if (!value) return {}
-
-  try {
-    const parsed: unknown = JSON.parse(value)
-    if (!parsed || typeof parsed !== 'object') {
-      return {}
-    }
-
-    return Object.entries(parsed).reduce<TaskCheckoffMap>((acc, [key, rawValue]) => {
-      acc[key] = rawValue === true
-      return acc
-    }, {})
-  } catch {
-    return {}
-  }
-}
-
 function formatUpdatedAt(value: string | null): string {
   if (!value) return 'Not yet saved'
   const date = new Date(value)
@@ -87,64 +62,30 @@ function isUpdatePlaceholder(value: string): boolean {
   return value.includes('<update required>')
 }
 
-const templateSourceConfig: Record<
-  'remote' | 'default' | 'invalid-fallback',
-  { label: string; status: 'success' | 'warning' | 'info' }
-> = {
-  remote: { label: 'Live template', status: 'success' },
-  default: { label: 'Default template', status: 'info' },
-  'invalid-fallback': { label: 'Fallback to default', status: 'warning' },
-}
-
 export default function DdsPage() {
-  const todayIso = useMemo(() => formatDateISO(new Date()), [])
   const member = useAuthStore((state) => state.member)
   const hasMinimumLevel = useAuthStore((state) => state.hasMinimumLevel)
   const canEditTemplate = hasMinimumLevel(AccountLevel.ADMIN)
-  const memberStorageId = member?.id ?? 'anonymous'
-  const checkoffStorageKey = `${CHECKOFF_STORAGE_PREFIX}.${memberStorageId}.${todayIso}`
+  const { data: timingsData } = useOperationalTimings({ enabled: true })
+  const rolloverTime = timingsData?.settings.operational.dayRolloverTime ?? '03:00'
+  const todayIso = useOperationalDateKey(rolloverTime)
 
   const { data, isLoading, isError, error, saveTemplateMutation } = useDdsPageContent()
 
-  const [checkoffMap, setCheckoffMap] = useState<TaskCheckoffMap>({})
-  const [isCheckoffHydrated, setIsCheckoffHydrated] = useState(false)
   const [isEditingTemplate, setIsEditingTemplate] = useState(false)
   const [draftTemplate, setDraftTemplate] = useState<DdsPageContent | null>(null)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    setCheckoffMap(parseStoredCheckoff(window.localStorage.getItem(checkoffStorageKey)))
-    setIsCheckoffHydrated(true)
-  }, [checkoffStorageKey])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (!isCheckoffHydrated) return
-    window.localStorage.setItem(checkoffStorageKey, JSON.stringify(checkoffMap))
-  }, [checkoffMap, checkoffStorageKey, isCheckoffHydrated])
-
   const currentTemplate = data?.content ?? null
   const activeTemplate = isEditingTemplate ? draftTemplate : currentTemplate
+  const checklist = useDdsChecklist({
+    checklistBlocks: currentTemplate?.checklistBlocks ?? [],
+    memberId: member?.id,
+    dateKey: todayIso,
+  })
 
-  const totalChecklistTasks = useMemo(() => {
-    if (!currentTemplate) return 0
-    return currentTemplate.checklistBlocks.reduce((acc, block) => acc + block.tasks.length, 0)
-  }, [currentTemplate])
-
-  const completedChecklistTasks = useMemo(() => {
-    if (!currentTemplate) return 0
-
-    return currentTemplate.checklistBlocks.reduce((count, block) => {
-      const completedInBlock = block.tasks.reduce((taskCount, _task, index) => {
-        const taskKey = getTaskKey(block.id, index)
-        return taskCount + (checkoffMap[taskKey] ? 1 : 0)
-      }, 0)
-      return count + completedInBlock
-    }, 0)
-  }, [checkoffMap, currentTemplate])
-
-  const completionPercent =
-    totalChecklistTasks > 0 ? Math.round((completedChecklistTasks / totalChecklistTasks) * 100) : 0
+  const totalChecklistTasks = checklist.totalTasks
+  const completedChecklistTasks = checklist.completedTasks
+  const completionPercent = checklist.completionPercent
 
   const updateDraft = (updater: (current: DdsPageContent) => DdsPageContent) => {
     setDraftTemplate((current) => {
@@ -186,16 +127,7 @@ export default function DdsPage() {
 
   const handleToggleTask = (blockId: string, taskIndex: number) => {
     if (isEditingTemplate) return
-    const taskKey = getTaskKey(blockId, taskIndex)
-    setCheckoffMap((current) => ({
-      ...current,
-      [taskKey]: !current[taskKey],
-    }))
-  }
-
-  const handleResetChecklist = () => {
-    setCheckoffMap({})
-    toast.success('Checklist reset for today')
+    checklist.toggleTask(blockId, taskIndex)
   }
 
   if (isLoading) {
@@ -237,8 +169,6 @@ export default function DdsPage() {
   }
 
   const templateState = data as NonNullable<typeof data>
-  const sourceConfig = templateSourceConfig[templateState.source]
-
   return (
     <main
       className="mx-auto w-full max-w-[1200px]"
@@ -256,15 +186,6 @@ export default function DdsPage() {
                 Duty Day Staff responsibilities, duty phone playbook, member call triage, and daily
                 execution checklist.
               </AppCardDescription>
-              <div className="flex flex-wrap items-center gap-2">
-                <AppBadge status={sourceConfig.status}>{sourceConfig.label}</AppBadge>
-                <AppBadge status={canEditTemplate ? 'success' : 'info'}>
-                  {canEditTemplate ? 'Template editable' : 'View only'}
-                </AppBadge>
-                <AppBadge status={completionPercent === 100 ? 'success' : 'warning'}>
-                  {completedChecklistTasks}/{totalChecklistTasks} tasks complete
-                </AppBadge>
-              </div>
             </div>
 
             <AppCardAction className="flex flex-wrap items-center justify-end gap-2">
@@ -305,18 +226,6 @@ export default function DdsPage() {
                     Cancel
                   </button>
                 </>
-              )}
-
-              {!isEditingTemplate && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={handleResetChecklist}
-                  data-testid="dds-reset-checklist-btn"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Reset Today
-                </button>
               )}
             </AppCardAction>
           </div>
@@ -1019,35 +928,36 @@ export default function DdsPage() {
           </div>
 
           <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
-            <AppCard className="lg:sticky" style={{ top: 'var(--space-4)' }}>
-              <AppCardHeader>
-                <AppCardTitle>Daily Checklist</AppCardTitle>
-                <AppCardDescription>
-                  Personal task completion is stored locally for {todayIso} on this device.
-                </AppCardDescription>
-              </AppCardHeader>
+            {isEditingTemplate ? (
+              <AppCard className="lg:sticky" style={{ top: 'var(--space-4)' }}>
+                <AppCardHeader>
+                  <AppCardTitle>Daily Checklist</AppCardTitle>
+                  <AppCardDescription>
+                    Personal task completion is stored locally for {todayIso} on this device.
+                  </AppCardDescription>
+                </AppCardHeader>
 
-              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
-                <div className="w-full">
-                  <progress
-                    className="progress progress-primary w-full"
-                    value={completionPercent}
-                    max={100}
-                  />
-                  <div className="mt-1 text-xs text-base-content/70">
-                    Progress: {completionPercent}% ({completedChecklistTasks}/{totalChecklistTasks})
+                <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                  <div className="w-full">
+                    <progress
+                      className="progress progress-primary w-full"
+                      value={completionPercent}
+                      max={100}
+                    />
+                    <div className="mt-1 text-xs text-base-content/70">
+                      Progress: {completionPercent}% ({completedChecklistTasks}/
+                      {totalChecklistTasks})
+                    </div>
                   </div>
-                </div>
 
-                {activeTemplate.checklistBlocks.map((block, blockIndex) => (
-                  <section
-                    key={block.id}
-                    className="border border-base-300 bg-base-100"
-                    style={{ padding: 'var(--space-4)', display: 'grid', gap: 'var(--space-3)' }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0" style={{ display: 'grid', gap: 'var(--space-1)' }}>
-                        {isEditingTemplate ? (
+                  {activeTemplate.checklistBlocks.map((block, blockIndex) => (
+                    <section
+                      key={block.id}
+                      className="border border-base-300 bg-base-100"
+                      style={{ padding: 'var(--space-4)', display: 'grid', gap: 'var(--space-3)' }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0" style={{ display: 'grid', gap: 'var(--space-1)' }}>
                           <input
                             value={block.timeLabel}
                             onChange={(event) => {
@@ -1064,11 +974,7 @@ export default function DdsPage() {
                             className="input input-bordered input-sm w-full max-w-xs"
                             aria-label={`Checklist block ${blockIndex + 1} time`}
                           />
-                        ) : (
-                          <h3 className="font-semibold text-base">{block.timeLabel}</h3>
-                        )}
 
-                        {isEditingTemplate ? (
                           <input
                             value={block.heading ?? ''}
                             onChange={(event) => {
@@ -1086,14 +992,8 @@ export default function DdsPage() {
                             placeholder="Optional heading"
                             aria-label={`Checklist block ${blockIndex + 1} heading`}
                           />
-                        ) : (
-                          block.heading && (
-                            <p className="text-sm text-base-content/70">{block.heading}</p>
-                          )
-                        )}
-                      </div>
+                        </div>
 
-                      {isEditingTemplate && (
                         <button
                           type="button"
                           className="btn btn-ghost btn-sm text-error"
@@ -1109,10 +1009,8 @@ export default function DdsPage() {
                           <Trash2 className="h-4 w-4" />
                           Remove
                         </button>
-                      )}
-                    </div>
+                      </div>
 
-                    {isEditingTemplate ? (
                       <fieldset className="fieldset">
                         <legend className="fieldset-legend">Tasks (one per line)</legend>
                         <textarea
@@ -1131,45 +1029,9 @@ export default function DdsPage() {
                           }}
                         />
                       </fieldset>
-                    ) : (
-                      <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
-                        {block.tasks.map((task, taskIndex) => {
-                          const taskKey = getTaskKey(block.id, taskIndex)
-                          const checked = checkoffMap[taskKey] ?? false
+                    </section>
+                  ))}
 
-                          return (
-                            <label
-                              key={taskKey}
-                              className={cn(
-                                'label w-full max-w-full cursor-pointer items-start justify-start gap-3 border border-base-300 bg-base-100',
-                                checked && 'bg-success-fadded'
-                              )}
-                              style={{ padding: 'var(--space-2)' }}
-                            >
-                              <input
-                                type="checkbox"
-                                className="checkbox checkbox-primary checkbox-sm shrink-0"
-                                checked={checked}
-                                onChange={() => handleToggleTask(block.id, taskIndex)}
-                                data-testid={`dds-task-${block.id}-${taskIndex}`}
-                              />
-                              <span
-                                className={cn(
-                                  'min-w-0 flex-1 whitespace-normal break-words text-sm',
-                                  checked && 'line-through text-base-content/60'
-                                )}
-                              >
-                                {task}
-                              </span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </section>
-                ))}
-
-                {isEditingTemplate && (
                   <button
                     type="button"
                     className="btn btn-outline btn-sm justify-self-start"
@@ -1191,9 +1053,21 @@ export default function DdsPage() {
                     <Plus className="h-4 w-4" />
                     Add Checklist Block
                   </button>
-                )}
-              </AppCardContent>
-            </AppCard>
+                </AppCardContent>
+              </AppCard>
+            ) : (
+              <div className="lg:sticky" style={{ top: 'var(--space-4)' }}>
+                <DdsChecklistCard
+                  checkoffMap={checklist.checkoffMap}
+                  checklistBlocks={activeTemplate.checklistBlocks}
+                  completedTasks={completedChecklistTasks}
+                  completionPercent={completionPercent}
+                  description={`Personal task completion is stored locally for ${todayIso} on this device.`}
+                  onToggleTask={handleToggleTask}
+                  totalTasks={totalChecklistTasks}
+                />
+              </div>
+            )}
 
             <AppCard>
               <AppCardHeader>
