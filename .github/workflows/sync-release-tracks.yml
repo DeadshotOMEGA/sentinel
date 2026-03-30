@@ -42,8 +42,8 @@ jobs:
       INPUT_REPOSITORY: ${{ github.event.inputs.repository }}
       INPUT_PROJECT_OWNER: ${{ github.event.inputs.project_owner }}
       DEFAULT_REPOSITORY: ${{ github.repository }}
-      SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
-      SENTINEL_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
+      SENTINEL_PROJECT_NUMBER: ${{ vars['SENTINEL_PROJECT_NUMBER'] || '' }}
+      SENTINEL_PROJECT_OWNER: ${{ vars['SENTINEL_PROJECT_OWNER'] || '' }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
       GITHUB_TOKEN: ${{ github.token }}
 
