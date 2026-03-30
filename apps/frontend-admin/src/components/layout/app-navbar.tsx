@@ -20,7 +20,7 @@ const navLinks = [
 ]
 
 const adminLinks = [
-  { href: '/kiosk', label: 'Kiosk' },
+  { href: '/kiosk', label: 'Kiosk', openInNewTab: true },
   { href: '/checkins', label: 'History' },
   { href: '/database', label: 'Database' },
   { href: '/settings', label: 'Settings' },
@@ -80,27 +80,34 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             </li>
           ))}
           <li>
-            <details>
-              <summary
+            <div className="dropdown dropdown-hover">
+              <button
+                type="button"
+                tabIndex={0}
                 className={cn('inline-flex items-center gap-1', isAdminRoute && 'active')}
                 data-testid={TID.nav.link('admin')}
               >
                 Admin
-              </summary>
-              <ul className="z-20 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-xl">
+              </button>
+              <ul
+                tabIndex={-1}
+                className="dropdown-content z-20 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-xl"
+              >
                 {adminLinks.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
                       className={cn(pathname === link.href && 'active')}
                       data-testid={TID.nav.link(link.href.slice(1))}
+                      target={link.openInNewTab ? '_blank' : undefined}
+                      rel={link.openInNewTab ? 'noreferrer' : undefined}
                     >
                       {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </details>
+            </div>
           </li>
         </ul>
       </div>

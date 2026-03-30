@@ -259,6 +259,11 @@
   transform: translateY(-2px);
 }
 
+body.kiosk-lock-mode .tsqd-parent-container,
+body.kiosk-lock-mode button[aria-label='Open Next.js Dev Tools'] {
+  display: none !important;
+}
+
 /* ========================================
    STATUS INDICATOR STYLES
    Military-precision status display

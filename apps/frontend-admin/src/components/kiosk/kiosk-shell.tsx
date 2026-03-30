@@ -44,6 +44,27 @@ export function KioskShell() {
   useEffect(() => {
     if (typeof document === 'undefined') return
 
+    const hiddenDevtools = new Set<HTMLElement>()
+
+    const concealDevtools = () => {
+      const selectors = [
+        '.tsqd-parent-container',
+        'button[aria-label="Open Tanstack query devtools"]',
+        'button[aria-label="Open Next.js Dev Tools"]',
+      ]
+
+      for (const selector of selectors) {
+        const elements = document.querySelectorAll<HTMLElement>(selector)
+        for (const element of elements) {
+          if (element.dataset.kioskHidden === 'true') continue
+          element.dataset.kioskHidden = 'true'
+          element.dataset.kioskPreviousDisplay = element.style.display
+          element.style.display = 'none'
+          hiddenDevtools.add(element)
+        }
+      }
+    }
+
     const handleFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement))
     }
@@ -76,6 +97,10 @@ export function KioskShell() {
       void attemptFullscreen()
     }
 
+    const observer = new window.MutationObserver(() => {
+      concealDevtools()
+    })
+
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('contextmenu', handleContextMenu)
     window.addEventListener('keydown', handleKeyDown, { capture: true })
@@ -84,15 +109,24 @@ export function KioskShell() {
 
     setIsFullscreen(Boolean(document.fullscreenElement))
     document.body.classList.add('kiosk-lock-mode')
+    concealDevtools()
+    observer.observe(document.body, { childList: true, subtree: true })
     void attemptFullscreen()
 
     return () => {
+      observer.disconnect()
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('contextmenu', handleContextMenu)
       window.removeEventListener('keydown', handleKeyDown, { capture: true })
       window.removeEventListener('pointerdown', handleInteraction)
       window.removeEventListener('touchstart', handleInteraction)
       document.body.classList.remove('kiosk-lock-mode')
+
+      for (const element of hiddenDevtools) {
+        element.style.display = element.dataset.kioskPreviousDisplay ?? ''
+        delete element.dataset.kioskHidden
+        delete element.dataset.kioskPreviousDisplay
+      }
     }
   }, [])
 
@@ -123,14 +157,17 @@ export function KioskShell() {
 
   return (
     <div className="relative h-dvh overflow-hidden bg-base-300 p-2 lg:p-3">
-      <div className="h-full border border-base-300 bg-base-100 shadow-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.08),transparent_38%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06),transparent_28%,rgba(15,23,42,0.03))]" />
+
+      <div className="relative h-full rounded-box border border-base-300 bg-base-100 shadow-2xl">
         <KioskCheckinScreen isActive mode="standalone" />
       </div>
 
       {!isFullscreen && (
-        <div className="pointer-events-none fixed inset-x-0 top-2 z-[var(--z-tooltip)] flex justify-center px-2">
-          <div className="badge badge-warning badge-outline badge-lg bg-base-100/95">
-            Tap screen to enter full screen
+        <div className="pointer-events-none fixed inset-x-0 top-3 z-[var(--z-tooltip)] flex justify-center px-3">
+          <div className="rounded-full border border-warning/30 bg-base-100/95 px-4 py-2 text-sm font-semibold tracking-[0.12em] text-warning-fadded-content shadow-lg backdrop-blur">
+            Tap anywhere to enter full screen
           </div>
         </div>
       )}
@@ -143,7 +180,7 @@ export function KioskShell() {
       />
 
       {showExitControls && (
-        <div className="fixed bottom-3 right-3 z-[var(--z-tooltip)] card card-border w-72 bg-base-100 shadow-xl">
+        <div className="fixed bottom-3 right-3 z-[var(--z-tooltip)] card card-border w-80 bg-base-100 shadow-2xl">
           <div className="card-body p-3 gap-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
               Maintenance Controls
