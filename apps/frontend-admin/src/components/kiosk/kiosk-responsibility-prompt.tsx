@@ -64,70 +64,86 @@ export function KioskResponsibilityPrompt({
 
   return (
     <div
-      className="absolute inset-0 z-(--z-modal) bg-base-100/98"
+      className="absolute inset-0 z-(--z-modal) bg-base-300/80 backdrop-blur-[2px]"
       data-testid={TID.dashboard.kiosk.responsibilityPrompt}
     >
       <div
         className="flex h-full items-center justify-center"
-        style={{ padding: 'var(--space-6)' }}
+        style={{ padding: 'var(--space-4)' }}
       >
         <AppCard
           variant="elevated"
           status="warning"
-          className="w-full max-w-4xl border border-warning/30 bg-warning-fadded/30 text-base-content"
+          className="w-full max-w-5xl border border-warning/40 bg-base-100 text-base-content shadow-2xl"
         >
           <AppCardHeader
-            className="border-b border-base-300"
-            style={{ padding: 'var(--space-6)', gap: 'var(--space-3)' }}
+            className="border-b border-base-300 bg-warning-fadded/55"
+            style={{ padding: 'var(--space-5)', gap: 'var(--space-3)' }}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <AppBadge status="warning">ACTION REQUIRED</AppBadge>
-              {state.isFirstMemberCheckin && <AppBadge status="info">FIRST MEMBER</AppBadge>}
-              {state.needsBuildingOpen && <AppBadge status="error">BUILDING SECURED</AppBadge>}
-              {state.needsDds && <AppBadge status="warning">DDS NEEDED</AppBadge>}
+              <AppBadge status="warning" size="lg">
+                ACTION REQUIRED
+              </AppBadge>
+              {state.isFirstMemberCheckin && (
+                <AppBadge status="info" size="lg">
+                  FIRST MEMBER
+                </AppBadge>
+              )}
+              {state.needsBuildingOpen && (
+                <AppBadge status="error" size="lg">
+                  BUILDING SECURED
+                </AppBadge>
+              )}
+              {state.needsDds && (
+                <AppBadge status="warning" size="lg">
+                  DDS NEEDED
+                </AppBadge>
+              )}
             </div>
-            <AppCardTitle className="font-display text-3xl sm:text-4xl">{headline}</AppCardTitle>
+            <AppCardTitle className="font-display text-4xl leading-tight sm:text-5xl">
+              {headline}
+            </AppCardTitle>
             <AppCardDescription className="max-w-3xl text-base text-base-content/80">
-              Confirm whether you are opening the building and whether you are taking Duty Day Staff
-              responsibility for today.
+              Choose the responsibility you are taking now. This kiosk will keep stopping later
+              arrivals until the building is open and today&apos;s DDS is active.
             </AppCardDescription>
           </AppCardHeader>
 
           <AppCardContent
-            className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
-            style={{ padding: 'var(--space-6)' }}
+            className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]"
+            style={{ padding: 'var(--space-5)' }}
           >
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div
                 role="alert"
                 className="alert alert-soft border border-warning/30 bg-warning-fadded text-base-content"
               >
                 <AlertTriangle className="h-5 w-5" />
                 <div>
-                  <p className="font-semibold">Responsibility confirmation required</p>
+                  <p className="font-semibold">Complete one of these responsibilities now</p>
                   <p className="text-sm text-base-content/80">
-                    The kiosk will continue asking later arrivals until the building is open and a
-                    DDS is active for today.
+                    Opening the building clears the secured status. Taking DDS also opens the
+                    building and transfers lockup automatically.
                   </p>
                 </div>
               </div>
 
-              <fieldset className="fieldset rounded-box border border-base-300 bg-base-100/90">
+              <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/45">
                 <legend className="fieldset-legend px-3">Opening responsibility</legend>
                 <label
-                  className={`flex items-center justify-between gap-4 px-4 py-4 ${
+                  className={`flex items-center justify-between gap-4 px-4 py-5 ${
                     !state.canOpenBuilding ? 'opacity-60' : ''
                   }`}
                 >
                   <div>
-                    <p className="font-semibold">I am opening the building</p>
+                    <p className="text-lg font-semibold">I am opening the building</p>
                     <p className="text-sm text-base-content/70">
                       Opening the building makes you the current lockup holder until DDS is active.
                     </p>
                   </div>
                   <input
                     type="checkbox"
-                    className="toggle toggle-lg toggle-success"
+                    className="toggle toggle-xl toggle-success"
                     checked={openBuilding}
                     disabled={!state.canOpenBuilding || takeDds}
                     onChange={(event) => setOpenBuilding(event.target.checked)}
@@ -140,22 +156,22 @@ export function KioskResponsibilityPrompt({
                 )}
               </fieldset>
 
-              <fieldset className="fieldset rounded-box border border-base-300 bg-base-100/90">
+              <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/45">
                 <legend className="fieldset-legend px-3">DDS responsibility</legend>
                 <label
-                  className={`flex items-center justify-between gap-4 px-4 py-4 ${
+                  className={`flex items-center justify-between gap-4 px-4 py-5 ${
                     !state.canAcceptDds ? 'opacity-60' : ''
                   }`}
                 >
                   <div>
-                    <p className="font-semibold">I am taking DDS for today</p>
+                    <p className="text-lg font-semibold">I am taking DDS for today</p>
                     <p className="text-sm text-base-content/70">
                       Taking DDS also opens the building and transfers lockup to you automatically.
                     </p>
                   </div>
                   <input
                     type="checkbox"
-                    className="toggle toggle-lg toggle-primary"
+                    className="toggle toggle-xl toggle-primary"
                     checked={takeDds}
                     disabled={!state.canAcceptDds}
                     onChange={(event) => setTakeDds(event.target.checked)}
@@ -175,10 +191,23 @@ export function KioskResponsibilityPrompt({
                 </div>
               )}
 
-              <div className="flex flex-wrap justify-end gap-3">
+              <div className="rounded-box border border-base-300 bg-base-200/45 p-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-base-content/60">
+                  Current selection
+                </p>
+                <p className="mt-2 text-lg font-semibold">
+                  {takeDds
+                    ? 'DDS responsibility will be accepted and the building will open.'
+                    : openBuilding
+                      ? 'The building will be opened, but DDS will still need to be accepted later.'
+                      : 'No responsibility selected yet.'}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-3 border-t border-base-300 pt-4">
                 <button
                   type="button"
-                  className="btn btn-lg btn-ghost"
+                  className="btn btn-lg btn-ghost min-w-40"
                   onClick={onDecline}
                   disabled={isPending}
                   data-testid={TID.dashboard.kiosk.responsibilityDecline}
@@ -187,7 +216,7 @@ export function KioskResponsibilityPrompt({
                 </button>
                 <button
                   type="button"
-                  className="btn btn-lg btn-primary"
+                  className="btn btn-lg btn-primary min-w-64"
                   disabled={submitDisabled}
                   onClick={() => onSubmit({ openBuilding, takeDds })}
                   data-testid={TID.dashboard.kiosk.responsibilitySubmit}
@@ -198,7 +227,7 @@ export function KioskResponsibilityPrompt({
               </div>
             </div>
 
-            <div className="rounded-box border border-base-300 bg-base-100/90">
+            <div className="rounded-box border border-base-300 bg-base-200/35">
               <div
                 className="grid divide-y divide-base-300"
                 style={{ gap: '0', padding: 'var(--space-2)' }}

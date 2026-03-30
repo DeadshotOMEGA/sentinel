@@ -1,0 +1,126 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e9]:
+            - generic [ref=e10]:
+              - generic [ref=e11]:
+                - generic [ref=e12]: Front Entrance
+                - status [ref=e13]: VISITOR ACTIVE
+              - generic [ref=e14]: Front Entrance Kiosk
+              - generic [ref=e15]: Members scan on the left. Visitors use the check-in lane on the right.
+            - generic [ref=e16]:
+              - generic [ref=e17]:
+                - generic [ref=e18]:
+                  - img [ref=e19]
+                  - paragraph [ref=e22]: Local time
+                - paragraph [ref=e23]: Mar 27, 2026, 1:08:21 p.m.
+              - button "Refresh status" [ref=e24] [cursor=pointer]:
+                - img [ref=e25]
+                - text: Refresh status
+          - generic [ref=e31]:
+            - generic [ref=e120]:
+              - img [ref=e122]
+              - generic [ref=e125]:
+                - paragraph [ref=e126]: Action needed
+                - paragraph [ref=e127]: Unit Secured
+                - paragraph [ref=e128]: Staff must open the unit before normal traffic can continue.
+            - generic [ref=e130]:
+              - img [ref=e132]
+              - generic [ref=e134]:
+                - paragraph [ref=e135]: Action needed
+                - paragraph [ref=e136]: DDS Not Accepted
+                - paragraph [ref=e137]: A qualified member still needs to accept DDS for today.
+      - generic [ref=e38]:
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]: Member Scan
+              - status [ref=e44]: VISITOR ACTIVE
+            - generic [ref=e45]:
+              - generic [ref=e46]:
+                - img [ref=e48]
+                - generic [ref=e53]:
+                  - generic [ref=e54]: Member lane paused
+                  - generic [ref=e55]: Finish visitor check-in before the next member badge scan.
+              - generic [ref=e56]:
+                - paragraph [ref=e57]: Status
+                - paragraph [ref=e58]: Paused for visitor check-in
+                - paragraph [ref=e59]: Member scanning resumes as soon as the visitor flow closes.
+          - generic [ref=e60]:
+            - status [ref=e61]:
+              - generic [ref=e139]:
+                - generic [ref=e140]:
+                  - generic [ref=e141]:
+                    - paragraph [ref=e142]: Visitor Sign-In
+                    - heading "Member scan paused" [level=2] [ref=e143]
+                    - paragraph [ref=e144]: Visitor check-in is active on the right. Member scanning resumes when that flow is closed or finished.
+                  - status [ref=e146]: VISITOR MODE
+                - generic [ref=e147]:
+                  - generic [ref=e148]:
+                    - paragraph [ref=e149]: Current mode
+                    - paragraph [ref=e150]: Visitor sign-in in progress
+                    - paragraph [ref=e151]: Keep the visitor on the right-hand panel until the flow completes.
+                  - generic [ref=e152]:
+                    - paragraph [ref=e153]: Member scanning
+                    - paragraph [ref=e154]: Paused
+                    - paragraph [ref=e155]: Member scans resume after the visitor flow is cancelled or finished.
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - generic [ref=e72]:
+                  - paragraph [ref=e73]: Manual fallback
+                  - paragraph [ref=e74]: Only use this if the scanner fails
+                  - paragraph [ref=e75]: The scanner writes into this field automatically when the page remains focused.
+                - textbox "Visitor sign-in active" [disabled] [ref=e156]
+              - generic [ref=e77]:
+                - button "Submit badge number" [disabled]
+                - paragraph [ref=e78]: Manual entry is disabled while visitor sign-in is active.
+                - button "Re-focus scanner field" [ref=e79] [cursor=pointer]
+        - complementary [ref=e80]:
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - generic [ref=e160]:
+                - generic [ref=e161]: Visitor Sign-In
+                - status [ref=e162]: ACTIVE
+              - generic [ref=e163]:
+                - img [ref=e165]
+                - generic [ref=e168]:
+                  - generic [ref=e169]: Visitor check-in
+                  - generic [ref=e170]: Complete the visitor steps here. Member scanning returns when this flow closes.
+            - generic [ref=e172]:
+              - list [ref=e174]:
+                - listitem [ref=e175]: Visitor Type
+                - listitem [ref=e176]: Details
+                - listitem [ref=e177]: Visit Purpose
+                - listitem [ref=e178]: Review
+              - generic [ref=e179]:
+                - generic [ref=e181]:
+                  - generic [ref=e182]: Choose the option that best matches why you are signing into the Unit today.
+                  - generic [ref=e183]:
+                    - button "Guest Family, friends, and general visitors to the Unit." [ref=e184] [cursor=pointer]:
+                      - generic [ref=e185]:
+                        - generic [ref=e186]: Guest
+                        - generic [ref=e187]: Family, friends, and general visitors to the Unit.
+                    - button "Military Serving members visiting from another unit or formation." [ref=e188] [cursor=pointer]:
+                      - generic [ref=e189]:
+                        - generic [ref=e190]: Military
+                        - generic [ref=e191]: Serving members visiting from another unit or formation.
+                    - button "Recruitment Prospective members visiting for information or intake steps." [ref=e192] [cursor=pointer]:
+                      - generic [ref=e193]:
+                        - generic [ref=e194]: Recruitment
+                        - generic [ref=e195]: Prospective members visiting for information or intake steps.
+                    - button "Contractor Trades, vendors, and service providers conducting work." [ref=e196] [cursor=pointer]:
+                      - generic [ref=e197]:
+                        - generic [ref=e198]: Contractor
+                        - generic [ref=e199]: Trades, vendors, and service providers conducting work.
+                - generic [ref=e200]:
+                  - button "Cancel" [ref=e202] [cursor=pointer]
+                  - button "Continue" [ref=e203] [cursor=pointer]:
+                    - text: Continue
+                    - img [ref=e204]
+    - button "Hidden kiosk controls" [ref=e109]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e115] [cursor=pointer]:
+    - img [ref=e116]
+  - alert [ref=e138]
