@@ -6,6 +6,7 @@ import {
   ChevronDown,
   CircleAlert,
   CircleDashed,
+  ArrowRightLeft,
   Search,
   ShieldCheck,
   UserCheck,
@@ -27,7 +28,7 @@ import {
   AppCardTitle,
 } from '@/components/ui/AppCard'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
-import { useDdsStatus, useSetTodayDds } from '@/hooks/use-dds'
+import { useDdsStatus, useSetTodayDds, useTransferDds } from '@/hooks/use-dds'
 import { useLockupStatus } from '@/hooks/use-lockup'
 import { useLockupEligibleMembers } from '@/hooks/use-qualifications'
 import { useCurrentDds } from '@/hooks/use-schedules'
@@ -50,6 +51,13 @@ type RequirementState = 'met' | 'pending' | 'missing'
 function formatMemberName(member: DisplayMember | null): string {
   if (!member) return 'None assigned'
   return `${member.rank} ${member.firstName} ${member.lastName}`
+}
+
+function formatOperationalDate(dateString: string): string {
+  const [year, month, day] = dateString.split('-').map(Number)
+  if (!year || !month || !day) return dateString
+
+  return new Date(year, month - 1, day).toLocaleDateString()
 }
 
 function buildAssignmentMember(
@@ -146,6 +154,7 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
     checkedInOnly: true,
   })
   const setTodayDds = useSetTodayDds()
+  const transferDds = useTransferDds()
 
   const candidatePool = useMemo(
     () =>
@@ -169,11 +178,32 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
   }, [candidatePool, search])
 
   const currentAssignment = ddsStatus?.assignment ?? null
+  const handover = ddsStatus?.handover
+  const isHandoverPending = handover?.isPending ?? false
   const currentHolder = lockupStatus?.currentHolder ?? null
   const hasActiveDds = currentAssignment?.status === 'active'
   const hasPendingDds = currentAssignment?.status === 'pending'
+  const isTransferMode = isHandoverPending || hasActiveDds
   const pendingCandidate = hasPendingDds
     ? candidatePool.find((member) => member.id === currentAssignment?.memberId)
+    : null
+  const outgoingHandoverMember = handover?.outgoingDds
+    ? {
+        id: handover.outgoingDds.id,
+        rank: handover.outgoingDds.rank,
+        firstName: handover.outgoingDds.firstName,
+        lastName: handover.outgoingDds.lastName,
+        serviceNumber: null,
+      }
+    : null
+  const incomingHandoverMember = handover?.incomingDds
+    ? {
+        id: handover.incomingDds.id,
+        rank: handover.incomingDds.rank,
+        firstName: handover.incomingDds.firstName,
+        lastName: handover.incomingDds.lastName,
+        serviceNumber: null,
+      }
     : null
   const defaultPendingMemberId =
     hasPendingDds &&
@@ -181,7 +211,15 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
     candidatePool.some((member) => member.id === currentAssignment.memberId)
       ? currentAssignment.memberId
       : null
-  const effectiveSelectedMemberId = selectedMemberId ?? defaultPendingMemberId
+  const defaultTransferMemberId =
+    isTransferMode &&
+    incomingHandoverMember &&
+    candidatePool.some((member) => member.id === incomingHandoverMember.id)
+      ? incomingHandoverMember.id
+      : null
+  const effectiveSelectedMemberId =
+    selectedMemberId ?? defaultTransferMemberId ?? defaultPendingMemberId
+  const recommendedTransferMemberId = incomingHandoverMember?.id ?? null
   const currentAssignmentMember = buildAssignmentMember(
     currentAssignment,
     pendingCandidate?.serviceNumber ?? null
@@ -195,16 +233,34 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
   const isAlreadyCurrentDds =
     effectiveSelectedMemberId !== null &&
     currentAssignment?.memberId === effectiveSelectedMemberId &&
-    currentAssignment.status === 'active'
+    currentAssignment?.status === 'active'
   const isPendingCurrentDds =
     effectiveSelectedMemberId !== null &&
     currentAssignment?.memberId === effectiveSelectedMemberId &&
-    currentAssignment.status === 'pending'
+    currentAssignment?.status === 'pending'
   const isOverrideSelection =
-    hasPendingDds &&
     effectiveSelectedMemberId !== null &&
-    currentAssignment?.memberId !== effectiveSelectedMemberId
+    (isHandoverPending
+      ? recommendedTransferMemberId !== null &&
+        effectiveSelectedMemberId !== recommendedTransferMemberId
+      : (hasPendingDds || isTransferMode) &&
+        currentAssignment?.memberId !== effectiveSelectedMemberId)
   const shouldShowPicker = showMemberPicker || !hasPendingDds
+  const selectedScheduledMember =
+    incomingHandoverMember ??
+    (scheduledDds?.dds
+      ? {
+          id: scheduledDds.dds.member.id,
+          rank: scheduledDds.dds.member.rank,
+          firstName: scheduledDds.dds.member.firstName,
+          lastName: scheduledDds.dds.member.lastName,
+          serviceNumber: null,
+        }
+      : null)
+  const summaryMember = isHandoverPending
+    ? (selectedMember ?? selectedScheduledMember ?? currentAssignmentMember)
+    : (selectedMember ?? currentAssignmentMember)
+  const activeMutation = isTransferMode ? transferDds : setTodayDds
 
   const handleClose = () => {
     setSearch('')
@@ -216,10 +272,27 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
 
   const handleSubmit = () => {
     if (!effectiveSelectedMemberId || isAlreadyCurrentDds) return
+    const payloadNotes = note.trim() ? note.trim() : undefined
+
+    if (isTransferMode) {
+      transferDds.mutate(
+        {
+          toMemberId: effectiveSelectedMemberId,
+          notes: payloadNotes,
+        },
+        {
+          onSuccess: () => {
+            handleClose()
+          },
+        }
+      )
+      return
+    }
+
     setTodayDds.mutate(
       {
         memberId: effectiveSelectedMemberId,
-        notes: note.trim() ? note.trim() : undefined,
+        notes: payloadNotes,
       },
       {
         onSuccess: () => {
@@ -229,79 +302,145 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
     )
   }
 
-  const title = hasPendingDds
-    ? "Resolve Today's DDS"
-    : hasActiveDds
-      ? "Replace Today's DDS"
-      : "Set Today's DDS"
-  const description = hasPendingDds
-    ? 'The scheduled DDS is checked in and waiting for activation.'
-    : hasActiveDds
-      ? 'Replace the live DDS for today without changing the weekly schedule.'
-      : 'Assign a checked-in DDS-qualified member for today without changing the weekly schedule.'
-  const actionLabel = isPendingCurrentDds
-    ? 'Confirm DDS'
-    : isOverrideSelection
-      ? 'Assign Different DDS'
+  const title = isHandoverPending
+    ? 'Complete Weekly DDS Handover'
+    : hasPendingDds
+      ? "Resolve Today's DDS"
       : hasActiveDds
-        ? "Replace Today's DDS"
-        : "Assign Today's DDS"
+        ? "Transfer Today's DDS"
+        : "Set Today's DDS"
+  const description = isHandoverPending
+    ? 'The outgoing DDS is still live. Transfer DDS to the incoming scheduled member or assign a replacement to complete the weekly handover.'
+    : hasPendingDds
+      ? 'The scheduled DDS is checked in and waiting for activation.'
+      : hasActiveDds
+        ? 'Transfer the live DDS for today without changing the weekly schedule.'
+        : 'Assign a checked-in DDS-qualified member for today without changing the weekly schedule.'
+  const actionLabel = isHandoverPending
+    ? effectiveSelectedMemberId === incomingHandoverMember?.id
+      ? 'Complete Handover'
+      : 'Transfer DDS'
+    : isPendingCurrentDds
+      ? 'Confirm DDS'
+      : isOverrideSelection
+        ? 'Assign Different DDS'
+        : hasActiveDds
+          ? "Transfer Today's DDS"
+          : "Assign Today's DDS"
   const actionClass = isPendingCurrentDds ? 'btn btn-success' : 'btn btn-primary'
-  const statusCardTitle = hasPendingDds ? 'Recommended Resolution' : "Today's DDS Status"
-  const statusCardDescription = hasPendingDds
-    ? 'Confirm this member or use an override if the scheduled DDS cannot take the duty.'
+  const statusCardTitle = isHandoverPending
+    ? 'Weekly Handover Status'
+    : hasPendingDds
+      ? 'Recommended Resolution'
+      : "Today's DDS Status"
+  const statusCardDescription = isHandoverPending
+    ? 'The outgoing DDS stays live until you record a transfer. The incoming scheduled DDS is the recommended handover target.'
+    : hasPendingDds
+      ? 'Confirm this member or use an override if the scheduled DDS cannot take the duty.'
+      : hasActiveDds
+        ? 'A live DDS is already active. Choose a different member only if an override is required.'
+        : 'No live DDS is active right now. Assign a checked-in DDS-qualified member to cover today.'
+  const pickerHeading = isTransferMode
+    ? 'Choose Transfer Target'
+    : hasPendingDds
+      ? 'Choose Someone Else'
+      : "Choose Today's DDS"
+  const pickerDescription = isHandoverPending
+    ? 'The incoming scheduled DDS is recommended. Choose someone else only when operations require an override.'
     : hasActiveDds
-      ? 'A live DDS is already active. Choose a different member only if an override is required.'
-      : 'No live DDS is active right now. Assign a checked-in DDS-qualified member to cover today.'
-  const pickerHeading = hasPendingDds ? 'Choose Someone Else' : "Choose Today's DDS"
-  const pickerDescription = hasPendingDds
-    ? 'Only use this override path if the scheduled DDS cannot take the duty.'
-    : 'Select a checked-in DDS-qualified member to cover today.'
-  const noteHelper = isOverrideSelection
-    ? 'Recommended when overriding the scheduled DDS.'
-    : 'Optional admin note for the duty log.'
+      ? 'Select a checked-in DDS-qualified member to receive today’s live DDS responsibility.'
+      : hasPendingDds
+        ? 'Only use this override path if the scheduled DDS cannot take the duty.'
+        : 'Select a checked-in DDS-qualified member to cover today.'
+  const noteHelper = isHandoverPending
+    ? 'Recommended when documenting the weekly DDS handover or an override.'
+    : isOverrideSelection
+      ? 'Recommended when overriding the scheduled DDS.'
+      : 'Optional admin note for the duty log.'
   const requirementItems: Array<{
     label: string
     detail?: string
     state: RequirementState
-  }> = [
-    {
-      label: 'Scheduled DDS identified',
-      detail: scheduledDds?.dds
-        ? formatMemberName(scheduledDds.dds.member)
-        : 'No scheduled DDS found',
-      state: scheduledDds?.dds ? 'met' : 'missing',
-    },
-    {
-      label: 'Member checked in',
-      detail: selectedMember
-        ? `${formatMemberName(selectedMember)} is currently present.`
-        : 'No checked-in DDS selected.',
-      state: selectedMember ? 'met' : 'missing',
-    },
-    {
-      label: 'Building open',
-      detail:
-        lockupStatus?.buildingStatus === 'secured'
-          ? 'Building is still secured.'
-          : 'Building is open for today.',
-      state: lockupStatus?.buildingStatus === 'secured' ? 'missing' : 'met',
-    },
-    {
-      label: 'Lockup holder assigned',
-      detail: currentHolder ? formatMemberName(currentHolder) : 'No lockup holder assigned.',
-      state: currentHolder ? 'met' : 'missing',
-    },
-    {
-      label: 'DDS confirmed for today',
-      detail: hasPendingDds
-        ? 'Admin confirmation is still required.'
-        : hasActiveDds
-          ? 'Live DDS is already active.'
-          : 'DDS still needs to be assigned.',
-      state: hasPendingDds ? 'pending' : hasActiveDds ? 'met' : 'missing',
-    },
-  ]
+  }> = isHandoverPending
+    ? [
+        {
+          label: 'Outgoing DDS is still live',
+          detail: outgoingHandoverMember
+            ? `${formatMemberName(outgoingHandoverMember)} remains responsible until transfer is recorded.`
+            : 'Outgoing DDS could not be resolved.',
+          state: outgoingHandoverMember ? 'met' : 'missing',
+        },
+        {
+          label: 'Incoming scheduled DDS identified',
+          detail: selectedScheduledMember
+            ? formatMemberName(selectedScheduledMember)
+            : 'No incoming scheduled DDS found.',
+          state: selectedScheduledMember ? 'met' : 'missing',
+        },
+        {
+          label: 'Transfer target checked in',
+          detail: selectedMember
+            ? `${formatMemberName(selectedMember)} is currently present.`
+            : 'Select a checked-in DDS-qualified member to receive the handover.',
+          state: selectedMember ? 'met' : 'missing',
+        },
+        {
+          label: 'Building open',
+          detail:
+            lockupStatus?.buildingStatus === 'secured'
+              ? 'Building is still secured.'
+              : 'Building is open for today.',
+          state: lockupStatus?.buildingStatus === 'secured' ? 'missing' : 'met',
+        },
+        {
+          label: 'Lockup holder assigned',
+          detail: currentHolder ? formatMemberName(currentHolder) : 'No lockup holder assigned.',
+          state: currentHolder ? 'met' : 'missing',
+        },
+        {
+          label: 'Weekly handover completed',
+          detail: 'A DDS transfer must be recorded before the incoming week takes over.',
+          state: 'pending',
+        },
+      ]
+    : [
+        {
+          label: 'Scheduled DDS identified',
+          detail: selectedScheduledMember
+            ? formatMemberName(selectedScheduledMember)
+            : 'No scheduled DDS found',
+          state: selectedScheduledMember ? 'met' : 'missing',
+        },
+        {
+          label: 'Member checked in',
+          detail: selectedMember
+            ? `${formatMemberName(selectedMember)} is currently present.`
+            : 'No checked-in DDS selected.',
+          state: selectedMember ? 'met' : 'missing',
+        },
+        {
+          label: 'Building open',
+          detail:
+            lockupStatus?.buildingStatus === 'secured'
+              ? 'Building is still secured.'
+              : 'Building is open for today.',
+          state: lockupStatus?.buildingStatus === 'secured' ? 'missing' : 'met',
+        },
+        {
+          label: 'Lockup holder assigned',
+          detail: currentHolder ? formatMemberName(currentHolder) : 'No lockup holder assigned.',
+          state: currentHolder ? 'met' : 'missing',
+        },
+        {
+          label: 'DDS confirmed for today',
+          detail: hasPendingDds
+            ? 'Admin confirmation is still required.'
+            : hasActiveDds
+              ? 'Live DDS is already active.'
+              : 'DDS still needs to be assigned.',
+          state: hasPendingDds ? 'pending' : hasActiveDds ? 'met' : 'missing',
+        },
+      ]
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
@@ -315,6 +454,37 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
         </DialogHeader>
 
         <div className="space-y-3">
+          {isHandoverPending && (
+            <div
+              role="alert"
+              className="alert alert-soft border border-warning/30 bg-warning-fadded text-base-content"
+            >
+              <ArrowRightLeft className="h-5 w-5 text-warning" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <AppBadge status="warning" size="sm">
+                    Handover Pending
+                  </AppBadge>
+                  {handover?.firstOperationalDay && (
+                    <AppBadge status="info" size="sm">
+                      Since {formatOperationalDate(handover.firstOperationalDay)}
+                    </AppBadge>
+                  )}
+                </div>
+                <p className="mt-2 text-sm font-medium">
+                  {outgoingHandoverMember
+                    ? formatMemberName(outgoingHandoverMember)
+                    : 'Outgoing DDS'}{' '}
+                  is still the live DDS. Transfer responsibility to{' '}
+                  {selectedScheduledMember
+                    ? formatMemberName(selectedScheduledMember)
+                    : 'the incoming scheduled DDS'}{' '}
+                  to complete the weekly handover.
+                </p>
+              </div>
+            </div>
+          )}
+
           <AppCard status={hasPendingDds ? 'warning' : hasActiveDds ? 'info' : 'neutral'}>
             <AppCardHeader className="gap-1 px-4 py-3">
               <AppCardTitle className="text-base-content">{statusCardTitle}</AppCardTitle>
@@ -323,30 +493,44 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
             <AppCardContent className="grid gap-3 px-4 pb-4 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
               <div className="rounded-box border border-base-300 bg-base-100 p-3">
                 <p className="text-xs uppercase tracking-wide text-base-content/60">
-                  {hasPendingDds
-                    ? 'Pending DDS'
-                    : selectedMember
-                      ? 'Selected Member'
-                      : 'Current Live DDS'}
+                  {isHandoverPending
+                    ? 'Transfer Target'
+                    : hasPendingDds
+                      ? 'Pending DDS'
+                      : selectedMember
+                        ? 'Selected Member'
+                        : 'Current Live DDS'}
                 </p>
                 <div className="mt-2 flex items-start gap-2.5">
                   <UserCheck className="mt-0.5 h-5 w-5 text-base-content/70" />
                   <div className="min-w-0">
                     <p className="text-lg font-semibold leading-tight">
-                      {formatMemberName(selectedMember ?? currentAssignmentMember)}
+                      {formatMemberName(summaryMember)}
                     </p>
-                    {(selectedMember?.serviceNumber ?? currentAssignmentMember?.serviceNumber) && (
+                    {(summaryMember?.serviceNumber ?? null) && (
                       <p className="mt-0.5 font-mono text-sm text-base-content/60">
-                        {selectedMember?.serviceNumber ?? currentAssignmentMember?.serviceNumber}
+                        {summaryMember?.serviceNumber}
                       </p>
                     )}
                     <div className="mt-2 flex flex-wrap gap-2">
+                      {isHandoverPending && (
+                        <>
+                          <AppBadge status="warning" size="sm">
+                            OUTGOING DDS LIVE
+                          </AppBadge>
+                          {selectedScheduledMember && (
+                            <AppBadge status="info" size="sm">
+                              INCOMING SCHEDULED DDS
+                            </AppBadge>
+                          )}
+                        </>
+                      )}
                       {hasPendingDds && (
                         <AppBadge status="warning" size="sm">
                           Awaiting Confirmation
                         </AppBadge>
                       )}
-                      {hasActiveDds && (
+                      {hasActiveDds && !isHandoverPending && (
                         <AppBadge status="success" size="sm">
                           Active DDS
                         </AppBadge>
@@ -488,7 +672,7 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
           ) : (
             <div className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:items-end">
               <div className="space-y-2 rounded-box border border-base-300 bg-base-100 p-3">
-                {hasPendingDds ? (
+                {hasPendingDds || isTransferMode ? (
                   <button
                     type="button"
                     className="btn btn-sm btn-outline btn-neutral justify-start"
@@ -504,9 +688,11 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
                   </div>
                 )}
 
-                {hasPendingDds && (
+                {(hasPendingDds || isTransferMode) && (
                   <p className="text-xs text-base-content/60">
-                    Use the override path only when the scheduled DDS cannot take the duty.
+                    {isHandoverPending
+                      ? 'Use the override path only when the incoming scheduled DDS cannot take over.'
+                      : 'Use the override path only when the scheduled DDS cannot take the duty.'}
                   </p>
                 )}
               </div>
@@ -531,9 +717,9 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
             </div>
           )}
 
-          {setTodayDds.isError && (
+          {activeMutation.isError && (
             <div role="alert" className="alert alert-error alert-soft">
-              <span>{setTodayDds.error.message}</span>
+              <span>{activeMutation.error.message}</span>
             </div>
           )}
         </div>
@@ -544,10 +730,10 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
           </button>
           <button
             className={actionClass}
-            disabled={!effectiveSelectedMemberId || isAlreadyCurrentDds || setTodayDds.isPending}
+            disabled={!effectiveSelectedMemberId || isAlreadyCurrentDds || activeMutation.isPending}
             onClick={handleSubmit}
           >
-            {setTodayDds.isPending && <ButtonSpinner />}
+            {activeMutation.isPending && <ButtonSpinner />}
             {actionLabel}
           </button>
         </DialogFooter>

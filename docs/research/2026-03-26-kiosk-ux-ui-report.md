@@ -12,7 +12,6 @@ Date: March 26, 2026
 - `docs/wiki/operations/day-duty/kiosk-check-in.md`
 - `docs/mermaid/scan-system/main-scan-flow.mmd`
 - `docs/mermaid/scan-system/dds-acceptance-flow.mmd`
-- `tests/e2e/frontend/kiosk-first-entry-dds.spec.ts`
 - Playwright CLI capture artifacts under `test-results/kiosk-ux-review/`
 
 ## Kiosk Intent

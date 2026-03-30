@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { prisma } from '@sentinel/database'
 import { logger } from '../lib/logger.js'
 import { AlertService } from '../services/alert-service.js'
+import { DdsService } from '../services/dds-service.js'
 import { LockupService } from '../services/lockup-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import {
@@ -30,6 +31,7 @@ export async function runDailyReset(): Promise<void> {
   jobLogger.info('Starting daily reset job')
 
   const alertService = new AlertService(prisma)
+  const ddsService = new DdsService(prisma)
   const lockupService = new LockupService(prisma)
   const presenceService = new PresenceService(prisma)
 
@@ -194,52 +196,36 @@ export async function runDailyReset(): Promise<void> {
         statusId: newStatus.id,
       })
 
-      // Create pending DDS assignment from weekly schedule so badge scan triggers auto-accept
-      const { start } = getOperationalWeek()
-      const ddsRole = await prisma.dutyRole.findUnique({ where: { code: 'DDS' } })
+      // Create pending DDS assignment from schedule unless weekly handover is still pending.
+      const scheduledMemberId = await ddsService.getAutomaticPendingAssignmentMemberId(todayDate)
 
-      if (ddsRole) {
-        const ddsSchedule = await prisma.weeklySchedule.findUnique({
+      if (scheduledMemberId) {
+        const existingAssignment = await prisma.ddsAssignment.findFirst({
           where: {
-            dutyRoleId_weekStartDate: {
-              dutyRoleId: ddsRole.id,
-              weekStartDate: start,
-            },
-          },
-          include: {
-            assignments: {
-              where: { status: { not: 'released' } },
-              take: 1,
-            },
+            assignedDate: todayDate,
+            status: { in: ['pending', 'active'] },
           },
         })
 
-        if (ddsSchedule && ddsSchedule.assignments.length > 0) {
-          const scheduledMemberId = ddsSchedule.assignments[0]!.memberId
-
-          // Only create if no assignment already exists for today
-          const existingAssignment = await prisma.ddsAssignment.findFirst({
-            where: {
+        if (!existingAssignment) {
+          await prisma.ddsAssignment.create({
+            data: {
+              memberId: scheduledMemberId,
               assignedDate: todayDate,
-              status: { in: ['pending', 'active'] },
+              status: 'pending',
+              notes: 'Auto-created from weekly schedule during daily reset',
             },
           })
 
-          if (!existingAssignment) {
-            await prisma.ddsAssignment.create({
-              data: {
-                memberId: scheduledMemberId,
-                assignedDate: todayDate,
-                status: 'pending',
-                notes: 'Auto-created from weekly schedule during daily reset',
-              },
-            })
-
-            jobLogger.info('Created pending DDS assignment from schedule', {
-              memberId: scheduledMemberId,
-            })
-          }
+          jobLogger.info('Created pending DDS assignment from schedule', {
+            memberId: scheduledMemberId,
+          })
         }
+      } else {
+        const { start } = getOperationalWeek()
+        jobLogger.info('Skipped pending DDS auto-assignment because weekly handover is deferred', {
+          weekStartDate: start.toISOString().substring(0, 10),
+        })
       }
     }
 

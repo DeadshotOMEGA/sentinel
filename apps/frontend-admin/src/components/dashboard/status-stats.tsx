@@ -145,16 +145,33 @@ function DdsStat({
   }
 
   const assignmentStatus = ddsStatus.assignment.status
+  const handover = ddsStatus.handover
+  const isHandoverPending = handover.isPending
   const onSite = ddsStatus.isDdsOnSite
   const isAccepted = assignmentStatus === 'active'
   const isPendingDds = assignmentStatus === 'pending'
-  const accentColor = isAccepted ? (onSite ? 'success' : 'error') : 'warning'
-  const nameColor = isAccepted ? (onSite ? 'text-success' : 'text-error') : 'text-warning'
-  const subHeading = isAccepted
-    ? onSite
-      ? 'DDS On Site'
-      : 'Contact DDS Cell 204-612-4621'
-    : 'DDS Scheduled, Awaiting Acceptance'
+  const accentColor = isHandoverPending
+    ? 'warning'
+    : isAccepted
+      ? onSite
+        ? 'success'
+        : 'error'
+      : 'warning'
+  const nameColor = isHandoverPending
+    ? 'text-warning'
+    : isAccepted
+      ? onSite
+        ? 'text-success'
+        : 'text-error'
+      : 'text-warning'
+  const subHeading = isHandoverPending
+    ? 'Outgoing DDS remains live until weekly handover is completed.'
+    : isAccepted
+      ? onSite
+        ? 'DDS On Site'
+        : 'Contact DDS Cell 204-612-4621'
+      : 'DDS Scheduled, Awaiting Acceptance'
+  const incomingHandoverName = handover.incomingDds ? formatMemberName(handover.incomingDds) : null
 
   return (
     <StatContainer accentColor={accentColor} helpId="dashboard.stat.dds">
@@ -166,20 +183,32 @@ function DdsStat({
         {ddsStatus.assignment.member.rank} {ddsStatus.assignment.member.lastName}{' '}
         {ddsStatus.assignment.member.firstName.charAt(0)}
       </div>
-      <div className="stat-desc flex w-full items-center justify-between gap-3">
-        <span className="min-w-0">{subHeading}</span>
-        {isPendingDds && (
-          <div
-            className={!isAdmin ? 'tooltip tooltip-right' : ''}
-            data-tip="Requires Admin level or higher"
-          >
-            <button
-              className="btn btn-xs border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
-              disabled={!isAdmin}
-              onClick={onResolvePendingDds}
+      <div className="stat-desc flex w-full flex-col gap-2">
+        <div className="flex w-full items-center justify-between gap-3">
+          <span className="min-w-0">{subHeading}</span>
+          {(isPendingDds || isHandoverPending) && (
+            <div
+              className={!isAdmin ? 'tooltip tooltip-right' : ''}
+              data-tip="Requires Admin level or higher"
             >
-              Accept DDS
-            </button>
+              <button
+                className="btn btn-xs border font-medium transition-all duration-200 shadow-sm hover:shadow-md btn-action stats-action-button stats-action-success"
+                disabled={!isAdmin}
+                onClick={onResolvePendingDds}
+              >
+                {isHandoverPending ? 'Complete Handover' : 'Accept DDS'}
+              </button>
+            </div>
+          )}
+        </div>
+        {isHandoverPending && (
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <AppBadge status="warning" size="sm">
+              Handover Pending
+            </AppBadge>
+            {incomingHandoverName && (
+              <span className="text-xs text-base-content/70">Incoming: {incomingHandoverName}</span>
+            )}
           </div>
         )}
       </div>
@@ -483,6 +512,7 @@ function StatusActionsStat({
   isSecured,
   isOpenWithHolder,
   isOpenNoHolder,
+  ddsActionLabel,
   onOpenBuilding,
   onExecuteLockup,
   onSetTodayDds,
@@ -492,6 +522,7 @@ function StatusActionsStat({
   isSecured: boolean
   isOpenWithHolder: boolean
   isOpenNoHolder: boolean
+  ddsActionLabel: string
   onOpenBuilding: () => void
   onExecuteLockup: () => void
   onSetTodayDds: () => void
@@ -549,7 +580,7 @@ function StatusActionsStat({
               data-testid={TID.dashboard.quickAction.setTodayDds}
             >
               <ShieldCheck className="size-[1.1em] shrink-0" />
-              Transfer DDS
+              {ddsActionLabel}
             </button>
           </div>
 
@@ -583,6 +614,7 @@ export function StatusStats() {
   const [isOpenBuildingOpen, setIsOpenBuildingOpen] = useState(false)
   const [isLockupModalOpen, setIsLockupModalOpen] = useState(false)
   const { data: lockupStatus, isLoading: lockupLoading } = useLockupStatus()
+  const { data: ddsStatus } = useDdsStatus()
   const currentHolder = lockupStatus?.currentHolder
   const buildingStatus = lockupStatus?.buildingStatus
   const { data: checkoutOptions } = useCheckoutOptions(currentHolder?.id ?? '')
@@ -590,6 +622,7 @@ export function StatusStats() {
   const isSecured = buildingStatus === 'secured'
   const isOpenWithHolder = buildingStatus === 'open' && !!currentHolder
   const isOpenNoHolder = buildingStatus === 'open' && !currentHolder
+  const ddsActionLabel = ddsStatus?.handover.isPending ? 'Complete Handover' : 'Transfer DDS'
 
   return (
     <div
@@ -606,6 +639,7 @@ export function StatusStats() {
         isSecured={isSecured}
         isOpenWithHolder={isOpenWithHolder}
         isOpenNoHolder={isOpenNoHolder}
+        ddsActionLabel={ddsActionLabel}
         onOpenBuilding={() => setIsOpenBuildingOpen(true)}
         onExecuteLockup={() => setIsLockupModalOpen(true)}
         onSetTodayDds={() => setIsSetTodayDdsOpen(true)}

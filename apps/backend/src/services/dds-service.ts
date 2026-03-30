@@ -5,7 +5,7 @@ import { ConflictError, NotFoundError, ValidationError } from '../middleware/err
 import { LockupService } from './lockup-service.js'
 import { PresenceService } from './presence-service.js'
 import { QualificationService } from './qualification-service.js'
-import { ScheduleService } from './schedule-service.js'
+import { ScheduleService, type CurrentDdsFromSchedule } from './schedule-service.js'
 import { StatHolidayService } from './stat-holiday-service.js'
 import { broadcastDdsUpdate } from '../websocket/broadcast.js'
 
@@ -88,9 +88,41 @@ type MemberSummary = {
   rank: string
 }
 
+interface WeeklyHandoverContext {
+  firstOperationalDay: Date
+  outgoingDds: CurrentDdsFromSchedule
+  incomingDds: CurrentDdsFromSchedule
+}
+
+interface DdsHandoverStatus {
+  isPending: boolean
+  firstOperationalDay: Date | null
+  outgoingDds: MemberSummary | null
+  incomingDds: MemberSummary | null
+}
+
 function getTodayDate(): Date {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+}
+
+function startOfDay(date: Date): Date {
+  const normalized = new Date(date)
+  normalized.setHours(0, 0, 0, 0)
+  return normalized
+}
+
+function getWeekStart(date: Date): Date {
+  const normalized = startOfDay(date)
+  const dayOfWeek = normalized.getDay()
+  normalized.setDate(normalized.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+  return normalized
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
 }
 
 const memberInclude = {
@@ -237,6 +269,130 @@ export class DdsService {
     }
   }
 
+  private buildSyntheticAssignmentFromSchedule(
+    scheduledDds: CurrentDdsFromSchedule,
+    assignedDate: Date,
+    notes: string
+  ): DdsAssignmentWithMember {
+    return {
+      id: `synthetic-${scheduledDds.assignmentId}-${assignedDate.toISOString().substring(0, 10)}`,
+      memberId: scheduledDds.member.id,
+      assignedDate,
+      acceptedAt: assignedDate,
+      releasedAt: null,
+      transferredTo: null,
+      assignedBy: null,
+      status: 'active',
+      notes,
+      createdAt: assignedDate,
+      updatedAt: assignedDate,
+      member: {
+        id: scheduledDds.member.id,
+        firstName: scheduledDds.member.firstName,
+        lastName: scheduledDds.member.lastName,
+        rank: scheduledDds.member.rank,
+        division: null,
+      },
+      assignedByAdminName: null,
+    }
+  }
+
+  private async getWeeklyHandoverContext(date: Date): Promise<WeeklyHandoverContext | null> {
+    const today = startOfDay(date)
+    const weekStart = getWeekStart(today)
+    const firstOperationalDay = await this.statHolidayService.getFirstOperationalDay(weekStart)
+
+    if (today < firstOperationalDay) {
+      return null
+    }
+
+    const [{ dds: incomingDds }, { dds: outgoingDds }] = await Promise.all([
+      this.scheduleService.getDdsByWeek(weekStart),
+      this.scheduleService.getDdsByWeek(addDays(weekStart, -7)),
+    ])
+
+    if (
+      !incomingDds ||
+      !outgoingDds ||
+      incomingDds.status === 'released' ||
+      outgoingDds.status === 'released' ||
+      incomingDds.member.id === outgoingDds.member.id
+    ) {
+      return null
+    }
+
+    const nextWeekStart = addDays(weekStart, 7)
+    const completedHandover = await this.prisma.ddsAssignment.findFirst({
+      where: {
+        assignedDate: {
+          gte: firstOperationalDay,
+          lt: nextWeekStart,
+        },
+        memberId: {
+          not: outgoingDds.member.id,
+        },
+      },
+      select: { id: true },
+    })
+
+    if (completedHandover) {
+      return null
+    }
+
+    return {
+      firstOperationalDay,
+      outgoingDds,
+      incomingDds,
+    }
+  }
+
+  async getAutomaticPendingAssignmentMemberId(date: Date): Promise<string | null> {
+    const normalizedDate = startOfDay(date)
+    const handoverContext = await this.getWeeklyHandoverContext(normalizedDate)
+
+    if (handoverContext) {
+      return null
+    }
+
+    const { dds } = await this.scheduleService.getDdsByWeek(normalizedDate)
+
+    if (!dds || dds.status === 'released') {
+      return null
+    }
+
+    return dds.member.id
+  }
+
+  async getCurrentHandoverStatus(date: Date = getTodayDate()): Promise<DdsHandoverStatus> {
+    const handoverContext = await this.getWeeklyHandoverContext(date)
+
+    if (!handoverContext) {
+      return {
+        isPending: false,
+        firstOperationalDay: null,
+        outgoingDds: null,
+        incomingDds: null,
+      }
+    }
+
+    return {
+      isPending: true,
+      firstOperationalDay: handoverContext.firstOperationalDay,
+      outgoingDds: {
+        id: handoverContext.outgoingDds.member.id,
+        firstName: handoverContext.outgoingDds.member.firstName,
+        lastName: handoverContext.outgoingDds.member.lastName,
+        rank: handoverContext.outgoingDds.member.rank,
+      },
+      incomingDds: {
+        id: handoverContext.incomingDds.member.id,
+        firstName: handoverContext.incomingDds.member.firstName,
+        lastName: handoverContext.incomingDds.member.lastName,
+        rank: handoverContext.incomingDds.member.rank,
+      },
+    }
+  }
+
   private async broadcastAssignment(
     action: 'accepted' | 'assigned' | 'transferred' | 'released',
     assignment: DdsAssignmentWithMember | null
@@ -288,6 +444,16 @@ export class DdsService {
 
     if (assignment) {
       return this.transformAssignment(assignment)
+    }
+
+    const handoverContext = await this.getWeeklyHandoverContext(today)
+
+    if (handoverContext) {
+      return this.buildSyntheticAssignmentFromSchedule(
+        handoverContext.outgoingDds,
+        today,
+        'Weekly DDS handover is still pending transfer'
+      )
     }
 
     const { dds } = await this.scheduleService.getCurrentDdsFromSchedule()
@@ -393,6 +559,7 @@ export class DdsService {
     await this.ensureDdsCandidateIsPresentAndQualified(memberId)
 
     const existingDds = await this.getPersistedCurrentAssignment(today)
+    const handoverContext = existingDds ? null : await this.getWeeklyHandoverContext(today)
 
     if (existingDds?.status === 'active' && existingDds.memberId === memberId) {
       return this.transformAssignment(existingDds)
@@ -400,6 +567,12 @@ export class DdsService {
 
     if (existingDds?.status === 'active' && existingDds.memberId !== memberId) {
       throw new ConflictError('A DDS has already been accepted for today')
+    }
+
+    if (handoverContext && handoverContext.outgoingDds.member.id !== memberId) {
+      throw new ConflictError(
+        'DDS handover is still pending; the outgoing DDS must transfer responsibility before another member can accept today'
+      )
     }
 
     let assignment: Prisma.DdsAssignmentGetPayload<{ include: typeof memberInclude }>
@@ -491,6 +664,7 @@ export class DdsService {
     await this.ensureDdsCandidateIsPresentAndQualified(memberId)
 
     const existingDds = await this.getPersistedCurrentAssignment(today)
+    const handoverContext = existingDds ? null : await this.getWeeklyHandoverContext(today)
     const assignedByAdminId = await this.resolveAssignedByAdminId(adminId)
 
     if (existingDds?.status === 'active' && existingDds.memberId === memberId) {
@@ -510,6 +684,22 @@ export class DdsService {
           status: 'active',
           assignedBy: assignedByAdminId,
           notes: notes ?? existingDds.notes,
+        },
+        include: memberInclude,
+      })
+    } else if (handoverContext && handoverContext.outgoingDds.member.id !== memberId) {
+      broadcastAction = 'transferred'
+      auditAction = 'transferred'
+      fromMemberId = handoverContext.outgoingDds.member.id
+
+      assignment = await this.prisma.ddsAssignment.create({
+        data: {
+          memberId,
+          assignedDate: today,
+          acceptedAt: new Date(),
+          assignedBy: assignedByAdminId,
+          status: 'active',
+          notes: notes ?? null,
         },
         include: memberInclude,
       })
@@ -602,12 +792,15 @@ export class DdsService {
   ): Promise<DdsAssignmentWithMember> {
     const today = getTodayDate()
     const currentDds = await this.getPersistedCurrentAssignment(today)
+    const handoverContext = currentDds ? null : await this.getWeeklyHandoverContext(today)
 
-    if (!currentDds) {
+    if (!currentDds && !handoverContext) {
       throw new NotFoundError('DDS Assignment', 'today')
     }
 
-    if (currentDds.memberId === toMemberId) {
+    const currentMemberId = currentDds?.memberId ?? handoverContext?.outgoingDds.member.id
+
+    if (currentMemberId === toMemberId) {
       throw new ValidationError('Cannot transfer DDS to the same member')
     }
 
@@ -700,19 +893,7 @@ export class DdsService {
   }
 
   async hasDdsForToday(): Promise<boolean> {
-    const today = getTodayDate()
-
-    const assignment = await this.prisma.ddsAssignment.findFirst({
-      where: {
-        assignedDate: today,
-        status: {
-          in: ['pending', 'active'],
-        },
-      },
-      select: { id: true },
-    })
-
-    return assignment !== null
+    return (await this.getCurrentDds()) !== null
   }
 
   async getAuditLog(memberId?: string, limit: number = 50): Promise<ResponsibilityAuditLogEntry[]> {
