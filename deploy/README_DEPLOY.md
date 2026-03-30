@@ -326,6 +326,10 @@ Post-upgrade UI smoke checks (recommended):
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Installer/update then verifies schema parity with migration files:
   `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`
+- If update/install fails with `ERR_PNPM_RECOURSIVE_EXEC_FIRST_FAIL` around `prisma migrate diff`, the underlying problem is usually schema drift on that appliance database, not pnpm itself. Capture the real drift summary with:
+  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
+  - `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'`
+  - This is most common on appliances whose database history predates the canonical `0_init` Prisma baseline introduced on February 21, 2026.
 
 ## Members + badges transfer (local -> deployed)
 
