@@ -44,6 +44,8 @@ jobs:
       SENTINEL_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
       SENTINEL_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
 
     steps:
       - name: Checkout
@@ -57,8 +59,6 @@ jobs:
           fi
 
       - name: Sync release tracks
-        env:
-          GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
         run: |
           set -euo pipefail
 

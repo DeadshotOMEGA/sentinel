@@ -42,9 +42,21 @@ if [[ -z "${REPO_ROOT}" ]]; then
 fi
 cd "$REPO_ROOT"
 
-if ! gh auth status >/dev/null 2>&1; then
-  die "GitHub CLI is not authenticated. Run: gh auth login"
-fi
+ensure_gh_auth() {
+  # In CI, gh commonly authenticates via GH_TOKEN/GITHUB_TOKEN rather than stored hosts.yml state.
+  if [[ -n "${GH_TOKEN:-}" || -n "${GITHUB_TOKEN:-}" ]]; then
+    if ! gh api rate_limit >/dev/null 2>&1; then
+      die "GitHub CLI token auth failed. Verify GH_TOKEN/GITHUB_TOKEN and required scopes."
+    fi
+    return 0
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    die "GitHub CLI is not authenticated. Run: gh auth login"
+  fi
+}
+
+ensure_gh_auth
 
 REPO="${1:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"
 OWNER="${REPO%%/*}"
