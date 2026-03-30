@@ -9,7 +9,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useCheckins } from '@/hooks/use-checkins'
-import { useAuthStore, AccountLevel } from '@/store/auth-store'
 
 import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp, User, Users, Pencil } from 'lucide-react'
 import { TableSkeleton } from '@/components/ui/loading-skeleton'
@@ -27,15 +26,14 @@ interface CheckinsTableProps {
     startDate?: string
     endDate?: string
   }
+  canEdit: boolean
   onPageChange: (page: number) => void
 }
 
 const columnHelper = createColumnHelper<CheckinWithMemberResponse>()
 
-export function CheckinsTable({ filters, onPageChange }: CheckinsTableProps) {
+export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableProps) {
   const { data, isLoading, isError } = useCheckins(filters)
-  const member = useAuthStore((state) => state.member)
-  const canEdit = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
 
   const [editingCheckin, setEditingCheckin] = useState<CheckinWithMemberResponse | null>(null)
   const [editingVisitorId, setEditingVisitorId] = useState<string | null>(null)

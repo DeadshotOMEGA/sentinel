@@ -17,7 +17,7 @@ import { LockupService } from '../services/lockup-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
-import { AccountLevel } from '../middleware/roles.js'
+import { canMemberEditHistory } from '../lib/history-permissions.js'
 
 function getClientIp(req: unknown): string {
   const r = req as { ip?: string; socket?: { remoteAddress?: string } }
@@ -614,13 +614,12 @@ export const checkinsRouter = s.router(checkinContract, {
     body: UpdateCheckinInput
     req: Request
   }) => {
-    // Enforce Admin+ access
-    if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
+    if (!(await canMemberEditHistory(req))) {
       return {
         status: 403 as const,
         body: {
           error: 'FORBIDDEN',
-          message: 'Editing check-in records requires Admin or Developer access',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
         },
       }
     }
@@ -741,13 +740,12 @@ export const checkinsRouter = s.router(checkinContract, {
    * Delete checkin — Admin/Developer only, fully audited
    */
   deleteCheckin: async ({ params, req }: { params: IdParam; req: Request }) => {
-    // Enforce Admin+ access
-    if ((req.member?.accountLevel ?? 0) < AccountLevel.ADMIN) {
+    if (!(await canMemberEditHistory(req))) {
       return {
         status: 403 as const,
         body: {
           error: 'FORBIDDEN',
-          message: 'Deleting check-in records requires Admin or Developer access',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
         },
       }
     }
