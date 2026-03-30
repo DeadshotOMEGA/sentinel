@@ -479,6 +479,22 @@ wait_for_service_health() {
   return 1
 }
 
+verify_prisma_schema_parity() {
+  log "Verifying schema parity against migration files"
+
+  if compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'; then
+    return 0
+  fi
+
+  warn "Prisma schema parity check failed. Capturing human-readable drift summary (database -> schema)."
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma' || true
+  warn "Common cause: an older appliance database drifted from the canonical Prisma baseline."
+  warn "For more detail, rerun on the appliance:"
+  warn "  docker compose exec -T backend sh -lc \"cd /app && pnpm --filter @sentinel/database exec prisma migrate status\""
+  warn "  docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'"
+  die "Database schema drift detected; review the Prisma diff output above before retrying the update."
+}
+
 run_safe_migrations() {
   local table_count
   local bootstrap_schema="false"
@@ -515,8 +531,7 @@ run_safe_migrations() {
   log "Verifying migration status"
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
-  log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
+  verify_prisma_schema_parity
 
   run_bootstrap_sentinel_account
 }
@@ -533,8 +548,7 @@ run_bootstrap_schema_and_baseline() {
   log "Verifying migration status"
   compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"
 
-  log "Verifying schema parity against migration files"
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
+  verify_prisma_schema_parity
 
   run_bootstrap_sentinel_account
 }
