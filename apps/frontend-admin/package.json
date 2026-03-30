@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm --filter @sentinel/contracts build && tsc --noEmit",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
