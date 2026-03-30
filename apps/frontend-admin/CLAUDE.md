@@ -20,6 +20,7 @@ Before implementing frontend changes, read:
 - MUST use project wrappers for semantic consistency (`AppCard`, `AppBadge`, `Chip`, and `Dialog` primitives).
 - MUST use design tokens for spacing, elevation, z-index, and transition timing.
 - MUST use `playwright-cli` to verify all edited/new frontend components/pages.
+- MUST use a `1920x1080` browser window for all Playwright verification in this repo.
 - MUST execute exactly 3 visual QA rounds in order:
   1. Targeted correctness
   2. Adjacent/related regressions

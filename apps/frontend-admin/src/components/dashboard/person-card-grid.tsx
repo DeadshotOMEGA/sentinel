@@ -12,6 +12,7 @@ import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
+import { MotionButton } from '@/components/ui/motion-button'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
 
 type FilterType = 'all' | 'member' | 'visitor'
@@ -163,37 +164,37 @@ export function PersonCardGrid() {
         {/* Filters + Search */}
         <div className="flex flex-wrap items-center justify-end gap-2">
           <div className="flex flex-wrap gap-1">
-            <button
+            <MotionButton
               className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
               aria-pressed={filter === 'all'}
               onClick={() => handleFilterChange('all')}
             >
               All ({data?.total ?? 0})
-            </button>
-            <button
+            </MotionButton>
+            <MotionButton
               className={`btn btn-xs ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
               aria-pressed={filter === 'member'}
               onClick={() => handleFilterChange('member')}
             >
               Members ({memberCount})
-            </button>
-            <button
+            </MotionButton>
+            <MotionButton
               className={`btn btn-xs ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
               aria-pressed={filter === 'visitor'}
               onClick={() => handleFilterChange('visitor')}
             >
               Visitors ({visitorCount})
-            </button>
+            </MotionButton>
           </div>
           {(isDevMode || isSentinelSystem) && (
-            <button
+            <MotionButton
               className="btn btn-xs btn-ghost border-base-300 text-base-content/70 hover:text-base-content"
               onClick={() => setIsScanModalOpen(true)}
               data-testid={TID.dashboard.quickAction.simulateScan}
             >
               <Radio className="size-[1em] shrink-0" />
               Simulate Scan
-            </button>
+            </MotionButton>
           )}
           <div className="relative w-full sm:w-auto">
             <Search

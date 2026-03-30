@@ -29,8 +29,7 @@ Applies when editing files under: `apps/frontend-admin/`
 - MUST use token-based styling (`--space-*`, z-index tokens, duration tokens); no magic-number spacing for new changes.
 - MUST perform a post-change visual sanity check for frontend layout/UX work before considering the task complete.
 - MUST check for obvious overflow, clipping, awkward density, duplicate action bands, hidden controls, and unnecessary scrollbars.
-- MUST inspect the rendered UI at the user-requested viewport when one is provided.
-- MUST use a `1920x1080` browser window for Codex Playwright verification unless the user explicitly requests a different size.
+- MUST use a `1920x1080` browser window for all Codex Playwright verification in this repo.
 - MUST use `playwright-cli` for the visual sanity check when the task is primarily about frontend layout/UX, when the user reports a visual defect, or when a local route is available and the change materially affects layout.
 - MUST NOT use Playwright MCP tools for frontend verification when `playwright-cli` is available.
 - MUST use the Sentinel bootstrap account (`0000000000` / `0000`) or a freshly generated `playwright-cli` auth state unless the task explicitly requires a different login.

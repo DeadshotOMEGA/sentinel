@@ -12,16 +12,15 @@ import { TID } from '@/lib/test-ids'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dds', label: 'DDS' },
+  { href: '/checkins', label: 'History' },
   { href: '/members', label: 'Members' },
-  { href: '/badges', label: 'Badges' },
   { href: '/events', label: 'Events' },
   { href: '/schedules', label: 'Schedules' },
 ]
 
 const adminLinks = [
   { href: '/kiosk', label: 'Kiosk', openInNewTab: true },
-  { href: '/checkins', label: 'History' },
+  { href: '/badges', label: 'Badges' },
   { href: '/database', label: 'Database' },
   { href: '/settings', label: 'Settings' },
   { href: '/logs', label: 'Logs' },
@@ -56,13 +55,9 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         )}
 
         {/* Logo with backend status indicator */}
-        <Link
-          href="/dashboard"
-          className="btn btn-ghost max-w-48 truncate sm:max-w-none"
-          data-testid={TID.nav.logo}
-        >
+        <div className="max-w-48 truncate sm:max-w-none" data-testid={TID.nav.logo}>
           <span className="px-2 text-lg font-bold sm:px-4 sm:text-2xl">HMCS Chippawa</span>
-        </Link>
+        </div>
       </div>
 
       {/* Navigation Links - hidden on mobile, visible on desktop */}

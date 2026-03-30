@@ -8,11 +8,13 @@ import type {
   VisitType,
   VisitorCheckInMethod,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
 import type { Visitor } from '@sentinel/types'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/broadcast.js'
 import { resolveVisitReason } from '../utils/visitor-intake.js'
+import { canMemberEditHistory } from '../lib/history-permissions.js'
 
 const s = initServer()
 
@@ -273,7 +275,25 @@ export const visitorsRouter = s.router(visitorContract, {
   /**
    * Update visitor
    */
-  updateVisitor: async ({ params, body }: { params: IdParam; body: UpdateVisitorInput }) => {
+  updateVisitor: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: UpdateVisitorInput
+    req: Request
+  }) => {
+    if (!(await canMemberEditHistory(req))) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
+        },
+      }
+    }
+
     try {
       const visitor = await visitorRepo.update(params.id, {
         name: body.name,

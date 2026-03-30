@@ -9,6 +9,7 @@ import { KioskCommandDeck } from '@/components/kiosk/kiosk-command-deck'
 const SECRET_TAP_TARGET = 5
 const SECRET_TAP_WINDOW_MS = 3500
 const EXIT_PANEL_AUTO_HIDE_MS = 12000
+const BADGE_FOCUS_REQUEST_EVENT = 'kiosk-request-badge-focus'
 
 export function KioskShellRedesign() {
   const router = useRouter()
@@ -99,7 +100,14 @@ export function KioskShellRedesign() {
     }
 
     const handleInteraction = () => {
+      const shouldRequestFocus = !document.fullscreenElement
       void attemptFullscreen()
+
+      if (shouldRequestFocus) {
+        window.setTimeout(() => {
+          window.dispatchEvent(new window.CustomEvent(BADGE_FOCUS_REQUEST_EVENT))
+        }, 150)
+      }
     }
 
     const observer = new window.MutationObserver(() => {

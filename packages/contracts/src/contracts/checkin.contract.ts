@@ -103,6 +103,7 @@ export const checkinContract = c.router({
       200: CheckinWithMemberResponseSchema,
       400: ErrorResponseSchema,
       401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
       404: ErrorResponseSchema,
       500: ErrorResponseSchema,
     },
@@ -126,7 +127,8 @@ export const checkinContract = c.router({
       500: ErrorResponseSchema,
     },
     summary: 'Create new checkin',
-    description: 'Record a new checkin for a member. Checkout (direction=out) is blocked if the member holds lockup responsibility.',
+    description:
+      'Record a new checkin for a member. Checkout (direction=out) is blocked if the member holds lockup responsibility.',
   },
 
   /**

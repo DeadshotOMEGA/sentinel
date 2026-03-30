@@ -38,8 +38,7 @@ description: Enforces Sentinel frontend design quality for apps/frontend-admin w
 
 - Inspect the rendered UI after implementation, not just the code and build output.
 - Check for overflow, clipped focus rings, hidden inputs/actions, duplicate control bands, awkward spacing, unnecessary scrollbars, and broken responsive behavior.
-- When the user reported a specific viewport or attached a screenshot, verify against that case first.
-- Otherwise inspect at least one desktop viewport and one narrower viewport likely to expose layout stress.
+- Use a `1920x1080` browser window for Playwright verification in this repo.
 - If the result looks wrong, iterate before presenting the work as complete.
 
 5. Use `playwright-cli` for rendered verification when the change materially affects layout or when the user reports a visual problem:
@@ -81,7 +80,7 @@ For every frontend change, include:
 ### Visual Sanity Check
 
 - Route or UI surface reviewed
-- Viewport(s) checked
+- Viewport checked (`1920x1080`)
 - What was inspected
 - Result or remaining issue
 

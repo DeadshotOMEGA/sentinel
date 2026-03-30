@@ -1,13 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock, ArrowDownCircle, ArrowUpCircle, PanelLeftClose, Pencil, Trash2, Check, X } from 'lucide-react'
+import {
+  Clock,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  PanelLeftClose,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+} from 'lucide-react'
 import { useRecentActivity, useUpdateCheckin, useDeleteCheckin } from '@/hooks/use-checkins'
-import { useAuthStore, AccountLevel } from '@/store/auth-store'
+import { useAuthStore } from '@/store/auth-store'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import type { RecentActivityItem } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { formatPersonLabel } from '@/lib/name-format'
+import { useCurrentDds } from '@/hooks/use-schedules'
+import { canEditHistoryEntries, getCurrentDdsEditorId } from '@/lib/history-permissions'
 
 interface AppSidebarProps {
   drawerId: string
@@ -96,9 +107,7 @@ function EditRow({ item, onDone }: EditRowProps) {
         </button>
       </div>
       {(update.isError || remove.isError) && (
-        <p className="text-xs text-error">
-          {update.error?.message ?? remove.error?.message}
-        </p>
+        <p className="text-xs text-error">{update.error?.message ?? remove.error?.message}</p>
       )}
     </div>
   )
@@ -109,7 +118,9 @@ function EditRow({ item, onDone }: EditRowProps) {
 export function AppSidebar({ drawerId }: AppSidebarProps) {
   const { data, isLoading, isError } = useRecentActivity()
   const activities = data?.activities ?? []
-  const isDeveloper = useAuthStore((s) => s.hasMinimumLevel(AccountLevel.DEVELOPER))
+  const member = useAuthStore((state) => state.member)
+  const { data: currentDds } = useCurrentDds()
+  const canEditHistory = canEditHistoryEntries(member, getCurrentDdsEditorId(currentDds))
   const [editingId, setEditingId] = useState<string | null>(null)
 
   return (
@@ -161,8 +172,8 @@ export function AppSidebar({ drawerId }: AppSidebarProps) {
               rank: item.rank,
               compact: true,
             })
-            // Visitors don't have a checkin record to edit/delete
-            const canEdit = isDeveloper && !isVisitor
+            // Visitors don't have a checkin record to edit/delete here.
+            const canEdit = canEditHistory && !isVisitor
 
             return (
               <li key={`${item.type}-${item.id}-${item.direction}`}>

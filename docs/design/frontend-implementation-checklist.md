@@ -44,6 +44,7 @@ Checklist for implementing or reviewing frontend work in `apps/frontend-admin/`.
 ## 5. 3-Round Visual QA (Final Gate)
 
 Use `playwright-cli` for all edited or newly created components/pages.
+Use a `1920x1080` browser window for all Playwright QA in this repo.
 
 - [ ] Round 1 complete: targeted component/page correctness verified
 - [ ] Round 2 complete: adjacent/related same-route regressions verified
