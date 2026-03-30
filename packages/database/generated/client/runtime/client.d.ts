@@ -7,6 +7,7 @@ import { empty } from '@prisma/client-runtime-utils';
 import { isAnyNull } from '@prisma/client-runtime-utils';
 import { isDbNull } from '@prisma/client-runtime-utils';
 import { isJsonNull } from '@prisma/client-runtime-utils';
+import { isObjectEnumValue } from '@prisma/client-runtime-utils';
 import { join } from '@prisma/client-runtime-utils';
 import { JsonNull } from '@prisma/client-runtime-utils';
 import { JsonNullClass } from '@prisma/client-runtime-utils';
@@ -276,6 +277,7 @@ declare type CompilerWasmLoadingConfig = {
      * @remarks only used by ClientEngine
      */
     getQueryCompilerWasmModule: () => Promise<unknown>;
+    importName: string;
 };
 
 export declare type Compute<T> = T extends Function ? T : {
@@ -389,13 +391,6 @@ declare type DatamodelEnum = ReadonlyDeep_2<{
 
 declare function datamodelEnumToSchemaEnum(datamodelEnum: DatamodelEnum): SchemaEnum;
 
-declare type DatamodelSchemaEnum = ReadonlyDeep_2<{
-    name: string;
-    values: string[];
-}>;
-
-declare function datamodelSchemaEnumToSchemaEnum(datamodelSchemaEnum: DatamodelSchemaEnum): SchemaEnum;
-
 declare type DataRule = {
     type: 'rowCountEq';
     args: number;
@@ -467,7 +462,7 @@ export declare function defineDmmfProperty(target: object, runtimeDataModel: Run
 
 declare function defineExtension(ext: ExtensionArgs | ((client: Client) => Client)): (client: Client) => Client;
 
-declare const denylist: readonly ["$connect", "$disconnect", "$on", "$transaction", "$extends"];
+declare const denylist: readonly ["$connect", "$disconnect", "$on", "$use", "$extends"];
 
 declare type Deprecation = ReadonlyDeep_2<{
     sinceVersion: string;
@@ -477,7 +472,7 @@ declare type Deprecation = ReadonlyDeep_2<{
 
 declare type DeserializedResponse = Array<Record<string, unknown>>;
 
-export declare function deserializeJsonResponse(result: unknown): unknown;
+export declare function deserializeJsonObject(result: unknown): unknown;
 
 export declare function deserializeRawResult(response: RawResponse): DeserializedResponse;
 
@@ -504,12 +499,10 @@ export declare type DevTypeMapFnDef = {
 export declare namespace DMMF {
     export {
         datamodelEnumToSchemaEnum,
-        datamodelSchemaEnumToSchemaEnum,
         Document_2 as Document,
         Mappings,
         OtherOperationMappings,
         DatamodelEnum,
-        DatamodelSchemaEnum,
         SchemaEnum,
         EnumValue,
         Datamodel,
@@ -548,12 +541,10 @@ export declare namespace DMMF {
 declare namespace DMMF_2 {
     export {
         datamodelEnumToSchemaEnum,
-        datamodelSchemaEnumToSchemaEnum,
         Document_2 as Document,
         Mappings,
         OtherOperationMappings,
         DatamodelEnum,
-        DatamodelSchemaEnum,
         SchemaEnum,
         EnumValue,
         Datamodel,
@@ -807,6 +798,15 @@ declare interface EngineConfig {
      * Each plugin receives query context and returns key-value pairs.
      */
     sqlCommenters?: SqlCommenterPlugin[];
+    /**
+     * Parameterization schema (ParamGraph) for schema-aware query parameterization.
+     * Enables precise parameterization based on DMMF metadata.
+     */
+    parameterizationSchema: SerializedParamGraph;
+    /**
+     * Runtime data model for enum lookups during parameterization.
+     */
+    runtimeDataModel: RuntimeDataModel;
 }
 
 declare type EngineEvent<E extends EngineEventType> = E extends QueryEventType ? QueryEvent : LogEvent;
@@ -1090,6 +1090,9 @@ declare type Fragment = {
     type: 'parameter';
 } | {
     type: 'parameterTuple';
+    itemPrefix: string;
+    itemSeparator: string;
+    itemSuffix: string;
 } | {
     type: 'parameterTupleList';
     itemPrefix: string;
@@ -1261,7 +1264,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
             callback: (client: Client) => Promise<unknown>;
             options?: Options;
         }): Promise<unknown>;
-        _createItxClient(transaction: PrismaPromiseInteractiveTransaction): Client;
+        _createItxClient(transaction: PrismaPromiseInteractiveTransaction, scopeId: string, scopeState: ItxScopeState): Client;
         /**
          * Execute queries within a transaction
          * @param input a callback or a query list
@@ -1306,6 +1309,11 @@ export declare type GetPrismaClientConfig = {
      * Optional wasm loading configuration
      */
     compilerWasm?: CompilerWasmLoadingConfig;
+    /**
+     * Parameterization schema for schema-aware query parameterization.
+     * Enables precise parameterization based on DMMF metadata.
+     */
+    parameterizationSchema: SerializedParamGraph;
 };
 
 export declare type GetResult<Payload extends OperationPayload, Args, OperationName extends Operation = 'findUniqueOrThrow', GlobalOmitOptions = {}> = {
@@ -1536,6 +1544,8 @@ export { isDbNull }
 
 export { isJsonNull }
 
+export { isObjectEnumValue }
+
 declare type IsolationLevel = 'READ UNCOMMITTED' | 'READ COMMITTED' | 'REPEATABLE READ' | 'SNAPSHOT' | 'SERIALIZABLE';
 
 declare type IsolationLevel_2 = 'ReadUncommitted' | 'ReadCommitted' | 'RepeatableRead' | 'Snapshot' | 'Serializable';
@@ -1547,6 +1557,10 @@ export declare function isTypedSql(value: unknown): value is UnknownTypedSql;
 export declare type ITXClientDenyList = (typeof denylist)[number];
 
 export declare const itxClientDenyList: readonly (string | symbol)[];
+
+declare type ItxScopeState = {
+    stack: string[];
+};
 
 declare interface Job {
     resolve: (data: any) => void;
@@ -1906,6 +1920,11 @@ declare type Options = {
     timeout?: number;
     /** Transaction isolation level */
     isolationLevel?: IsolationLevel_2;
+    /**
+     * Used for nested interactive transactions. When provided, the engine may
+     * re-use an existing open transaction instead of opening a new one.
+     */
+    newTxId?: string;
 };
 
 export declare type Or<A extends 1 | 0, B extends 1 | 0> = {
@@ -1932,7 +1951,7 @@ declare type OutputType = ReadonlyDeep_2<{
 declare type OutputTypeRef = TypeRef<'scalar' | 'outputObjectTypes' | 'enumTypes'>;
 
 declare type Pagination = {
-    cursor: Record<string, PrismaValue> | null;
+    cursor: Record<string, unknown> | null;
     take: number | null;
     skip: number | null;
 };
@@ -2320,6 +2339,7 @@ declare type QueryPlanNode = {
     args: {
         parent: QueryPlanNode;
         children: JoinExpression[];
+        canAssumeStrictEquality: boolean;
     };
 } | {
     type: 'mapField';
@@ -2572,8 +2592,8 @@ declare type Schema = ReadonlyDeep_2<{
         prisma: OutputType[];
     };
     enumTypes: {
-        model?: DatamodelSchemaEnum[];
-        prisma: DatamodelSchemaEnum[];
+        model?: SchemaEnum[];
+        prisma: SchemaEnum[];
     };
     fieldRefTypes: {
         prisma?: FieldRefType[];
@@ -2586,16 +2606,14 @@ declare type SchemaArg = ReadonlyDeep_2<{
     isNullable: boolean;
     isRequired: boolean;
     inputTypes: InputTypeRef[];
+    isParameterizable: boolean;
     requiresOtherFields?: string[];
     deprecation?: Deprecation;
 }>;
 
 declare type SchemaEnum = ReadonlyDeep_2<{
     name: string;
-    data: {
-        key: string;
-        value: string;
-    }[];
+    values: string[];
 }>;
 
 declare type SchemaField = ReadonlyDeep_2<{
@@ -2628,7 +2646,17 @@ export declare type SelectField<P extends SelectablePayloadFields<any, any>, K e
 declare type Selection_2 = Record<string, boolean | Skip | JsArgs>;
 export { Selection_2 as Selection }
 
-export declare function serializeJsonQuery({ modelName, action, args, runtimeDataModel, extensions, callsite, clientMethod, errorFormat, clientVersion, previewFeatures, globalOmit, }: SerializeParams): JsonQuery;
+/**
+ * Serialized format stored in the generated client.
+ */
+declare interface SerializedParamGraph {
+    /** String table (field names, enum names, root keys) */
+    strings: string[];
+    /** Base64url-encoded binary blob for structural data */
+    graph: string;
+}
+
+export declare function serializeJsonQuery({ modelName, action, args, runtimeDataModel, extensions, callsite, clientMethod, errorFormat, clientVersion, previewFeatures, globalOmit, wrapRawValues, }: SerializeParams): JsonQuery;
 
 declare type SerializeParams = {
     runtimeDataModel: RuntimeDataModel;
@@ -2642,6 +2670,7 @@ declare type SerializeParams = {
     errorFormat: ErrorFormat;
     previewFeatures: string[];
     globalOmit?: GlobalOmitOptions;
+    wrapRawValues?: boolean;
 };
 
 declare class Skip {
@@ -3134,6 +3163,18 @@ declare interface Transaction extends AdapterInfo, SqlQueryable {
      * Roll back the transaction.
      */
     rollback(): Promise<void>;
+    /**
+     * Creates a savepoint within the currently running transaction.
+     */
+    createSavepoint?(name: string): Promise<void>;
+    /**
+     * Rolls back transaction state to a previously created savepoint.
+     */
+    rollbackToSavepoint?(name: string): Promise<void>;
+    /**
+     * Releases a previously created savepoint. Optional because not every connector supports this operation.
+     */
+    releaseSavepoint?(name: string): Promise<void>;
 }
 
 declare namespace Transaction_2 {
@@ -3263,14 +3304,14 @@ declare namespace Utils {
 }
 
 declare type ValidationError = {
-    error_identifier: 'RELATION_VIOLATION';
+    errorIdentifier: 'RELATION_VIOLATION';
     context: {
         relation: string;
         modelA: string;
         modelB: string;
     };
 } | {
-    error_identifier: 'MISSING_RELATED_RECORD';
+    errorIdentifier: 'MISSING_RELATED_RECORD';
     context: {
         model: string;
         relation: string;
@@ -3279,24 +3320,24 @@ declare type ValidationError = {
         neededFor?: string;
     };
 } | {
-    error_identifier: 'MISSING_RECORD';
+    errorIdentifier: 'MISSING_RECORD';
     context: {
         operation: string;
     };
 } | {
-    error_identifier: 'INCOMPLETE_CONNECT_INPUT';
+    errorIdentifier: 'INCOMPLETE_CONNECT_INPUT';
     context: {
         expectedRows: number;
     };
 } | {
-    error_identifier: 'INCOMPLETE_CONNECT_OUTPUT';
+    errorIdentifier: 'INCOMPLETE_CONNECT_OUTPUT';
     context: {
         expectedRows: number;
         relation: string;
         relationType: string;
     };
 } | {
-    error_identifier: 'RECORDS_NOT_CONNECTED';
+    errorIdentifier: 'RECORDS_NOT_CONNECTED';
     context: {
         relation: string;
         parent: string;
