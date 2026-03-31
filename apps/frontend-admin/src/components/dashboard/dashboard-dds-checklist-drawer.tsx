@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { BookOpenCheck, ChevronLeft, PanelRightOpen } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -18,6 +18,10 @@ interface DashboardDdsChecklistDrawerProps {
   children: ReactNode
 }
 
+function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)))
+}
+
 export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistDrawerProps) {
   const [isOpen, setIsOpen] = useState(false)
   const shouldReduceMotion = useReducedMotion()
@@ -32,8 +36,8 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
   const ddsTabTop = 'calc(4rem + var(--space-4) + var(--space-5) + 10px)'
   const kioskTabTop = `calc(${ddsTabTop} + ${floatingTabHeight} + 10px)`
   const floatingTabClassName =
-    'fixed right-0 z-(--z-sticky) h-10 w-20 justify-center rounded-l-full rounded-r-none px-(--space-2) text-sm ring-1 ring-base-100/50'
-  const floatingTabHover = shouldReduceMotion ? undefined : { x: -6, y: -4, scale: 1.04 }
+    'fixed right-0 z-(--z-sticky) h-10 w-26 items-center justify-center gap-(--space-1) rounded-l-full rounded-r-none px-(--space-2) text-sm ring-1 ring-base-100/50'
+  const floatingTabHover = shouldReduceMotion ? undefined : { x: -5, y: -2, scale: 1.03 }
   const floatingTabTap = shouldReduceMotion ? undefined : { x: -2, y: -1, scale: 0.98 }
   const floatingTabTransition = shouldReduceMotion
     ? { duration: 0 }
@@ -44,6 +48,16 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
     memberId: member?.id,
     dateKey: operationalDateKey,
   })
+  const checklistCompletionPercent = clampPercent(checklist.completionPercent)
+  const checklistProgressTip =
+    checklist.totalTasks > 0
+      ? `Checklist ${checklistCompletionPercent}% (${checklist.completedTasks}/${checklist.totalTasks})`
+      : 'Checklist progress unavailable'
+  const checklistProgressStyle = {
+    '--value': checklistCompletionPercent,
+    '--size': 'calc(var(--space-6) + var(--space-2))',
+    '--thickness': 'calc(var(--space-1) - 1px)',
+  } as CSSProperties
 
   return (
     <div className="drawer drawer-end overflow-visible">
@@ -74,13 +88,26 @@ export function DashboardDdsChecklistDrawer({ children }: DashboardDdsChecklistD
             onClick={() => setIsOpen(true)}
             data-testid={TID.dashboard.ddsDrawer.open}
           >
-            DDS
+            <span className="font-semibold tracking-wide">DDS</span>
+            <div className="tooltip tooltip-left" data-tip={checklistProgressTip}>
+              <div
+                className="radial-progress shrink-0 text-white text-[0.6rem] font-semibold"
+                style={checklistProgressStyle}
+                aria-label={`Checklist completion ${checklistCompletionPercent}%`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={checklistCompletionPercent}
+                role="progressbar"
+              >
+                {checklistCompletionPercent}%
+              </div>
+            </div>
           </motion.button>
         ) : null}
 
         <motion.button
           type="button"
-          className={cn('btn btn-sm btn-accent text-white', floatingTabClassName)}
+          className={cn('btn btn-sm btn-secondary text-white', floatingTabClassName)}
           whileHover={floatingTabHover}
           whileTap={floatingTabTap}
           transition={floatingTabTransition}

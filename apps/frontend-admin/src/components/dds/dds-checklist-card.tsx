@@ -88,7 +88,7 @@ export function DdsChecklistCard({
                       />
                       <span
                         className={cn(
-                          'list-col-grow min-w-0 whitespace-normal break-words text-xs',
+                          'list-col-grow min-w-0 whitespace-normal wrap-break-word text-xs',
                           checked && 'line-through text-base-content/60'
                         )}
                       >
@@ -123,7 +123,7 @@ export function DdsChecklistCard({
                     />
                     <span
                       className={cn(
-                        'min-w-0 flex-1 whitespace-normal break-words text-xs',
+                        'min-w-0 flex-1 whitespace-normal wrap-break-word text-xs',
                         checked && 'line-through text-base-content/60'
                       )}
                     >

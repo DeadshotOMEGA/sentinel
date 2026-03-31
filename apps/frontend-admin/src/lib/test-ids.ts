@@ -11,6 +11,7 @@ export const TID = {
     helpBtn: 'nav-help-btn',
     backendStatus: 'nav-backend-status',
     backendStatusDetails: 'nav-backend-status-details',
+    backendStatusRecovery: 'nav-backend-status-recovery',
     userMenu: 'nav-user-menu',
     changePin: 'nav-change-pin',
     logout: 'nav-logout',
