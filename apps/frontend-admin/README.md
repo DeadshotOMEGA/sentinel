@@ -1,39 +1,65 @@
-# Sentinel Frontend Admin Dashboard
+# Sentinel Frontend Admin
 
-Next.js 15 admin dashboard for the Sentinel RFID attendance tracking system at HMCS Chippawa.
+Frontend Admin is the operational web interface for Sentinel, including dashboard workflows, member/history/event/schedule management, DDS workflows, and kiosk mode.
+
+## Current Status (v2.1.0)
+
+- Phase 1: Core frontend foundation - complete
+- Phase 2: Dashboard and live status UX - complete
+- Phase 3: Member/history/event/schedule workflows - complete
+- Phase 4: DDS + lockup operational workflows - complete
+- Phase 5: Kiosk operations and visitor self-sign-in - complete
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
-- **UI Library:** Shadcn/ui with Tweakcn theme
-- **State Management:**
-  - TanStack Query v5 (server state)
-  - Zustand (UI state)
-- **API Client:** ts-rest with type-safe contracts from `@sentinel/contracts`
-- **Forms:** React Hook Form + Valibot
-- **Real-Time:** socket.io-client
-- **Styling:** Tailwind CSS 4
-- **Icons:** Lucide React
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4 + DaisyUI 5
+- TanStack Query 5 + Zustand
+- ts-rest React Query client from `@sentinel/contracts`
+- Socket.IO client for real-time updates
 
-## Prerequisites
+## Routes and Areas
+
+- `/dashboard` - Presence, alerts, quick actions, system status, DDS controls
+- `/checkins` - History and check-in operations
+- `/members` - Member records and badge operations
+- `/events` - Event management
+- `/schedules` - Schedule and duty-watch planning
+- `/dds` - DDS checklist and handover-focused workflows
+- `/kiosk` - Touch-first kiosk mode
+- `/badges`, `/database`, `/settings`, `/logs` - Admin and support tooling
+
+## Kiosk (Current)
+
+Kiosk mode is implemented in this app at `/kiosk` and includes:
+
+- Fullscreen-first kiosk shell behavior
+- Hidden maintenance exit controls for supervised recovery
+- Badge-driven command deck flow
+- DDS responsibility prompts and lockup/open-building actions
+- Visitor self-sign-in flow
+- Touch-focused UI behavior and keyboard support
+
+## Local Development
+
+### Prerequisites
 
 - Node.js 24.x
 - pnpm 10.x
-- Backend API running on `localhost:3000`
+- Backend API on `localhost:3000`
 
-## Getting Started
+### Install
 
-### Install Dependencies
-
-From the project root:
+From repo root:
 
 ```bash
 pnpm install
 ```
 
-### Environment Variables
+### Environment
 
-Create `.env.local` in this directory:
+Create `.env.local` in `apps/frontend-admin`:
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:3000
@@ -45,175 +71,52 @@ NEXT_PUBLIC_HELP_PREVIEW_ENABLED=false
 NEXT_PUBLIC_HELP_DOCS_VERSION=latest
 ```
 
-### Development Server
+### Run
 
-**Recommended: Run both backend and frontend together**
-
-From project root:
+Recommended from repo root:
 
 ```bash
 pnpm dev:all
 ```
 
-This starts both services with color-coded output (cyan for backend, magenta for frontend).
-
-**Or run frontend only** (requires backend running separately):
+Frontend-only options:
 
 ```bash
-# From this directory
-pnpm dev
-
-# Or from project root
 pnpm --filter frontend-admin dev
-# Or use the shortcut
+# or
 pnpm dev:frontend
 ```
 
-The app will be available at [http://localhost:3001](http://localhost:3001)
-
-**Backend API must be running** on port 3000 for the frontend to function properly.
-
-### Build
+### Validate
 
 ```bash
-pnpm build
-```
-
-### Type Check
-
-```bash
-pnpm type-check
+pnpm --filter frontend-admin typecheck
+pnpm --filter frontend-admin lint
+pnpm --filter frontend-admin build
 ```
 
 ## Project Structure
 
-```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── layout.tsx         # Root layout with providers
-│   ├── page.tsx           # Home (redirects to /dashboard)
-│   ├── login/             # Badge + PIN login
-│   └── dashboard/         # Dashboard page
-├── components/
-│   ├── ui/                # Shadcn/ui components
-│   ├── auth/              # Auth-related components
-│   ├── layout/            # Layout components (nav, shell)
-│   ├── dashboard/         # Dashboard widgets (Phase 2)
-│   ├── members/           # Members page components (Phase 3)
-│   └── checkins/          # Check-ins page components (Phase 4)
-├── lib/
-│   ├── api-client.ts      # ts-rest API client
-│   ├── query-client.ts    # TanStack Query config
-│   ├── websocket.ts       # WebSocket manager
-│   └── utils.ts           # Utility functions (cn, etc.)
-├── hooks/                  # Custom React hooks
-├── store/                  # Zustand stores
-│   ├── auth-store.ts      # Authentication state
-│   └── ui-store.ts        # UI state (modals, etc.)
-└── types/                  # TypeScript type definitions
+```text
+apps/frontend-admin/src/
+├── app/                 # Next.js routes
+├── components/          # UI + feature components
+├── hooks/               # Data and behavior hooks
+├── lib/                 # API client, utils, wiring
+├── store/               # Zustand stores
+└── types/               # Frontend-specific types
 ```
 
-## Current Status
+## Notes
 
-**Phase 1: Core Infrastructure** ✅ **COMPLETE** (2026-01-23)
+- Frontend uses DaisyUI-first component styling and conventions.
+- Mobile-app roadmap work is not part of the current frontend-admin scope.
 
-- [x] Next.js 15 app with TypeScript and Tailwind CSS 4
-- [x] Shadcn/ui components with Tweakcn theme (OKLCH colors, Roboto fonts)
-- [x] State management (TanStack Query v5, Zustand with persist)
-- [x] API client with ts-rest (@sentinel/contracts)
-- [x] WebSocket manager (Socket.io-client with auto-reconnect)
-- [x] Badge + PIN login page components
-- [x] Top navigation and layout components
-- [x] Process manager (`pnpm dev:all` with concurrently)
-- [x] Automatic port cleanup script (handles Docker conflicts)
-- [x] Backend environment configuration with secrets
+## Related Docs
 
-**Phase 2: Dashboard Page** ✅ **COMPLETE** (2026-01-23)
-
-- [x] Presence stats widget with real-time WebSocket updates
-- [x] Security alerts widget with acknowledge functionality
-- [x] Recent check-ins feed widget with direction indicators
-- [x] Quick actions widget with role-based permissions + DDS status display
-
-**Phase 3: Members Page** 🚧 **TODO**
-
-- [ ] Members table with pagination
-- [ ] Member filters
-- [ ] Create/Edit/Delete member forms
-
-**Phase 4: Check-ins Page** 🚧 **TODO**
-
-- [ ] Check-ins log table
-- [ ] Check-ins filters
-- [ ] Manual check-in creation (admin-only)
-
-## Authentication
-
-The app uses a two-step Badge + PIN authentication flow:
-
-1. **Badge Scan:** User scans their RFID badge (or enters serial manually)
-2. **PIN Entry:** User enters their 4-6 digit PIN
-
-This ATM-style flow provides better security than simple username/password.
-
-## API Integration
-
-The frontend consumes the backend API via:
-
-- **Type-safe REST calls:** Using `@sentinel/contracts` ts-rest client
-- **Real-time updates:** WebSocket subscriptions to channels:
-  - `presence` - Presence statistics
-  - `checkins` - Check-in/out events
-  - `alerts` - Security alerts (admin-only)
-  - `dds` - DDS status updates
-
-## Theme
-
-The app uses the **Tweakcn theme** with modern design features:
-
-- **Color System:** OKLCH color space for perceptually uniform colors
-- **Typography:** Roboto font family (Sans, Mono, Slab)
-- **Border Radius:** 1.3rem (~21px) for rounded corners
-- **Shadows:** Custom shadow system with configurable offsets
-- **Dark Mode:** Full dark theme support included
-
-To reinstall the theme:
-
-```bash
-pnpm dlx shadcn@latest add https://tweakcn.com/r/themes/cmkrca83o000204jifird32xf
-```
-
-## Process Manager
-
-The monorepo includes scripts for running both backend and frontend together:
-
-- **`pnpm dev:all`** - Automatically stops Docker containers, kills processes on ports 3000/3001, then starts both services
-- **`pnpm dev:backend`** - Run backend only (port 3000)
-- **`pnpm dev:frontend`** - Run frontend only (port 3001)
-- **`pnpm cleanup`** - Manually cleanup ports without starting services
-
-The cleanup script (`scripts/cleanup-ports.sh`) handles:
-
-- Stopping Docker `sentinel-backend` container if running
-- Killing any processes on port 3000 (backend)
-- Killing any processes on port 3001 (frontend)
-
-## Development Guidelines
-
-- **TypeScript strict mode** - No `any` types allowed
-- **Component structure** - Use Shadcn/ui components as base, add `shadow-sm` for cards
-- **State management:**
-  - Server state → TanStack Query
-  - UI state → Zustand stores
-- **Forms** - React Hook Form with Valibot validation
-- **Styling** - Tailwind CSS utility classes (use theme colors: `bg-card`, `text-muted-foreground`, etc.)
-- **Desktop-first** - Minimum 1280px width (mobile later)
-
-## Related Documentation
-
-- [Implementation Plan](../../docs/plans/active/2026-01-23-frontend-admin-mvp.md)
-- [Backend API Documentation](../backend/README.md)
-- [Contracts Package](../../packages/contracts/README.md)
+- [Root README](../../README.md)
+- [Backend README](../backend/README.md)
+- [Deployment README](../../deploy/README_DEPLOY.md)
 
 ## License
 

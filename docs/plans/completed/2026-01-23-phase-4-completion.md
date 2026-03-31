@@ -473,7 +473,7 @@ Export API collection for manual testing:
 
 - **Phase 5:** Implement 11 deferred routes (2-3 weeks)
 - **Phase 6:** Advanced features and reporting (2-3 weeks)
-- **Phase 7:** Monitoring & observability (1 week)
+- **Phase 6 (Ops):** Monitoring & observability (1 week)
 
 ---
 
@@ -677,7 +677,7 @@ Prepare to cover:
 Create `frontend-development-plan.md` covering:
 
 - Frontend architecture (Next.js App Router)
-- Component library (HeroUI)
+- Component library (DaisyUI)
 - API client generation from OpenAPI
 - WebSocket integration
 - Authentication flow

@@ -31,7 +31,7 @@ related_code:
 Convert the Sentinel RFID attendance tracking backend from the `develop` branch to the new rebuild architecture with a **testing-first approach**. Timeline: 8 weeks across 4 phases.
 
 **Key Changes:**
-- Runtime: Bun → Node.js 22 (HeroUI compatibility)
+- Runtime: Bun → Node.js 22 (frontend toolchain compatibility)
 - Structure: Single app → pnpm monorepo
 - Auth: Custom JWT → better-auth with API keys
 - Validation: Zod v3 → ts-rest + Valibot
@@ -1381,7 +1381,7 @@ Added real-time event broadcasting to 7 services:
 
 | Component | Technology | Rationale |
 |-----------|------------|-----------|
-| **Runtime** | Node.js 22 | HeroUI compatibility (not Bun) |
+| **Runtime** | Node.js 22 | Frontend toolchain compatibility (not Bun) |
 | **Package Manager** | pnpm | Monorepo workspace support |
 | **Framework** | Express.js | Keep existing (proven, low risk) |
 | **Database** | PostgreSQL + Prisma | Keep existing schema |

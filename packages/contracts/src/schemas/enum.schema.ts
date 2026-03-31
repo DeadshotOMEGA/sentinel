@@ -6,7 +6,7 @@ import * as v from 'valibot'
 const CodePattern = /^[a-z0-9_]+$/
 
 /**
- * Valid chip variants (matching HeroUI styles)
+ * Valid chip variants (matching DaisyUI-style chip usage)
  */
 export const ChipVariants = [
   'solid',
@@ -21,7 +21,7 @@ export const ChipVariants = [
 export type ChipVariant = (typeof ChipVariants)[number]
 
 /**
- * Valid chip colors (includes both semantic and base HeroUI colors)
+ * Valid chip colors (includes both semantic and base DaisyUI-aligned colors)
  */
 export const ChipColors = [
   // Semantic colors
