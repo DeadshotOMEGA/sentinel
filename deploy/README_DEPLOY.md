@@ -115,6 +115,9 @@ Port defaults in `.env`:
 - `KROKI_IMAGE_TAG=0.30.0` (pin for reproducible self-hosted Kroki)
 - `KROKI_SERVER_URL=http://kroki:8000` (internal Wiki.js renderer target)
 - `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
+- `CAPTIVE_PORTAL_RECOVERY_ENABLED=false` (register local Wi-Fi recovery helper used by Sentinel UI action)
+- `CAPTIVE_PORTAL_AUTO_RECOVER=false` (run the helper automatically in the logged-in Ubuntu session)
+- `CAPTIVE_PORTAL_TAILSCALE_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
 
 Canonical Sentinel port allocation policy (host/LAN):
 
@@ -147,6 +150,48 @@ If install reports GHCR unreachable:
 ```bash
 ./install.sh --version vX.Y.Z
 ```
+
+## Optional captive portal auto-recovery
+
+If your deployment laptop sits behind a hotel/base/public Wi-Fi portal that expires daily, Sentinel can now register a local helper on the Ubuntu laptop.
+
+Enable it in `/opt/sentinel/deploy/.env`:
+
+```env
+CAPTIVE_PORTAL_RECOVERY_ENABLED=true
+CAPTIVE_PORTAL_AUTO_RECOVER=true
+# Optional but useful when backend access depends on Tailscale:
+CAPTIVE_PORTAL_TAILSCALE_TARGET=100.64.0.10
+```
+
+Then re-run:
+
+```bash
+cd /opt/sentinel/deploy
+./update.sh --version vX.Y.Z
+```
+
+What this does:
+
+- registers a local `sentinel-recover://` URL handler on the laptop
+- enables the `Launch Wi-Fi Recovery` action in Sentinel's System Status dropdown
+- optionally starts a user-session watcher after login that checks Wi-Fi + internet access, then opens `http://neverssl.com` and sends the configured `Tab`, `Space`, `Return` sequence when captive-portal recovery is needed
+
+Tuning values in `.env`:
+
+- `CAPTIVE_PORTAL_RECOVERY_CHECK_URL` default `https://connectivitycheck.gstatic.com/generate_204`
+- `CAPTIVE_PORTAL_RECOVERY_PORTAL_URL` default `http://neverssl.com`
+- `CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS` default `8`
+- `CAPTIVE_PORTAL_RECOVERY_TAB_COUNT` default `1`
+- `CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS` default `900`
+- `CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS` default `60`
+- `CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD` default `2`
+
+Notes:
+
+- This helper runs on the Ubuntu desktop session, not inside Docker.
+- `xdotool` only works when a graphical session is logged in.
+- Leave `CAPTIVE_PORTAL_AUTO_RECOVER=false` if you want the manual Sentinel button only.
 
 ## Update
 
@@ -199,6 +244,8 @@ or for explicit targets:
 ```bash
 sentinel-upgrade --latest
 sentinel-upgrade --version v1.4.4
+# non-interactive (for scripts/automation):
+sentinel-upgrade --latest --yes
 ```
 
 The upgrade launcher verifies package checksums before install, installs the selected `.deb`, then executes the updated `/opt/sentinel/deploy/update.sh`.
@@ -210,6 +257,24 @@ Optional update flags:
 - `--allow-grafana-lan` / `--disallow-grafana-lan`
 - `--allow-wiki-lan` / `--disallow-wiki-lan`
 - `--no-firewall`
+
+## Automatic upgrade helper
+
+If you want unattended upgrade checks on a deployment laptop, use:
+
+```bash
+cd /opt/sentinel/deploy
+./auto-upgrade.sh
+```
+
+Behavior:
+
+- reads current `SENTINEL_VERSION` from `.env`
+- checks latest GitHub release for the configured owner (`GHCR_OWNER`)
+- runs non-interactive `upgrade-launcher.sh --latest --yes` only when a newer version exists
+- applies `AUTO_UPGRADE_WITH_OBS`, `AUTO_UPGRADE_ALLOW_GRAFANA_LAN`, `AUTO_UPGRADE_ALLOW_WIKI_LAN` when set in `.env`
+
+To schedule it, run the script from cron or a systemd timer as root.
 
 ## Rollback
 

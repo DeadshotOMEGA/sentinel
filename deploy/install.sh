@@ -214,6 +214,7 @@ fi
 
 ensure_mdns_hostname
 ensure_local_wiki_host_alias
+configure_captive_portal_recovery
 MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
 WIKI_DOMAIN="$(env_value WIKI_DOMAIN docs.sentinel.local)"
 

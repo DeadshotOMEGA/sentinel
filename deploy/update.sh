@@ -210,6 +210,7 @@ fi
 ensure_env_file
 bootstrap_env_defaults
 write_admin_credentials_snapshot
+configure_captive_portal_recovery
 load_state
 
 if [[ -n "${CLI_WITH_OBS}" ]]; then

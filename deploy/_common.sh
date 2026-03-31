@@ -278,6 +278,42 @@ bootstrap_env_defaults() {
     upsert_env "WIKI_LAN_PORT" "3020"
   fi
 
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_ENABLED)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_ENABLED" "false"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_AUTO_RECOVER)"; then
+    upsert_env "CAPTIVE_PORTAL_AUTO_RECOVER" "false"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_CHECK_URL)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_CHECK_URL" "https://connectivitycheck.gstatic.com/generate_204"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_PORTAL_URL)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_PORTAL_URL" "http://neverssl.com"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS" "8"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_TAB_COUNT)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_TAB_COUNT" "1"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS" "900"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS" "60"
+  fi
+
+  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD)"; then
+    upsert_env "CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD" "2"
+  fi
+
   if [[ "${generated_count}" -gt 0 ]]; then
     log "Auto-generated ${generated_count} secure .env values for first-time setup."
     log "Generated values were written to ${ENV_FILE}."
@@ -755,6 +791,158 @@ env_value() {
     return 0
   fi
   printf '%s\n' "${default_value}"
+}
+
+normalize_boolean_env() {
+  local value="${1:-}"
+  value="$(printf '%s' "${value}" | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  case "${value}" in
+    1|true|yes|y|on)
+      printf 'true\n'
+      ;;
+    *)
+      printf 'false\n'
+      ;;
+  esac
+}
+
+resolve_desktop_user() {
+  if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+    printf '%s\n' "${SUDO_USER}"
+    return 0
+  fi
+
+  if [[ -n "${USER:-}" && "${USER}" != "root" ]]; then
+    printf '%s\n' "${USER}"
+    return 0
+  fi
+
+  return 1
+}
+
+desktop_user_home() {
+  local user="${1:-}"
+  local home_dir
+  [[ -n "${user}" ]] || return 1
+  home_dir="$(getent passwd "${user}" | cut -d: -f6 || true)"
+  [[ -n "${home_dir}" ]] || return 1
+  printf '%s\n' "${home_dir}"
+}
+
+run_as_desktop_user() {
+  local user="${1:-}"
+  shift || true
+  [[ -n "${user}" ]] || return 1
+
+  if [[ "${EUID}" -eq 0 ]]; then
+    runuser -u "${user}" -- "$@"
+    return $?
+  fi
+
+  "$@"
+}
+
+cleanup_captive_portal_recovery() {
+  local desktop_user="${1:-}" home_dir="${2:-}"
+  [[ -n "${desktop_user}" && -n "${home_dir}" ]] || return 0
+
+  run_root rm -f "${home_dir}/.local/share/applications/sentinel-captive-portal-recover.desktop"
+  run_root rm -f "${home_dir}/.config/autostart/sentinel-captive-portal-watch.desktop"
+}
+
+configure_captive_portal_recovery() {
+  local enabled auto_enabled desktop_user home_dir applications_dir autostart_dir
+  local handler_file autostart_file tmp_file desktop_group
+
+  enabled="$(normalize_boolean_env "$(env_value CAPTIVE_PORTAL_RECOVERY_ENABLED false)")"
+  auto_enabled="$(normalize_boolean_env "$(env_value CAPTIVE_PORTAL_AUTO_RECOVER false)")"
+  desktop_user="$(resolve_desktop_user || true)"
+
+  if [[ -z "${desktop_user}" ]]; then
+    warn "Unable to determine desktop user; skipping captive portal recovery helper setup."
+    return 0
+  fi
+
+  home_dir="$(desktop_user_home "${desktop_user}" || true)"
+  if [[ -z "${home_dir}" ]]; then
+    warn "Unable to resolve home directory for ${desktop_user}; skipping captive portal recovery helper setup."
+    return 0
+  fi
+  desktop_group="$(id -gn "${desktop_user}")"
+
+  applications_dir="${home_dir}/.local/share/applications"
+  autostart_dir="${home_dir}/.config/autostart"
+  handler_file="${applications_dir}/sentinel-captive-portal-recover.desktop"
+  autostart_file="${autostart_dir}/sentinel-captive-portal-watch.desktop"
+
+  if [[ "${enabled}" != "true" ]]; then
+    cleanup_captive_portal_recovery "${desktop_user}" "${home_dir}"
+    log "Captive portal recovery helper disabled."
+    return 0
+  fi
+
+  if ! dpkg -s xdotool >/dev/null 2>&1 || ! dpkg -s xdg-utils >/dev/null 2>&1; then
+    log "Installing captive portal recovery helper dependencies (xdotool, xdg-utils)"
+    run_root apt-get update -y >/dev/null
+    run_root apt-get install -y xdotool xdg-utils >/dev/null
+  fi
+
+  run_root install -d -m 755 -o "${desktop_user}" -g "${desktop_group}" "${applications_dir}"
+  run_root install -d -m 755 -o "${desktop_user}" -g "${desktop_group}" "${autostart_dir}"
+
+  tmp_file="$(mktemp)"
+  cat >"${tmp_file}" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Sentinel Wi-Fi Recovery
+Comment=Launch the Sentinel captive portal recovery helper
+Exec=${DEPLOY_DIR}/captive-portal-recover.sh --force --uri %u
+Terminal=false
+NoDisplay=true
+MimeType=x-scheme-handler/sentinel-recover;
+Categories=Network;
+DESKTOP
+  run_root install -m 644 "${tmp_file}" "${handler_file}"
+  rm -f "${tmp_file}"
+
+  if [[ "${auto_enabled}" == "true" ]]; then
+    tmp_file="$(mktemp)"
+    cat >"${tmp_file}" <<AUTOSTART
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Sentinel Wi-Fi Recovery Watcher
+Comment=Automatically launch captive portal recovery checks for Sentinel deployments
+Exec=${DEPLOY_DIR}/captive-portal-watch.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
+AUTOSTART
+    run_root install -m 644 "${tmp_file}" "${autostart_file}"
+    rm -f "${tmp_file}"
+  else
+    rm -f "${autostart_file}"
+  fi
+
+  run_root chown "${desktop_user}:${desktop_group}" "${handler_file}"
+  if [[ -f "${autostart_file}" ]]; then
+    run_root chown "${desktop_user}:${desktop_group}" "${autostart_file}"
+  fi
+
+  if command -v update-desktop-database >/dev/null 2>&1; then
+    run_as_desktop_user "${desktop_user}" update-desktop-database "${applications_dir}" >/dev/null 2>&1 || true
+  fi
+
+  if command -v xdg-mime >/dev/null 2>&1; then
+    run_as_desktop_user "${desktop_user}" xdg-mime default sentinel-captive-portal-recover.desktop x-scheme-handler/sentinel-recover >/dev/null 2>&1 || true
+  fi
+
+  log "Captive portal recovery helper installed for ${desktop_user}."
+  if [[ "${auto_enabled}" == "true" ]]; then
+    log "Automatic captive portal recovery watcher enabled for ${desktop_user}."
+  else
+    log "Automatic captive portal recovery watcher disabled; manual launch remains available from Sentinel."
+  fi
 }
 
 write_systemd_unit() {
