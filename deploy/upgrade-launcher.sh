@@ -12,6 +12,7 @@ WITH_OBS="true"
 ALLOW_GRAFANA_LAN="true"
 ALLOW_WIKI_LAN="true"
 DRY_RUN="false"
+AUTO_APPROVE="false"
 
 RELEASE_JSON=""
 RELEASE_TITLE=""
@@ -37,6 +38,7 @@ Options:
   --allow-wiki-lan          Publish Wiki.js on LAN (default)
   --disallow-wiki-lan       Disable Wiki.js LAN publish
   --dry-run                 Validate release/assets/checksum only
+  --yes                     Non-interactive mode (skip confirmation prompt)
 USAGE
 }
 
@@ -522,6 +524,11 @@ prompt_advanced_zenity() {
 }
 
 confirm_summary_terminal() {
+  if [[ "${AUTO_APPROVE}" == "true" ]]; then
+    log "Auto-approve enabled (--yes); skipping confirmation prompt."
+    return 0
+  fi
+
   echo
   echo "Upgrade summary:"
   echo "  Owner: ${GH_OWNER}"
@@ -547,6 +554,11 @@ confirm_summary_terminal() {
 }
 
 confirm_summary_zenity() {
+  if [[ "${AUTO_APPROVE}" == "true" ]]; then
+    log "Auto-approve enabled (--yes); skipping confirmation dialog."
+    return 0
+  fi
+
   local text
   text="Owner: ${GH_OWNER}\nTarget: ${TARGET_TAG}\nObservability stack: ${WITH_OBS}\nPublish Grafana on LAN: ${ALLOW_GRAFANA_LAN}\nPublish Wiki on LAN: ${ALLOW_WIKI_LAN}\nDry run: ${DRY_RUN}\n\nRelease brief:\n${RELEASE_TITLE} (${RELEASE_PUBLISHED_AT})\n${RELEASE_URL}\n\nDeployment notes:\n${DEPLOYMENT_NOTES}\nProceed with package install and update?"
 
@@ -608,6 +620,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN="true"
+      shift
+      ;;
+    --yes)
+      AUTO_APPROVE="true"
       shift
       ;;
     -h|--help)

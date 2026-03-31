@@ -1,6 +1,7 @@
 'use client'
 /* global process */
 /* global Response */
+/* global AbortController */
 
 import { useEffect, useState } from 'react'
 
@@ -10,6 +11,7 @@ type BackendServiceStatus = 'healthy' | 'unhealthy'
 interface BackendHealthDetails {
   status: BackendServiceStatus
   databaseHealthy: boolean
+  databaseAddress: string | null
   environment: string
   version: string
   uptimeSeconds: number
@@ -34,7 +36,6 @@ export function useBackendHealth() {
   })
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef -- AbortController is a browser global
     const controller = new AbortController()
 
     async function checkHealth() {
@@ -99,6 +100,7 @@ async function parseHealthResponse(response: Response): Promise<BackendHealthDet
     return {
       status,
       databaseHealthy,
+      databaseAddress: typeof checks?.databaseAddress === 'string' ? checks.databaseAddress : null,
       environment: typeof payload.environment === 'string' ? payload.environment : 'unknown',
       version: typeof payload.version === 'string' ? payload.version : 'unknown',
       uptimeSeconds,

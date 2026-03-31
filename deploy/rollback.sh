@@ -88,5 +88,7 @@ if command -v systemctl >/dev/null 2>&1; then
   write_systemd_unit
 fi
 
+configure_captive_portal_recovery
+
 log "Rollback complete. Current version: ${CURRENT_VERSION}"
 warn "If database schema changed incompatibly, use restore.sh with a pre-update backup."

@@ -32,6 +32,29 @@ function resolveServiceVersion(): string {
 
 const SERVICE_VERSION = resolveServiceVersion()
 
+function resolveDatabaseAddress(): string | null {
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    return null
+  }
+
+  try {
+    const parsed = new globalThis.URL(databaseUrl)
+    if (!parsed.hostname) {
+      return null
+    }
+
+    const defaultPort =
+      parsed.protocol === 'postgresql:' || parsed.protocol === 'postgres:' ? '5432' : ''
+    const port = parsed.port || defaultPort
+    return port ? `${parsed.hostname}:${port}` : parsed.hostname
+  } catch {
+    return null
+  }
+}
+
+const DATABASE_ADDRESS = resolveDatabaseAddress()
+
 /**
  * Overall health check
  *
@@ -44,6 +67,7 @@ const SERVICE_VERSION = resolveServiceVersion()
 healthRouter.get('/health', async (_req, res) => {
   const checks = {
     database: false,
+    databaseAddress: DATABASE_ADDRESS,
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   }
