@@ -30,12 +30,22 @@ git diff --cached -- <path>
 git log --oneline --decorate -n 10
 ```
 
+Version sync guard (Sentinel monorepo):
+
+```bash
+# Root package version is source-of-truth
+pnpm version:check || pnpm version:sync
+```
+
+If `pnpm version:sync` changes files, keep those `package.json` edits in scope for the commit plan.
+
 Safety checks before committing:
 
 - Confirm the repo is not in detached HEAD state. If detached, stop and ask the user how to proceed.
 - Confirm at least one remote is configured before attempting push. If no remotes exist, stop and ask the user for target remote.
 - Check for files that should not be committed (logs, build output, local secrets). Update `.gitignore` if recurring artifacts appear.
 - If a single file mixes unrelated changes, plan to use `git add -p` when staging.
+- If a release/version bump is intended, update root `package.json` version first, then run `pnpm version:sync` so workspace versions match root.
 
 ## Phase 2: Commit Strategy
 
