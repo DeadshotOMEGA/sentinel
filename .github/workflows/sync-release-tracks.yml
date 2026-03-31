@@ -42,8 +42,7 @@ jobs:
       INPUT_REPOSITORY: ${{ github.event.inputs.repository }}
       INPUT_PROJECT_OWNER: ${{ github.event.inputs.project_owner }}
       DEFAULT_REPOSITORY: ${{ github.repository }}
-      SENTINEL_PROJECT_NUMBER: ${{ vars['SENTINEL_PROJECT_NUMBER'] || '' }}
-      SENTINEL_PROJECT_OWNER: ${{ vars['SENTINEL_PROJECT_OWNER'] || '' }}
+      REPO_VARS_JSON: ${{ toJSON(vars) }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
       GITHUB_TOKEN: ${{ github.token }}
 
@@ -61,18 +60,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          repo_project_number="$(jq -r '.SENTINEL_PROJECT_NUMBER // empty' <<<"${REPO_VARS_JSON}")"
+          repo_project_owner="$(jq -r '.SENTINEL_PROJECT_OWNER // empty' <<<"${REPO_VARS_JSON}")"
+
           target_repo="${INPUT_REPOSITORY:-$DEFAULT_REPOSITORY}"
           if [[ -n "${INPUT_PROJECT_NUMBER}" ]]; then
             export PROJECT_NUMBER="${INPUT_PROJECT_NUMBER}"
-          elif [[ -n "${SENTINEL_PROJECT_NUMBER}" ]]; then
-            export PROJECT_NUMBER="${SENTINEL_PROJECT_NUMBER}"
+          elif [[ -n "${repo_project_number}" ]]; then
+            export PROJECT_NUMBER="${repo_project_number}"
           else
             export PROJECT_NUMBER="3"
           fi
           if [[ -n "${INPUT_PROJECT_OWNER}" ]]; then
             export PROJECT_OWNER="${INPUT_PROJECT_OWNER}"
-          elif [[ -n "${SENTINEL_PROJECT_OWNER}" ]]; then
-            export PROJECT_OWNER="${SENTINEL_PROJECT_OWNER}"
+          elif [[ -n "${repo_project_owner}" ]]; then
+            export PROJECT_OWNER="${repo_project_owner}"
           fi
 
           if [[ -n "${INPUT_CURRENT_VERSION}" ]]; then

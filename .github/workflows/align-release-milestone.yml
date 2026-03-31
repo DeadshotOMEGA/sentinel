@@ -26,8 +26,7 @@ jobs:
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
       INPUT_ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
       INPUT_PROJECT_NUMBER: ${{ github.event.inputs.project_number }}
-      DEFAULT_PROJECT_NUMBER: ${{ vars.SENTINEL_PROJECT_NUMBER }}
-      DEFAULT_PROJECT_OWNER: ${{ vars.SENTINEL_PROJECT_OWNER }}
+      REPO_VARS_JSON: ${{ toJSON(vars) }}
 
     steps:
       - name: Validate token
@@ -44,11 +43,18 @@ jobs:
           script: |
             const owner = context.repo.owner
             const normalizedRepoOwner = owner.toLowerCase()
-            const configuredProjectOwner = process.env.DEFAULT_PROJECT_OWNER
-              ? process.env.DEFAULT_PROJECT_OWNER.toLowerCase()
+            let repoVars = {}
+            try {
+              repoVars = JSON.parse(process.env.REPO_VARS_JSON || '{}')
+            } catch {
+              repoVars = {}
+            }
+
+            const configuredProjectOwner = typeof repoVars.SENTINEL_PROJECT_OWNER === 'string'
+              ? repoVars.SENTINEL_PROJECT_OWNER.toLowerCase()
               : normalizedRepoOwner
             const repo = context.repo.repo
-            const fallbackProjectNumber = Number(process.env.DEFAULT_PROJECT_NUMBER || 3)
+            const fallbackProjectNumber = Number(repoVars.SENTINEL_PROJECT_NUMBER || 3)
             const projectNumber = Number(process.env.INPUT_PROJECT_NUMBER || fallbackProjectNumber)
             const issueNumber = context.eventName === 'workflow_dispatch'
               ? Number(process.env.INPUT_ISSUE_NUMBER)
