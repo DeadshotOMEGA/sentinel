@@ -33,7 +33,7 @@ Complete technical architecture and technology stack for the Sentinel RFID Atten
 
 | Component              | Technology     | Version     | Notes                                        |
 | ---------------------- | -------------- | ----------- | -------------------------------------------- |
-| **Runtime**            | Node.js        | 24.x        | NOT Bun (HeroUI incompatibility)             |
+| **Runtime**            | Node.js        | 24.x        | NOT Bun                                      |
 | **Package Manager**    | pnpm           | 10.x        | Workspace support                            |
 | **Backend Framework**  | Express        | 4.x         | REST API server                              |
 | **Database ORM**       | Prisma         | 7.x         | Schema management, migrations                |

@@ -1,6 +1,5 @@
 /**
- * HeroUI Theme Colors for Sentinel
- * Extracted from @heroui/theme color definitions
+ * DaisyUI-compatible theme colors for Sentinel
  */
 
 export type ColorShade =
@@ -56,9 +55,9 @@ export interface ColorScale {
 }
 
 /**
- * Base color palette from HeroUI theme
+ * Base color palette used by Sentinel UI themes
  */
-export const HEROUI_COLORS = {
+export const DAISYUI_COLORS = {
   blue: {
     50: '#e6f1fe',
     100: '#cce3fd',
@@ -161,16 +160,16 @@ export const HEROUI_COLORS = {
  * Semantic color mappings (using default shade 500)
  */
 export const SEMANTIC_COLORS: Record<SemanticColorName, string> = {
-  default: HEROUI_COLORS.zinc[300],
-  neutral: HEROUI_COLORS.zinc[500],
-  primary: HEROUI_COLORS.blue[500],
-  secondary: HEROUI_COLORS.purple[500],
-  accent: HEROUI_COLORS.pink[500],
-  success: HEROUI_COLORS.green[500],
-  warning: HEROUI_COLORS.yellow[500],
-  info: HEROUI_COLORS.cyan[600],
-  error: HEROUI_COLORS.red[500],
-  danger: HEROUI_COLORS.red[500],
+  default: DAISYUI_COLORS.zinc[300],
+  neutral: DAISYUI_COLORS.zinc[500],
+  primary: DAISYUI_COLORS.blue[500],
+  secondary: DAISYUI_COLORS.purple[500],
+  accent: DAISYUI_COLORS.pink[500],
+  success: DAISYUI_COLORS.green[500],
+  warning: DAISYUI_COLORS.yellow[500],
+  info: DAISYUI_COLORS.cyan[600],
+  error: DAISYUI_COLORS.red[500],
+  danger: DAISYUI_COLORS.red[500],
 }
 
 /**
@@ -199,7 +198,7 @@ export function getColorOptions(): ColorOption[] {
   })
 
   // Add base colors at default shade (500)
-  Object.entries(HEROUI_COLORS).forEach(([name, shades]) => {
+  Object.entries(DAISYUI_COLORS).forEach(([name, shades]) => {
     if (!Object.values(SEMANTIC_COLORS).includes(shades[500])) {
       options.push({
         name,
@@ -221,8 +220,8 @@ export function getColor(name: ColorName, shade: ColorShade = '500'): string {
     return SEMANTIC_COLORS[name as SemanticColorName]
   }
 
-  if (name in HEROUI_COLORS) {
-    return HEROUI_COLORS[name as BaseColorName][shade]
+  if (name in DAISYUI_COLORS) {
+    return DAISYUI_COLORS[name as BaseColorName][shade]
   }
 
   throw new Error(`Unknown color: ${name}`)
@@ -232,5 +231,5 @@ export function getColor(name: ColorName, shade: ColorShade = '500'): string {
  * Check if a color name is valid
  */
 export function isValidColorName(name: string): name is ColorName {
-  return name in SEMANTIC_COLORS || name in HEROUI_COLORS
+  return name in SEMANTIC_COLORS || name in DAISYUI_COLORS
 }

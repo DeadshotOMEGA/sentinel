@@ -7,7 +7,7 @@ Backend API server for the Sentinel RFID attendance tracking system. Built with 
 ### Prerequisites
 
 - Node.js 24.x
-- pnpm (NOT Bun - HeroUI incompatibility)
+- pnpm (NOT Bun)
 - Docker & Docker Compose (for PostgreSQL and Redis)
 
 ### 1. Install Dependencies

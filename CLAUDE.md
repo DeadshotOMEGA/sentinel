@@ -17,7 +17,7 @@ When creating or editing `CLAUDE.md` files:
 
 ## Non-Negotiables (MUST / MUST NOT)
 
-- MUST use pnpm (NOT Bun - HeroUI incompatibility) and Node.js 24.x
+- MUST use pnpm (NOT Bun) and Node.js 24.x
 - MUST use TypeScript strict mode
 - MUST NOT use `any` types
 - MUST NOT push directly to `develop` branch

@@ -1,6 +1,6 @@
 'use client'
 
-import { HEROUI_COLORS, SEMANTIC_COLORS, type ColorName } from '@sentinel/types'
+import { DAISYUI_COLORS, SEMANTIC_COLORS, type ColorName } from '@sentinel/types'
 import { cn } from '@/lib/utils'
 
 interface ColorPickerProps {
@@ -31,14 +31,14 @@ const COLOR_OPTIONS: ColorOption[] = [
   { name: 'danger', hex: SEMANTIC_COLORS.danger, label: 'Danger', category: 'semantic' },
 
   // Base colors (additional options)
-  { name: 'blue', hex: HEROUI_COLORS.blue[500], label: 'Blue', category: 'base' },
-  { name: 'green', hex: HEROUI_COLORS.green[500], label: 'Green', category: 'base' },
-  { name: 'pink', hex: HEROUI_COLORS.pink[500], label: 'Pink', category: 'base' },
-  { name: 'purple', hex: HEROUI_COLORS.purple[500], label: 'Purple', category: 'base' },
-  { name: 'red', hex: HEROUI_COLORS.red[500], label: 'Red', category: 'base' },
-  { name: 'yellow', hex: HEROUI_COLORS.yellow[500], label: 'Yellow', category: 'base' },
-  { name: 'cyan', hex: HEROUI_COLORS.cyan[500], label: 'Cyan', category: 'base' },
-  { name: 'zinc', hex: HEROUI_COLORS.zinc[500], label: 'Zinc', category: 'base' },
+  { name: 'blue', hex: DAISYUI_COLORS.blue[500], label: 'Blue', category: 'base' },
+  { name: 'green', hex: DAISYUI_COLORS.green[500], label: 'Green', category: 'base' },
+  { name: 'pink', hex: DAISYUI_COLORS.pink[500], label: 'Pink', category: 'base' },
+  { name: 'purple', hex: DAISYUI_COLORS.purple[500], label: 'Purple', category: 'base' },
+  { name: 'red', hex: DAISYUI_COLORS.red[500], label: 'Red', category: 'base' },
+  { name: 'yellow', hex: DAISYUI_COLORS.yellow[500], label: 'Yellow', category: 'base' },
+  { name: 'cyan', hex: DAISYUI_COLORS.cyan[500], label: 'Cyan', category: 'base' },
+  { name: 'zinc', hex: DAISYUI_COLORS.zinc[500], label: 'Zinc', category: 'base' },
 ]
 
 function ColorSwatch({ hex, size = 'sm' }: { hex: string; size?: 'sm' | 'md' }) {

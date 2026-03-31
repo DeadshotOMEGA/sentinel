@@ -23,7 +23,7 @@ Commonly used commands for development, testing, and deployment.
 
 ## Package Manager
 
-**All commands use pnpm** (NOT npm or bun)
+**All commands use pnpm**
 
 ```bash
 # Install dependencies

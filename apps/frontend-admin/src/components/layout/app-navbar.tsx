@@ -22,10 +22,9 @@ const navLinks = [
 ]
 
 const adminLinks = [
-  { href: '/kiosk', label: 'Kiosk', openInNewTab: true },
+  { href: '/settings', label: 'Settings' },
   { href: '/badges', label: 'Badges' },
   { href: '/database', label: 'Database' },
-  { href: '/settings', label: 'Settings' },
   { href: '/logs', label: 'Logs' },
 ]
 
@@ -42,6 +41,8 @@ const statusConfig = {
 
 const GITHUB_LATEST_RELEASE_URL =
   'https://api.github.com/repos/DeadshotOMEGA/sentinel/releases/latest'
+const WIKI_LAN_FALLBACK_PORT = '3020'
+const WIKI_LOCAL_DEV_PORT = '3002'
 
 interface LatestReleaseState {
   tag: string | null
@@ -69,9 +70,13 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const databaseStatus = getDatabaseStatus(backendHealth)
   const databaseValue = getDatabaseValue(backendHealth)
   const databaseLocation = getDatabaseLocation(backendHealth)
-  const wikiLocation = resolveWikiLocation(process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '')
-  const wikiStatus = getWikiStatus(backendHealth, wikiLocation)
-  const wikiValue = getWikiValue(backendHealth, wikiLocation)
+  const wikiBaseUrl = resolveWikiBaseUrl(
+    process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '',
+    browserOrigin
+  )
+  const wikiLocation = stripUrlProtocol(wikiBaseUrl)
+  const wikiStatus = getWikiStatus(backendHealth, wikiBaseUrl)
+  const wikiValue = getWikiValue(backendHealth, wikiBaseUrl)
   const shouldShowLaptopRecovery = [databaseStatus, badgeStatus, frontendStatus, wikiStatus].some(
     (status) => status !== 'success'
   )
@@ -147,6 +152,16 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             </li>
           ))}
           <li>
+            <a
+              href={wikiBaseUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-testid={TID.nav.link('wiki')}
+            >
+              Wiki
+            </a>
+          </li>
+          <li>
             <div className="dropdown dropdown-hover">
               <button
                 type="button"
@@ -166,8 +181,6 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       href={link.href}
                       className={cn(pathname === link.href && 'active')}
                       data-testid={TID.nav.link(link.href.slice(1))}
-                      target={link.openInNewTab ? '_blank' : undefined}
-                      rel={link.openInNewTab ? 'noreferrer' : undefined}
                     >
                       {link.label}
                     </Link>
@@ -415,17 +428,9 @@ function resolveBackendLocation(browserOrigin: string): string {
   return stripUrlProtocol(`${browserOrigin}/healthz`)
 }
 
-function resolveWikiLocation(configuredWikiBase: string): string {
-  if (configuredWikiBase.length === 0) {
-    return 'unknown'
-  }
-
-  return stripUrlProtocol(configuredWikiBase)
-}
-
 function getWikiStatus(
   backendHealth: ReturnType<typeof useBackendHealth>,
-  wikiLocation: string
+  wikiBaseUrl: string
 ): AppBadgeStatus {
   if (backendHealth.status === 'disconnected') {
     return 'error'
@@ -435,7 +440,7 @@ function getWikiStatus(
     return 'warning'
   }
 
-  if (wikiLocation === 'unknown') {
+  if (!wikiBaseUrl) {
     return 'neutral'
   }
 
@@ -444,7 +449,7 @@ function getWikiStatus(
 
 function getWikiValue(
   backendHealth: ReturnType<typeof useBackendHealth>,
-  wikiLocation: string
+  wikiBaseUrl: string
 ): string {
   if (backendHealth.status === 'checking') {
     return 'Checking...'
@@ -454,7 +459,7 @@ function getWikiValue(
     return 'Disconnected'
   }
 
-  if (wikiLocation === 'unknown') {
+  if (!wikiBaseUrl) {
     return 'Unknown'
   }
 
@@ -463,6 +468,40 @@ function getWikiValue(
 
 function stripUrlProtocol(value: string): string {
   return value.replace(/^https?:\/\//, '')
+}
+
+function resolveWikiBaseUrl(configuredWikiBase: string, browserOrigin: string): string {
+  if (configuredWikiBase.length > 0) {
+    return configuredWikiBase.replace(/\/+$/, '')
+  }
+
+  const parsedOrigin = safeParseUrl(browserOrigin)
+  if (!parsedOrigin) {
+    return ''
+  }
+
+  const protocol = parsedOrigin?.protocol === 'https:' ? 'https:' : 'http:'
+  const hostname = parsedOrigin?.hostname?.toLowerCase() ?? ''
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1'
+  const wikiUrl = new globalThis.URL(parsedOrigin.origin)
+
+  if (isLocalHost) {
+    wikiUrl.protocol = protocol
+    wikiUrl.port = WIKI_LOCAL_DEV_PORT
+    return wikiUrl.origin
+  }
+
+  wikiUrl.protocol = protocol
+  wikiUrl.port = WIKI_LAN_FALLBACK_PORT
+  return wikiUrl.origin
+}
+
+function safeParseUrl(value: string) {
+  try {
+    return new globalThis.URL(value)
+  } catch {
+    return null
+  }
 }
 
 function parseLatestRelease(payload: unknown): LatestReleaseState {

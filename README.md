@@ -1,428 +1,277 @@
-# Sentinel - RFID Attendance Tracking System
+# Sentinel
 
-Enterprise-grade attendance tracking system for HMCS Chippawa naval reserve unit, built with RFID technology for automated personnel management.
+RFID attendance and operations management platform for HMCS Chippawa.
 
-## Project Overview
+Sentinel combines a TypeScript backend API, a Next.js admin dashboard, shared contracts/types, and appliance deployment tooling for reliable on-site operation.
 
-Sentinel replaces manual sign-in sheets with automated RFID badge scanning, providing:
+## Current Release Status (March 31, 2026)
 
-- **Real-time attendance tracking** - Instant check-in/out via RFID badges
-- **Personnel management** - Member profiles, divisions, ranks, qualifications
-- **Event coordination** - Training events, exercises, duty periods
-- **Security monitoring** - Alerts for unauthorized access, late arrivals
-- **Administrative reporting** - Attendance reports, statistics, compliance tracking
-- **Hardware integration** - RFID readers, kiosks, barcode scanners
+- Workspace/source version: `2.1.0`
+- Latest published GitHub release: [`v2.1.0`](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.1.0) (published March 31, 2026)
+- Latest git tag in repo: `v2.1.0`
 
-## Monorepo Structure
+## Program Phase Status
 
-This is a **pnpm workspace monorepo** with the following packages:
+- Phase 1: Core platform foundation - complete
+- Phase 2: Backend/API hardening - complete
+- Phase 3: Frontend Admin operational workflows - complete
+- Phase 4: Deployment appliance and update tooling - complete
+- Phase 5: Kiosk and day-duty operational UX - complete
+- Phase 6: Ongoing refinement, observability, and operator efficiency - active
+- Phase 7: Report generation and report-command workflows - planned
 
+### Phase 7 Focus: Reporting and Command Options (Planned)
+
+Phase 7 will focus on building a complete reporting layer for operations and leadership workflows, including:
+
+- Detailed attendance and check-in trend reports
+- Duty/watch and DDS operational summary reports
+- Printable report formats for handover and briefing packages
+- Export-friendly formats (PDF/CSV) for archive and sharing workflows
+- Command-driven report generation for repeatable operations
+
+Planned command-style workflows (examples):
+
+```bash
+pnpm reports:generate -- --type attendance --range this-week --format pdf
+pnpm reports:generate -- --type dds-summary --date 2026-03-31 --format printable
+pnpm reports:generate -- --type lockup --range month --format csv
 ```
+
+## Monorepo Layout
+
+```text
 sentinel/
 ├── apps/
-│   ├── backend/                 # Express.js API server ✅ Production-ready
-│   ├── frontend-admin/          # Next.js admin web panel (planned)
-│   └── frontend-kiosk/          # React kiosk interface (planned)
+│   ├── backend/                 # Express + ts-rest API (port 3000)
+│   └── frontend-admin/          # Next.js admin UI (port 3001)
 ├── packages/
-│   ├── contracts/               # ts-rest API contracts (shared types)
-│   ├── database/                # Prisma schema + migrations
-│   └── types/                   # Shared TypeScript types
-├── docs/                        # Documentation & plans
-└── monitoring/                  # Grafana, Prometheus, Loki configs
+│   ├── contracts/               # Shared ts-rest contracts and schemas
+│   ├── database/                # Prisma schema/client/migrations
+│   └── types/                   # Shared TypeScript domain types
+├── deploy/                      # Ubuntu appliance deployment bundle
+├── docs/                        # Architecture, guides, runbooks, domain docs
+├── monitoring/                  # Grafana/Prometheus/Loki configs
+└── scripts/                     # Repo automation and utilities
 ```
 
-### Package Overview
+## Core Components
 
-| Package                      | Status      | Description                                                     |
-| ---------------------------- | ----------- | --------------------------------------------------------------- |
-| **@sentinel/backend**        | ✅ Complete | Express.js API with 63 endpoints, WebSocket support, 634 tests  |
-| **@sentinel/contracts**      | ✅ Complete | ts-rest API contracts for type-safe client/server communication |
-| **@sentinel/database**       | ✅ Complete | Prisma ORM with PostgreSQL schema, migrations, seed data        |
-| **@sentinel/types**          | ✅ Complete | Shared TypeScript types and enums                               |
-| **@sentinel/frontend-admin** | 🚧 Planned  | Next.js 15 admin dashboard with HeroUI components               |
-| **@sentinel/frontend-kiosk** | 🚧 Planned  | React kiosk interface for RFID check-in stations                |
+| Component                      | Purpose                                      | Default                       |
+| ------------------------------ | -------------------------------------------- | ----------------------------- |
+| Backend API                    | REST/WebSocket API, auth, health, metrics    | `http://localhost:3000`       |
+| Frontend Admin                 | Operations dashboard and workflows           | `http://localhost:3001`       |
+| Kiosk Mode (Frontend route)    | Touch-first check-in and visitor intake flow | `http://localhost:3001/kiosk` |
+| Wiki.js (dev helper container) | In-app help/docs                             | `http://localhost:3002`       |
+| PostgreSQL                     | Primary datastore                            | `localhost:5432`              |
+| Redis                          | Cache/rate limiting support                  | `localhost:6379`              |
 
-## Quick Start
+## Tech Stack (Current)
+
+- Runtime: Node.js `24.x`
+- Package manager: `pnpm` `10.x`
+- Language: TypeScript (strict mode)
+- Backend: Express, ts-rest, Prisma, Socket.IO, Valibot
+- Frontend: Next.js 16, React 19, Tailwind CSS 4, DaisyUI, TanStack Query, Zustand
+- Infra/dev tooling: Docker Compose, GitHub Actions, Husky, ESLint, Prettier
+
+## Quick Start (Local Development)
 
 ### Prerequisites
 
-- **Node.js** 24.x (LTS)
-- **pnpm** 9.x (`npm install -g pnpm`)
-- **Docker** & Docker Compose
-- **Git** with GitHub CLI (`gh`)
+- Node.js `24.x`
+- pnpm `10.x`
+- Docker + Docker Compose v2
 
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/yourusername/sentinel.git
-cd sentinel
-```
-
-### 2. Install Dependencies
+### 1) Install dependencies
 
 ```bash
 pnpm install
 ```
 
-This installs all workspace dependencies (~5 minutes first time).
-
-### 3. Start Infrastructure
-
-Start PostgreSQL and Redis:
+### 2) Create local environment file (if needed)
 
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
 
-### 4. Run Database Migrations
+### 3) Start full local stack (recommended)
 
 ```bash
-cd packages/database
-pnpm prisma migrate dev
+pnpm dev:all
 ```
 
-### 5. Start Backend API
+This command:
+
+- syncs workspace versions to root (`pnpm version:sync`)
+- ensures Docker services are running
+- starts backend + frontend concurrently
+
+### 4) Verify
 
 ```bash
-cd apps/backend
-pnpm dev
-```
-
-API runs at: **http://localhost:3000**
-
-### 6. Verify Installation
-
-```bash
-# Check health endpoint
 curl http://localhost:3000/health
-
-# View API documentation
+open http://localhost:3001/dashboard
 open http://localhost:3000/docs
 ```
 
-## Backend API
-
-The backend is **production-ready** and fully documented.
-
-**📖 See [apps/backend/README.md](apps/backend/README.md) for complete backend documentation.**
-
-### Key Features
-
-- ✅ **63 REST API endpoints** - Personnel, attendance, events, security
-- ✅ **10 WebSocket channels** - Real-time updates for all resources
-- ✅ **634 passing tests** - 477 repository tests, 157 route tests
-- ✅ **80%+ test coverage** - Integration-first testing approach
-- ✅ **OpenAPI 3.0 spec** - Auto-generated from ts-rest contracts
-- ✅ **Swagger UI + ReDoc** - Interactive API documentation
-- ✅ **Type-safe contracts** - End-to-end TypeScript safety
-- ✅ **Authentication** - JWT sessions + API keys
-- ✅ **Rate limiting** - 100 req/15min per client
-- ✅ **Security hardened** - Helmet, CORS, input validation
-- ✅ **Structured logging** - Winston with Loki integration
-- ✅ **Health checks** - Database, Redis, graceful shutdown
-- ✅ **Docker ready** - Multi-stage builds, compose configs
-- ✅ **CI/CD pipelines** - GitHub Actions for test + build
-
-### API Documentation
-
-| URL                                                                      | Description                               |
-| ------------------------------------------------------------------------ | ----------------------------------------- |
-| [http://localhost:3000/docs](http://localhost:3000/docs)                 | **Swagger UI** - Interactive API explorer |
-| [http://localhost:3000/redoc](http://localhost:3000/redoc)               | **ReDoc** - Clean API reference           |
-| [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json) | **OpenAPI spec** - Raw JSON               |
-
-## Development Workflow
-
-### Branch Strategy
-
-- `main` - Production releases
-- `feature/*` - Feature branches
-
-**Rules:**
-
-- Never push directly to `main`
-- Create PRs from feature branches → `main`
-- 1 approval required for PRs
-
-### Git Workflow
+### Common local commands
 
 ```bash
-# Create feature branch
-git checkout -b feature/add-reporting
-
-# Make changes, commit with conventional commits
-git commit -m "feat(reports): add attendance summary endpoint"
-
-# Push and create PR
-git push origin feature/add-reporting
-gh pr create --base main
-```
-
-### Conventional Commits
-
-Use semantic commit prefixes:
-
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `chore:` - Maintenance tasks
-- `docs:` - Documentation changes
-- `refactor:` - Code refactoring
-- `test:` - Test additions/changes
-- `perf:` - Performance improvements
-
-### Running Tests
-
-```bash
-# Type checking (all packages)
+pnpm dev:backend
+pnpm dev:frontend
+pnpm dev:all:core
 pnpm typecheck
-
-# Linting
 pnpm lint
-
-# Build
 pnpm build
+pnpm version:check
 ```
 
-## Docker Services
+## Deployment Appliance (Ubuntu 24.04)
 
-### Core Services (Always Running)
+Sentinel ships an appliance deployment bundle in [`deploy/`](./deploy) with install/update/upgrade flows and desktop launchers.
 
-Start with `docker-compose up -d`:
+Primary docs:
 
-- **PostgreSQL** (port 5432) - Primary database
-- **Redis** (port 6379) - Rate limiting, caching
+- [`deploy/README_DEPLOY.md`](./deploy/README_DEPLOY.md)
 
-### Optional Services (Profiles)
+Primary commands:
 
 ```bash
-# Backend in Docker
-docker-compose --profile backend up -d
-
-# Database management tools
-docker-compose --profile tools up -d
-
-# Monitoring stack (Grafana, Prometheus, Loki)
-docker-compose --profile monitoring up -d
-
-# Everything
-docker-compose --profile backend --profile tools --profile monitoring up -d
+cd /opt/sentinel/deploy
+./install.sh --version vX.Y.Z
+./update.sh --version vX.Y.Z
+sentinel-upgrade --latest
 ```
 
-### Service URLs
+Notable deployment capabilities:
 
-| Service     | URL                   | Credentials                  |
-| ----------- | --------------------- | ---------------------------- |
-| Backend API | http://localhost:3000 | -                            |
-| PostgreSQL  | localhost:5432        | sentinel/sentinel            |
-| Redis       | localhost:6379        | -                            |
-| pgAdmin     | http://localhost:5050 | admin@sentinel.local / admin |
-| Grafana     | http://localhost:3010 | admin / changeme             |
-| Prometheus  | http://localhost:3011 | -                            |
-| Loki        | http://localhost:3012 | -                            |
+- Debian package distribution (`sentinel_<version>_all.deb`)
+- Automated upgrade flow with release selection
+- Captive portal recovery helper + optional auto-recovery watcher
+- Optional observability profile and LAN publishing controls
 
-## Technology Stack
+## System Status and Recovery
 
-### Backend
+The Frontend Admin status dropdown tracks:
 
-- **Runtime:** Node.js 24.x
-- **Framework:** Express.js 4.x
-- **Language:** TypeScript 5.9 (strict mode)
-- **ORM:** Prisma 7.x + Kysely (for complex queries)
-- **Database:** PostgreSQL 16
-- **Cache:** Redis 7
-- **Auth:** better-auth 1.4
-- **API:** ts-rest 3.x (type-safe contracts)
-- **WebSocket:** Socket.IO 4.x
-- **Validation:** Valibot 1.x
-- **Testing:** Vitest 4.x + Testcontainers
-- **Logging:** Winston 3.x
+- Database
+- Backend API
+- Frontend
+- Wiki
 
-### Frontend (Planned)
+It also supports deployment-laptop recovery actions when connectivity is degraded:
 
-- **Framework:** Next.js 15 (App Router)
-- **UI Library:** HeroUI (Next UI)
-- **State:** React Query + Zustand
-- **Forms:** React Hook Form + Valibot
-- **Styling:** Tailwind CSS 4
+- `sentinel-recover://run` launcher
+- fallback portal open (`http://neverssl.com`)
 
-### DevOps
+## Versioning and Release Policy
 
-- **Package Manager:** pnpm 9.x
-- **Containerization:** Docker + Docker Compose
-- **CI/CD:** GitHub Actions
-- **Monitoring:** Grafana + Prometheus + Loki
-- **Documentation:** Swagger UI + ReDoc
+### Version source of truth
 
-## Project Status
+- Root `package.json` version is authoritative.
+- Workspace versions are synchronized with:
+  - `pnpm version:sync`
+  - `pnpm version:check`
+- Sync script: [`scripts/sync-workspace-versions.mjs`](./scripts/sync-workspace-versions.mjs)
 
-### ✅ Phase 1-3: Backend Rebuild (Complete)
+### Branching and releases
 
-- [x] Repository layer with Prisma ORM (477 tests)
-- [x] Route layer with ts-rest contracts (157 tests)
-- [x] WebSocket infrastructure (10 channels)
-- [x] Authentication system (JWT + API keys)
-- [x] OpenAPI documentation generation
-- [x] Docker deployment setup
-- [x] CI/CD pipelines
-- [x] 63 core API endpoints
+- `main` is the long-lived integration branch.
+- Daily work uses `feature/*`, `fix/*`, or `hotfix/*`.
+- Release stabilization may use temporary `release/vX.Y.Z` branches.
+- Release branches must merge back to `main` before tagging `vX.Y.Z`.
 
-### 🔄 Phase 4: Production Readiness (In Progress)
+## Documentation Map
 
-- [x] Swagger UI at `/docs`
-- [x] Backend README with setup instructions
-- [ ] Query performance benchmarks
-- [ ] Coverage verification (70-80% target)
-- [ ] Docker build validation
-- [ ] CI/CD verification
-- [ ] Security audit
+- Backend: [`apps/backend/README.md`](./apps/backend/README.md)
+- Frontend Admin: [`apps/frontend-admin/README.md`](./apps/frontend-admin/README.md)
+- Deployment: [`deploy/README_DEPLOY.md`](./deploy/README_DEPLOY.md)
+- Engineering docs index: [`docs/`](./docs)
 
-**Progress:** 95% complete, 3-5 days remaining
+## Release Evolution (Compared Across All Releases)
 
-### 🚧 Phase 5: Frontend Development (Q1 2026)
+Compared across all published GitHub releases from `v1.0.0` through `v2.1.0`:
 
-- [ ] Next.js admin dashboard
-- [ ] React kiosk interface
-- [ ] Type-safe API client generation
-- [ ] WebSocket integration
-- [ ] Authentication flow
-- [ ] Real-time updates UI
+- `v1.0.0` to `v1.1.x`: appliance/deploy baseline established and hardened (bootstrap, migration reliability, secret generation, installer improvements)
+- `v1.2.x`: production hardening continued, kiosk standalone mode introduced, backend rate-limit and health/status fixes landed
+- `v1.3.x`: Wiki.js/help integration and release-track workflow automation expanded
+- `v1.4.x`: authentication and admin flows improved, Tailscale inventory support added, dev simulation tooling refined
+- `v1.5.x`: wiki publishing tooling + dashboard/admin workflow improvements
+- `v1.6.x`: kiosk redesign and major lockup/DDS/dashboard behavior fixes
+- `v1.7.x`: CI/release-track robustness and database/deploy diagnostics hardening
+- `v2.0.0`: milestone release with DDS drawer and workflow polish
+- `v2.1.0`: captive portal recovery automation, richer system status/health context, and root-driven workspace version governance
 
-### 📋 Future Phases
+### Published GitHub Releases
 
-- **Phase 6:** Advanced reporting & analytics
-- **Phase 7:** Mobile app (React Native)
-- **Phase 8:** Hardware integration (RFID readers)
+All releases: <https://github.com/DeadshotOMEGA/sentinel/releases>
 
-See [docs/plans/](docs/plans/) for detailed plans.
-
-## Documentation
-
-| Document                                                   | Description                            |
-| ---------------------------------------------------------- | -------------------------------------- |
-| [apps/backend/README.md](apps/backend/README.md)           | Backend API setup & development        |
-| [docs/plans/active/](docs/plans/active/)                   | Active implementation plans            |
-| [docs/architecture/](docs/architecture/)                   | System architecture & design decisions |
-| [packages/database/README.md](packages/database/README.md) | Database schema & migrations           |
+| Tag       | Date       | Link                                                                      |
+| --------- | ---------- | ------------------------------------------------------------------------- |
+| `v1.0.0`  | 2026-02-20 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.0.0)  |
+| `v1.1.1`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.1)  |
+| `v1.1.2`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.2)  |
+| `v1.1.3`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.3)  |
+| `v1.1.4`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.4)  |
+| `v1.1.5`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.5)  |
+| `v1.1.6`  | 2026-02-21 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.6)  |
+| `v1.1.7`  | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.7)  |
+| `v1.1.8`  | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.8)  |
+| `v1.1.9`  | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.9)  |
+| `v1.1.10` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.10) |
+| `v1.1.11` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.11) |
+| `v1.1.12` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.12) |
+| `v1.1.13` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.13) |
+| `v1.1.14` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.14) |
+| `v1.1.15` | 2026-02-22 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.1.15) |
+| `v1.2.0`  | 2026-02-23 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.0)  |
+| `v1.2.1`  | 2026-02-23 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.1)  |
+| `v1.2.2`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.2)  |
+| `v1.2.3`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.3)  |
+| `v1.2.4`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.4)  |
+| `v1.2.5`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.5)  |
+| `v1.2.6`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.6)  |
+| `v1.2.7`  | 2026-02-24 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.2.7)  |
+| `v1.3.0`  | 2026-02-25 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.3.0)  |
+| `v1.3.1`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.3.1)  |
+| `v1.3.2`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.3.2)  |
+| `v1.4.0`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.0)  |
+| `v1.4.1`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.1)  |
+| `v1.4.2`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.2)  |
+| `v1.4.3`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.3)  |
+| `v1.4.4`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.4)  |
+| `v1.4.5`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.5)  |
+| `v1.4.6`  | 2026-02-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.4.6)  |
+| `v1.5.0`  | 2026-03-03 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.5.0)  |
+| `v1.5.1`  | 2026-03-03 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.5.1)  |
+| `v1.5.2`  | 2026-03-23 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.5.2)  |
+| `v1.6.0`  | 2026-03-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.6.0)  |
+| `v1.6.1`  | 2026-03-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.6.1)  |
+| `v1.6.2`  | 2026-03-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.6.2)  |
+| `v1.6.3`  | 2026-03-27 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.6.3)  |
+| `v1.6.4`  | 2026-03-30 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.6.4)  |
+| `v1.7.0`  | 2026-03-30 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.7.0)  |
+| `v1.7.1`  | 2026-03-30 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.7.1)  |
+| `v1.7.2`  | 2026-03-30 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v1.7.2)  |
+| `v2.0.0`  | 2026-03-30 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.0.0)  |
+| `v2.1.0`  | 2026-03-31 | [Release](https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.1.0)  |
 
 ## Contributing
 
-### Setup for Development
-
-1. Read [apps/backend/README.md](apps/backend/README.md) for backend setup
-2. Ensure CI-equivalent checks pass: `pnpm typecheck && pnpm lint && pnpm build`
-3. Follow conventional commit format
-4. Create feature branch from `main`
-5. Open PR with 1 reviewer
-
-### Code Standards
-
-- **TypeScript strict mode** - No `any` types
-- **ESLint** - Enforced on commit
-- **Prettier** - Auto-formatting
-- **80%+ test coverage** - For new code
-- **Integration-first testing** - Prefer integration over unit tests
-
-### Testing Philosophy
-
-- Test behavior, not implementation
-- Use real databases (Testcontainers)
-- Avoid mocks unless necessary
-- Each test should be independent
-
-## Troubleshooting
-
-### Common Issues
-
-**1. "pnpm install" fails**
+1. Create a branch from `main` (`feature/*`, `fix/*`, or `hotfix/*`).
+2. Keep commits in Conventional Commit format.
+3. Run checks before PR:
 
 ```bash
-# Clear cache
-pnpm store prune
-pnpm install --force
+pnpm version:check
+pnpm typecheck
+pnpm lint
+pnpm build
 ```
 
-**2. Database connection errors**
-
-```bash
-# Restart PostgreSQL
-docker-compose restart postgres
-
-# Check logs
-docker logs sentinel-postgres
-```
-
-**3. Port already in use**
-
-```bash
-# Find process using port 3000
-lsof -ti:3000 | xargs kill -9
-
-# Or change PORT in .env
-PORT=3001
-```
-
-**4. Tests failing**
-
-```bash
-# Clean test containers
-cd apps/backend
-pnpm test:clean:force
-
-# Restart infrastructure
-docker-compose restart
-```
-
-**5. Type errors after pulling**
-
-```bash
-# Rebuild all packages
-pnpm -r build
-
-# Clean and reinstall
-pnpm clean
-pnpm install
-```
-
-## Security
-
-### Reporting Vulnerabilities
-
-Report security issues to: security@sentinel.local
-
-**Do not** open public issues for security vulnerabilities.
-
-### Security Measures
-
-- ✅ Input validation on all endpoints (Valibot)
-- ✅ SQL injection prevention (Prisma parameterized queries)
-- ✅ XSS protection (Helmet security headers)
-- ✅ CSRF protection (SameSite cookies)
-- ✅ Rate limiting (100 req/15min)
-- ✅ Authentication (JWT + API keys)
-- ✅ Password hashing (bcrypt)
-- ✅ Secrets management (environment variables)
-- ✅ HTTPS ready (reverse proxy recommended)
-- ✅ Regular dependency audits (`pnpm audit`)
-
-### Last Security Audit
-
-**Date:** January 23, 2026
-**Result:** No vulnerabilities found
-**Command:** `pnpm audit`
+4. Open a PR (never push directly to `main`).
 
 ## License
 
-**Private - HMCS Chippawa Internal Use Only**
-
-This project is proprietary software developed for HMCS Chippawa. Unauthorized access, use, or distribution is prohibited.
-
-## Support
-
-- **Documentation:** [docs/](docs/)
-- **Issues:** Create GitHub issue
-- **Questions:** Contact development team
-
----
-
-**Current Version:** 2.0.0 (Backend Complete)
-**Last Updated:** January 23, 2026
+Private - HMCS Chippawa internal use only.

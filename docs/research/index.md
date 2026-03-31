@@ -9,6 +9,7 @@
 ## What Is Research Documentation?
 
 Research docs record:
+
 - Technology evaluations
 - Spike investigations
 - Performance analysis
@@ -24,9 +25,9 @@ Research docs record:
 
 Currently ongoing investigations:
 
-| Topic | Started | Status | Related ADR |
-|-------|---------|--------|-------------|
-| *No active research* | - | - | - |
+| Topic                | Started | Status | Related ADR |
+| -------------------- | ------- | ------ | ----------- |
+| _No active research_ | -       | -      | -           |
 
 **Total Active:** 0
 
@@ -36,13 +37,13 @@ Currently ongoing investigations:
 
 Finished investigations:
 
-| Topic | Completed | Key Finding | Outcome |
-|-------|-----------|-------------|---------|
-| [Backend Architecture](2026-01-18-backend-executive-summary.md) | 2026-01-18 | Full rebuild recommended | Backend rebuild plan created |
-| [Framework Comparison](2026-01-18-framework-comparison.md) | 2026-01-18 | Express + ts-rest optimal | Express chosen |
-| [ORM Comparison](2026-01-18-orm-database-comparison.md) | 2026-01-18 | Prisma 7 best fit | Prisma adopted |
-| [Authentication Solutions](2026-01-18-authentication-solutions.md) | 2026-01-18 | better-auth recommended | better-auth chosen |
-| [Testing Strategy](2026-01-18-testing-strategy.md) | 2026-01-18 | Integration-first approach | Testcontainers adopted |
+| Topic                                                              | Completed  | Key Finding                | Outcome                      |
+| ------------------------------------------------------------------ | ---------- | -------------------------- | ---------------------------- |
+| [Backend Architecture](2026-01-18-backend-executive-summary.md)    | 2026-01-18 | Full rebuild recommended   | Backend rebuild plan created |
+| [Framework Comparison](2026-01-18-framework-comparison.md)         | 2026-01-18 | Express + ts-rest optimal  | Express chosen               |
+| [ORM Comparison](2026-01-18-orm-database-comparison.md)            | 2026-01-18 | Prisma 7 best fit          | Prisma adopted               |
+| [Authentication Solutions](2026-01-18-authentication-solutions.md) | 2026-01-18 | better-auth recommended    | better-auth chosen           |
+| [Testing Strategy](2026-01-18-testing-strategy.md)                 | 2026-01-18 | Integration-first approach | Testcontainers adopted       |
 
 **Total Completed:** 10
 
@@ -51,6 +52,7 @@ Finished investigations:
 ## Research by Category
 
 ### Technology Evaluation
+
 - [2026-01-18: Framework Comparison](2026-01-18-framework-comparison.md) - Express, Fastify, Hono, Elysia evaluation
 - [2026-01-18: ORM/Database Comparison](2026-01-18-orm-database-comparison.md) - Prisma, Drizzle, Kysely analysis
 - [2026-01-18: Authentication Solutions](2026-01-18-authentication-solutions.md) - better-auth, Lucia, NextAuth comparison
@@ -58,17 +60,21 @@ Finished investigations:
 - [2026-01-18: Validation & Type Safety](2026-01-18-validation-type-safety.md) - Zod, Valibot, ts-rest analysis
 
 ### Performance Analysis
-*No research yet*
+
+_No research yet_
 
 ### Security Assessment
+
 - [2026-01-18: Authentication Solutions](2026-01-18-authentication-solutions.md) - Auth security patterns
 
 ### Architecture Investigation
+
 - [2026-01-18: Backend Architecture Analysis](2026-01-18-backend-architecture-analysis.md) - Current state analysis
 - [2026-01-18: Current Backend Analysis](2026-01-18-current-backend-analysis.md) - Detailed assessment
 - [2026-01-18: Backend Executive Summary](2026-01-18-backend-executive-summary.md) - High-level findings
 
 ### Library Comparison
+
 - [2026-01-18: Framework Comparison](2026-01-18-framework-comparison.md) - Express vs alternatives
 - [2026-01-18: ORM Comparison](2026-01-18-orm-database-comparison.md) - Prisma vs alternatives
 
@@ -77,15 +83,19 @@ Finished investigations:
 ## Research by Domain
 
 ### Authentication
+
 - [2026-01-18: Authentication Solutions](2026-01-18-authentication-solutions.md) - better-auth evaluation
 
 ### Personnel Management
-*No research yet*
+
+_No research yet_
 
 ### Check-in System
-*No research yet*
+
+_No research yet_
 
 ### Testing Infrastructure
+
 - [2026-01-18: Testing Strategy](2026-01-18-testing-strategy.md) - Integration-first approach with Testcontainers
 
 ---
@@ -93,6 +103,7 @@ Finished investigations:
 ## Creating Research Documents
 
 **When to create:**
+
 - Need to evaluate technology choices
 - Investigating performance issues
 - Comparing multiple approaches
@@ -100,6 +111,7 @@ Finished investigations:
 - Before making major decisions
 
 **How to create:**
+
 1. Copy template: `cp docs/templates/research.md docs/research/YYYY-MM-DD-research-topic.md`
 2. Define research question
 3. Document methodology
@@ -127,6 +139,7 @@ Implementation (Plan)
 ```
 
 **Example:**
+
 1. Research: "Evaluate better-auth vs. custom JWT"
 2. Finding: "better-auth has API key support"
 3. Decision: ADR-0002-better-auth-adoption.md
@@ -137,16 +150,19 @@ Implementation (Plan)
 ## Search Research
 
 **By topic:**
+
 ```bash
 rg "topic" docs/research/
 ```
 
 **By technology:**
+
 ```bash
-rg "better-auth|testcontainers|heroui" docs/research/
+rg "better-auth|testcontainers|daisyui" docs/research/
 ```
 
 **By date:**
+
 ```bash
 ls docs/research/2026-01-*.md
 ```

@@ -6,11 +6,19 @@ import { register } from '../lib/metrics.js'
 
 export const healthRouter: Router = Router()
 
+function normalizeVersion(value: string): string {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) {
+    return 'unknown'
+  }
+
+  return trimmed.startsWith('v') ? trimmed.slice(1) : trimmed
+}
+
 function resolveServiceVersion(): string {
-  const envVersion =
-    process.env.APP_VERSION || process.env.SENTINEL_VERSION || process.env.npm_package_version
-  if (envVersion) {
-    return envVersion
+  const appVersion = process.env.APP_VERSION
+  if (typeof appVersion === 'string' && appVersion.trim().length > 0) {
+    return normalizeVersion(appVersion)
   }
 
   try {
@@ -19,7 +27,7 @@ function resolveServiceVersion(): string {
       version?: unknown
     }
     if (typeof packageJson.version === 'string' && packageJson.version.length > 0) {
-      return packageJson.version
+      return normalizeVersion(packageJson.version)
     }
   } catch (error) {
     logger.warn('Unable to resolve backend version from package.json', {
@@ -27,10 +35,13 @@ function resolveServiceVersion(): string {
     })
   }
 
+  const processVersion = process.env.npm_package_version || process.env.SENTINEL_VERSION
+  if (typeof processVersion === 'string' && processVersion.trim().length > 0) {
+    return normalizeVersion(processVersion)
+  }
+
   return 'unknown'
 }
-
-const SERVICE_VERSION = resolveServiceVersion()
 
 function resolveDatabaseAddress(): string | null {
   const databaseUrl = process.env.DATABASE_URL
@@ -89,7 +100,7 @@ healthRouter.get('/health', async (_req, res) => {
     status: healthy ? 'healthy' : 'unhealthy',
     checks,
     environment: process.env.NODE_ENV || 'development',
-    version: SERVICE_VERSION,
+    version: resolveServiceVersion(),
   })
 })
 
