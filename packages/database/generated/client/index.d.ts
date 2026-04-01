@@ -64,6 +64,11 @@ export type Member = $Result.DefaultSelection<Prisma.$MemberPayload>
  */
 export type MemberSession = $Result.DefaultSelection<Prisma.$MemberSessionPayload>
 /**
+ * Model RemoteSystem
+ * 
+ */
+export type RemoteSystem = $Result.DefaultSelection<Prisma.$RemoteSystemPayload>
+/**
  * Model Tag
  * 
  */
@@ -485,6 +490,16 @@ export class PrismaClient<
     * ```
     */
   get memberSession(): Prisma.MemberSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.remoteSystem`: Exposes CRUD operations for the **RemoteSystem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RemoteSystems
+    * const remoteSystems = await prisma.remoteSystem.findMany()
+    * ```
+    */
+  get remoteSystem(): Prisma.RemoteSystemDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tag`: Exposes CRUD operations for the **Tag** model.
@@ -1329,6 +1344,7 @@ export namespace Prisma {
     Event: 'Event',
     Member: 'Member',
     MemberSession: 'MemberSession',
+    RemoteSystem: 'RemoteSystem',
     Tag: 'Tag',
     MemberTag: 'MemberTag',
     SecurityAlert: 'SecurityAlert',
@@ -1384,7 +1400,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "memberSession" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "memberSession" | "remoteSystem" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2125,6 +2141,80 @@ export namespace Prisma {
           count: {
             args: Prisma.MemberSessionCountArgs<ExtArgs>
             result: $Utils.Optional<MemberSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      RemoteSystem: {
+        payload: Prisma.$RemoteSystemPayload<ExtArgs>
+        fields: Prisma.RemoteSystemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RemoteSystemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RemoteSystemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          findFirst: {
+            args: Prisma.RemoteSystemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RemoteSystemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          findMany: {
+            args: Prisma.RemoteSystemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>[]
+          }
+          create: {
+            args: Prisma.RemoteSystemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          createMany: {
+            args: Prisma.RemoteSystemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RemoteSystemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>[]
+          }
+          delete: {
+            args: Prisma.RemoteSystemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          update: {
+            args: Prisma.RemoteSystemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          deleteMany: {
+            args: Prisma.RemoteSystemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RemoteSystemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RemoteSystemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>[]
+          }
+          upsert: {
+            args: Prisma.RemoteSystemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RemoteSystemPayload>
+          }
+          aggregate: {
+            args: Prisma.RemoteSystemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRemoteSystem>
+          }
+          groupBy: {
+            args: Prisma.RemoteSystemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RemoteSystemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RemoteSystemCountArgs<ExtArgs>
+            result: $Utils.Optional<RemoteSystemCountAggregateOutputType> | number
           }
         }
       }
@@ -5206,6 +5296,7 @@ export namespace Prisma {
     event?: EventOmit
     member?: MemberOmit
     memberSession?: MemberSessionOmit
+    remoteSystem?: RemoteSystemOmit
     tag?: TagOmit
     memberTag?: MemberTagOmit
     securityAlert?: SecurityAlertOmit
@@ -5810,6 +5901,37 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountAcknowledgedSecurityAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SecurityAlertWhereInput
+  }
+
+
+  /**
+   * Count Type RemoteSystemCountOutputType
+   */
+
+  export type RemoteSystemCountOutputType = {
+    sessions: number
+  }
+
+  export type RemoteSystemCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sessions?: boolean | RemoteSystemCountOutputTypeCountSessionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * RemoteSystemCountOutputType without action
+   */
+  export type RemoteSystemCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystemCountOutputType
+     */
+    select?: RemoteSystemCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * RemoteSystemCountOutputType without action
+   */
+  export type RemoteSystemCountOutputTypeCountSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MemberSessionWhereInput
   }
 
 
@@ -18379,10 +18501,15 @@ export namespace Prisma {
   export type MemberSessionMinAggregateOutputType = {
     id: string | null
     memberId: string | null
+    remoteSystemId: string | null
     token: string | null
     expiresAt: Date | null
     ipAddress: string | null
     userAgent: string | null
+    remoteSystemNameSnapshot: string | null
+    lastSeenAt: Date | null
+    endedAt: Date | null
+    endReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18390,10 +18517,15 @@ export namespace Prisma {
   export type MemberSessionMaxAggregateOutputType = {
     id: string | null
     memberId: string | null
+    remoteSystemId: string | null
     token: string | null
     expiresAt: Date | null
     ipAddress: string | null
     userAgent: string | null
+    remoteSystemNameSnapshot: string | null
+    lastSeenAt: Date | null
+    endedAt: Date | null
+    endReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18401,10 +18533,15 @@ export namespace Prisma {
   export type MemberSessionCountAggregateOutputType = {
     id: number
     memberId: number
+    remoteSystemId: number
     token: number
     expiresAt: number
     ipAddress: number
     userAgent: number
+    remoteSystemNameSnapshot: number
+    lastSeenAt: number
+    endedAt: number
+    endReason: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -18414,10 +18551,15 @@ export namespace Prisma {
   export type MemberSessionMinAggregateInputType = {
     id?: true
     memberId?: true
+    remoteSystemId?: true
     token?: true
     expiresAt?: true
     ipAddress?: true
     userAgent?: true
+    remoteSystemNameSnapshot?: true
+    lastSeenAt?: true
+    endedAt?: true
+    endReason?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18425,10 +18567,15 @@ export namespace Prisma {
   export type MemberSessionMaxAggregateInputType = {
     id?: true
     memberId?: true
+    remoteSystemId?: true
     token?: true
     expiresAt?: true
     ipAddress?: true
     userAgent?: true
+    remoteSystemNameSnapshot?: true
+    lastSeenAt?: true
+    endedAt?: true
+    endReason?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18436,10 +18583,15 @@ export namespace Prisma {
   export type MemberSessionCountAggregateInputType = {
     id?: true
     memberId?: true
+    remoteSystemId?: true
     token?: true
     expiresAt?: true
     ipAddress?: true
     userAgent?: true
+    remoteSystemNameSnapshot?: true
+    lastSeenAt?: true
+    endedAt?: true
+    endReason?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -18520,10 +18672,15 @@ export namespace Prisma {
   export type MemberSessionGroupByOutputType = {
     id: string
     memberId: string
+    remoteSystemId: string | null
     token: string
     expiresAt: Date
     ipAddress: string | null
     userAgent: string | null
+    remoteSystemNameSnapshot: string
+    lastSeenAt: Date
+    endedAt: Date | null
+    endReason: string | null
     createdAt: Date
     updatedAt: Date
     _count: MemberSessionCountAggregateOutputType | null
@@ -18548,73 +18705,105 @@ export namespace Prisma {
   export type MemberSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     memberId?: boolean
+    remoteSystemId?: boolean
     token?: boolean
     expiresAt?: boolean
     ipAddress?: boolean
     userAgent?: boolean
+    remoteSystemNameSnapshot?: boolean
+    lastSeenAt?: boolean
+    endedAt?: boolean
+    endReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }, ExtArgs["result"]["memberSession"]>
 
   export type MemberSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     memberId?: boolean
+    remoteSystemId?: boolean
     token?: boolean
     expiresAt?: boolean
     ipAddress?: boolean
     userAgent?: boolean
+    remoteSystemNameSnapshot?: boolean
+    lastSeenAt?: boolean
+    endedAt?: boolean
+    endReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }, ExtArgs["result"]["memberSession"]>
 
   export type MemberSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     memberId?: boolean
+    remoteSystemId?: boolean
     token?: boolean
     expiresAt?: boolean
     ipAddress?: boolean
     userAgent?: boolean
+    remoteSystemNameSnapshot?: boolean
+    lastSeenAt?: boolean
+    endedAt?: boolean
+    endReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }, ExtArgs["result"]["memberSession"]>
 
   export type MemberSessionSelectScalar = {
     id?: boolean
     memberId?: boolean
+    remoteSystemId?: boolean
     token?: boolean
     expiresAt?: boolean
     ipAddress?: boolean
     userAgent?: boolean
+    remoteSystemNameSnapshot?: boolean
+    lastSeenAt?: boolean
+    endedAt?: boolean
+    endReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MemberSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "memberId" | "token" | "expiresAt" | "ipAddress" | "userAgent" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSession"]>
+  export type MemberSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "memberId" | "remoteSystemId" | "token" | "expiresAt" | "ipAddress" | "userAgent" | "remoteSystemNameSnapshot" | "lastSeenAt" | "endedAt" | "endReason" | "createdAt" | "updatedAt", ExtArgs["result"]["memberSession"]>
   export type MemberSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }
   export type MemberSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }
   export type MemberSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     member?: boolean | MemberDefaultArgs<ExtArgs>
+    remoteSystem?: boolean | MemberSession$remoteSystemArgs<ExtArgs>
   }
 
   export type $MemberSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "MemberSession"
     objects: {
       member: Prisma.$MemberPayload<ExtArgs>
+      remoteSystem: Prisma.$RemoteSystemPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       memberId: string
+      remoteSystemId: string | null
       token: string
       expiresAt: Date
       ipAddress: string | null
       userAgent: string | null
+      remoteSystemNameSnapshot: string
+      lastSeenAt: Date
+      endedAt: Date | null
+      endReason: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["memberSession"]>
@@ -19012,6 +19201,7 @@ export namespace Prisma {
   export interface Prisma__MemberSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     member<T extends MemberDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MemberDefaultArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    remoteSystem<T extends MemberSession$remoteSystemArgs<ExtArgs> = {}>(args?: Subset<T, MemberSession$remoteSystemArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -19043,10 +19233,15 @@ export namespace Prisma {
   interface MemberSessionFieldRefs {
     readonly id: FieldRef<"MemberSession", 'String'>
     readonly memberId: FieldRef<"MemberSession", 'String'>
+    readonly remoteSystemId: FieldRef<"MemberSession", 'String'>
     readonly token: FieldRef<"MemberSession", 'String'>
     readonly expiresAt: FieldRef<"MemberSession", 'DateTime'>
     readonly ipAddress: FieldRef<"MemberSession", 'String'>
     readonly userAgent: FieldRef<"MemberSession", 'String'>
+    readonly remoteSystemNameSnapshot: FieldRef<"MemberSession", 'String'>
+    readonly lastSeenAt: FieldRef<"MemberSession", 'DateTime'>
+    readonly endedAt: FieldRef<"MemberSession", 'DateTime'>
+    readonly endReason: FieldRef<"MemberSession", 'String'>
     readonly createdAt: FieldRef<"MemberSession", 'DateTime'>
     readonly updatedAt: FieldRef<"MemberSession", 'DateTime'>
   }
@@ -19459,6 +19654,25 @@ export namespace Prisma {
   }
 
   /**
+   * MemberSession.remoteSystem
+   */
+  export type MemberSession$remoteSystemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    where?: RemoteSystemWhereInput
+  }
+
+  /**
    * MemberSession without action
    */
   export type MemberSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -19474,6 +19688,1163 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: MemberSessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model RemoteSystem
+   */
+
+  export type AggregateRemoteSystem = {
+    _count: RemoteSystemCountAggregateOutputType | null
+    _avg: RemoteSystemAvgAggregateOutputType | null
+    _sum: RemoteSystemSumAggregateOutputType | null
+    _min: RemoteSystemMinAggregateOutputType | null
+    _max: RemoteSystemMaxAggregateOutputType | null
+  }
+
+  export type RemoteSystemAvgAggregateOutputType = {
+    displayOrder: number | null
+  }
+
+  export type RemoteSystemSumAggregateOutputType = {
+    displayOrder: number | null
+  }
+
+  export type RemoteSystemMinAggregateOutputType = {
+    id: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    displayOrder: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RemoteSystemMaxAggregateOutputType = {
+    id: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    displayOrder: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RemoteSystemCountAggregateOutputType = {
+    id: number
+    code: number
+    name: number
+    description: number
+    displayOrder: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type RemoteSystemAvgAggregateInputType = {
+    displayOrder?: true
+  }
+
+  export type RemoteSystemSumAggregateInputType = {
+    displayOrder?: true
+  }
+
+  export type RemoteSystemMinAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    displayOrder?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RemoteSystemMaxAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    displayOrder?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RemoteSystemCountAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    displayOrder?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type RemoteSystemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RemoteSystem to aggregate.
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RemoteSystems to fetch.
+     */
+    orderBy?: RemoteSystemOrderByWithRelationInput | RemoteSystemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RemoteSystemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RemoteSystems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RemoteSystems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RemoteSystems
+    **/
+    _count?: true | RemoteSystemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RemoteSystemAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RemoteSystemSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RemoteSystemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RemoteSystemMaxAggregateInputType
+  }
+
+  export type GetRemoteSystemAggregateType<T extends RemoteSystemAggregateArgs> = {
+        [P in keyof T & keyof AggregateRemoteSystem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRemoteSystem[P]>
+      : GetScalarType<T[P], AggregateRemoteSystem[P]>
+  }
+
+
+
+
+  export type RemoteSystemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RemoteSystemWhereInput
+    orderBy?: RemoteSystemOrderByWithAggregationInput | RemoteSystemOrderByWithAggregationInput[]
+    by: RemoteSystemScalarFieldEnum[] | RemoteSystemScalarFieldEnum
+    having?: RemoteSystemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RemoteSystemCountAggregateInputType | true
+    _avg?: RemoteSystemAvgAggregateInputType
+    _sum?: RemoteSystemSumAggregateInputType
+    _min?: RemoteSystemMinAggregateInputType
+    _max?: RemoteSystemMaxAggregateInputType
+  }
+
+  export type RemoteSystemGroupByOutputType = {
+    id: string
+    code: string
+    name: string
+    description: string | null
+    displayOrder: number
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: RemoteSystemCountAggregateOutputType | null
+    _avg: RemoteSystemAvgAggregateOutputType | null
+    _sum: RemoteSystemSumAggregateOutputType | null
+    _min: RemoteSystemMinAggregateOutputType | null
+    _max: RemoteSystemMaxAggregateOutputType | null
+  }
+
+  type GetRemoteSystemGroupByPayload<T extends RemoteSystemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RemoteSystemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RemoteSystemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RemoteSystemGroupByOutputType[P]>
+            : GetScalarType<T[P], RemoteSystemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RemoteSystemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    displayOrder?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sessions?: boolean | RemoteSystem$sessionsArgs<ExtArgs>
+    _count?: boolean | RemoteSystemCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["remoteSystem"]>
+
+  export type RemoteSystemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    displayOrder?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["remoteSystem"]>
+
+  export type RemoteSystemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    displayOrder?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["remoteSystem"]>
+
+  export type RemoteSystemSelectScalar = {
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    displayOrder?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type RemoteSystemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "displayOrder" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["remoteSystem"]>
+  export type RemoteSystemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sessions?: boolean | RemoteSystem$sessionsArgs<ExtArgs>
+    _count?: boolean | RemoteSystemCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type RemoteSystemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type RemoteSystemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $RemoteSystemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RemoteSystem"
+    objects: {
+      sessions: Prisma.$MemberSessionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      code: string
+      name: string
+      description: string | null
+      displayOrder: number
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["remoteSystem"]>
+    composites: {}
+  }
+
+  type RemoteSystemGetPayload<S extends boolean | null | undefined | RemoteSystemDefaultArgs> = $Result.GetResult<Prisma.$RemoteSystemPayload, S>
+
+  type RemoteSystemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RemoteSystemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: RemoteSystemCountAggregateInputType | true
+    }
+
+  export interface RemoteSystemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RemoteSystem'], meta: { name: 'RemoteSystem' } }
+    /**
+     * Find zero or one RemoteSystem that matches the filter.
+     * @param {RemoteSystemFindUniqueArgs} args - Arguments to find a RemoteSystem
+     * @example
+     * // Get one RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RemoteSystemFindUniqueArgs>(args: SelectSubset<T, RemoteSystemFindUniqueArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RemoteSystem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RemoteSystemFindUniqueOrThrowArgs} args - Arguments to find a RemoteSystem
+     * @example
+     * // Get one RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RemoteSystemFindUniqueOrThrowArgs>(args: SelectSubset<T, RemoteSystemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RemoteSystem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemFindFirstArgs} args - Arguments to find a RemoteSystem
+     * @example
+     * // Get one RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RemoteSystemFindFirstArgs>(args?: SelectSubset<T, RemoteSystemFindFirstArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RemoteSystem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemFindFirstOrThrowArgs} args - Arguments to find a RemoteSystem
+     * @example
+     * // Get one RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RemoteSystemFindFirstOrThrowArgs>(args?: SelectSubset<T, RemoteSystemFindFirstOrThrowArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RemoteSystems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RemoteSystems
+     * const remoteSystems = await prisma.remoteSystem.findMany()
+     * 
+     * // Get first 10 RemoteSystems
+     * const remoteSystems = await prisma.remoteSystem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const remoteSystemWithIdOnly = await prisma.remoteSystem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RemoteSystemFindManyArgs>(args?: SelectSubset<T, RemoteSystemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RemoteSystem.
+     * @param {RemoteSystemCreateArgs} args - Arguments to create a RemoteSystem.
+     * @example
+     * // Create one RemoteSystem
+     * const RemoteSystem = await prisma.remoteSystem.create({
+     *   data: {
+     *     // ... data to create a RemoteSystem
+     *   }
+     * })
+     * 
+     */
+    create<T extends RemoteSystemCreateArgs>(args: SelectSubset<T, RemoteSystemCreateArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RemoteSystems.
+     * @param {RemoteSystemCreateManyArgs} args - Arguments to create many RemoteSystems.
+     * @example
+     * // Create many RemoteSystems
+     * const remoteSystem = await prisma.remoteSystem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RemoteSystemCreateManyArgs>(args?: SelectSubset<T, RemoteSystemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many RemoteSystems and returns the data saved in the database.
+     * @param {RemoteSystemCreateManyAndReturnArgs} args - Arguments to create many RemoteSystems.
+     * @example
+     * // Create many RemoteSystems
+     * const remoteSystem = await prisma.remoteSystem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many RemoteSystems and only return the `id`
+     * const remoteSystemWithIdOnly = await prisma.remoteSystem.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RemoteSystemCreateManyAndReturnArgs>(args?: SelectSubset<T, RemoteSystemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a RemoteSystem.
+     * @param {RemoteSystemDeleteArgs} args - Arguments to delete one RemoteSystem.
+     * @example
+     * // Delete one RemoteSystem
+     * const RemoteSystem = await prisma.remoteSystem.delete({
+     *   where: {
+     *     // ... filter to delete one RemoteSystem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RemoteSystemDeleteArgs>(args: SelectSubset<T, RemoteSystemDeleteArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RemoteSystem.
+     * @param {RemoteSystemUpdateArgs} args - Arguments to update one RemoteSystem.
+     * @example
+     * // Update one RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RemoteSystemUpdateArgs>(args: SelectSubset<T, RemoteSystemUpdateArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RemoteSystems.
+     * @param {RemoteSystemDeleteManyArgs} args - Arguments to filter RemoteSystems to delete.
+     * @example
+     * // Delete a few RemoteSystems
+     * const { count } = await prisma.remoteSystem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RemoteSystemDeleteManyArgs>(args?: SelectSubset<T, RemoteSystemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RemoteSystems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RemoteSystems
+     * const remoteSystem = await prisma.remoteSystem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RemoteSystemUpdateManyArgs>(args: SelectSubset<T, RemoteSystemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RemoteSystems and returns the data updated in the database.
+     * @param {RemoteSystemUpdateManyAndReturnArgs} args - Arguments to update many RemoteSystems.
+     * @example
+     * // Update many RemoteSystems
+     * const remoteSystem = await prisma.remoteSystem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more RemoteSystems and only return the `id`
+     * const remoteSystemWithIdOnly = await prisma.remoteSystem.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RemoteSystemUpdateManyAndReturnArgs>(args: SelectSubset<T, RemoteSystemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one RemoteSystem.
+     * @param {RemoteSystemUpsertArgs} args - Arguments to update or create a RemoteSystem.
+     * @example
+     * // Update or create a RemoteSystem
+     * const remoteSystem = await prisma.remoteSystem.upsert({
+     *   create: {
+     *     // ... data to create a RemoteSystem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RemoteSystem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RemoteSystemUpsertArgs>(args: SelectSubset<T, RemoteSystemUpsertArgs<ExtArgs>>): Prisma__RemoteSystemClient<$Result.GetResult<Prisma.$RemoteSystemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of RemoteSystems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemCountArgs} args - Arguments to filter RemoteSystems to count.
+     * @example
+     * // Count the number of RemoteSystems
+     * const count = await prisma.remoteSystem.count({
+     *   where: {
+     *     // ... the filter for the RemoteSystems we want to count
+     *   }
+     * })
+    **/
+    count<T extends RemoteSystemCountArgs>(
+      args?: Subset<T, RemoteSystemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RemoteSystemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RemoteSystem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RemoteSystemAggregateArgs>(args: Subset<T, RemoteSystemAggregateArgs>): Prisma.PrismaPromise<GetRemoteSystemAggregateType<T>>
+
+    /**
+     * Group by RemoteSystem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RemoteSystemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RemoteSystemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RemoteSystemGroupByArgs['orderBy'] }
+        : { orderBy?: RemoteSystemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RemoteSystemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRemoteSystemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RemoteSystem model
+   */
+  readonly fields: RemoteSystemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RemoteSystem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RemoteSystemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    sessions<T extends RemoteSystem$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, RemoteSystem$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RemoteSystem model
+   */
+  interface RemoteSystemFieldRefs {
+    readonly id: FieldRef<"RemoteSystem", 'String'>
+    readonly code: FieldRef<"RemoteSystem", 'String'>
+    readonly name: FieldRef<"RemoteSystem", 'String'>
+    readonly description: FieldRef<"RemoteSystem", 'String'>
+    readonly displayOrder: FieldRef<"RemoteSystem", 'Int'>
+    readonly isActive: FieldRef<"RemoteSystem", 'Boolean'>
+    readonly createdAt: FieldRef<"RemoteSystem", 'DateTime'>
+    readonly updatedAt: FieldRef<"RemoteSystem", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RemoteSystem findUnique
+   */
+  export type RemoteSystemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter, which RemoteSystem to fetch.
+     */
+    where: RemoteSystemWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem findUniqueOrThrow
+   */
+  export type RemoteSystemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter, which RemoteSystem to fetch.
+     */
+    where: RemoteSystemWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem findFirst
+   */
+  export type RemoteSystemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter, which RemoteSystem to fetch.
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RemoteSystems to fetch.
+     */
+    orderBy?: RemoteSystemOrderByWithRelationInput | RemoteSystemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RemoteSystems.
+     */
+    cursor?: RemoteSystemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RemoteSystems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RemoteSystems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RemoteSystems.
+     */
+    distinct?: RemoteSystemScalarFieldEnum | RemoteSystemScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem findFirstOrThrow
+   */
+  export type RemoteSystemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter, which RemoteSystem to fetch.
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RemoteSystems to fetch.
+     */
+    orderBy?: RemoteSystemOrderByWithRelationInput | RemoteSystemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RemoteSystems.
+     */
+    cursor?: RemoteSystemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RemoteSystems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RemoteSystems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RemoteSystems.
+     */
+    distinct?: RemoteSystemScalarFieldEnum | RemoteSystemScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem findMany
+   */
+  export type RemoteSystemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter, which RemoteSystems to fetch.
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RemoteSystems to fetch.
+     */
+    orderBy?: RemoteSystemOrderByWithRelationInput | RemoteSystemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RemoteSystems.
+     */
+    cursor?: RemoteSystemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RemoteSystems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RemoteSystems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RemoteSystems.
+     */
+    distinct?: RemoteSystemScalarFieldEnum | RemoteSystemScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem create
+   */
+  export type RemoteSystemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a RemoteSystem.
+     */
+    data: XOR<RemoteSystemCreateInput, RemoteSystemUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem createMany
+   */
+  export type RemoteSystemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RemoteSystems.
+     */
+    data: RemoteSystemCreateManyInput | RemoteSystemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RemoteSystem createManyAndReturn
+   */
+  export type RemoteSystemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * The data used to create many RemoteSystems.
+     */
+    data: RemoteSystemCreateManyInput | RemoteSystemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RemoteSystem update
+   */
+  export type RemoteSystemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a RemoteSystem.
+     */
+    data: XOR<RemoteSystemUpdateInput, RemoteSystemUncheckedUpdateInput>
+    /**
+     * Choose, which RemoteSystem to update.
+     */
+    where: RemoteSystemWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem updateMany
+   */
+  export type RemoteSystemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RemoteSystems.
+     */
+    data: XOR<RemoteSystemUpdateManyMutationInput, RemoteSystemUncheckedUpdateManyInput>
+    /**
+     * Filter which RemoteSystems to update
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * Limit how many RemoteSystems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RemoteSystem updateManyAndReturn
+   */
+  export type RemoteSystemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * The data used to update RemoteSystems.
+     */
+    data: XOR<RemoteSystemUpdateManyMutationInput, RemoteSystemUncheckedUpdateManyInput>
+    /**
+     * Filter which RemoteSystems to update
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * Limit how many RemoteSystems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RemoteSystem upsert
+   */
+  export type RemoteSystemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the RemoteSystem to update in case it exists.
+     */
+    where: RemoteSystemWhereUniqueInput
+    /**
+     * In case the RemoteSystem found by the `where` argument doesn't exist, create a new RemoteSystem with this data.
+     */
+    create: XOR<RemoteSystemCreateInput, RemoteSystemUncheckedCreateInput>
+    /**
+     * In case the RemoteSystem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RemoteSystemUpdateInput, RemoteSystemUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem delete
+   */
+  export type RemoteSystemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
+    /**
+     * Filter which RemoteSystem to delete.
+     */
+    where: RemoteSystemWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * RemoteSystem deleteMany
+   */
+  export type RemoteSystemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RemoteSystems to delete
+     */
+    where?: RemoteSystemWhereInput
+    /**
+     * Limit how many RemoteSystems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RemoteSystem.sessions
+   */
+  export type RemoteSystem$sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberSession
+     */
+    select?: MemberSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberSession
+     */
+    omit?: MemberSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberSessionInclude<ExtArgs> | null
+    where?: MemberSessionWhereInput
+    orderBy?: MemberSessionOrderByWithRelationInput | MemberSessionOrderByWithRelationInput[]
+    cursor?: MemberSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MemberSessionScalarFieldEnum | MemberSessionScalarFieldEnum[]
+  }
+
+  /**
+   * RemoteSystem without action
+   */
+  export type RemoteSystemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RemoteSystem
+     */
+    select?: RemoteSystemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RemoteSystem
+     */
+    omit?: RemoteSystemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RemoteSystemInclude<ExtArgs> | null
   }
 
 
@@ -65709,15 +67080,34 @@ export namespace Prisma {
   export const MemberSessionScalarFieldEnum: {
     id: 'id',
     memberId: 'memberId',
+    remoteSystemId: 'remoteSystemId',
     token: 'token',
     expiresAt: 'expiresAt',
     ipAddress: 'ipAddress',
     userAgent: 'userAgent',
+    remoteSystemNameSnapshot: 'remoteSystemNameSnapshot',
+    lastSeenAt: 'lastSeenAt',
+    endedAt: 'endedAt',
+    endReason: 'endReason',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type MemberSessionScalarFieldEnum = (typeof MemberSessionScalarFieldEnum)[keyof typeof MemberSessionScalarFieldEnum]
+
+
+  export const RemoteSystemScalarFieldEnum: {
+    id: 'id',
+    code: 'code',
+    name: 'name',
+    description: 'description',
+    displayOrder: 'displayOrder',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type RemoteSystemScalarFieldEnum = (typeof RemoteSystemScalarFieldEnum)[keyof typeof RemoteSystemScalarFieldEnum]
 
 
   export const TagScalarFieldEnum: {
@@ -67452,25 +68842,37 @@ export namespace Prisma {
     NOT?: MemberSessionWhereInput | MemberSessionWhereInput[]
     id?: UuidFilter<"MemberSession"> | string
     memberId?: UuidFilter<"MemberSession"> | string
+    remoteSystemId?: UuidNullableFilter<"MemberSession"> | string | null
     token?: StringFilter<"MemberSession"> | string
     expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
     ipAddress?: StringNullableFilter<"MemberSession"> | string | null
     userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    remoteSystemNameSnapshot?: StringFilter<"MemberSession"> | string
+    lastSeenAt?: DateTimeFilter<"MemberSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"MemberSession"> | Date | string | null
+    endReason?: StringNullableFilter<"MemberSession"> | string | null
     createdAt?: DateTimeFilter<"MemberSession"> | Date | string
     updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
     member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+    remoteSystem?: XOR<RemoteSystemNullableScalarRelationFilter, RemoteSystemWhereInput> | null
   }
 
   export type MemberSessionOrderByWithRelationInput = {
     id?: SortOrder
     memberId?: SortOrder
+    remoteSystemId?: SortOrderInput | SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
+    remoteSystemNameSnapshot?: SortOrder
+    lastSeenAt?: SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    endReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     member?: MemberOrderByWithRelationInput
+    remoteSystem?: RemoteSystemOrderByWithRelationInput
   }
 
   export type MemberSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -67480,21 +68882,32 @@ export namespace Prisma {
     OR?: MemberSessionWhereInput[]
     NOT?: MemberSessionWhereInput | MemberSessionWhereInput[]
     memberId?: UuidFilter<"MemberSession"> | string
+    remoteSystemId?: UuidNullableFilter<"MemberSession"> | string | null
     expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
     ipAddress?: StringNullableFilter<"MemberSession"> | string | null
     userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    remoteSystemNameSnapshot?: StringFilter<"MemberSession"> | string
+    lastSeenAt?: DateTimeFilter<"MemberSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"MemberSession"> | Date | string | null
+    endReason?: StringNullableFilter<"MemberSession"> | string | null
     createdAt?: DateTimeFilter<"MemberSession"> | Date | string
     updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
     member?: XOR<MemberScalarRelationFilter, MemberWhereInput>
+    remoteSystem?: XOR<RemoteSystemNullableScalarRelationFilter, RemoteSystemWhereInput> | null
   }, "id" | "token">
 
   export type MemberSessionOrderByWithAggregationInput = {
     id?: SortOrder
     memberId?: SortOrder
+    remoteSystemId?: SortOrderInput | SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
     userAgent?: SortOrderInput | SortOrder
+    remoteSystemNameSnapshot?: SortOrder
+    lastSeenAt?: SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    endReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MemberSessionCountOrderByAggregateInput
@@ -67508,12 +68921,89 @@ export namespace Prisma {
     NOT?: MemberSessionScalarWhereWithAggregatesInput | MemberSessionScalarWhereWithAggregatesInput[]
     id?: UuidWithAggregatesFilter<"MemberSession"> | string
     memberId?: UuidWithAggregatesFilter<"MemberSession"> | string
+    remoteSystemId?: UuidNullableWithAggregatesFilter<"MemberSession"> | string | null
     token?: StringWithAggregatesFilter<"MemberSession"> | string
     expiresAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
     ipAddress?: StringNullableWithAggregatesFilter<"MemberSession"> | string | null
     userAgent?: StringNullableWithAggregatesFilter<"MemberSession"> | string | null
+    remoteSystemNameSnapshot?: StringWithAggregatesFilter<"MemberSession"> | string
+    lastSeenAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
+    endedAt?: DateTimeNullableWithAggregatesFilter<"MemberSession"> | Date | string | null
+    endReason?: StringNullableWithAggregatesFilter<"MemberSession"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"MemberSession"> | Date | string
+  }
+
+  export type RemoteSystemWhereInput = {
+    AND?: RemoteSystemWhereInput | RemoteSystemWhereInput[]
+    OR?: RemoteSystemWhereInput[]
+    NOT?: RemoteSystemWhereInput | RemoteSystemWhereInput[]
+    id?: UuidFilter<"RemoteSystem"> | string
+    code?: StringFilter<"RemoteSystem"> | string
+    name?: StringFilter<"RemoteSystem"> | string
+    description?: StringNullableFilter<"RemoteSystem"> | string | null
+    displayOrder?: IntFilter<"RemoteSystem"> | number
+    isActive?: BoolFilter<"RemoteSystem"> | boolean
+    createdAt?: DateTimeFilter<"RemoteSystem"> | Date | string
+    updatedAt?: DateTimeFilter<"RemoteSystem"> | Date | string
+    sessions?: MemberSessionListRelationFilter
+  }
+
+  export type RemoteSystemOrderByWithRelationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    displayOrder?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sessions?: MemberSessionOrderByRelationAggregateInput
+  }
+
+  export type RemoteSystemWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    code?: string
+    AND?: RemoteSystemWhereInput | RemoteSystemWhereInput[]
+    OR?: RemoteSystemWhereInput[]
+    NOT?: RemoteSystemWhereInput | RemoteSystemWhereInput[]
+    name?: StringFilter<"RemoteSystem"> | string
+    description?: StringNullableFilter<"RemoteSystem"> | string | null
+    displayOrder?: IntFilter<"RemoteSystem"> | number
+    isActive?: BoolFilter<"RemoteSystem"> | boolean
+    createdAt?: DateTimeFilter<"RemoteSystem"> | Date | string
+    updatedAt?: DateTimeFilter<"RemoteSystem"> | Date | string
+    sessions?: MemberSessionListRelationFilter
+  }, "id" | "code">
+
+  export type RemoteSystemOrderByWithAggregationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    displayOrder?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: RemoteSystemCountOrderByAggregateInput
+    _avg?: RemoteSystemAvgOrderByAggregateInput
+    _max?: RemoteSystemMaxOrderByAggregateInput
+    _min?: RemoteSystemMinOrderByAggregateInput
+    _sum?: RemoteSystemSumOrderByAggregateInput
+  }
+
+  export type RemoteSystemScalarWhereWithAggregatesInput = {
+    AND?: RemoteSystemScalarWhereWithAggregatesInput | RemoteSystemScalarWhereWithAggregatesInput[]
+    OR?: RemoteSystemScalarWhereWithAggregatesInput[]
+    NOT?: RemoteSystemScalarWhereWithAggregatesInput | RemoteSystemScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"RemoteSystem"> | string
+    code?: StringWithAggregatesFilter<"RemoteSystem"> | string
+    name?: StringWithAggregatesFilter<"RemoteSystem"> | string
+    description?: StringNullableWithAggregatesFilter<"RemoteSystem"> | string | null
+    displayOrder?: IntWithAggregatesFilter<"RemoteSystem"> | number
+    isActive?: BoolWithAggregatesFilter<"RemoteSystem"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"RemoteSystem"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RemoteSystem"> | Date | string
   }
 
   export type TagWhereInput = {
@@ -71829,18 +73319,28 @@ export namespace Prisma {
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     member: MemberCreateNestedOneWithoutMemberSessionsInput
+    remoteSystem?: RemoteSystemCreateNestedOneWithoutSessionsInput
   }
 
   export type MemberSessionUncheckedCreateInput = {
     id?: string
     memberId: string
+    remoteSystemId?: string | null
     token: string
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -71851,18 +73351,28 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     member?: MemberUpdateOneRequiredWithoutMemberSessionsNestedInput
+    remoteSystem?: RemoteSystemUpdateOneWithoutSessionsNestedInput
   }
 
   export type MemberSessionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    remoteSystemId?: NullableStringFieldUpdateOperationsInput | string | null
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71870,10 +73380,15 @@ export namespace Prisma {
   export type MemberSessionCreateManyInput = {
     id?: string
     memberId: string
+    remoteSystemId?: string | null
     token: string
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -71884,6 +73399,10 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -71891,10 +73410,96 @@ export namespace Prisma {
   export type MemberSessionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    remoteSystemId?: NullableStringFieldUpdateOperationsInput | string | null
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RemoteSystemCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sessions?: MemberSessionCreateNestedManyWithoutRemoteSystemInput
+  }
+
+  export type RemoteSystemUncheckedCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sessions?: MemberSessionUncheckedCreateNestedManyWithoutRemoteSystemInput
+  }
+
+  export type RemoteSystemUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: MemberSessionUpdateManyWithoutRemoteSystemNestedInput
+  }
+
+  export type RemoteSystemUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: MemberSessionUncheckedUpdateManyWithoutRemoteSystemNestedInput
+  }
+
+  export type RemoteSystemCreateManyInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RemoteSystemUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RemoteSystemUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -76361,13 +77966,23 @@ export namespace Prisma {
     isNot?: MemberWhereInput
   }
 
+  export type RemoteSystemNullableScalarRelationFilter = {
+    is?: RemoteSystemWhereInput | null
+    isNot?: RemoteSystemWhereInput | null
+  }
+
   export type MemberSessionCountOrderByAggregateInput = {
     id?: SortOrder
     memberId?: SortOrder
+    remoteSystemId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
+    remoteSystemNameSnapshot?: SortOrder
+    lastSeenAt?: SortOrder
+    endedAt?: SortOrder
+    endReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76375,10 +77990,15 @@ export namespace Prisma {
   export type MemberSessionMaxOrderByAggregateInput = {
     id?: SortOrder
     memberId?: SortOrder
+    remoteSystemId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
+    remoteSystemNameSnapshot?: SortOrder
+    lastSeenAt?: SortOrder
+    endedAt?: SortOrder
+    endReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76386,12 +78006,58 @@ export namespace Prisma {
   export type MemberSessionMinOrderByAggregateInput = {
     id?: SortOrder
     memberId?: SortOrder
+    remoteSystemId?: SortOrder
     token?: SortOrder
     expiresAt?: SortOrder
     ipAddress?: SortOrder
     userAgent?: SortOrder
+    remoteSystemNameSnapshot?: SortOrder
+    lastSeenAt?: SortOrder
+    endedAt?: SortOrder
+    endReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type RemoteSystemCountOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    displayOrder?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RemoteSystemAvgOrderByAggregateInput = {
+    displayOrder?: SortOrder
+  }
+
+  export type RemoteSystemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    displayOrder?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RemoteSystemMinOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    displayOrder?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RemoteSystemSumOrderByAggregateInput = {
+    displayOrder?: SortOrder
   }
 
   export type QualificationTypeListRelationFilter = {
@@ -80214,12 +81880,70 @@ export namespace Prisma {
     connect?: MemberWhereUniqueInput
   }
 
+  export type RemoteSystemCreateNestedOneWithoutSessionsInput = {
+    create?: XOR<RemoteSystemCreateWithoutSessionsInput, RemoteSystemUncheckedCreateWithoutSessionsInput>
+    connectOrCreate?: RemoteSystemCreateOrConnectWithoutSessionsInput
+    connect?: RemoteSystemWhereUniqueInput
+  }
+
   export type MemberUpdateOneRequiredWithoutMemberSessionsNestedInput = {
     create?: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
     connectOrCreate?: MemberCreateOrConnectWithoutMemberSessionsInput
     upsert?: MemberUpsertWithoutMemberSessionsInput
     connect?: MemberWhereUniqueInput
     update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutMemberSessionsInput, MemberUpdateWithoutMemberSessionsInput>, MemberUncheckedUpdateWithoutMemberSessionsInput>
+  }
+
+  export type RemoteSystemUpdateOneWithoutSessionsNestedInput = {
+    create?: XOR<RemoteSystemCreateWithoutSessionsInput, RemoteSystemUncheckedCreateWithoutSessionsInput>
+    connectOrCreate?: RemoteSystemCreateOrConnectWithoutSessionsInput
+    upsert?: RemoteSystemUpsertWithoutSessionsInput
+    disconnect?: RemoteSystemWhereInput | boolean
+    delete?: RemoteSystemWhereInput | boolean
+    connect?: RemoteSystemWhereUniqueInput
+    update?: XOR<XOR<RemoteSystemUpdateToOneWithWhereWithoutSessionsInput, RemoteSystemUpdateWithoutSessionsInput>, RemoteSystemUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type MemberSessionCreateNestedManyWithoutRemoteSystemInput = {
+    create?: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput> | MemberSessionCreateWithoutRemoteSystemInput[] | MemberSessionUncheckedCreateWithoutRemoteSystemInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutRemoteSystemInput | MemberSessionCreateOrConnectWithoutRemoteSystemInput[]
+    createMany?: MemberSessionCreateManyRemoteSystemInputEnvelope
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+  }
+
+  export type MemberSessionUncheckedCreateNestedManyWithoutRemoteSystemInput = {
+    create?: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput> | MemberSessionCreateWithoutRemoteSystemInput[] | MemberSessionUncheckedCreateWithoutRemoteSystemInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutRemoteSystemInput | MemberSessionCreateOrConnectWithoutRemoteSystemInput[]
+    createMany?: MemberSessionCreateManyRemoteSystemInputEnvelope
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+  }
+
+  export type MemberSessionUpdateManyWithoutRemoteSystemNestedInput = {
+    create?: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput> | MemberSessionCreateWithoutRemoteSystemInput[] | MemberSessionUncheckedCreateWithoutRemoteSystemInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutRemoteSystemInput | MemberSessionCreateOrConnectWithoutRemoteSystemInput[]
+    upsert?: MemberSessionUpsertWithWhereUniqueWithoutRemoteSystemInput | MemberSessionUpsertWithWhereUniqueWithoutRemoteSystemInput[]
+    createMany?: MemberSessionCreateManyRemoteSystemInputEnvelope
+    set?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    disconnect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    delete?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    update?: MemberSessionUpdateWithWhereUniqueWithoutRemoteSystemInput | MemberSessionUpdateWithWhereUniqueWithoutRemoteSystemInput[]
+    updateMany?: MemberSessionUpdateManyWithWhereWithoutRemoteSystemInput | MemberSessionUpdateManyWithWhereWithoutRemoteSystemInput[]
+    deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
+  }
+
+  export type MemberSessionUncheckedUpdateManyWithoutRemoteSystemNestedInput = {
+    create?: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput> | MemberSessionCreateWithoutRemoteSystemInput[] | MemberSessionUncheckedCreateWithoutRemoteSystemInput[]
+    connectOrCreate?: MemberSessionCreateOrConnectWithoutRemoteSystemInput | MemberSessionCreateOrConnectWithoutRemoteSystemInput[]
+    upsert?: MemberSessionUpsertWithWhereUniqueWithoutRemoteSystemInput | MemberSessionUpsertWithWhereUniqueWithoutRemoteSystemInput[]
+    createMany?: MemberSessionCreateManyRemoteSystemInputEnvelope
+    set?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    disconnect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    delete?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    connect?: MemberSessionWhereUniqueInput | MemberSessionWhereUniqueInput[]
+    update?: MemberSessionUpdateWithWhereUniqueWithoutRemoteSystemInput | MemberSessionUpdateWithWhereUniqueWithoutRemoteSystemInput[]
+    updateMany?: MemberSessionUpdateManyWithWhereWithoutRemoteSystemInput | MemberSessionUpdateManyWithWhereWithoutRemoteSystemInput[]
+    deleteMany?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
   }
 
   export type MemberTagCreateNestedManyWithoutTagInput = {
@@ -85854,16 +87578,26 @@ export namespace Prisma {
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    remoteSystem?: RemoteSystemCreateNestedOneWithoutSessionsInput
   }
 
   export type MemberSessionUncheckedCreateWithoutMemberInput = {
     id?: string
+    remoteSystemId?: string | null
     token: string
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -86523,10 +88257,15 @@ export namespace Prisma {
     NOT?: MemberSessionScalarWhereInput | MemberSessionScalarWhereInput[]
     id?: UuidFilter<"MemberSession"> | string
     memberId?: UuidFilter<"MemberSession"> | string
+    remoteSystemId?: UuidNullableFilter<"MemberSession"> | string | null
     token?: StringFilter<"MemberSession"> | string
     expiresAt?: DateTimeFilter<"MemberSession"> | Date | string
     ipAddress?: StringNullableFilter<"MemberSession"> | string | null
     userAgent?: StringNullableFilter<"MemberSession"> | string | null
+    remoteSystemNameSnapshot?: StringFilter<"MemberSession"> | string
+    lastSeenAt?: DateTimeFilter<"MemberSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"MemberSession"> | Date | string | null
+    endReason?: StringNullableFilter<"MemberSession"> | string | null
     createdAt?: DateTimeFilter<"MemberSession"> | Date | string
     updatedAt?: DateTimeFilter<"MemberSession"> | Date | string
   }
@@ -86677,6 +88416,33 @@ export namespace Prisma {
     create: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
   }
 
+  export type RemoteSystemCreateWithoutSessionsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RemoteSystemUncheckedCreateWithoutSessionsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    displayOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RemoteSystemCreateOrConnectWithoutSessionsInput = {
+    where: RemoteSystemWhereUniqueInput
+    create: XOR<RemoteSystemCreateWithoutSessionsInput, RemoteSystemUncheckedCreateWithoutSessionsInput>
+  }
+
   export type MemberUpsertWithoutMemberSessionsInput = {
     update: XOR<MemberUpdateWithoutMemberSessionsInput, MemberUncheckedUpdateWithoutMemberSessionsInput>
     create: XOR<MemberCreateWithoutMemberSessionsInput, MemberUncheckedCreateWithoutMemberSessionsInput>
@@ -86792,6 +88558,95 @@ export namespace Prisma {
     missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
     unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
+  }
+
+  export type RemoteSystemUpsertWithoutSessionsInput = {
+    update: XOR<RemoteSystemUpdateWithoutSessionsInput, RemoteSystemUncheckedUpdateWithoutSessionsInput>
+    create: XOR<RemoteSystemCreateWithoutSessionsInput, RemoteSystemUncheckedCreateWithoutSessionsInput>
+    where?: RemoteSystemWhereInput
+  }
+
+  export type RemoteSystemUpdateToOneWithWhereWithoutSessionsInput = {
+    where?: RemoteSystemWhereInput
+    data: XOR<RemoteSystemUpdateWithoutSessionsInput, RemoteSystemUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type RemoteSystemUpdateWithoutSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RemoteSystemUncheckedUpdateWithoutSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    displayOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionCreateWithoutRemoteSystemInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    member: MemberCreateNestedOneWithoutMemberSessionsInput
+  }
+
+  export type MemberSessionUncheckedCreateWithoutRemoteSystemInput = {
+    id?: string
+    memberId: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionCreateOrConnectWithoutRemoteSystemInput = {
+    where: MemberSessionWhereUniqueInput
+    create: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput>
+  }
+
+  export type MemberSessionCreateManyRemoteSystemInputEnvelope = {
+    data: MemberSessionCreateManyRemoteSystemInput | MemberSessionCreateManyRemoteSystemInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MemberSessionUpsertWithWhereUniqueWithoutRemoteSystemInput = {
+    where: MemberSessionWhereUniqueInput
+    update: XOR<MemberSessionUpdateWithoutRemoteSystemInput, MemberSessionUncheckedUpdateWithoutRemoteSystemInput>
+    create: XOR<MemberSessionCreateWithoutRemoteSystemInput, MemberSessionUncheckedCreateWithoutRemoteSystemInput>
+  }
+
+  export type MemberSessionUpdateWithWhereUniqueWithoutRemoteSystemInput = {
+    where: MemberSessionWhereUniqueInput
+    data: XOR<MemberSessionUpdateWithoutRemoteSystemInput, MemberSessionUncheckedUpdateWithoutRemoteSystemInput>
+  }
+
+  export type MemberSessionUpdateManyWithWhereWithoutRemoteSystemInput = {
+    where: MemberSessionScalarWhereInput
+    data: XOR<MemberSessionUpdateManyMutationInput, MemberSessionUncheckedUpdateManyWithoutRemoteSystemInput>
   }
 
   export type MemberTagCreateWithoutTagInput = {
@@ -96758,10 +98613,15 @@ export namespace Prisma {
 
   export type MemberSessionCreateManyMemberInput = {
     id?: string
+    remoteSystemId?: string | null
     token: string
     expiresAt: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -97512,26 +99372,41 @@ export namespace Prisma {
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    remoteSystem?: RemoteSystemUpdateOneWithoutSessionsNestedInput
   }
 
   export type MemberSessionUncheckedUpdateWithoutMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
+    remoteSystemId?: NullableStringFieldUpdateOperationsInput | string | null
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MemberSessionUncheckedUpdateManyWithoutMemberInput = {
     id?: StringFieldUpdateOperationsInput | string
+    remoteSystemId?: NullableStringFieldUpdateOperationsInput | string | null
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -97579,6 +99454,66 @@ export namespace Prisma {
     acknowledgedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     acknowledgeNote?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionCreateManyRemoteSystemInput = {
+    id?: string
+    memberId: string
+    token: string
+    expiresAt: Date | string
+    ipAddress?: string | null
+    userAgent?: string | null
+    remoteSystemNameSnapshot?: string
+    lastSeenAt?: Date | string
+    endedAt?: Date | string | null
+    endReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MemberSessionUpdateWithoutRemoteSystemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    member?: MemberUpdateOneRequiredWithoutMemberSessionsNestedInput
+  }
+
+  export type MemberSessionUncheckedUpdateWithoutRemoteSystemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MemberSessionUncheckedUpdateManyWithoutRemoteSystemInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    remoteSystemNameSnapshot?: StringFieldUpdateOperationsInput | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MemberTagCreateManyTagInput = {
