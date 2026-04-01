@@ -55,6 +55,13 @@ interface DutyPositionSeedInput {
   displayOrder: number
 }
 
+interface RemoteSystemSeedInput {
+  code: string
+  name: string
+  description: string | null
+  displayOrder: number
+}
+
 const RANKS_SEED_SQL_RELATIVE_PATH = '../../../packages/database/scripts/seed-ranks.sql'
 const RANK_INSERT_STATEMENT_REGEX = /INSERT INTO ranks[\s\S]*?;/gi
 const RANK_REPLACEMENT_MAPPINGS = [
@@ -475,6 +482,21 @@ const DEFAULT_DUTY_POSITIONS: ReadonlyArray<DutyPositionSeedInput> = [
   },
 ]
 
+const DEFAULT_REMOTE_SYSTEMS: ReadonlyArray<RemoteSystemSeedInput> = [
+  {
+    code: 'deployment_laptop',
+    name: 'Deployment Laptop',
+    description: 'Deployment laptop local session and operator presence.',
+    displayOrder: 0,
+  },
+  {
+    code: 'kiosk',
+    name: 'Kiosk',
+    description: 'Shared kiosk station for local badge check-in workflows.',
+    displayOrder: 1,
+  },
+]
+
 async function ensureMemberStatuses(): Promise<number> {
   let inserted = 0
 
@@ -792,6 +814,57 @@ async function ensureDutyPositions(roleIdsByCode: Map<string, string>): Promise<
   return inserted
 }
 
+async function ensureRemoteSystems(): Promise<number> {
+  let inserted = 0
+
+  for (const remoteSystem of DEFAULT_REMOTE_SYSTEMS) {
+    const existing = await prisma.remoteSystem.findUnique({
+      where: { code: remoteSystem.code },
+      select: { id: true },
+    })
+
+    if (existing) {
+      continue
+    }
+
+    await prisma.remoteSystem.create({
+      data: {
+        code: remoteSystem.code,
+        name: remoteSystem.name,
+        description: remoteSystem.description,
+        displayOrder: remoteSystem.displayOrder,
+        isActive: true,
+      },
+    })
+    inserted += 1
+  }
+
+  return inserted
+}
+
+async function ensureNetworkSettings(): Promise<boolean> {
+  const existing = await prisma.setting.findUnique({
+    where: { key: 'network.approved_ssids' },
+    select: { id: true },
+  })
+
+  if (existing) {
+    return false
+  }
+
+  await prisma.setting.create({
+    data: {
+      key: 'network.approved_ssids',
+      value: { approvedSsids: [] },
+      category: 'network',
+      description:
+        'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
+    },
+  })
+
+  return true
+}
+
 async function ensureRanks(): Promise<{ inserted: number; existing: number }> {
   const existing = await prisma.rank.count()
   const seedPath = join(__dirname, RANKS_SEED_SQL_RELATIVE_PATH)
@@ -841,9 +914,11 @@ async function main(): Promise<void> {
     } = await ensureQualificationTypes(tagIdsByName)
     const { inserted: insertedDutyRoles, roleIdsByCode } = await ensureDutyRoles()
     const insertedDutyPositions = await ensureDutyPositions(roleIdsByCode)
+    const insertedRemoteSystems = await ensureRemoteSystems()
+    const seededNetworkSettings = await ensureNetworkSettings()
 
     console.log(
-      `enum seed complete: ranks_seeded=${insertedRanks} ranks_existing=${existingRanks} member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags_inserted=${insertedTags} tags_updated=${updatedTags} qualification_types_inserted=${insertedQualificationTypes} qualification_types_updated=${updatedQualificationTypes} qualification_tag_links=${linkedTagIds} duty_roles=${insertedDutyRoles} duty_positions=${insertedDutyPositions}`
+      `enum seed complete: ranks_seeded=${insertedRanks} ranks_existing=${existingRanks} member_statuses=${insertedMemberStatuses} member_types=${insertedMemberTypes} visit_types=${insertedVisitTypes} badge_statuses=${insertedBadgeStatuses} tags_inserted=${insertedTags} tags_updated=${updatedTags} qualification_types_inserted=${insertedQualificationTypes} qualification_types_updated=${updatedQualificationTypes} qualification_tag_links=${linkedTagIds} duty_roles=${insertedDutyRoles} duty_positions=${insertedDutyPositions} remote_systems=${insertedRemoteSystems} network_settings_seeded=${seededNetworkSettings ? 1 : 0}`
     )
   } finally {
     await prisma.$disconnect()

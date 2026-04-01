@@ -26,6 +26,10 @@ import {
   devToolsContract,
   devContract,
   operationalTimingContract,
+  authContract,
+  remoteSystemContract,
+  networkSettingContract,
+  systemStatusContract,
 } from '@sentinel/contracts'
 import { initContract } from '@ts-rest/core'
 
@@ -57,6 +61,10 @@ const apiContract = c.router({
   devTools: devToolsContract,
   dev: devContract,
   operationalTimings: operationalTimingContract,
+  auth: authContract,
+  remoteSystems: remoteSystemContract,
+  networkSettings: networkSettingContract,
+  systemStatus: systemStatusContract,
 })
 
 // Generate OpenAPI specification
@@ -116,6 +124,19 @@ const openApiDocument = generateOpenApi(
       },
       { name: 'dev', description: 'Development endpoints for testing and debugging' },
       { name: 'operational-timings', description: 'Operational timings and alert rate-limits' },
+      { name: 'auth', description: 'Member session authentication and session heartbeat' },
+      {
+        name: 'remote-systems',
+        description: 'Managed remote systems for login selection and live presence tracking',
+      },
+      {
+        name: 'network-settings',
+        description: 'Approved Wi-Fi SSID allowlist used by system-status checks',
+      },
+      {
+        name: 'system-status',
+        description: 'Aggregated backend, database, network, and remote-session status',
+      },
     ],
     components: {
       securitySchemes: {
