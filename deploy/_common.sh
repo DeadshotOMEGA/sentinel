@@ -7,6 +7,7 @@ STATE_FILE="${DEPLOY_DIR}/.appliance-state"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
 GRAFANA_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.grafana-lan.yml"
 WIKI_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.wiki-lan.yml"
+NETWORK_STATUS_SCRIPT="${DEPLOY_DIR}/write-network-status.sh"
 
 DOCKER_CMD=(docker)
 COMPOSE_FILE_ARGS=()
@@ -312,6 +313,10 @@ bootstrap_env_defaults() {
 
   if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD)"; then
     upsert_env "CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD" "2"
+  fi
+
+  if is_placeholder_env_value "$(env_value NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS)"; then
+    upsert_env "NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS" "30"
   fi
 
   if [[ "${generated_count}" -gt 0 ]]; then
@@ -943,6 +948,56 @@ AUTOSTART
   else
     log "Automatic captive portal recovery watcher disabled; manual launch remains available from Sentinel."
   fi
+}
+
+configure_network_status_telemetry() {
+  local interval_seconds runtime_dir
+
+  if ! command -v systemctl >/dev/null 2>&1; then
+    warn "systemctl is unavailable; skipping host network telemetry timer setup."
+    return 0
+  fi
+
+  interval_seconds="$(env_value NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS 30)"
+  if [[ ! "${interval_seconds}" =~ ^[0-9]+$ ]] || (( interval_seconds < 10 )); then
+    interval_seconds="30"
+  fi
+
+  runtime_dir="${DEPLOY_DIR}/runtime/network-status"
+  run_root install -d -m 755 "${runtime_dir}"
+  run_root chmod 755 "${NETWORK_STATUS_SCRIPT}" >/dev/null 2>&1 || true
+
+  run_root tee /etc/systemd/system/sentinel-network-status.service >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host network telemetry snapshot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=${DEPLOY_DIR}
+ExecStart=${NETWORK_STATUS_SCRIPT}
+UNIT
+
+  run_root tee /etc/systemd/system/sentinel-network-status.timer >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host network telemetry snapshot timer
+
+[Timer]
+OnBootSec=20s
+OnUnitActiveSec=${interval_seconds}s
+AccuracySec=5s
+Unit=sentinel-network-status.service
+
+[Install]
+WantedBy=timers.target
+UNIT
+
+  run_root systemctl daemon-reload
+  run_root systemctl enable --now sentinel-network-status.timer
+  run_root systemctl start sentinel-network-status.service
+
+  log "Host network telemetry timer enabled (${interval_seconds}s interval)."
 }
 
 write_systemd_unit() {
