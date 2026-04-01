@@ -18,7 +18,7 @@ jobs:
       LABEL_POLICY_ENFORCE: ${{ vars.LABEL_POLICY_ENFORCE || 'false' }}
     steps:
       - name: Validate label policy
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const enforce = String(process.env.LABEL_POLICY_ENFORCE || 'false').toLowerCase() === 'true'
