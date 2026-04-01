@@ -1,5 +1,5 @@
-import { KioskShellRedesign } from '@/components/kiosk/kiosk-shell-redesign'
+import { KioskShell } from '@/components/kiosk/kiosk-shell'
 
 export default function KioskPage() {
-  return <KioskShellRedesign />
+  return <KioskShell />
 }

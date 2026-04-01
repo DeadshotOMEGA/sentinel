@@ -91,7 +91,7 @@ export default function RootLayout({
               },
             }}
           />
-          <ReactQueryDevtools initialIsOpen={false} />
+          {!isBareRoute && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
       </body>
     </html>

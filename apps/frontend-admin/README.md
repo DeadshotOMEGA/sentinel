@@ -32,11 +32,14 @@ Frontend Admin is the operational web interface for Sentinel, including dashboar
 
 ## Kiosk (Current)
 
-Kiosk mode is implemented in this app at `/kiosk` and includes:
+Kiosk mode is implemented in this app at `/kiosk` and is the only supported kiosk surface going
+forward. Dashboard users launch it in a separate tab/window for the front-entrance workstation.
+
+The canonical kiosk includes:
 
 - Fullscreen-first kiosk shell behavior
 - Hidden maintenance exit controls for supervised recovery
-- Badge-driven command deck flow
+- Badge-driven member scan flow
 - DDS responsibility prompts and lockup/open-building actions
 - Visitor self-sign-in flow
 - Touch-focused UI behavior and keyboard support
