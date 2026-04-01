@@ -3,10 +3,21 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EnumTable } from '@/components/settings/enum-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
+import { NetworkSettingsPanel } from '@/components/settings/network-settings-panel'
 import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
 import { TimingsSettingsPanel } from '@/components/settings/timings-settings-panel'
 import { TID } from '@/lib/test-ids'
-import { Users, BadgeCheck, UserCheck, Building, Tag, Award, Calendar, Clock3 } from 'lucide-react'
+import {
+  Users,
+  BadgeCheck,
+  UserCheck,
+  Building,
+  Tag,
+  Award,
+  Calendar,
+  Clock3,
+  Wifi,
+} from 'lucide-react'
 
 export default function SettingsPage() {
   return (
@@ -48,6 +59,14 @@ export default function SettingsPage() {
           >
             <Clock3 className="h-4 w-4" />
             <span className="hidden sm:inline">Timings</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="network"
+            className="flex items-center gap-2"
+            data-testid={TID.settings.network.tab}
+          >
+            <Wifi className="h-4 w-4" />
+            <span className="hidden sm:inline">Network</span>
           </TabsTrigger>
         </TabsList>
 
@@ -107,6 +126,10 @@ export default function SettingsPage() {
 
         <TabsContent value="timings">
           <TimingsSettingsPanel />
+        </TabsContent>
+
+        <TabsContent value="network">
+          <NetworkSettingsPanel />
         </TabsContent>
       </Tabs>
     </div>

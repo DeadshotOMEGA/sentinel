@@ -5,13 +5,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
 import { Menu, PanelLeftOpen } from 'lucide-react'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
-import { useBackendHealth } from '@/hooks/use-backend-health'
+import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
+import { useAuthStore } from '@/store/auth-store'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -33,12 +35,6 @@ interface AppNavbarProps {
   isDrawerOpen: boolean
 }
 
-const statusConfig = {
-  connected: { dot: 'status-success', label: 'Connected', badgeStatus: 'success' },
-  disconnected: { dot: 'status-error', label: 'Disconnected', badgeStatus: 'error' },
-  checking: { dot: 'status-warning', label: 'Checking...', badgeStatus: 'warning' },
-} as const
-
 const GITHUB_LATEST_RELEASE_URL =
   'https://api.github.com/repos/DeadshotOMEGA/sentinel/releases/latest'
 const WIKI_LAN_FALLBACK_PORT = '3020'
@@ -52,8 +48,15 @@ interface LatestReleaseState {
 
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
-  const backendHealth = useBackendHealth()
-  const { dot, label, badgeStatus } = statusConfig[backendHealth.status]
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
+  const systemStatus = systemStatusQuery.data ?? null
+  const isStatusLoading = !isAuthenticated || systemStatusQuery.isLoading
+  const { dot, label, badgeStatus } = getSystemSummaryBadge({
+    systemStatus,
+    isLoading: isStatusLoading,
+    isError: systemStatusQuery.isError,
+  })
   const isAdminRoute = adminLinks.some((link) => pathname === link.href)
   const isClient = useSyncExternalStore(
     () => () => {},
@@ -64,28 +67,44 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     isClient && typeof window !== 'undefined'
       ? window.location.origin || 'current browser host'
       : 'current browser host'
-  const frontendStatus = getFrontendStatus(backendHealth)
-  const frontendValue = getFrontendValue(backendHealth)
+  const frontendStatus: AppBadgeStatus = 'success'
+  const frontendValue = 'Loaded'
   const backendLocation = resolveBackendLocation(browserOrigin)
-  const databaseStatus = getDatabaseStatus(backendHealth)
-  const databaseValue = getDatabaseValue(backendHealth)
-  const databaseLocation = getDatabaseLocation(backendHealth)
+  const backendStatus = getBackendStatus(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const backendValue = getBackendValue(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const databaseStatus = getDatabaseStatus(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const databaseValue = getDatabaseValue(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const databaseLocation = systemStatus?.database.address ?? 'unknown'
+  const networkStatus = getHealthBadgeStatus(
+    systemStatus?.network.status ?? 'unknown',
+    isStatusLoading,
+    systemStatusQuery.isError
+  )
+  const networkValue = getNetworkValue(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const networkMessage = getNetworkMessage(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const environment = (systemStatus?.backend.environment ?? 'unknown').toLowerCase()
+  const isDevelopmentEnvironment = environment !== 'production'
+  const networkSubtitle =
+    systemStatus?.network.currentSsid ??
+    (isDevelopmentEnvironment ? 'Local development host' : 'Host telemetry')
   const wikiBaseUrl = resolveWikiBaseUrl(
     process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '',
     browserOrigin
   )
   const wikiLocation = stripUrlProtocol(wikiBaseUrl)
-  const wikiStatus = getWikiStatus(backendHealth, wikiBaseUrl)
-  const wikiValue = getWikiValue(backendHealth, wikiBaseUrl)
-  const shouldShowLaptopRecovery = [databaseStatus, badgeStatus, frontendStatus, wikiStatus].some(
-    (status) => status !== 'success'
-  )
+  const wikiStatus = getWikiStatus(wikiBaseUrl)
+  const wikiValue = getWikiValue(wikiBaseUrl)
+  const activeRemoteSessions = systemStatus?.remoteSystems.sessions ?? []
+  const remoteSystemOverflowCount = systemStatus?.remoteSystems.overflowCount ?? 0
+  const shouldShowLaptopRecovery =
+    systemStatus !== null &&
+    [databaseStatus, backendStatus, networkStatus].some((status) => status !== 'success')
   const [latestRelease, setLatestRelease] = useState<LatestReleaseState>({
     tag: null,
     releaseUrl: null,
     downloadUrl: null,
   })
-  const currentVersion = backendHealth.details?.version ?? 'unknown'
+  const currentVersion = systemStatus?.backend.version ?? 'unknown'
   const versionStatusLabel = getVersionStatus(currentVersion, latestRelease.tag)
   const updateAvailable = isUpdateAvailable(currentVersion, latestRelease.tag)
   const updateTargetUrl = latestRelease.downloadUrl ?? latestRelease.releaseUrl
@@ -217,8 +236,8 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
               <StatusRow
                 label="Backend API"
                 subtitle={backendLocation}
-                status={badgeStatus}
-                value={backendHealth.status === 'checking' ? 'Checking...' : label}
+                status={backendStatus}
+                value={backendValue}
               />
               <StatusRow
                 label="Frontend"
@@ -232,11 +251,72 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 status={wikiStatus}
                 value={wikiValue}
               />
+              <StatusRow
+                label="Network"
+                subtitle={networkSubtitle}
+                status={networkStatus}
+                value={networkValue}
+              />
+              <div
+                className={cn(
+                  'rounded-box border px-(--space-3) py-(--space-2)',
+                  networkStatus === 'error'
+                    ? 'border-error/25 bg-error-fadded text-error-fadded-content'
+                    : networkStatus === 'warning'
+                      ? 'border-warning/35 bg-warning-fadded text-warning-fadded-content'
+                      : 'border-base-300 bg-base-200 text-base-content'
+                )}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide">Network Detail</p>
+                <p className="mt-1 text-xs leading-relaxed">{networkMessage}</p>
+              </div>
+              <div
+                className="border-t border-base-300 pt-2"
+                data-testid={TID.nav.backendStatusRemoteSystems}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide">Remote Systems</p>
+                {isDevelopmentEnvironment && (
+                  <p className="mt-1 text-[11px] text-base-content/60">
+                    Development mode: remote-system names are not enforced.
+                  </p>
+                )}
+                {activeRemoteSessions.length > 0 ? (
+                  <div className="mt-2 space-y-2">
+                    {activeRemoteSessions.map((session) => (
+                      <div
+                        key={session.sessionId}
+                        className="flex items-start justify-between gap-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm leading-tight">{session.remoteSystemName}</p>
+                          <p className="text-[11px] text-base-content/60">
+                            {session.memberRank} {session.memberName}
+                          </p>
+                        </div>
+                        <AppBadge status="success" size="sm">
+                          {formatRecentTimestamp(session.lastSeenAt)}
+                        </AppBadge>
+                      </div>
+                    ))}
+                    {remoteSystemOverflowCount > 0 && (
+                      <p className="text-[11px] text-base-content/60">
+                        +{remoteSystemOverflowCount} more active
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-base-content/60">
+                    {isStatusLoading
+                      ? 'Checking active remote systems...'
+                      : 'No remote systems currently active.'}
+                  </p>
+                )}
+              </div>
               {shouldShowLaptopRecovery && (
                 <div
                   className={cn(
                     'mt-1 rounded-box border p-(--space-2)',
-                    backendHealth.status === 'disconnected'
+                    networkStatus === 'error'
                       ? 'border-warning/35 bg-warning-fadded text-warning-fadded-content'
                       : 'border-base-300 bg-base-200 text-base-content'
                   )}
@@ -252,7 +332,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       href="sentinel-recover://run"
                       className={cn(
                         'btn btn-xs',
-                        backendHealth.status === 'disconnected' ? 'btn-warning' : 'btn-outline'
+                        networkStatus === 'error' ? 'btn-warning' : 'btn-outline'
                       )}
                       data-testid={TID.nav.backendStatusRecovery}
                     >
@@ -291,21 +371,19 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 <p>
                   Environment:{' '}
                   <span className="font-mono text-base-content">
-                    {backendHealth.details?.environment ?? 'unknown'}
+                    {systemStatus?.backend.environment ?? 'unknown'}
                   </span>
                 </p>
                 <p>
                   Uptime:{' '}
                   <span className="font-mono text-base-content">
-                    {formatUptime(backendHealth.details?.uptimeSeconds)}
+                    {formatUptime(systemStatus?.backend.uptimeSeconds)}
                   </span>
                 </p>
                 <p>
                   Last Check:{' '}
                   <span className="font-mono text-base-content">
-                    {formatTimestamp(
-                      backendHealth.details?.serviceTimestamp ?? backendHealth.lastCheckedAt
-                    )}
+                    {formatTimestamp(systemStatus?.lastCheckedAt ?? null)}
                   </span>
                 </p>
               </div>
@@ -353,68 +431,111 @@ function formatTimestamp(value: string | null): string {
   return timestamp.toLocaleTimeString()
 }
 
-function getDatabaseStatus(backendHealth: ReturnType<typeof useBackendHealth>): AppBadgeStatus {
-  if (backendHealth.status === 'disconnected') {
-    return 'error'
+function formatRecentTimestamp(value: string): string {
+  const timestamp = new Date(value)
+  if (Number.isNaN(timestamp.getTime())) {
+    return 'Recent'
   }
 
-  if (backendHealth.status === 'checking') {
+  const deltaSeconds = Math.max(0, Math.round((Date.now() - timestamp.getTime()) / 1000))
+  if (deltaSeconds < 60) {
+    return `${deltaSeconds}s ago`
+  }
+
+  const deltaMinutes = Math.round(deltaSeconds / 60)
+  if (deltaMinutes < 60) {
+    return `${deltaMinutes}m ago`
+  }
+
+  return timestamp.toLocaleTimeString()
+}
+
+function getSystemSummaryBadge(input: {
+  systemStatus: SystemStatusResponse | null
+  isLoading: boolean
+  isError: boolean
+}): { dot: string; label: string; badgeStatus: AppBadgeStatus } {
+  if (input.isError) {
+    return { dot: 'status-error', label: 'Unavailable', badgeStatus: 'error' }
+  }
+
+  if (input.isLoading || !input.systemStatus) {
+    return { dot: 'status-warning', label: 'Checking...', badgeStatus: 'warning' }
+  }
+
+  switch (input.systemStatus.overall.status) {
+    case 'healthy':
+      return { dot: 'status-success', label: 'Healthy', badgeStatus: 'success' }
+    case 'warning':
+    case 'unknown':
+      return {
+        dot: 'status-warning',
+        label: input.systemStatus.overall.label,
+        badgeStatus: 'warning',
+      }
+    case 'error':
+      return { dot: 'status-error', label: input.systemStatus.overall.label, badgeStatus: 'error' }
+    default:
+      return { dot: 'status-neutral', label: 'Unknown', badgeStatus: 'neutral' }
+  }
+}
+
+function getHealthBadgeStatus(
+  status: SystemHealthStatus,
+  isLoading: boolean,
+  isError: boolean
+): AppBadgeStatus {
+  if (isLoading) {
     return 'warning'
   }
 
-  if (!backendHealth.details) {
-    return 'neutral'
-  }
-
-  return backendHealth.details.databaseHealthy ? 'success' : 'error'
-}
-
-function getFrontendStatus(backendHealth: ReturnType<typeof useBackendHealth>): AppBadgeStatus {
-  if (backendHealth.status === 'disconnected') {
+  if (isError) {
     return 'error'
   }
 
-  if (backendHealth.status === 'checking') {
+  switch (status) {
+    case 'healthy':
+      return 'success'
+    case 'warning':
+    case 'unknown':
+      return 'warning'
+    case 'error':
+      return 'error'
+    default:
+      return 'neutral'
+  }
+}
+
+function getBackendStatus(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
+): AppBadgeStatus {
+  if (isLoading) {
     return 'warning'
   }
 
-  return 'success'
+  if (isError || !systemStatus) {
+    return 'error'
+  }
+
+  return systemStatus.backend.status === 'healthy' ? 'success' : 'error'
 }
 
-function getFrontendValue(backendHealth: ReturnType<typeof useBackendHealth>): string {
-  if (backendHealth.status === 'checking') {
+function getBackendValue(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
+): string {
+  if (isLoading) {
     return 'Checking...'
   }
 
-  if (backendHealth.status === 'disconnected') {
-    return 'Disconnected'
-  }
-
-  return 'Connected'
-}
-
-function getDatabaseValue(backendHealth: ReturnType<typeof useBackendHealth>): string {
-  if (backendHealth.status === 'checking') {
-    return 'Checking...'
-  }
-
-  if (backendHealth.status === 'disconnected') {
-    return 'Disconnected'
-  }
-
-  if (!backendHealth.details) {
+  if (isError || !systemStatus) {
     return 'Unavailable'
   }
 
-  return backendHealth.details.databaseHealthy ? 'Healthy' : 'Unavailable'
-}
-
-function getDatabaseLocation(backendHealth: ReturnType<typeof useBackendHealth>): string {
-  if (backendHealth.details?.databaseAddress) {
-    return backendHealth.details.databaseAddress
-  }
-
-  return 'unknown'
+  return systemStatus.backend.status === 'healthy' ? 'Healthy' : 'Unavailable'
 }
 
 function resolveBackendLocation(browserOrigin: string): string {
@@ -428,18 +549,80 @@ function resolveBackendLocation(browserOrigin: string): string {
   return stripUrlProtocol(`${browserOrigin}/healthz`)
 }
 
-function getWikiStatus(
-  backendHealth: ReturnType<typeof useBackendHealth>,
-  wikiBaseUrl: string
+function getDatabaseStatus(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
 ): AppBadgeStatus {
-  if (backendHealth.status === 'disconnected') {
-    return 'error'
-  }
-
-  if (backendHealth.status === 'checking') {
+  if (isLoading) {
     return 'warning'
   }
 
+  if (isError || !systemStatus) {
+    return 'error'
+  }
+
+  return systemStatus.database.healthy ? 'success' : 'error'
+}
+
+function getDatabaseValue(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
+): string {
+  if (isLoading) {
+    return 'Checking...'
+  }
+
+  if (isError || !systemStatus) {
+    return 'Unavailable'
+  }
+
+  return systemStatus.database.healthy ? 'Healthy' : 'Unavailable'
+}
+
+function getNetworkValue(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
+): string {
+  if (isLoading) {
+    return 'Checking...'
+  }
+
+  if (isError || !systemStatus) {
+    return 'Unavailable'
+  }
+
+  switch (systemStatus.network.status) {
+    case 'healthy':
+      return 'Healthy'
+    case 'warning':
+      return 'Warning'
+    case 'error':
+      return 'Offline'
+    default:
+      return 'Unknown'
+  }
+}
+
+function getNetworkMessage(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean
+): string {
+  if (isLoading) {
+    return 'Checking host network telemetry...'
+  }
+
+  if (isError || !systemStatus) {
+    return 'Unable to load host network telemetry.'
+  }
+
+  return systemStatus.network.message
+}
+
+function getWikiStatus(wikiBaseUrl: string): AppBadgeStatus {
   if (!wikiBaseUrl) {
     return 'neutral'
   }
@@ -447,18 +630,7 @@ function getWikiStatus(
   return 'success'
 }
 
-function getWikiValue(
-  backendHealth: ReturnType<typeof useBackendHealth>,
-  wikiBaseUrl: string
-): string {
-  if (backendHealth.status === 'checking') {
-    return 'Checking...'
-  }
-
-  if (backendHealth.status === 'disconnected') {
-    return 'Disconnected'
-  }
-
+function getWikiValue(wikiBaseUrl: string): string {
   if (!wikiBaseUrl) {
     return 'Unknown'
   }
