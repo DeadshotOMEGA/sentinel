@@ -1,11 +1,12 @@
 import { QueryCache, QueryClient, MutationCache } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { buildForcedReauthLoginUrl } from '@/lib/post-login-destination'
 
 function handle401() {
   // Clear persisted auth state
   localStorage.removeItem('auth-storage')
   toast.error('Session expired. Please log in again.')
-  window.location.href = '/login'
+  window.location.href = buildForcedReauthLoginUrl()
 }
 
 function isHttpError(error: unknown, status: number): boolean {
@@ -24,7 +25,7 @@ export const queryClient = new QueryClient({
           handle401()
         } else {
           // Initial load 401 — just redirect silently
-          window.location.href = '/login'
+          window.location.href = buildForcedReauthLoginUrl()
         }
       }
     },

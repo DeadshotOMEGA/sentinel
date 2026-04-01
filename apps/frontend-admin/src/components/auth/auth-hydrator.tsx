@@ -1,11 +1,15 @@
 'use client'
-/* global process */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { apiClient } from '@/lib/api-client'
+import {
+  buildChangePinRequiredUrl,
+  buildForcedReauthLoginUrl,
+  buildLoginUrl,
+  resolvePostLoginDestinationHint,
+} from '@/lib/post-login-destination'
 import { useAuthStore } from '@/store/auth-store'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 /**
  * Validates the session cookie on mount and syncs the Zustand auth store.
@@ -18,47 +22,104 @@ export function AuthHydrator() {
   const { isAuthenticated, setAuth, logout } = useAuthStore()
   const hasValidated = useRef(false)
 
+  const validateSession = useEffectEvent(async () => {
+    try {
+      const response = await apiClient.auth.getSession()
+
+      if (response.status === 200) {
+        const data = response.body
+        setAuth(data.member, '')
+
+        if (
+          data.member.mustChangePin &&
+          pathname !== '/change-pin-required' &&
+          pathname !== '/login'
+        ) {
+          router.replace(buildChangePinRequiredUrl(pathname, window.location.search))
+          return
+        }
+
+        if (!data.member.mustChangePin && pathname === '/change-pin-required') {
+          router.replace(resolvePostLoginDestinationHint(pathname, window.location.search))
+        }
+        return
+      }
+
+      if (response.status === 401) {
+        logout()
+        if (pathname !== '/login') {
+          router.replace(buildForcedReauthLoginUrl())
+        }
+        return
+      }
+
+      if (isAuthenticated) {
+        logout()
+        if (pathname !== '/login') {
+          router.replace(buildLoginUrl(pathname, window.location.search))
+        }
+      }
+    } catch {
+      // Network errors should not immediately clear local auth state.
+    }
+  })
+
+  const sendHeartbeat = useEffectEvent(async () => {
+    if (!useAuthStore.getState().isAuthenticated) {
+      return
+    }
+
+    try {
+      const response = await apiClient.auth.heartbeat()
+
+      if (response.status === 401) {
+        logout()
+        if (pathname !== '/login') {
+          router.replace(buildForcedReauthLoginUrl())
+        }
+      }
+    } catch {
+      // Best effort only. Session validation on future navigation will recover if needed.
+    }
+  })
+
   useEffect(() => {
     if (hasValidated.current) return
     hasValidated.current = true
 
-    async function validateSession() {
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/session`, {
-          credentials: 'include',
-        })
+    void validateSession()
+  }, [])
 
-        if (res.ok) {
-          const data = await res.json()
-          if (data.member) {
-            setAuth(data.member, data.token ?? '')
-            if (
-              data.member.mustChangePin &&
-              pathname !== '/change-pin-required' &&
-              pathname !== '/login'
-            ) {
-              router.replace('/change-pin-required')
-              return
-            }
-            if (!data.member.mustChangePin && pathname === '/change-pin-required') {
-              router.replace('/dashboard')
-              return
-            }
-          }
-        } else if (isAuthenticated) {
-          // Cookie expired but store thinks we're authenticated
-          logout()
-          if (pathname === '/change-pin-required') {
-            router.replace('/login')
-          }
-        }
-      } catch {
-        // Network error — keep existing store state, don't force logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return
+    }
+
+    void sendHeartbeat()
+
+    const intervalId = window.setInterval(() => {
+      void sendHeartbeat()
+    }, 30_000)
+
+    const handleFocus = () => {
+      void sendHeartbeat()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void sendHeartbeat()
       }
     }
 
-    validateSession()
-  }, [isAuthenticated, setAuth, logout, pathname, router])
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isAuthenticated])
 
   return null
 }
