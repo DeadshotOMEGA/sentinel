@@ -14,7 +14,7 @@ jobs:
     steps:
       # This keeps issue intake consistent: all new/reopened issues must enter triage.
       - name: Normalize issue status labels to triage
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const owner = context.repo.owner

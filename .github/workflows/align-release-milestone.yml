@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Align issue release and milestone
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.PROJECTS_TOKEN }}
           script: |
