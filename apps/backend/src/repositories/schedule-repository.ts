@@ -93,6 +93,15 @@ export interface ScheduleAssignmentEntity {
 }
 
 /**
+ * Member duty assignment lookup entity
+ */
+export interface MemberDutyAssignmentEntity {
+  weekStartDate: Date
+  dutyRoleCode: string
+  status: string
+}
+
+/**
  * DW night override entity from database
  */
 export interface DwNightOverrideEntity {
@@ -276,17 +285,11 @@ function getScheduleFullInclude() {
     },
     assignments: {
       include: assignmentInclude,
-      orderBy: [
-        { dutyPosition: { displayOrder: 'asc' as const } },
-        { createdAt: 'asc' as const },
-      ],
+      orderBy: [{ dutyPosition: { displayOrder: 'asc' as const } }, { createdAt: 'asc' as const }],
     },
     nightOverrides: {
       include: overrideInclude,
-      orderBy: [
-        { nightDate: 'asc' as const },
-        { dutyPosition: { displayOrder: 'asc' as const } },
-      ],
+      orderBy: [{ nightDate: 'asc' as const }, { dutyPosition: { displayOrder: 'asc' as const } }],
     },
   }
 }
@@ -539,10 +542,7 @@ export class ScheduleRepository {
     const assignments = await this.prisma.scheduleAssignment.findMany({
       where: { scheduleId },
       include: assignmentInclude,
-      orderBy: [
-        { dutyPosition: { displayOrder: 'asc' } },
-        { createdAt: 'asc' },
-      ],
+      orderBy: [{ dutyPosition: { displayOrder: 'asc' } }, { createdAt: 'asc' }],
     })
     return assignments
   }
@@ -649,10 +649,7 @@ export class ScheduleRepository {
     return this.prisma.dutyWatchNightOverride.findMany({
       where,
       include: overrideInclude,
-      orderBy: [
-        { nightDate: 'asc' },
-        { dutyPosition: { displayOrder: 'asc' } },
-      ],
+      orderBy: [{ nightDate: 'asc' }, { dutyPosition: { displayOrder: 'asc' } }],
     })
   }
 
@@ -783,10 +780,7 @@ export class ScheduleRepository {
           where: {
             status: { not: 'released' },
           },
-          orderBy: [
-            { dutyPosition: { displayOrder: 'asc' } },
-            { createdAt: 'asc' },
-          ],
+          orderBy: [{ dutyPosition: { displayOrder: 'asc' } }, { createdAt: 'asc' }],
         },
       },
     })
@@ -799,5 +793,54 @@ export class ScheduleRepository {
       schedule,
       assignments: schedule.assignments,
     }
+  }
+
+  /**
+   * Get DDS and Duty Watch assignments for a member across a date range
+   */
+  async findMemberDutyAssignmentsBetween(
+    memberId: string,
+    weekStartDate: Date,
+    weekEndDate: Date
+  ): Promise<MemberDutyAssignmentEntity[]> {
+    const assignments = await this.prisma.scheduleAssignment.findMany({
+      where: {
+        memberId,
+        status: { not: 'released' },
+        schedule: {
+          weekStartDate: {
+            gte: weekStartDate,
+            lte: weekEndDate,
+          },
+          dutyRole: {
+            code: { in: ['DDS', 'DUTY_WATCH'] },
+          },
+        },
+      },
+      select: {
+        status: true,
+        schedule: {
+          select: {
+            weekStartDate: true,
+            dutyRole: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        schedule: {
+          weekStartDate: 'asc',
+        },
+      },
+    })
+
+    return assignments.map((assignment) => ({
+      weekStartDate: assignment.schedule.weekStartDate,
+      dutyRoleCode: assignment.schedule.dutyRole.code,
+      status: assignment.status,
+    }))
   }
 }

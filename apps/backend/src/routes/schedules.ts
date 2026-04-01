@@ -6,6 +6,7 @@ import type {
   ScheduleIdParam,
   ScheduleAssignmentParams,
   DutyRoleIdParam,
+  MemberScheduleSummaryParams,
   CreateScheduleInput,
   UpdateScheduleInput,
   CreateAssignmentInput,
@@ -448,6 +449,25 @@ export const schedulesRouter = s.router(scheduleContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch schedules',
+        },
+      }
+    }
+  },
+
+  getMemberAssignmentSummary: async ({ params }: { params: MemberScheduleSummaryParams }) => {
+    try {
+      const summary = await scheduleService.getMemberAssignmentSummary(params.memberId)
+      return {
+        status: 200 as const,
+        body: summary,
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to fetch member assignment summary',
         },
       }
     }
