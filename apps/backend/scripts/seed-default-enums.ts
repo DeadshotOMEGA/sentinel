@@ -484,16 +484,28 @@ const DEFAULT_DUTY_POSITIONS: ReadonlyArray<DutyPositionSeedInput> = [
 
 const DEFAULT_REMOTE_SYSTEMS: ReadonlyArray<RemoteSystemSeedInput> = [
   {
+    code: 'brow_controller',
+    name: 'Brow',
+    description: 'Sentinel Management Laptop for the Brow',
+    displayOrder: 0,
+  },
+  {
+    code: 'ships_office',
+    name: "Ship's Office",
+    description: "Sentinel Management Laptop for Ship's Office",
+    displayOrder: 1,
+  },
+  {
     code: 'deployment_laptop',
     name: 'Deployment Laptop',
     description: 'Deployment laptop local session and operator presence.',
-    displayOrder: 0,
+    displayOrder: 2,
   },
   {
     code: 'kiosk',
     name: 'Kiosk',
     description: 'Shared kiosk station for local badge check-in workflows.',
-    displayOrder: 1,
+    displayOrder: 3,
   },
 ]
 
@@ -824,6 +836,14 @@ async function ensureRemoteSystems(): Promise<number> {
     })
 
     if (existing) {
+      await prisma.remoteSystem.update({
+        where: { id: existing.id },
+        data: {
+          name: remoteSystem.name,
+          description: remoteSystem.description,
+          displayOrder: remoteSystem.displayOrder,
+        },
+      })
       continue
     }
 
@@ -837,6 +857,17 @@ async function ensureRemoteSystems(): Promise<number> {
       },
     })
     inserted += 1
+  }
+
+  const activeCount = await prisma.remoteSystem.count({
+    where: { isActive: true },
+  })
+
+  if (activeCount === 0) {
+    await prisma.remoteSystem.updateMany({
+      where: { code: 'deployment_laptop' },
+      data: { isActive: true },
+    })
   }
 
   return inserted
