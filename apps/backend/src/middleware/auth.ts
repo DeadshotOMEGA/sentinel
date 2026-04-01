@@ -84,6 +84,7 @@ function isPinChangeExemptPath(req: Request): boolean {
   const path = req.path
 
   if (method === 'POST' && path === '/auth/change-pin') return true
+  if (method === 'POST' && path === '/auth/heartbeat') return true
   if (method === 'POST' && path === '/auth/logout') return true
   if (method === 'GET' && path === '/auth/session') return true
   if (method === 'POST' && path === '/auth/login') return true

@@ -6,6 +6,7 @@ import { AlertService } from '../services/alert-service.js'
 import { DdsService } from '../services/dds-service.js'
 import { LockupService } from '../services/lockup-service.js'
 import { PresenceService } from '../services/presence-service.js'
+import { SessionRepository } from '../repositories/session-repository.js'
 import {
   DEFAULT_TIMEZONE,
   getOperationalDayStartTime,
@@ -34,6 +35,7 @@ export async function runDailyReset(): Promise<void> {
   const ddsService = new DdsService(prisma)
   const lockupService = new LockupService(prisma)
   const presenceService = new PresenceService(prisma)
+  const sessionRepository = new SessionRepository(prisma)
 
   try {
     // Step 1: Check building status from yesterday's lockup status
@@ -229,9 +231,15 @@ export async function runDailyReset(): Promise<void> {
       }
     }
 
+    const endedSessions = await sessionRepository.endAllActive('daily_reset')
+    jobLogger.info('Ended active Sentinel sessions after daily reset', {
+      endedSessions,
+    })
+
     jobLogger.info('Daily reset job completed successfully', {
       forceCheckedOutMembers: presentMembers.length,
       forceCheckedOutVisitors: presentVisitors.length,
+      endedSessions,
       buildingWasSecured: previousStatus?.buildingStatus === 'secured',
     })
   } catch (error) {
