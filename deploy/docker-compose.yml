@@ -68,9 +68,12 @@ services:
       SENTINEL_AUTO_SEED_ENUMS: ${SENTINEL_AUTO_SEED_ENUMS:-true}
       SENTINEL_AUTO_SEED_ATTEMPTS: ${SENTINEL_AUTO_SEED_ATTEMPTS:-3}
       SENTINEL_AUTO_SEED_RETRY_DELAY_MS: ${SENTINEL_AUTO_SEED_RETRY_DELAY_MS:-3000}
+      NETWORK_STATUS_FILE_PATH: /var/run/sentinel/network-status/network-status.json
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ./runtime/network-status:/var/run/sentinel/network-status:ro
     healthcheck:
       test:
         [

@@ -2,15 +2,21 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { KioskCheckinScreen } from '@/components/dashboard/kiosk-checkin-screen'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { ArrowLeft, Maximize2, MonitorCog, ScanLine } from 'lucide-react'
+import { KioskScreen } from '@/components/kiosk/kiosk-screen'
 
 const SECRET_TAP_TARGET = 5
 const SECRET_TAP_WINDOW_MS = 3500
 const EXIT_PANEL_AUTO_HIDE_MS = 12000
+const BADGE_FOCUS_REQUEST_EVENT = 'kiosk-request-badge-focus'
 
 export function KioskShell() {
   const router = useRouter()
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  const [isFullscreen, setIsFullscreen] = useState(
+    () => typeof document !== 'undefined' && Boolean(document.fullscreenElement)
+  )
   const [showExitControls, setShowExitControls] = useState(false)
   const tapTimestampsRef = useRef<number[]>([])
 
@@ -22,7 +28,7 @@ export function KioskShell() {
     try {
       await document.documentElement.requestFullscreen()
     } catch {
-      // Browser may require user gesture or deny fullscreen while loading.
+      // Browser may require a gesture or deny fullscreen.
     }
   }
 
@@ -33,12 +39,24 @@ export function KioskShell() {
     try {
       await document.exitFullscreen()
     } catch {
-      // Ignore failures and keep kiosk controls available.
+      // Keep kiosk controls accessible even if fullscreen exit is rejected.
     }
   }
 
   const revealExitControls = () => {
     setShowExitControls(true)
+  }
+
+  const engageKioskSurface = () => {
+    const shouldRequestFocus = typeof document !== 'undefined' && !document.fullscreenElement
+
+    void attemptFullscreen()
+
+    if (shouldRequestFocus) {
+      window.setTimeout(() => {
+        window.dispatchEvent(new window.CustomEvent(BADGE_FOCUS_REQUEST_EVENT))
+      }, 150)
+    }
   }
 
   useEffect(() => {
@@ -93,10 +111,6 @@ export function KioskShell() {
       }
     }
 
-    const handleInteraction = () => {
-      void attemptFullscreen()
-    }
-
     const observer = new window.MutationObserver(() => {
       concealDevtools()
     })
@@ -104,10 +118,7 @@ export function KioskShell() {
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('contextmenu', handleContextMenu)
     window.addEventListener('keydown', handleKeyDown, { capture: true })
-    window.addEventListener('pointerdown', handleInteraction, { passive: true })
-    window.addEventListener('touchstart', handleInteraction, { passive: true })
 
-    setIsFullscreen(Boolean(document.fullscreenElement))
     document.body.classList.add('kiosk-lock-mode')
     concealDevtools()
     observer.observe(document.body, { childList: true, subtree: true })
@@ -118,8 +129,6 @@ export function KioskShell() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('contextmenu', handleContextMenu)
       window.removeEventListener('keydown', handleKeyDown, { capture: true })
-      window.removeEventListener('pointerdown', handleInteraction)
-      window.removeEventListener('touchstart', handleInteraction)
       document.body.classList.remove('kiosk-lock-mode')
 
       for (const element of hiddenDevtools) {
@@ -132,9 +141,8 @@ export function KioskShell() {
 
   useEffect(() => {
     if (!showExitControls) return
-
-    const timer = setTimeout(() => setShowExitControls(false), EXIT_PANEL_AUTO_HIDE_MS)
-    return () => clearTimeout(timer)
+    const timer = window.setTimeout(() => setShowExitControls(false), EXIT_PANEL_AUTO_HIDE_MS)
+    return () => window.clearTimeout(timer)
   }, [showExitControls])
 
   const handleSecretTap = () => {
@@ -156,17 +164,15 @@ export function KioskShell() {
   }
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-base-300 p-2 lg:p-3">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.08),transparent_38%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06),transparent_28%,rgba(15,23,42,0.03))]" />
-
-      <div className="relative h-full rounded-box border border-base-300 bg-base-100 shadow-2xl">
-        <KioskCheckinScreen isActive mode="standalone" />
-      </div>
+    <div
+      className="relative h-dvh overflow-hidden bg-base-300"
+      onPointerDownCapture={engageKioskSurface}
+    >
+      <KioskScreen />
 
       {!isFullscreen && (
-        <div className="pointer-events-none fixed inset-x-0 top-3 z-[var(--z-tooltip)] flex justify-center px-3">
-          <div className="rounded-full border border-warning/30 bg-base-100/95 px-4 py-2 text-sm font-semibold tracking-[0.12em] text-warning-fadded-content shadow-lg backdrop-blur">
+        <div className="pointer-events-none fixed inset-x-0 top-(--space-4) z-[var(--z-tooltip)] flex justify-center px-(--space-4)">
+          <div className="rounded-full border border-info/30 bg-base-100/95 px-(--space-4) py-(--space-3) text-sm font-semibold tracking-[0.14em] text-info-fadded-content shadow-[var(--shadow-2)] backdrop-blur-sm">
             Tap anywhere to enter full screen
           </div>
         </div>
@@ -179,41 +185,68 @@ export function KioskShell() {
         className="fixed left-0 top-0 h-10 w-10 opacity-0"
       />
 
-      {showExitControls && (
-        <div className="fixed bottom-3 right-3 z-[var(--z-tooltip)] card card-border w-80 bg-base-100 shadow-2xl">
-          <div className="card-body p-3 gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-base-content/70">
-              Maintenance Controls
-            </p>
-            <p className="text-xs text-base-content/70">
-              Hidden shortcut: <kbd className="kbd kbd-xs">Ctrl</kbd> +{' '}
-              <kbd className="kbd kbd-xs">Alt</kbd> + <kbd className="kbd kbd-xs">Shift</kbd> +{' '}
-              <kbd className="kbd kbd-xs">K</kbd>
-            </p>
-            <button
-              type="button"
-              className="btn btn-sm btn-outline"
-              onClick={() => void exitFullscreen()}
-            >
-              Exit Full Screen
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm btn-warning"
-              onClick={() => void handleExitKiosk()}
-            >
-              Exit Kiosk Page
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost"
-              onClick={() => setShowExitControls(false)}
-            >
-              Hide Controls
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {showExitControls && (
+          <motion.div
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.2 }}
+            className="fixed bottom-(--space-4) right-(--space-4) z-[var(--z-tooltip)] w-[22rem] rounded-box border border-base-300 bg-base-100/95 shadow-[var(--shadow-3)] backdrop-blur-sm"
+          >
+            <div className="flex flex-col gap-(--space-3) p-(--space-4)">
+              <div className="flex items-start justify-between gap-(--space-3)">
+                <div className="flex items-start gap-(--space-3)">
+                  <div className="rounded-box border border-base-300 bg-base-200/70 p-(--space-2)">
+                    <MonitorCog className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-base-content/55">
+                      Maintenance Controls
+                    </p>
+                    <p className="mt-(--space-1) text-sm text-base-content/70">
+                      Shortcut: Ctrl + Alt + Shift + K
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-box border border-base-300 bg-base-200/60 px-(--space-2) py-(--space-1) text-xs uppercase tracking-[0.16em] text-base-content/55">
+                  Hidden
+                </div>
+              </div>
+
+              <div className="rounded-box border border-base-300 bg-base-200/45 p-(--space-3) text-sm text-base-content/75">
+                Use these controls only for recovery, fullscreen issues, or returning to the
+                dashboard.
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-outline justify-between"
+                onClick={() => void exitFullscreen()}
+              >
+                <span>Exit full screen</span>
+                <Maximize2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="btn btn-warning justify-between"
+                onClick={() => void handleExitKiosk()}
+              >
+                <span>Exit kiosk page</span>
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost justify-between"
+                onClick={() => setShowExitControls(false)}
+              >
+                <span>Hide controls</span>
+                <ScanLine className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

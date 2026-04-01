@@ -16,8 +16,10 @@ import {
   ScheduleIdParamSchema,
   ScheduleAssignmentParamsSchema,
   DutyRoleIdParamSchema,
+  MemberScheduleSummaryParamsSchema,
   CurrentDdsResponseSchema,
   DutyWatchTeamResponseSchema,
+  MemberScheduleSummaryResponseSchema,
   DwNightOverrideResponseSchema,
   DwNightOverrideListResponseSchema,
   CreateDwOverrideInputSchema,
@@ -138,6 +140,24 @@ export const scheduleContract = c.router({
     summary: 'Get schedules by week',
     description:
       'Get all schedules for the week containing the specified date, including assignments',
+  },
+
+  /**
+   * Get kiosk duty-assignment summary for a member
+   */
+  getMemberAssignmentSummary: {
+    method: 'GET',
+    path: '/api/schedules/member-assignment-summary/:memberId',
+    pathParams: MemberScheduleSummaryParamsSchema,
+    responses: {
+      200: MemberScheduleSummaryResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Get member assignment summary',
+    description:
+      'Get today and upcoming DDS/Duty Watch assignment summary for a member, optimized for kiosk scans',
   },
 
   /**

@@ -114,6 +114,43 @@ export const activeSessions = new Gauge({
   registers: [register],
 })
 
+/**
+ * Number of active remote-system sessions.
+ */
+export const activeRemoteSessions = new Gauge({
+  name: 'auth_active_remote_sessions',
+  help: 'Number of active user sessions reporting remote-system presence',
+  registers: [register],
+})
+
+/**
+ * Total number of session heartbeat requests.
+ */
+export const sessionHeartbeatsTotal = new Counter({
+  name: 'auth_session_heartbeats_total',
+  help: 'Total number of authenticated session heartbeats',
+  registers: [register],
+})
+
+/**
+ * Age of the most recent host network telemetry snapshot.
+ */
+export const hostNetworkStatusAgeSeconds = new Gauge({
+  name: 'host_network_status_age_seconds',
+  help: 'Age in seconds of the most recent host network telemetry snapshot',
+  registers: [register],
+})
+
+/**
+ * Total degraded network-status observations reported by the status API.
+ */
+export const networkStatusDegradationsTotal = new Counter({
+  name: 'network_status_degradations_total',
+  help: 'Total degraded host network status observations',
+  labelNames: ['status'],
+  registers: [register],
+})
+
 // ============================================================================
 // Business Metrics - Check-ins
 // ============================================================================

@@ -118,6 +118,7 @@ Port defaults in `.env`:
 - `CAPTIVE_PORTAL_RECOVERY_ENABLED=false` (register local Wi-Fi recovery helper used by Sentinel UI action)
 - `CAPTIVE_PORTAL_AUTO_RECOVER=false` (run the helper automatically in the logged-in Ubuntu session)
 - `CAPTIVE_PORTAL_TAILSCALE_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
+- `NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS=30` (how often the Ubuntu host writes Wi-Fi/internet telemetry for Sentinel)
 
 Canonical Sentinel port allocation policy (host/LAN):
 
@@ -192,6 +193,27 @@ Notes:
 - This helper runs on the Ubuntu desktop session, not inside Docker.
 - `xdotool` only works when a graphical session is logged in.
 - Leave `CAPTIVE_PORTAL_AUTO_RECOVER=false` if you want the manual Sentinel button only.
+
+## Host network telemetry
+
+Sentinel now writes a host-level network snapshot on the Ubuntu laptop every 30 seconds and bind-mounts it into the backend container. This is what powers the `Network` row in System Status.
+
+What it checks:
+
+- whether Wi-Fi is connected
+- the current SSID
+- whether the configured internet reachability URL succeeds
+- whether the optional `CAPTIVE_PORTAL_TAILSCALE_TARGET` is reachable
+
+Where it lives:
+
+- host file: `/opt/sentinel/deploy/runtime/network-status/network-status.json`
+- container path: `/var/run/sentinel/network-status/network-status.json`
+
+systemd units installed during install/update/rollback:
+
+- `sentinel-network-status.service`
+- `sentinel-network-status.timer`
 
 ## Update
 
@@ -389,6 +411,8 @@ Post-upgrade UI smoke checks (recommended):
 - If `_prisma_migrations` contains failed rows, installer auto-resolves them as rolled back before bootstrapping/baselining.
 - Installer/update then verifies migration status:
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
+- Updates run `prisma:migrate:deploy:safe` automatically, so newly added tables/columns
+  (for example `remote_systems` and `member_sessions` presence-tracking columns) are applied on appliance upgrades.
 - Installer/update then verifies schema parity with migration files:
   `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`
 - If update/install fails with `ERR_PNPM_RECOURSIVE_EXEC_FIRST_FAIL` around `prisma migrate diff`, the underlying problem is usually schema drift on that appliance database, not pnpm itself. Capture the real drift summary with:

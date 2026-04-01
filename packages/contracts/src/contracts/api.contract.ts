@@ -27,6 +27,10 @@ import { statHolidayContract } from './stat-holiday.contract.js'
 import { tagContract } from './tag.contract.js'
 import { settingContract } from './setting.contract.js'
 import { operationalTimingContract } from './operational-timing.contract.js'
+import { authContract } from './auth.contract.js'
+import { remoteSystemContract } from './remote-system.contract.js'
+import { networkSettingContract } from './network-setting.contract.js'
+import { systemStatusContract } from './system-status.contract.js'
 
 const c = initContract()
 
@@ -66,6 +70,10 @@ export const apiContract = c.router(
     tags: tagContract,
     settings: settingContract,
     operationalTimings: operationalTimingContract,
+    auth: authContract,
+    remoteSystems: remoteSystemContract,
+    networkSettings: networkSettingContract,
+    systemStatus: systemStatusContract,
   },
   {
     pathPrefix: '',

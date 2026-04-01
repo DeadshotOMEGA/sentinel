@@ -86,6 +86,7 @@ fi
 
 if command -v systemctl >/dev/null 2>&1; then
   write_systemd_unit
+  configure_network_status_telemetry
 fi
 
 configure_captive_portal_recovery

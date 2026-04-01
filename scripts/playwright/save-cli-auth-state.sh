@@ -5,6 +5,7 @@ SESSION_NAME="${1:-sentinel-auth}"
 BASE_URL="${BASE_URL:-http://localhost:3001}"
 PLAYWRIGHT_BADGE_SERIAL="${PLAYWRIGHT_BADGE_SERIAL:-${E2E_BADGE_SERIAL:-0000000000}}"
 PLAYWRIGHT_PIN="${PLAYWRIGHT_PIN:-${E2E_PIN:-0000}}"
+PLAYWRIGHT_REMOTE_SYSTEM="${PLAYWRIGHT_REMOTE_SYSTEM:-Deployment Laptop}"
 PLAYWRIGHT_CLI_CONFIG="${PLAYWRIGHT_CLI_CONFIG:-.playwright-cli/cli.config.json}"
 AUTH_STATE_PATH="${AUTH_STATE_PATH:-.playwright-cli/auth/bootstrap.json}"
 RUN_DATE="$(date +%F)"
@@ -45,13 +46,55 @@ list_root_artifacts >"$ROOT_ARTIFACTS_BEFORE"
 
 playwright_cli -s="$SESSION_NAME" close >/dev/null 2>&1 || true
 playwright_cli -s="$SESSION_NAME" open "$BASE_URL/login" >/dev/null
+playwright_cli -s="$SESSION_NAME" resize 1920 1080 >/dev/null
 
 playwright_cli -s="$SESSION_NAME" run-code "
 async page => {
+  const preferredRemoteSystem = process.env.PLAYWRIGHT_REMOTE_SYSTEM ?? 'Deployment Laptop'
+
   await page.getByTestId('auth-badge-input').fill('$PLAYWRIGHT_BADGE_SERIAL')
   await page.keyboard.press('Enter')
+  await page.getByTestId('auth-pin-input').waitFor({ state: 'visible', timeout: 30000 })
   await page.getByTestId('auth-pin-input').fill('$PLAYWRIGHT_PIN')
-  await page.keyboard.press('Enter')
+
+  const remoteSystemSelect = page.getByTestId('auth-remote-system-select')
+  await remoteSystemSelect.waitFor({ state: 'visible', timeout: 30000 })
+
+  const desiredRemoteSystemValue = await remoteSystemSelect.evaluate(
+    (element, expectedLabel) => {
+      if (!(element instanceof HTMLSelectElement)) {
+        return null
+      }
+
+      const normalizedLabel = String(expectedLabel).trim().toLowerCase()
+      const matchingOption = Array.from(element.options).find(
+        option => option.label.trim().toLowerCase() === normalizedLabel
+      )
+
+      return matchingOption?.value ?? null
+    },
+    preferredRemoteSystem
+  )
+
+  const fallbackRemoteSystemValue = await remoteSystemSelect.evaluate(element => {
+    if (!(element instanceof HTMLSelectElement)) {
+      return null
+    }
+
+    const firstManagedOption = Array.from(element.options).find(
+      option => option.value.length > 0 && !option.disabled
+    )
+
+    return firstManagedOption?.value ?? null
+  })
+
+  const selectedRemoteSystemValue = desiredRemoteSystemValue ?? fallbackRemoteSystemValue
+  if (!selectedRemoteSystemValue) {
+    throw new Error('No managed remote systems are available on the login screen')
+  }
+  await remoteSystemSelect.selectOption(selectedRemoteSystemValue)
+
+  await page.getByTestId('auth-pin-submit').click()
   await page.waitForURL('**/dashboard', { timeout: 30000 })
 }
 " >/dev/null

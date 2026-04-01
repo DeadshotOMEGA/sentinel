@@ -2,6 +2,7 @@
 /* global process */
 
 import { type FormEvent, useState } from 'react'
+import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -49,6 +50,11 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
 
     if (newPin !== confirmPin) {
       setError('PINs do not match')
+      return
+    }
+
+    if (DISALLOWED_MEMBER_PINS.includes(newPin as (typeof DISALLOWED_MEMBER_PINS)[number])) {
+      setError('Choose a less predictable PIN')
       return
     }
 

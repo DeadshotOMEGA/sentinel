@@ -22,6 +22,9 @@ interface RepositoryMock {
   findScheduleById: ReturnType<typeof vi.fn>
   findDutyRoleById: ReturnType<typeof vi.fn>
   createOverride: ReturnType<typeof vi.fn>
+  findDdsAssignmentForWeek: ReturnType<typeof vi.fn>
+  findDutyWatchForWeek: ReturnType<typeof vi.fn>
+  findMemberDutyAssignmentsBetween: ReturnType<typeof vi.fn>
 }
 
 function createRepositoryMock(): RepositoryMock {
@@ -29,6 +32,9 @@ function createRepositoryMock(): RepositoryMock {
     findScheduleById: vi.fn(),
     findDutyRoleById: vi.fn(),
     createOverride: vi.fn(),
+    findDdsAssignmentForWeek: vi.fn(),
+    findDutyWatchForWeek: vi.fn(),
+    findMemberDutyAssignmentsBetween: vi.fn(),
   }
 }
 
@@ -39,6 +45,65 @@ function createDutyWatchSchedule() {
     dutyRole: { code: 'DUTY_WATCH' },
     status: 'draft',
     weekStartDate: new Date('2026-03-02T00:00:00.000Z'),
+  }
+}
+
+function createScheduleEntity({
+  id,
+  code,
+  weekStartDate,
+}: {
+  id: string
+  code: 'DDS' | 'DUTY_WATCH'
+  weekStartDate: string
+}) {
+  const weekStart = new Date(`${weekStartDate}T00:00:00.000Z`)
+
+  return {
+    id,
+    dutyRoleId: `${code.toLowerCase()}-role`,
+    dutyRole: { id: `${code.toLowerCase()}-role`, code, name: code },
+    status: 'published',
+    weekStartDate: weekStart,
+    createdBy: null,
+    publishedAt: null,
+    publishedBy: null,
+    notes: null,
+    createdAt: weekStart,
+    updatedAt: weekStart,
+  }
+}
+
+function createAssignmentEntity({
+  id,
+  memberId,
+  status = 'confirmed',
+}: {
+  id: string
+  memberId: string
+  status?: 'assigned' | 'confirmed' | 'released'
+}) {
+  const timestamp = new Date('2026-03-03T12:00:00.000Z')
+
+  return {
+    id,
+    scheduleId: 'schedule-1',
+    dutyPositionId: null,
+    memberId,
+    status,
+    confirmedAt: null,
+    releasedAt: null,
+    notes: null,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    member: {
+      id: memberId,
+      firstName: 'Alex',
+      lastName: 'Example',
+      rank: 'Cpl',
+      serviceNumber: '123456',
+    },
+    dutyPosition: null,
   }
 }
 
@@ -131,6 +196,96 @@ describe('ScheduleService.createDwOverride configured day validation', () => {
         overrideType: 'add',
         memberId: 'member-1',
       })
+    )
+  })
+})
+
+describe('ScheduleService.getMemberAssignmentSummary', () => {
+  let repositoryMock: RepositoryMock
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-03T12:00:00.000Z'))
+    repositoryMock = createRepositoryMock()
+    applyOperationalTimingsRuntimeState({
+      settings: getDefaultOperationalTimingsSettings(),
+      source: 'stored',
+      updatedAt: null,
+    })
+  })
+
+  function createServiceWithRepositoryMock(): ScheduleService {
+    const service = new ScheduleService({} as PrismaClientInstance)
+    ;(service as unknown as { repository: RepositoryMock }).repository = repositoryMock
+    return service
+  }
+
+  it('returns current and upcoming kiosk assignments for a member', async () => {
+    repositoryMock.findDdsAssignmentForWeek.mockResolvedValue({
+      schedule: createScheduleEntity({
+        id: 'dds-schedule',
+        code: 'DDS',
+        weekStartDate: '2026-03-02',
+      }),
+      assignment: createAssignmentEntity({
+        id: 'dds-assignment',
+        memberId: 'member-1',
+      }),
+    })
+    repositoryMock.findDutyWatchForWeek.mockResolvedValue({
+      schedule: createScheduleEntity({
+        id: 'dw-schedule',
+        code: 'DUTY_WATCH',
+        weekStartDate: '2026-03-02',
+      }),
+      assignments: [
+        {
+          ...createAssignmentEntity({
+            id: 'dw-assignment',
+            memberId: 'member-1',
+            status: 'assigned',
+          }),
+          dutyPosition: {
+            id: 'position-1',
+            code: 'SWK',
+            name: 'Senior Watch Keeper',
+          },
+        },
+      ],
+    })
+    repositoryMock.findMemberDutyAssignmentsBetween.mockResolvedValue([
+      {
+        weekStartDate: new Date('2026-03-02T00:00:00.000Z'),
+        dutyRoleCode: 'DDS',
+        status: 'confirmed',
+      },
+      {
+        weekStartDate: new Date('2026-03-09T00:00:00.000Z'),
+        dutyRoleCode: 'DUTY_WATCH',
+        status: 'assigned',
+      },
+      {
+        weekStartDate: new Date('2026-03-16T00:00:00.000Z'),
+        dutyRoleCode: 'DDS',
+        status: 'assigned',
+      },
+    ])
+
+    const service = createServiceWithRepositoryMock()
+    const summary = await service.getMemberAssignmentSummary('member-1')
+
+    expect(summary).toEqual({
+      memberId: 'member-1',
+      isDdsToday: true,
+      isDutyWatchToday: true,
+      upcomingDdsWeeks: ['2026-03-16'],
+      upcomingDutyWatchWeeks: ['2026-03-09'],
+    })
+    expect(repositoryMock.findMemberDutyAssignmentsBetween).toHaveBeenCalledTimes(1)
+    expect(repositoryMock.findMemberDutyAssignmentsBetween).toHaveBeenCalledWith(
+      'member-1',
+      expect.any(Date),
+      expect.any(Date)
     )
   })
 })

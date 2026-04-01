@@ -78,6 +78,17 @@ export interface DutyWatchTeamResult {
   team: DutyWatchTeamMember[]
 }
 
+export interface MemberAssignmentSummary {
+  memberId: string
+  isDdsToday: boolean
+  isDutyWatchToday: boolean
+  upcomingDdsWeeks: string[]
+  upcomingDutyWatchWeeks: string[]
+}
+
+const MEMBER_ASSIGNMENT_LOOKAHEAD_WEEKS = 8
+const MEMBER_ASSIGNMENT_PREVIEW_LIMIT = 4
+
 // ============================================================================
 // Service Class
 // ============================================================================
@@ -569,6 +580,55 @@ export class ScheduleService {
    */
   async getTonightDutyWatch(): Promise<DutyWatchTeamResult> {
     return this.getCurrentDutyWatch()
+  }
+
+  /**
+   * Get a member's kiosk assignment summary with a single backend round trip
+   */
+  async getMemberAssignmentSummary(memberId: string): Promise<MemberAssignmentSummary> {
+    const { start } = getOperationalWeek()
+    const currentWeekIso = start.toISOString().substring(0, 10)
+    const weekEndDate = new Date(start)
+    weekEndDate.setUTCDate(weekEndDate.getUTCDate() + MEMBER_ASSIGNMENT_LOOKAHEAD_WEEKS * 7)
+
+    const [currentDds, currentDutyWatch, assignments] = await Promise.all([
+      this.repository.findDdsAssignmentForWeek(start),
+      isDutyWatchNight() ? this.repository.findDutyWatchForWeek(start) : Promise.resolve(null),
+      this.repository.findMemberDutyAssignmentsBetween(memberId, start, weekEndDate),
+    ])
+
+    const ddsWeekStarts = new Set<string>()
+    const dutyWatchWeekStarts = new Set<string>()
+
+    for (const assignment of assignments) {
+      const weekStart = assignment.weekStartDate.toISOString().substring(0, 10)
+      if (assignment.dutyRoleCode === 'DDS') {
+        ddsWeekStarts.add(weekStart)
+      }
+      if (assignment.dutyRoleCode === 'DUTY_WATCH') {
+        dutyWatchWeekStarts.add(weekStart)
+      }
+    }
+
+    return {
+      memberId,
+      isDdsToday:
+        currentDds?.assignment.member.id === memberId &&
+        currentDds.assignment.status !== 'released',
+      isDutyWatchToday: Boolean(
+        currentDutyWatch?.assignments.some(
+          (assignment) => assignment.member.id === memberId && assignment.status !== 'released'
+        )
+      ),
+      upcomingDdsWeeks: Array.from(ddsWeekStarts)
+        .sort()
+        .filter((weekStart) => weekStart > currentWeekIso)
+        .slice(0, MEMBER_ASSIGNMENT_PREVIEW_LIMIT),
+      upcomingDutyWatchWeeks: Array.from(dutyWatchWeekStarts)
+        .sort()
+        .filter((weekStart) => weekStart > currentWeekIso)
+        .slice(0, MEMBER_ASSIGNMENT_PREVIEW_LIMIT),
+    }
   }
 
   // ==========================================================================

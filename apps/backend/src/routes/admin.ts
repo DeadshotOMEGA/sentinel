@@ -47,33 +47,8 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const memberId = req.query.memberId as string | undefined
-      const prisma = getPrismaClient()
-
-      const where: Record<string, unknown> = {
-        expiresAt: { gt: new Date() },
-      }
-      if (memberId) {
-        where.memberId = memberId
-      }
-
-      const sessions = await prisma.memberSession.findMany({
-        where,
-        select: {
-          id: true,
-          memberId: true,
-          expiresAt: true,
-          ipAddress: true,
-          createdAt: true,
-          member: {
-            select: {
-              firstName: true,
-              lastName: true,
-              rank: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      })
+      const sessionRepo = new SessionRepository(getPrismaClient())
+      const sessions = await sessionRepo.findActiveSessions({ memberId })
 
       authLogger.info('Listed sessions', {
         count: sessions.length,
@@ -109,7 +84,7 @@ router.delete(
     try {
       const sessionId = req.params.id as string
       const sessionRepo = new SessionRepository(getPrismaClient())
-      await sessionRepo.deleteByToken(sessionId)
+      await sessionRepo.endById(sessionId, 'revoked')
 
       authLogger.info('Session revoked', {
         sessionId,

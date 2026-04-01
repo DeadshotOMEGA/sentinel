@@ -260,19 +260,44 @@ model Member {
 }
 
 model MemberSession {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  memberId  String   @map("member_id") @db.Uuid
-  token     String   @unique @db.VarChar(128)
-  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
-  ipAddress String?  @map("ip_address") @db.Inet
-  userAgent String?  @map("user_agent") @db.VarChar(500)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
-  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                       String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  memberId                 String        @map("member_id") @db.Uuid
+  remoteSystemId           String?       @map("remote_system_id") @db.Uuid
+  token                    String        @unique @db.VarChar(128)
+  expiresAt                DateTime      @map("expires_at") @db.Timestamp(6)
+  ipAddress                String?       @map("ip_address") @db.Inet
+  userAgent                String?       @map("user_agent") @db.VarChar(500)
+  remoteSystemNameSnapshot String        @default("Unknown") @map("remote_system_name_snapshot") @db.VarChar(120)
+  lastSeenAt               DateTime      @default(now()) @map("last_seen_at") @db.Timestamp(6)
+  endedAt                  DateTime?     @map("ended_at") @db.Timestamp(6)
+  endReason                String?       @map("end_reason") @db.VarChar(50)
+  createdAt                DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                DateTime      @default(now()) @map("updated_at") @db.Timestamp(6)
+  member                   Member        @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  remoteSystem             RemoteSystem? @relation(fields: [remoteSystemId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
   @@index([memberId], map: "idx_member_sessions_member")
   @@index([expiresAt], map: "idx_member_sessions_expires")
+  @@index([remoteSystemId], map: "idx_member_sessions_remote_system")
+  @@index([lastSeenAt], map: "idx_member_sessions_last_seen_at")
+  @@index([endedAt], map: "idx_member_sessions_ended_at")
   @@map("member_sessions")
+}
+
+model RemoteSystem {
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String          @unique @db.VarChar(50)
+  name         String          @db.VarChar(100)
+  description  String?
+  displayOrder Int             @default(0) @map("display_order")
+  isActive     Boolean         @default(true) @map("is_active")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamp(6)
+  sessions     MemberSession[]
+
+  @@index([isActive], map: "idx_remote_systems_is_active")
+  @@index([displayOrder], map: "idx_remote_systems_display_order")
+  @@map("remote_systems")
 }
 
 model Tag {

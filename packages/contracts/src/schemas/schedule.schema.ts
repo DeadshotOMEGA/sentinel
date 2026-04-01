@@ -284,6 +284,13 @@ export const DutyRoleIdParamSchema = v.object({
   id: v.pipe(v.string('Duty role ID is required'), v.uuid('Invalid duty role ID format')),
 })
 
+/**
+ * Member ID path param for schedule summary lookups
+ */
+export const MemberScheduleSummaryParamsSchema = v.object({
+  memberId: v.pipe(v.string('Member ID is required'), v.uuid('Invalid member ID format')),
+})
+
 // ============================================================================
 // DDS/Duty Watch Convenience Response Schemas
 // ============================================================================
@@ -341,6 +348,17 @@ export const DutyWatchTeamResponseSchema = v.object({
   ),
 })
 
+/**
+ * Member duty assignment summary response
+ */
+export const MemberScheduleSummaryResponseSchema = v.object({
+  memberId: v.string(),
+  isDdsToday: v.boolean(),
+  isDutyWatchToday: v.boolean(),
+  upcomingDdsWeeks: v.array(v.string()),
+  upcomingDutyWatchWeeks: v.array(v.string()),
+})
+
 // ============================================================================
 // Type Exports
 // ============================================================================
@@ -374,5 +392,9 @@ export type ScheduleListQuery = v.InferOutput<typeof ScheduleListQuerySchema>
 export type ScheduleIdParam = v.InferOutput<typeof ScheduleIdParamSchema>
 export type ScheduleAssignmentParams = v.InferOutput<typeof ScheduleAssignmentParamsSchema>
 export type DutyRoleIdParam = v.InferOutput<typeof DutyRoleIdParamSchema>
+export type MemberScheduleSummaryParams = v.InferOutput<typeof MemberScheduleSummaryParamsSchema>
 export type CurrentDdsResponse = v.InferOutput<typeof CurrentDdsResponseSchema>
 export type DutyWatchTeamResponse = v.InferOutput<typeof DutyWatchTeamResponseSchema>
+export type MemberScheduleSummaryResponse = v.InferOutput<
+  typeof MemberScheduleSummaryResponseSchema
+>

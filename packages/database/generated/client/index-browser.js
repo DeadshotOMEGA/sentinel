@@ -269,10 +269,26 @@ exports.Prisma.MemberScalarFieldEnum = {
 exports.Prisma.MemberSessionScalarFieldEnum = {
   id: 'id',
   memberId: 'memberId',
+  remoteSystemId: 'remoteSystemId',
   token: 'token',
   expiresAt: 'expiresAt',
   ipAddress: 'ipAddress',
   userAgent: 'userAgent',
+  remoteSystemNameSnapshot: 'remoteSystemNameSnapshot',
+  lastSeenAt: 'lastSeenAt',
+  endedAt: 'endedAt',
+  endReason: 'endReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RemoteSystemScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  displayOrder: 'displayOrder',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -809,6 +825,7 @@ exports.Prisma.ModelName = {
   Event: 'Event',
   Member: 'Member',
   MemberSession: 'MemberSession',
+  RemoteSystem: 'RemoteSystem',
   Tag: 'Tag',
   MemberTag: 'MemberTag',
   SecurityAlert: 'SecurityAlert',

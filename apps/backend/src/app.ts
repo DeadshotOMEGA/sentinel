@@ -38,6 +38,9 @@ import {
   statHolidayContract,
   tagContract,
   operationalTimingContract,
+  remoteSystemContract,
+  networkSettingContract,
+  systemStatusContract,
 } from '@sentinel/contracts'
 import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
@@ -82,6 +85,9 @@ import { unitEventsRouter } from './routes/unit-events.js'
 import { statHolidaysRouter } from './routes/stat-holidays.js'
 import { tagsRouter } from './routes/tags.js'
 import { operationalTimingsRouter } from './routes/operational-timings.js'
+import { remoteSystemsRouter } from './routes/remote-systems.js'
+import { networkSettingsRouter } from './routes/network-settings.js'
+import { systemStatusRouter } from './routes/system-status.js'
 import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
@@ -307,6 +313,33 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(operationalTimingContract, operationalTimingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(remoteSystemContract, remoteSystemsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(networkSettingContract, networkSettingsRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(systemStatusContract, systemStatusRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
