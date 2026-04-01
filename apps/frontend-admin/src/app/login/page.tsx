@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { BadgeScanInput } from '@/components/auth/badge-scan-input'
 import type { PinInputInitialSelection, PinInputSubmission } from '@/components/auth/pin-input'
@@ -76,6 +76,31 @@ function getErrorMessage(body: unknown, fallback: string): string {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
+  )
+}
+
+function LoginPageFallback() {
+  return (
+    <div className="min-h-screen bg-base-200 px-(--space-4) py-(--space-6)">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center">
+        <AppCard
+          variant="elevated"
+          className="w-full border border-base-300 bg-base-100 shadow-[var(--shadow-2)]"
+        >
+          <AppCardContent className="flex justify-center px-(--space-6) py-(--space-8)">
+            <span className="loading loading-spinner loading-lg" />
+          </AppCardContent>
+        </AppCard>
+      </div>
+    </div>
+  )
+}
+
+function LoginPageContent() {
   const [step, setStep] = useState<'badge' | 'pin'>('badge')
   const [badgeSerial, setBadgeSerial] = useState<string>('')
   const [error, setError] = useState<string | null>(null)

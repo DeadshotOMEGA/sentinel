@@ -1,7 +1,7 @@
 'use client'
 /* global process */
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
 import { resolvePostLoginDestination } from '@/lib/post-login-destination'
@@ -10,6 +10,26 @@ import { useAuthStore } from '@/store/auth-store'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 export default function ChangePinRequiredPage() {
+  return (
+    <Suspense fallback={<ChangePinRequiredFallback />}>
+      <ChangePinRequiredContent />
+    </Suspense>
+  )
+}
+
+function ChangePinRequiredFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-base-100 p-(--space-4)">
+      <div className="card w-full max-w-md border border-base-300 bg-base-100 shadow-(--shadow-1)">
+        <div className="card-body items-center">
+          <span className="loading loading-spinner loading-md" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ChangePinRequiredContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { logout } = useAuthStore()
