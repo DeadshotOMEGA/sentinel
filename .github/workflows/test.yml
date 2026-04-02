@@ -87,7 +87,6 @@ jobs:
           pnpm --filter @sentinel/database exec prisma migrate diff \
             --from-migrations prisma/migrations \
             --to-schema prisma/schema.prisma \
-            --shadow-database-url "$PRISMA_SHADOW_DATABASE_URL" \
             --exit-code
 
       - name: Bootstrap schema on fresh CI Postgres instance
