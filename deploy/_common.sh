@@ -14,6 +14,7 @@ COMPOSE_FILE_ARGS=()
 WITH_OBS="false"
 ALLOW_GRAFANA_LAN="false"
 ALLOW_WIKI_LAN="false"
+UPDATE_HAS_PRE_UPDATE_BACKUP="${UPDATE_HAS_PRE_UPDATE_BACKUP:-false}"
 
 log() {
   printf '[sentinel] %s\n' "$*"
@@ -26,6 +27,18 @@ warn() {
 die() {
   printf '[sentinel][error] %s\n' "$*" >&2
   exit 1
+}
+
+shell_join() {
+  local joined="" part quoted
+  for part in "$@"; do
+    printf -v quoted '%q' "${part}"
+    if [[ -n "${joined}" ]]; then
+      joined+=" "
+    fi
+    joined+="${quoted}"
+  done
+  printf '%s\n' "${joined}"
 }
 
 run_root() {
@@ -419,6 +432,14 @@ compose() {
   return 1
 }
 
+compose_command_prefix() {
+  local args=("${DOCKER_CMD[@]}" compose --env-file "${ENV_FILE}" "${COMPOSE_FILE_ARGS[@]}")
+  if [[ "${WITH_OBS}" == "true" ]]; then
+    args+=(--profile obs)
+  fi
+  shell_join "${args[@]}"
+}
+
 database_non_prisma_table_count() {
   local postgres_user postgres_db raw_count
   postgres_user="$(env_value POSTGRES_USER sentinel)"
@@ -520,20 +541,140 @@ wait_for_service_health() {
   return 1
 }
 
-verify_prisma_schema_parity() {
-  log "Verifying schema parity against migration files"
+prisma_schema_parity_clean() {
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'
+}
 
-  if compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'; then
+prisma_db_to_schema_diff_human() {
+  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'
+}
+
+prisma_db_to_schema_diff_script() {
+  compose exec -T backend sh -lc 'cd /app && rm -f /tmp/sentinel-prisma-diff.sql && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script --output /tmp/sentinel-prisma-diff.sql && cat /tmp/sentinel-prisma-diff.sql && rm -f /tmp/sentinel-prisma-diff.sql'
+}
+
+normalize_sql_script() {
+  local script="${1:-}"
+  printf '%s\n' "${script}" \
+    | tr -d '\r' \
+    | sed -E \
+      -e '/^[[:space:]]*$/d' \
+      -e '/^[[:space:]]*--/d' \
+      -e '/^[[:space:]]*Loaded Prisma config from /d' \
+      -e 's/^[[:space:]]+//; s/[[:space:]]+$//'
+}
+
+normalized_approved_prisma_drift_sql() {
+  printf 'ALTER TABLE "remote_systems" ALTER COLUMN "updated_at" DROP DEFAULT;\n'
+}
+
+db_column_default_expr() {
+  local table_name="${1}"
+  local column_name="${2}"
+  local postgres_user postgres_db default_expr
+  postgres_user="$(env_value POSTGRES_USER sentinel)"
+  postgres_db="$(env_value POSTGRES_DB sentinel)"
+
+  default_expr="$(
+    compose exec -T postgres psql -U "${postgres_user}" -d "${postgres_db}" -tAc \
+      "SELECT column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '${table_name}' AND column_name = '${column_name}';" \
+      2>/dev/null || true
+  )"
+
+  printf '%s\n' "$(printf '%s' "${default_expr}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+}
+
+default_expr_is_now_like() {
+  local raw="${1:-}"
+  local normalized
+  normalized="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+  [[ "${normalized}" =~ ^(current_timestamp(\([0-9]+\))?|now\(\)|transaction_timestamp\(\))$ ]]
+}
+
+print_prisma_drift_help() {
+  local compose_prefix
+  compose_prefix="$(compose_command_prefix)"
+
+  warn "Common cause: an older appliance database drifted from the canonical Prisma baseline."
+  warn "Only the exact DROP DEFAULT case for public.remote_systems.updated_at is auto-remediated."
+  if [[ "${UPDATE_HAS_PRE_UPDATE_BACKUP}" == "true" ]]; then
+    warn "A pre-update backup was already created earlier in this run."
+  fi
+  warn "No broad drift ignore was applied."
+  warn "For more detail, rerun on the appliance from any directory:"
+  warn "  ${compose_prefix} exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate status'"
+  warn "  ${compose_prefix} exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'"
+  warn "  ${compose_prefix} exec -T postgres psql -U $(env_value POSTGRES_USER sentinel) -d $(env_value POSTGRES_DB sentinel) -c \"SELECT column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'remote_systems' AND column_name = 'updated_at';\""
+}
+
+apply_approved_remote_systems_updated_at_default_remediation() {
+  local postgres_user postgres_db live_default
+  postgres_user="$(env_value POSTGRES_USER sentinel)"
+  postgres_db="$(env_value POSTGRES_DB sentinel)"
+  live_default="$(db_column_default_expr remote_systems updated_at)"
+
+  if [[ -z "${live_default}" ]]; then
+    warn "Approved drift candidate did not have a live default on public.remote_systems.updated_at."
+    return 1
+  fi
+
+  if ! default_expr_is_now_like "${live_default}"; then
+    warn "Approved drift candidate had an unexpected live default on public.remote_systems.updated_at: ${live_default}"
+    return 1
+  fi
+
+  log "Approved compatibility drift detected on public.remote_systems.updated_at; canonical schema expects no default."
+  log "Live default expression on public.remote_systems.updated_at: ${live_default}"
+  log 'Applying one-time schema correction: ALTER TABLE "remote_systems" ALTER COLUMN "updated_at" DROP DEFAULT;'
+
+  compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "${postgres_user}" -d "${postgres_db}" \
+    -c 'ALTER TABLE "remote_systems" ALTER COLUMN "updated_at" DROP DEFAULT;'
+
+  log "Rechecking canonical Prisma schema parity after approved remediation"
+  if ! prisma_schema_parity_clean; then
+    warn "Approved compatibility drift remediation did not produce a clean canonical Prisma schema diff."
+    return 1
+  fi
+
+  log "Approved compatibility drift remediation completed successfully."
+  return 0
+}
+
+verify_prisma_schema_parity() {
+  local diff_script normalized_diff approved_diff
+  approved_diff="$(normalized_approved_prisma_drift_sql)"
+
+  log "Verifying database schema matches the canonical Prisma schema"
+
+  if prisma_schema_parity_clean; then
     return 0
   fi
 
-  warn "Prisma schema parity check failed. Capturing human-readable drift summary (database -> schema)."
-  compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma' || true
-  warn "Common cause: an older appliance database drifted from the canonical Prisma baseline."
-  warn "For more detail, rerun on the appliance:"
-  warn "  docker compose exec -T backend sh -lc \"cd /app && pnpm --filter @sentinel/database exec prisma migrate status\""
-  warn "  docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'"
-  die "Database schema drift detected; review the Prisma diff output above before retrying the update."
+  warn "Canonical Prisma schema parity check failed. Capturing executable database-to-schema drift SQL."
+  if ! diff_script="$(prisma_db_to_schema_diff_script)"; then
+    warn "Failed to capture executable Prisma drift SQL."
+    warn "Capturing human-readable drift summary (database -> schema)."
+    prisma_db_to_schema_diff_human || true
+    print_prisma_drift_help
+    die "Database schema drift detected; canonical Prisma schema parity is not clean."
+  fi
+
+  normalized_diff="$(normalize_sql_script "${diff_script}" | paste -sd' ' -)"
+  if [[ "${normalized_diff}" == "${approved_diff}" ]]; then
+    if apply_approved_remote_systems_updated_at_default_remediation; then
+      return 0
+    fi
+
+    warn "Approved compatibility drift remediation failed or left additional drift behind."
+  else
+    warn "Detected non-allowlisted Prisma drift SQL:"
+    warn "  ${normalized_diff:-<empty>}"
+  fi
+
+  warn "Capturing human-readable drift summary (database -> schema)."
+  prisma_db_to_schema_diff_human || true
+  print_prisma_drift_help
+  die "Database schema drift detected; canonical Prisma schema parity is not clean."
 }
 
 run_safe_migrations() {

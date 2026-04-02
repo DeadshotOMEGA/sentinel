@@ -55,6 +55,41 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter @sentinel/database prisma generate
 
+      - name: Verify Prisma migrations match canonical schema
+        env:
+          DATABASE_URL: postgresql://sentinel:sentinel@localhost:5432/sentinel_migration_guard?schema=public
+          PRISMA_SHADOW_DATABASE_URL: postgresql://sentinel:sentinel@localhost:5432/sentinel_migration_guard_shadow?schema=public
+        run: |
+          pnpm --filter @sentinel/database exec node --input-type=module <<'NODE'
+          import { Client } from 'pg'
+
+          const client = new Client({
+            host: 'localhost',
+            port: 5432,
+            user: 'sentinel',
+            password: 'sentinel',
+            database: 'postgres',
+          })
+
+          const databases = ['sentinel_migration_guard', 'sentinel_migration_guard_shadow']
+
+          try {
+            await client.connect()
+            for (const database of databases) {
+              await client.query(`DROP DATABASE IF EXISTS "${database}" WITH (FORCE)`)
+              await client.query(`CREATE DATABASE "${database}"`)
+            }
+          } finally {
+            await client.end()
+          }
+          NODE
+
+          pnpm --filter @sentinel/database exec prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema prisma/schema.prisma \
+            --shadow-database-url "$PRISMA_SHADOW_DATABASE_URL" \
+            --exit-code
+
       - name: Bootstrap schema on fresh CI Postgres instance
         run: pnpm --filter @sentinel/database exec prisma db push
 

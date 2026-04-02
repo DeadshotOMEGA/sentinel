@@ -413,11 +413,15 @@ Post-upgrade UI smoke checks (recommended):
   `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
 - Updates run `prisma:migrate:deploy:safe` automatically, so newly added tables/columns
   (for example `remote_systems` and `member_sessions` presence-tracking columns) are applied on appliance upgrades.
-- Installer/update then verifies schema parity with migration files:
+- Installer/update then verifies database parity against the canonical Prisma schema:
   `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code'`
+- A follow-up migration drops the legacy `remote_systems.updated_at DEFAULT CURRENT_TIMESTAMP` so the migration chain matches the canonical Prisma schema (`@updatedAt` with no DB default).
+- If Prisma diff detects exactly that one legacy default drift on an appliance, the updater auto-remediates it by running `ALTER TABLE "remote_systems" ALTER COLUMN "updated_at" DROP DEFAULT;`, then re-runs the parity check. Any other drift still fails closed.
 - If update/install fails with `ERR_PNPM_RECOURSIVE_EXEC_FIRST_FAIL` around `prisma migrate diff`, the underlying problem is usually schema drift on that appliance database, not pnpm itself. Capture the real drift summary with:
-  - `docker compose exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
-  - `docker compose exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'`
+  - `docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml exec -T backend sh -lc "cd /app && pnpm --filter @sentinel/database exec prisma migrate status"`
+  - `docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'`
+  - `docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml exec -T postgres psql -U sentinel -d sentinel -c "SELECT column_default FROM information_schema.columns WHERE table_schema = '\''public'\'' AND table_name = '\''remote_systems'\'' AND column_name = '\''updated_at'\'';"`
+  - If Docker on that appliance requires elevation, replace `docker` with `sudo docker`.
   - This is most common on appliances whose database history predates the canonical `0_init` Prisma baseline introduced on February 21, 2026.
 
 ## Members + badges transfer (local -> deployed)
