@@ -7,6 +7,8 @@ import {
 } from '../lib/system-bootstrap.js'
 
 const BCRYPT_COST = 12
+// Temporary bootstrap PIN for regular members after badge assignment.
+// Login treats this as setup-only state and requires the member to replace it.
 const TEMPORARY_PIN = '1111'
 
 /**

@@ -2,7 +2,14 @@ import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SessionRepository } from '../repositories/session-repository.js'
-import { AuthService, PinPolicyError } from './auth-service.js'
+import {
+  AuthService,
+  ForbiddenError,
+  PinPolicyError,
+  PinSetupRequiredError,
+} from './auth-service.js'
+
+const TEST_BCRYPT_COST = 4
 
 function createSessionRepositoryMock() {
   return {
@@ -17,109 +24,215 @@ function createSessionRepositoryMock() {
   }
 }
 
+function createMemberRecord(
+  overrides: Partial<{
+    id: string
+    firstName: string
+    lastName: string
+    rank: string
+    serviceNumber: string
+    accountLevel: number
+    mustChangePin: boolean
+    status: string
+    pinHash: string | null
+  }> = {}
+) {
+  return {
+    id: 'member-1',
+    firstName: 'Alex',
+    lastName: 'Example',
+    rank: 'PO2',
+    serviceNumber: 'M12345678',
+    accountLevel: 1,
+    mustChangePin: false,
+    status: 'active',
+    pinHash: null,
+    ...overrides,
+  }
+}
+
+function createPrismaMock(memberOverrides: Parameters<typeof createMemberRecord>[0] = {}) {
+  const memberRecord = createMemberRecord(memberOverrides)
+
+  return {
+    badge: {
+      findUnique: vi.fn().mockResolvedValue({
+        id: 'badge-1',
+        assignedToId: memberRecord.id,
+        status: 'active',
+        members: [],
+      }),
+    },
+    member: {
+      findUnique: vi.fn().mockResolvedValue(memberRecord),
+      update: vi.fn().mockResolvedValue(undefined),
+    },
+    setting: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
+  } as unknown as PrismaClientInstance & {
+    member: {
+      findUnique: ReturnType<typeof vi.fn>
+      update: ReturnType<typeof vi.fn>
+    }
+  }
+}
+
+function attachSessionRepository(service: AuthService) {
+  const sessionRepository = createSessionRepositoryMock()
+  ;(service as unknown as { sessionRepo: SessionRepository }).sessionRepo =
+    sessionRepository as unknown as SessionRepository
+  return sessionRepository
+}
+
 describe('AuthService', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('allows login when a member has no PIN and flags PIN setup as required', async () => {
-    const prisma = {
-      badge: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'badge-1',
-          assignedToId: 'member-1',
-          status: 'active',
-          members: [],
-        }),
-      },
-      member: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'member-1',
-          firstName: 'Alex',
-          lastName: 'Example',
-          rank: 'PO2',
-          serviceNumber: 'M12345678',
-          accountLevel: 1,
-          mustChangePin: false,
-          status: 'active',
-          pinHash: null,
-        }),
-        update: vi.fn().mockResolvedValue(undefined),
-      },
-    } as unknown as PrismaClientInstance
-
+  it('rejects login when a member has no PIN and flags setup as required', async () => {
+    const prisma = createPrismaMock({ pinHash: null, mustChangePin: false })
     const service = new AuthService(prisma)
-    const sessionRepository = createSessionRepositoryMock()
-    ;(service as unknown as { sessionRepo: SessionRepository }).sessionRepo =
-      sessionRepository as unknown as SessionRepository
+    const sessionRepository = attachSessionRepository(service)
 
-    const result = await service.login(
-      'serial-1',
-      '9876',
-      {
-        remoteSystemId: 'remote-1',
-        remoteSystemName: 'Deployment Laptop',
-      },
-      '127.0.0.1',
-      'vitest'
-    )
+    await expect(
+      service.login(
+        'serial-1',
+        '9876',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Deployment Laptop',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).rejects.toBeInstanceOf(PinSetupRequiredError)
 
     expect(prisma.member.update).toHaveBeenCalledWith({
       where: { id: 'member-1' },
       data: { mustChangePin: true },
     })
-    expect(result.member.mustChangePin).toBe(true)
-    expect(sessionRepository.create).toHaveBeenCalled()
+    expect(sessionRepository.create).not.toHaveBeenCalled()
   })
 
-  it('flags blocked member PINs for change after a successful login', async () => {
-    const weakPinHash = await bcrypt.hash('1234', 12)
-    const prisma = {
-      badge: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'badge-1',
-          assignedToId: 'member-1',
-          status: 'active',
-          members: [],
-        }),
-      },
-      member: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'member-1',
-          firstName: 'Alex',
-          lastName: 'Example',
-          rank: 'PO2',
-          serviceNumber: 'M12345678',
-          accountLevel: 1,
-          mustChangePin: false,
-          status: 'active',
-          pinHash: weakPinHash,
-        }),
-        update: vi.fn().mockResolvedValue(undefined),
-      },
-    } as unknown as PrismaClientInstance
-
+  it('rejects login when a member still has a blocked default PIN', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('1111', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
     const service = new AuthService(prisma)
-    const sessionRepository = createSessionRepositoryMock()
-    ;(service as unknown as { sessionRepo: SessionRepository }).sessionRepo =
-      sessionRepository as unknown as SessionRepository
+    const sessionRepository = attachSessionRepository(service)
 
-    const result = await service.login(
-      'serial-1',
-      '1234',
-      {
-        remoteSystemId: 'remote-1',
-        remoteSystemName: 'Deployment Laptop',
-      },
-      '127.0.0.1',
-      'vitest'
-    )
+    await expect(
+      service.login(
+        'serial-1',
+        '1111',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Deployment Laptop',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).rejects.toBeInstanceOf(PinSetupRequiredError)
 
     expect(prisma.member.update).toHaveBeenCalledWith({
       where: { id: 'member-1' },
       data: { mustChangePin: true },
     })
-    expect(result.member.mustChangePin).toBe(true)
+    expect(sessionRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('preflight reports missing PIN setup state', async () => {
+    const prisma = createPrismaMock({ pinHash: null, mustChangePin: false })
+    const service = new AuthService(prisma)
+
+    await expect(service.preflightLogin('serial-1', '127.0.0.1')).resolves.toMatchObject({
+      member: {
+        id: 'member-1',
+        mustChangePin: true,
+      },
+      pinState: 'setup_required',
+      setupReason: 'missing',
+    })
+  })
+
+  it('preflight reports default PIN setup state', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('1111', TEST_BCRYPT_COST),
+      mustChangePin: true,
+    })
+    const service = new AuthService(prisma)
+
+    await expect(service.preflightLogin('serial-1', '127.0.0.1')).resolves.toMatchObject({
+      member: {
+        id: 'member-1',
+        mustChangePin: true,
+      },
+      pinState: 'setup_required',
+      setupReason: 'default',
+    })
+  })
+
+  it('allows self-setup for a member with a temporary default PIN and clears mustChangePin', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('1111', TEST_BCRYPT_COST),
+      mustChangePin: true,
+    })
+    const service = new AuthService(prisma)
+
+    await service.setupPin('serial-1', '2468', '127.0.0.1')
+
+    const finalUpdateCall = prisma.member.update.mock.calls.at(-1)?.[0]
+    expect(finalUpdateCall).toMatchObject({
+      where: { id: 'member-1' },
+      data: { mustChangePin: false },
+    })
+    expect(typeof finalUpdateCall?.data.pinHash).toBe('string')
+    await expect(bcrypt.compare('2468', finalUpdateCall?.data.pinHash as string)).resolves.toBe(
+      true
+    )
+  })
+
+  it('rejects self-setup for an account with a configured PIN', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+
+    await expect(service.setupPin('serial-1', '1357', '127.0.0.1')).rejects.toBeInstanceOf(
+      ForbiddenError
+    )
+  })
+
+  it('still allows normal login for a configured non-default PIN', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+
+    await expect(
+      service.login(
+        'serial-1',
+        '2468',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Deployment Laptop',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).resolves.toMatchObject({
+      member: {
+        id: 'member-1',
+        mustChangePin: false,
+      },
+    })
+
+    expect(sessionRepository.create).toHaveBeenCalled()
   })
 
   it('rejects blocked replacement PINs', async () => {
@@ -129,7 +242,7 @@ describe('AuthService', () => {
       },
       member: {
         findUnique: vi.fn().mockResolvedValue({
-          pinHash: await bcrypt.hash('2468', 12),
+          pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
           mustChangePin: true,
         }),
       },

@@ -171,7 +171,9 @@ export function createApp(): Express {
   }
 
   // Badge+PIN auth routes
+  app.use('/api/auth/preflight-login', authLimiter)
   app.use('/api/auth/login', authLimiter)
+  app.use('/api/auth/setup-pin', authLimiter)
   app.use('/api/auth/rfid-login', rfidAuthLimiter)
   app.use('/api/auth', authRouter)
 

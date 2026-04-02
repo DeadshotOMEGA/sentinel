@@ -85,7 +85,7 @@ export const ddsContract = c.router({
     },
     summary: 'Get kiosk DDS responsibility state',
     description:
-      'Get whether the scanned member should be prompted to open the building and/or take DDS for today',
+      'Get kiosk responsibility context including expected DDS, open-building status, who is already inside, and same-day opening history',
   },
 
   /**

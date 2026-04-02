@@ -164,6 +164,13 @@ export class PresenceService {
   }
 
   /**
+   * Get the count of currently present visitors.
+   */
+  async getActiveVisitorCount(): Promise<number> {
+    return this.visitorRepo.getActiveCount()
+  }
+
+  /**
    * Get all members with their presence status
    */
   async getMemberPresenceList(): Promise<MemberPresenceItem[]> {

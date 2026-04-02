@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { AlertTriangle, DoorOpen, ShieldCheck, UserCheck } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, Clock3, DoorOpen, ShieldCheck, UserCheck, Users } from 'lucide-react'
 import {
   AppCard,
   AppCardContent,
@@ -13,18 +13,60 @@ import { AppBadge } from '@/components/ui/AppBadge'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { TID } from '@/lib/test-ids'
 import type { KioskResponsibilityStateResponse } from '@sentinel/contracts'
+import {
+  getKioskResponsibilityPromptPresentation,
+  getResponsibilityPrimaryLabel,
+  getResponsibilitySummary,
+  type ResponsibilityActionChoice,
+} from './kiosk-responsibility-prompt.logic'
 
 interface KioskResponsibilityPromptProps {
   state: KioskResponsibilityStateResponse
   isPending: boolean
   errorMessage?: string | null
   onDecline: () => void
-  onSubmit: (selection: { openBuilding: boolean; takeDds: boolean }) => void
+  onSubmit: (action: ResponsibilityActionChoice) => void
 }
 
-function formatMemberName(member: { rank: string; firstName: string; lastName: string } | null) {
-  if (!member) return null
+const bannerToneClasses = {
+  info: 'alert-info border border-info/30 bg-info-fadded text-info-fadded-content',
+  warning: 'alert-warning border border-warning/30 bg-warning-fadded text-warning-fadded-content',
+} as const
+
+function formatMemberName(
+  member:
+    | {
+        rank: string
+        firstName: string
+        lastName: string
+      }
+    | null
+    | undefined
+): string {
+  if (!member) {
+    return 'Unknown'
+  }
+
   return `${member.rank} ${member.firstName} ${member.lastName}`
+}
+
+function formatTime(timestamp: string | null | undefined): string {
+  if (!timestamp) {
+    return 'Unknown time'
+  }
+
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function formatExpectedSource(state: KioskResponsibilityStateResponse): string {
+  if (!state.expectedDds) {
+    return 'No expected DDS set'
+  }
+
+  return state.expectedDds.source === 'live' ? 'Live DDS target' : 'Scheduled DDS target'
 }
 
 export function KioskResponsibilityPrompt({
@@ -34,50 +76,40 @@ export function KioskResponsibilityPrompt({
   onDecline,
   onSubmit,
 }: KioskResponsibilityPromptProps) {
-  const [openBuilding, setOpenBuilding] = useState(state.needsBuildingOpen)
-  const [takeDds, setTakeDds] = useState(false)
+  const presentation = useMemo(() => getKioskResponsibilityPromptPresentation(state), [state])
+  const [selectedAction, setSelectedAction] = useState<ResponsibilityActionChoice | null>(
+    presentation.defaultAction
+  )
 
   useEffect(() => {
-    setOpenBuilding(state.needsBuildingOpen)
-    setTakeDds(false)
-  }, [state.member.id, state.needsBuildingOpen])
+    setSelectedAction(presentation.defaultAction)
+  }, [presentation.defaultAction, state.member.id, state.promptVariant])
 
-  useEffect(() => {
-    if (takeDds) {
-      setOpenBuilding(true)
-    }
-  }, [takeDds])
-
-  const submitDisabled =
-    isPending ||
-    (!takeDds && !openBuilding) ||
-    (takeDds && !state.canAcceptDds) ||
-    (!takeDds && openBuilding && !state.canOpenBuilding)
-
-  const headline = state.isFirstMemberCheckin
-    ? 'You are the first member checked in today.'
-    : 'Daily opening responsibilities are still unresolved.'
-
-  const scheduledDdsName = formatMemberName(state.scheduledDds)
-  const currentDdsName = formatMemberName(state.currentDds)
-  const currentHolderName = formatMemberName(state.currentLockupHolder)
+  const selectedOption =
+    presentation.actionOptions.find((option) => option.value === selectedAction) ?? null
+  const primaryLabel = selectedOption
+    ? getResponsibilityPrimaryLabel(state, selectedOption.value)
+    : null
+  const summaryText = selectedOption
+    ? getResponsibilitySummary(state, selectedOption.value)
+    : (presentation.blockedMessage ??
+      'Arrival was recorded. Another member still needs to resolve responsibility.')
+  const cardStatus = state.promptVariant === 'expected_dds' ? 'info' : 'warning'
+  const openContext = state.currentOpenContext
 
   return (
     <div
       className="absolute inset-0 z-(--z-modal) bg-base-300/80 backdrop-blur-[2px]"
       data-testid={TID.dashboard.kiosk.responsibilityPrompt}
     >
-      <div
-        className="flex h-full items-center justify-center"
-        style={{ padding: 'var(--space-4)' }}
-      >
+      <div className="flex h-full items-center justify-center p-(--space-4)">
         <AppCard
           variant="elevated"
-          status="warning"
-          className="w-full max-w-5xl border border-warning/40 bg-base-100 text-base-content shadow-2xl"
+          status={cardStatus}
+          className="w-full max-w-6xl border border-base-300 bg-base-100 text-base-content shadow-2xl"
         >
           <AppCardHeader
-            className="border-b border-base-300 bg-warning-fadded/55"
+            className="border-b border-base-300 bg-base-200/85"
             style={{ padding: 'var(--space-5)', gap: 'var(--space-3)' }}
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -86,12 +118,21 @@ export function KioskResponsibilityPrompt({
               </AppBadge>
               {state.isFirstMemberCheckin && (
                 <AppBadge status="info" size="lg">
-                  FIRST MEMBER
+                  FIRST ARRIVAL
                 </AppBadge>
               )}
-              {state.needsBuildingOpen && (
-                <AppBadge status="error" size="lg">
+              {state.promptVariant === 'expected_dds' && (
+                <AppBadge status="info" size="lg">
+                  EXPECTED DDS
+                </AppBadge>
+              )}
+              {state.needsBuildingOpen ? (
+                <AppBadge status="warning" size="lg">
                   BUILDING SECURED
+                </AppBadge>
+              ) : (
+                <AppBadge status="success" size="lg">
+                  BUILDING OPEN
                 </AppBadge>
               )}
               {state.needsDds && (
@@ -100,89 +141,80 @@ export function KioskResponsibilityPrompt({
                 </AppBadge>
               )}
             </div>
+
             <AppCardTitle className="font-display text-4xl leading-tight sm:text-5xl">
-              {headline}
+              {presentation.headline}
             </AppCardTitle>
-            <AppCardDescription className="max-w-3xl text-base text-base-content/80">
-              Choose the responsibility you are taking now. This kiosk will keep stopping later
-              arrivals until the building is open and today&apos;s DDS is active.
+            <AppCardDescription className="max-w-4xl text-base text-base-content/80">
+              {presentation.helperText}
             </AppCardDescription>
           </AppCardHeader>
 
           <AppCardContent
-            className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]"
+            className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]"
             style={{ padding: 'var(--space-5)' }}
           >
             <div className="space-y-4">
               <div
                 role="alert"
-                className="alert alert-soft border border-warning/30 bg-warning-fadded text-base-content"
+                className={`alert alert-soft ${bannerToneClasses[presentation.bannerTone]}`}
               >
-                <AlertTriangle className="h-5 w-5" />
+                <ShieldCheck className="h-5 w-5" />
                 <div>
-                  <p className="font-semibold">Complete one of these responsibilities now</p>
-                  <p className="text-sm text-base-content/80">
-                    Opening the building clears the secured status. Taking DDS also opens the
-                    building and transfers lockup automatically.
-                  </p>
+                  <p className="font-semibold">{presentation.bannerTitle}</p>
+                  <p className="text-sm opacity-90">{presentation.bannerDescription}</p>
                 </div>
               </div>
 
-              <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/45">
-                <legend className="fieldset-legend px-3">Opening responsibility</legend>
-                <label
-                  className={`flex items-center justify-between gap-4 px-4 py-5 ${
-                    !state.canOpenBuilding ? 'opacity-60' : ''
-                  }`}
+              {presentation.blockedMessage && (
+                <div
+                  role="alert"
+                  className="alert alert-soft alert-warning border border-warning/30"
                 >
-                  <div>
-                    <p className="text-lg font-semibold">I am opening the building</p>
-                    <p className="text-sm text-base-content/70">
-                      Opening the building makes you the current lockup holder until DDS is active.
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-xl toggle-success"
-                    checked={openBuilding}
-                    disabled={!state.canOpenBuilding || takeDds}
-                    onChange={(event) => setOpenBuilding(event.target.checked)}
-                  />
-                </label>
-                {!state.canOpenBuilding && (
-                  <p className="label px-4 pb-4 text-base-content/70">
-                    You must be checked in and lockup-qualified to open the building.
-                  </p>
-                )}
-              </fieldset>
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>{presentation.blockedMessage}</span>
+                </div>
+              )}
 
-              <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/45">
-                <legend className="fieldset-legend px-3">DDS responsibility</legend>
-                <label
-                  className={`flex items-center justify-between gap-4 px-4 py-5 ${
-                    !state.canAcceptDds ? 'opacity-60' : ''
-                  }`}
-                >
-                  <div>
-                    <p className="text-lg font-semibold">I am taking DDS for today</p>
-                    <p className="text-sm text-base-content/70">
-                      Taking DDS also opens the building and transfers lockup to you automatically.
-                    </p>
+              {presentation.actionOptions.length > 1 && (
+                <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/45 p-4">
+                  <legend className="fieldset-legend px-1">Choose what you are doing now</legend>
+                  <div className="space-y-3">
+                    {presentation.actionOptions.map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex cursor-pointer items-start gap-4 rounded-box border px-4 py-4 transition-colors ${
+                          selectedAction === option.value
+                            ? 'border-primary bg-primary-fadded text-primary-fadded-content'
+                            : 'border-base-300 bg-base-100 text-base-content'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="kiosk-responsibility-action"
+                          className="radio radio-primary radio-lg mt-1"
+                          checked={selectedAction === option.value}
+                          onChange={() => setSelectedAction(option.value)}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-lg font-semibold">{option.title}</p>
+                          <p className="text-sm opacity-80">{option.description}</p>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-xl toggle-primary"
-                    checked={takeDds}
-                    disabled={!state.canAcceptDds}
-                    onChange={(event) => setTakeDds(event.target.checked)}
-                  />
-                </label>
-                {!state.canAcceptDds && (
-                  <p className="label px-4 pb-4 text-base-content/70">
-                    You must be checked in and hold an active DDS qualification to take DDS.
+                </fieldset>
+              )}
+
+              {presentation.actionOptions.length === 1 && selectedOption && (
+                <div className="rounded-box border border-base-300 bg-base-200/45 p-4">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-base-content/60">
+                    Action Ready
                   </p>
-                )}
-              </fieldset>
+                  <p className="mt-2 text-lg font-semibold">{selectedOption.title}</p>
+                  <p className="mt-1 text-sm text-base-content/70">{selectedOption.description}</p>
+                </div>
+              )}
 
               {errorMessage && (
                 <div role="alert" className="alert alert-error alert-soft">
@@ -193,15 +225,9 @@ export function KioskResponsibilityPrompt({
 
               <div className="rounded-box border border-base-300 bg-base-200/45 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-base-content/60">
-                  Current selection
+                  Current Selection
                 </p>
-                <p className="mt-2 text-lg font-semibold">
-                  {takeDds
-                    ? 'DDS responsibility will be accepted and the building will open.'
-                    : openBuilding
-                      ? 'The building will be opened, but DDS will still need to be accepted later.'
-                      : 'No responsibility selected yet.'}
-                </p>
+                <p className="mt-2 text-lg font-semibold">{summaryText}</p>
               </div>
 
               <div className="flex flex-wrap justify-end gap-3 border-t border-base-300 pt-4">
@@ -214,58 +240,154 @@ export function KioskResponsibilityPrompt({
                 >
                   Not Me
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-lg btn-primary min-w-64"
-                  disabled={submitDisabled}
-                  onClick={() => onSubmit({ openBuilding, takeDds })}
-                  data-testid={TID.dashboard.kiosk.responsibilitySubmit}
-                >
-                  {isPending && <ButtonSpinner />}
-                  Accept Responsibility
-                </button>
+                {selectedOption && primaryLabel && (
+                  <button
+                    type="button"
+                    className="btn btn-lg btn-primary min-w-64"
+                    disabled={isPending}
+                    onClick={() => onSubmit(selectedOption.value)}
+                    data-testid={TID.dashboard.kiosk.responsibilitySubmit}
+                  >
+                    {isPending && <ButtonSpinner />}
+                    {primaryLabel}
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="rounded-box border border-base-300 bg-base-200/35">
-              <div
-                className="grid divide-y divide-base-300"
-                style={{ gap: '0', padding: 'var(--space-2)' }}
-              >
-                <div className="flex items-start gap-3 px-3 py-4">
-                  <UserCheck className="mt-0.5 h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-base-content/60">
-                      Scanned Member
-                    </p>
-                    <p className="font-semibold">{formatMemberName(state.member)}</p>
+            <div className="space-y-4">
+              <div className="rounded-box border border-base-300 bg-base-200/35 p-4">
+                <div className="stats stats-vertical w-full bg-transparent shadow-none">
+                  <div className="stat px-0 py-3">
+                    <div className="stat-figure text-primary">
+                      <UserCheck className="h-5 w-5" />
+                    </div>
+                    <div className="stat-title">Scanned Member</div>
+                    <div className="stat-value text-xl">{formatMemberName(state.member)}</div>
+                    <div className="stat-desc">This arrival is already recorded.</div>
+                  </div>
+
+                  <div className="stat border-t border-base-300 px-0 py-3">
+                    <div className="stat-figure text-info">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div className="stat-title">Expected DDS</div>
+                    <div className="stat-value text-xl">
+                      {state.expectedDds ? formatMemberName(state.expectedDds.member) : 'Not set'}
+                    </div>
+                    <div className="stat-desc">{formatExpectedSource(state)}</div>
+                  </div>
+
+                  <div className="stat border-t border-base-300 px-0 py-3">
+                    <div className="stat-figure text-success">
+                      <DoorOpen className="h-5 w-5" />
+                    </div>
+                    <div className="stat-title">Building Status</div>
+                    <div className="stat-value text-xl capitalize">{state.buildingStatus}</div>
+                    <div className="stat-desc">
+                      {state.currentLockupHolder
+                        ? `Lockup: ${formatMemberName(state.currentLockupHolder)}`
+                        : 'No lockup holder assigned'}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 px-3 py-4">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 text-warning" />
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-base-content/60">Live DDS</p>
-                    <p className="font-semibold">{currentDdsName ?? 'No active DDS yet'}</p>
+              </div>
+
+              {openContext && (
+                <div className="rounded-box border border-success/30 bg-success-fadded p-4 text-success-fadded-content">
+                  <div className="flex items-start gap-3">
+                    <Clock3 className="mt-1 h-5 w-5 shrink-0" />
+                    <div>
+                      <p className="font-semibold">Current Open Details</p>
+                      <p className="text-sm opacity-90">
+                        Opened by {formatMemberName(openContext.openedBy)} at{' '}
+                        {formatTime(openContext.openedAt)}.
+                      </p>
+                      <p className="text-sm opacity-90">
+                        Lockup is currently with {formatMemberName(openContext.currentLockupHolder)}
+                        {openContext.currentHolderAcquiredAt
+                          ? ` since ${formatTime(openContext.currentHolderAcquiredAt)}`
+                          : '.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 px-3 py-4">
-                  <DoorOpen className="mt-0.5 h-5 w-5 text-success" />
+              )}
+
+              <div className="rounded-box border border-base-300 bg-base-200/35 p-4">
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-base-content/60">
-                      Building Status
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-base-content/60">
+                      Already In The Unit
                     </p>
-                    <p className="font-semibold capitalize">{state.buildingStatus}</p>
-                    <p className="text-sm text-base-content/70">
-                      Lockup holder: {currentHolderName ?? 'None assigned'}
+                    <p className="mt-1 text-sm text-base-content/70">
+                      {state.presentVisitorCount > 0
+                        ? `${state.presentVisitorCount} visitor${state.presentVisitorCount === 1 ? '' : 's'} also signed in.`
+                        : 'Members only are listed here.'}
                     </p>
                   </div>
+                  <Users className="h-5 w-5 text-base-content/50" />
                 </div>
-                <div className="px-3 py-4">
-                  <p className="text-xs uppercase tracking-wide text-base-content/60">
-                    Scheduled DDS
+
+                <ul className="list mt-3 max-h-56 overflow-y-auto pr-1">
+                  {state.presentMembers.map((presentMember, index) => (
+                    <li key={presentMember.id} className="list-row items-center px-0 py-2">
+                      <span className="badge badge-ghost badge-sm">{index + 1}</span>
+                      <div className="list-col-grow">
+                        <p className="font-medium">{formatMemberName(presentMember)}</p>
+                        <p className="text-xs text-base-content/60">
+                          In at {formatTime(presentMember.checkedInAt)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-box border border-base-300 bg-neutral-fadded p-4 text-neutral-fadded-content">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] opacity-70">
+                  Today&apos;s Open / Close Timeline
+                </p>
+
+                {state.todayCycles.length === 0 ? (
+                  <p className="mt-3 text-sm opacity-80">
+                    No open or lockup events have been recorded yet today.
                   </p>
-                  <p className="font-semibold">{scheduledDdsName ?? 'No scheduled DDS found'}</p>
-                </div>
+                ) : (
+                  <div className="mt-3 max-h-72 overflow-y-auto pr-1">
+                    <ul className="timeline timeline-vertical timeline-compact">
+                      {state.todayCycles.map((cycle, index) => (
+                        <li key={cycle.id}>
+                          {index > 0 && <hr className="bg-base-400" />}
+                          <div className="timeline-middle">
+                            <div
+                              className={`h-3 w-3 rounded-full ${
+                                cycle.isCurrent ? 'bg-success' : 'bg-neutral'
+                              }`}
+                            />
+                          </div>
+                          <div className="timeline-end timeline-box ml-3 w-full max-w-none border border-base-300 bg-base-100 px-3 py-3 text-base-content">
+                            <p className="font-semibold">
+                              {cycle.isCurrent ? 'Current open cycle' : 'Previous open cycle'}
+                            </p>
+                            <p className="mt-1 text-sm text-base-content/75">
+                              Opened by {formatMemberName(cycle.openedBy)} at{' '}
+                              {formatTime(cycle.openedAt)}.
+                            </p>
+                            <p className="text-sm text-base-content/75">
+                              {cycle.closedAt
+                                ? `Locked up by ${formatMemberName(cycle.closedBy)} at ${formatTime(cycle.closedAt)}.`
+                                : cycle.isCurrent
+                                  ? 'Still open now.'
+                                  : 'Close details unavailable.'}
+                            </p>
+                          </div>
+                          {index < state.todayCycles.length - 1 && <hr className="bg-base-400" />}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </AppCardContent>

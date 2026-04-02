@@ -1,9 +1,11 @@
 import { Router, type Request, type Response } from 'express'
 import * as v from 'valibot'
 import {
+  PreflightLoginSchema,
   LoginRequestWithRemoteSystemSchema,
   ChangePinSchema,
   SetPinSchema,
+  SetupPinSchema,
 } from '@sentinel/contracts'
 import {
   AuthService,
@@ -11,6 +13,7 @@ import {
   ForbiddenError,
   NotFoundError,
   PinPolicyError,
+  PinSetupRequiredError,
 } from '../services/auth-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
@@ -56,6 +59,44 @@ function extractToken(req: Request): string | null {
 
   return null
 }
+
+/**
+ * POST /api/auth/preflight-login
+ */
+router.post('/preflight-login', async (req: Request, res: Response) => {
+  try {
+    const parsed = v.safeParse(PreflightLoginSchema, req.body)
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: parsed.issues[0]?.message ?? 'Validation failed',
+      })
+    }
+
+    const authService = getAuthService()
+    const result = await authService.preflightLogin(
+      parsed.output.serialNumber,
+      getRequestClientIp(req)
+    )
+
+    return res.status(200).json(result)
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return res.status(401).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
+
+    authLogger.error('Preflight login error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Preflight login failed',
+    })
+  }
+})
 
 /**
  * POST /api/auth/login
@@ -125,7 +166,7 @@ router.post('/login', async (req: Request, res: Response) => {
         remoteSystemId: resolvedRemoteSystem.id,
         remoteSystemName: resolvedRemoteSystem.name,
       },
-      req.ip ?? req.socket.remoteAddress,
+      getRequestClientIp(req),
       req.headers['user-agent']
     )
 
@@ -150,9 +191,15 @@ router.post('/login', async (req: Request, res: Response) => {
       member: result.member,
     })
   } catch (error) {
+    if (error instanceof PinSetupRequiredError) {
+      return res.status(403).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
     if (error instanceof AuthenticationError) {
       return res.status(401).json({
-        error: 'UNAUTHORIZED',
+        error: error.code,
         message: error.message,
       })
     }
@@ -162,6 +209,57 @@ router.post('/login', async (req: Request, res: Response) => {
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
       message: 'Login failed',
+    })
+  }
+})
+
+/**
+ * POST /api/auth/setup-pin
+ */
+router.post('/setup-pin', async (req: Request, res: Response) => {
+  try {
+    const parsed = v.safeParse(SetupPinSchema, req.body)
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: parsed.issues[0]?.message ?? 'Validation failed',
+      })
+    }
+
+    const authService = getAuthService()
+    await authService.setupPin(
+      parsed.output.serialNumber,
+      parsed.output.newPin,
+      getRequestClientIp(req)
+    )
+
+    return res.status(200).json({ message: 'PIN set' })
+  } catch (error) {
+    if (error instanceof PinPolicyError) {
+      return res.status(400).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
+    if (error instanceof AuthenticationError) {
+      return res.status(401).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
+    if (error instanceof ForbiddenError) {
+      return res.status(403).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
+
+    authLogger.error('Public PIN setup error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Failed to set PIN',
     })
   }
 })

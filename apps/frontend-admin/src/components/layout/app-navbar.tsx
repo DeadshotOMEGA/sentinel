@@ -39,6 +39,7 @@ const GITHUB_LATEST_RELEASE_URL =
   'https://api.github.com/repos/DeadshotOMEGA/sentinel/releases/latest'
 const WIKI_LAN_FALLBACK_PORT = '3020'
 const WIKI_LOCAL_DEV_PORT = '3002'
+const NETWORK_TELEMETRY_STALE_WARNING_SECONDS = 120
 
 interface LatestReleaseState {
   tag: string | null
@@ -72,9 +73,21 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const backendLocation = resolveBackendLocation(browserOrigin)
   const backendStatus = getBackendStatus(systemStatus, isStatusLoading, systemStatusQuery.isError)
   const backendValue = getBackendValue(systemStatus, isStatusLoading, systemStatusQuery.isError)
+  const backendTooltip = getBackendTooltip(
+    systemStatus,
+    isStatusLoading,
+    systemStatusQuery.isError,
+    backendLocation
+  )
   const databaseStatus = getDatabaseStatus(systemStatus, isStatusLoading, systemStatusQuery.isError)
   const databaseValue = getDatabaseValue(systemStatus, isStatusLoading, systemStatusQuery.isError)
   const databaseLocation = systemStatus?.database.address ?? 'unknown'
+  const databaseTooltip = getDatabaseTooltip(
+    systemStatus,
+    isStatusLoading,
+    systemStatusQuery.isError,
+    databaseLocation
+  )
   const networkStatus = getHealthBadgeStatus(
     systemStatus?.network.status ?? 'unknown',
     isStatusLoading,
@@ -84,6 +97,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const networkMessage = getNetworkMessage(systemStatus, isStatusLoading, systemStatusQuery.isError)
   const environment = (systemStatus?.backend.environment ?? 'unknown').toLowerCase()
   const isDevelopmentEnvironment = environment !== 'production'
+  const networkTooltip = getNetworkTooltip(
+    systemStatus,
+    isStatusLoading,
+    systemStatusQuery.isError,
+    isDevelopmentEnvironment
+  )
   const networkSubtitle =
     systemStatus?.network.currentSsid ??
     (isDevelopmentEnvironment ? 'Local development host' : 'Host telemetry')
@@ -94,6 +113,8 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const wikiLocation = stripUrlProtocol(wikiBaseUrl)
   const wikiStatus = getWikiStatus(wikiBaseUrl)
   const wikiValue = getWikiValue(wikiBaseUrl)
+  const wikiTooltip = getWikiTooltip(wikiBaseUrl, wikiLocation)
+  const frontendTooltip = getFrontendTooltip(browserOrigin)
   const activeRemoteSessions = systemStatus?.remoteSystems.sessions ?? []
   const remoteSystemOverflowCount = systemStatus?.remoteSystems.overflowCount ?? 0
   const shouldShowLaptopRecovery =
@@ -232,30 +253,35 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 subtitle={databaseLocation}
                 status={databaseStatus}
                 value={databaseValue}
+                tooltip={databaseTooltip}
               />
               <StatusRow
                 label="Backend API"
                 subtitle={backendLocation}
                 status={backendStatus}
                 value={backendValue}
+                tooltip={backendTooltip}
               />
               <StatusRow
                 label="Frontend"
                 subtitle={stripUrlProtocol(browserOrigin)}
                 status={frontendStatus}
                 value={frontendValue}
+                tooltip={frontendTooltip}
               />
               <StatusRow
                 label="Wiki"
                 subtitle={wikiLocation}
                 status={wikiStatus}
                 value={wikiValue}
+                tooltip={wikiTooltip}
               />
               <StatusRow
                 label="Network"
                 subtitle={networkSubtitle}
                 status={networkStatus}
                 value={networkValue}
+                tooltip={networkTooltip}
               />
               <div
                 className={cn(
@@ -450,6 +476,44 @@ function formatRecentTimestamp(value: string): string {
   return timestamp.toLocaleTimeString()
 }
 
+function formatDetailedTimestamp(value: string | null): string {
+  if (!value) {
+    return 'unknown'
+  }
+
+  const timestamp = new Date(value)
+  if (Number.isNaN(timestamp.getTime())) {
+    return 'unknown'
+  }
+
+  return timestamp.toLocaleString()
+}
+
+function formatTelemetryAge(ageSeconds: number | null): string {
+  if (ageSeconds === null) {
+    return 'unknown'
+  }
+
+  if (ageSeconds < 60) {
+    return `${ageSeconds}s old`
+  }
+
+  const minutes = Math.floor(ageSeconds / 60)
+  const seconds = ageSeconds % 60
+
+  if (seconds === 0) {
+    return `${minutes}m old`
+  }
+
+  return `${minutes}m ${seconds}s old`
+}
+
+function joinTooltipLines(lines: Array<string | null | undefined>): string {
+  return lines
+    .filter((line): line is string => typeof line === 'string' && line.trim().length > 0)
+    .join('\n')
+}
+
 function getSystemSummaryBadge(input: {
   systemStatus: SystemStatusResponse | null
   isLoading: boolean
@@ -538,6 +602,31 @@ function getBackendValue(
   return systemStatus.backend.status === 'healthy' ? 'Healthy' : 'Unavailable'
 }
 
+function getBackendTooltip(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean,
+  backendLocation: string
+): string {
+  if (isLoading) {
+    return 'Yellow because Sentinel is still checking the backend API status.'
+  }
+
+  if (isError || !systemStatus) {
+    return joinTooltipLines([
+      'Red because the frontend could not load authenticated system status from the backend API.',
+      `Target: ${backendLocation}`,
+    ])
+  }
+
+  return joinTooltipLines([
+    'Green because the backend API returned the latest authenticated system-status payload successfully.',
+    `Target: ${backendLocation}`,
+    `Environment: ${systemStatus.backend.environment}`,
+    `Last service timestamp: ${formatDetailedTimestamp(systemStatus.backend.serviceTimestamp)}`,
+  ])
+}
+
 function resolveBackendLocation(browserOrigin: string): string {
   const configuredApiBase = process.env.NEXT_PUBLIC_API_URL?.trim() ?? ''
 
@@ -581,6 +670,36 @@ function getDatabaseValue(
   return systemStatus.database.healthy ? 'Healthy' : 'Unavailable'
 }
 
+function getDatabaseTooltip(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean,
+  databaseLocation: string
+): string {
+  if (isLoading) {
+    return 'Yellow because Sentinel is still running the database health probe.'
+  }
+
+  if (isError || !systemStatus) {
+    return joinTooltipLines([
+      'Red because the frontend could not load database health from the backend.',
+      `Database target: ${databaseLocation}`,
+    ])
+  }
+
+  if (systemStatus.database.healthy) {
+    return joinTooltipLines([
+      'Green because the backend database probe succeeded.',
+      `Database target: ${databaseLocation}`,
+    ])
+  }
+
+  return joinTooltipLines([
+    'Red because the backend database probe failed.',
+    `Database target: ${databaseLocation}`,
+  ])
+}
+
 function getNetworkValue(
   systemStatus: SystemStatusResponse | null,
   isLoading: boolean,
@@ -622,6 +741,72 @@ function getNetworkMessage(
   return systemStatus.network.message
 }
 
+function getNetworkTooltip(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean,
+  isDevelopmentEnvironment: boolean
+): string {
+  if (isLoading) {
+    return 'Yellow because Sentinel is still checking host network telemetry.'
+  }
+
+  if (isError || !systemStatus) {
+    return 'Red because the frontend could not load host network telemetry from the backend.'
+  }
+
+  const network = systemStatus.network
+  const currentSsid = network.currentSsid ?? 'unknown'
+  const approvedSsids =
+    network.approvedSsids.length > 0 ? network.approvedSsids.join(', ') : 'none configured'
+  const remoteTarget = network.remoteTarget ?? 'not configured'
+
+  let reason = `Yellow because ${network.message}.`
+
+  if (!network.telemetryAvailable) {
+    reason = isDevelopmentEnvironment
+      ? 'Green because this is a development build and host telemetry is optional.'
+      : 'Yellow because host telemetry is unavailable.'
+  } else if (
+    network.telemetryAgeSeconds !== null &&
+    network.telemetryAgeSeconds > NETWORK_TELEMETRY_STALE_WARNING_SECONDS
+  ) {
+    reason = `Yellow because the host network snapshot is stale (${formatTelemetryAge(network.telemetryAgeSeconds)}).`
+  } else if (network.wifiConnected === false) {
+    reason = 'Red because Wi-Fi is disconnected.'
+  } else if (network.internetReachable === false && network.portalRecoveryLikely === true) {
+    reason =
+      'Red because internet access failed while Wi-Fi is connected, so captive-portal recovery is likely needed.'
+  } else if (network.internetReachable === false) {
+    reason = 'Red because the internet reachability check failed.'
+  } else if (network.approvedSsid === false) {
+    reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
+  } else if (network.remoteTarget && network.remoteReachable === false) {
+    reason = `Yellow because the remote reachability check to ${network.remoteTarget} failed.`
+  } else if (network.telemetryAvailable && network.wifiConnected === true) {
+    if (network.approvedSsids.length === 0) {
+      reason =
+        'Green because Wi-Fi and internet are reachable, and no approved SSID allowlist is configured.'
+    } else if (network.approvedSsid === true) {
+      reason = `Green because "${currentSsid}" is approved and internet is reachable.`
+    } else {
+      reason = `Green because ${network.message}.`
+    }
+  }
+
+  return joinTooltipLines([
+    reason,
+    `Detail: ${network.message}`,
+    `SSID: ${currentSsid}`,
+    `Approved SSIDs: ${approvedSsids}`,
+    `Internet reachable: ${formatBooleanLabel(network.internetReachable)}`,
+    `Remote target: ${remoteTarget}`,
+    `Remote reachable: ${formatBooleanLabel(network.remoteReachable)}`,
+    `Telemetry age: ${formatTelemetryAge(network.telemetryAgeSeconds)}`,
+    `Snapshot time: ${formatDetailedTimestamp(network.generatedAt)}`,
+  ])
+}
+
 function getWikiStatus(wikiBaseUrl: string): AppBadgeStatus {
   if (!wikiBaseUrl) {
     return 'neutral'
@@ -636,6 +821,34 @@ function getWikiValue(wikiBaseUrl: string): string {
   }
 
   return 'Available'
+}
+
+function getWikiTooltip(wikiBaseUrl: string, wikiLocation: string): string {
+  if (!wikiBaseUrl) {
+    return 'Gray because no Wiki base URL is configured for this environment.'
+  }
+
+  return joinTooltipLines([
+    'Green because the frontend resolved a Wiki URL for this environment.',
+    `Target: ${wikiLocation}`,
+    'This pill is configuration-based and does not perform a live Wiki health check.',
+  ])
+}
+
+function getFrontendTooltip(browserOrigin: string): string {
+  return joinTooltipLines([
+    'Green because the current admin UI is loaded in this browser session.',
+    `Origin: ${stripUrlProtocol(browserOrigin)}`,
+    'This reflects frontend availability in the current tab, not a separate remote probe.',
+  ])
+}
+
+function formatBooleanLabel(value: boolean | null): string {
+  if (value === null) {
+    return 'unknown'
+  }
+
+  return value ? 'yes' : 'no'
 }
 
 function stripUrlProtocol(value: string): string {
@@ -782,11 +995,17 @@ interface StatusRowProps {
   subtitle?: string
   status: AppBadgeStatus
   value: string
+  tooltip?: string
 }
 
-function StatusRow({ label, subtitle, status, value }: StatusRowProps) {
+function StatusRow({ label, subtitle, status, value, tooltip }: StatusRowProps) {
   const statusClass = getDaisyStatusClass(status)
   const shouldPulse = status === 'error'
+  const badge = (
+    <AppBadge status={status} size="sm">
+      {value}
+    </AppBadge>
+  )
 
   return (
     <div className="flex items-start justify-between gap-2">
@@ -801,9 +1020,21 @@ function StatusRow({ label, subtitle, status, value }: StatusRowProps) {
         {subtitle && <p className="text-[11px] text-base-content/60">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-2">
-        <AppBadge status={status} size="sm">
-          {value}
-        </AppBadge>
+        {tooltip ? (
+          <div
+            className={cn(
+              'tooltip tooltip-left shrink-0 hover:z-(--z-tooltip) focus-within:z-(--z-tooltip)',
+              'before:w-[18rem] before:max-w-[calc(100vw-var(--space-8))] before:whitespace-pre-wrap before:text-left before:text-[11px] before:leading-relaxed before:normal-case'
+            )}
+            data-tip={tooltip}
+            title={tooltip}
+            tabIndex={0}
+          >
+            {badge}
+          </div>
+        ) : (
+          badge
+        )}
       </div>
     </div>
   )

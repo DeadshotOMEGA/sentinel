@@ -14,14 +14,12 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    env:
-      LABEL_POLICY_ENFORCE: ${{ vars.LABEL_POLICY_ENFORCE || 'false' }}
     steps:
       - name: Validate label policy
         uses: actions/github-script@v8
         with:
           script: |
-            const enforce = String(process.env.LABEL_POLICY_ENFORCE || 'false').toLowerCase() === 'true'
+            const enforce = '${{ vars.LABEL_POLICY_ENFORCE }}' === 'true' || false
             const findings = []
 
             const isIssueEvent = context.eventName === 'issues'

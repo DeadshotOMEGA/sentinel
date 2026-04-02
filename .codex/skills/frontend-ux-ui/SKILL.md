@@ -50,6 +50,14 @@ Assume these unless repo evidence says otherwise:
 - shadcn/ui for primitives where it improves consistency
 - Existing local design tokens over new dependencies
 
+Sentinel-specific override:
+
+- In Sentinel frontend-admin work, DaisyUI and Sentinel wrappers (`AppCard`, `AppBadge`, `Chip`) take precedence over generic shadcn-first patterns.
+- Read the Sentinel theme token inventory from `apps/frontend-admin/src/app/globals.css` and prefer:
+  `base-100/200/300/400/500`, `base-content`, plus each semantic family’s
+  base/content/fadded/fadded-content pair for `primary`, `secondary`, `accent`,
+  `neutral`, `info`, `success`, `warning`, and `error`.
+
 ## Operating Rules
 
 1. Repo-first, not blank-canvas: inspect the codebase before proposing visuals.
@@ -90,6 +98,7 @@ Every feature and screen must define and implement:
 ### Minimum context to gather
 
 - Existing visual language (type scale, spacing rhythm, radii, shadows)
+- Existing theme token inventory, especially Sentinel DaisyUI semantic/fadded pairs when present
 - Existing state patterns (skeletons, inline errors, empty screens)
 - Existing accessibility patterns (dialog focus trap, form errors, aria-live usage)
 - Existing testing/verification standards in the repo

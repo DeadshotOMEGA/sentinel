@@ -33,6 +33,10 @@ description: Enforces Sentinel frontend design quality for apps/frontend-admin w
 - Use `AppBadge` for status-only indicators.
 - Use `Chip` for decorative labels/tags.
 - Use token-based spacing/elevation/timing and avoid magic numbers.
+- Use the Sentinel DaisyUI theme token inventory from `apps/frontend-admin/src/app/globals.css`:
+  `base-100/200/300/400/500`, `base-content`, and every semantic family’s
+  `color`, `content`, `fadded`, and `fadded-content` pair for `primary`,
+  `secondary`, `accent`, `neutral`, `info`, `success`, `warning`, and `error`.
 
 4. Perform a post-change visual sanity pass before finishing any layout/UX work:
 

@@ -17,6 +17,37 @@ function isDisallowedMemberPin(pin: string): boolean {
   return DISALLOWED_MEMBER_PIN_SET.has(pin)
 }
 
+type PinSetupReason = 'missing' | 'default'
+
+interface LoginMemberRecord {
+  id: string
+  firstName: string
+  lastName: string
+  rank: string
+  serviceNumber: string
+  accountLevel: number
+  mustChangePin: boolean
+  status: string
+  pinHash: string | null
+}
+
+interface AuthMemberSummary {
+  id: string
+  firstName: string
+  lastName: string
+  rank: string
+  serviceNumber: string
+  accountLevel: number
+  mustChangePin: boolean
+}
+
+interface LoginContext {
+  member: LoginMemberRecord
+  isBootstrapMember: boolean
+  pinState: 'configured' | 'setup_required'
+  setupReason: PinSetupReason | null
+}
+
 export interface LoginResult {
   token: string
   sessionId: string
@@ -24,15 +55,13 @@ export interface LoginResult {
   remoteSystemName: string
   lastSeenAt: string
   expiresAt: string
-  member: {
-    id: string
-    firstName: string
-    lastName: string
-    rank: string
-    serviceNumber: string
-    accountLevel: number
-    mustChangePin: boolean
-  }
+  member: AuthMemberSummary
+}
+
+export interface PreflightLoginResult {
+  member: AuthMemberSummary
+  pinState: 'configured' | 'setup_required'
+  setupReason: PinSetupReason | null
 }
 
 export interface RemoteSystemSelection {
@@ -61,6 +90,130 @@ export class AuthService {
     ipAddress?: string | null,
     userAgent?: string | null
   ): Promise<LoginResult> {
+    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+    const { member } = context
+
+    if (context.pinState === 'setup_required') {
+      authLogger.info('Login blocked until PIN setup is completed', {
+        memberId: member.id,
+        setupReason: context.setupReason,
+        ip: ipAddress,
+      })
+      throw new PinSetupRequiredError('PIN setup required before signing in')
+    }
+
+    const pinValid = await bcrypt.compare(pin, member.pinHash!)
+    if (!pinValid) {
+      authLogger.warn('Login failed: invalid PIN', {
+        memberId: member.id,
+        ip: ipAddress,
+      })
+      throw new AuthenticationError('Invalid badge or PIN')
+    }
+
+    // Create session
+    const session = await this.sessionRepo.create({
+      memberId: member.id,
+      remoteSystemId: remoteSystem.remoteSystemId,
+      remoteSystemName: remoteSystem.remoteSystemName,
+      ipAddress,
+      userAgent,
+    })
+
+    authLogger.info('Login successful', {
+      memberId: member.id,
+      sessionId: session.id,
+      remoteSystemId: remoteSystem.remoteSystemId,
+      remoteSystemName: remoteSystem.remoteSystemName,
+      ip: ipAddress,
+    })
+
+    return {
+      token: session.token,
+      sessionId: session.id,
+      remoteSystemId: session.remoteSystemId,
+      remoteSystemName: session.remoteSystemName,
+      lastSeenAt: session.lastSeenAt.toISOString(),
+      expiresAt: session.expiresAt.toISOString(),
+      member: this.toAuthMemberSummary(member),
+    }
+  }
+
+  async preflightLogin(
+    serialNumber: string,
+    ipAddress?: string | null
+  ): Promise<PreflightLoginResult> {
+    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+
+    return {
+      member: this.toAuthMemberSummary(context.member),
+      pinState: context.pinState,
+      setupReason: context.setupReason,
+    }
+  }
+
+  async setupPin(serialNumber: string, newPin: string, ipAddress?: string | null): Promise<void> {
+    this.assertAllowedNewPin(newPin)
+
+    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+
+    if (context.isBootstrapMember) {
+      throw new ForbiddenError('Cannot set PIN for the protected Sentinel bootstrap account')
+    }
+
+    if (context.pinState !== 'setup_required') {
+      throw new ForbiddenError('PIN setup is not available for this account')
+    }
+
+    const hash = await bcrypt.hash(newPin, BCRYPT_COST)
+    await this.prisma.member.update({
+      where: { id: context.member.id },
+      data: { pinHash: hash, mustChangePin: false },
+    })
+
+    authLogger.info('PIN setup completed after badge scan', {
+      memberId: context.member.id,
+      ip: ipAddress,
+    })
+  }
+
+  private async resolveLoginContext(
+    serialNumber: string,
+    ipAddress?: string | null
+  ): Promise<LoginContext> {
+    const member = await this.findLoginMemberByBadge(serialNumber, ipAddress)
+    const isBootstrapMember = isSentinelBootstrapServiceNumber(member.serviceNumber)
+    const setupReason = await this.detectPinSetupReason(member, isBootstrapMember)
+
+    if (setupReason) {
+      await this.ensureMustChangePin(member)
+
+      authLogger.info('PIN setup is required before protected login', {
+        memberId: member.id,
+        setupReason,
+        ip: ipAddress,
+      })
+
+      return {
+        member,
+        isBootstrapMember,
+        pinState: 'setup_required',
+        setupReason,
+      }
+    }
+
+    return {
+      member,
+      isBootstrapMember,
+      pinState: 'configured',
+      setupReason: null,
+    }
+  }
+
+  private async findLoginMemberByBadge(
+    serialNumber: string,
+    ipAddress?: string | null
+  ): Promise<LoginMemberRecord> {
     // Find badge by serial number with assigned member
     const badge = await this.prisma.badge.findUnique({
       where: { serialNumber },
@@ -120,90 +273,7 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
-    const isBootstrapMember = isSentinelBootstrapServiceNumber(member.serviceNumber)
-    let mustChangePin = member.mustChangePin
-
-    if (!member.pinHash) {
-      if (isBootstrapMember) {
-        authLogger.warn('Login failed: bootstrap member is missing a PIN hash', {
-          memberId: member.id,
-          ip: ipAddress,
-        })
-        throw new AuthenticationError('Invalid badge or PIN')
-      }
-
-      mustChangePin = true
-      if (!member.mustChangePin) {
-        await this.prisma.member.update({
-          where: { id: member.id },
-          data: { mustChangePin: true },
-        })
-      }
-
-      authLogger.info('Login requires PIN setup because no PIN is configured', {
-        memberId: member.id,
-        ip: ipAddress,
-      })
-    } else {
-      const pinValid = await bcrypt.compare(pin, member.pinHash)
-      if (!pinValid) {
-        authLogger.warn('Login failed: invalid PIN', {
-          memberId: member.id,
-          ip: ipAddress,
-        })
-        throw new AuthenticationError('Invalid badge or PIN')
-      }
-
-      if (!isBootstrapMember && isDisallowedMemberPin(pin)) {
-        mustChangePin = true
-        if (!member.mustChangePin) {
-          await this.prisma.member.update({
-            where: { id: member.id },
-            data: { mustChangePin: true },
-          })
-        }
-
-        authLogger.info('Login requires PIN change because a blocked PIN was used', {
-          memberId: member.id,
-          ip: ipAddress,
-        })
-      }
-    }
-
-    // Create session
-    const session = await this.sessionRepo.create({
-      memberId: member.id,
-      remoteSystemId: remoteSystem.remoteSystemId,
-      remoteSystemName: remoteSystem.remoteSystemName,
-      ipAddress,
-      userAgent,
-    })
-
-    authLogger.info('Login successful', {
-      memberId: member.id,
-      sessionId: session.id,
-      remoteSystemId: remoteSystem.remoteSystemId,
-      remoteSystemName: remoteSystem.remoteSystemName,
-      ip: ipAddress,
-    })
-
-    return {
-      token: session.token,
-      sessionId: session.id,
-      remoteSystemId: session.remoteSystemId,
-      remoteSystemName: session.remoteSystemName,
-      lastSeenAt: session.lastSeenAt.toISOString(),
-      expiresAt: session.expiresAt.toISOString(),
-      member: {
-        id: member.id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        rank: member.rank,
-        serviceNumber: member.serviceNumber,
-        accountLevel: member.accountLevel,
-        mustChangePin,
-      },
-    }
+    return member
   }
 
   /**
@@ -304,6 +374,59 @@ export class AuthService {
     }
   }
 
+  private toAuthMemberSummary(member: LoginMemberRecord): AuthMemberSummary {
+    return {
+      id: member.id,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      rank: member.rank,
+      serviceNumber: member.serviceNumber,
+      accountLevel: member.accountLevel,
+      mustChangePin: member.mustChangePin,
+    }
+  }
+
+  private async detectPinSetupReason(
+    member: LoginMemberRecord,
+    isBootstrapMember: boolean
+  ): Promise<PinSetupReason | null> {
+    if (!member.pinHash) {
+      if (isBootstrapMember) {
+        authLogger.warn('Login failed: bootstrap member is missing a PIN hash', {
+          memberId: member.id,
+        })
+        throw new AuthenticationError('Invalid badge or PIN')
+      }
+
+      return 'missing'
+    }
+
+    if (isBootstrapMember) {
+      return null
+    }
+
+    for (const disallowedPin of DISALLOWED_MEMBER_PINS) {
+      if (await bcrypt.compare(disallowedPin, member.pinHash)) {
+        return 'default'
+      }
+    }
+
+    return null
+  }
+
+  private async ensureMustChangePin(member: LoginMemberRecord): Promise<void> {
+    if (member.mustChangePin) {
+      return
+    }
+
+    await this.prisma.member.update({
+      where: { id: member.id },
+      data: { mustChangePin: true },
+    })
+
+    member.mustChangePin = true
+  }
+
   private async isProtectedBootstrapMember(memberId: string): Promise<boolean> {
     const identity = await getSentinelBootstrapIdentity(this.prisma)
     if (identity && identity.memberId === memberId) {
@@ -352,5 +475,14 @@ export class PinPolicyError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'PinPolicyError'
+  }
+}
+
+export class PinSetupRequiredError extends Error {
+  public statusCode = 403
+  public code = 'PIN_SETUP_REQUIRED'
+  constructor(message: string) {
+    super(message)
+    this.name = 'PinSetupRequiredError'
   }
 }
