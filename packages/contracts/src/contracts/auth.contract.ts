@@ -1,10 +1,13 @@
 import { initContract } from '@ts-rest/core'
 import {
+  PreflightLoginSchema,
+  PreflightLoginResponseSchema,
   LoginRequestWithRemoteSystemSchema,
   LoginResponseSchema,
   SessionResponseSchema,
   ChangePinSchema,
   SetPinSchema,
+  SetupPinSchema,
   AuthMessageSchema,
   AuthErrorSchema,
   HeartbeatResponseSchema,
@@ -16,6 +19,22 @@ const c = initContract()
  * Auth API contract — badge+PIN authentication
  */
 export const authContract = c.router({
+  preflightLogin: {
+    method: 'POST',
+    path: '/api/auth/preflight-login',
+    body: PreflightLoginSchema,
+    responses: {
+      200: PreflightLoginResponseSchema,
+      400: AuthErrorSchema,
+      401: AuthErrorSchema,
+      429: AuthErrorSchema,
+      500: AuthErrorSchema,
+    },
+    summary: 'Check badge login state before PIN entry',
+    description:
+      'Validate a scanned badge and report whether the member can continue to PIN entry or must first create a replacement PIN.',
+  },
+
   login: {
     method: 'POST',
     path: '/api/auth/login',
@@ -24,6 +43,7 @@ export const authContract = c.router({
       200: LoginResponseSchema,
       400: AuthErrorSchema,
       401: AuthErrorSchema,
+      403: AuthErrorSchema,
       429: AuthErrorSchema,
       500: AuthErrorSchema,
     },
@@ -100,5 +120,22 @@ export const authContract = c.router({
     },
     summary: 'Admin set member PIN',
     description: 'Admin sets or resets a member PIN (requires account level 5+)',
+  },
+
+  setupPin: {
+    method: 'POST',
+    path: '/api/auth/setup-pin',
+    body: SetupPinSchema,
+    responses: {
+      200: AuthMessageSchema,
+      400: AuthErrorSchema,
+      401: AuthErrorSchema,
+      403: AuthErrorSchema,
+      429: AuthErrorSchema,
+      500: AuthErrorSchema,
+    },
+    summary: 'Create a first or replacement PIN after badge scan',
+    description:
+      'Allow a member with a missing or temporary default PIN to create a secure 4-digit PIN before normal sign-in.',
   },
 })

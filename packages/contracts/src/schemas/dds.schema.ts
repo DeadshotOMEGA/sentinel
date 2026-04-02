@@ -109,11 +109,49 @@ export const KioskResponsibilityStateMemberSchema = v.object({
   rank: v.string(),
 })
 
+export const KioskResponsibilityPromptVariantSchema = v.picklist([
+  'expected_dds',
+  'opener_only',
+  'replacement_candidate',
+  'building_open_dds_pending',
+])
+
+export const KioskExpectedDdsSchema = v.object({
+  member: KioskResponsibilityStateMemberSchema,
+  source: v.picklist(['live', 'scheduled']),
+  matchesScannedMember: v.boolean(),
+})
+
+export const KioskCurrentOpenContextSchema = v.object({
+  openedBy: v.nullable(KioskResponsibilityStateMemberSchema),
+  openedAt: v.nullable(v.string()),
+  currentLockupHolder: v.nullable(KioskResponsibilityStateMemberSchema),
+  currentHolderAcquiredAt: v.nullable(v.string()),
+})
+
+export const KioskPresentMemberSchema = v.object({
+  id: v.string(),
+  firstName: v.string(),
+  lastName: v.string(),
+  rank: v.string(),
+  checkedInAt: v.string(),
+})
+
+export const KioskOperationalCycleSchema = v.object({
+  id: v.string(),
+  openedBy: v.nullable(KioskResponsibilityStateMemberSchema),
+  openedAt: v.string(),
+  closedBy: v.nullable(KioskResponsibilityStateMemberSchema),
+  closedAt: v.nullable(v.string()),
+  isCurrent: v.boolean(),
+})
+
 /**
  * Kiosk responsibility prompt state schema
  */
 export const KioskResponsibilityStateResponseSchema = v.object({
   shouldPrompt: v.boolean(),
+  promptVariant: KioskResponsibilityPromptVariantSchema,
   isFirstMemberCheckin: v.boolean(),
   needsDds: v.boolean(),
   needsBuildingOpen: v.boolean(),
@@ -121,6 +159,7 @@ export const KioskResponsibilityStateResponseSchema = v.object({
   canAcceptDds: v.boolean(),
   canOpenBuilding: v.boolean(),
   member: KioskResponsibilityStateMemberSchema,
+  expectedDds: v.nullable(KioskExpectedDdsSchema),
   scheduledDds: v.nullable(KioskResponsibilityStateMemberSchema),
   currentDds: v.nullable(
     v.object({
@@ -132,6 +171,10 @@ export const KioskResponsibilityStateResponseSchema = v.object({
     })
   ),
   currentLockupHolder: v.nullable(KioskResponsibilityStateMemberSchema),
+  currentOpenContext: v.nullable(KioskCurrentOpenContextSchema),
+  presentMembers: v.array(KioskPresentMemberSchema),
+  presentVisitorCount: v.number(),
+  todayCycles: v.array(KioskOperationalCycleSchema),
 })
 
 /**
@@ -190,6 +233,13 @@ export type DdsHandoverState = v.InferOutput<typeof DdsHandoverStateSchema>
 export type KioskResponsibilityStateMember = v.InferOutput<
   typeof KioskResponsibilityStateMemberSchema
 >
+export type KioskResponsibilityPromptVariant = v.InferOutput<
+  typeof KioskResponsibilityPromptVariantSchema
+>
+export type KioskExpectedDds = v.InferOutput<typeof KioskExpectedDdsSchema>
+export type KioskCurrentOpenContext = v.InferOutput<typeof KioskCurrentOpenContextSchema>
+export type KioskPresentMember = v.InferOutput<typeof KioskPresentMemberSchema>
+export type KioskOperationalCycle = v.InferOutput<typeof KioskOperationalCycleSchema>
 export type KioskResponsibilityStateResponse = v.InferOutput<
   typeof KioskResponsibilityStateResponseSchema
 >

@@ -8,6 +8,10 @@ export const TID = {
     remoteSystemNameInput: 'auth-remote-system-name-input',
     destinationToggle: 'auth-destination-toggle',
     errorAlert: 'auth-error-alert',
+    setupNotice: 'auth-setup-notice',
+    setupPinInput: 'auth-setup-pin-input',
+    setupPinConfirmInput: 'auth-setup-pin-confirm-input',
+    setupPinSubmit: 'auth-setup-pin-submit',
   },
   nav: {
     logo: 'nav-logo',

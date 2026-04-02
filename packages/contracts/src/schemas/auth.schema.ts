@@ -2,6 +2,9 @@ import * as v from 'valibot'
 
 export const DISALLOWED_MEMBER_PINS = ['0000', '1111', '1234', '4321'] as const
 
+export const LoginPinStateValues = ['configured', 'setup_required'] as const
+export const LoginPinSetupReasonValues = ['missing', 'default'] as const
+
 function isAllowedMemberPin(value: string): boolean {
   return !DISALLOWED_MEMBER_PINS.includes(value as (typeof DISALLOWED_MEMBER_PINS)[number])
 }
@@ -11,6 +14,18 @@ const SecureNewPinSchema = v.pipe(
   v.regex(/^\d{4}$/, 'PIN must be exactly 4 digits'),
   v.check(isAllowedMemberPin, 'Choose a less predictable PIN')
 )
+
+/**
+ * Badge preflight request — validate badge and discover PIN setup state
+ */
+export const PreflightLoginSchema = v.object({
+  serialNumber: v.pipe(
+    v.string('Badge serial number is required'),
+    v.minLength(1, 'Badge serial number must not be empty')
+  ),
+})
+
+export type PreflightLoginInput = v.InferOutput<typeof PreflightLoginSchema>
 
 /**
  * Login request — badge serial + 4-digit PIN
@@ -53,6 +68,12 @@ export const AuthMemberSchema = v.object({
 
 export type AuthMember = v.InferOutput<typeof AuthMemberSchema>
 
+export const LoginPinStateSchema = v.picklist(LoginPinStateValues)
+export type LoginPinState = v.InferOutput<typeof LoginPinStateSchema>
+
+export const LoginPinSetupReasonSchema = v.picklist(LoginPinSetupReasonValues)
+export type LoginPinSetupReason = v.InferOutput<typeof LoginPinSetupReasonSchema>
+
 export const SessionMetadataSchema = v.object({
   sessionId: v.string(),
   remoteSystemId: v.nullable(v.string()),
@@ -62,6 +83,14 @@ export const SessionMetadataSchema = v.object({
 })
 
 export type SessionMetadata = v.InferOutput<typeof SessionMetadataSchema>
+
+export const PreflightLoginResponseSchema = v.object({
+  member: AuthMemberSchema,
+  pinState: LoginPinStateSchema,
+  setupReason: v.nullable(LoginPinSetupReasonSchema),
+})
+
+export type PreflightLoginResponse = v.InferOutput<typeof PreflightLoginResponseSchema>
 
 /**
  * Login response
@@ -120,6 +149,19 @@ export const SetPinSchema = v.object({
 })
 
 export type SetPinInput = v.InferOutput<typeof SetPinSchema>
+
+/**
+ * Public PIN setup — member creates a first PIN after badge scan
+ */
+export const SetupPinSchema = v.object({
+  serialNumber: v.pipe(
+    v.string('Badge serial number is required'),
+    v.minLength(1, 'Badge serial number must not be empty')
+  ),
+  newPin: SecureNewPinSchema,
+})
+
+export type SetupPinInput = v.InferOutput<typeof SetupPinSchema>
 
 /**
  * Generic success message

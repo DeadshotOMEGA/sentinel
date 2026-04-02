@@ -1,7 +1,10 @@
 import { Prisma } from '@sentinel/database'
 import type { PrismaClient } from '@sentinel/database'
+import { DateTime } from 'luxon'
 import { getPrismaClient } from '../lib/database.js'
 import { ConflictError, NotFoundError, ValidationError } from '../middleware/error-handler.js'
+import type { LockupStatusEntity } from '../repositories/lockup-repository.js'
+import { DEFAULT_TIMEZONE, getOperationalDayStartTime } from '../utils/operational-date.js'
 import { LockupService } from './lockup-service.js'
 import { PresenceService } from './presence-service.js'
 import { QualificationService } from './qualification-service.js'
@@ -46,24 +49,24 @@ interface ResponsibilityAuditLogEntry {
 
 interface DdsResponsibilityState {
   shouldPrompt: boolean
+  promptVariant:
+    | 'expected_dds'
+    | 'opener_only'
+    | 'replacement_candidate'
+    | 'building_open_dds_pending'
   isFirstMemberCheckin: boolean
   needsDds: boolean
   needsBuildingOpen: boolean
   buildingStatus: 'secured' | 'open' | 'locking_up'
   canAcceptDds: boolean
   canOpenBuilding: boolean
-  member: {
-    id: string
-    firstName: string
-    lastName: string
-    rank: string
-  }
-  scheduledDds: {
-    id: string
-    firstName: string
-    lastName: string
-    rank: string
+  member: MemberSummary
+  expectedDds: {
+    member: MemberSummary
+    source: 'live' | 'scheduled'
+    matchesScannedMember: boolean
   } | null
+  scheduledDds: MemberSummary | null
   currentDds: {
     id: string
     firstName: string
@@ -71,12 +74,27 @@ interface DdsResponsibilityState {
     rank: string
     status: 'pending' | 'active'
   } | null
-  currentLockupHolder: {
-    id: string
-    firstName: string
-    lastName: string
-    rank: string
+  currentLockupHolder: MemberSummary | null
+  currentOpenContext: {
+    openedBy: MemberSummary | null
+    openedAt: string | null
+    currentLockupHolder: MemberSummary | null
+    currentHolderAcquiredAt: string | null
   } | null
+  presentMembers: Array<
+    MemberSummary & {
+      checkedInAt: string
+    }
+  >
+  presentVisitorCount: number
+  todayCycles: Array<{
+    id: string
+    openedBy: MemberSummary | null
+    openedAt: string
+    closedBy: MemberSummary | null
+    closedAt: string | null
+    isCurrent: boolean
+  }>
 }
 
 type DdsActorType = 'member' | 'admin'
@@ -99,6 +117,15 @@ interface DdsHandoverStatus {
   firstOperationalDay: Date | null
   outgoingDds: MemberSummary | null
   incomingDds: MemberSummary | null
+}
+
+interface LockupHistoryCycle {
+  id: string
+  openedBy: MemberSummary | null
+  openedAt: string
+  closedBy: MemberSummary | null
+  closedAt: string | null
+  isCurrent: boolean
 }
 
 function getTodayDate(): Date {
@@ -221,6 +248,223 @@ export class DdsService {
     }
 
     return member
+  }
+
+  private toMemberSummary(
+    member:
+      | {
+          id: string
+          firstName: string
+          lastName: string
+          rank: string
+        }
+      | null
+      | undefined
+  ): MemberSummary | null {
+    if (!member) {
+      return null
+    }
+
+    return {
+      id: member.id,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      rank: member.rank,
+    }
+  }
+
+  private async getMemberSummariesById(memberIds: string[]): Promise<Map<string, MemberSummary>> {
+    if (memberIds.length === 0) {
+      return new Map()
+    }
+
+    const members = await this.prisma.member.findMany({
+      where: {
+        id: {
+          in: memberIds,
+        },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        rank: true,
+      },
+    })
+
+    return new Map(
+      members.map((member) => [
+        member.id,
+        {
+          id: member.id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          rank: member.rank,
+        },
+      ])
+    )
+  }
+
+  private resolveExpectedDds(
+    scannedMemberId: string,
+    currentDds: DdsAssignmentWithMember | null,
+    scheduledDds: CurrentDdsFromSchedule | null
+  ): {
+    member: MemberSummary
+    source: 'live' | 'scheduled'
+    matchesScannedMember: boolean
+  } | null {
+    if (currentDds) {
+      return {
+        member: {
+          id: currentDds.member.id,
+          firstName: currentDds.member.firstName,
+          lastName: currentDds.member.lastName,
+          rank: currentDds.member.rank,
+        },
+        source: 'live',
+        matchesScannedMember: currentDds.memberId === scannedMemberId,
+      }
+    }
+
+    if (!scheduledDds) {
+      return null
+    }
+
+    return {
+      member: {
+        id: scheduledDds.member.id,
+        firstName: scheduledDds.member.firstName,
+        lastName: scheduledDds.member.lastName,
+        rank: scheduledDds.member.rank,
+      },
+      source: 'scheduled',
+      matchesScannedMember: scheduledDds.member.id === scannedMemberId,
+    }
+  }
+
+  private resolvePromptVariant(input: {
+    needsDds: boolean
+    needsBuildingOpen: boolean
+    canAcceptDds: boolean
+    expectedDdsMatches: boolean
+  }): DdsResponsibilityState['promptVariant'] {
+    if (input.needsDds && input.expectedDdsMatches) {
+      return 'expected_dds'
+    }
+
+    if (input.needsDds && !input.needsBuildingOpen) {
+      return 'building_open_dds_pending'
+    }
+
+    if (input.needsDds && input.needsBuildingOpen && input.canAcceptDds) {
+      return 'replacement_candidate'
+    }
+
+    return 'opener_only'
+  }
+
+  private async getTodayLockupCycles(
+    lockupStatus: LockupStatusEntity
+  ): Promise<LockupHistoryCycle[]> {
+    const rollover = getOperationalDayStartTime()
+    const windowStart = DateTime.fromObject(
+      {
+        year: lockupStatus.date.getUTCFullYear(),
+        month: lockupStatus.date.getUTCMonth() + 1,
+        day: lockupStatus.date.getUTCDate(),
+      },
+      {
+        zone: DEFAULT_TIMEZONE,
+      }
+    ).set({
+      hour: rollover.hour,
+      minute: rollover.minute,
+      second: 0,
+      millisecond: 0,
+    })
+    const windowEnd = windowStart.plus({ days: 1 })
+
+    const logs = await this.prisma.responsibilityAuditLog.findMany({
+      where: {
+        tagName: 'Lockup',
+        action: {
+          in: ['building_opened', 'building_lockup'],
+        },
+        timestamp: {
+          gte: windowStart.toJSDate(),
+          lt: windowEnd.toJSDate(),
+        },
+      },
+      orderBy: {
+        timestamp: 'asc',
+      },
+    })
+
+    const memberSummaries = await this.getMemberSummariesById([
+      ...new Set(logs.map((log) => log.memberId)),
+    ])
+
+    const cycles: LockupHistoryCycle[] = []
+    let activeCycle: LockupHistoryCycle | null = null
+
+    for (const log of logs) {
+      const actor = memberSummaries.get(log.memberId) ?? null
+
+      if (log.action === 'building_opened') {
+        if (activeCycle) {
+          cycles.push(activeCycle)
+        }
+
+        activeCycle = {
+          id: log.id,
+          openedBy: actor,
+          openedAt: log.timestamp.toISOString(),
+          closedBy: null,
+          closedAt: null,
+          isCurrent: false,
+        }
+        continue
+      }
+
+      if (log.action === 'building_lockup' && activeCycle) {
+        activeCycle = {
+          ...activeCycle,
+          closedBy: actor,
+          closedAt: log.timestamp.toISOString(),
+          isCurrent: false,
+        }
+        cycles.push(activeCycle)
+        activeCycle = null
+      }
+    }
+
+    if (activeCycle) {
+      cycles.push({
+        ...activeCycle,
+        isCurrent: lockupStatus.buildingStatus !== 'secured',
+      })
+    }
+
+    return cycles
+  }
+
+  private buildCurrentOpenContext(
+    lockupStatus: LockupStatusEntity,
+    todayCycles: LockupHistoryCycle[]
+  ): DdsResponsibilityState['currentOpenContext'] {
+    if (lockupStatus.buildingStatus === 'secured') {
+      return null
+    }
+
+    const currentCycle = [...todayCycles].reverse().find((cycle) => cycle.isCurrent) ?? null
+
+    return {
+      openedBy: currentCycle?.openedBy ?? null,
+      openedAt: currentCycle?.openedAt ?? null,
+      currentLockupHolder: this.toMemberSummary(lockupStatus.currentHolder),
+      currentHolderAcquiredAt: lockupStatus.acquiredAt?.toISOString() ?? null,
+    }
   }
 
   private async resolveAssignedByAdminId(actorId: string): Promise<string | null> {
@@ -492,6 +736,7 @@ export class DdsService {
       scheduledDdsResult,
       lockupStatus,
       presentMembers,
+      presentVisitorCount,
       hasDdsQual,
       canOpen,
     ] = await Promise.all([
@@ -500,6 +745,7 @@ export class DdsService {
       this.scheduleService.getCurrentDdsFromSchedule(),
       this.lockupService.getCurrentStatus(),
       this.presenceService.getPresentMembers(),
+      this.presenceService.getActiveVisitorCount(),
       this.qualificationService.memberHasActiveQualificationCode(memberId, 'DDS'),
       this.qualificationService.canMemberReceiveLockup(memberId),
     ])
@@ -511,11 +757,26 @@ export class DdsService {
     const canAcceptDds =
       isPresent &&
       hasDdsQual &&
+      canOpen &&
       (!currentDds || currentDds.status !== 'active' || currentDds.memberId === memberId)
     const canOpenBuilding = isPresent && canOpen && lockupStatus.buildingStatus === 'secured'
+    const expectedDds = this.resolveExpectedDds(
+      memberId,
+      currentDds,
+      scheduledDdsResult.dds ?? null
+    )
+    const promptVariant = this.resolvePromptVariant({
+      needsDds,
+      needsBuildingOpen,
+      canAcceptDds,
+      expectedDdsMatches: expectedDds?.matchesScannedMember ?? false,
+    })
+    const todayCycles = await this.getTodayLockupCycles(lockupStatus)
+    const currentOpenContext = this.buildCurrentOpenContext(lockupStatus, todayCycles)
 
     return {
       shouldPrompt: needsDds || needsBuildingOpen,
+      promptVariant,
       isFirstMemberCheckin,
       needsDds,
       needsBuildingOpen,
@@ -523,6 +784,7 @@ export class DdsService {
       canAcceptDds,
       canOpenBuilding,
       member,
+      expectedDds,
       scheduledDds: scheduledDdsResult.dds
         ? {
             id: scheduledDdsResult.dds.member.id,
@@ -540,14 +802,17 @@ export class DdsService {
             status: currentDds.status === 'active' ? 'active' : 'pending',
           }
         : null,
-      currentLockupHolder: lockupStatus.currentHolder
-        ? {
-            id: lockupStatus.currentHolder.id,
-            firstName: lockupStatus.currentHolder.firstName,
-            lastName: lockupStatus.currentHolder.lastName,
-            rank: lockupStatus.currentHolder.rank,
-          }
-        : null,
+      currentLockupHolder: this.toMemberSummary(lockupStatus.currentHolder),
+      currentOpenContext,
+      presentMembers: presentMembers.map((presentMember) => ({
+        id: presentMember.id,
+        firstName: presentMember.firstName,
+        lastName: presentMember.lastName,
+        rank: presentMember.rank,
+        checkedInAt: presentMember.checkedInAt,
+      })),
+      presentVisitorCount,
+      todayCycles,
     }
   }
 

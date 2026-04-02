@@ -62,6 +62,14 @@ function getRateLimitIdentity(req: {
   return `ip:${req.ip ?? 'unknown'}`
 }
 
+function isRateLimitingGloballyDisabled(): boolean {
+  return process.env.ENABLE_RATE_LIMITING === 'false'
+}
+
+function isAuthRateLimitingDisabled(): boolean {
+  return isRateLimitingGloballyDisabled() || process.env.NODE_ENV === 'development'
+}
+
 /**
  * General API rate limiter
  *
@@ -81,7 +89,7 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   skip: (req) => {
     // Skip rate limiting if feature is disabled
-    if (process.env.ENABLE_RATE_LIMITING === 'false') {
+    if (isRateLimitingGloballyDisabled()) {
       return true
     }
 
@@ -122,7 +130,7 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (_req) => {
-    return process.env.ENABLE_RATE_LIMITING === 'false'
+    return isAuthRateLimitingDisabled()
   },
   handler: (req, res) => {
     logger.warn('Auth rate limit exceeded', {
@@ -154,7 +162,7 @@ export const rfidAuthLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (_req) => {
-    return process.env.ENABLE_RATE_LIMITING === 'false'
+    return isRateLimitingGloballyDisabled()
   },
   handler: (req, res) => {
     logger.warn('RFID auth rate limit exceeded', {
@@ -186,6 +194,6 @@ export const publicLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (_req) => {
-    return process.env.ENABLE_RATE_LIMITING === 'false'
+    return isRateLimitingGloballyDisabled()
   },
 })

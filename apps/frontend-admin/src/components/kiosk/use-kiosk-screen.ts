@@ -611,16 +611,13 @@ export function useKioskScreen() {
     }
   }
 
-  const handleResponsibilitySubmit = async (selection: {
-    openBuilding: boolean
-    takeDds: boolean
-  }) => {
+  const handleResponsibilitySubmit = async (action: 'open_building' | 'accept_dds') => {
     if (!responsibilityContext) return
 
     setResponsibilityError(null)
 
     try {
-      if (selection.takeDds) {
+      if (action === 'accept_dds') {
         await acceptDdsMutation.mutateAsync(responsibilityContext.memberId)
         setResult({
           tone: 'success',
@@ -634,7 +631,7 @@ export function useKioskScreen() {
         })
         setResponsibilityContext(null)
         setResponsibilityDismissed(false)
-      } else if (selection.openBuilding) {
+      } else if (action === 'open_building') {
         await openBuildingMutation.mutateAsync({
           memberId: responsibilityContext.memberId,
         })

@@ -63,6 +63,40 @@ Extended base scale for surface hierarchy:
 | `bg-base-400` | Disabled backgrounds, heavier borders |
 | `bg-base-500` | Muted elements, separator lines       |
 
+### Sentinel DaisyUI Theme Inventory
+
+The Sentinel theme source of truth is `apps/frontend-admin/src/app/globals.css` via `@plugin "daisyui/theme"`.
+
+Base tokens:
+
+| Token          | Use Case                                   |
+| -------------- | ------------------------------------------ |
+| `base-100`     | Primary page and modal surfaces            |
+| `base-200`     | Secondary surfaces and grouped sections    |
+| `base-300`     | Borders, dividers, and input backgrounds   |
+| `base-400`     | Disabled fills and heavy separators        |
+| `base-500`     | Muted separators and low-emphasis elements |
+| `base-content` | Default text and icon color                |
+
+Semantic token families:
+
+| Family      | Full-strength pair               | Soft-background pair                           |
+| ----------- | -------------------------------- | ---------------------------------------------- |
+| `primary`   | `primary`, `primary-content`     | `primary-fadded`, `primary-fadded-content`     |
+| `secondary` | `secondary`, `secondary-content` | `secondary-fadded`, `secondary-fadded-content` |
+| `accent`    | `accent`, `accent-content`       | `accent-fadded`, `accent-fadded-content`       |
+| `neutral`   | `neutral`, `neutral-content`     | `neutral-fadded`, `neutral-fadded-content`     |
+| `info`      | `info`, `info-content`           | `info-fadded`, `info-fadded-content`           |
+| `success`   | `success`, `success-content`     | `success-fadded`, `success-fadded-content`     |
+| `warning`   | `warning`, `warning-content`     | `warning-fadded`, `warning-fadded-content`     |
+| `error`     | `error`, `error-content`         | `error-fadded`, `error-fadded-content`         |
+
+Rules:
+
+- Use full-strength semantic colors for buttons, badges, and strong state emphasis.
+- Use `*-fadded` + `*-fadded-content` for banners, contextual panels, selected rows, and gentle status tinting.
+- Prefer `base-*` tokens for neutral layout structure instead of semantic colors.
+
 ### Semantic Colors (Status-Only)
 
 ```tsx
