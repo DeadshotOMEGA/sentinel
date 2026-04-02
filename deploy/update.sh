@@ -240,6 +240,7 @@ fi
 
 log "Creating pre-update backup"
 "${SCRIPT_DIR}/backup.sh"
+UPDATE_HAS_PRE_UPDATE_BACKUP="true"
 
 PREVIOUS_VERSION="${CURRENT_VERSION}"
 CURRENT_VERSION="${TARGET_VERSION}"
