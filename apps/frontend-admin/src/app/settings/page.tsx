@@ -1,6 +1,7 @@
 'use client'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AccountLevelSettingsPanel } from '@/components/settings/account-level-settings-panel'
 import { EnumTable } from '@/components/settings/enum-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { NetworkSettingsPanel } from '@/components/settings/network-settings-panel'
@@ -12,6 +13,7 @@ import {
   BadgeCheck,
   UserCheck,
   Building,
+  Shield,
   Tag,
   Award,
   Calendar,
@@ -67,6 +69,10 @@ export default function SettingsPage() {
           >
             <Wifi className="h-4 w-4" />
             <span className="hidden sm:inline">Network</span>
+          </TabsTrigger>
+          <TabsTrigger value="account-levels" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Account Levels</span>
           </TabsTrigger>
         </TabsList>
 
@@ -130,6 +136,10 @@ export default function SettingsPage() {
 
         <TabsContent value="network">
           <NetworkSettingsPanel />
+        </TabsContent>
+
+        <TabsContent value="account-levels">
+          <AccountLevelSettingsPanel />
         </TabsContent>
       </Tabs>
     </div>
