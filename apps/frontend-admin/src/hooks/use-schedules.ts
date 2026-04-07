@@ -11,6 +11,8 @@ import type {
   CreateAssignmentInput,
   UpdateAssignmentInput,
   CreateDwOverrideInput,
+  CreateLiveDutyAssignmentInput,
+  ClearLiveDutyAssignmentInput,
 } from '@sentinel/contracts'
 
 // ============================================================================
@@ -27,6 +29,7 @@ export const scheduleKeys = {
   overrides: (scheduleId: string) => [...scheduleKeys.all, 'overrides', scheduleId] as const,
   overridesByNight: (scheduleId: string, nightDate: string) =>
     [...scheduleKeys.overrides(scheduleId), nightDate] as const,
+  liveAssignments: () => [...scheduleKeys.all, 'live-assignments'] as const,
 }
 
 // ============================================================================
@@ -530,4 +533,66 @@ export function useTonightDutyWatch() {
   }, [refetch])
 
   return query
+}
+
+export function useLiveDutyAssignments() {
+  return useQuery({
+    queryKey: scheduleKeys.liveAssignments(),
+    queryFn: async () => {
+      const response = await apiClient.schedules.listLiveDutyAssignments()
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch live duty assignments')
+      }
+      return response.body
+    },
+  })
+}
+
+export function useCreateLiveDutyAssignment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateLiveDutyAssignmentInput) => {
+      const response = await apiClient.schedules.createLiveDutyAssignment({
+        body: data,
+      })
+      if (response.status !== 201) {
+        const errorBody = response.body as { message?: string }
+        throw new Error(errorBody?.message ?? 'Failed to create live duty assignment')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.liveAssignments() })
+      void invalidateDashboardQueries(queryClient)
+    },
+  })
+}
+
+export function useClearLiveDutyAssignment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      assignmentId,
+      data,
+    }: {
+      assignmentId: string
+      data?: ClearLiveDutyAssignmentInput
+    }) => {
+      const response = await apiClient.schedules.clearLiveDutyAssignment({
+        params: { assignmentId },
+        body: data ?? {},
+      })
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string }
+        throw new Error(errorBody?.message ?? 'Failed to clear live duty assignment')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: scheduleKeys.liveAssignments() })
+      void invalidateDashboardQueries(queryClient)
+    },
+  })
 }

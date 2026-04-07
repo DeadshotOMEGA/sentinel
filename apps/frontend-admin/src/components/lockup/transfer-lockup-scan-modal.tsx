@@ -21,6 +21,7 @@ interface TransferLockupScanModalProps {
   onOpenChange: (open: boolean) => void
   currentHolder: { id: string; rank: string; firstName: string; lastName: string }
   eligibleRecipients: EligibleRecipient[]
+  notes?: string | null
   onComplete: () => void
 }
 
@@ -31,6 +32,7 @@ export function TransferLockupScanModal({
   onOpenChange,
   currentHolder,
   eligibleRecipients,
+  notes,
   onComplete,
 }: TransferLockupScanModalProps) {
   const [step, setStep] = useState<Step>('select')
@@ -65,7 +67,7 @@ export function TransferLockupScanModal({
       await transferLockup.mutateAsync({
         toMemberId: selectedRecipient.id,
         reason: 'manual',
-        notes: null,
+        notes: notes?.trim() ? notes.trim() : null,
       })
       setNewHolder(selectedRecipient)
       setStep('success')

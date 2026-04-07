@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import { Clock, User, Building2, LogOut } from 'lucide-react'
+import { AppBadge } from '@/components/ui/AppBadge'
 import {
   Chip,
   fadedColorClasses,
@@ -36,6 +37,7 @@ const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
 // These are qualification tags (DDS, Duty Watch positions) that only display when scheduled
 const RESPONSIBILITY_TAG_NAMES = ['DDS', 'SWK', 'DSWK', 'QM', 'BM', 'APS']
 const FTS_TAG_NAME = 'FTS'
+const HOVER_3D_LAYER_KEYS = Array.from({ length: 8 }, (_, index) => index)
 
 interface PersonAvatarProps {
   person: PresentPerson
@@ -210,16 +212,21 @@ interface PersonCardProps {
   person: PresentPerson
   dutyPosition?: string | null
   isDds?: boolean
+  isSelected?: boolean
   onCheckoutVisitor?: (id: string) => void
+  onSelectMember?: (person: PresentPerson, sideHint: 'left' | 'right') => void
 }
 
 export const PersonCard = memo(function PersonCard({
   person,
   dutyPosition,
   isDds,
+  isSelected = false,
   onCheckoutVisitor,
+  onSelectMember,
 }: PersonCardProps) {
   const isMember = person.type === 'member'
+  const isInteractive = Boolean(isMember && onSelectMember)
   const displayName = formatPersonLabel({
     name: person.name,
     displayName: getOptionalDisplayName(person),
@@ -253,12 +260,25 @@ export const PersonCard = memo(function PersonCard({
   })()
 
   // Card border color: subtle indicator for member vs visitor
-  const cardBorderClass = isMember ? 'border-primary/50' : 'border-neutral/50'
+  const cardBorderClass = isSelected
+    ? 'border-primary shadow-md ring-1 ring-primary/20'
+    : isMember
+      ? 'border-primary/50'
+      : 'border-neutral/50'
 
-  return (
+  const handleMemberSelect = (sideHint: 'left' | 'right') => {
+    if (isInteractive) {
+      onSelectMember?.(person, sideHint)
+    }
+  }
+
+  const cardContent = (
     <div
-      className={`card card-elevated border h-full min-w-0 ${cardBorderClass}`}
-      data-testid={TID.dashboard.personCard(person.id)}
+      className={`card card-elevated border h-full min-w-0 transition-all duration-200 ${cardBorderClass} ${
+        isInteractive
+          ? 'group-hover:border-primary group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-primary/40'
+          : ''
+      }`}
     >
       <div className="card-body min-w-0 p-3.5 gap-2.5">
         {/* Header - different layout for member vs visitor */}
@@ -302,6 +322,26 @@ export const PersonCard = memo(function PersonCard({
         <div className="min-h-5">
           {isMember ? (
             <div className="flex flex-wrap gap-1">
+              {person.liveDutyAssignment && (
+                <AppBadge status="warning" size="sm">
+                  Temp {person.liveDutyAssignment.dutyPosition.code}
+                </AppBadge>
+              )}
+              {!person.liveDutyAssignment && person.scheduledDutyTonight?.dutyPosition?.code && (
+                <AppBadge
+                  status={
+                    person.scheduledDutyTonight.source === 'night_override' ? 'warning' : 'neutral'
+                  }
+                  size="sm"
+                >
+                  Tonight {person.scheduledDutyTonight.dutyPosition.code}
+                </AppBadge>
+              )}
+              {person.lockupActions?.holdsLockup && (
+                <AppBadge status="info" size="sm">
+                  Lockup
+                </AppBadge>
+              )}
               {person.tags
                 ?.filter((tag) => {
                   if (tag.source === 'qualification') return false
@@ -349,6 +389,11 @@ export const PersonCard = memo(function PersonCard({
             <Clock size={10} />
             <span>{formatRelativeTime(person.checkInTime)}</span>
           </div>
+          {isInteractive && (
+            <span className="font-medium text-primary/80">
+              {isSelected ? 'Actions open' : 'Open actions'}
+            </span>
+          )}
           {!isMember && onCheckoutVisitor && (
             <button
               type="button"
@@ -362,6 +407,43 @@ export const PersonCard = memo(function PersonCard({
           )}
         </div>
       </div>
+    </div>
+  )
+
+  return (
+    <div
+      className={`hover-3d presence-card-hover-3d group h-full w-full ${
+        isInteractive ? 'cursor-pointer focus-visible:outline-none' : ''
+      }`}
+      data-testid={TID.dashboard.personCard(person.id)}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-expanded={isInteractive ? isSelected : undefined}
+      aria-haspopup={isInteractive ? 'menu' : undefined}
+      onClick={
+        isInteractive
+          ? (event) => {
+              handleMemberSelect(event.clientX >= window.innerWidth / 2 ? 'left' : 'right')
+            }
+          : undefined
+      }
+      onKeyDown={
+        isInteractive
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                const rect = event.currentTarget.getBoundingClientRect()
+                const centerX = rect.left + rect.width / 2
+                handleMemberSelect(centerX >= window.innerWidth / 2 ? 'left' : 'right')
+              }
+            }
+          : undefined
+      }
+    >
+      {cardContent}
+      {HOVER_3D_LAYER_KEYS.map((key) => (
+        <div key={key} aria-hidden="true" />
+      ))}
     </div>
   )
 })

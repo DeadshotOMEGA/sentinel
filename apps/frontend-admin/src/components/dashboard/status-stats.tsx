@@ -28,6 +28,7 @@ import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
 import { MotionButton } from '@/components/ui/motion-button'
 import { TID } from '@/lib/test-ids'
+import { getDutyWatchCoverageSummary } from '@/lib/dashboard-member-actions'
 
 function formatTime(dateStr: string | null): string {
   if (!dateStr) return 'N/A'
@@ -389,10 +390,12 @@ function DutyWatchStat() {
   }
 
   const team = dutyWatch.team || []
-  const checkedInCount = team.filter((m: { isCheckedIn: boolean }) => m.isCheckedIn).length
-  const allCheckedIn = checkedInCount === team.length && team.length > 0
+  const coverageSummary = getDutyWatchCoverageSummary(dutyWatch)
+  const checkedInCount = coverageSummary.coveredCount
+  const plannedCount = coverageSummary.plannedCount
+  const allCheckedIn = coverageSummary.allCovered
 
-  if (team.length === 0) {
+  if (plannedCount === 0 && coverageSummary.liveOnlyCount === 0) {
     return (
       <StatContainer
         accentColor="warning"
@@ -429,7 +432,7 @@ function DutyWatchStat() {
             className="inline-flex cursor-help items-center"
             aria-label="View tonight's Duty Watch team"
           >
-            {checkedInCount}/{team.length}
+            {checkedInCount}/{plannedCount || team.length}
           </div>
           <div
             tabIndex={0}
@@ -440,13 +443,14 @@ function DutyWatchStat() {
                 Tonight&apos;s Duty Watch
               </p>
               <p className="text-xs leading-5 font-normal text-base-content/60">
-                Scheduled members, their assigned watch positions, and who is currently present at
-                the unit.
+                Scheduled members, their assigned watch positions, and any temporary live coverage
+                that is currently covering a slot.
               </p>
             </div>
             <ul className="list rounded-box bg-base-100">
               {team.map((assignment) => {
                 const positionLabel = getDutyWatchPositionLabel(assignment.position)
+                const isCovered = assignment.isCheckedIn || Boolean(assignment.liveCoverage)
 
                 return (
                   <li
@@ -474,12 +478,21 @@ function DutyWatchStat() {
                       <p className="mt-0.5 font-mono text-xs text-base-content/50">
                         {assignment.member.serviceNumber}
                       </p>
+                      {assignment.liveCoverage && (
+                        <p className="mt-1 text-xs text-warning">
+                          Covered live by{' '}
+                          {formatDutyWatchMemberName(assignment.liveCoverage.member)}
+                        </p>
+                      )}
+                      {assignment.source === 'live_only' && (
+                        <p className="mt-1 text-xs text-info">Temporary live-only coverage</p>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center justify-end pt-0.5">
-                      {assignment.isCheckedIn ? (
+                      {isCovered ? (
                         <AppBadge status="success" size="sm" className="gap-1">
                           <CheckCircle2 className="size-3.5" />
-                          Present
+                          {assignment.liveCoverage ? 'Covered' : 'Present'}
                         </AppBadge>
                       ) : (
                         <AppBadge status="neutral" size="sm">
@@ -496,11 +509,21 @@ function DutyWatchStat() {
       </div>
       <div className="stat-desc flex items-center gap-1">
         {allCheckedIn ? (
-          <span>All checked in</span>
+          <span>
+            All scheduled slots covered
+            {coverageSummary.liveOnlyCount > 0
+              ? ` + ${coverageSummary.liveOnlyCount} live-only`
+              : ''}
+          </span>
         ) : (
           <>
             <Clock size={12} />
-            <span>{team.length - checkedInCount} not checked in</span>
+            <span>
+              {coverageSummary.uncoveredCount} uncovered
+              {coverageSummary.liveOnlyCount > 0
+                ? ` • ${coverageSummary.liveOnlyCount} live-only`
+                : ''}
+            </span>
           </>
         )}
       </div>

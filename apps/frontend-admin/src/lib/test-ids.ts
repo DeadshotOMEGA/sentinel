@@ -278,5 +278,14 @@ export const TID = {
     },
     personCard: (id: string) => `person-card-${id}`,
     visitorCheckout: (id: string) => `person-card-visitor-checkout-${id}`,
+    memberActions: {
+      panel: (id: string) => `dashboard-member-actions-${id}`,
+      manualCheckout: (id: string) => `dashboard-member-actions-manual-checkout-${id}`,
+      temporaryRole: (id: string) => `dashboard-member-actions-temp-role-${id}`,
+      clearTemporaryRole: (id: string) => `dashboard-member-actions-temp-clear-${id}`,
+      tonightOverride: (id: string) => `dashboard-member-actions-override-${id}`,
+      transferLockup: (id: string) => `dashboard-member-actions-transfer-lockup-${id}`,
+      openBuilding: (id: string) => `dashboard-member-actions-open-building-${id}`,
+    },
   },
 } as const

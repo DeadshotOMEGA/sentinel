@@ -259,6 +259,18 @@
   transform: translateY(-2px);
 }
 
+.presence-card-hover-3d {
+  width: 100%;
+}
+
+.presence-card-hover-3d > :not(:first-child) {
+  pointer-events: none;
+}
+
+.presence-card-hover-3d > :first-child {
+  width: 100%;
+}
+
 body.kiosk-lock-mode .tsqd-parent-container,
 body.kiosk-lock-mode button[aria-label='Open Next.js Dev Tools'] {
   display: none !important;
@@ -472,6 +484,77 @@ html[data-theme='business'] .backend-status-badge {
 .presence-section-header {
   border-bottom: 1px solid oklch(94% 0 0);
   background: oklch(99% 0 0);
+}
+
+.presence-member-drawer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.presence-member-drawer > .drawer-toggle {
+  display: none;
+}
+
+.presence-member-drawer > .drawer-content,
+.presence-member-drawer > .drawer-side {
+  min-width: 0;
+}
+
+.presence-member-drawer > .drawer-content {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.presence-card-grid-shell {
+  container-type: inline-size;
+}
+
+.presence-member-drawer > .drawer-side {
+  display: none;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.presence-member-drawer[data-open='true'] > .drawer-side {
+  display: block;
+}
+
+.presence-member-drawer-panel {
+  position: sticky;
+  top: var(--space-2);
+  max-height: min(44rem, calc(100dvh - 10rem));
+}
+
+@container (min-width: 1180px) {
+  .presence-member-drawer[data-open='true'][data-side='right'] {
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 26rem);
+  }
+
+  .presence-member-drawer[data-open='true'][data-side='left'] {
+    grid-template-columns: minmax(22rem, 26rem) minmax(0, 1fr);
+  }
+
+  .presence-member-drawer[data-open='true'][data-side='left'] > .drawer-content {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .presence-member-drawer[data-open='true'][data-side='left'] > .drawer-side {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .presence-member-drawer[data-open='true'][data-side='right'] > .drawer-content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .presence-member-drawer[data-open='true'][data-side='right'] > .drawer-side {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 /* ========================================

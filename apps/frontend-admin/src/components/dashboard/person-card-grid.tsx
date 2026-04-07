@@ -5,21 +5,25 @@ import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from
 import { UsersRound, Search, Radio } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
-import { useTonightDutyWatch } from '@/hooks/use-schedules'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
+import {
+  MemberActionPanel,
+  type MemberActionDrawerSide,
+  type MemberActionView,
+} from './member-action-panel'
 import { PersonCard } from './person-card'
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { MotionButton } from '@/components/ui/motion-button'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
+import { cn } from '@/lib/utils'
 
 type FilterType = 'all' | 'member' | 'visitor'
 
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
-  const { data: dutyWatch } = useTonightDutyWatch()
   const { data: ddsStatus } = useDdsStatus()
   const checkoutVisitor = useCheckoutVisitor()
   const member = useAuthStore((state) => state.member)
@@ -29,20 +33,25 @@ export function PersonCardGrid() {
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
+  const [selectedMemberActionView, setSelectedMemberActionView] = useState<MemberActionView>('menu')
+  const [selectedMemberActionSide, setSelectedMemberActionSide] =
+    useState<MemberActionDrawerSide>('right')
   const [isPending, startTransition] = useTransition()
-
-  // Create lookup map: memberId -> position code
-  const dutyPositionMap = useMemo(() => {
-    if (!dutyWatch?.team) return new Map<string, string>()
-    return new Map(
-      dutyWatch.team
-        .filter((m): m is typeof m & { position: { code: string } } => !!m.position?.code)
-        .map((m) => [m.member.id, m.position.code])
-    )
-  }, [dutyWatch?.team])
 
   // Current DDS member ID (only when assignment is active/pending)
   const ddsMemberId = ddsStatus?.assignment?.memberId ?? null
+
+  const selectedMember =
+    data?.people.find(
+      (person): person is PresentPerson =>
+        person.type === 'member' && person.id === selectedMemberId
+    ) ?? null
+
+  const closeSelectedMemberActions = useCallback(() => {
+    setSelectedMemberId(null)
+    setSelectedMemberActionView('menu')
+  }, [])
 
   const handleFilterChange = (newFilter: FilterType) => {
     startTransition(() => setFilter(newFilter))
@@ -119,6 +128,36 @@ export function PersonCardGrid() {
     const interval = setInterval(() => setTick((t) => t + 1), 60000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (selectedMemberId && !selectedMember) {
+      closeSelectedMemberActions()
+    }
+  }, [closeSelectedMemberActions, selectedMember, selectedMemberId])
+
+  useEffect(() => {
+    if (selectedMemberId && !filteredPeople.some((person) => person.id === selectedMemberId)) {
+      closeSelectedMemberActions()
+    }
+  }, [closeSelectedMemberActions, filteredPeople, selectedMemberId])
+
+  useEffect(() => {
+    if (!selectedMemberId) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeSelectedMemberActions()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [closeSelectedMemberActions, selectedMemberId])
 
   if (isError) {
     return (
@@ -218,42 +257,113 @@ export function PersonCardGrid() {
         <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
       )}
 
-      {/* Grid or empty state */}
-      <div aria-live="polite" aria-atomic="false">
-        {filteredPeople.length > 0 ? (
-          <div
-            className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
-          >
-            {filteredPeople.map((person: PresentPerson, index: number) => (
+      <div
+        className={cn(
+          'drawer presence-member-drawer overflow-visible',
+          selectedMember && 'drawer-open'
+        )}
+        data-open={selectedMember ? 'true' : 'false'}
+        data-side={selectedMemberActionSide}
+      >
+        <input
+          type="checkbox"
+          className="drawer-toggle"
+          checked={Boolean(selectedMember)}
+          readOnly
+          aria-hidden="true"
+        />
+
+        <div className="drawer-content min-w-0">
+          <div className="presence-card-grid-shell" aria-live="polite" aria-atomic="false">
+            {filteredPeople.length > 0 ? (
               <div
-                key={`${person.type}-${person.id}`}
-                className={`h-full min-w-0${hasAnimated.current ? '' : ' animate-fade-in-up'}`}
-                style={
-                  hasAnimated.current
-                    ? undefined
-                    : {
-                        animationDelay: `${Math.min(index, 12) * 50}ms`,
-                        animationFillMode: 'backwards',
-                      }
-                }
+                className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
               >
-                <PersonCard
-                  person={person}
-                  dutyPosition={dutyPositionMap.get(person.id)}
-                  isDds={person.type === 'member' && person.id === ddsMemberId}
-                  onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
-                />
+                {filteredPeople.map((person: PresentPerson, index: number) => (
+                  <div
+                    key={`${person.type}-${person.id}`}
+                    className={`relative h-full min-w-0${person.type === 'member' && person.id === selectedMemberId ? ' z-(--z-dropdown)' : ''}${hasAnimated.current ? '' : ' animate-fade-in-up'}`}
+                    style={
+                      hasAnimated.current
+                        ? undefined
+                        : {
+                            animationDelay: `${Math.min(index, 12) * 50}ms`,
+                            animationFillMode: 'backwards',
+                          }
+                    }
+                  >
+                    <PersonCard
+                      person={person}
+                      dutyPosition={
+                        person.type === 'member'
+                          ? (person.liveDutyAssignment?.dutyPosition.code ??
+                            person.scheduledDutyTonight?.dutyPosition?.code ??
+                            null)
+                          : null
+                      }
+                      isDds={person.type === 'member' && person.id === ddsMemberId}
+                      isSelected={person.type === 'member' && person.id === selectedMemberId}
+                      onCheckoutVisitor={canCheckout ? handleCheckoutVisitor : undefined}
+                      onSelectMember={
+                        person.type === 'member'
+                          ? (selectedPerson, sideHint) => {
+                              if (selectedMemberId === selectedPerson.id) {
+                                closeSelectedMemberActions()
+                                return
+                              }
+
+                              const visibleMembers = filteredPeople.filter(
+                                (candidate): candidate is PresentPerson & { type: 'member' } =>
+                                  candidate.type === 'member'
+                              )
+                              const memberIndex = visibleMembers.findIndex(
+                                (candidate) => candidate.id === selectedPerson.id
+                              )
+                              const midpoint = Math.ceil(visibleMembers.length / 2)
+                              const resolvedSide =
+                                memberIndex >= 0
+                                  ? memberIndex < midpoint
+                                    ? 'right'
+                                    : 'left'
+                                  : sideHint
+
+                              setSelectedMemberActionSide(resolvedSide)
+                              setSelectedMemberId(selectedPerson.id)
+                              setSelectedMemberActionView('menu')
+                            }
+                          : undefined
+                      }
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-base-content/50">
+                <UsersRound size={32} strokeWidth={1} className="mb-2" />
+                <p className="text-sm">
+                  {search.trim() || filter !== 'all'
+                    ? 'No people match your filters'
+                    : 'No one is currently checked in'}
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-base-content/50">
-            <UsersRound size={32} strokeWidth={1} className="mb-2" />
-            <p className="text-sm">
-              {search.trim() || filter !== 'all'
-                ? 'No people match your filters'
-                : 'No one is currently checked in'}
-            </p>
+        </div>
+
+        {selectedMember && (
+          <div className="drawer-side presence-member-drawer-side min-w-0">
+            <MemberActionPanel
+              open
+              className="presence-member-drawer-panel"
+              person={selectedMember}
+              view={selectedMemberActionView}
+              onViewChange={setSelectedMemberActionView}
+              onOpenChange={(nextOpen) => {
+                if (!nextOpen) {
+                  closeSelectedMemberActions()
+                }
+              }}
+            />
           </div>
         )}
       </div>

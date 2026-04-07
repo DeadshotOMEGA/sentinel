@@ -8,6 +8,7 @@ const DASHBOARD_QUERY_KEYS = [
   ['eligible-openers'],
   ['checkout-options'],
   ['duty-watch'],
+  ['schedules', 'live-assignments'],
   ['security-alerts'],
 ] as const
 
