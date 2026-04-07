@@ -10,6 +10,8 @@ import type {
 } from '../repositories/lockup-repository.js'
 import { QualificationService } from './qualification-service.js'
 import { PresenceService } from './presence-service.js'
+import { LiveDutyAssignmentService } from './live-duty-assignment-service.js'
+import { ScheduleService } from './schedule-service.js'
 import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
 import { getOperationalDate } from '../utils/operational-date.js'
 import {
@@ -115,6 +117,8 @@ export class LockupService {
   private lockupRepo: LockupRepository
   private qualificationService: QualificationService
   private presenceService: PresenceService
+  private liveDutyAssignmentService: LiveDutyAssignmentService
+  private scheduleService: ScheduleService
 
   constructor(prismaClient?: PrismaClient) {
     this.prisma = prismaClient || getPrismaClient()
@@ -123,6 +127,8 @@ export class LockupService {
     this.lockupRepo = new LockupRepository(this.prisma)
     this.qualificationService = new QualificationService(this.prisma)
     this.presenceService = new PresenceService(this.prisma)
+    this.liveDutyAssignmentService = new LiveDutyAssignmentService(this.prisma)
+    this.scheduleService = new ScheduleService(this.prisma)
   }
 
   // ============================================================================
@@ -151,6 +157,50 @@ export class LockupService {
   async memberHoldsLockup(memberId: string): Promise<boolean> {
     const status = await this.getCurrentStatus()
     return status.currentHolderId === memberId
+  }
+
+  private async getDdsAuthorityMemberIds(): Promise<Set<string>> {
+    const operationalDate = getOperationalDate()
+
+    const [currentDdsAssignment, scheduledDdsResult] = await Promise.all([
+      this.prisma.ddsAssignment.findFirst({
+        where: {
+          assignedDate: operationalDate,
+          status: {
+            in: ['pending', 'active'],
+          },
+        },
+        select: {
+          memberId: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.scheduleService.getCurrentDdsFromSchedule(),
+    ])
+
+    const memberIds = new Set<string>()
+
+    if (currentDdsAssignment?.memberId) {
+      memberIds.add(currentDdsAssignment.memberId)
+    }
+
+    if (scheduledDdsResult.dds && scheduledDdsResult.dds.status !== 'released') {
+      memberIds.add(scheduledDdsResult.dds.member.id)
+    }
+
+    return memberIds
+  }
+
+  async canMemberExerciseLockupAuthority(memberId: string): Promise<boolean> {
+    const [holdsLockup, hasLockupQualification, ddsAuthorityMemberIds] = await Promise.all([
+      this.memberHoldsLockup(memberId),
+      this.qualificationService.canMemberReceiveLockup(memberId),
+      this.getDdsAuthorityMemberIds(),
+    ])
+
+    return holdsLockup || hasLockupQualification || ddsAuthorityMemberIds.has(memberId)
   }
 
   // ============================================================================
@@ -190,8 +240,8 @@ export class LockupService {
       throw new NotFoundError('Member', toMemberId)
     }
 
-    // Verify toMember has lockup-eligible qualification
-    const canReceive = await this.qualificationService.canMemberReceiveLockup(toMemberId)
+    // DDS authority can stand in for a lockup qualification during transfers.
+    const canReceive = await this.canMemberExerciseLockupAuthority(toMemberId)
     if (!canReceive) {
       throw new ValidationError('Recipient is not qualified to receive lockup responsibility')
     }
@@ -255,8 +305,7 @@ export class LockupService {
       throw new NotFoundError('Member', memberId)
     }
 
-    // Verify member has lockup-eligible qualification
-    const canReceive = await this.qualificationService.canMemberReceiveLockup(memberId)
+    const canReceive = await this.canMemberExerciseLockupAuthority(memberId)
     if (!canReceive) {
       throw new ValidationError('Member is not qualified to acquire lockup responsibility')
     }
@@ -329,8 +378,51 @@ export class LockupService {
       serviceNumber: string
     }>
   > {
-    const eligibleMembers = await this.qualificationService.getLockupEligibleMembers(true)
-    return eligibleMembers.map((m) => ({
+    const [eligibleMembers, presentMembers, ddsAuthorityMemberIds] = await Promise.all([
+      this.qualificationService.getLockupEligibleMembers(true),
+      this.checkinRepo.getPresentMembers(),
+      this.getDdsAuthorityMemberIds(),
+    ])
+
+    const eligibleById = new Map(
+      eligibleMembers.map((member) => [
+        member.id,
+        {
+          id: member.id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          rank: member.rank,
+          serviceNumber: member.serviceNumber,
+        },
+      ])
+    )
+
+    const ddsAuthorityIds = presentMembers
+      .filter((member) => ddsAuthorityMemberIds.has(member.id) && !eligibleById.has(member.id))
+      .map((member) => member.id)
+
+    if (ddsAuthorityIds.length > 0) {
+      const ddsAuthorityMembers = await this.prisma.member.findMany({
+        where: {
+          id: {
+            in: ddsAuthorityIds,
+          },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          rank: true,
+          serviceNumber: true,
+        },
+      })
+
+      for (const member of ddsAuthorityMembers) {
+        eligibleById.set(member.id, member)
+      }
+    }
+
+    return [...eligibleById.values()].map((m) => ({
       id: m.id,
       firstName: m.firstName,
       lastName: m.lastName,
@@ -369,8 +461,7 @@ export class LockupService {
       throw new NotFoundError('Member', memberId)
     }
 
-    // Verify member has lockup qualification
-    const canReceive = await this.qualificationService.canMemberReceiveLockup(memberId)
+    const canReceive = await this.canMemberExerciseLockupAuthority(memberId)
     if (!canReceive) {
       throw new ValidationError('Member is not qualified to open building')
     }
@@ -578,14 +669,7 @@ export class LockupService {
       throw new NotFoundError('Member', memberId)
     }
 
-    // Check if member currently holds lockup
-    const holdsLockup = await this.memberHoldsLockup(memberId)
-    if (holdsLockup) {
-      return true
-    }
-
-    // Check if member has lockup-eligible qualification
-    return this.qualificationService.canMemberReceiveLockup(memberId)
+    return this.canMemberExerciseLockupAuthority(memberId)
   }
 
   /**
@@ -736,6 +820,14 @@ export class LockupService {
           error: error instanceof Error ? error.message : String(error),
         })
       }
+    }
+
+    if (checkedOutMembers.length > 0) {
+      await this.liveDutyAssignmentService.clearAssignmentsForMembers(
+        checkedOutMembers.map((member) => member.id),
+        'lockup_execution',
+        now
+      )
     }
 
     // Create lockup execution record

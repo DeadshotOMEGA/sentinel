@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
+import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import type { SessionMetadata, SessionWithMember } from '../repositories/session-repository.js'
 import { authLogger } from '../lib/logger.js'
@@ -9,6 +10,8 @@ import {
   getSentinelBootstrapIdentity,
   isSentinelBootstrapServiceNumber,
 } from '../lib/system-bootstrap.js'
+import { broadcastCheckin } from '../websocket/broadcast.js'
+import { PresenceService } from './presence-service.js'
 
 const BCRYPT_COST = 12
 const DISALLOWED_MEMBER_PIN_SET = new Set<string>(DISALLOWED_MEMBER_PINS)
@@ -72,10 +75,14 @@ export interface RemoteSystemSelection {
 export class AuthService {
   private prisma: PrismaClientInstance
   private sessionRepo: SessionRepository
+  private checkinRepo: CheckinRepository
+  private presenceService: PresenceService
 
   constructor(prisma: PrismaClientInstance = defaultPrisma) {
     this.prisma = prisma
     this.sessionRepo = new SessionRepository(prisma)
+    this.checkinRepo = new CheckinRepository(prisma)
+    this.presenceService = new PresenceService(prisma)
   }
 
   /**
@@ -111,7 +118,6 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
-    // Create session
     const session = await this.sessionRepo.create({
       memberId: member.id,
       remoteSystemId: remoteSystem.remoteSystemId,
@@ -119,6 +125,19 @@ export class AuthService {
       ipAddress,
       userAgent,
     })
+
+    try {
+      await this.ensureMemberCheckedIn(member.id, remoteSystem.remoteSystemId)
+    } catch (error) {
+      await this.sessionRepo.endById(session.id, 'auto_checkin_failed')
+      authLogger.error('Login auto check-in failed; session revoked', {
+        memberId: member.id,
+        sessionId: session.id,
+        remoteSystemId: remoteSystem.remoteSystemId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      throw error
+    }
 
     authLogger.info('Login successful', {
       memberId: member.id,
@@ -439,6 +458,62 @@ export class AuthService {
     })
 
     return isSentinelBootstrapServiceNumber(member?.serviceNumber)
+  }
+
+  private async ensureMemberCheckedIn(
+    memberId: string,
+    remoteSystemId: string | null
+  ): Promise<void> {
+    const latestCheckin = await this.checkinRepo.findLatestByMember(memberId)
+    if (latestCheckin?.direction === 'in') {
+      return
+    }
+
+    if (!remoteSystemId) {
+      throw new Error('Remote system is required for login auto check-in')
+    }
+
+    const member = await this.prisma.member.findUnique({
+      where: { id: memberId },
+      select: {
+        id: true,
+        rank: true,
+        firstName: true,
+        lastName: true,
+        displayName: true,
+        division: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    if (!member) {
+      throw new NotFoundError('Member not found')
+    }
+
+    const checkin = await this.checkinRepo.create({
+      memberId,
+      direction: 'in',
+      kioskId: remoteSystemId,
+      method: 'login',
+      timestamp: new Date(),
+      synced: true,
+    })
+
+    broadcastCheckin({
+      id: checkin.id,
+      memberId,
+      memberName: member.displayName ?? `${member.firstName} ${member.lastName}`,
+      rank: member.rank,
+      division: member.division?.name ?? 'Unknown',
+      direction: 'in',
+      timestamp: checkin.timestamp.toISOString(),
+      kioskId: remoteSystemId,
+    })
+
+    await this.presenceService.broadcastStatsUpdate()
   }
 }
 

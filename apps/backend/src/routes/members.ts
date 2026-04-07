@@ -49,11 +49,20 @@ export const membersRouter = s.router(memberContract, {
         divisionId?: string
         search?: string
         status?: MemberStatus
+        ranks?: string[]
+        tags?: string[]
         qualificationCode?: string
         includeHidden?: boolean
       } = {
         divisionId: query.divisionId,
         search: query.search,
+        ranks:
+          query.ranks && query.ranks.length > 0
+            ? query.ranks
+            : query.rank
+              ? [query.rank]
+              : undefined,
+        tags: query.tags,
         qualificationCode: query.qualificationCode,
         includeHidden,
       }

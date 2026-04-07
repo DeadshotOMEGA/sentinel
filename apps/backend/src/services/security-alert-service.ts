@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
-import { NotFoundError, ValidationError } from '../middleware/error-handler.js'
+import { AppError, NotFoundError, ValidationError } from '../middleware/error-handler.js'
+import { AccountLevel } from '../middleware/roles.js'
 import { Prisma } from '@sentinel/database'
 import { getRuntimeAlertRateLimit } from '../lib/operational-timings-runtime.js'
 
@@ -154,7 +155,7 @@ export class SecurityAlertService {
    * Acknowledge a security alert
    */
   async acknowledgeAlert(alertId: string, memberId: string, note?: string): Promise<ActiveAlert> {
-    // Verify member exists and has Admin (5) or Developer (6) level
+    // Command-level operators and above can acknowledge operational alerts.
     const member = await this.prisma.member.findUnique({
       where: { id: memberId },
       select: { id: true, accountLevel: true },
@@ -164,8 +165,12 @@ export class SecurityAlertService {
       throw new NotFoundError('Member', memberId)
     }
 
-    if (member.accountLevel < 5) {
-      throw new ValidationError('Only Admin or Developer level members can acknowledge alerts')
+    if (member.accountLevel < AccountLevel.COMMAND) {
+      throw new AppError(
+        'Only Command, Admin, or Developer level members can acknowledge alerts',
+        403,
+        'FORBIDDEN'
+      )
     }
 
     // Check if alert exists

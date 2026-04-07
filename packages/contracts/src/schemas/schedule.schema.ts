@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import { DwNightOverrideResponseSchema } from './dw-override.schema.js'
+import { DutyWatchLiveCoverageSchema } from './operational-duty-assignment.schema.js'
 
 // ============================================================================
 // Duty Role Schemas
@@ -344,6 +345,8 @@ export const DutyWatchTeamResponseSchema = v.object({
       }),
       status: AssignmentStatusSchema,
       isCheckedIn: v.boolean(),
+      source: v.picklist(['schedule', 'night_override', 'live_only']),
+      liveCoverage: v.nullable(DutyWatchLiveCoverageSchema),
     })
   ),
 })

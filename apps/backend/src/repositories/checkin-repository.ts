@@ -49,6 +49,7 @@ export interface PresentMember {
   divisionId: string | null
   memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
   mess: string | null
+  activeCheckinId: string
   checkedInAt: string
   kioskId?: string
 }
@@ -743,6 +744,7 @@ export class CheckinRepository {
         division_name: string
         division_code: string
         member_type: string
+        active_checkin_id: string
         checked_in_at: Date
         kiosk_id: string | null
         tags: string | null
@@ -750,6 +752,7 @@ export class CheckinRepository {
     >`
       WITH latest_checkins AS (
         SELECT DISTINCT ON (member_id)
+          id,
           member_id,
           direction,
           timestamp,
@@ -800,6 +803,7 @@ export class CheckinRepository {
         d.name as division_name,
         d.code as division_code,
         m.member_type,
+        lc.id as active_checkin_id,
         lc.timestamp as checked_in_at,
         lc.kiosk_id,
         mta.tags::text as tags
@@ -825,6 +829,7 @@ export class CheckinRepository {
       divisionId: row.division_id,
       memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
       mess: row.mess,
+      activeCheckinId: row.active_checkin_id,
       checkedInAt: row.checked_in_at.toISOString(),
       kioskId: row.kiosk_id ?? undefined,
       tags: row.tags ? JSON.parse(row.tags) : [],

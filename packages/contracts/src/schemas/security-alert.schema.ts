@@ -1,11 +1,27 @@
 import * as v from 'valibot'
-import { AlertTypeEnum, AlertSeverityEnum } from './alert-config.schema.js'
+import { AlertSeverityEnum } from './alert-config.schema.js'
+import {
+  OperationalAlertRateLimitKeys,
+  SecurityAlertRateLimitKeys,
+} from './operational-timing.schema.js'
+
+const SecurityAlertTypeValues = [
+  ...SecurityAlertRateLimitKeys,
+  ...OperationalAlertRateLimitKeys,
+  'system',
+] as const
+
+export const SecurityAlertTypeEnum = v.picklist(
+  SecurityAlertTypeValues,
+  'Invalid security alert type'
+)
+export type SecurityAlertType = v.InferOutput<typeof SecurityAlertTypeEnum>
 
 /**
  * Create security alert request schema
  */
 export const CreateSecurityAlertSchema = v.object({
-  alertType: AlertTypeEnum,
+  alertType: SecurityAlertTypeEnum,
   severity: AlertSeverityEnum,
   badgeSerial: v.nullable(v.string()),
   memberId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid member ID')))),
@@ -31,7 +47,7 @@ export const AcknowledgeAlertSchema = v.object({
  */
 export const SecurityAlertResponseSchema = v.object({
   id: v.string(),
-  alertType: AlertTypeEnum,
+  alertType: SecurityAlertTypeEnum,
   severity: AlertSeverityEnum,
   badgeSerial: v.nullable(v.string()),
   memberId: v.nullable(v.string()),

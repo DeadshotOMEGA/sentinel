@@ -3,6 +3,7 @@ import {
   CreateCheckinSchema,
   BulkCreateCheckinsSchema,
   UpdateCheckinSchema,
+  ManualCheckoutSchema,
   CheckinWithMemberResponseSchema,
   CheckinListQuerySchema,
   CheckinListResponseSchema,
@@ -10,6 +11,7 @@ import {
   PresentPeopleResponseSchema,
   RecentActivityResponseSchema,
   RecentActivityQuerySchema,
+  ManualCheckoutResponseSchema,
   ErrorResponseSchema,
   IdParamSchema,
   SuccessResponseSchema,
@@ -89,6 +91,29 @@ export const checkinContract = c.router({
     },
     summary: 'Get recent activity',
     description: 'Get combined recent check-ins and visitor sign-ins for the activity feed',
+  },
+
+  /**
+   * Manually check out a currently present member
+   * NOTE: Must be before getCheckinById to avoid :id matching 'manual-checkout'
+   */
+  manualCheckout: {
+    method: 'POST',
+    path: '/api/checkins/manual-checkout/:id',
+    pathParams: IdParamSchema,
+    body: ManualCheckoutSchema,
+    responses: {
+      200: ManualCheckoutResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Manually check out member',
+    description:
+      'Create an audited manual checkout for a currently present member and record missed-checkout metadata.',
   },
 
   /**

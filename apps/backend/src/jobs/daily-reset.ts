@@ -5,6 +5,7 @@ import { logger } from '../lib/logger.js'
 import { AlertService } from '../services/alert-service.js'
 import { DdsService } from '../services/dds-service.js'
 import { LockupService } from '../services/lockup-service.js'
+import { LiveDutyAssignmentService } from '../services/live-duty-assignment-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import {
@@ -34,6 +35,7 @@ export async function runDailyReset(): Promise<void> {
   const alertService = new AlertService(prisma)
   const ddsService = new DdsService(prisma)
   const lockupService = new LockupService(prisma)
+  const liveDutyAssignmentService = new LiveDutyAssignmentService(prisma)
   const presenceService = new PresenceService(prisma)
   const sessionRepository = new SessionRepository(prisma)
 
@@ -71,6 +73,7 @@ export async function runDailyReset(): Promise<void> {
       })
 
       const missedMembers: Array<{ name: string; id: string }> = []
+      const forceCheckedOutMemberIds: string[] = []
 
       for (const member of presentMembers) {
         try {
@@ -129,6 +132,8 @@ export async function runDailyReset(): Promise<void> {
               timestamp: resetTimestamp.toISOString(),
               kioskId: 'SYSTEM',
             })
+
+            forceCheckedOutMemberIds.push(member.id)
           }
 
           missedMembers.push({
@@ -141,6 +146,14 @@ export async function runDailyReset(): Promise<void> {
             error: error instanceof Error ? error.message : 'Unknown error',
           })
         }
+      }
+
+      if (forceCheckedOutMemberIds.length > 0) {
+        await liveDutyAssignmentService.clearAssignmentsForMembers(
+          forceCheckedOutMemberIds,
+          'daily_reset',
+          resetTimestamp
+        )
       }
 
       // Emit alert for missed checkouts

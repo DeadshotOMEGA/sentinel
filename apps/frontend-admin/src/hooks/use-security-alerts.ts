@@ -8,6 +8,20 @@ import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
 import { useAuthStore } from '@/store/auth-store'
 
+function getApiErrorMessage(body: unknown, fallback: string): string {
+  if (
+    typeof body === 'object' &&
+    body !== null &&
+    'message' in body &&
+    typeof body.message === 'string' &&
+    body.message.length > 0
+  ) {
+    return body.message
+  }
+
+  return fallback
+}
+
 export function useSecurityAlerts() {
   const query = useQuery({
     queryKey: ['security-alerts'],
@@ -63,7 +77,7 @@ export function useAcknowledgeAlert() {
         body: { adminId: member.id, ...(note ? { note } : {}) },
       })
       if (response.status !== 200) {
-        throw new Error('Failed to acknowledge alert')
+        throw new Error(getApiErrorMessage(response.body, 'Failed to acknowledge alert'))
       }
       return response.body
     },

@@ -637,6 +637,18 @@ exports.Prisma.DutyPositionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.LiveDutyAssignmentScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  dutyPositionId: 'dutyPositionId',
+  notes: 'notes',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  endedReason: 'endedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.WeeklyScheduleScalarFieldEnum = {
   id: 'id',
   dutyRoleId: 'dutyRoleId',
@@ -855,6 +867,7 @@ exports.Prisma.ModelName = {
   MemberQualification: 'MemberQualification',
   DutyRole: 'DutyRole',
   DutyPosition: 'DutyPosition',
+  LiveDutyAssignment: 'LiveDutyAssignment',
   WeeklySchedule: 'WeeklySchedule',
   ScheduleAssignment: 'ScheduleAssignment',
   DutyWatchNightOverride: 'DutyWatchNightOverride',

@@ -1,6 +1,6 @@
 {
   "name": "frontend-admin",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
@@ -11,6 +11,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@sentinel/contracts": "workspace:*",
     "@sentinel/types": "workspace:*",

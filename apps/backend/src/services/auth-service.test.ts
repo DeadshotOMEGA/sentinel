@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { CheckinRepository } from '../repositories/checkin-repository.js'
 import type { SessionRepository } from '../repositories/session-repository.js'
+import type { PresenceService } from './presence-service.js'
 import {
   AuthService,
   ForbiddenError,
@@ -21,6 +23,27 @@ function createSessionRepositoryMock() {
       remoteSystemName: 'Deployment Laptop',
       lastSeenAt: new Date('2026-04-01T12:00:00.000Z'),
     }),
+    endById: vi.fn().mockResolvedValue(1),
+  }
+}
+
+function createCheckinRepositoryMock() {
+  return {
+    findLatestByMember: vi.fn().mockResolvedValue(null),
+    create: vi.fn().mockResolvedValue({
+      id: 'checkin-1',
+      memberId: 'member-1',
+      direction: 'in',
+      timestamp: new Date('2026-04-01T12:05:00.000Z'),
+      kioskId: 'remote-1',
+      method: 'login',
+    }),
+  }
+}
+
+function createPresenceServiceMock() {
+  return {
+    broadcastStatsUpdate: vi.fn().mockResolvedValue(undefined),
   }
 }
 
@@ -83,6 +106,20 @@ function attachSessionRepository(service: AuthService) {
   ;(service as unknown as { sessionRepo: SessionRepository }).sessionRepo =
     sessionRepository as unknown as SessionRepository
   return sessionRepository
+}
+
+function attachCheckinRepository(service: AuthService) {
+  const checkinRepository = createCheckinRepositoryMock()
+  ;(service as unknown as { checkinRepo: CheckinRepository }).checkinRepo =
+    checkinRepository as unknown as CheckinRepository
+  return checkinRepository
+}
+
+function attachPresenceService(service: AuthService) {
+  const presenceService = createPresenceServiceMock()
+  ;(service as unknown as { presenceService: PresenceService }).presenceService =
+    presenceService as unknown as PresenceService
+  return presenceService
 }
 
 describe('AuthService', () => {
@@ -213,6 +250,8 @@ describe('AuthService', () => {
     })
     const service = new AuthService(prisma)
     const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    const presenceService = attachPresenceService(service)
 
     await expect(
       service.login(
@@ -233,6 +272,74 @@ describe('AuthService', () => {
     })
 
     expect(sessionRepository.create).toHaveBeenCalled()
+    expect(checkinRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        memberId: 'member-1',
+        direction: 'in',
+        kioskId: 'remote-1',
+        method: 'login',
+      })
+    )
+    expect(presenceService.broadcastStatsUpdate).toHaveBeenCalled()
+  })
+
+  it('does not create a duplicate login checkin when the member is already present', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    attachPresenceService(service)
+
+    checkinRepository.findLatestByMember.mockResolvedValue({
+      id: 'existing-checkin',
+      direction: 'in',
+      timestamp: new Date('2026-04-01T11:00:00.000Z'),
+    })
+
+    await service.login(
+      'serial-1',
+      '2468',
+      {
+        remoteSystemId: 'remote-1',
+        remoteSystemName: 'Deployment Laptop',
+      },
+      '127.0.0.1',
+      'vitest'
+    )
+
+    expect(sessionRepository.create).toHaveBeenCalled()
+    expect(checkinRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('revokes the new session when login auto checkin fails', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    attachPresenceService(service)
+
+    checkinRepository.create.mockRejectedValue(new Error('insert failed'))
+
+    await expect(
+      service.login(
+        'serial-1',
+        '2468',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Deployment Laptop',
+        },
+        '127.0.0.1',
+        'vitest'
+      )
+    ).rejects.toThrow('insert failed')
+
+    expect(sessionRepository.endById).toHaveBeenCalledWith('session-1', 'auto_checkin_failed')
   })
 
   it('rejects blocked replacement PINs', async () => {

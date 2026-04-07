@@ -1,8 +1,10 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
+import { websocketManager } from '@/lib/websocket'
 import type { GrantQualificationInput, RevokeQualificationInput } from '@sentinel/contracts'
 
 // ============================================================================
@@ -130,7 +132,7 @@ interface LockupEligibilityParams {
 }
 
 export function useLockupEligibleMembers(params: LockupEligibilityParams = {}) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['lockup-eligible', params],
     queryFn: async () => {
       const response = await apiClient.qualifications.getLockupEligibleMembers({
@@ -144,4 +146,34 @@ export function useLockupEligibleMembers(params: LockupEligibilityParams = {}) {
       return response.body
     },
   })
+
+  const { refetch } = query
+
+  useEffect(() => {
+    websocketManager.connect()
+    websocketManager.subscribe('presence')
+    websocketManager.subscribe('checkins')
+    websocketManager.subscribe('lockup')
+
+    const handleUpdate = () => {
+      refetch()
+    }
+
+    websocketManager.on('presence:update', handleUpdate)
+    websocketManager.on('checkin:new', handleUpdate)
+    websocketManager.on('lockup:status', handleUpdate)
+    websocketManager.on('lockup:statusChanged', handleUpdate)
+
+    return () => {
+      websocketManager.off('presence:update', handleUpdate)
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.off('lockup:status', handleUpdate)
+      websocketManager.off('lockup:statusChanged', handleUpdate)
+      websocketManager.unsubscribe('presence')
+      websocketManager.unsubscribe('checkins')
+      websocketManager.unsubscribe('lockup')
+    }
+  }, [refetch])
+
+  return query
 }

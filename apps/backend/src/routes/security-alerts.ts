@@ -2,6 +2,7 @@ import { initServer } from '@ts-rest/express'
 import { securityAlertContract } from '@sentinel/contracts'
 import { SecurityAlertService } from '../services/security-alert-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { AppError } from '../middleware/error-handler.js'
 
 const s = initServer()
 
@@ -95,9 +96,10 @@ export const securityAlertsRouter = s.router(securityAlertContract, {
   /**
    * Acknowledge a security alert
    */
-  acknowledgeAlert: async ({ params, body }) => {
+  acknowledgeAlert: async ({ params, body, req }) => {
     try {
-      const alert = await securityAlertService.acknowledgeAlert(params.id, body.adminId, body.note)
+      const actorId = req.member?.id ?? body.adminId
+      const alert = await securityAlertService.acknowledgeAlert(params.id, actorId, body.note)
 
       return {
         status: 200 as const,
@@ -123,21 +125,31 @@ export const securityAlertsRouter = s.router(securityAlertContract, {
         },
       }
     } catch (error) {
-      if (error instanceof Error && error.message.includes('not found')) {
+      if (error instanceof AppError && error.statusCode === 404) {
         return {
           status: 404 as const,
           body: {
-            error: 'NOT_FOUND',
-            message: `Security alert with ID '${params.id}' not found`,
+            error: error.code,
+            message: error.message,
           },
         }
       }
 
-      if (error instanceof Error && error.message.includes('already')) {
+      if (error instanceof AppError && error.statusCode === 403) {
+        return {
+          status: 403 as const,
+          body: {
+            error: error.code,
+            message: error.message,
+          },
+        }
+      }
+
+      if (error instanceof AppError && error.statusCode === 400) {
         return {
           status: 400 as const,
           body: {
-            error: 'VALIDATION_ERROR',
+            error: error.code,
             message: error.message,
           },
         }

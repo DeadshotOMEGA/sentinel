@@ -98,6 +98,7 @@ export interface MemberFilterParams {
     memberType?: MemberType;
     status?: MemberStatus;
     search?: string;
+    ranks?: string[];
     mess?: string;
     moc?: string;
     division?: string;

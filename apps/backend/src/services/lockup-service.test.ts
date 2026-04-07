@@ -20,6 +20,10 @@ function createService() {
   const prisma = {
     member: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
+    },
+    ddsAssignment: {
+      findFirst: vi.fn(),
     },
     responsibilityAuditLog: {
       create: vi.fn(),
@@ -56,11 +60,24 @@ function createService() {
     canMemberReceiveLockup: vi.fn(),
   }
 
+  const liveDutyAssignmentService = {
+    clearAssignmentsForMembers: vi.fn(),
+  }
+
+  const scheduleService = {
+    getCurrentDdsFromSchedule: vi.fn().mockResolvedValue({
+      dds: null,
+      operationalDate: '2026-03-26',
+    }),
+  }
+
   Reflect.set(service, 'checkinRepo', checkinRepo)
   Reflect.set(service, 'visitorRepo', visitorRepo)
   Reflect.set(service, 'lockupRepo', lockupRepo)
   Reflect.set(service, 'presenceService', presenceService)
   Reflect.set(service, 'qualificationService', qualificationService)
+  Reflect.set(service, 'liveDutyAssignmentService', liveDutyAssignmentService)
+  Reflect.set(service, 'scheduleService', scheduleService)
 
   return {
     service,
@@ -70,6 +87,8 @@ function createService() {
     lockupRepo,
     presenceService,
     qualificationService,
+    liveDutyAssignmentService,
+    scheduleService,
   }
 }
 
@@ -117,8 +136,15 @@ describe('LockupService.executeLockup', () => {
   })
 
   it('records the lockup holder checkout separately from forced checkouts', async () => {
-    const { service, prisma, checkinRepo, visitorRepo, lockupRepo, presenceService } =
-      createService()
+    const {
+      service,
+      prisma,
+      checkinRepo,
+      visitorRepo,
+      lockupRepo,
+      presenceService,
+      liveDutyAssignmentService,
+    } = createService()
 
     vi.spyOn(service, 'getCurrentStatus').mockResolvedValue({
       id: 'status-1',
@@ -207,6 +233,7 @@ describe('LockupService.executeLockup', () => {
     lockupRepo.markSecured.mockResolvedValue({})
     prisma.responsibilityAuditLog.create.mockResolvedValue({})
     presenceService.setMemberDirection.mockResolvedValue(undefined)
+    liveDutyAssignmentService.clearAssignmentsForMembers.mockResolvedValue(2)
 
     await service.executeLockup('member-1', 'End of day')
 
@@ -232,6 +259,11 @@ describe('LockupService.executeLockup', () => {
           { id: 'member-2', name: 'Lt Alex Other' },
         ],
       })
+    )
+    expect(liveDutyAssignmentService.clearAssignmentsForMembers).toHaveBeenCalledWith(
+      ['member-1', 'member-2'],
+      'lockup_execution',
+      expect.any(Date)
     )
   })
 })
@@ -338,5 +370,71 @@ describe('LockupService same-day reopen flow', () => {
       buildingStatus: 'secured',
     })
     expect(lockupRepo.updateHolder).not.toHaveBeenCalled()
+  })
+
+  it('lets the scheduled DDS open the building even without a separate lockup qualification', async () => {
+    const { service, prisma, lockupRepo, presenceService, qualificationService, scheduleService } =
+      createService()
+
+    vi.spyOn(service, 'getCurrentStatus').mockResolvedValue({
+      id: 'status-secured',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: null,
+      acquiredAt: null,
+      buildingStatus: 'secured',
+      securedAt: new Date('2026-03-26T06:00:00.000Z'),
+      securedBy: 'member-9',
+      isActive: true,
+      createdAt: new Date('2026-03-26T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-26T06:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+
+    prisma.member.findUnique.mockResolvedValue({
+      id: 'member-2',
+      firstName: 'Taylor',
+      lastName: 'Reed',
+      rank: 'SLt',
+    })
+    prisma.ddsAssignment.findFirst.mockResolvedValue(null)
+    qualificationService.canMemberReceiveLockup.mockResolvedValue(false)
+    scheduleService.getCurrentDdsFromSchedule.mockResolvedValue({
+      dds: {
+        assignmentId: 'schedule-assignment-1',
+        member: {
+          id: 'member-2',
+          firstName: 'Taylor',
+          lastName: 'Reed',
+          rank: 'SLt',
+          serviceNumber: '44221',
+        },
+        scheduleId: 'schedule-1',
+        status: 'confirmed',
+        weekStartDate: '2026-03-23',
+      },
+      operationalDate: '2026-03-26',
+    })
+    presenceService.isMemberPresent.mockResolvedValue(true)
+    lockupRepo.markOpen.mockResolvedValue({
+      id: 'status-open',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-2',
+      acquiredAt: new Date('2026-03-26T08:00:00.000Z'),
+      buildingStatus: 'open',
+      securedAt: null,
+      securedBy: null,
+      isActive: true,
+      createdAt: new Date('2026-03-26T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-26T08:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+    prisma.responsibilityAuditLog.create.mockResolvedValue({})
+
+    await expect(service.openBuilding('member-2')).resolves.toMatchObject({
+      currentHolderId: 'member-2',
+      buildingStatus: 'open',
+    })
   })
 })

@@ -5,7 +5,11 @@ import { useEffect } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import { websocketManager } from '@/lib/websocket'
-import type { CreateCheckinInput, UpdateCheckinInput } from '@sentinel/contracts'
+import type {
+  CreateCheckinInput,
+  ManualCheckoutInput,
+  UpdateCheckinInput,
+} from '@sentinel/contracts'
 
 interface CheckinsQueryParams {
   page?: number
@@ -15,6 +19,7 @@ interface CheckinsQueryParams {
   direction?: string
   startDate?: string
   endDate?: string
+  enabled?: boolean
 }
 
 export function useCheckins(params: CheckinsQueryParams = {}) {
@@ -37,6 +42,7 @@ export function useCheckins(params: CheckinsQueryParams = {}) {
       }
       return response.body
     },
+    enabled: params.enabled ?? true,
   })
 
   const { refetch } = query
@@ -182,6 +188,31 @@ export function useUpdateCheckin() {
       if (response.status !== 200) {
         const body = response.body as { message?: string }
         throw new Error(body?.message ?? 'Failed to update check-in')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
+      queryClient.invalidateQueries({ queryKey: ['checkins'] })
+      queryClient.invalidateQueries({ queryKey: ['presence'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
+    },
+  })
+}
+
+export function useManualCheckout() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ memberId, data }: { memberId: string; data: ManualCheckoutInput }) => {
+      const response = await apiClient.checkins.manualCheckout({
+        params: { id: memberId },
+        body: data,
+      })
+      if (response.status !== 200) {
+        const body = response.body as { message?: string }
+        throw new Error(body?.message ?? 'Failed to create manual checkout')
       }
       return response.body
     },

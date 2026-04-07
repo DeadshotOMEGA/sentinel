@@ -60,6 +60,7 @@ export const securityAlertContract = c.router({
     responses: {
       200: AcknowledgeAlertResponseSchema,
       400: ErrorResponseSchema,
+      403: ErrorResponseSchema,
       401: ErrorResponseSchema,
       404: ErrorResponseSchema,
       500: ErrorResponseSchema,

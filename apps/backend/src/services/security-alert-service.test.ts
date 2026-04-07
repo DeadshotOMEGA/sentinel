@@ -18,6 +18,7 @@ import {
   broadcastSecurityAlert,
   broadcastSecurityAlertAcknowledged,
 } from '../websocket/broadcast.js'
+import { AppError } from '../middleware/error-handler.js'
 import {
   applyOperationalTimingsRuntimeState,
   getDefaultOperationalTimingsSettings,
@@ -67,10 +68,10 @@ describe('SecurityAlertService.acknowledgeAlert', () => {
     })
   })
 
-  it('broadcasts alert acknowledgement after the database update succeeds', async () => {
+  it('allows command-level members to acknowledge alerts and broadcasts afterwards', async () => {
     prismaMock.member.findUnique.mockResolvedValue({
       id: 'admin-1',
-      accountLevel: 5,
+      accountLevel: 4,
     })
     prismaMock.securityAlert.findUnique.mockResolvedValue({
       id: 'alert-1',
@@ -124,6 +125,25 @@ describe('SecurityAlertService.acknowledgeAlert', () => {
     if (updateOrder !== undefined && broadcastOrder !== undefined) {
       expect(updateOrder).toBeLessThan(broadcastOrder)
     }
+  })
+
+  it('rejects members below command level', async () => {
+    prismaMock.member.findUnique.mockResolvedValue({
+      id: 'member-1',
+      accountLevel: 3,
+    })
+
+    const service = new SecurityAlertService(prismaMock as unknown as PrismaClient)
+
+    await expect(service.acknowledgeAlert('alert-1', 'member-1', 'Handled')).rejects.toMatchObject<
+      Partial<AppError>
+    >({
+      statusCode: 403,
+      code: 'FORBIDDEN',
+    })
+
+    expect(prismaMock.securityAlert.findUnique).not.toHaveBeenCalled()
+    expect(prismaMock.securityAlert.update).not.toHaveBeenCalled()
   })
 })
 
