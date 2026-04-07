@@ -375,7 +375,7 @@ export function useDeleteAssignment() {
 // ============================================================================
 
 export function useCurrentDds() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['dds', 'current'],
     queryFn: async () => {
       const response = await apiClient.schedules.getCurrentDdsFromSchedule()
@@ -385,6 +385,30 @@ export function useCurrentDds() {
       return response.body
     },
   })
+
+  const { refetch } = query
+
+  useEffect(() => {
+    websocketManager.connect()
+    websocketManager.subscribe('schedules')
+
+    const handleUpdate = () => {
+      refetch()
+    }
+
+    websocketManager.on('schedule:update', handleUpdate)
+    websocketManager.on('schedule:assignment', handleUpdate)
+    websocketManager.on('schedules:updated', handleUpdate)
+
+    return () => {
+      websocketManager.off('schedule:update', handleUpdate)
+      websocketManager.off('schedule:assignment', handleUpdate)
+      websocketManager.off('schedules:updated', handleUpdate)
+      websocketManager.unsubscribe('schedules')
+    }
+  }, [refetch])
+
+  return query
 }
 
 export function useDdsByWeek(date: string) {

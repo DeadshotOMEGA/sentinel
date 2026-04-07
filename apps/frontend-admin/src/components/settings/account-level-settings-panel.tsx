@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import type { MemberResponse } from '@sentinel/contracts'
 import {
@@ -10,7 +10,7 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Chip } from '@/components/ui/chip'
 import { ButtonSpinner, LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   Dialog,
@@ -22,9 +22,10 @@ import {
 } from '@/components/ui/dialog'
 import { useDivisions } from '@/hooks/use-divisions'
 import { useEnums } from '@/hooks/use-enums'
+import { useTags } from '@/hooks/use-member-tags'
 import { useMembers, useUpdateMember } from '@/hooks/use-members'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
-import { AlertTriangle, Shield, Users } from 'lucide-react'
+import { AlertTriangle, BookOpenText, SlidersHorizontal, Shield, Users, X } from 'lucide-react'
 
 type AssignableAccountLevel = (typeof AccountLevel)[keyof typeof AccountLevel]
 
@@ -105,6 +106,11 @@ export function AccountLevelSettingsPanel() {
   const actorLevel = signedInMember?.accountLevel ?? 0
   const canEdit = actorLevel >= AccountLevel.ADMIN
   const updateMember = useUpdateMember()
+  const [selectedRanks, setSelectedRanks] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [draftRanks, setDraftRanks] = useState<string[]>([])
+  const [draftTags, setDraftTags] = useState<string[]>([])
+  const [collapsedLevels, setCollapsedLevels] = useState<Record<number, boolean>>({})
   const {
     data: membersData,
     isLoading,
@@ -114,12 +120,16 @@ export function AccountLevelSettingsPanel() {
     page: 1,
     limit: 500,
     includeHidden: true,
+    ranks: selectedRanks,
+    tags: selectedTags,
   })
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
+  const { data: tags = [] } = useTags()
 
   const [selection, setSelection] = useState<Record<string, boolean>>({})
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false)
   const assignableLevels = useMemo(() => getAssignableLevels(actorLevel), [actorLevel])
   const [nextLevel, setNextLevel] = useState<number>(
     assignableLevels[0]?.level ?? AccountLevel.BASIC
@@ -134,13 +144,49 @@ export function AccountLevelSettingsPanel() {
   const statusMap = useMemo(() => {
     return new Map((enums?.memberStatuses ?? []).map((status) => [status.id, status.name]))
   }, [enums])
-
   const members = membersData?.members ?? []
+  const memberRankSet = useMemo(() => new Set(members.map((member) => member.rank)), [members])
+  const rankSortOrderMap = useMemo(
+    () => new Map((enums?.rankDetails ?? []).map((rank) => [rank.code, rank.displayOrder])),
+    [enums?.rankDetails]
+  )
+  const rankOptions = useMemo(
+    () =>
+      [...(enums?.rankDetails ?? [])]
+        .filter((rank) => memberRankSet.has(rank.code))
+        .sort((left, right) => {
+          if (left.displayOrder !== right.displayOrder) {
+            return right.displayOrder - left.displayOrder
+          }
+
+          return left.code.localeCompare(right.code)
+        }),
+    [enums?.rankDetails, memberRankSet]
+  )
+  const tagOptions = useMemo(
+    () =>
+      [...tags]
+        .filter((tag) => !tag.isPositional)
+        .sort((left, right) => {
+          if ((left.displayOrder ?? 0) !== (right.displayOrder ?? 0)) {
+            return (left.displayOrder ?? 0) - (right.displayOrder ?? 0)
+          }
+
+          return left.name.localeCompare(right.name)
+        }),
+    [tags]
+  )
+
   const selectedMemberIds = useMemo(
     () => Object.entries(selection).flatMap(([memberId, checked]) => (checked ? [memberId] : [])),
     [selection]
   )
   const selectedCount = selectedMemberIds.length
+  const hasActiveFilters = selectedTags.length > 0 || selectedRanks.length > 0
+
+  useEffect(() => {
+    setSelection({})
+  }, [selectedRanks, selectedTags])
 
   const groupedMembers = useMemo(() => {
     const groups = new Map<number, MemberResponse[]>()
@@ -157,11 +203,27 @@ export function AccountLevelSettingsPanel() {
 
     for (const groupMembers of groups.values()) {
       groupMembers.sort((a, b) => {
-        if (a.rank !== b.rank) {
-          return a.rank.localeCompare(b.rank)
+        const rankA = rankSortOrderMap.get(a.rank) ?? 0
+        const rankB = rankSortOrderMap.get(b.rank) ?? 0
+        if (rankA !== rankB) {
+          return rankB - rankA
         }
 
-        return a.displayName.localeCompare(b.displayName)
+        const lastNameComparison = a.lastName.localeCompare(b.lastName, undefined, {
+          sensitivity: 'base',
+        })
+        if (lastNameComparison !== 0) {
+          return lastNameComparison
+        }
+
+        const firstNameComparison = a.firstName.localeCompare(b.firstName, undefined, {
+          sensitivity: 'base',
+        })
+        if (firstNameComparison !== 0) {
+          return firstNameComparison
+        }
+
+        return a.serviceNumber.localeCompare(b.serviceNumber, undefined, { numeric: true })
       })
     }
 
@@ -169,7 +231,7 @@ export function AccountLevelSettingsPanel() {
       definition,
       members: groups.get(definition.level) ?? [],
     }))
-  }, [members])
+  }, [members, rankSortOrderMap])
 
   const handleToggleMember = (memberId: string, checked: boolean) => {
     setSelection((current) => ({
@@ -190,6 +252,63 @@ export function AccountLevelSettingsPanel() {
 
   const handleClearSelection = () => {
     setSelection({})
+  }
+
+  const handleToggleRankFilter = (rankCode: string, checked: boolean) => {
+    setSelectedRanks((current) =>
+      checked ? [...current, rankCode] : current.filter((value) => value !== rankCode)
+    )
+  }
+
+  const handleToggleTagFilter = (tagName: string, checked: boolean) => {
+    setSelectedTags((current) =>
+      checked ? [...current, tagName] : current.filter((value) => value !== tagName)
+    )
+  }
+
+  const handleToggleDraftRankFilter = (rankCode: string, checked: boolean) => {
+    setDraftRanks((current) =>
+      checked ? [...current, rankCode] : current.filter((value) => value !== rankCode)
+    )
+  }
+
+  const handleToggleDraftTagFilter = (tagName: string, checked: boolean) => {
+    setDraftTags((current) =>
+      checked ? [...current, tagName] : current.filter((value) => value !== tagName)
+    )
+  }
+
+  const handleOpenFilterDialog = () => {
+    setDraftRanks(selectedRanks)
+    setDraftTags(selectedTags)
+    setFilterDialogOpen(true)
+  }
+
+  const handleFilterDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setDraftRanks(selectedRanks)
+      setDraftTags(selectedTags)
+    }
+
+    setFilterDialogOpen(open)
+  }
+
+  const handleApplyFilters = () => {
+    setSelectedRanks(draftRanks)
+    setSelectedTags(draftTags)
+    setFilterDialogOpen(false)
+  }
+
+  const handleClearDraftFilters = () => {
+    setDraftRanks([])
+    setDraftTags([])
+  }
+
+  const handleToggleGroupCollapsed = (level: number) => {
+    setCollapsedLevels((current) => ({
+      ...current,
+      [level]: !current[level],
+    }))
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -284,7 +403,7 @@ export function AccountLevelSettingsPanel() {
         }}
       >
         <div
-          className="grid items-start xl:grid-cols-[minmax(0,1fr)_20rem]"
+          className="grid items-start xl:grid-cols-[minmax(0,1fr)_17rem]"
           style={{ gap: 'var(--space-4)' }}
         >
           <div className="grid" style={{ gap: 'var(--space-4)' }}>
@@ -292,11 +411,11 @@ export function AccountLevelSettingsPanel() {
               <AppCardHeader>
                 <AppCardTitle>Account Level Directory</AppCardTitle>
                 <AppCardDescription>
-                  Review Sentinel access by level, select multiple members, and assign a new user
-                  level in one pass.
+                  Review access by level, refine the directory, and reassign selected members in one
+                  pass.
                 </AppCardDescription>
               </AppCardHeader>
-              <AppCardContent style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              <AppCardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
                 {!canEdit ? (
                   <div role="alert" className="alert alert-warning alert-soft">
                     <AlertTriangle className="h-4 w-4" />
@@ -315,19 +434,45 @@ export function AccountLevelSettingsPanel() {
                 ) : null}
 
                 <div
-                  className="flex flex-wrap items-center justify-between border border-base-300 bg-base-200/50"
-                  style={{ gap: 'var(--space-3)', padding: 'var(--space-3)' }}
+                  className={`flex flex-wrap items-center justify-between border-y ${
+                    selectedCount > 0
+                      ? 'border-primary/20 bg-primary-fadded text-primary-fadded-content'
+                      : 'border-base-300 bg-base-200/60'
+                  }`}
+                  style={{
+                    gap: 'var(--space-3)',
+                    paddingBlock: 'var(--space-3)',
+                    paddingInline: 'var(--space-3)',
+                  }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center bg-base-100">
-                      <Shield className="h-5 w-5 text-primary" />
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className="flex size-9 items-center justify-center border border-base-300 bg-base-100"
+                      aria-hidden="true"
+                    >
+                      <Shield className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">
-                        {members.length} member{members.length === 1 ? '' : 's'} indexed
-                      </p>
-                      <p className="text-sm text-base-content/60">
-                        {selectedCount} selected for reassignment
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">
+                          {members.length} member{members.length === 1 ? '' : 's'} indexed
+                        </p>
+                        {selectedCount > 0 ? (
+                          <Chip variant="faded" color="primary" size="sm">
+                            {selectedCount} selected
+                          </Chip>
+                        ) : null}
+                      </div>
+                      <p
+                        className={`text-sm ${
+                          selectedCount > 0
+                            ? 'text-primary-fadded-content/80'
+                            : 'text-base-content/60'
+                        }`}
+                      >
+                        {selectedCount > 0
+                          ? 'Selection is ready for reassignment.'
+                          : 'Select members from one or more levels to change account access.'}
                       </p>
                     </div>
                   </div>
@@ -350,10 +495,71 @@ export function AccountLevelSettingsPanel() {
                     </button>
                   </div>
                 </div>
+
+                <div
+                  className="flex flex-wrap items-center gap-2 border-b border-base-300"
+                  style={{ paddingBottom: 'var(--space-3)' }}
+                >
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline"
+                    onClick={handleOpenFilterDialog}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filter
+                    {hasActiveFilters ? (
+                      <span className="badge badge-primary badge-sm">
+                        {selectedTags.length + selectedRanks.length}
+                      </span>
+                    ) : null}
+                  </button>
+
+                  {hasActiveFilters ? (
+                    <>
+                      {selectedTags.map((tag) => (
+                        <button
+                          key={`tag-${tag}`}
+                          type="button"
+                          className="inline-flex"
+                          onClick={() => handleToggleTagFilter(tag, false)}
+                          aria-label={`Remove ${tag} tag filter`}
+                        >
+                          <Chip variant="faded" color="primary" size="sm" className="gap-1">
+                            {tag}
+                            <X className="h-3 w-3" />
+                          </Chip>
+                        </button>
+                      ))}
+                      {selectedRanks.map((rank) => (
+                        <button
+                          key={`rank-${rank}`}
+                          type="button"
+                          className="inline-flex"
+                          onClick={() => handleToggleRankFilter(rank, false)}
+                          aria-label={`Remove ${rank} rank filter`}
+                        >
+                          <Chip variant="faded" color="neutral" size="sm" className="gap-1">
+                            {rank}
+                            <X className="h-3 w-3" />
+                          </Chip>
+                        </button>
+                      ))}
+                      <span className="text-sm text-base-content/60">
+                        Filtered to {members.length} matching member
+                        {members.length === 1 ? '' : 's'}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-sm text-base-content/60">
+                      No filters applied. Open Filter to narrow the directory.
+                    </span>
+                  )}
+                </div>
               </AppCardContent>
             </AppCard>
 
             {groupedMembers.map(({ definition, members: groupMembers }) => {
+              const isCollapsed = collapsedLevels[definition.level] ?? false
               const groupMemberIds = groupMembers.map((member) => member.id)
               const selectableGroupMemberIds = groupMembers
                 .filter((member) => canEdit && member.accountLevel <= actorLevel)
@@ -367,14 +573,39 @@ export function AccountLevelSettingsPanel() {
               const someSelected = selectedInGroup > 0 && !allSelected
 
               return (
-                <AppCard key={definition.level}>
-                  <AppCardHeader>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <AppCardTitle>
-                          {definition.label} ({definition.level})
-                        </AppCardTitle>
-                        <AppCardDescription>{definition.summary}</AppCardDescription>
+                <div
+                  key={definition.level}
+                  tabIndex={0}
+                  className={`collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm ${
+                    isCollapsed ? 'collapse-close' : 'collapse-open'
+                  }`}
+                >
+                  <div
+                    className="collapse-title min-h-0 px-4 py-3"
+                    onClick={() => handleToggleGroupCollapsed(definition.level)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        handleToggleGroupCollapsed(definition.level)
+                      }
+                    }}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3 pr-6">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-base font-semibold">{definition.label}</p>
+                          <Chip variant="faded" color="neutral" size="sm">
+                            Level {definition.level}
+                          </Chip>
+                          {selectedInGroup > 0 ? (
+                            <Chip variant="faded" color="primary" size="sm">
+                              {selectedInGroup} selected
+                            </Chip>
+                          ) : null}
+                        </div>
+                        <p className="truncate text-sm text-base-content/60">
+                          {definition.summary}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-base-content/60">
                         <Users className="h-4 w-4" />
@@ -383,88 +614,103 @@ export function AccountLevelSettingsPanel() {
                         </span>
                       </div>
                     </div>
-                  </AppCardHeader>
-                  <AppCardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <label className="flex items-center gap-2 text-sm font-medium">
-                        <Checkbox
-                          checked={allSelected}
-                          indeterminate={someSelected}
-                          onCheckedChange={(checked) =>
-                            handleToggleGroup(selectableGroupMemberIds, checked === true)
-                          }
-                          disabled={selectableGroupMemberIds.length === 0}
-                          aria-label={`Select all ${definition.label} members`}
-                        />
-                        Select all in {definition.label}
-                      </label>
-                      {selectedInGroup > 0 ? (
-                        <span className="text-sm text-base-content/60">
-                          {selectedInGroup} selected in this group
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="overflow-x-auto border border-base-300">
-                      <table className="table table-sm table-zebra">
-                        <thead>
-                          <tr>
-                            <th className="w-12"></th>
-                            <th>Service #</th>
-                            <th>Name</th>
-                            <th>Rank</th>
-                            <th>Division</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {groupMembers.length > 0 ? (
-                            groupMembers.map((member) => (
-                              <tr
-                                key={member.id}
-                                className={
-                                  selection[member.id]
-                                    ? 'bg-primary-fadded text-primary-fadded-content'
-                                    : ''
+                  </div>
+                  <div className="collapse-content grid gap-3 px-4 pb-4 pt-0">
+                    {!isCollapsed ? (
+                      <>
+                        <div className="text-sm text-base-content/60">
+                          {definition.permissions.join(' ')}
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
+                            <input
+                              className="checkbox"
+                              type="checkbox"
+                              checked={allSelected}
+                              ref={(element) => {
+                                if (element) {
+                                  element.indeterminate = someSelected
                                 }
-                              >
-                                <td>
-                                  <Checkbox
-                                    checked={selection[member.id] === true}
-                                    onCheckedChange={(checked) =>
-                                      handleToggleMember(member.id, checked === true)
-                                    }
-                                    disabled={!canEdit || member.accountLevel > actorLevel}
-                                    aria-label={`Select ${member.displayName}`}
-                                  />
-                                </td>
-                                <td className="font-mono text-sm">{member.serviceNumber}</td>
-                                <td>{member.displayName}</td>
-                                <td>{member.rank}</td>
-                                <td>
-                                  {member.divisionId
-                                    ? (divisionMap.get(member.divisionId) ?? 'Unknown')
-                                    : '—'}
-                                </td>
-                                <td>
-                                  {member.memberStatusId
-                                    ? (statusMap.get(member.memberStatusId) ?? 'Unknown')
-                                    : '—'}
-                                </td>
+                              }}
+                              onChange={(event) =>
+                                handleToggleGroup(selectableGroupMemberIds, event.target.checked)
+                              }
+                              disabled={selectableGroupMemberIds.length === 0}
+                              aria-label={`Select all ${definition.label} members`}
+                            />
+                            Select all in {definition.label}
+                          </label>
+                          {selectedInGroup > 0 ? (
+                            <span className="text-sm text-base-content/60">
+                              {selectedInGroup} selected in this group
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className="overflow-x-auto border border-base-300">
+                          <table className="table table-sm table-zebra">
+                            <thead>
+                              <tr>
+                                <th className="w-12"></th>
+                                <th>Service #</th>
+                                <th>Name</th>
+                                <th>Rank</th>
+                                <th>Division</th>
+                                <th>Status</th>
                               </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={6} className="text-center text-base-content/60">
-                                No members are currently assigned to this level.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </AppCardContent>
-                </AppCard>
+                            </thead>
+                            <tbody>
+                              {groupMembers.length > 0 ? (
+                                groupMembers.map((member) => (
+                                  <tr
+                                    key={member.id}
+                                    className={
+                                      selection[member.id]
+                                        ? 'bg-primary-fadded text-primary-fadded-content'
+                                        : ''
+                                    }
+                                  >
+                                    <td>
+                                      <input
+                                        className="checkbox"
+                                        type="checkbox"
+                                        checked={selection[member.id] === true}
+                                        onChange={(event) =>
+                                          handleToggleMember(member.id, event.target.checked)
+                                        }
+                                        disabled={!canEdit || member.accountLevel > actorLevel}
+                                        aria-label={`Select ${member.displayName}`}
+                                      />
+                                    </td>
+                                    <td className="font-mono text-sm">{member.serviceNumber}</td>
+                                    <td>{member.displayName}</td>
+                                    <td>{member.rank}</td>
+                                    <td>
+                                      {member.divisionId
+                                        ? (divisionMap.get(member.divisionId) ?? 'Unknown')
+                                        : '—'}
+                                    </td>
+                                    <td>
+                                      {member.memberStatusId
+                                        ? (statusMap.get(member.memberStatusId) ?? 'Unknown')
+                                        : '—'}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={6} className="text-center text-base-content/60">
+                                    No members are currently assigned to this level.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -475,31 +721,72 @@ export function AccountLevelSettingsPanel() {
           >
             <AppCard>
               <AppCardHeader>
-                <AppCardTitle>Level Reference</AppCardTitle>
+                <AppCardTitle>Level Guide</AppCardTitle>
                 <AppCardDescription>
-                  Use this sidebar to confirm what each Sentinel account level can do.
+                  Keep this condensed unless you need a quick permissions reference.
                 </AppCardDescription>
               </AppCardHeader>
               <AppCardContent style={{ display: 'grid', gap: 'var(--space-3)' }}>
-                {ACCOUNT_LEVEL_DEFINITIONS.map((definition) => (
-                  <div
-                    key={definition.level}
-                    className="border border-base-300 bg-base-200/40"
-                    style={{ padding: 'var(--space-3)' }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold">
-                        {definition.label} ({definition.level})
-                      </h3>
+                <div
+                  className="border border-base-300 bg-base-200/40"
+                  style={{ padding: 'var(--space-3)' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      <BookOpenText className="h-4 w-4 text-info" />
                     </div>
-                    <p className="mt-1 text-sm text-base-content/70">{definition.summary}</p>
-                    <ul className="mt-2 list-disc pl-4 text-sm text-base-content/80">
-                      {definition.permissions.map((permission) => (
-                        <li key={permission}>{permission}</li>
-                      ))}
-                    </ul>
+                    <div className="text-sm text-base-content/70">
+                      Level guidance is reference-only. The directory and reassignment controls on
+                      the left are the working surface.
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                <div
+                  tabIndex={0}
+                  className="collapse collapse-arrow border border-base-300 bg-base-100"
+                >
+                  <div className="collapse-title min-h-0 px-3 py-3 text-sm font-semibold">
+                    View all account levels
+                  </div>
+                  <div className="collapse-content grid gap-2 px-3 pb-3 pt-0">
+                    {ACCOUNT_LEVEL_DEFINITIONS.map((definition) => (
+                      <details
+                        key={definition.level}
+                        className="border border-base-300 bg-base-200/30"
+                      >
+                        <summary
+                          className="cursor-pointer list-none"
+                          style={{ padding: 'var(--space-3)' }}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-semibold">{definition.label}</span>
+                                <Chip variant="faded" color="neutral" size="sm">
+                                  {definition.level}
+                                </Chip>
+                              </div>
+                              <p className="mt-1 text-sm text-base-content/70">
+                                {definition.summary}
+                              </p>
+                            </div>
+                          </div>
+                        </summary>
+                        <div
+                          className="border-t border-base-300 text-sm text-base-content/80"
+                          style={{ padding: 'var(--space-3)' }}
+                        >
+                          <ul className="list-disc pl-4">
+                            {definition.permissions.map((permission) => (
+                              <li key={permission}>{permission}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
 
                 <div role="alert" className="alert alert-info alert-soft">
                   <Shield className="h-4 w-4" />
@@ -566,6 +853,141 @@ export function AccountLevelSettingsPanel() {
             >
               {isSubmitting ? <ButtonSpinner /> : null}
               Apply level
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={filterDialogOpen} onOpenChange={handleFilterDialogOpenChange}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>Refine Directory</DialogTitle>
+            <DialogDescription>
+              Choose one or more tags and ranks, then apply the filter set to the account-level
+              directory.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {draftTags.length > 0 || draftRanks.length > 0 ? (
+                <>
+                  {draftTags.map((tag) => (
+                    <button
+                      key={`draft-tag-${tag}`}
+                      type="button"
+                      className="inline-flex"
+                      onClick={() => handleToggleDraftTagFilter(tag, false)}
+                      aria-label={`Remove ${tag} tag filter`}
+                    >
+                      <Chip variant="faded" color="primary" size="sm" className="gap-1">
+                        {tag}
+                        <X className="h-3 w-3" />
+                      </Chip>
+                    </button>
+                  ))}
+                  {draftRanks.map((rank) => (
+                    <button
+                      key={`draft-rank-${rank}`}
+                      type="button"
+                      className="inline-flex"
+                      onClick={() => handleToggleDraftRankFilter(rank, false)}
+                      aria-label={`Remove ${rank} rank filter`}
+                    >
+                      <Chip variant="faded" color="neutral" size="sm" className="gap-1">
+                        {rank}
+                        <X className="h-3 w-3" />
+                      </Chip>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <span className="text-sm text-base-content/60">No draft filters selected yet.</span>
+              )}
+            </div>
+
+            <div
+              className="grid items-start"
+              style={{
+                gap: 'var(--space-4)',
+                gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
+              }}
+            >
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Tags</legend>
+                <div
+                  className="border border-base-300 bg-base-200/30"
+                  style={{ padding: 'var(--space-3)' }}
+                >
+                  <form
+                    className="filter flex flex-wrap gap-2"
+                    onSubmit={(event) => event.preventDefault()}
+                  >
+                    {tagOptions.map((tag) => (
+                      <input
+                        key={tag.id}
+                        className="btn btn-xs"
+                        type="checkbox"
+                        aria-label={tag.name}
+                        checked={draftTags.includes(tag.name)}
+                        onChange={(event) =>
+                          handleToggleDraftTagFilter(tag.name, event.target.checked)
+                        }
+                      />
+                    ))}
+                  </form>
+                </div>
+              </fieldset>
+
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Ranks</legend>
+                <div
+                  className="grid border border-base-300 bg-base-200/30"
+                  style={{
+                    padding: 'var(--space-3)',
+                    gap: 'var(--space-2)',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                  }}
+                >
+                  {rankOptions.map((rank) => (
+                    <label
+                      key={rank.id}
+                      className="label cursor-pointer justify-start gap-2 rounded-none px-0 py-1 text-sm"
+                    >
+                      <input
+                        className="checkbox checkbox-xs"
+                        type="checkbox"
+                        checked={draftRanks.includes(rank.code)}
+                        onChange={(event) =>
+                          handleToggleDraftRankFilter(rank.code, event.target.checked)
+                        }
+                      />
+                      <span className="font-medium">{rank.code}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={handleClearDraftFilters}
+              disabled={draftTags.length === 0 && draftRanks.length === 0}
+            >
+              Clear all
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => handleFilterDialogOpenChange(false)}
+            >
+              Cancel
+            </button>
+            <button type="button" className="btn btn-primary" onClick={handleApplyFilters}>
+              Apply
             </button>
           </DialogFooter>
         </DialogContent>

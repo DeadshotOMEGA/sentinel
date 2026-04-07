@@ -75,7 +75,7 @@ export function useLockupHistory(startDate?: string, endDate?: string) {
  * Used to determine if member holds lockup and what options are available
  */
 export function useCheckoutOptions(memberId: string) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['checkout-options', memberId],
     queryFn: async () => {
       const response = await apiClient.lockup.getCheckoutOptions({
@@ -88,13 +88,51 @@ export function useCheckoutOptions(memberId: string) {
     },
     enabled: !!memberId,
   })
+
+  const { refetch } = query
+
+  useEffect(() => {
+    if (!memberId) {
+      return
+    }
+
+    websocketManager.connect()
+    websocketManager.subscribe('lockup')
+    websocketManager.subscribe('presence')
+    websocketManager.subscribe('checkins')
+
+    const handleUpdate = () => {
+      refetch()
+    }
+
+    websocketManager.on('lockup:status', handleUpdate)
+    websocketManager.on('lockup:statusChanged', handleUpdate)
+    websocketManager.on('lockup:transferred', handleUpdate)
+    websocketManager.on('lockup:executed', handleUpdate)
+    websocketManager.on('presence:update', handleUpdate)
+    websocketManager.on('checkin:new', handleUpdate)
+
+    return () => {
+      websocketManager.off('lockup:status', handleUpdate)
+      websocketManager.off('lockup:statusChanged', handleUpdate)
+      websocketManager.off('lockup:transferred', handleUpdate)
+      websocketManager.off('lockup:executed', handleUpdate)
+      websocketManager.off('presence:update', handleUpdate)
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.unsubscribe('lockup')
+      websocketManager.unsubscribe('presence')
+      websocketManager.unsubscribe('checkins')
+    }
+  }, [memberId, refetch])
+
+  return query
 }
 
 /**
  * Get present people for lockup confirmation
  */
 export function usePresentForLockup(excludeMemberId?: string) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['lockup-present', excludeMemberId ?? null],
     queryFn: async () => {
       const response = await apiClient.lockup.getPresentForLockup({
@@ -106,6 +144,36 @@ export function usePresentForLockup(excludeMemberId?: string) {
       return response.body
     },
   })
+
+  const { refetch } = query
+
+  useEffect(() => {
+    websocketManager.connect()
+    websocketManager.subscribe('presence')
+    websocketManager.subscribe('checkins')
+    websocketManager.subscribe('lockup')
+
+    const handleUpdate = () => {
+      refetch()
+    }
+
+    websocketManager.on('presence:update', handleUpdate)
+    websocketManager.on('checkin:new', handleUpdate)
+    websocketManager.on('lockup:status', handleUpdate)
+    websocketManager.on('lockup:statusChanged', handleUpdate)
+
+    return () => {
+      websocketManager.off('presence:update', handleUpdate)
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.off('lockup:status', handleUpdate)
+      websocketManager.off('lockup:statusChanged', handleUpdate)
+      websocketManager.unsubscribe('presence')
+      websocketManager.unsubscribe('checkins')
+      websocketManager.unsubscribe('lockup')
+    }
+  }, [refetch])
+
+  return query
 }
 
 /**
@@ -166,7 +234,7 @@ export function useExecuteLockup() {
  * Get members eligible to open the building
  */
 export function useEligibleOpeners(options?: { enabled?: boolean }) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['eligible-openers'],
     queryFn: async () => {
       const response = await apiClient.lockup.getEligibleOpeners()
@@ -179,6 +247,45 @@ export function useEligibleOpeners(options?: { enabled?: boolean }) {
     staleTime: 0,
     refetchOnMount: 'always',
   })
+
+  const { refetch } = query
+  const enabled = options?.enabled ?? true
+
+  useEffect(() => {
+    if (!enabled) {
+      return
+    }
+
+    websocketManager.connect()
+    websocketManager.subscribe('presence')
+    websocketManager.subscribe('checkins')
+    websocketManager.subscribe('lockup')
+
+    const handleUpdate = () => {
+      refetch()
+    }
+
+    websocketManager.on('presence:update', handleUpdate)
+    websocketManager.on('checkin:new', handleUpdate)
+    websocketManager.on('lockup:status', handleUpdate)
+    websocketManager.on('lockup:statusChanged', handleUpdate)
+    websocketManager.on('lockup:transferred', handleUpdate)
+    websocketManager.on('lockup:executed', handleUpdate)
+
+    return () => {
+      websocketManager.off('presence:update', handleUpdate)
+      websocketManager.off('checkin:new', handleUpdate)
+      websocketManager.off('lockup:status', handleUpdate)
+      websocketManager.off('lockup:statusChanged', handleUpdate)
+      websocketManager.off('lockup:transferred', handleUpdate)
+      websocketManager.off('lockup:executed', handleUpdate)
+      websocketManager.unsubscribe('presence')
+      websocketManager.unsubscribe('checkins')
+      websocketManager.unsubscribe('lockup')
+    }
+  }, [enabled, refetch])
+
+  return query
 }
 
 /**

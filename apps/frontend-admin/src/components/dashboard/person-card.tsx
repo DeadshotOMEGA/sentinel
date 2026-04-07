@@ -201,7 +201,7 @@ function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
       className="avatar avatar-placeholder"
       aria-label={getOptionalDisplayName(person) ?? person.name}
     >
-      <div className="w-10 rounded-full border border-base-300 bg-base-200 text-base-content/60">
+      <div className="w-10 rounded-full border border-base-400 bg-neutral-fadded text-base-content/60">
         <span className="text-xs font-bold">{initials}</span>
       </div>
     </div>
@@ -335,11 +335,6 @@ export const PersonCard = memo(function PersonCard({
                   size="sm"
                 >
                   Tonight {person.scheduledDutyTonight.dutyPosition.code}
-                </AppBadge>
-              )}
-              {person.lockupActions?.holdsLockup && (
-                <AppBadge status="info" size="sm">
-                  Lockup
                 </AppBadge>
               )}
               {person.tags

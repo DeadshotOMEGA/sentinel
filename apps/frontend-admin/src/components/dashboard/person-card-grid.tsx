@@ -5,7 +5,9 @@ import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from
 import { UsersRound, Search, Radio } from 'lucide-react'
 import { usePresentPeople } from '@/hooks/use-present-people'
 import { useCheckoutVisitor } from '@/hooks/use-visitors'
+import { useDashboardPersonCardSort } from '@/hooks/use-dashboard-person-card-sort'
 import { useDdsStatus } from '@/hooks/use-dds'
+import { useCurrentDds } from '@/hooks/use-schedules'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
 import {
@@ -18,6 +20,7 @@ import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { MotionButton } from '@/components/ui/motion-button'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
+import { applyDashboardPersonCardSort } from '@/lib/dashboard-person-card-sort'
 import { cn } from '@/lib/utils'
 
 type FilterType = 'all' | 'member' | 'visitor'
@@ -25,6 +28,8 @@ type FilterType = 'all' | 'member' | 'visitor'
 export function PersonCardGrid() {
   const { data, isLoading, isError } = usePresentPeople()
   const { data: ddsStatus } = useDdsStatus()
+  const { data: dashboardSortConfig } = useDashboardPersonCardSort()
+  const { data: scheduledDds } = useCurrentDds()
   const checkoutVisitor = useCheckoutVisitor()
   const member = useAuthStore((state) => state.member)
   const canCheckout = (member?.accountLevel ?? 0) >= AccountLevel.QUARTERMASTER
@@ -90,22 +95,19 @@ export function PersonCardGrid() {
       )
     }
 
-    // Sort: visitors first, then members by rank (senior first), then by check-in time
-    people.sort((a, b) => {
-      if (a.type !== b.type) {
-        return a.type === 'visitor' ? -1 : 1
-      }
-      // For members, sort by rank (higher displayOrder = more senior = first)
-      if (a.type === 'member' && b.type === 'member') {
-        const rankA = a.rankSortOrder ?? 0
-        const rankB = b.rankSortOrder ?? 0
-        if (rankA !== rankB) return rankB - rankA
-      }
-      return new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
+    return applyDashboardPersonCardSort(people, dashboardSortConfig ?? null, {
+      activeDdsMemberId:
+        ddsStatus?.assignment?.status === 'active' ? ddsStatus.assignment.memberId : null,
+      scheduledDdsMemberId: scheduledDds?.dds?.member.id ?? null,
     })
-
-    return people
-  }, [data?.people, filter, search])
+  }, [
+    dashboardSortConfig,
+    data?.people,
+    ddsStatus?.assignment,
+    filter,
+    scheduledDds?.dds?.member.id,
+    search,
+  ])
 
   const memberCount = useMemo(
     () => data?.people?.filter((p) => p.type === 'member').length ?? 0,
