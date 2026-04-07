@@ -29,6 +29,7 @@ interface MemberFilters extends MemberFilterParams {
   memberType?: MemberType
   status?: MemberStatus
   search?: string
+  ranks?: string[]
   hasBadge?: boolean
   qualificationCode?: string
   includeHidden?: boolean
@@ -325,6 +326,12 @@ export class MemberRepository {
       where.status = filters.status
     }
 
+    if (filters?.ranks && filters.ranks.length > 0) {
+      where.rank = {
+        in: filters.ranks,
+      }
+    }
+
     if (filters?.mess) {
       where.mess = filters.mess
     }
@@ -509,6 +516,12 @@ export class MemberRepository {
 
     if (filters?.status) {
       where.status = filters.status
+    }
+
+    if (filters?.ranks && filters.ranks.length > 0) {
+      where.rank = {
+        in: filters.ranks,
+      }
     }
 
     if (filters?.mess) {

@@ -10,6 +10,8 @@ interface MembersQueryParams {
   limit?: number
   divisionId?: string
   rank?: string
+  ranks?: string[]
+  tags?: string[]
   status?: string
   search?: string
   qualificationCode?: string
@@ -39,6 +41,8 @@ export function useMembers(params: MembersQueryParams = {}) {
           limit: params.limit?.toString() ?? '50',
           divisionId: params.divisionId,
           rank: params.rank,
+          ranks: params.ranks?.length ? params.ranks.join(',') : undefined,
+          tags: params.tags?.length ? params.tags.join(',') : undefined,
           status: params.status,
           search: params.search,
           qualificationCode: params.qualificationCode,

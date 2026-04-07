@@ -37,7 +37,7 @@ export const memberContract = c.router({
     },
     summary: 'List all members',
     description:
-      'Get paginated list of members with optional filtering by division, rank, and status',
+      'Get paginated list of members with optional filtering by division, rank, tags, and status',
   },
 
   /**

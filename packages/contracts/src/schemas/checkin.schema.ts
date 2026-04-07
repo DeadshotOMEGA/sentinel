@@ -9,7 +9,7 @@ export const CheckinDirectionEnum = v.picklist(['in', 'out'])
 /**
  * Checkin method enum
  */
-export const CheckinMethodEnum = v.picklist(['badge', 'manual', 'override'])
+export const CheckinMethodEnum = v.picklist(['badge', 'manual', 'override', 'login'])
 
 /**
  * Create checkin request schema

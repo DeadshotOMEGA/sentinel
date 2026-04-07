@@ -166,6 +166,28 @@ export const MemberListQuerySchema = v.object({
   search: v.optional(v.string()),
   divisionId: v.optional(v.pipe(v.string(), v.uuid())),
   rank: v.optional(v.string()),
+  ranks: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((value) =>
+        value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      )
+    )
+  ),
+  tags: v.optional(
+    v.pipe(
+      v.string(),
+      v.transform((value) =>
+        value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      )
+    )
+  ),
   status: v.optional(v.string()),
   qualificationCode: v.optional(v.string()),
   includeHidden: v.optional(
