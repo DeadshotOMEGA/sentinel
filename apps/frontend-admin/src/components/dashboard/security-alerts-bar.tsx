@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-alerts'
 import { useAuthStore } from '@/store/auth-store'
+import { AccountLevel } from '@/store/auth-store'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -25,7 +26,12 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
   badge_disabled: 'Disabled Badge',
   inactive_member: 'Inactive Member',
   unauthorized_access: 'Unauthorized Access',
-  lockup_overdue: 'Lockup Overdue',
+  lockup_reminder: 'Lockup Reminder',
+  lockup_not_executed: 'Lockup Not Executed',
+  duty_watch_missing: 'Duty Watch Missing',
+  duty_watch_not_checked_in: 'Duty Watch Not Checked In',
+  building_not_secured: 'Building Not Secured',
+  system: 'System',
 }
 
 function formatAlertType(alertType: string): string {
@@ -35,8 +41,7 @@ function formatAlertType(alertType: string): string {
 function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
   const acknowledge = useAcknowledgeAlert()
   const member = useAuthStore((s) => s.member)
-  const hasMinimumLevel = useAuthStore((s) => s.hasMinimumLevel)
-  const canAcknowledge = member && hasMinimumLevel(5) // Admin (5) or Developer (6)
+  const canAcknowledge = (member?.accountLevel ?? 0) >= AccountLevel.COMMAND
   const [dialogOpen, setDialogOpen] = useState(false)
   const [note, setNote] = useState('')
 
@@ -86,7 +91,7 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
               !member
                 ? 'Sign in to acknowledge alerts'
                 : !canAcknowledge
-                  ? 'Admin or Developer level required'
+                  ? 'Command, Admin, or Developer level required'
                   : undefined
             }
           >
