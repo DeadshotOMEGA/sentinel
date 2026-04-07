@@ -45,6 +45,10 @@ export type AuditAction =
   | 'role_changed'
   | 'checkin_update'
   | 'checkin_delete'
+  | 'checkin_manual_checkout'
+  | 'duty_watch_live_assignment_set'
+  | 'duty_watch_live_assignment_clear'
+  | 'duty_watch_override_create'
 
 interface AuditLogEntry {
   adminUserId: string | null

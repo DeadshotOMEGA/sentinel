@@ -5,19 +5,25 @@ import type {
   CreateCheckinInput,
   BulkCreateCheckinsInput,
   UpdateCheckinInput,
+  ManualCheckoutInput,
   RecentActivityQuery,
   IdParam,
 } from '@sentinel/contracts'
 import type { Request } from 'express'
+import type { CheckinWithMember } from '@sentinel/types'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
+import type { LiveDutyAssignmentEntity } from '../repositories/live-duty-assignment-repository.js'
 import { PresenceService } from '../services/presence-service.js'
 import { LockupService } from '../services/lockup-service.js'
+import { ScheduleService } from '../services/schedule-service.js'
+import { LiveDutyAssignmentService } from '../services/live-duty-assignment-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
 import { canMemberEditHistory } from '../lib/history-permissions.js'
+import type { PrismaClientInstance } from '@sentinel/database'
 
 function getClientIp(req: unknown): string {
   const r = req as { ip?: string; socket?: { remoteAddress?: string } }
@@ -30,10 +36,64 @@ const checkinRepo = new CheckinRepository(getPrismaClient())
 const visitorRepo = new VisitorRepository(getPrismaClient())
 const presenceService = new PresenceService(getPrismaClient())
 const auditRepo = new AuditRepository(getPrismaClient())
+const scheduleService = new ScheduleService(getPrismaClient())
+const liveDutyAssignmentService = new LiveDutyAssignmentService(getPrismaClient())
+const lockupService = new LockupService(getPrismaClient())
 
 /**
  * Checkins route implementation using ts-rest
  */
+function checkinWithMemberToApiFormat(checkinWithMember: CheckinWithMember) {
+  return {
+    id: checkinWithMember.id,
+    memberId: checkinWithMember.memberId ?? null,
+    badgeId: checkinWithMember.badgeId ?? null,
+    direction: checkinWithMember.direction,
+    timestamp: checkinWithMember.timestamp.toISOString(),
+    kioskId: checkinWithMember.kioskId,
+    synced: checkinWithMember.synced ?? null,
+    flaggedForReview: null,
+    flagReason: null,
+    method: checkinWithMember.method ?? null,
+    member: checkinWithMember.member
+      ? {
+          id: checkinWithMember.member.id,
+          serviceNumber: checkinWithMember.member.serviceNumber,
+          rank: checkinWithMember.member.rank,
+          displayName:
+            checkinWithMember.member.displayName ??
+            `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`,
+          firstName: checkinWithMember.member.firstName,
+          lastName: checkinWithMember.member.lastName,
+          divisionId: checkinWithMember.member.divisionId ?? null,
+        }
+      : null,
+  }
+}
+
+function liveDutyAssignmentToApiFormat(assignment: LiveDutyAssignmentEntity) {
+  return {
+    id: assignment.id,
+    memberId: assignment.memberId,
+    dutyPositionId: assignment.dutyPositionId,
+    notes: assignment.notes,
+    startedAt: assignment.startedAt.toISOString(),
+    endedAt: assignment.endedAt?.toISOString() ?? null,
+    endedReason: assignment.endedReason,
+    createdAt: assignment.createdAt.toISOString(),
+    updatedAt: assignment.updatedAt.toISOString(),
+    member: assignment.member,
+    dutyPosition: {
+      id: assignment.dutyPosition.id,
+      code: assignment.dutyPosition.code,
+      name: assignment.dutyPosition.name,
+      maxSlots: assignment.dutyPosition.maxSlots,
+      dutyRoleCode: assignment.dutyPosition.dutyRole.code,
+      dutyRoleName: assignment.dutyPosition.dutyRole.name,
+    },
+  }
+}
+
 export const checkinsRouter = s.router(checkinContract, {
   /**
    * Get all checkins with pagination and filtering
@@ -310,7 +370,43 @@ export const checkinsRouter = s.router(checkinContract, {
    */
   getPresentPeople: async () => {
     try {
-      const people = await presenceService.getAllPresentPeople()
+      const lockupStatusPromise = lockupService.getCurrentStatus()
+      const [people, tonightDutyWatch, liveAssignments, lockupStatus] = await Promise.all([
+        presenceService.getAllPresentPeople(),
+        scheduleService.getTonightDutyWatch(),
+        liveDutyAssignmentService.listActiveAssignments(),
+        lockupStatusPromise,
+      ])
+      const eligibleOpeners =
+        lockupStatus.buildingStatus === 'secured' ? await lockupService.getEligibleOpeners() : []
+
+      const liveAssignmentMap = new Map(
+        liveAssignments.map((assignment) => [
+          assignment.memberId,
+          liveDutyAssignmentToApiFormat(assignment),
+        ])
+      )
+
+      const scheduledDutyTonightMap = new Map(
+        tonightDutyWatch.team
+          .filter((assignment) => assignment.source !== 'live_only')
+          .map((assignment) => [
+            assignment.member.id,
+            {
+              scheduleId: tonightDutyWatch.scheduleId as string,
+              assignmentId: assignment.assignmentId,
+              source:
+                assignment.source === 'night_override'
+                  ? ('night_override' as const)
+                  : ('schedule' as const),
+              dutyPosition: assignment.position,
+            },
+          ])
+      )
+
+      const eligibleOpenerIds = new Set(eligibleOpeners.map((member) => member.id))
+      const lockupHolderId =
+        lockupStatus.buildingStatus === 'secured' ? null : (lockupStatus.currentHolder?.id ?? null)
 
       return {
         status: 200 as const,
@@ -337,6 +433,19 @@ export const checkinsRouter = s.router(checkinContract, {
             hostName: p.hostName,
             eventId: p.eventId,
             eventName: p.eventName,
+            activeCheckinId: p.activeCheckinId,
+            ...(p.type === 'member'
+              ? {
+                  liveDutyAssignment: liveAssignmentMap.get(p.id) ?? null,
+                  scheduledDutyTonight: scheduledDutyTonightMap.get(p.id) ?? null,
+                  lockupActions: {
+                    holdsLockup: lockupHolderId === p.id,
+                    canManualCheckout: lockupHolderId !== p.id,
+                    canOpenBuilding:
+                      lockupStatus.buildingStatus === 'secured' && eligibleOpenerIds.has(p.id),
+                  },
+                }
+              : {}),
             checkInTime: p.checkInTime.toISOString(),
             kioskId: p.kioskId,
             kioskName: p.kioskName,
@@ -377,6 +486,192 @@ export const checkinsRouter = s.router(checkinContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to fetch recent activity',
+        },
+      }
+    }
+  },
+
+  /**
+   * Create an audited manual checkout for a currently present member
+   */
+  manualCheckout: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: ManualCheckoutInput
+    req: Request
+  }) => {
+    if (!(await canMemberEditHistory(req))) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
+        },
+      }
+    }
+
+    try {
+      const member = await getPrismaClient().member.findUnique({
+        where: { id: params.id },
+        select: {
+          id: true,
+          badgeId: true,
+          firstName: true,
+          lastName: true,
+          rank: true,
+        },
+      })
+
+      if (!member) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Member with ID '${params.id}' not found`,
+          },
+        }
+      }
+
+      const latestCheckin = await checkinRepo.findLatestByMember(params.id)
+      if (!latestCheckin || latestCheckin.direction !== 'in') {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: 'Member is not currently checked in',
+          },
+        }
+      }
+
+      const checkoutOptions = await lockupService.getCheckoutOptions(params.id)
+      if (!checkoutOptions.canCheckout) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'LOCKUP_HELD',
+            message:
+              checkoutOptions.blockReason ??
+              'Finish transferring lockup or execute building lockup before manual checkout',
+          },
+        }
+      }
+
+      const checkoutTimestamp = new Date()
+      const operationalDate = new Date(checkoutTimestamp.toISOString().substring(0, 10))
+
+      const result = await getPrismaClient().$transaction(async (tx) => {
+        const transactionClient = tx as unknown as PrismaClientInstance
+        const transactionCheckinRepo = new CheckinRepository(transactionClient)
+        const transactionLiveDutyAssignmentService = new LiveDutyAssignmentService(
+          transactionClient
+        )
+
+        await tx.missedCheckout.create({
+          data: {
+            memberId: params.id,
+            date: operationalDate,
+            originalCheckinAt: latestCheckin.timestamp,
+            forcedCheckoutAt: checkoutTimestamp,
+            resolvedBy: 'admin',
+            notes: `Manual checkout correction: ${body.reason}`,
+          },
+        })
+
+        await tx.member.update({
+          where: { id: params.id },
+          data: {
+            missedCheckoutCount: { increment: 1 },
+            lastMissedCheckout: checkoutTimestamp,
+          },
+        })
+
+        const checkout = await transactionCheckinRepo.create({
+          memberId: params.id,
+          badgeId: latestCheckin.badgeId ?? member.badgeId ?? undefined,
+          direction: 'out',
+          kioskId: 'ADMIN_MANUAL',
+          method: 'manual',
+          timestamp: checkoutTimestamp,
+          synced: true,
+        })
+
+        const clearedLiveAssignments =
+          await transactionLiveDutyAssignmentService.clearAssignmentsForMembers(
+            [params.id],
+            'member_checkout',
+            checkoutTimestamp
+          )
+
+        return {
+          checkinId: checkout.id,
+          clearedLiveAssignments,
+        }
+      })
+
+      const checkinWithMember = await checkinRepo.findByIdWithMember(result.checkinId)
+
+      if (!checkinWithMember) {
+        throw new Error('Failed to fetch created manual checkout')
+      }
+
+      await auditRepo.log({
+        adminUserId: null,
+        action: 'checkin_manual_checkout',
+        entityType: 'checkin',
+        entityId: checkinWithMember.id,
+        details: {
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          subjectMemberId: params.id,
+          reason: body.reason,
+          originalCheckinId: latestCheckin.id,
+          originalCheckinAt: latestCheckin.timestamp.toISOString(),
+          clearedLiveAssignments: result.clearedLiveAssignments,
+          missedCheckoutRecorded: true,
+        },
+        ipAddress: getClientIp(req),
+      })
+
+      broadcastCheckin({
+        id: checkinWithMember.id,
+        memberId: checkinWithMember.memberId ?? null,
+        memberName: checkinWithMember.member
+          ? (checkinWithMember.member.displayName ??
+            `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`)
+          : undefined,
+        rank: checkinWithMember.member?.rank,
+        direction: 'out',
+        timestamp: checkinWithMember.timestamp.toISOString(),
+        kioskId: checkinWithMember.kioskId,
+      })
+
+      presenceService.broadcastStatsUpdate().catch((error) => {
+        serviceLogger.warn('Presence stats broadcast failed after manual checkout', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message: `${member.rank} ${member.lastName} checked out manually`,
+          checkin: checkinWithMemberToApiFormat(checkinWithMember),
+          missedCheckoutRecorded: true,
+          clearedLiveAssignments: result.clearedLiveAssignments,
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create manual checkout',
         },
       }
     }
@@ -445,7 +740,6 @@ export const checkinsRouter = s.router(checkinContract, {
     try {
       // Block checkout if member holds lockup responsibility
       if (body.direction === 'out' && body.memberId) {
-        const lockupService = new LockupService(getPrismaClient())
         const checkoutOptions = await lockupService.getCheckoutOptions(body.memberId)
 
         if (!checkoutOptions.canCheckout) {
@@ -475,6 +769,14 @@ export const checkinsRouter = s.router(checkinContract, {
         timestamp: body.timestamp ? new Date(body.timestamp) : new Date(),
         synced: true,
       })
+
+      if (checkin.direction === 'out' && checkin.memberId) {
+        await liveDutyAssignmentService.clearAssignmentsForMembers(
+          [checkin.memberId],
+          'member_checkout',
+          checkin.timestamp
+        )
+      }
 
       // Fetch with member details for response
       const checkinWithMember = await checkinRepo.findByIdWithMember(checkin.id)
@@ -506,31 +808,7 @@ export const checkinsRouter = s.router(checkinContract, {
 
       return {
         status: 201 as const,
-        body: {
-          id: checkinWithMember.id,
-          memberId: checkinWithMember.memberId ?? null,
-          badgeId: checkinWithMember.badgeId ?? null,
-          direction: checkinWithMember.direction,
-          timestamp: checkinWithMember.timestamp.toISOString(),
-          kioskId: checkinWithMember.kioskId,
-          synced: checkinWithMember.synced ?? null,
-          flaggedForReview: null,
-          flagReason: null,
-          method: checkinWithMember.method ?? null,
-          member: checkinWithMember.member
-            ? {
-                id: checkinWithMember.member.id,
-                serviceNumber: checkinWithMember.member.serviceNumber,
-                rank: checkinWithMember.member.rank,
-                displayName:
-                  checkinWithMember.member.displayName ??
-                  `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`,
-                firstName: checkinWithMember.member.firstName,
-                lastName: checkinWithMember.member.lastName,
-                divisionId: checkinWithMember.member.divisionId ?? null,
-              }
-            : null,
-        },
+        body: checkinWithMemberToApiFormat(checkinWithMember),
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes('not found')) {
@@ -689,31 +967,7 @@ export const checkinsRouter = s.router(checkinContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: checkinWithMember.id,
-          memberId: checkinWithMember.memberId ?? null,
-          badgeId: checkinWithMember.badgeId ?? null,
-          direction: checkinWithMember.direction,
-          timestamp: checkinWithMember.timestamp.toISOString(),
-          kioskId: checkinWithMember.kioskId,
-          synced: checkinWithMember.synced ?? null,
-          flaggedForReview: null,
-          flagReason: null,
-          method: checkinWithMember.method ?? null,
-          member: checkinWithMember.member
-            ? {
-                id: checkinWithMember.member.id,
-                serviceNumber: checkinWithMember.member.serviceNumber,
-                rank: checkinWithMember.member.rank,
-                displayName:
-                  checkinWithMember.member.displayName ??
-                  `${checkinWithMember.member.firstName} ${checkinWithMember.member.lastName}`,
-                firstName: checkinWithMember.member.firstName,
-                lastName: checkinWithMember.member.lastName,
-                divisionId: checkinWithMember.member.divisionId ?? null,
-              }
-            : null,
-        },
+        body: checkinWithMemberToApiFormat(checkinWithMember),
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes('not found')) {

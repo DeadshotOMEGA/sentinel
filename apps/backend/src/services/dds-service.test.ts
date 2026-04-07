@@ -494,10 +494,14 @@ describe('DdsService', () => {
     }
     ;(
       service as unknown as {
-        lockupService: { getCurrentStatus: ReturnType<typeof vi.fn> }
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
       }
     ).lockupService = {
       getCurrentStatus: vi.fn().mockResolvedValue(createLockupStatus()),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(true),
     }
     ;(
       service as unknown as {
@@ -586,10 +590,14 @@ describe('DdsService', () => {
     }
     ;(
       service as unknown as {
-        lockupService: { getCurrentStatus: ReturnType<typeof vi.fn> }
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
       }
     ).lockupService = {
       getCurrentStatus: vi.fn().mockResolvedValue(createLockupStatus()),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(true),
     }
     ;(
       service as unknown as {
@@ -684,7 +692,10 @@ describe('DdsService', () => {
     }
     ;(
       service as unknown as {
-        lockupService: { getCurrentStatus: ReturnType<typeof vi.fn> }
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
       }
     ).lockupService = {
       getCurrentStatus: vi.fn().mockResolvedValue(
@@ -701,6 +712,7 @@ describe('DdsService', () => {
           },
         })
       ),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(false),
     }
     ;(
       service as unknown as {
@@ -813,7 +825,10 @@ describe('DdsService', () => {
     }
     ;(
       service as unknown as {
-        lockupService: { getCurrentStatus: ReturnType<typeof vi.fn> }
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
       }
     ).lockupService = {
       getCurrentStatus: vi.fn().mockResolvedValue(
@@ -830,6 +845,7 @@ describe('DdsService', () => {
           },
         })
       ),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(false),
     }
     ;(
       service as unknown as {
@@ -950,7 +966,10 @@ describe('DdsService', () => {
     }
     ;(
       service as unknown as {
-        lockupService: { getCurrentStatus: ReturnType<typeof vi.fn> }
+        lockupService: {
+          getCurrentStatus: ReturnType<typeof vi.fn>
+          canMemberExerciseLockupAuthority: ReturnType<typeof vi.fn>
+        }
       }
     ).lockupService = {
       getCurrentStatus: vi.fn().mockResolvedValue(
@@ -967,6 +986,7 @@ describe('DdsService', () => {
           },
         })
       ),
+      canMemberExerciseLockupAuthority: vi.fn().mockResolvedValue(false),
     }
     ;(
       service as unknown as {

@@ -13,6 +13,7 @@ import {
   type ScheduleListFilter,
 } from '../repositories/schedule-repository.js'
 import { PresenceService } from './presence-service.js'
+import { LiveDutyAssignmentService } from './live-duty-assignment-service.js'
 import {
   getOperationalWeek,
   getOperationalDateISO,
@@ -65,6 +66,19 @@ export interface DutyWatchTeamMember {
   }
   status: 'assigned' | 'confirmed' | 'released'
   isCheckedIn: boolean
+  source: 'schedule' | 'night_override' | 'live_only'
+  liveCoverage: {
+    assignmentId: string
+    startedAt: string
+    notes: string | null
+    member: {
+      id: string
+      firstName: string
+      lastName: string
+      rank: string
+      serviceNumber: string
+    }
+  } | null
 }
 
 /**
@@ -99,10 +113,12 @@ const MEMBER_ASSIGNMENT_PREVIEW_LIMIT = 4
 export class ScheduleService {
   private repository: ScheduleRepository
   private presenceService: PresenceService
+  private liveDutyAssignmentService: LiveDutyAssignmentService
 
   constructor(prisma: PrismaClientInstance = defaultPrisma) {
     this.repository = new ScheduleRepository(prisma)
     this.presenceService = new PresenceService(prisma)
+    this.liveDutyAssignmentService = new LiveDutyAssignmentService(prisma)
   }
 
   // ==========================================================================
@@ -564,6 +580,8 @@ export class ScheduleService {
       member: a.member,
       status: a.status as 'assigned' | 'confirmed' | 'released',
       isCheckedIn: presentMemberIds.has(a.memberId),
+      source: 'schedule',
+      liveCoverage: null,
     }))
 
     return {
@@ -579,7 +597,49 @@ export class ScheduleService {
    * Get tonight's Duty Watch team (only meaningful on configured Duty Watch nights)
    */
   async getTonightDutyWatch(): Promise<DutyWatchTeamResult> {
-    return this.getCurrentDutyWatch()
+    const operationalDate = getOperationalDateISO()
+    const { start } = getOperationalWeek()
+    const isDWNight = isDutyWatchNight()
+
+    const result = await this.repository.findDutyWatchForWeek(start)
+
+    if (!result) {
+      return {
+        scheduleId: null,
+        weekStartDate: null,
+        operationalDate,
+        isDutyWatchNight: isDWNight,
+        team: [],
+      }
+    }
+
+    const [presentMembers, liveAssignments, overrides] = await Promise.all([
+      this.presenceService.getPresentMembers(),
+      this.liveDutyAssignmentService.listActiveAssignments(),
+      isDWNight
+        ? this.repository.findOverridesBySchedule(
+            result.schedule.id,
+            new Date(`${operationalDate}T00:00:00.000Z`)
+          )
+        : Promise.resolve([] as DwNightOverrideEntity[]),
+    ])
+
+    const presentMemberIds = new Set(presentMembers.map((member) => member.id))
+
+    const team = this.applyTonightDutyWatchState({
+      assignments: result.assignments,
+      overrides,
+      liveAssignments,
+      presentMemberIds,
+    })
+
+    return {
+      scheduleId: result.schedule.id,
+      weekStartDate: result.schedule.weekStartDate.toISOString().substring(0, 10),
+      operationalDate,
+      isDutyWatchNight: isDWNight,
+      team,
+    }
   }
 
   /**
@@ -810,5 +870,105 @@ export class ScheduleService {
     d.setDate(d.getDate() + diff)
     d.setHours(0, 0, 0, 0)
     return d
+  }
+
+  private applyTonightDutyWatchState(input: {
+    assignments: ScheduleAssignmentEntity[]
+    overrides: DwNightOverrideEntity[]
+    liveAssignments: Awaited<ReturnType<LiveDutyAssignmentService['listActiveAssignments']>>
+    presentMemberIds: Set<string>
+  }): DutyWatchTeamMember[] {
+    const team: DutyWatchTeamMember[] = input.assignments.map((assignment) => ({
+      assignmentId: assignment.id,
+      position: assignment.dutyPosition,
+      member: assignment.member,
+      status: assignment.status as 'assigned' | 'confirmed' | 'released',
+      isCheckedIn: input.presentMemberIds.has(assignment.memberId),
+      source: 'schedule',
+      liveCoverage: null,
+    }))
+
+    for (const override of input.overrides) {
+      const matchingIndex = team.findIndex(
+        (entry) =>
+          entry.position?.id === override.dutyPositionId &&
+          entry.member.id === override.baseMemberId
+      )
+
+      if (override.overrideType === 'remove') {
+        if (matchingIndex >= 0) {
+          team.splice(matchingIndex, 1)
+        }
+        continue
+      }
+
+      if (override.overrideType === 'replace' && override.member) {
+        if (matchingIndex >= 0) {
+          const existing = team[matchingIndex]
+          if (!existing) continue
+          team.splice(matchingIndex, 1, {
+            assignmentId: override.id,
+            position: override.dutyPosition,
+            member: override.member,
+            status: existing.status,
+            isCheckedIn: input.presentMemberIds.has(override.member.id),
+            source: 'night_override',
+            liveCoverage: null,
+          })
+        }
+        continue
+      }
+
+      if (override.overrideType === 'add' && override.member) {
+        team.push({
+          assignmentId: override.id,
+          position: override.dutyPosition,
+          member: override.member,
+          status: 'assigned',
+          isCheckedIn: input.presentMemberIds.has(override.member.id),
+          source: 'night_override',
+          liveCoverage: null,
+        })
+      }
+    }
+
+    for (const liveAssignment of input.liveAssignments) {
+      const matchingEntry = team.find(
+        (entry) => entry.position?.id === liveAssignment.dutyPositionId && !entry.liveCoverage
+      )
+
+      if (matchingEntry) {
+        matchingEntry.liveCoverage = {
+          assignmentId: liveAssignment.id,
+          startedAt: liveAssignment.startedAt.toISOString(),
+          notes: liveAssignment.notes,
+          member: liveAssignment.member,
+        }
+        continue
+      }
+
+      team.push({
+        assignmentId: liveAssignment.id,
+        position: {
+          id: liveAssignment.dutyPosition.id,
+          code: liveAssignment.dutyPosition.code,
+          name: liveAssignment.dutyPosition.name,
+        },
+        member: liveAssignment.member,
+        status: 'assigned',
+        isCheckedIn: true,
+        source: 'live_only',
+        liveCoverage: null,
+      })
+    }
+
+    return team.sort((left, right) => {
+      const leftCode = left.position?.code ?? 'ZZZ'
+      const rightCode = right.position?.code ?? 'ZZZ'
+      if (leftCode !== rightCode) {
+        return leftCode.localeCompare(rightCode)
+      }
+      return left.member.lastName.localeCompare(right.member.lastName)
+    })
   }
 }

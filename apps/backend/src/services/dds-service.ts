@@ -738,7 +738,7 @@ export class DdsService {
       presentMembers,
       presentVisitorCount,
       hasDdsQual,
-      canOpen,
+      hasLockupAuthority,
     ] = await Promise.all([
       this.getRequiredMemberSummary(memberId),
       this.getCurrentDds(),
@@ -747,7 +747,7 @@ export class DdsService {
       this.presenceService.getPresentMembers(),
       this.presenceService.getActiveVisitorCount(),
       this.qualificationService.memberHasActiveQualificationCode(memberId, 'DDS'),
-      this.qualificationService.canMemberReceiveLockup(memberId),
+      this.lockupService.canMemberExerciseLockupAuthority(memberId),
     ])
 
     const isPresent = presentMembers.some((presentMember) => presentMember.id === memberId)
@@ -757,9 +757,10 @@ export class DdsService {
     const canAcceptDds =
       isPresent &&
       hasDdsQual &&
-      canOpen &&
+      hasLockupAuthority &&
       (!currentDds || currentDds.status !== 'active' || currentDds.memberId === memberId)
-    const canOpenBuilding = isPresent && canOpen && lockupStatus.buildingStatus === 'secured'
+    const canOpenBuilding =
+      isPresent && hasLockupAuthority && lockupStatus.buildingStatus === 'secured'
     const expectedDds = this.resolveExpectedDds(
       memberId,
       currentDds,

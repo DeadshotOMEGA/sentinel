@@ -24,6 +24,7 @@ interface RepositoryMock {
   createOverride: ReturnType<typeof vi.fn>
   findDdsAssignmentForWeek: ReturnType<typeof vi.fn>
   findDutyWatchForWeek: ReturnType<typeof vi.fn>
+  findOverridesBySchedule: ReturnType<typeof vi.fn>
   findMemberDutyAssignmentsBetween: ReturnType<typeof vi.fn>
 }
 
@@ -34,6 +35,7 @@ function createRepositoryMock(): RepositoryMock {
     createOverride: vi.fn(),
     findDdsAssignmentForWeek: vi.fn(),
     findDutyWatchForWeek: vi.fn(),
+    findOverridesBySchedule: vi.fn(),
     findMemberDutyAssignmentsBetween: vi.fn(),
   }
 }
@@ -78,10 +80,12 @@ function createAssignmentEntity({
   id,
   memberId,
   status = 'confirmed',
+  dutyPosition,
 }: {
   id: string
   memberId: string
   status?: 'assigned' | 'confirmed' | 'released'
+  dutyPosition?: { id: string; code: string; name: string } | null
 }) {
   const timestamp = new Date('2026-03-03T12:00:00.000Z')
 
@@ -103,7 +107,7 @@ function createAssignmentEntity({
       rank: 'Cpl',
       serviceNumber: '123456',
     },
-    dutyPosition: null,
+    dutyPosition: dutyPosition ?? null,
   }
 }
 
@@ -286,6 +290,197 @@ describe('ScheduleService.getMemberAssignmentSummary', () => {
       'member-1',
       expect.any(Date),
       expect.any(Date)
+    )
+  })
+})
+
+describe('ScheduleService.getTonightDutyWatch', () => {
+  let repositoryMock: RepositoryMock
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-03-06T20:00:00.000Z'))
+    repositoryMock = createRepositoryMock()
+    applyOperationalTimingsRuntimeState({
+      settings: {
+        ...getDefaultOperationalTimingsSettings(),
+        operational: {
+          ...getDefaultOperationalTimingsSettings().operational,
+          dutyWatchRules: [
+            {
+              id: 'dw-fri',
+              name: 'Friday Duty Watch',
+              effectiveStartDate: '2026-03-06',
+              startTime: '19:00',
+              endTime: '22:00',
+              recurrence: { type: 'weekly', weekday: 5, intervalWeeks: 1 },
+            },
+          ],
+        },
+      },
+      source: 'stored',
+      updatedAt: null,
+    })
+  })
+
+  function createServiceWithMocks() {
+    const service = new ScheduleService({} as PrismaClientInstance)
+    const presenceService = {
+      getPresentMembers: vi.fn(),
+    }
+    const liveDutyAssignmentService = {
+      listActiveAssignments: vi.fn(),
+    }
+
+    ;(service as unknown as { repository: RepositoryMock }).repository = repositoryMock
+    ;(
+      service as unknown as {
+        presenceService: typeof presenceService
+        liveDutyAssignmentService: typeof liveDutyAssignmentService
+      }
+    ).presenceService = presenceService
+    ;(
+      service as unknown as {
+        liveDutyAssignmentService: typeof liveDutyAssignmentService
+      }
+    ).liveDutyAssignmentService = liveDutyAssignmentService
+
+    return { service, presenceService, liveDutyAssignmentService }
+  }
+
+  it('applies live temporary coverage to planned slots and appends live-only assignments', async () => {
+    repositoryMock.findDutyWatchForWeek.mockResolvedValue({
+      schedule: createScheduleEntity({
+        id: 'dw-schedule',
+        code: 'DUTY_WATCH',
+        weekStartDate: '2026-03-02',
+      }),
+      assignments: [
+        createAssignmentEntity({
+          id: 'assignment-swk',
+          memberId: 'member-1',
+          status: 'assigned',
+          dutyPosition: {
+            id: 'position-swk',
+            code: 'SWK',
+            name: 'Senior Watch Keeper',
+          },
+        }),
+        createAssignmentEntity({
+          id: 'assignment-qm',
+          memberId: 'member-2',
+          status: 'confirmed',
+          dutyPosition: {
+            id: 'position-qm',
+            code: 'QM',
+            name: 'Quartermaster',
+          },
+        }),
+      ],
+    })
+    repositoryMock.findOverridesBySchedule.mockResolvedValue([])
+
+    const { service, presenceService, liveDutyAssignmentService } = createServiceWithMocks()
+
+    presenceService.getPresentMembers.mockResolvedValue([
+      { id: 'member-2' },
+      { id: 'member-4' },
+      { id: 'member-5' },
+    ])
+    liveDutyAssignmentService.listActiveAssignments.mockResolvedValue([
+      {
+        id: 'live-swk',
+        memberId: 'member-4',
+        dutyPositionId: 'position-swk',
+        notes: 'Covering until relief arrives',
+        startedAt: new Date('2026-03-06T19:15:00.000Z'),
+        endedAt: null,
+        endedReason: null,
+        createdAt: new Date('2026-03-06T19:15:00.000Z'),
+        updatedAt: new Date('2026-03-06T19:15:00.000Z'),
+        member: {
+          id: 'member-4',
+          firstName: 'Jordan',
+          lastName: 'Relief',
+          rank: 'LS',
+          serviceNumber: '444444',
+        },
+        dutyPosition: {
+          id: 'position-swk',
+          code: 'SWK',
+          name: 'Senior Watch Keeper',
+          maxSlots: 1,
+          dutyRole: {
+            id: 'role-duty-watch',
+            code: 'DUTY_WATCH',
+            name: 'Duty Watch',
+          },
+        },
+      },
+      {
+        id: 'live-aps',
+        memberId: 'member-5',
+        dutyPositionId: 'position-aps',
+        notes: 'Extra live coverage',
+        startedAt: new Date('2026-03-06T19:20:00.000Z'),
+        endedAt: null,
+        endedReason: null,
+        createdAt: new Date('2026-03-06T19:20:00.000Z'),
+        updatedAt: new Date('2026-03-06T19:20:00.000Z'),
+        member: {
+          id: 'member-5',
+          firstName: 'Taylor',
+          lastName: 'Extra',
+          rank: 'MS',
+          serviceNumber: '555555',
+        },
+        dutyPosition: {
+          id: 'position-aps',
+          code: 'APS',
+          name: 'Assistant Petty Officer',
+          maxSlots: 1,
+          dutyRole: {
+            id: 'role-duty-watch',
+            code: 'DUTY_WATCH',
+            name: 'Duty Watch',
+          },
+        },
+      },
+    ])
+
+    const result = await service.getTonightDutyWatch()
+
+    expect(result.team).toHaveLength(3)
+    expect(result.team).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          assignmentId: 'assignment-qm',
+          source: 'schedule',
+          isCheckedIn: true,
+          liveCoverage: null,
+        }),
+        expect.objectContaining({
+          assignmentId: 'assignment-swk',
+          source: 'schedule',
+          isCheckedIn: false,
+          liveCoverage: expect.objectContaining({
+            assignmentId: 'live-swk',
+            member: expect.objectContaining({
+              id: 'member-4',
+              lastName: 'Relief',
+            }),
+          }),
+        }),
+        expect.objectContaining({
+          assignmentId: 'live-aps',
+          source: 'live_only',
+          isCheckedIn: true,
+          member: expect.objectContaining({
+            id: 'member-5',
+            lastName: 'Extra',
+          }),
+        }),
+      ])
     )
   })
 })

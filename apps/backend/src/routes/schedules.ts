@@ -14,14 +14,24 @@ import type {
   CreateDwOverrideInput,
   DwOverrideParams,
   DwOverrideQuery,
+  CreateLiveDutyAssignmentInput,
+  ClearLiveDutyAssignmentInput,
+  LiveDutyAssignmentParams,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
 import { ScheduleService } from '../services/schedule-service.js'
+import { LiveDutyAssignmentService } from '../services/live-duty-assignment-service.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
+import type { LiveDutyAssignmentEntity } from '../repositories/live-duty-assignment-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { parseOperationalDate } from '../utils/operational-date.js'
+import { canMemberEditHistory } from '../lib/history-permissions.js'
 
 const s = initServer()
 
 const scheduleService = new ScheduleService(getPrismaClient())
+const liveDutyAssignmentService = new LiveDutyAssignmentService(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 // ============================================================================
 // Helper Functions
@@ -202,6 +212,34 @@ function overrideToApiFormat(override: {
     baseMember: override.baseMember,
     dutyPosition: override.dutyPosition,
   }
+}
+
+function liveDutyAssignmentToApiFormat(assignment: LiveDutyAssignmentEntity) {
+  return {
+    id: assignment.id,
+    memberId: assignment.memberId,
+    dutyPositionId: assignment.dutyPositionId,
+    notes: assignment.notes,
+    startedAt: assignment.startedAt.toISOString(),
+    endedAt: assignment.endedAt?.toISOString() ?? null,
+    endedReason: assignment.endedReason,
+    createdAt: assignment.createdAt.toISOString(),
+    updatedAt: assignment.updatedAt.toISOString(),
+    member: assignment.member,
+    dutyPosition: {
+      id: assignment.dutyPosition.id,
+      code: assignment.dutyPosition.code,
+      name: assignment.dutyPosition.name,
+      maxSlots: assignment.dutyPosition.maxSlots,
+      dutyRoleCode: assignment.dutyPosition.dutyRole.code,
+      dutyRoleName: assignment.dutyPosition.dutyRole.name,
+    },
+  }
+}
+
+function getClientIp(req: unknown): string {
+  const request = req as { ip?: string; socket?: { remoteAddress?: string } }
+  return request.ip || request.socket?.remoteAddress || 'unknown'
 }
 
 /**
@@ -923,6 +961,190 @@ export const schedulesRouter = s.router(scheduleContract, {
     }
   },
 
+  listLiveDutyAssignments: async () => {
+    try {
+      const assignments = await liveDutyAssignmentService.listActiveAssignments()
+      return {
+        status: 200 as const,
+        body: {
+          data: assignments.map(liveDutyAssignmentToApiFormat),
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch live duty assignments',
+        },
+      }
+    }
+  },
+
+  createLiveDutyAssignment: async ({
+    body,
+    req,
+  }: {
+    body: CreateLiveDutyAssignmentInput
+    req: Request
+  }) => {
+    if (!(await canMemberEditHistory(req))) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
+        },
+      }
+    }
+
+    try {
+      const assignment = await liveDutyAssignmentService.assignTemporaryDuty(body)
+
+      await auditRepo.log({
+        adminUserId: null,
+        action: 'duty_watch_live_assignment_set',
+        entityType: 'live_duty_assignment',
+        entityId: assignment.id,
+        details: {
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          memberId: assignment.memberId,
+          dutyPositionCode: assignment.dutyPosition.code,
+          notes: body.notes ?? null,
+        },
+        ipAddress: getClientIp(req),
+      })
+
+      return {
+        status: 201 as const,
+        body: liveDutyAssignmentToApiFormat(assignment),
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('already has an active temporary') ||
+          error.message.includes('maximum of'))
+      ) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
+      if (
+        error instanceof Error &&
+        (error.message.includes('checked in') ||
+          error.message.includes('qualification') ||
+          error.message.includes('only support') ||
+          error.message.includes('not supported'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create live duty assignment',
+        },
+      }
+    }
+  },
+
+  clearLiveDutyAssignment: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: LiveDutyAssignmentParams
+    body: ClearLiveDutyAssignmentInput
+    req: Request
+  }) => {
+    if (!(await canMemberEditHistory(req))) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
+        },
+      }
+    }
+
+    try {
+      const assignment = await liveDutyAssignmentService.clearAssignment(
+        params.assignmentId,
+        'manual_clear'
+      )
+
+      await auditRepo.log({
+        adminUserId: null,
+        action: 'duty_watch_live_assignment_clear',
+        entityType: 'live_duty_assignment',
+        entityId: assignment.id,
+        details: {
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          memberId: assignment.memberId,
+          dutyPositionCode: assignment.dutyPosition.code,
+          notes: body.notes ?? null,
+        },
+        ipAddress: getClientIp(req),
+      })
+
+      return {
+        status: 200 as const,
+        body: liveDutyAssignmentToApiFormat(assignment),
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: error.message,
+          },
+        }
+      }
+      if (error instanceof Error && error.message.includes('already inactive')) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to clear live duty assignment',
+        },
+      }
+    }
+  },
+
   // ==========================================================================
   // DW Night Overrides
   // ==========================================================================
@@ -965,10 +1187,22 @@ export const schedulesRouter = s.router(scheduleContract, {
   createDwOverride: async ({
     params,
     body,
+    req,
   }: {
     params: ScheduleIdParam
     body: CreateDwOverrideInput
+    req: Request
   }) => {
+    if (!(await canMemberEditHistory(req))) {
+      return {
+        status: 403 as const,
+        body: {
+          error: 'FORBIDDEN',
+          message: 'Editing history entries requires Admin, Developer, or current DDS access',
+        },
+      }
+    }
+
     try {
       const override = await scheduleService.createDwOverride(params.id, {
         nightDate: body.nightDate,
@@ -978,6 +1212,28 @@ export const schedulesRouter = s.router(scheduleContract, {
         baseMemberId: body.baseMemberId,
         notes: body.notes,
       })
+
+      await auditRepo.log({
+        adminUserId: null,
+        action: 'duty_watch_override_create',
+        entityType: 'dw_night_override',
+        entityId: override.id,
+        details: {
+          editorMemberId: req.member?.id ?? null,
+          editorName: req.member
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown',
+          scheduleId: params.id,
+          overrideType: override.overrideType,
+          nightDate: override.nightDate.toISOString().substring(0, 10),
+          dutyPositionCode: override.dutyPosition.code,
+          memberId: override.memberId,
+          baseMemberId: override.baseMemberId,
+          notes: body.notes ?? null,
+        },
+        ipAddress: getClientIp(req),
+      })
+
       return {
         status: 201 as const,
         body: overrideToApiFormat(override),

@@ -29,9 +29,18 @@ interface PresentMember {
   divisionId: string
   memberType: string
   mess: string | null
+  activeCheckinId: string
   checkedInAt: string
   kioskId?: string
-  tags: Array<{ id: string; name: string; chipVariant?: string; chipColor?: string }>
+  tags: Array<{
+    id: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+    isPositional?: boolean
+    displayOrder?: number
+    source?: 'direct' | 'qualification'
+  }>
 }
 
 interface MemberPresenceItem {
@@ -121,6 +130,7 @@ interface PresentPerson {
   hostName?: string
   eventId?: string
   eventName?: string
+  activeCheckinId?: string
   checkInTime: Date
   kioskId?: string
   kioskName?: string
@@ -217,6 +227,7 @@ export class PresenceService {
         divisionId: m.divisionId,
         memberType: m.memberType,
         tags: m.tags,
+        activeCheckinId: m.activeCheckinId,
         checkInTime: new Date(m.checkedInAt),
         kioskId: m.kioskId,
         // TODO Phase 3: Add kiosk name lookup
