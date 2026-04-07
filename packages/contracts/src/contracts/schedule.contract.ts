@@ -25,6 +25,11 @@ import {
   CreateDwOverrideInputSchema,
   DwOverrideParamsSchema,
   DwOverrideQuerySchema,
+  LiveDutyAssignmentResponseSchema,
+  LiveDutyAssignmentListResponseSchema,
+  CreateLiveDutyAssignmentInputSchema,
+  ClearLiveDutyAssignmentInputSchema,
+  LiveDutyAssignmentParamsSchema,
   ErrorResponseSchema,
 } from '../schemas/index.js'
 
@@ -405,6 +410,62 @@ export const scheduleContract = c.router({
     },
     summary: 'Get tonight Duty Watch',
     description: "Get tonight's Duty Watch team (only active on Tuesday/Thursday)",
+  },
+
+  /**
+   * List active live temporary duty assignments
+   */
+  listLiveDutyAssignments: {
+    method: 'GET',
+    path: '/api/schedules/duty-watch/live-assignments',
+    responses: {
+      200: LiveDutyAssignmentListResponseSchema,
+      401: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'List live duty assignments',
+    description: 'Get active temporary duty assignments that apply while members are checked in',
+  },
+
+  /**
+   * Create a live temporary duty assignment
+   */
+  createLiveDutyAssignment: {
+    method: 'POST',
+    path: '/api/schedules/duty-watch/live-assignments',
+    body: CreateLiveDutyAssignmentInputSchema,
+    responses: {
+      201: LiveDutyAssignmentResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create live duty assignment',
+    description:
+      'Temporarily assign a checked-in member to a qualified duty-watch position until checkout.',
+  },
+
+  /**
+   * Clear a live temporary duty assignment
+   */
+  clearLiveDutyAssignment: {
+    method: 'DELETE',
+    path: '/api/schedules/duty-watch/live-assignments/:assignmentId',
+    pathParams: LiveDutyAssignmentParamsSchema,
+    body: ClearLiveDutyAssignmentInputSchema,
+    responses: {
+      200: LiveDutyAssignmentResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      403: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Clear live duty assignment',
+    description: 'End a temporary duty assignment before the member checks out.',
   },
 
   // ==========================================================================

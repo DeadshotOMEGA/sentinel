@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { LiveDutyAssignmentResponseSchema } from './operational-duty-assignment.schema.js'
 
 /**
  * Checkin direction enum
@@ -50,6 +51,14 @@ export const UpdateCheckinSchema = v.object({
   /** Reason for the edit — recorded in audit log */
   editReason: v.optional(
     v.pipe(v.string(), v.maxLength(500, 'Edit reason must be 500 characters or less'))
+  ),
+})
+
+export const ManualCheckoutSchema = v.object({
+  reason: v.pipe(
+    v.string('Reason is required'),
+    v.minLength(1, 'Reason is required'),
+    v.maxLength(500, 'Reason must be 500 characters or less')
   ),
 })
 
@@ -196,6 +205,31 @@ export const PresentPersonSchema = v.object({
   hostName: v.optional(v.string()),
   eventId: v.optional(v.string()),
   eventName: v.optional(v.string()),
+  activeCheckinId: v.optional(v.string()),
+  liveDutyAssignment: v.optional(v.nullable(LiveDutyAssignmentResponseSchema)),
+  scheduledDutyTonight: v.optional(
+    v.nullable(
+      v.object({
+        scheduleId: v.string(),
+        assignmentId: v.string(),
+        source: v.picklist(['schedule', 'night_override']),
+        dutyPosition: v.nullable(
+          v.object({
+            id: v.string(),
+            code: v.string(),
+            name: v.string(),
+          })
+        ),
+      })
+    )
+  ),
+  lockupActions: v.optional(
+    v.object({
+      holdsLockup: v.boolean(),
+      canManualCheckout: v.boolean(),
+      canOpenBuilding: v.boolean(),
+    })
+  ),
   checkInTime: v.string(),
   kioskId: v.optional(v.string()),
   kioskName: v.optional(v.string()),
@@ -216,6 +250,14 @@ export const PresentPersonSchema = v.object({
 export const PresentPeopleResponseSchema = v.object({
   people: v.array(PresentPersonSchema),
   total: v.number(),
+})
+
+export const ManualCheckoutResponseSchema = v.object({
+  success: v.boolean(),
+  message: v.string(),
+  checkin: CheckinWithMemberResponseSchema,
+  missedCheckoutRecorded: v.boolean(),
+  clearedLiveAssignments: v.number(),
 })
 
 /**
@@ -270,6 +312,8 @@ export type CheckinListResponse = v.InferOutput<typeof CheckinListResponseSchema
 export type PresenceStatusResponse = v.InferOutput<typeof PresenceStatusResponseSchema>
 export type PresentPerson = v.InferOutput<typeof PresentPersonSchema>
 export type PresentPeopleResponse = v.InferOutput<typeof PresentPeopleResponseSchema>
+export type ManualCheckoutInput = v.InferOutput<typeof ManualCheckoutSchema>
+export type ManualCheckoutResponse = v.InferOutput<typeof ManualCheckoutResponseSchema>
 export type RecentActivityItem = v.InferOutput<typeof RecentActivityItemSchema>
 export type RecentActivityResponse = v.InferOutput<typeof RecentActivityResponseSchema>
 export type RecentActivityQuery = v.InferOutput<typeof RecentActivityQuerySchema>
