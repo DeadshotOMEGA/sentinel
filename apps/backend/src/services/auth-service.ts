@@ -1,7 +1,11 @@
 import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
+import {
+  DISALLOWED_MEMBER_PINS,
+  type KioskResponsibilityStateResponse,
+  type LoginStartOfDayAction,
+} from '@sentinel/contracts'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import type { SessionMetadata, SessionWithMember } from '../repositories/session-repository.js'
@@ -12,6 +16,8 @@ import {
 } from '../lib/system-bootstrap.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { PresenceService } from './presence-service.js'
+import { DdsService } from './dds-service.js'
+import { LockupService } from './lockup-service.js'
 
 const BCRYPT_COST = 12
 const DISALLOWED_MEMBER_PIN_SET = new Set<string>(DISALLOWED_MEMBER_PINS)
@@ -51,6 +57,11 @@ interface LoginContext {
   setupReason: PinSetupReason | null
 }
 
+interface LoginCheckinResult {
+  created: boolean
+  checkinId: string | null
+}
+
 export interface LoginResult {
   token: string
   sessionId: string
@@ -72,17 +83,25 @@ export interface RemoteSystemSelection {
   remoteSystemName: string
 }
 
+export interface StartOfDayRequirement {
+  responsibilityState: KioskResponsibilityStateResponse
+}
+
 export class AuthService {
   private prisma: PrismaClientInstance
   private sessionRepo: SessionRepository
   private checkinRepo: CheckinRepository
   private presenceService: PresenceService
+  private ddsService: DdsService
+  private lockupService: LockupService
 
   constructor(prisma: PrismaClientInstance = defaultPrisma) {
     this.prisma = prisma
     this.sessionRepo = new SessionRepository(prisma)
     this.checkinRepo = new CheckinRepository(prisma)
     this.presenceService = new PresenceService(prisma)
+    this.ddsService = new DdsService(prisma)
+    this.lockupService = new LockupService(prisma)
   }
 
   /**
@@ -94,6 +113,7 @@ export class AuthService {
     serialNumber: string,
     pin: string,
     remoteSystem: RemoteSystemSelection,
+    startOfDayAction?: LoginStartOfDayAction,
     ipAddress?: string | null,
     userAgent?: string | null
   ): Promise<LoginResult> {
@@ -118,6 +138,21 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
+    const startOfDayRequirement = await this.getStartOfDayRequirement(member.id)
+    if (startOfDayRequirement && !startOfDayAction) {
+      authLogger.info('Login paused pending start-of-day action selection', {
+        memberId: member.id,
+        ip: ipAddress,
+      })
+      throw new StartOfDayActionRequiredError(
+        'Choose how to open the unit before signing in',
+        startOfDayRequirement
+      )
+    }
+    if (startOfDayRequirement && startOfDayAction) {
+      this.assertValidStartOfDayAction(startOfDayRequirement, startOfDayAction)
+    }
+
     const session = await this.sessionRepo.create({
       memberId: member.id,
       remoteSystemId: remoteSystem.remoteSystemId,
@@ -126,9 +161,29 @@ export class AuthService {
       userAgent,
     })
 
+    let loginCheckin: LoginCheckinResult = { created: false, checkinId: null }
+
     try {
-      await this.ensureMemberCheckedIn(member.id, remoteSystem.remoteSystemId)
+      loginCheckin = await this.ensureMemberCheckedIn(member.id, remoteSystem.remoteSystemId)
+
+      if (startOfDayRequirement && startOfDayAction) {
+        await this.executeStartOfDayAction(member.id, startOfDayAction)
+      }
     } catch (error) {
+      if (loginCheckin.created && loginCheckin.checkinId) {
+        try {
+          await this.checkinRepo.delete(loginCheckin.checkinId)
+          await this.presenceService.broadcastStatsUpdate()
+        } catch (rollbackError) {
+          authLogger.error('Login rollback failed after start-of-day action error', {
+            memberId: member.id,
+            sessionId: session.id,
+            checkinId: loginCheckin.checkinId,
+            error: rollbackError instanceof Error ? rollbackError.message : 'Unknown error',
+          })
+        }
+      }
+
       await this.sessionRepo.endById(session.id, 'auto_checkin_failed')
       authLogger.error('Login auto check-in failed; session revoked', {
         memberId: member.id,
@@ -463,10 +518,10 @@ export class AuthService {
   private async ensureMemberCheckedIn(
     memberId: string,
     remoteSystemId: string | null
-  ): Promise<void> {
+  ): Promise<LoginCheckinResult> {
     const latestCheckin = await this.checkinRepo.findLatestByMember(memberId)
     if (latestCheckin?.direction === 'in') {
-      return
+      return { created: false, checkinId: latestCheckin.id }
     }
 
     if (!remoteSystemId) {
@@ -514,6 +569,59 @@ export class AuthService {
     })
 
     await this.presenceService.broadcastStatsUpdate()
+
+    return {
+      created: true,
+      checkinId: checkin.id,
+    }
+  }
+
+  private async getStartOfDayRequirement(memberId: string): Promise<StartOfDayRequirement | null> {
+    const latestCheckin = await this.checkinRepo.findLatestByMember(memberId)
+    if (latestCheckin?.direction === 'in') {
+      return null
+    }
+
+    const responsibilityState = await this.ddsService.getLoginResponsibilityState(memberId)
+    if (
+      responsibilityState.isFirstMemberCheckin &&
+      responsibilityState.needsBuildingOpen &&
+      responsibilityState.canOpenBuilding
+    ) {
+      return { responsibilityState }
+    }
+
+    return null
+  }
+
+  private assertValidStartOfDayAction(
+    requirement: StartOfDayRequirement,
+    action: LoginStartOfDayAction
+  ): void {
+    if (action === 'open_only') {
+      if (!requirement.responsibilityState.canOpenBuilding) {
+        throw new InvalidStartOfDayActionError('This badge cannot open the unit right now')
+      }
+      return
+    }
+
+    if (!requirement.responsibilityState.canAcceptDds) {
+      throw new InvalidStartOfDayActionError(
+        'This badge cannot accept DDS right now. Choose open unit only instead.'
+      )
+    }
+  }
+
+  private async executeStartOfDayAction(
+    memberId: string,
+    action: LoginStartOfDayAction
+  ): Promise<void> {
+    if (action === 'open_and_accept_dds') {
+      await this.ddsService.acceptDds(memberId)
+      return
+    }
+
+    await this.lockupService.openBuilding(memberId, 'Opened during Sentinel sign-in')
   }
 }
 
@@ -559,5 +667,27 @@ export class PinSetupRequiredError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'PinSetupRequiredError'
+  }
+}
+
+export class StartOfDayActionRequiredError extends Error {
+  public statusCode = 409
+  public code = 'START_OF_DAY_ACTION_REQUIRED'
+  public requirement: StartOfDayRequirement
+
+  constructor(message: string, requirement: StartOfDayRequirement) {
+    super(message)
+    this.name = 'StartOfDayActionRequiredError'
+    this.requirement = requirement
+  }
+}
+
+export class InvalidStartOfDayActionError extends Error {
+  public statusCode = 400
+  public code = 'INVALID_START_OF_DAY_ACTION'
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidStartOfDayActionError'
   }
 }

@@ -1,9 +1,11 @@
 import * as v from 'valibot'
+import { KioskResponsibilityStateResponseSchema } from './dds.schema.js'
 
 export const DISALLOWED_MEMBER_PINS = ['0000', '1111', '1234', '4321'] as const
 
 export const LoginPinStateValues = ['configured', 'setup_required'] as const
 export const LoginPinSetupReasonValues = ['missing', 'default'] as const
+export const LoginStartOfDayActionValues = ['open_only', 'open_and_accept_dds'] as const
 
 function isAllowedMemberPin(value: string): boolean {
   return !DISALLOWED_MEMBER_PINS.includes(value as (typeof DISALLOWED_MEMBER_PINS)[number])
@@ -40,6 +42,9 @@ export const LoginRequestSchema = v.object({
     v.pipe(v.string('Remote system is required'), v.uuid('Invalid remote system ID'))
   ),
   useKioskRemoteSystem: v.optional(v.boolean('Kiosk mode flag must be a boolean')),
+  startOfDayAction: v.optional(
+    v.picklist(LoginStartOfDayActionValues, 'Choose a valid start-of-day action')
+  ),
 })
 
 export const LoginRequestWithRemoteSystemSchema = v.pipe(
@@ -52,6 +57,8 @@ export const LoginRequestWithRemoteSystemSchema = v.pipe(
 )
 
 export type LoginRequest = v.InferOutput<typeof LoginRequestWithRemoteSystemSchema>
+export const LoginStartOfDayActionSchema = v.picklist(LoginStartOfDayActionValues)
+export type LoginStartOfDayAction = v.InferOutput<typeof LoginStartOfDayActionSchema>
 
 /**
  * Authenticated member info returned in login and session responses
@@ -177,3 +184,11 @@ export const AuthErrorSchema = v.object({
   error: v.string(),
   message: v.string(),
 })
+
+export const LoginStartOfDayRequiredSchema = v.object({
+  error: v.literal('START_OF_DAY_ACTION_REQUIRED'),
+  message: v.string(),
+  responsibilityState: KioskResponsibilityStateResponseSchema,
+})
+
+export type LoginStartOfDayRequired = v.InferOutput<typeof LoginStartOfDayRequiredSchema>

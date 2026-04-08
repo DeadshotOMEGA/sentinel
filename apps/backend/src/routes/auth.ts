@@ -14,6 +14,8 @@ import {
   NotFoundError,
   PinPolicyError,
   PinSetupRequiredError,
+  StartOfDayActionRequiredError,
+  InvalidStartOfDayActionError,
 } from '../services/auth-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
@@ -111,7 +113,8 @@ router.post('/login', async (req: Request, res: Response) => {
       })
     }
 
-    const { serialNumber, pin, remoteSystemId, useKioskRemoteSystem } = parsed.output
+    const { serialNumber, pin, remoteSystemId, useKioskRemoteSystem, startOfDayAction } =
+      parsed.output
     const remoteSystemRepository = new RemoteSystemRepository(getPrismaClient())
     const shouldUseKioskRemoteSystem = useKioskRemoteSystem === true
     const shouldForceDeploymentRemoteSystem =
@@ -166,6 +169,7 @@ router.post('/login', async (req: Request, res: Response) => {
         remoteSystemId: resolvedRemoteSystem.id,
         remoteSystemName: resolvedRemoteSystem.name,
       },
+      startOfDayAction,
       getRequestClientIp(req),
       req.headers['user-agent']
     )
@@ -193,6 +197,19 @@ router.post('/login', async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof PinSetupRequiredError) {
       return res.status(403).json({
+        error: error.code,
+        message: error.message,
+      })
+    }
+    if (error instanceof StartOfDayActionRequiredError) {
+      return res.status(409).json({
+        error: error.code,
+        message: error.message,
+        responsibilityState: error.requirement.responsibilityState,
+      })
+    }
+    if (error instanceof InvalidStartOfDayActionError) {
+      return res.status(400).json({
         error: error.code,
         message: error.message,
       })
