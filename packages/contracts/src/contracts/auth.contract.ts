@@ -11,6 +11,7 @@ import {
   AuthMessageSchema,
   AuthErrorSchema,
   HeartbeatResponseSchema,
+  LoginStartOfDayRequiredSchema,
 } from '../schemas/auth.schema.js'
 
 const c = initContract()
@@ -44,6 +45,7 @@ export const authContract = c.router({
       400: AuthErrorSchema,
       401: AuthErrorSchema,
       403: AuthErrorSchema,
+      409: LoginStartOfDayRequiredSchema,
       429: AuthErrorSchema,
       500: AuthErrorSchema,
     },

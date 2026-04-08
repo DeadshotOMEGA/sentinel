@@ -730,6 +730,17 @@ export class DdsService {
   }
 
   async getKioskResponsibilityState(memberId: string): Promise<DdsResponsibilityState> {
+    return this.buildResponsibilityState(memberId, false)
+  }
+
+  async getLoginResponsibilityState(memberId: string): Promise<DdsResponsibilityState> {
+    return this.buildResponsibilityState(memberId, true)
+  }
+
+  private async buildResponsibilityState(
+    memberId: string,
+    assumeMemberPresent: boolean
+  ): Promise<DdsResponsibilityState> {
     const [
       member,
       currentDds,
@@ -750,8 +761,11 @@ export class DdsService {
       this.lockupService.canMemberExerciseLockupAuthority(memberId),
     ])
 
-    const isPresent = presentMembers.some((presentMember) => presentMember.id === memberId)
-    const isFirstMemberCheckin = presentMembers.length === 1 && isPresent
+    const isActuallyPresent = presentMembers.some((presentMember) => presentMember.id === memberId)
+    const isPresent = isActuallyPresent || assumeMemberPresent
+    const effectivePresentMemberCount =
+      presentMembers.length + (!isActuallyPresent && assumeMemberPresent ? 1 : 0)
+    const isFirstMemberCheckin = effectivePresentMemberCount === 1 && isPresent
     const needsDds = currentDds?.status !== 'active'
     const needsBuildingOpen = lockupStatus.buildingStatus === 'secured'
     const canAcceptDds =

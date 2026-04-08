@@ -12,6 +12,10 @@ export const TID = {
     setupPinInput: 'auth-setup-pin-input',
     setupPinConfirmInput: 'auth-setup-pin-confirm-input',
     setupPinSubmit: 'auth-setup-pin-submit',
+    startOfDayPrompt: 'auth-start-of-day-prompt',
+    startOfDayOption: (value: string) => `auth-start-of-day-option-${value}`,
+    startOfDaySubmit: 'auth-start-of-day-submit',
+    startOfDayBack: 'auth-start-of-day-back',
   },
   nav: {
     logo: 'nav-logo',

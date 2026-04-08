@@ -5,11 +5,19 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import {
   DISALLOWED_MEMBER_PINS,
   type AuthMember,
+  type KioskResponsibilityStateResponse,
   type LoginPinSetupReason,
+  type LoginStartOfDayAction,
 } from '@sentinel/contracts'
 import { BadgeScanInput } from '@/components/auth/badge-scan-input'
 import type { PinInputInitialSelection, PinInputSubmission } from '@/components/auth/pin-input'
 import { PinInput } from '@/components/auth/pin-input'
+import {
+  getKioskResponsibilityPromptPresentation,
+  getResponsibilityPrimaryLabel,
+  getResponsibilitySummary,
+  type ResponsibilityActionChoice,
+} from '@/components/kiosk/kiosk-responsibility-prompt.logic'
 import { AppBadge } from '@/components/ui/AppBadge'
 import {
   AppCard,
@@ -26,11 +34,22 @@ import { useAuthStore } from '@/store/auth-store'
 
 const LAST_REMOTE_SYSTEM_STORAGE_KEY = 'sentinel.last-remote-system'
 
-type LoginStep = 'badge' | 'setup' | 'pin'
+type LoginStep = 'badge' | 'setup' | 'pin' | 'start_of_day'
 
 interface SetupFlowState {
   member: AuthMember
   reason: LoginPinSetupReason
+}
+
+interface StartOfDayState {
+  pinSubmission: PinInputSubmission
+  responsibilityState: KioskResponsibilityStateResponse
+}
+
+function mapResponsibilityActionToLoginAction(
+  action: ResponsibilityActionChoice
+): LoginStartOfDayAction {
+  return action === 'accept_dds' ? 'open_and_accept_dds' : 'open_only'
 }
 
 function readInitialSelection(): PinInputInitialSelection | null {
@@ -138,6 +157,9 @@ function LoginPageContent() {
   const [setupState, setSetupState] = useState<SetupFlowState | null>(null)
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
+  const [startOfDayState, setStartOfDayState] = useState<StartOfDayState | null>(null)
+  const [selectedStartOfDayAction, setSelectedStartOfDayAction] =
+    useState<LoginStartOfDayAction | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -165,10 +187,16 @@ function LoginPageContent() {
     setConfirmPin('')
   }
 
+  const resetStartOfDayState = () => {
+    setStartOfDayState(null)
+    setSelectedStartOfDayAction(null)
+  }
+
   const returnToBadgeScan = () => {
     setStep('badge')
     setBadgeSerial('')
     setSetupState(null)
+    resetStartOfDayState()
     setError(null)
     setStatusMessage(null)
     resetPinSetupForm()
@@ -230,7 +258,8 @@ function LoginPageContent() {
     pin,
     remoteSystemId,
     useKioskRemoteSystem,
-  }: PinInputSubmission) => {
+    startOfDayAction,
+  }: PinInputSubmission & { startOfDayAction?: LoginStartOfDayAction }) => {
     setLoading(true)
     setError(null)
     setStatusMessage(null)
@@ -243,8 +272,8 @@ function LoginPageContent() {
 
       const response = await apiClient.auth.login({
         body: useKioskRemoteSystem
-          ? { serialNumber: badgeSerial, pin, useKioskRemoteSystem: true }
-          : { serialNumber: badgeSerial, pin, remoteSystemId },
+          ? { serialNumber: badgeSerial, pin, useKioskRemoteSystem: true, startOfDayAction }
+          : { serialNumber: badgeSerial, pin, remoteSystemId, startOfDayAction },
       })
 
       if (response.status === 403 && getErrorCode(response.body) === 'PIN_SETUP_REQUIRED') {
@@ -252,6 +281,22 @@ function LoginPageContent() {
         if (!recovered) {
           setError(getErrorMessage(response.body, 'PIN setup is required before signing in'))
         }
+        return
+      }
+
+      if (response.status === 409 && response.body.error === 'START_OF_DAY_ACTION_REQUIRED') {
+        const promptState = response.body.responsibilityState
+        const presentation = getKioskResponsibilityPromptPresentation(promptState)
+        const defaultAction = presentation.defaultAction
+          ? mapResponsibilityActionToLoginAction(presentation.defaultAction)
+          : null
+
+        setStartOfDayState({
+          pinSubmission: { pin, remoteSystemId, useKioskRemoteSystem },
+          responsibilityState: promptState,
+        })
+        setSelectedStartOfDayAction(defaultAction)
+        setStep('start_of_day')
         return
       }
 
@@ -265,6 +310,7 @@ function LoginPageContent() {
         persistSelection({ id: data.remoteSystemId })
       }
 
+      resetStartOfDayState()
       setAuth(data.member, data.token)
       const nextDestination = postLoginDestination
       if (data.member.mustChangePin) {
@@ -277,6 +323,18 @@ function LoginPageContent() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleStartOfDaySubmit = async () => {
+    if (!startOfDayState || !selectedStartOfDayAction) {
+      setError('Choose how you are opening the unit before signing in')
+      return
+    }
+
+    await handlePinSubmit({
+      ...startOfDayState.pinSubmission,
+      startOfDayAction: selectedStartOfDayAction,
+    })
   }
 
   const handleSetupSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -510,6 +568,129 @@ function LoginPageContent() {
                   forceKioskRemoteSystem={isKioskDestination(postLoginDestination)}
                 />
               )}
+
+              {step === 'start_of_day' &&
+                startOfDayState &&
+                (() => {
+                  const presentation = getKioskResponsibilityPromptPresentation(
+                    startOfDayState.responsibilityState
+                  )
+
+                  return (
+                    <div className="space-y-(--space-4)" data-testid={TID.auth.startOfDayPrompt}>
+                      <div
+                        role="alert"
+                        className={`alert ${presentation.bannerTone === 'info' ? 'alert-info' : 'alert-warning'} alert-soft`}
+                      >
+                        <div className="space-y-(--space-1)">
+                          <div className="font-semibold">{presentation.bannerTitle}</div>
+                          <div>{presentation.bannerDescription}</div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-box border border-base-300 bg-base-200/40 p-(--space-3)">
+                        <div className="flex flex-wrap items-center gap-(--space-2)">
+                          <AppBadge status="warning" size="sm">
+                            First member today
+                          </AppBadge>
+                          <AppBadge status="neutral" size="sm">
+                            {badgeSerial}
+                          </AppBadge>
+                        </div>
+                        <p className="mt-(--space-3) text-sm font-medium text-base-content">
+                          {startOfDayState.responsibilityState.member.rank}{' '}
+                          {startOfDayState.responsibilityState.member.lastName},{' '}
+                          {startOfDayState.responsibilityState.member.firstName}
+                        </p>
+                        <p className="mt-(--space-1) text-sm text-base-content/70">
+                          {presentation.headline}
+                        </p>
+                        <p className="mt-(--space-1) text-sm text-base-content/70">
+                          {presentation.helperText}
+                        </p>
+                      </div>
+
+                      <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/70 p-(--space-4)">
+                        <legend className="fieldset-legend px-(--space-2)">
+                          Choose how you are opening the unit
+                        </legend>
+                        <div className="space-y-(--space-3)">
+                          {presentation.actionOptions.map((option) => {
+                            const loginAction = mapResponsibilityActionToLoginAction(option.value)
+                            const checked = selectedStartOfDayAction === loginAction
+
+                            return (
+                              <label
+                                key={option.value}
+                                className={`flex cursor-pointer items-start gap-(--space-3) rounded-box border p-(--space-3) transition-colors ${
+                                  checked
+                                    ? 'border-primary bg-primary-fadded text-primary-fadded-content'
+                                    : 'border-base-300 bg-base-100'
+                                }`}
+                                data-testid={TID.auth.startOfDayOption(option.value)}
+                              >
+                                <input
+                                  type="radio"
+                                  name="start-of-day-action"
+                                  className="radio radio-primary mt-[2px]"
+                                  checked={checked}
+                                  onChange={() => setSelectedStartOfDayAction(loginAction)}
+                                  disabled={loading}
+                                />
+                                <div className="space-y-(--space-1)">
+                                  <div className="font-semibold">{option.title}</div>
+                                  <div className="text-sm opacity-80">{option.description}</div>
+                                  <div className="text-xs opacity-70">
+                                    {getResponsibilitySummary(
+                                      startOfDayState.responsibilityState,
+                                      option.value
+                                    )}
+                                  </div>
+                                </div>
+                              </label>
+                            )
+                          })}
+                        </div>
+                        {presentation.blockedMessage && (
+                          <p className="label text-error">{presentation.blockedMessage}</p>
+                        )}
+                      </fieldset>
+
+                      <div className="grid grid-cols-2 gap-(--space-2)">
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => {
+                            resetStartOfDayState()
+                            setStep('pin')
+                          }}
+                          disabled={loading}
+                          data-testid={TID.auth.startOfDayBack}
+                        >
+                          Back
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={handleStartOfDaySubmit}
+                          disabled={loading || !selectedStartOfDayAction}
+                          data-testid={TID.auth.startOfDaySubmit}
+                        >
+                          {loading ? (
+                            <span className="loading loading-spinner loading-sm" />
+                          ) : (
+                            getResponsibilityPrimaryLabel(
+                              startOfDayState.responsibilityState,
+                              selectedStartOfDayAction === 'open_and_accept_dds'
+                                ? 'accept_dds'
+                                : 'open_building'
+                            )
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })()}
             </div>
           </AppCardContent>
         </AppCard>

@@ -9,6 +9,7 @@ import {
   ForbiddenError,
   PinPolicyError,
   PinSetupRequiredError,
+  StartOfDayActionRequiredError,
 } from './auth-service.js'
 
 const TEST_BCRYPT_COST = 4
@@ -44,6 +45,42 @@ function createCheckinRepositoryMock() {
 function createPresenceServiceMock() {
   return {
     broadcastStatsUpdate: vi.fn().mockResolvedValue(undefined),
+  }
+}
+
+function createDdsServiceMock() {
+  return {
+    getLoginResponsibilityState: vi.fn().mockResolvedValue({
+      shouldPrompt: false,
+      promptVariant: 'opener_only',
+      isFirstMemberCheckin: false,
+      needsDds: false,
+      needsBuildingOpen: false,
+      buildingStatus: 'open',
+      canAcceptDds: false,
+      canOpenBuilding: false,
+      member: {
+        id: 'member-1',
+        firstName: 'Alex',
+        lastName: 'Example',
+        rank: 'PO2',
+      },
+      expectedDds: null,
+      scheduledDds: null,
+      currentDds: null,
+      currentLockupHolder: null,
+      currentOpenContext: null,
+      presentMembers: [],
+      presentVisitorCount: 0,
+      todayCycles: [],
+    }),
+    acceptDds: vi.fn().mockResolvedValue(undefined),
+  }
+}
+
+function createLockupServiceMock() {
+  return {
+    openBuilding: vi.fn().mockResolvedValue(undefined),
   }
 }
 
@@ -122,6 +159,21 @@ function attachPresenceService(service: AuthService) {
   return presenceService
 }
 
+function attachDdsService(service: AuthService) {
+  const ddsService = createDdsServiceMock()
+  ;(service as unknown as { ddsService: ReturnType<typeof createDdsServiceMock> }).ddsService =
+    ddsService
+  return ddsService
+}
+
+function attachLockupService(service: AuthService) {
+  const lockupService = createLockupServiceMock()
+  ;(
+    service as unknown as { lockupService: ReturnType<typeof createLockupServiceMock> }
+  ).lockupService = lockupService
+  return lockupService
+}
+
 describe('AuthService', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -131,6 +183,8 @@ describe('AuthService', () => {
     const prisma = createPrismaMock({ pinHash: null, mustChangePin: false })
     const service = new AuthService(prisma)
     const sessionRepository = attachSessionRepository(service)
+    attachDdsService(service)
+    attachLockupService(service)
 
     await expect(
       service.login(
@@ -140,6 +194,7 @@ describe('AuthService', () => {
           remoteSystemId: 'remote-1',
           remoteSystemName: 'Deployment Laptop',
         },
+        undefined,
         '127.0.0.1',
         'vitest'
       )
@@ -159,6 +214,8 @@ describe('AuthService', () => {
     })
     const service = new AuthService(prisma)
     const sessionRepository = attachSessionRepository(service)
+    attachDdsService(service)
+    attachLockupService(service)
 
     await expect(
       service.login(
@@ -168,6 +225,7 @@ describe('AuthService', () => {
           remoteSystemId: 'remote-1',
           remoteSystemName: 'Deployment Laptop',
         },
+        undefined,
         '127.0.0.1',
         'vitest'
       )
@@ -252,6 +310,8 @@ describe('AuthService', () => {
     const sessionRepository = attachSessionRepository(service)
     const checkinRepository = attachCheckinRepository(service)
     const presenceService = attachPresenceService(service)
+    const ddsService = attachDdsService(service)
+    const lockupService = attachLockupService(service)
 
     await expect(
       service.login(
@@ -261,6 +321,7 @@ describe('AuthService', () => {
           remoteSystemId: 'remote-1',
           remoteSystemName: 'Deployment Laptop',
         },
+        undefined,
         '127.0.0.1',
         'vitest'
       )
@@ -281,6 +342,8 @@ describe('AuthService', () => {
       })
     )
     expect(presenceService.broadcastStatsUpdate).toHaveBeenCalled()
+    expect(ddsService.acceptDds).not.toHaveBeenCalled()
+    expect(lockupService.openBuilding).not.toHaveBeenCalled()
   })
 
   it('does not create a duplicate login checkin when the member is already present', async () => {
@@ -292,6 +355,8 @@ describe('AuthService', () => {
     const sessionRepository = attachSessionRepository(service)
     const checkinRepository = attachCheckinRepository(service)
     attachPresenceService(service)
+    attachDdsService(service)
+    attachLockupService(service)
 
     checkinRepository.findLatestByMember.mockResolvedValue({
       id: 'existing-checkin',
@@ -306,6 +371,7 @@ describe('AuthService', () => {
         remoteSystemId: 'remote-1',
         remoteSystemName: 'Deployment Laptop',
       },
+      undefined,
       '127.0.0.1',
       'vitest'
     )
@@ -323,6 +389,8 @@ describe('AuthService', () => {
     const sessionRepository = attachSessionRepository(service)
     const checkinRepository = attachCheckinRepository(service)
     attachPresenceService(service)
+    attachDdsService(service)
+    attachLockupService(service)
 
     checkinRepository.create.mockRejectedValue(new Error('insert failed'))
 
@@ -334,12 +402,190 @@ describe('AuthService', () => {
           remoteSystemId: 'remote-1',
           remoteSystemName: 'Deployment Laptop',
         },
+        undefined,
         '127.0.0.1',
         'vitest'
       )
     ).rejects.toThrow('insert failed')
 
     expect(sessionRepository.endById).toHaveBeenCalledWith('session-1', 'auto_checkin_failed')
+  })
+
+  it('requires a start-of-day action before the first member opens the unit', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    const ddsService = attachDdsService(service)
+    attachLockupService(service)
+
+    ddsService.getLoginResponsibilityState.mockResolvedValue({
+      shouldPrompt: true,
+      promptVariant: 'expected_dds',
+      isFirstMemberCheckin: true,
+      needsDds: true,
+      needsBuildingOpen: true,
+      buildingStatus: 'secured',
+      canAcceptDds: true,
+      canOpenBuilding: true,
+      member: {
+        id: 'member-1',
+        firstName: 'Alex',
+        lastName: 'Example',
+        rank: 'PO2',
+      },
+      expectedDds: {
+        member: {
+          id: 'member-1',
+          firstName: 'Alex',
+          lastName: 'Example',
+          rank: 'PO2',
+        },
+        source: 'scheduled',
+        matchesScannedMember: true,
+      },
+      scheduledDds: null,
+      currentDds: null,
+      currentLockupHolder: null,
+      currentOpenContext: null,
+      presentMembers: [],
+      presentVisitorCount: 0,
+      todayCycles: [],
+    })
+
+    await expect(
+      service.login(
+        'serial-1',
+        '2468',
+        {
+          remoteSystemId: 'remote-1',
+          remoteSystemName: 'Deployment Laptop',
+        },
+        undefined,
+        '127.0.0.1',
+        'vitest'
+      )
+    ).rejects.toBeInstanceOf(StartOfDayActionRequiredError)
+
+    expect(sessionRepository.create).not.toHaveBeenCalled()
+    expect(checkinRepository.create).not.toHaveBeenCalled()
+  })
+
+  it('opens the unit without accepting DDS when the member selects open only', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    const presenceService = attachPresenceService(service)
+    const ddsService = attachDdsService(service)
+    const lockupService = attachLockupService(service)
+
+    ddsService.getLoginResponsibilityState.mockResolvedValue({
+      shouldPrompt: true,
+      promptVariant: 'opener_only',
+      isFirstMemberCheckin: true,
+      needsDds: true,
+      needsBuildingOpen: true,
+      buildingStatus: 'secured',
+      canAcceptDds: false,
+      canOpenBuilding: true,
+      member: {
+        id: 'member-1',
+        firstName: 'Alex',
+        lastName: 'Example',
+        rank: 'PO2',
+      },
+      expectedDds: null,
+      scheduledDds: null,
+      currentDds: null,
+      currentLockupHolder: null,
+      currentOpenContext: null,
+      presentMembers: [],
+      presentVisitorCount: 0,
+      todayCycles: [],
+    })
+
+    await service.login(
+      'serial-1',
+      '2468',
+      {
+        remoteSystemId: 'remote-1',
+        remoteSystemName: 'Deployment Laptop',
+      },
+      'open_only',
+      '127.0.0.1',
+      'vitest'
+    )
+
+    expect(sessionRepository.create).toHaveBeenCalled()
+    expect(checkinRepository.create).toHaveBeenCalled()
+    expect(lockupService.openBuilding).toHaveBeenCalledWith(
+      'member-1',
+      'Opened during Sentinel sign-in'
+    )
+    expect(ddsService.acceptDds).not.toHaveBeenCalled()
+    expect(presenceService.broadcastStatsUpdate).toHaveBeenCalled()
+  })
+
+  it('accepts DDS when the first member chooses the combined start-of-day action', async () => {
+    const prisma = createPrismaMock({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    const service = new AuthService(prisma)
+    const sessionRepository = attachSessionRepository(service)
+    const checkinRepository = attachCheckinRepository(service)
+    attachPresenceService(service)
+    const ddsService = attachDdsService(service)
+    const lockupService = attachLockupService(service)
+
+    ddsService.getLoginResponsibilityState.mockResolvedValue({
+      shouldPrompt: true,
+      promptVariant: 'expected_dds',
+      isFirstMemberCheckin: true,
+      needsDds: true,
+      needsBuildingOpen: true,
+      buildingStatus: 'secured',
+      canAcceptDds: true,
+      canOpenBuilding: true,
+      member: {
+        id: 'member-1',
+        firstName: 'Alex',
+        lastName: 'Example',
+        rank: 'PO2',
+      },
+      expectedDds: null,
+      scheduledDds: null,
+      currentDds: null,
+      currentLockupHolder: null,
+      currentOpenContext: null,
+      presentMembers: [],
+      presentVisitorCount: 0,
+      todayCycles: [],
+    })
+
+    await service.login(
+      'serial-1',
+      '2468',
+      {
+        remoteSystemId: 'remote-1',
+        remoteSystemName: 'Deployment Laptop',
+      },
+      'open_and_accept_dds',
+      '127.0.0.1',
+      'vitest'
+    )
+
+    expect(sessionRepository.create).toHaveBeenCalled()
+    expect(checkinRepository.create).toHaveBeenCalled()
+    expect(ddsService.acceptDds).toHaveBeenCalledWith('member-1')
+    expect(lockupService.openBuilding).not.toHaveBeenCalled()
   })
 
   it('rejects blocked replacement PINs', async () => {
