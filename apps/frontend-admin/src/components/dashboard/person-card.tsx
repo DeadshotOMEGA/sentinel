@@ -265,6 +265,7 @@ export const PersonCard = memo(function PersonCard({
     : isMember
       ? 'border-primary/50'
       : 'border-neutral/50'
+  const cardSurfaceClass = isMember ? 'card-elevated' : 'card-elevated-neutral'
 
   const handleMemberSelect = (sideHint: 'left' | 'right') => {
     if (isInteractive) {
@@ -274,7 +275,7 @@ export const PersonCard = memo(function PersonCard({
 
   const cardContent = (
     <div
-      className={`card card-elevated border h-full min-w-0 transition-all duration-200 ${cardBorderClass} ${
+      className={`card border h-full min-w-0 ${cardSurfaceClass} ${cardBorderClass} ${
         isInteractive
           ? 'group-hover:border-primary group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-primary/40'
           : ''

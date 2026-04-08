@@ -282,6 +282,25 @@
   transform: translateY(-2px);
 }
 
+.card-elevated-neutral {
+  background: var(--color-neutral-fadded);
+  color: var(--color-neutral-fadded-content);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.04),
+    0 4px 6px -1px rgb(0 0 0 / 0.05),
+    0 0 0 1px rgb(0 0 0 / 0.03);
+  transition:
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-elevated-neutral:hover {
+  box-shadow:
+    0 2px 4px 0 rgb(0 0 0 / 0.05),
+    0 6px 10px -2px rgb(0 0 0 / 0.05),
+    0 0 0 1px rgb(0 0 0 / 0.04);
+}
+
 .presence-card-hover-3d {
   width: 100%;
 }
