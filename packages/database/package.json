@@ -1,6 +1,6 @@
 {
   "name": "@sentinel/database",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "private": true,
   "type": "module",
   "description": "Database schema and client for Sentinel",
