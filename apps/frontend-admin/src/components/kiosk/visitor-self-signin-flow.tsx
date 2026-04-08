@@ -50,6 +50,7 @@ type KeyboardFieldName =
   | 'firstName'
   | 'lastName'
   | 'mobilePhone'
+  | 'licensePlate'
   | 'hostSearch'
   | 'purposeDetails'
 
@@ -66,6 +67,7 @@ interface VisitorSelfSigninFormValues {
   unit: string
   organization: string
   mobilePhone: string
+  licensePlate: string
   recruitmentStep: RecruitmentStep | ''
   visitPurpose: VisitPurpose | ''
   hostMemberId: string
@@ -80,6 +82,7 @@ const DEFAULT_FORM_VALUES: VisitorSelfSigninFormValues = {
   unit: '',
   organization: '',
   mobilePhone: '',
+  licensePlate: '',
   recruitmentStep: '',
   visitPurpose: '',
   hostMemberId: '',
@@ -91,6 +94,45 @@ type KeyboardFieldElement = globalThis.HTMLInputElement | globalThis.HTMLTextAre
 function trimValue(value: string): string | undefined {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
+}
+
+function getKioskChoiceTileClass(selected: boolean): string {
+  return [
+    'btn h-auto justify-start whitespace-normal border-2 text-left shadow-[var(--shadow-0)] transition-all duration-[var(--duration-fast)]',
+    'min-h-32 rounded-[calc(var(--radius-box)+1rem)] px-0 py-0',
+    selected
+      ? 'border-primary bg-primary-fadded text-primary-fadded-content hover:border-primary hover:bg-primary-fadded hover:text-primary-fadded-content'
+      : 'border-base-400 bg-base-100 text-base-content hover:border-primary/55 hover:bg-primary-fadded hover:text-primary-fadded-content',
+  ].join(' ')
+}
+
+function getKioskInputClass(hasError: boolean, isActive: boolean): string {
+  return [
+    'input input-lg w-full border-2 bg-base-100 text-base-content shadow-[var(--shadow-0)] transition-all duration-[var(--duration-fast)]',
+    'min-h-16 rounded-[calc(var(--radius-box)+1rem)] px-[var(--space-4)]',
+    'placeholder:text-base-content/50',
+    hasError ? 'border-error' : 'border-base-400',
+    isActive ? 'border-primary ring-2 ring-primary/25 ring-offset-2 ring-offset-base-100' : '',
+  ].join(' ')
+}
+
+function getKioskInputShellClass(hasError: boolean, isActive: boolean): string {
+  return [
+    'input input-lg w-full border-2 bg-base-100 text-base-content shadow-[var(--shadow-0)] transition-all duration-[var(--duration-fast)]',
+    'min-h-16 rounded-[calc(var(--radius-box)+1rem)] px-[var(--space-4)]',
+    hasError ? 'border-error' : 'border-base-400',
+    isActive ? 'border-primary ring-2 ring-primary/25 ring-offset-2 ring-offset-base-100' : '',
+  ].join(' ')
+}
+
+function getKioskTextareaClass(hasError: boolean, isActive: boolean): string {
+  return [
+    'textarea textarea-lg w-full border-2 bg-base-100 text-base-content shadow-[var(--shadow-0)] transition-all duration-[var(--duration-fast)]',
+    'min-h-36 rounded-[calc(var(--radius-box)+1rem)] px-[var(--space-4)] py-[var(--space-3)]',
+    'placeholder:text-base-content/50',
+    hasError ? 'border-error' : 'border-base-400',
+    isActive ? 'border-primary ring-2 ring-primary/25 ring-offset-2 ring-offset-base-100' : '',
+  ].join(' ')
 }
 
 export function VisitorSelfSigninFlow({
@@ -132,6 +174,7 @@ export function VisitorSelfSigninFlow({
   const unit = useWatch({ control, name: 'unit' })
   const organization = useWatch({ control, name: 'organization' })
   const mobilePhone = useWatch({ control, name: 'mobilePhone' })
+  const licensePlate = useWatch({ control, name: 'licensePlate' })
   const purposeDetails = useWatch({ control, name: 'purposeDetails' })
 
   const hostSearchEnabled = visitPurpose === 'member_invited' || visitPurpose === 'appointment'
@@ -212,6 +255,7 @@ export function VisitorSelfSigninFlow({
       visibleFields.add('firstName')
       visibleFields.add('lastName')
       visibleFields.add('mobilePhone')
+      visibleFields.add('licensePlate')
 
       if (visitType === 'military') {
         visibleFields.add('rankPrefix')
@@ -347,7 +391,7 @@ export function VisitorSelfSigninFlow({
         fields.push('organization')
       }
 
-      fields.push('firstName', 'lastName', 'mobilePhone')
+      fields.push('firstName', 'lastName', 'mobilePhone', 'licensePlate')
       return fields
     }
 
@@ -417,11 +461,7 @@ export function VisitorSelfSigninFlow({
     }
 
     if (step === 2) {
-      const fields: Array<keyof VisitorSelfSigninFormValues> = [
-        'firstName',
-        'lastName',
-        'mobilePhone',
-      ]
+      const fields: Array<keyof VisitorSelfSigninFormValues> = ['firstName', 'lastName']
 
       if (visitType === 'military') {
         fields.push('rankPrefix', 'unit')
@@ -459,10 +499,19 @@ export function VisitorSelfSigninFlow({
           .filter(Boolean)
           .join(' '),
         visitType: values.visitType,
-        mobilePhone: values.mobilePhone.trim(),
         kioskId,
         checkInMethod: 'kiosk_self_service',
         visitPurpose: values.visitPurpose,
+      }
+
+      const trimmedMobilePhone = trimValue(values.mobilePhone)
+      if (trimmedMobilePhone) {
+        payload.mobilePhone = trimmedMobilePhone
+      }
+
+      const trimmedLicensePlate = trimValue(values.licensePlate)
+      if (trimmedLicensePlate) {
+        payload.licensePlate = trimmedLicensePlate
       }
 
       if (visitType === 'military') {
@@ -541,6 +590,7 @@ export function VisitorSelfSigninFlow({
         firstName,
         lastName,
         mobilePhone,
+        licensePlate,
         hostSearch,
         purposeDetails,
       }[activeKeyboardField.name]
@@ -584,10 +634,8 @@ export function VisitorSelfSigninFlow({
     required: 'Last name is required',
     validate: (value) => Boolean(value.trim()) || 'Last name is required',
   })
-  const mobilePhoneRegistration = register('mobilePhone', {
-    required: 'Mobile phone is required',
-    validate: (value) => Boolean(value.trim()) || 'Mobile phone is required',
-  })
+  const mobilePhoneRegistration = register('mobilePhone')
+  const licensePlateRegistration = register('licensePlate')
   const purposeDetailsRegistration = register('purposeDetails', {
     validate: (value) => {
       const trimmed = value.trim()
@@ -610,10 +658,10 @@ export function VisitorSelfSigninFlow({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className={isInline ? 'mb-4 rounded-box bg-base-100' : 'mb-3 bg-base-100'}>
-        <ul className="steps steps-vertical lg:steps-horizontal w-full">
+        <ul className="kiosk-progress steps w-full steps-vertical lg:steps-horizontal">
           {steps.map((item) => (
             <li key={item.label} className={`step ${item.active ? 'step-primary' : ''} text-sm`}>
-              {item.label}
+              <span className="font-medium text-base-content">{item.label}</span>
             </li>
           ))}
         </ul>
@@ -673,15 +721,17 @@ export function VisitorSelfSigninFlow({
                     <button
                       key={option.value}
                       type="button"
-                      className={`btn h-auto min-h-32 justify-start text-left whitespace-normal ${
-                        visitType === option.value ? 'btn-primary' : 'btn-outline'
-                      }`}
+                      className={getKioskChoiceTileClass(visitType === option.value)}
                       style={{ padding: 'var(--space-4)' }}
                       onClick={() => handleTypeSelect(option.value)}
                     >
                       <span className="flex flex-col items-start" style={{ gap: 'var(--space-1)' }}>
                         <span className="text-xl font-semibold">{option.label}</span>
-                        <span className="text-sm opacity-80">{option.description}</span>
+                        <span
+                          className={`text-sm ${visitType === option.value ? 'opacity-90' : 'text-base-content/75'}`}
+                        >
+                          {option.description}
+                        </span>
                       </span>
                     </button>
                   ))}
@@ -698,15 +748,18 @@ export function VisitorSelfSigninFlow({
                 {visitType === 'military' && (
                   <>
                     <fieldset className="fieldset">
-                      <legend className="fieldset-legend">Rank</legend>
+                      <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                        Rank
+                      </legend>
                       <input
                         type="text"
                         inputMode="none"
                         autoComplete="off"
                         value={rankPrefix}
-                        className={`input input-md w-full ${errors.rankPrefix ? 'input-error' : ''} ${
-                          activeKeyboardField?.name === 'rankPrefix' ? 'ring-2 ring-primary/25' : ''
-                        }`}
+                        className={getKioskInputClass(
+                          Boolean(errors.rankPrefix),
+                          activeKeyboardField?.name === 'rankPrefix'
+                        )}
                         placeholder="Rank or prefix"
                         {...rankPrefixRegistration}
                         ref={attachFieldRef('rankPrefix', rankPrefixRegistration.ref)}
@@ -719,15 +772,18 @@ export function VisitorSelfSigninFlow({
                     </fieldset>
 
                     <fieldset className="fieldset">
-                      <legend className="fieldset-legend">Unit</legend>
+                      <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                        Unit
+                      </legend>
                       <input
                         type="text"
                         inputMode="none"
                         autoComplete="off"
                         value={unit}
-                        className={`input input-md w-full ${errors.unit ? 'input-error' : ''} ${
-                          activeKeyboardField?.name === 'unit' ? 'ring-2 ring-primary/25' : ''
-                        }`}
+                        className={getKioskInputClass(
+                          Boolean(errors.unit),
+                          activeKeyboardField?.name === 'unit'
+                        )}
                         placeholder="Your home unit"
                         {...unitRegistration}
                         ref={attachFieldRef('unit', unitRegistration.ref)}
@@ -741,15 +797,18 @@ export function VisitorSelfSigninFlow({
 
                 {visitType === 'contractor' && (
                   <fieldset className="fieldset lg:col-span-2">
-                    <legend className="fieldset-legend">Company Name</legend>
+                    <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                      Company Name
+                    </legend>
                     <input
                       type="text"
                       inputMode="none"
                       autoComplete="off"
                       value={organization}
-                      className={`input input-md w-full ${errors.organization ? 'input-error' : ''} ${
-                        activeKeyboardField?.name === 'organization' ? 'ring-2 ring-primary/25' : ''
-                      }`}
+                      className={getKioskInputClass(
+                        Boolean(errors.organization),
+                        activeKeyboardField?.name === 'organization'
+                      )}
                       placeholder="Company or contractor name"
                       {...organizationRegistration}
                       ref={attachFieldRef('organization', organizationRegistration.ref)}
@@ -764,25 +823,34 @@ export function VisitorSelfSigninFlow({
 
                 {visitType === 'recruitment' && (
                   <fieldset className="fieldset lg:col-span-2">
-                    <legend className="fieldset-legend">Recruitment Step</legend>
-                    <select
-                      className={`select select-md w-full ${
-                        errors.recruitmentStep ? 'select-error' : ''
-                      }`}
+                    <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                      Recruitment Step
+                    </legend>
+                    <input
+                      type="hidden"
                       {...register('recruitmentStep', {
                         validate: (value) =>
                           visitType !== 'recruitment' ||
                           Boolean(value) ||
                           'Select the recruitment step for this visit',
                       })}
-                    >
-                      <option value="">Choose the recruitment step</option>
+                    />
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       {RECRUITMENT_STEP_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={getKioskChoiceTileClass(recruitmentStep === option.value)}
+                          style={{ minHeight: '5.5rem', padding: 'var(--space-4)' }}
+                          onClick={() => {
+                            setValue('recruitmentStep', option.value, { shouldValidate: true })
+                            clearErrors('recruitmentStep')
+                          }}
+                        >
+                          <span className="text-base font-semibold">{option.label}</span>
+                        </button>
                       ))}
-                    </select>
+                    </div>
                     {errors.recruitmentStep && (
                       <p className="label text-error">{errors.recruitmentStep.message}</p>
                     )}
@@ -790,15 +858,18 @@ export function VisitorSelfSigninFlow({
                 )}
 
                 <fieldset className="fieldset">
-                  <legend className="fieldset-legend">First Name</legend>
+                  <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                    First Name
+                  </legend>
                   <input
                     type="text"
                     inputMode="none"
                     autoComplete="off"
                     value={firstName}
-                    className={`input input-md w-full ${errors.firstName ? 'input-error' : ''} ${
-                      activeKeyboardField?.name === 'firstName' ? 'ring-2 ring-primary/25' : ''
-                    }`}
+                    className={getKioskInputClass(
+                      Boolean(errors.firstName),
+                      activeKeyboardField?.name === 'firstName'
+                    )}
                     placeholder="First name"
                     {...firstNameRegistration}
                     ref={attachFieldRef('firstName', firstNameRegistration.ref)}
@@ -811,15 +882,18 @@ export function VisitorSelfSigninFlow({
                 </fieldset>
 
                 <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Last Name</legend>
+                  <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                    Last Name
+                  </legend>
                   <input
                     type="text"
                     inputMode="none"
                     autoComplete="off"
                     value={lastName}
-                    className={`input input-md w-full ${errors.lastName ? 'input-error' : ''} ${
-                      activeKeyboardField?.name === 'lastName' ? 'ring-2 ring-primary/25' : ''
-                    }`}
+                    className={getKioskInputClass(
+                      Boolean(errors.lastName),
+                      activeKeyboardField?.name === 'lastName'
+                    )}
                     placeholder="Last name"
                     {...lastNameRegistration}
                     ref={attachFieldRef('lastName', lastNameRegistration.ref)}
@@ -830,11 +904,14 @@ export function VisitorSelfSigninFlow({
                 </fieldset>
 
                 <fieldset className="fieldset lg:col-span-2">
-                  <legend className="fieldset-legend">Mobile Phone Number</legend>
+                  <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                    Mobile Phone Number
+                  </legend>
                   <label
-                    className={`input input-md w-full ${errors.mobilePhone ? 'input-error' : ''} ${
-                      activeKeyboardField?.name === 'mobilePhone' ? 'ring-2 ring-primary/25' : ''
-                    }`}
+                    className={getKioskInputShellClass(
+                      Boolean(errors.mobilePhone),
+                      activeKeyboardField?.name === 'mobilePhone'
+                    )}
                   >
                     <Phone className="h-5 w-5 text-base-content/60" />
                     <input
@@ -842,18 +919,46 @@ export function VisitorSelfSigninFlow({
                       inputMode="none"
                       autoComplete="off"
                       value={mobilePhone}
-                      placeholder="Used only in case of an emergency"
+                      className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                      placeholder="Optional emergency contact number"
                       {...mobilePhoneRegistration}
                       ref={attachFieldRef('mobilePhone', mobilePhoneRegistration.ref)}
                       onFocus={() => activateKeyboardField('mobilePhone', 'numpad')}
                       onClick={() => activateKeyboardField('mobilePhone', 'numpad')}
                     />
                   </label>
-                  <p className="label text-base-content/70">
-                    This number is used only in case of an emergency while you are in the Unit.
+                  <p className="label text-sm text-base-content/80">
+                    Optional. Used only in case of an emergency while you are in the Unit.
                   </p>
                   {errors.mobilePhone && (
                     <p className="label text-error">{errors.mobilePhone.message}</p>
+                  )}
+                </fieldset>
+
+                <fieldset className="fieldset lg:col-span-2">
+                  <legend className="fieldset-legend text-sm font-semibold text-base-content">
+                    License Plate
+                  </legend>
+                  <input
+                    type="text"
+                    inputMode="none"
+                    autoComplete="off"
+                    value={licensePlate}
+                    className={getKioskInputClass(
+                      Boolean(errors.licensePlate),
+                      activeKeyboardField?.name === 'licensePlate'
+                    )}
+                    placeholder="Optional vehicle plate number"
+                    {...licensePlateRegistration}
+                    ref={attachFieldRef('licensePlate', licensePlateRegistration.ref)}
+                    onFocus={() => activateKeyboardField('licensePlate')}
+                    onClick={() => activateKeyboardField('licensePlate')}
+                  />
+                  <p className="label text-sm text-base-content/80">
+                    Optional. Helps staff identify your vehicle if needed.
+                  </p>
+                  {errors.licensePlate && (
+                    <p className="label text-error">{errors.licensePlate.message}</p>
                   )}
                 </fieldset>
               </div>
@@ -876,9 +981,7 @@ export function VisitorSelfSigninFlow({
                         <button
                           key={option.value}
                           type="button"
-                          className={`btn h-auto min-h-28 justify-start text-left whitespace-normal ${
-                            visitPurpose === option.value ? 'btn-primary' : 'btn-outline'
-                          }`}
+                          className={getKioskChoiceTileClass(visitPurpose === option.value)}
                           style={{ padding: 'var(--space-4)' }}
                           onClick={() => handlePurposeSelect(option.value)}
                         >
@@ -887,7 +990,11 @@ export function VisitorSelfSigninFlow({
                             style={{ gap: 'var(--space-1)' }}
                           >
                             <span className="text-lg font-semibold">{option.label}</span>
-                            <span className="text-sm opacity-80">{option.description}</span>
+                            <span
+                              className={`text-sm ${visitPurpose === option.value ? 'opacity-90' : 'text-base-content/75'}`}
+                            >
+                              {option.description}
+                            </span>
                           </span>
                         </button>
                       ))}
@@ -937,17 +1044,17 @@ export function VisitorSelfSigninFlow({
                       ) : (
                         <>
                           <label
-                            className={`input input-md w-full ${
+                            className={getKioskInputShellClass(
+                              false,
                               activeKeyboardField?.name === 'hostSearch'
-                                ? 'ring-2 ring-primary/25'
-                                : ''
-                            }`}
+                            )}
                           >
                             <Search className="h-5 w-5 text-base-content/60" />
                             <input
                               type="text"
                               inputMode="none"
                               autoComplete="off"
+                              className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
                               placeholder="Search by member name"
                               value={hostSearch}
                               ref={registerFieldRef('hostSearch')}
@@ -969,8 +1076,8 @@ export function VisitorSelfSigninFlow({
                                 <button
                                   key={member.id}
                                   type="button"
-                                  className="btn btn-outline justify-between"
-                                  style={{ minHeight: '3.5rem', padding: '0 var(--space-4)' }}
+                                  className="btn btn-outline justify-between border-2 border-base-400 bg-base-100 px-[var(--space-4)] text-base-content hover:border-primary/55 hover:bg-primary-fadded hover:text-primary-fadded-content"
+                                  style={{ minHeight: '4rem', padding: '0 var(--space-4)' }}
                                   onClick={() => handleSelectHost(member)}
                                 >
                                   <span className="truncate">{member.displayName}</span>
@@ -990,7 +1097,7 @@ export function VisitorSelfSigninFlow({
                 )}
 
                 <fieldset className="fieldset">
-                  <legend className="fieldset-legend">
+                  <legend className="fieldset-legend text-sm font-semibold text-base-content">
                     {visitType === 'contractor'
                       ? 'Work Details'
                       : visitPurpose === 'other'
@@ -1000,9 +1107,10 @@ export function VisitorSelfSigninFlow({
                           : 'Additional Details'}
                   </legend>
                   <textarea
-                    className={`textarea textarea-md w-full ${
-                      errors.purposeDetails ? 'textarea-error' : ''
-                    } ${activeKeyboardField?.name === 'purposeDetails' ? 'ring-2 ring-primary/25' : ''}`}
+                    className={getKioskTextareaClass(
+                      Boolean(errors.purposeDetails),
+                      activeKeyboardField?.name === 'purposeDetails'
+                    )}
                     rows={4}
                     inputMode="none"
                     value={purposeDetails}
@@ -1041,7 +1149,7 @@ export function VisitorSelfSigninFlow({
                       <p className="font-semibold">Visitor Type</p>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-outline btn-sm border-2 border-base-400 text-base-content hover:border-primary/55 hover:bg-primary-fadded hover:text-primary-fadded-content"
                         onClick={() => setStep(1)}
                       >
                         Change
@@ -1063,7 +1171,7 @@ export function VisitorSelfSigninFlow({
                       <p className="font-semibold">Visitor Details</p>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-outline btn-sm border-2 border-base-400 text-base-content hover:border-primary/55 hover:bg-primary-fadded hover:text-primary-fadded-content"
                         onClick={() => setStep(2)}
                       >
                         Change
@@ -1076,7 +1184,12 @@ export function VisitorSelfSigninFlow({
                     {reviewVisitType === 'contractor' && organization && (
                       <p className="text-sm text-base-content/70">Company: {organization}</p>
                     )}
-                    <p className="text-sm text-base-content/70">Mobile: {mobilePhone}</p>
+                    {mobilePhone && (
+                      <p className="text-sm text-base-content/70">Mobile: {mobilePhone}</p>
+                    )}
+                    {licensePlate && (
+                      <p className="text-sm text-base-content/70">License Plate: {licensePlate}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col lg:col-span-2" style={{ gap: 'var(--space-2)' }}>
@@ -1087,7 +1200,7 @@ export function VisitorSelfSigninFlow({
                       <p className="font-semibold">Visit Purpose</p>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-outline btn-sm border-2 border-base-400 text-base-content hover:border-primary/55 hover:bg-primary-fadded hover:text-primary-fadded-content"
                         onClick={() => setStep(3)}
                       >
                         Change

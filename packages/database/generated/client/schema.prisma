@@ -367,6 +367,7 @@ model Visitor {
   organization     String?    @db.VarChar(200)
   unit             String?    @db.VarChar(200)
   mobilePhone      String?    @map("mobile_phone") @db.VarChar(25)
+  licensePlate     String?    @map("license_plate") @db.VarChar(20)
   visitType        String     @map("visit_type") @db.VarChar(50)
   visitTypeId      String?    @map("visit_type_id") @db.Uuid
   visitReason      String?    @map("visit_reason")

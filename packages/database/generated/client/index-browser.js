@@ -338,6 +338,7 @@ exports.Prisma.VisitorScalarFieldEnum = {
   organization: 'organization',
   unit: 'unit',
   mobilePhone: 'mobilePhone',
+  licensePlate: 'licensePlate',
   visitType: 'visitType',
   visitTypeId: 'visitTypeId',
   visitReason: 'visitReason',
