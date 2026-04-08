@@ -46,9 +46,30 @@ import {
 } from '@/lib/dashboard-person-card-sort'
 import { cn } from '@/lib/utils'
 
+function createCriterionId(): string {
+  if (
+    typeof globalThis.crypto !== 'undefined' &&
+    typeof globalThis.crypto.randomUUID === 'function'
+  ) {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `dashboard-sort-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function cloneDashboardSortConfig(
+  config: DashboardPersonCardSortConfig
+): DashboardPersonCardSortConfig {
+  if (typeof globalThis.structuredClone === 'function') {
+    return globalThis.structuredClone(config)
+  }
+
+  return JSON.parse(JSON.stringify(config)) as DashboardPersonCardSortConfig
+}
+
 function createCriterion(type: DashboardSortCriterionType): DashboardSortCriterion {
   return {
-    id: globalThis.crypto.randomUUID(),
+    id: createCriterionId(),
     type,
     note: '',
     children: [],
@@ -443,12 +464,12 @@ export function DashboardPersonCardSortSettingsPanel() {
   )
 
   const beginEdit = () => {
-    setDraft(globalThis.structuredClone(effectiveConfig))
+    setDraft(cloneDashboardSortConfig(effectiveConfig))
     setIsEditing(true)
   }
 
   const cancelEdit = () => {
-    setDraft(globalThis.structuredClone(effectiveConfig))
+    setDraft(cloneDashboardSortConfig(effectiveConfig))
     setIsEditing(false)
   }
 
