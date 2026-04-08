@@ -179,6 +179,29 @@
 }
 
 /* ========================================
+   KIOSK FLOW POLISH
+   Higher-contrast, touch-friendly visitor form treatments
+   ======================================== */
+
+.kiosk-progress.steps .step {
+  color: oklch(20% 0.042 265.755);
+  font-weight: 500;
+}
+
+.kiosk-progress.steps .step::before {
+  font-weight: 700;
+}
+
+.kiosk-progress.steps .step:not(.step-primary)::before {
+  background-color: oklch(96% 0.001 286.375);
+  color: oklch(20% 0.042 265.755);
+}
+
+.kiosk-progress.steps .step:not(.step-primary)::after {
+  background-color: oklch(97% 0.001 106.424);
+}
+
+/* ========================================
    SIMPLE KEYBOARD KIOSK STYLING
    Dense, touch-first keyboard for the visitor modal
    ======================================== */

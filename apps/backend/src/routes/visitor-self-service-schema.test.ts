@@ -3,16 +3,29 @@ import { describe, expect, it } from 'vitest'
 import * as v from 'valibot'
 
 describe('CreateVisitorSchema self-service validation', () => {
-  it('accepts a military self-service visitor with required fields', () => {
+  it('accepts a military self-service visitor without a mobile phone number', () => {
     const parsed = v.safeParse(CreateVisitorSchema, {
       firstName: 'Jamie',
       lastName: 'Smith',
       rankPrefix: 'PO2',
       unit: 'HMCS Example',
-      mobilePhone: '204-555-0184',
       visitType: 'military',
       visitPurpose: 'appointment',
       purposeDetails: 'Meeting with the Coxswain',
+      kioskId: 'DASHBOARD_KIOSK',
+      checkInMethod: 'kiosk_self_service',
+    })
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('accepts an optional license plate for self-service visitors', () => {
+    const parsed = v.safeParse(CreateVisitorSchema, {
+      firstName: 'Morgan',
+      lastName: 'Lee',
+      licensePlate: 'ABC 123',
+      visitType: 'guest',
+      visitPurpose: 'information',
       kioskId: 'DASHBOARD_KIOSK',
       checkInMethod: 'kiosk_self_service',
     })
@@ -24,7 +37,6 @@ describe('CreateVisitorSchema self-service validation', () => {
     const parsed = v.safeParse(CreateVisitorSchema, {
       firstName: 'Alex',
       lastName: 'Taylor',
-      mobilePhone: '2045550199',
       visitType: 'recruitment',
       visitPurpose: 'information',
       kioskId: 'DASHBOARD_KIOSK',

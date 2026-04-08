@@ -67,6 +67,11 @@ const MobilePhoneSchema = v.pipe(
   v.maxLength(25, 'Mobile phone must be at most 25 characters')
 )
 
+const LicensePlateSchema = v.pipe(
+  v.string('License plate must be a string'),
+  v.maxLength(20, 'License plate must be at most 20 characters')
+)
+
 const VisitReasonSchema = v.pipe(
   v.string('Visit reason must be a string'),
   v.maxLength(500, 'Visit reason must be at most 500 characters')
@@ -90,6 +95,7 @@ const BaseCreateVisitorSchema = v.object({
   organization: v.optional(OrganizationSchema),
   unit: v.optional(UnitSchema),
   mobilePhone: v.optional(MobilePhoneSchema),
+  licensePlate: v.optional(LicensePlateSchema),
   visitType: VisitTypeEnum,
   visitTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid visit type ID'))),
   visitReason: v.optional(VisitReasonSchema),
@@ -117,10 +123,6 @@ export const CreateVisitorSchema = v.pipe(
     const hasLegacyName = Boolean(data.name?.trim())
     return hasStructuredName || hasLegacyName
   }, 'Visitor must include first and last name, or a legacy name value'),
-  v.check(
-    (data) => data.checkInMethod !== 'kiosk_self_service' || Boolean(data.mobilePhone?.trim()),
-    'Self-service visitors must include a mobile phone number'
-  ),
   v.check(
     (data) =>
       data.visitType !== 'military' ||
@@ -160,6 +162,7 @@ export const UpdateVisitorSchema = v.object({
   organization: v.optional(OrganizationSchema),
   unit: v.optional(UnitSchema),
   mobilePhone: v.optional(MobilePhoneSchema),
+  licensePlate: v.optional(LicensePlateSchema),
   visitType: v.optional(VisitTypeEnum),
   visitTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid visit type ID'))),
   visitReason: v.optional(VisitReasonSchema),
@@ -190,6 +193,7 @@ export const VisitorResponseSchema = v.object({
   organization: v.nullable(v.string()),
   unit: v.nullable(v.string()),
   mobilePhone: v.nullable(v.string()),
+  licensePlate: v.nullable(v.string()),
   visitType: VisitTypeEnum,
   visitTypeId: v.nullable(v.string()),
   visitReason: v.nullable(v.string()),

@@ -29,6 +29,7 @@ export interface Visitor {
   organization?: string
   unit?: string
   mobilePhone?: string
+  licensePlate?: string
   visitType: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
@@ -55,6 +56,7 @@ export interface CreateVisitorInput {
   organization?: string
   unit?: string
   mobilePhone?: string
+  licensePlate?: string
   visitType: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
@@ -80,6 +82,7 @@ export interface UpdateVisitorInput {
   organization?: string
   unit?: string
   mobilePhone?: string
+  licensePlate?: string
   visitType?: VisitorVisitType
   visitTypeId?: string
   visitReason?: string
