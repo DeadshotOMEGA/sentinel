@@ -1,96 +1,86 @@
-You are working on the Sentinel deployment/update system for a Linux appliance.
+[sentinel] Running one-shot safe migration deploy
 
-Context:
-- Sentinel is deployed with Docker Compose from: /opt/sentinel/deploy
-- The update flow installs a .deb package, then runs:
-  ./update.sh --version v#.#.#
-- A recent major release added and changed multiple Prisma tables/migrations.
-- The current canonical source of truth should be the NEW repo Prisma schema + migrations, not legacy drift in older appliance databases.
+> @sentinel/database@2.4.0 prisma:migrate:deploy:safe /app/packages/database
+> tsx scripts/migrate-deploy-safe.ts
 
-Problem observed:
-- The update process fails during the Prisma schema parity check.
-- `prisma migrate status` reports:
-  - Database schema is up to date
-  - 6 migrations found
-- But `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma` reports drift:
-  - Changed the `remote_systems` table
-  - Altered column `updated_at` (default changed from `Some(Now)` to `None`)
-- This means the live appliance database still has a default of `now()` on `remote_systems.updated_at`, but the current Prisma schema does not define that default.
-- The updater then exits with:
-  - "Database schema drift detected; review the Prisma diff output above before retrying the update."
+Datasource "db": PostgreSQL database "sentinel", schema "public" at "postgres:5432"
 
-Important interpretation:
-- The new Prisma schema/migrations should be treated as correct.
-- The old appliance DB likely has legacy drift.
-- This specific drift is probably fixed by bringing the database in line with the schema, likely:
-  ALTER TABLE remote_systems ALTER COLUMN updated_at DROP DEFAULT;
+7 migrations found in prisma/migrations
 
-Also observed:
-- Running Docker Compose troubleshooting commands outside /opt/sentinel/deploy produced:
-  "no configuration file provided: not found"
-- So any troubleshooting or remediation commands should either:
-  - `cd /opt/sentinel/deploy` first, or
-  - use docker compose with an explicit project/compose file strategy.
 
-What I want from you:
-1. Analyze this issue and confirm the best fix strategy.
-2. Determine whether the correct remediation is:
-   - a one-time DB correction on the appliance,
-   - a formal Prisma migration,
-   - or update-script logic that safely handles known benign legacy drift.
-3. Recommend the safest long-term fix.
-4. Propose concrete changes to `update.sh` so this is handled better in future releases.
-5. Produce code changes if appropriate.
+No pending migrations to apply.
+Loaded Prisma config from prisma.config.ts.
 
-Please think through the tradeoffs carefully.
+Prisma schema loaded from prisma/schema.prisma.
+[sentinel] Verifying migration status
+Loaded Prisma config from prisma.config.ts.
 
-Specific goals:
-- Avoid silently masking real schema drift.
-- Allow safe upgrades from older appliance databases.
-- Keep the canonical repo schema as the source of truth.
-- Preserve a strong safety posture in the updater.
-- Improve diagnostics so operators get actionable remediation steps.
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "sentinel", schema "public" at "postgres:5432"
 
-Please evaluate at least these options:
+7 migrations found in prisma/migrations
 
-Option A:
-- Keep strict parity enforcement.
-- Detect this exact known legacy drift (`remote_systems.updated_at` default now() vs no default).
-- Auto-remediate it before failing, with logging and clear safety checks.
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.6.0 -> 7.7.0                        │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+Database schema is up to date!
+[sentinel] Verifying database schema matches the canonical Prisma schema
+Loaded Prisma config from prisma.config.ts.
 
-Option B:
-- Add a preflight drift remediation step before the parity check.
-- For explicitly approved benign drifts, reconcile the DB to the schema automatically.
-- Fail on any drift outside the approved allowlist.
 
-Option C:
-- Add a proper migration or migration-like compatibility patch to normalize older appliance DBs before running the strict parity check.
+[-] Removed tables
+  - live_duty_assignments
 
-I want you to answer with:
-1. Root-cause analysis
-2. Recommended approach
-3. Why that approach is safest
-4. Exact changes to `update.sh`
-5. Any changes needed in Prisma schema/migrations
-6. Example shell code / patch
-7. Improved operator-facing error messages
-8. Suggested test plan
+[*] Changed the `live_duty_assignments` table
+  [-] Removed foreign key on columns (member_id)
+  [-] Removed foreign key on columns (duty_position_id)
+undefined
+/app/packages/database:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 2: prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code
+[sentinel][warn] docker compose failed with 'docker'; retrying with sudo docker.
+Loaded Prisma config from prisma.config.ts.
 
-Additional implementation requirements:
-- If auto-remediating, do not use a broad “ignore drift” approach.
-- Only auto-fix this exact known drift if it matches precisely.
-- Emit clear logs before and after remediation.
-- Re-run the Prisma diff after remediation and only continue if clean.
-- If remediation fails, stop safely with explicit instructions.
-- Ensure commands are run from /opt/sentinel/deploy or otherwise reliably locate the Compose project.
-- Consider that some systems may require `sudo docker compose`.
-- Backups already happen before the update, but call out whether remediation should happen before or after backup.
-- Recommend the best ordering.
 
-Helpful observed command outputs:
-- `prisma migrate status` says database schema is up to date.
-- `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma` reports:
-  remote_systems.updated_at default changed from Some(Now) to None
-- Previous update log also described this as likely older appliance drift from the canonical Prisma baseline.
+[-] Removed tables
+  - live_duty_assignments
 
-Please be opinionated and practical. I want a robust production-minded fix, not just theory.
+[*] Changed the `live_duty_assignments` table
+  [-] Removed foreign key on columns (member_id)
+  [-] Removed foreign key on columns (duty_position_id)
+undefined
+/app/packages/database:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 2: prisma migrate diff --from-schema prisma/schema.prisma --to-config-datasource --exit-code
+[sentinel][warn] Canonical Prisma schema parity check failed. Capturing executable database-to-schema drift SQL.
+Loaded Prisma config from prisma.config.ts.
+
+[sentinel][warn] Detected non-allowlisted Prisma drift SQL:
+[sentinel][warn]   CREATE TABLE "live_duty_assignments" ( "id" UUID NOT NULL DEFAULT gen_random_uuid(), "member_id" UUID NOT NULL, "duty_position_id" UUID NOT NULL, "notes" TEXT, "started_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP, "ended_at" TIMESTAMP(6), "ended_reason" VARCHAR(30), "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(6) NOT NULL, CONSTRAINT "live_duty_assignments_pkey" PRIMARY KEY ("id") ); CREATE INDEX "idx_live_duty_assignments_member" ON "live_duty_assignments"("member_id"); CREATE INDEX "idx_live_duty_assignments_position" ON "live_duty_assignments"("duty_position_id"); CREATE INDEX "idx_live_duty_assignments_ended_at" ON "live_duty_assignments"("ended_at"); ALTER TABLE "live_duty_assignments" ADD CONSTRAINT "live_duty_assignments_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE CASCADE ON UPDATE NO ACTION; ALTER TABLE "live_duty_assignments" ADD CONSTRAINT "live_duty_assignments_duty_position_id_fkey" FOREIGN KEY ("duty_position_id") REFERENCES "duty_positions"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+[sentinel][warn] Capturing human-readable drift summary (database -> schema).
+Loaded Prisma config from prisma.config.ts.
+
+
+[+] Added tables
+  - live_duty_assignments
+
+[*] Changed the `live_duty_assignments` table
+  [+] Added index on columns (member_id)
+  [+] Added index on columns (duty_position_id)
+  [+] Added index on columns (ended_at)
+  [+] Added foreign key on columns (member_id)
+  [+] Added foreign key on columns (duty_position_id)
+
+[sentinel][warn] Common cause: an older appliance database drifted from the canonical Prisma baseline.
+[sentinel][warn] Only the exact DROP DEFAULT case for public.remote_systems.updated_at is auto-remediated.
+[sentinel][warn] A pre-update backup was already created earlier in this run.
+[sentinel][warn] No broad drift ignore was applied.
+[sentinel][warn] For more detail, rerun on the appliance from any directory:
+[sentinel][warn]   sudo docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml --profile obs exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate status'
+[sentinel][warn]   sudo docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml --profile obs exec -T backend sh -lc 'cd /app && pnpm --filter @sentinel/database exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma'
+[sentinel][warn]   sudo docker compose --env-file /opt/sentinel/deploy/.env -f /opt/sentinel/deploy/docker-compose.yml --profile obs exec -T postgres psql -U sentinel -d sentinel -c "SELECT column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'remote_systems' AND column_name = 'updated_at';"
+[sentinel][error] Database schema drift detected; canonical Prisma schema parity is not clean.
+[ERROR] Script failed at line 399 with exit code 1.
+[ERROR] See log: /tmp/sentinel_update_20260407_185355.log
+[ERROR] Raw update output: /tmp/sentinel_update_raw_20260407_185355.log
