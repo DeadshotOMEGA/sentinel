@@ -81,6 +81,7 @@ function resolveNetworkStatusMessage(input: {
   developmentBuild: boolean
   runningInsideContainer: boolean
   telemetryAgeSeconds: number | null
+  approvedSsidsConfigured: boolean
   wifiConnected: boolean | null
   approvedSsid: boolean | null
   internetReachable: boolean | null
@@ -112,14 +113,6 @@ function resolveNetworkStatusMessage(input: {
     return 'Wi-Fi disconnected'
   }
 
-  if (input.internetReachable === false && input.portalRecoveryLikely === true) {
-    return 'Internet access is blocked and captive portal recovery is likely required'
-  }
-
-  if (input.internetReachable === false) {
-    return 'Internet connectivity check failed'
-  }
-
   if (input.approvedSsid === false) {
     return 'Connected to an unapproved Wi-Fi SSID'
   }
@@ -132,7 +125,11 @@ function resolveNetworkStatusMessage(input: {
     return input.fallbackMessage
   }
 
-  return 'Connected to approved Wi-Fi and internet is reachable'
+  if (input.approvedSsidsConfigured && input.approvedSsid === true) {
+    return 'Connected to approved Wi-Fi network'
+  }
+
+  return 'Connected to Wi-Fi network'
 }
 
 function resolveNetworkStatus(input: {
@@ -160,7 +157,7 @@ function resolveNetworkStatus(input: {
     return 'warning'
   }
 
-  if (input.wifiConnected === false || input.internetReachable === false) {
+  if (input.wifiConnected === false) {
     return 'error'
   }
 
@@ -172,7 +169,7 @@ function resolveNetworkStatus(input: {
     return 'warning'
   }
 
-  if (input.wifiConnected === true && input.internetReachable === true) {
+  if (input.wifiConnected === true) {
     return 'healthy'
   }
 
@@ -317,6 +314,7 @@ export class SystemStatusService {
           developmentBuild,
           runningInsideContainer,
           telemetryAgeSeconds,
+          approvedSsidsConfigured: approvedSsids.length > 0,
           wifiConnected: telemetry?.wifiConnected ?? null,
           approvedSsid,
           internetReachable: telemetry?.internetReachable ?? null,

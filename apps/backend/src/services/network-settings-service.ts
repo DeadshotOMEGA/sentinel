@@ -6,8 +6,10 @@ import { SettingRepository } from '../repositories/setting-repository.js'
 import { logger } from '../lib/logger.js'
 
 const NETWORK_SETTINGS_KEY = 'network.approved_ssids'
+const SENTINEL_SSID = 'Sentinel'
+const LEGACY_SENTINEL_SSID_KEYS = new Set(['hmcschippawa'])
 const DEFAULT_NETWORK_SETTINGS: NetworkSettings = {
-  approvedSsids: [],
+  approvedSsids: [SENTINEL_SSID],
 }
 
 export interface NetworkSettingsState {
@@ -21,6 +23,38 @@ export interface NetworkSettingsState {
 function cloneDefaultSettings(): NetworkSettings {
   return {
     approvedSsids: [...DEFAULT_NETWORK_SETTINGS.approvedSsids],
+  }
+}
+
+function normalizeSsidKey(ssid: string): string {
+  return ssid.replace(/[^a-z0-9]+/gi, '').toLowerCase()
+}
+
+function normalizeApprovedSsids(settings: NetworkSettings): NetworkSettings {
+  const normalizedSsids: string[] = []
+  const seen = new Set<string>()
+
+  for (const rawSsid of settings.approvedSsids) {
+    const trimmed = rawSsid.trim()
+    if (trimmed.length === 0) {
+      continue
+    }
+
+    const normalizedValue = LEGACY_SENTINEL_SSID_KEYS.has(normalizeSsidKey(trimmed))
+      ? SENTINEL_SSID
+      : trimmed
+    const dedupeKey = normalizedValue.toLocaleLowerCase()
+
+    if (seen.has(dedupeKey)) {
+      continue
+    }
+
+    seen.add(dedupeKey)
+    normalizedSsids.push(normalizedValue)
+  }
+
+  return {
+    approvedSsids: normalizedSsids,
   }
 }
 
@@ -59,7 +93,7 @@ export class NetworkSettingsService {
     }
 
     return {
-      settings: parsed.output,
+      settings: normalizeApprovedSsids(parsed.output),
       metadata: {
         source: 'stored',
         updatedAt: setting.updatedAt.toISOString(),
@@ -68,17 +102,18 @@ export class NetworkSettingsService {
   }
 
   async updateNetworkSettings(settings: NetworkSettings): Promise<NetworkSettingsState> {
+    const normalizedSettings = normalizeApprovedSsids(settings)
     const existing = await this.settingRepository.findByKey(NETWORK_SETTINGS_KEY)
 
     if (existing) {
       const updated = await this.settingRepository.updateByKey(NETWORK_SETTINGS_KEY, {
-        value: settings,
+        value: normalizedSettings,
         description:
           'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
       })
 
       return {
-        settings,
+        settings: normalizedSettings,
         metadata: {
           source: 'stored',
           updatedAt: updated.updatedAt.toISOString(),
@@ -88,14 +123,14 @@ export class NetworkSettingsService {
 
     const created = await this.settingRepository.create({
       key: NETWORK_SETTINGS_KEY,
-      value: settings,
+      value: normalizedSettings,
       category: 'network',
       description:
         'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
     })
 
     return {
-      settings,
+      settings: normalizedSettings,
       metadata: {
         source: 'stored',
         updatedAt: created.updatedAt.toISOString(),
@@ -104,4 +139,4 @@ export class NetworkSettingsService {
   }
 }
 
-export { NETWORK_SETTINGS_KEY, DEFAULT_NETWORK_SETTINGS }
+export { NETWORK_SETTINGS_KEY, DEFAULT_NETWORK_SETTINGS, SENTINEL_SSID, normalizeApprovedSsids }

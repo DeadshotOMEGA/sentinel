@@ -886,7 +886,7 @@ async function ensureNetworkSettings(): Promise<boolean> {
   await prisma.setting.create({
     data: {
       key: 'network.approved_ssids',
-      value: { approvedSsids: [] },
+      value: { approvedSsids: ['Sentinel'] },
       category: 'network',
       description:
         'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',

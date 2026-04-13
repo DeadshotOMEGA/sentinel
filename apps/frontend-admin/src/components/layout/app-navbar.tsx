@@ -349,9 +349,8 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide">Laptop Recovery</p>
                   <p className="mt-1 text-xs leading-relaxed">
-                    Open the local Wi-Fi recovery helper if a captive portal is blocking internet or
-                    Tailscale access on this laptop. If the helper is not enabled yet, use the
-                    portal page button below.
+                    Open the local Wi-Fi recovery helper if this laptop is off the Sentinel wireless
+                    network or needs help reconnecting to the approved SSID.
                   </p>
                   <div className="mt-2 flex flex-wrap gap-(--space-2)">
                     <a
@@ -363,14 +362,6 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       data-testid={TID.nav.backendStatusRecovery}
                     >
                       Launch Wi-Fi Recovery
-                    </a>
-                    <a
-                      href="http://neverssl.com"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-ghost btn-xs"
-                    >
-                      Open Portal Page
                     </a>
                   </div>
                 </div>
@@ -774,21 +765,15 @@ function getNetworkTooltip(
     reason = `Yellow because the host network snapshot is stale (${formatTelemetryAge(network.telemetryAgeSeconds)}).`
   } else if (network.wifiConnected === false) {
     reason = 'Red because Wi-Fi is disconnected.'
-  } else if (network.internetReachable === false && network.portalRecoveryLikely === true) {
-    reason =
-      'Red because internet access failed while Wi-Fi is connected, so captive-portal recovery is likely needed.'
-  } else if (network.internetReachable === false) {
-    reason = 'Red because the internet reachability check failed.'
   } else if (network.approvedSsid === false) {
     reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
   } else if (network.remoteTarget && network.remoteReachable === false) {
     reason = `Yellow because the remote reachability check to ${network.remoteTarget} failed.`
   } else if (network.telemetryAvailable && network.wifiConnected === true) {
     if (network.approvedSsids.length === 0) {
-      reason =
-        'Green because Wi-Fi and internet are reachable, and no approved SSID allowlist is configured.'
+      reason = 'Green because Wi-Fi is connected and no approved SSID allowlist is configured.'
     } else if (network.approvedSsid === true) {
-      reason = `Green because "${currentSsid}" is approved and internet is reachable.`
+      reason = `Green because "${currentSsid}" is approved.`
     } else {
       reason = `Green because ${network.message}.`
     }
@@ -799,7 +784,6 @@ function getNetworkTooltip(
     `Detail: ${network.message}`,
     `SSID: ${currentSsid}`,
     `Approved SSIDs: ${approvedSsids}`,
-    `Internet reachable: ${formatBooleanLabel(network.internetReachable)}`,
     `Remote target: ${remoteTarget}`,
     `Remote reachable: ${formatBooleanLabel(network.remoteReachable)}`,
     `Telemetry age: ${formatTelemetryAge(network.telemetryAgeSeconds)}`,

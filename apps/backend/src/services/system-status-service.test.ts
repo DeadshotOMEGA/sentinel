@@ -47,7 +47,7 @@ function createService(options?: {
   const networkSettingsService = {
     getNetworkSettings: vi.fn().mockResolvedValue({
       settings: {
-        approvedSsids: options?.approvedSsids ?? ['HMCS-Chippawa'],
+        approvedSsids: options?.approvedSsids ?? ['Sentinel'],
       },
       metadata: {
         source: 'stored',
@@ -104,7 +104,7 @@ describe('SystemStatusService', () => {
           remoteTarget: null,
           remoteReachable: null,
           portalRecoveryLikely: false,
-          message: 'Connected to Wi-Fi and internet is reachable',
+          message: 'Connected to Wi-Fi network',
         },
         error: null,
       },
@@ -117,6 +117,32 @@ describe('SystemStatusService', () => {
     expect(result.network.currentSsid).toBe('Coffee-Shop')
     expect(result.network.message).toContain('unapproved Wi-Fi SSID')
     expect(result.overall.status).toBe('warning')
+  })
+
+  it('keeps network status healthy when internet reachability is unavailable but Wi-Fi is approved', async () => {
+    const { service } = createService({
+      approvedSsids: ['Sentinel'],
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          wifiConnected: true,
+          currentSsid: 'Sentinel',
+          internetReachable: false,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'Connected to approved Wi-Fi network',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('healthy')
+    expect(result.network.approvedSsid).toBe(true)
+    expect(result.network.message).toBe('Connected to approved Wi-Fi network')
+    expect(result.overall.status).toBe('healthy')
   })
 
   it('reports host telemetry unavailable when the snapshot file is missing', async () => {
