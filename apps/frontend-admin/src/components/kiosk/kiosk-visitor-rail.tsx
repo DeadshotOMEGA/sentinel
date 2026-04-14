@@ -121,7 +121,6 @@ export function KioskVisitorRail({
                   >
                     Visitor Sign-In
                   </Chip>
-                  <AppBadge status="info">READY</AppBadge>
                 </div>
 
                 <div className="flex items-start gap-(--space-3)">
@@ -138,43 +137,19 @@ export function KioskVisitorRail({
                     </AppCardDescription>
                   </div>
                 </div>
-
-                <div className="grid gap-(--space-3)">
-                  <div className="rounded-box border border-base-300 bg-base-200/50 px-(--space-4) py-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">
-                      Step 1
-                    </p>
-                    <p className="mt-(--space-1) text-sm leading-relaxed text-base-content/75">
-                      Enter your details and the reason for your visit.
-                    </p>
-                  </div>
-                  <div className="rounded-box border border-base-300 bg-base-200/50 px-(--space-4) py-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">
-                      Step 2
-                    </p>
-                    <p className="mt-(--space-1) text-sm leading-relaxed text-base-content/75">
-                      Review your visit and complete your visitor check-in.
-                    </p>
-                  </div>
-                </div>
               </AppCardHeader>
 
               <AppCardContent
-                className="mt-auto"
+                className="mt-auto flex"
                 style={{ padding: '0 var(--space-5) var(--space-5)' }}
               >
                 <button
                   type="button"
-                  className="btn btn-secondary btn-xl h-auto min-h-24 w-full justify-between"
+                  className="btn btn-secondary btn-lg h-auto min-h-0 w-auto justify-between gap-(--space-4) px-(--space-5) py-(--space-4) text-xl"
                   onClick={onStart}
                   disabled={fatalOperationalOutage}
                 >
-                  <span className="text-left">
-                    <span className="block text-lg font-semibold">Start visitor check-in</span>
-                    <span className="mt-(--space-1) block text-sm font-normal opacity-80">
-                      Begin the guided self check-in steps
-                    </span>
-                  </span>
+                  <span className="text-left text-xl font-semibold">Start visitor check-in</span>
                   <ChevronRight className="h-6 w-6" />
                 </button>
               </AppCardContent>

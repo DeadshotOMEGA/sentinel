@@ -10,11 +10,16 @@ import {
   AppCardTitle,
 } from '@/components/ui/AppCard'
 import { Chip } from '@/components/ui/chip'
-import type { KioskHealthIndicator, OperationalLead, ReadinessWarning } from './kiosk-domain'
+import type {
+  KioskConnectivityBadge,
+  KioskHealthIndicator,
+  OperationalLead,
+  ReadinessWarning,
+} from './kiosk-domain'
 
 interface KioskOperationalHeaderProps {
   fatalOperationalOutage: boolean
-  visitorFlowActive: boolean
+  connectivityBadge: KioskConnectivityBadge
   clockLabel: string
   healthIndicator: KioskHealthIndicator
   leadDisplay: OperationalLead | null
@@ -36,7 +41,7 @@ function SkeletonStrip({ title }: { title: string }) {
 
 export function KioskOperationalHeader({
   fatalOperationalOutage,
-  visitorFlowActive,
+  connectivityBadge,
   clockLabel,
   healthIndicator,
   leadDisplay,
@@ -66,13 +71,23 @@ export function KioskOperationalHeader({
                   Front Entrance
                 </Chip>
                 <AppBadge
-                  status={fatalOperationalOutage ? 'error' : visitorFlowActive ? 'info' : 'neutral'}
+                  status={connectivityBadge.status}
+                  className="badge-outline backend-status-badge"
+                  title={connectivityBadge.detail}
                 >
-                  {fatalOperationalOutage
-                    ? 'SERVICES DOWN'
-                    : visitorFlowActive
-                      ? 'VISITOR ACTIVE'
-                      : 'KIOSK READY'}
+                  <span
+                    className={[
+                      'status',
+                      connectivityBadge.status === 'success' && 'status-success',
+                      connectivityBadge.status === 'warning' && 'status-warning',
+                      connectivityBadge.status === 'error' && 'status-error',
+                      connectivityBadge.status === 'info' && 'status-info',
+                      connectivityBadge.status === 'neutral' && 'status-neutral',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  />
+                  <span>{connectivityBadge.label}</span>
                 </AppBadge>
               </div>
               <AppCardTitle className="mt-(--space-3) font-display text-3xl leading-tight text-base-content xl:text-4xl">

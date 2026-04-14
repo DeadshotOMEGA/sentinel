@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAcceptDds, useDdsStatus, useKioskResponsibilityState } from '@/hooks/use-dds'
 import { useCheckoutOptions, useLockupStatus, useOpenBuilding } from '@/hooks/use-lockup'
 import { useCurrentDds, useTonightDutyWatch } from '@/hooks/use-schedules'
+import { useSystemStatus } from '@/hooks/use-system-status'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
 import {
@@ -22,6 +23,7 @@ import {
   formatTimestamp,
   getAssignmentBadges,
   getDutyWatchLead,
+  getKioskConnectivityBadge,
   getScheduledDdsLead,
   INITIAL_RESULT,
   KIOSK_ID,
@@ -65,6 +67,7 @@ export function useKioskScreen() {
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
   )
+  const systemStatusQuery = useSystemStatus()
   const ddsStatusQuery = useDdsStatus()
   const lockupStatusQuery = useLockupStatus()
   const scheduledDdsQuery = useCurrentDds()
@@ -149,6 +152,11 @@ export function useKioskScreen() {
       : degradedOperationalData
         ? { tone: 'warning', label: 'Delayed', pulse: false }
         : { tone: 'success', label: 'Live', pulse: true }
+  const connectivityBadge = getKioskConnectivityBadge({
+    systemStatus: systemStatusQuery.data ?? null,
+    isLoading: systemStatusQuery.isLoading,
+    isError: systemStatusQuery.isError,
+  })
 
   const resetResponsibilityState = () => {
     startTransition(() => {
@@ -490,7 +498,7 @@ export function useKioskScreen() {
     : resultDirection === 'in'
       ? { status: 'success', label: 'CHECKED IN', pulse: false }
       : resultDirection === 'out'
-        ? { status: 'warning', label: 'CHECKED OUT', pulse: false }
+        ? { status: 'error', label: 'CHECKED OUT', pulse: false }
         : fatalOperationalOutage
           ? { status: 'error', label: 'OFFLINE', pulse: false }
           : resultTone === 'error'
@@ -699,7 +707,7 @@ export function useKioskScreen() {
     visitorFlowActive,
     header: {
       fatalOperationalOutage,
-      visitorFlowActive,
+      connectivityBadge,
       clockLabel,
       healthIndicator,
       leadDisplay,
