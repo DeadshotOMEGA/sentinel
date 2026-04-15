@@ -231,13 +231,9 @@ export function MemberQualificationsModal({
           </AlertDialogHeader>
 
           <div className="space-y-4 py-4">
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Qualification Type</legend>
-              <select
-                className="select"
-                value={grantTypeId}
-                onChange={(e) => setGrantTypeId(e.target.value)}
-              >
+            <label className="select w-full">
+              <span className="label">Qualification Type</span>
+              <select value={grantTypeId} onChange={(e) => setGrantTypeId(e.target.value)}>
                 <option value="" disabled>
                   Select qualification...
                 </option>
@@ -248,27 +244,27 @@ export function MemberQualificationsModal({
                   </option>
                 ))}
               </select>
-            </fieldset>
+            </label>
 
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Expiration Date (Optional)</legend>
+            <label className="input input-bordered w-full">
+              <span className="label">Expiration Date (Optional)</span>
               <input
-                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                 type="date"
                 value={grantExpiration}
                 onChange={(e) => setGrantExpiration(e.target.value)}
               />
-            </fieldset>
+            </label>
 
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Notes (Optional)</legend>
+            <label className="input input-bordered w-full">
+              <span className="label">Notes (Optional)</span>
               <input
-                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                 value={grantNotes}
                 onChange={(e) => setGrantNotes(e.target.value)}
                 placeholder="Additional notes..."
               />
-            </fieldset>
+            </label>
           </div>
 
           <AlertDialogFooter>
@@ -295,15 +291,15 @@ export function MemberQualificationsModal({
           </AlertDialogHeader>
 
           <div className="py-4">
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Reason (Optional)</legend>
+            <label className="input input-bordered w-full">
+              <span className="label">Reason (Optional)</span>
               <input
-                className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                 value={revokeReason}
                 onChange={(e) => setRevokeReason(e.target.value)}
                 placeholder="Reason for revocation..."
               />
-            </fieldset>
+            </label>
           </div>
 
           <AlertDialogFooter>

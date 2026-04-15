@@ -616,10 +616,9 @@ export function MembersTable({
                 <span className="text-sm text-base-content/60">Show hidden</span>
               </label>
             )}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-base-content/60">Rows per page</span>
+            <label className="select select-sm">
+              <span className="label">Rows</span>
               <select
-                className="select select-sm"
                 value={limit}
                 onChange={(e) => onLimitChange(Number(e.target.value))}
                 data-testid={TID.members.pagination.rowsPerPage}
@@ -629,16 +628,16 @@ export function MembersTable({
                 <option value={100}>100</option>
                 <option value={200}>200</option>
               </select>
-            </div>
+            </label>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-base-content/60">
               Page {page} of {data?.totalPages ?? 1} ({data?.total ?? 0}{' '}
               {(data?.total ?? 0) === 1 ? 'member' : 'members'})
             </span>
-            <div className="flex items-center gap-1">
+            <div className="join">
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page <= 1}
                 data-testid={TID.members.pagination.prev}
@@ -646,7 +645,7 @@ export function MembersTable({
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= (data?.totalPages ?? 1)}
                 data-testid={TID.members.pagination.next}

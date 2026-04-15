@@ -3,7 +3,11 @@
 import { apiClient } from '@/lib/api-client'
 import type { AppBadgeStatus } from '@/components/ui/AppBadge'
 import type { VisitorSelfSigninCompletion } from '@/components/kiosk/visitor-self-signin-flow'
-import type { CheckinWithMemberResponse, CreateCheckinInput } from '@sentinel/contracts'
+import type {
+  CheckinWithMemberResponse,
+  CreateCheckinInput,
+  SystemStatusResponse,
+} from '@sentinel/contracts'
 import type { useCurrentDds, useTonightDutyWatch } from '@/hooks/use-schedules'
 import type { useLockupStatus } from '@/hooks/use-lockup'
 
@@ -104,6 +108,12 @@ export interface KioskHealthIndicator {
   pulse: boolean
 }
 
+export interface KioskConnectivityBadge {
+  status: AppBadgeStatus
+  label: string
+  detail: string
+}
+
 export type ScanMutationResult = SuccessfulScan | VisitorScan | LockupScan
 export type DutyWatchData = ReturnType<typeof useTonightDutyWatch>['data']
 export type ScheduledDdsData = ReturnType<typeof useCurrentDds>['data']
@@ -178,7 +188,7 @@ export function formatClockLabel(date: Date): string {
 }
 
 export function toneForDirection(direction: ScanDirection): ResultTone {
-  return direction === 'in' ? 'success' : 'warning'
+  return direction === 'in' ? 'success' : 'error'
 }
 
 export function createEmptyAssignments(): AssignmentSummary {
@@ -296,10 +306,102 @@ export function getAssignmentBadges(summary: AssignmentSummary | null): Assignme
 }
 
 export function resultToneToSurfaceClass(tone: ResultTone): string {
-  if (tone === 'success' || tone === 'warning' || tone === 'error' || tone === 'info') {
-    return 'border-base-300 bg-base-100 text-base-content'
+  if (tone === 'success') {
+    return 'border-success/25 bg-[var(--color-success-fadded)] text-base-content'
   }
+
+  if (tone === 'warning') {
+    return 'border-warning/25 bg-[var(--color-warning-fadded)] text-base-content'
+  }
+
+  if (tone === 'error') {
+    return 'border-error/25 bg-[var(--color-error-fadded)] text-base-content'
+  }
+
+  if (tone === 'info') {
+    return 'border-info/25 bg-[var(--color-info-fadded)] text-base-content'
+  }
+
   return 'border-base-300 bg-base-100 text-base-content'
+}
+
+interface KioskConnectivityBadgeInput {
+  systemStatus: SystemStatusResponse | null
+  isLoading: boolean
+  isError: boolean
+}
+
+export function getKioskConnectivityBadge({
+  systemStatus,
+  isLoading,
+  isError,
+}: KioskConnectivityBadgeInput): KioskConnectivityBadge {
+  if (isLoading) {
+    return {
+      status: 'warning',
+      label: 'CHECKING LINK',
+      detail: 'Sentinel is checking backend connectivity.',
+    }
+  }
+
+  if (isError || !systemStatus || systemStatus.backend.status !== 'healthy') {
+    return {
+      status: 'error',
+      label: 'DISCONNECTED',
+      detail: 'Kiosk cannot reach a healthy backend API.',
+    }
+  }
+
+  const environment = systemStatus.backend.environment.toLowerCase()
+  const isDevelopmentEnvironment = environment !== 'production'
+
+  if (isDevelopmentEnvironment) {
+    return {
+      status: 'success',
+      label: 'CONNECTED (DEV)',
+      detail: 'Development mode: backend reachable; Sentinel Wi-Fi enforcement is relaxed.',
+    }
+  }
+
+  const network = systemStatus.network
+
+  if (!network.telemetryAvailable) {
+    return {
+      status: 'warning',
+      label: 'CONNECTED (NO WIFI DATA)',
+      detail: 'Backend is reachable, but host Wi-Fi telemetry is unavailable.',
+    }
+  }
+
+  if (network.wifiConnected === false) {
+    return {
+      status: 'error',
+      label: 'WIFI DISCONNECTED',
+      detail: 'Backend link is unhealthy because the host Wi-Fi is disconnected.',
+    }
+  }
+
+  if (network.approvedSsids.length > 0 && network.approvedSsid === false) {
+    return {
+      status: 'warning',
+      label: 'OFF SENTINEL WIFI',
+      detail: `Backend reachable, but current SSID (${network.currentSsid ?? 'unknown'}) is not approved.`,
+    }
+  }
+
+  if (network.remoteTarget && network.remoteReachable === false) {
+    return {
+      status: 'warning',
+      label: 'CONNECTED (REMOTE DEGRADED)',
+      detail: `Backend reachable, but remote target check to ${network.remoteTarget} failed.`,
+    }
+  }
+
+  return {
+    status: 'success',
+    label: 'CONNECTED',
+    detail: 'Backend is reachable on an approved Sentinel Wi-Fi context.',
+  }
 }
 
 export async function createMemberCheckin(

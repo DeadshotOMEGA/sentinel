@@ -101,11 +101,10 @@ export function BulkGrantQualificationModal({
 
         <div className="space-y-4 py-4">
           {/* Qualification Type */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Qualification Type</legend>
+          <label className="select w-full">
+            <span className="label">Qualification Type</span>
             <select
               id="bulk-qualification-type"
-              className="select"
               value={qualificationTypeId}
               onChange={(e) => setQualificationTypeId(e.target.value)}
             >
@@ -116,31 +115,31 @@ export function BulkGrantQualificationModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Expiration Date */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Expiration Date (optional)</legend>
+          <label className="input w-full">
+            <span className="label">Expiration Date (optional)</span>
             <input
               id="bulk-expiration"
               type="datetime-local"
-              className="input"
+              className="grow"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
             />
-          </fieldset>
+          </label>
 
           {/* Notes */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Notes (optional)</legend>
+          <label className="input input-bordered w-full">
+            <span className="label">Notes (optional)</span>
             <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="grow disabled:opacity-50 disabled:cursor-not-allowed"
               id="bulk-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Granted during training weekend"
             />
-          </fieldset>
+          </label>
 
           {/* Progress indicator */}
           {isSubmitting && (

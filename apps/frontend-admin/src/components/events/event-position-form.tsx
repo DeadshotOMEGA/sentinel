@@ -45,12 +45,12 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-3 p-4 bg-base-200 rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">
+        <label className="input input-bordered w-full">
+          <span className="label">
             Code <span className="text-error">*</span>
-          </legend>
+          </span>
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="grow disabled:opacity-50 disabled:cursor-not-allowed"
             id="position-code"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -59,14 +59,14 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
             required
             aria-required="true"
           />
-        </fieldset>
+        </label>
 
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">
+        <label className="input input-bordered w-full">
+          <span className="label">
             Name <span className="text-error">*</span>
-          </legend>
+          </span>
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="grow disabled:opacity-50 disabled:cursor-not-allowed"
             id="position-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -75,7 +75,7 @@ export function EventPositionForm({ eventId, onClose }: EventPositionFormProps) 
             required
             aria-required="true"
           />
-        </fieldset>
+        </label>
       </div>
 
       <div className="flex justify-end gap-2">

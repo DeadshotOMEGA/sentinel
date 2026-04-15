@@ -27,7 +27,7 @@ export function KioskScreen() {
         <div className="relative z-[var(--z-base)] flex h-full min-h-0 flex-col gap-(--space-4) p-(--space-4) xl:p-(--space-5)">
           <KioskOperationalHeader {...kiosk.header} />
 
-          <div className="grid min-h-0 flex-1 gap-(--space-4) xl:grid-cols-[minmax(0,1.55fr)_minmax(24rem,0.9fr)]">
+          <div className="grid min-h-0 flex-1 gap-(--space-4) xl:grid-cols-2">
             <KioskMemberScanPanel
               {...kiosk.memberPanel}
               shouldReduceMotion={Boolean(kiosk.prefersReducedMotion)}

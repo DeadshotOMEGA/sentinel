@@ -158,24 +158,24 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
           {/* Name */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Rank/Prefix</legend>
+          <label className="input input-neutral w-full">
+            <span className="label">Rank/Prefix</span>
             <input
               type="text"
-              className="input input-neutral w-full"
+              className="grow"
               placeholder="Optional (e.g., Cpl, Lt, Mr)"
               disabled={isSubmitting}
               {...register('rankPrefix')}
             />
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">
+          <label className="input input-neutral w-full">
+            <span className="label">
               First Name <span className="text-error">*</span>
-            </legend>
+            </span>
             <input
               type="text"
-              className="input input-neutral w-full"
+              className="grow"
               placeholder="Visitor first name"
               disabled={isSubmitting}
               {...firstNameRegister}
@@ -184,44 +184,41 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
                 nameInputRef.current = el
               }}
             />
-            {errors.firstName && (
-              <span className="label text-error">{errors.firstName.message}</span>
-            )}
-          </fieldset>
+          </label>
+          {errors.firstName && <span className="label text-error">{errors.firstName.message}</span>}
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">
+          <label className="input input-neutral w-full">
+            <span className="label">
               Last Name <span className="text-error">*</span>
-            </legend>
+            </span>
             <input
               type="text"
-              className="input input-neutral w-full"
+              className="grow"
               placeholder="Visitor last name"
               disabled={isSubmitting}
               {...lastNameRegister}
             />
-            {errors.lastName && <span className="label text-error">{errors.lastName.message}</span>}
-          </fieldset>
+          </label>
+          {errors.lastName && <span className="label text-error">{errors.lastName.message}</span>}
 
           {/* Organization */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Organization</legend>
+          <label className="input input-neutral w-full">
+            <span className="label">Organization</span>
             <input
               type="text"
-              className="input input-neutral w-full"
+              className="grow"
               placeholder="Company or organization"
               {...register('organization')}
               disabled={isSubmitting}
             />
-          </fieldset>
+          </label>
 
           {/* Visit Type */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">
+          <label className="select select-neutral w-full">
+            <span className="label">
               Visit Type <span className="text-error">*</span>
-            </legend>
+            </span>
             <select
-              className="select select-neutral w-full"
               {...register('visitType', { required: 'Visit type is required' })}
               disabled={isSubmitting}
             >
@@ -232,102 +229,96 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
               <option value="official">Official</option>
               <option value="other">Other</option>
             </select>
-            {errors.visitType && (
-              <span className="label text-error">{errors.visitType.message}</span>
-            )}
-          </fieldset>
+          </label>
+          {errors.visitType && <span className="label text-error">{errors.visitType.message}</span>}
 
           {/* Visit Reason */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Visit Reason</legend>
+          <label className="input input-neutral w-full">
+            <span className="label">Visit Reason</span>
             <input
               type="text"
-              className="input input-neutral w-full"
+              className="grow"
               placeholder="Purpose of visit"
               {...register('visitReason')}
               disabled={isSubmitting}
             />
-          </fieldset>
+          </label>
 
           {/* Host Member */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Host Member</legend>
-            <div>
-              {selectedHost ? (
-                <div className="input input-neutral flex items-center gap-2">
-                  <span className="flex-1 truncate">{selectedHost.displayName}</span>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-xs btn-circle"
-                    onClick={() => {
-                      setValue('hostMemberId', '')
-                      setSelectedHost(null)
-                      setMemberSearch('')
-                    }}
+          <div className="space-y-2">
+            <span className="label">Host Member</span>
+            {selectedHost ? (
+              <div className="input input-neutral flex items-center gap-2">
+                <span className="label">Selected</span>
+                <span className="flex-1 truncate">{selectedHost.displayName}</span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs btn-circle"
+                  onClick={() => {
+                    setValue('hostMemberId', '')
+                    setSelectedHost(null)
+                    setMemberSearch('')
+                  }}
+                  disabled={isSubmitting}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <label className="input input-neutral w-full">
+                  <span className="label">Search</span>
+                  <Search className="h-4 w-4 text-base-content/60 pointer-events-none" />
+                  <input
+                    type="text"
+                    className="grow"
+                    placeholder="Search by name..."
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
                     disabled={isSubmitting}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60 pointer-events-none" />
-                    <input
-                      type="text"
-                      className="input input-neutral w-full pl-10"
-                      placeholder="Search by name..."
-                      value={memberSearch}
-                      onChange={(e) => setMemberSearch(e.target.value)}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  {memberSearch && (
-                    <ul className="menu bg-base-200 rounded-box mt-2 w-full max-h-36 overflow-y-auto">
-                      {membersData?.members.length === 0 ? (
-                        <li className="disabled">
-                          <span className="text-base-content/60">No members found</span>
+                  />
+                </label>
+                {memberSearch && (
+                  <ul className="menu bg-base-200 rounded-box mt-2 w-full max-h-36 overflow-y-auto">
+                    {membersData?.members.length === 0 ? (
+                      <li className="disabled">
+                        <span className="text-base-content/60">No members found</span>
+                      </li>
+                    ) : (
+                      membersData?.members.map((member) => (
+                        <li key={member.id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setValue('hostMemberId', member.id)
+                              setSelectedHost({
+                                id: member.id,
+                                displayName:
+                                  member.displayName ??
+                                  `${member.rank} ${member.lastName}, ${member.firstName}`,
+                              })
+                              setMemberSearch('')
+                            }}
+                          >
+                            <span className="font-medium">
+                              {member.displayName ??
+                                `${member.rank} ${member.lastName}, ${member.firstName}`}
+                            </span>
+                          </button>
                         </li>
-                      ) : (
-                        membersData?.members.map((member) => (
-                          <li key={member.id}>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setValue('hostMemberId', member.id)
-                                setSelectedHost({
-                                  id: member.id,
-                                  displayName:
-                                    member.displayName ??
-                                    `${member.rank} ${member.lastName}, ${member.firstName}`,
-                                })
-                                setMemberSearch('')
-                              }}
-                            >
-                              <span className="font-medium">
-                                {member.displayName ??
-                                  `${member.rank} ${member.lastName}, ${member.firstName}`}
-                              </span>
-                            </button>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </>
-              )}
-            </div>
-          </fieldset>
+                      ))
+                    )}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Event */}
           {eventsData?.data && eventsData.data.length > 0 && (
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Event</legend>
-              <select
-                className="select select-neutral w-full"
-                {...register('eventId')}
-                disabled={isSubmitting}
-              >
+            <label className="select select-neutral w-full">
+              <span className="label">Event</span>
+              <select {...register('eventId')} disabled={isSubmitting}>
                 <option value="">No event</option>
                 {eventsData.data.map((event) => (
                   <option key={event.id} value={event.id}>
@@ -335,31 +326,29 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
                   </option>
                 ))}
               </select>
-            </fieldset>
+            </label>
           )}
 
           {/* Temporary Badge */}
           {availableBadges && availableBadges.length > 0 && (
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Temporary Badge</legend>
-              <select
-                className="select select-neutral w-full"
-                {...register('temporaryBadgeId')}
-                disabled={isSubmitting}
-              >
-                <option value="">No badge</option>
-                {availableBadges.map((badge) => (
-                  <option key={badge.id} value={badge.id}>
-                    {badge.serialNumber}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-1">
+              <label className="select select-neutral w-full">
+                <span className="label">Temporary Badge</span>
+                <select {...register('temporaryBadgeId')} disabled={isSubmitting}>
+                  <option value="">No badge</option>
+                  {availableBadges.map((badge) => (
+                    <option key={badge.id} value={badge.id}>
+                      {badge.serialNumber}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {selectedBadgeId && (
                 <p className="text-xs text-info mt-1">
                   Badge will be assigned to visitor and released on sign-out.
                 </p>
               )}
-            </fieldset>
+            </div>
           )}
 
           {/* Admin Notes */}
@@ -385,7 +374,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
           <div className="modal-action">
             <button
               type="button"
-              className="btn btn-outline"
+              className="btn btn-outline btn-neutral"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >

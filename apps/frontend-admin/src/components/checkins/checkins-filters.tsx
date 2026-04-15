@@ -62,38 +62,34 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Start Date */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Start Date</legend>
+        <label className="input w-full">
+          <span className="label">Start Date</span>
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="startDate"
+            className="grow"
             type="date"
             value={startDateInput}
             onChange={(e) => handleStartDateChange(e.target.value)}
             data-testid={TID.checkins.filter.startDate}
           />
-        </fieldset>
+        </label>
 
-        {/* End Date */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">End Date</legend>
+        <label className="input w-full">
+          <span className="label">End Date</span>
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
             id="endDate"
+            className="grow"
             type="date"
             value={endDateInput}
             onChange={(e) => handleEndDateChange(e.target.value)}
             data-testid={TID.checkins.filter.endDate}
           />
-        </fieldset>
+        </label>
 
-        {/* Direction Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Direction</legend>
+        <label className="select w-full">
+          <span className="label">Direction</span>
           <select
             id="direction"
-            className="select"
             value={filters.direction ?? 'all'}
             onChange={(e) =>
               onFilterChange({ direction: e.target.value === 'all' ? undefined : e.target.value })
@@ -104,14 +100,12 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
             <option value="in">Check In</option>
             <option value="out">Check Out</option>
           </select>
-        </fieldset>
+        </label>
 
-        {/* Division Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Division</legend>
+        <label className="select w-full">
+          <span className="label">Division</span>
           <select
             id="division"
-            className="select"
             value={filters.divisionId ?? 'all'}
             onChange={(e) =>
               onFilterChange({ divisionId: e.target.value === 'all' ? undefined : e.target.value })
@@ -125,12 +119,16 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
               </option>
             ))}
           </select>
-        </fieldset>
+        </label>
 
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <div className="flex items-end">
-            <button className="btn btn-outline btn-sm w-full" onClick={handleClearFilters} data-testid={TID.checkins.filter.clear}>
+            <button
+              className="btn btn-outline btn-sm w-full"
+              onClick={handleClearFilters}
+              data-testid={TID.checkins.filter.clear}
+            >
               <X className="h-4 w-4 mr-2" />
               Clear Filters
             </button>

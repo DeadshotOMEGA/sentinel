@@ -110,14 +110,9 @@ export function BulkAssignTagModal({
 
         <div className="space-y-4 py-4">
           {/* Tag Selection */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Tag</legend>
-            <select
-              id="bulk-tag"
-              className="select"
-              value={tagId}
-              onChange={(e) => setTagId(e.target.value)}
-            >
+          <label className="select w-full">
+            <span className="label">Tag</span>
+            <select id="bulk-tag" value={tagId} onChange={(e) => setTagId(e.target.value)}>
               <option value="">Select a tag...</option>
               {availableTags.map((tag) => (
                 <option key={tag.id} value={tag.id}>
@@ -125,7 +120,7 @@ export function BulkAssignTagModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Tag Preview */}
           {selectedTag && (

@@ -594,17 +594,17 @@ export function MemberActionPanel({
                   : 'Manual checkout is not currently available for this member.'}
               </div>
             )}
-            <label className="fieldset">
+            <fieldset className="fieldset">
               <legend className="fieldset-legend">Admin reason</legend>
               <textarea
-                className="textarea textarea-bordered min-h-24 w-full"
+                className="textarea min-h-24 w-full"
                 maxLength={500}
                 placeholder="Explain why this corrective checkout is needed."
                 value={manualCheckoutReason}
                 onChange={(event) => setManualCheckoutReason(event.target.value)}
                 disabled={!canManageActions || !canManualCheckout || manualCheckout.isPending}
               />
-            </label>
+            </fieldset>
             <div className="flex justify-end gap-(--space-2)">
               <button
                 type="button"
@@ -649,10 +649,9 @@ export function MemberActionPanel({
               </div>
             ) : (
               <>
-                <label className="fieldset">
-                  <legend className="fieldset-legend">Qualified role</legend>
+                <label className="select select-bordered w-full">
+                  <span className="label">Qualified role</span>
                   <select
-                    className="select select-bordered w-full"
                     value={temporaryRoleId}
                     onChange={(event) => setTemporaryRoleId(event.target.value)}
                     disabled={!canManageActions || createLiveDutyAssignment.isPending}
@@ -664,17 +663,17 @@ export function MemberActionPanel({
                     ))}
                   </select>
                 </label>
-                <label className="fieldset">
+                <fieldset className="fieldset">
                   <legend className="fieldset-legend">Admin note</legend>
                   <textarea
-                    className="textarea textarea-bordered min-h-20 w-full"
+                    className="textarea min-h-20 w-full"
                     maxLength={500}
                     placeholder="Why is this temporary role being assigned?"
                     value={temporaryRoleNote}
                     onChange={(event) => setTemporaryRoleNote(event.target.value)}
                     disabled={!canManageActions || createLiveDutyAssignment.isPending}
                   />
-                </label>
+                </fieldset>
                 <div className="flex justify-end gap-(--space-2)">
                   <button
                     type="button"
@@ -697,17 +696,17 @@ export function MemberActionPanel({
             {person.liveDutyAssignment && (
               <>
                 <div className="divider my-0">Clear Active Role</div>
-                <label className="fieldset">
+                <fieldset className="fieldset">
                   <legend className="fieldset-legend">Clear note</legend>
                   <textarea
-                    className="textarea textarea-bordered min-h-20 w-full"
+                    className="textarea min-h-20 w-full"
                     maxLength={500}
                     placeholder="Why is this temporary role ending early?"
                     value={clearTemporaryRoleNote}
                     onChange={(event) => setClearTemporaryRoleNote(event.target.value)}
                     disabled={!canManageActions || clearLiveDutyAssignment.isPending}
                   />
-                </label>
+                </fieldset>
                 <div className="flex justify-end gap-(--space-2)">
                   <button
                     type="button"
@@ -747,10 +746,9 @@ export function MemberActionPanel({
               </div>
             ) : (
               <>
-                <label className="fieldset">
-                  <legend className="fieldset-legend">Replace this scheduled role</legend>
+                <label className="select select-bordered w-full">
+                  <span className="label">Replace this scheduled role</span>
                   <select
-                    className="select select-bordered w-full"
                     value={replacementAssignmentId}
                     onChange={(event) => setReplacementAssignmentId(event.target.value)}
                     disabled={!canManageActions || createDwOverride.isPending}
@@ -769,17 +767,17 @@ export function MemberActionPanel({
                     {tonightDutyWatch.operationalDate}.
                   </div>
                 )}
-                <label className="fieldset">
+                <fieldset className="fieldset">
                   <legend className="fieldset-legend">Admin note</legend>
                   <textarea
-                    className="textarea textarea-bordered min-h-20 w-full"
+                    className="textarea min-h-20 w-full"
                     maxLength={500}
                     placeholder="Why is this schedule override being created?"
                     value={replacementNote}
                     onChange={(event) => setReplacementNote(event.target.value)}
                     disabled={!canManageActions || createDwOverride.isPending}
                   />
-                </label>
+                </fieldset>
               </>
             )}
             <div className="flex items-center justify-between gap-(--space-2)">
@@ -828,17 +826,17 @@ export function MemberActionPanel({
                     No qualified checked-in recipients are currently available to receive lockup.
                   </div>
                 )}
-                <label className="fieldset">
+                <fieldset className="fieldset">
                   <legend className="fieldset-legend">Transfer note</legend>
                   <textarea
-                    className="textarea textarea-bordered min-h-20 w-full"
+                    className="textarea min-h-20 w-full"
                     maxLength={500}
                     placeholder="Why is lockup being transferred?"
                     value={transferLockupNote}
                     onChange={(event) => setTransferLockupNote(event.target.value)}
                     disabled={!canManageActions}
                   />
-                </label>
+                </fieldset>
                 <div className="flex justify-end gap-(--space-2)">
                   <button
                     type="button"
@@ -877,17 +875,17 @@ export function MemberActionPanel({
                 <div className="rounded-box border border-info/35 bg-info-fadded px-(--space-3) py-(--space-3) text-sm leading-5 text-info-fadded-content">
                   This member is checked in, qualified, and currently eligible to open the building.
                 </div>
-                <label className="fieldset">
+                <fieldset className="fieldset">
                   <legend className="fieldset-legend">Opening note</legend>
                   <textarea
-                    className="textarea textarea-bordered min-h-20 w-full"
+                    className="textarea min-h-20 w-full"
                     maxLength={500}
                     placeholder="Add any context for opening the building."
                     value={openBuildingNote}
                     onChange={(event) => setOpenBuildingNote(event.target.value)}
                     disabled={!canManageActions || openBuilding.isPending}
                   />
-                </label>
+                </fieldset>
                 <div className="flex justify-end gap-(--space-2)">
                   <button
                     type="button"

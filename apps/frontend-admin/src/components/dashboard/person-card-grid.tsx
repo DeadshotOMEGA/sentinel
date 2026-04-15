@@ -237,21 +237,19 @@ export function PersonCardGrid() {
               Simulate Scan
             </MotionButton>
           )}
-          <div className="relative w-full sm:w-auto">
-            <Search
-              size={14}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40"
-            />
+          <label className="input input-bordered input-sm w-full sm:w-56">
+            <span className="label">Search</span>
+            <Search size={14} className="text-base-content/40" />
             <input
               type="text"
-              placeholder="Search..."
+              className="grow"
+              placeholder="Search people..."
               aria-label="Search people"
-              className="input input-bordered input-sm pl-8 w-full sm:w-48"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-help-id="dashboard.presence.search"
             />
-          </div>
+          </label>
         </div>
       </div>
 

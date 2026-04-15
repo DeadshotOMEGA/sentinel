@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { ArrowLeft, Maximize2, MonitorCog, ScanLine } from 'lucide-react'
+import { ArrowLeft, MonitorCog, ScanLine } from 'lucide-react'
 import { KioskScreen } from '@/components/kiosk/kiosk-screen'
 
 const SECRET_TAP_TARGET = 5
@@ -14,49 +14,11 @@ const BADGE_FOCUS_REQUEST_EVENT = 'kiosk-request-badge-focus'
 export function KioskShell() {
   const router = useRouter()
   const prefersReducedMotion = useReducedMotion()
-  const [isFullscreen, setIsFullscreen] = useState(
-    () => typeof document !== 'undefined' && Boolean(document.fullscreenElement)
-  )
   const [showExitControls, setShowExitControls] = useState(false)
   const tapTimestampsRef = useRef<number[]>([])
 
-  const attemptFullscreen = async () => {
-    if (typeof document === 'undefined') return
-    if (document.fullscreenElement) return
-    if (typeof document.documentElement.requestFullscreen !== 'function') return
-
-    try {
-      await document.documentElement.requestFullscreen()
-    } catch {
-      // Browser may require a gesture or deny fullscreen.
-    }
-  }
-
-  const exitFullscreen = async () => {
-    if (typeof document === 'undefined') return
-    if (!document.fullscreenElement || typeof document.exitFullscreen !== 'function') return
-
-    try {
-      await document.exitFullscreen()
-    } catch {
-      // Keep kiosk controls accessible even if fullscreen exit is rejected.
-    }
-  }
-
   const revealExitControls = () => {
     setShowExitControls(true)
-  }
-
-  const engageKioskSurface = () => {
-    const shouldRequestFocus = typeof document !== 'undefined' && !document.fullscreenElement
-
-    void attemptFullscreen()
-
-    if (shouldRequestFocus) {
-      window.setTimeout(() => {
-        window.dispatchEvent(new window.CustomEvent(BADGE_FOCUS_REQUEST_EVENT))
-      }, 150)
-    }
   }
 
   useEffect(() => {
@@ -83,10 +45,6 @@ export function KioskShell() {
       }
     }
 
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement))
-    }
-
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault()
     }
@@ -102,11 +60,10 @@ export function KioskShell() {
 
       const isBrowserShortcut =
         (event.ctrlKey || event.metaKey) && ['r', 't', 'n', 'w', 'l', 'p', 's'].includes(key)
-      const isFullscreenToggle = event.key === 'F11'
       const isNavigationShortcut =
         event.altKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
 
-      if (isBrowserShortcut || isFullscreenToggle || isNavigationShortcut) {
+      if (isBrowserShortcut || isNavigationShortcut) {
         event.preventDefault()
       }
     }
@@ -115,18 +72,19 @@ export function KioskShell() {
       concealDevtools()
     })
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('contextmenu', handleContextMenu)
     window.addEventListener('keydown', handleKeyDown, { capture: true })
 
     document.body.classList.add('kiosk-lock-mode')
     concealDevtools()
     observer.observe(document.body, { childList: true, subtree: true })
-    void attemptFullscreen()
+
+    window.setTimeout(() => {
+      window.dispatchEvent(new window.CustomEvent(BADGE_FOCUS_REQUEST_EVENT))
+    }, 150)
 
     return () => {
       observer.disconnect()
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('contextmenu', handleContextMenu)
       window.removeEventListener('keydown', handleKeyDown, { capture: true })
       document.body.classList.remove('kiosk-lock-mode')
@@ -158,25 +116,13 @@ export function KioskShell() {
     }
   }
 
-  const handleExitKiosk = async () => {
-    await exitFullscreen()
+  const handleExitKiosk = () => {
     router.push('/dashboard')
   }
 
   return (
-    <div
-      className="relative h-dvh overflow-hidden bg-base-300"
-      onPointerDownCapture={engageKioskSurface}
-    >
+    <div className="relative h-dvh overflow-hidden bg-base-300">
       <KioskScreen />
-
-      {!isFullscreen && (
-        <div className="pointer-events-none fixed inset-x-0 top-(--space-4) z-[var(--z-tooltip)] flex justify-center px-(--space-4)">
-          <div className="rounded-full border border-info/30 bg-base-100/95 px-(--space-4) py-(--space-3) text-sm font-semibold tracking-[0.14em] text-info-fadded-content shadow-[var(--shadow-2)] backdrop-blur-sm">
-            Tap anywhere to enter full screen
-          </div>
-        </div>
-      )}
 
       <button
         type="button"
@@ -215,22 +161,13 @@ export function KioskShell() {
               </div>
 
               <div className="rounded-box border border-base-300 bg-base-200/45 p-(--space-3) text-sm text-base-content/75">
-                Use these controls only for recovery, fullscreen issues, or returning to the
-                dashboard.
+                Use these controls only for recovery or returning to the dashboard.
               </div>
 
               <button
                 type="button"
-                className="btn btn-outline justify-between"
-                onClick={() => void exitFullscreen()}
-              >
-                <span>Exit full screen</span>
-                <Maximize2 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
                 className="btn btn-warning justify-between"
-                onClick={() => void handleExitKiosk()}
+                onClick={handleExitKiosk}
               >
                 <span>Exit kiosk page</span>
                 <ArrowLeft className="h-4 w-4" />

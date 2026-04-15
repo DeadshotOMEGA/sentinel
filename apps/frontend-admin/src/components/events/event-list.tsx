@@ -93,11 +93,10 @@ export function EventList() {
       {/* Filters */}
       <div className="p-4" role="search" aria-label="Event filters">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Category</legend>
+          <label className="select w-full">
+            <span className="label">Category</span>
             <select
               id="category-filter"
-              className="select"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value as UnitEventCategory | '')}
               data-testid={TID.events.filter.category}
@@ -109,13 +108,12 @@ export function EventList() {
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Status</legend>
+          <label className="select w-full">
+            <span className="label">Status</span>
             <select
               id="status-filter"
-              className="select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as UnitEventStatus | '')}
               data-testid={TID.events.filter.status}
@@ -127,33 +125,33 @@ export function EventList() {
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Start Date</legend>
+          <label className="input w-full">
+            <span className="label">Start Date</span>
             <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
               id="start-date"
+              className="grow"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               aria-label="Filter by start date"
               data-testid={TID.events.filter.startDate}
             />
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">End Date</legend>
+          <label className="input w-full">
+            <span className="label">End Date</span>
             <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
               id="end-date"
+              className="grow"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               aria-label="Filter by end date"
               data-testid={TID.events.filter.endDate}
             />
-          </fieldset>
+          </label>
         </div>
 
         <div className="flex justify-end mt-4">

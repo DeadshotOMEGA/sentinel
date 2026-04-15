@@ -147,10 +147,10 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Serial Number</legend>
+          <label className="input input-bordered w-full">
+            <span className="label">Serial Number</span>
             <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="grow disabled:opacity-50 disabled:cursor-not-allowed"
               id="badge-serial-number"
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
@@ -158,19 +158,18 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
               data-testid={TID.badges.form.serialNumber}
               required
             />
-            {isSerialInvalid && (
-              <span className="label text-base-content/60">
-                Enter a badge serial number to continue.
-              </span>
-            )}
-          </fieldset>
+          </label>
+          {isSerialInvalid && (
+            <span className="label text-base-content/60">
+              Enter a badge serial number to continue.
+            </span>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Status</legend>
+            <label className="select w-full">
+              <span className="label">Status</span>
               <select
                 id="badge-status"
-                className="select"
                 value={status}
                 onChange={(e) => {
                   const nextStatus = e.target.value as BadgeLifecycleStatus
@@ -189,28 +188,29 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
                 <option value="damaged">Damaged</option>
                 <option value="decommissioned">Decommissioned</option>
               </select>
-            </fieldset>
+            </label>
 
             <fieldset className="fieldset">
-              <legend className="fieldset-legend">Assignment Type</legend>
-              <select
-                id="badge-assignment"
-                className="select"
-                value={assignmentType}
-                disabled={isDecommissioned}
-                onChange={(e) => {
-                  const value = e.target.value as 'member' | 'unassigned'
-                  setAssignmentType(value)
-                  if (value !== 'member') {
-                    setAssignedToId('')
-                    setMemberSearch('')
-                  }
-                }}
-                data-testid={TID.badges.form.assignmentType}
-              >
-                <option value="unassigned">Unassigned</option>
-                <option value="member">Member</option>
-              </select>
+              <label className="select w-full">
+                <span className="label">Assignment Type</span>
+                <select
+                  id="badge-assignment"
+                  value={assignmentType}
+                  disabled={isDecommissioned}
+                  onChange={(e) => {
+                    const value = e.target.value as 'member' | 'unassigned'
+                    setAssignmentType(value)
+                    if (value !== 'member') {
+                      setAssignedToId('')
+                      setMemberSearch('')
+                    }
+                  }}
+                  data-testid={TID.badges.form.assignmentType}
+                >
+                  <option value="unassigned">Unassigned</option>
+                  <option value="member">Member</option>
+                </select>
+              </label>
               {isDecommissioned && (
                 <span className="label text-base-content/60">
                   Decommissioned badges stay unassigned and hidden from normal operations.
@@ -221,32 +221,37 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
 
           {assignmentType === 'member' && !isDecommissioned && (
             <fieldset className="fieldset">
-              <legend className="fieldset-legend">Assigned Member</legend>
-              <input
-                id="badge-member-filter"
-                type="text"
-                className="input input-bordered w-full mb-2"
-                value={memberSearch}
-                onChange={(e) => setMemberSearch(e.target.value)}
-                placeholder="Filter members by name..."
-                data-testid={TID.badges.form.memberSearch}
-              />
-              <select
-                id="badge-assigned-member"
-                className="select w-full"
-                value={assignedToId}
-                onChange={(e) => setAssignedToId(e.target.value)}
-                data-testid={TID.badges.form.assignedTo}
-                required
-              >
-                <option value="">Select a member...</option>
-                {memberOptions.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`}{' '}
-                    ({member.serviceNumber})
-                  </option>
-                ))}
-              </select>
+              <label className="input input-bordered w-full mb-2">
+                <span className="label">Member Search</span>
+                <input
+                  id="badge-member-filter"
+                  type="text"
+                  className="grow"
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="Filter members by name..."
+                  data-testid={TID.badges.form.memberSearch}
+                />
+              </label>
+              <label className="select w-full">
+                <span className="label">Assigned Member</span>
+                <select
+                  id="badge-assigned-member"
+                  value={assignedToId}
+                  onChange={(e) => setAssignedToId(e.target.value)}
+                  data-testid={TID.badges.form.assignedTo}
+                  required
+                >
+                  <option value="">Select a member...</option>
+                  {memberOptions.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.displayName ??
+                        `${member.rank} ${member.lastName}, ${member.firstName}`}{' '}
+                      ({member.serviceNumber})
+                    </option>
+                  ))}
+                </select>
+              </label>
               {!isMembersLoading && memberOptions.length === 0 && (
                 <span className="label text-base-content/60">No members match that name.</span>
               )}

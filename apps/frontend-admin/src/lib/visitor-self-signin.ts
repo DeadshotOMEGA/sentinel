@@ -1,84 +1,92 @@
-import type { RecruitmentStep, VisitPurpose } from '@sentinel/contracts'
+import type { CreateVisitorInput, RecruitmentStep, VisitPurpose } from '@sentinel/contracts'
 
 export type SelfServiceVisitType = 'guest' | 'military' | 'recruitment' | 'contractor'
 
-export interface VisitorInstructionInput {
-  visitType: SelfServiceVisitType
-  visitPurpose?: VisitPurpose
-  hostDisplayName?: string
-}
+export type SelfServiceVisitReason =
+  | 'recruitment'
+  | 'contract_work'
+  | 'event'
+  | 'museum'
+  | 'meeting'
+  | 'other'
 
-export const SELF_SERVICE_VISIT_TYPE_OPTIONS: Array<{
-  value: SelfServiceVisitType
+export type SelfServiceVisitorBranch = 'military' | 'civilian'
+
+export const RECRUITMENT_DEFAULT_STEP: RecruitmentStep = 'information'
+
+export const SELF_SERVICE_REASON_OPTIONS: Array<{
+  value: SelfServiceVisitReason
   label: string
   description: string
 }> = [
-  {
-    value: 'guest',
-    label: 'Guest',
-    description: 'Family, friends, and general visitors to the Unit.',
-  },
-  {
-    value: 'military',
-    label: 'Military',
-    description: 'Serving members visiting from another unit or formation.',
-  },
   {
     value: 'recruitment',
     label: 'Recruitment',
-    description: 'Prospective members visiting for information or intake steps.',
+    description: 'Prospective members visiting for recruiting support.',
   },
   {
-    value: 'contractor',
-    label: 'Contractor',
-    description: 'Trades, vendors, and service providers conducting work.',
-  },
-]
-
-export const RECRUITMENT_STEP_OPTIONS: Array<{
-  value: RecruitmentStep
-  label: string
-}> = [
-  { value: 'information', label: 'New and looking for information' },
-  { value: 'testing', label: 'Testing' },
-  { value: 'interview', label: 'Interview' },
-  { value: 'medical_admin', label: 'Medical / Admin processing' },
-  { value: 'other', label: 'Other recruitment step' },
-]
-
-export const VISIT_PURPOSE_OPTIONS: Array<{
-  value: VisitPurpose
-  label: string
-  description: string
-}> = [
-  {
-    value: 'member_invited',
-    label: 'Invited by a member',
-    description: 'You were invited to the Unit by a serving member.',
+    value: 'contract_work',
+    label: 'Contract Work',
+    description: 'Trades, service providers, and delivery-related work visits.',
   },
   {
-    value: 'appointment',
-    label: 'Appointment',
-    description: 'You have an appointment with someone at the Unit.',
+    value: 'event',
+    label: 'Event',
+    description: 'Visitors attending an organized unit event.',
   },
   {
-    value: 'information',
-    label: 'Information',
-    description: 'You are here to get information or direction.',
+    value: 'museum',
+    label: 'Museum',
+    description: 'Museum-related visit or historical inquiry.',
+  },
+  {
+    value: 'meeting',
+    label: 'Meeting',
+    description: 'Scheduled meeting with a specific member.',
   },
   {
     value: 'other',
     label: 'Other',
-    description: 'Your visit does not match the other options.',
+    description: 'A reason that does not fit the listed options.',
   },
 ]
 
-const RECRUITMENT_STEP_LABELS: Record<RecruitmentStep, string> = {
-  information: 'New and looking for information',
-  testing: 'Testing',
-  interview: 'Interview',
-  medical_admin: 'Medical / Admin processing',
-  other: 'Other recruitment step',
+export const SELF_SERVICE_BRANCH_OPTIONS: Array<{
+  value: SelfServiceVisitorBranch
+  label: string
+  description: string
+}> = [
+  {
+    value: 'military',
+    label: 'Military',
+    description: 'Visiting in military capacity from another unit or formation.',
+  },
+  {
+    value: 'civilian',
+    label: 'Civilian',
+    description: 'Civilian visitor profile.',
+  },
+]
+
+const VISIT_REASON_LABELS: Record<SelfServiceVisitReason, string> = {
+  recruitment: 'Recruitment',
+  contract_work: 'Contract Work',
+  event: 'Event',
+  museum: 'Museum',
+  meeting: 'Meeting',
+  other: 'Other',
+}
+
+const BRANCH_LABELS: Record<SelfServiceVisitorBranch, string> = {
+  military: 'Military',
+  civilian: 'Civilian',
+}
+
+const VISIT_TYPE_LABELS: Record<SelfServiceVisitType, string> = {
+  guest: 'Guest',
+  military: 'Military',
+  recruitment: 'Recruitment',
+  contractor: 'Contractor',
 }
 
 const VISIT_PURPOSE_LABELS: Record<VisitPurpose, string> = {
@@ -88,61 +96,263 @@ const VISIT_PURPOSE_LABELS: Record<VisitPurpose, string> = {
   other: 'Other',
 }
 
-export function getSelfServiceVisitTypeLabel(visitType: SelfServiceVisitType): string {
-  return (
-    SELF_SERVICE_VISIT_TYPE_OPTIONS.find((option) => option.value === visitType)?.label ?? visitType
-  )
+function trimValue(value: string | null | undefined): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
 }
 
-export function getRecruitmentStepLabel(step: RecruitmentStep): string {
-  return RECRUITMENT_STEP_LABELS[step]
+function requireValue(value: string | null | undefined, message: string): string {
+  const trimmed = trimValue(value)
+  if (!trimmed) {
+    throw new Error(message)
+  }
+
+  return trimmed
+}
+
+export function getSelfServiceVisitReasonLabel(reason: SelfServiceVisitReason): string {
+  return VISIT_REASON_LABELS[reason]
+}
+
+export function getSelfServiceBranchLabel(branch: SelfServiceVisitorBranch): string {
+  return BRANCH_LABELS[branch]
+}
+
+export function getSelfServiceVisitTypeLabel(visitType: SelfServiceVisitType): string {
+  return VISIT_TYPE_LABELS[visitType]
 }
 
 export function getVisitPurposeLabel(purpose: VisitPurpose): string {
   return VISIT_PURPOSE_LABELS[purpose]
 }
 
-export function buildVisitorReasonSummary(input: {
-  visitType: SelfServiceVisitType
-  visitPurpose: VisitPurpose
-  recruitmentStep?: RecruitmentStep
+export function reasonRequiresBranch(reason: SelfServiceVisitReason): boolean {
+  return reason !== 'recruitment'
+}
+
+export function reasonRequiresMemberSelection(reason: SelfServiceVisitReason): boolean {
+  return reason === 'meeting'
+}
+
+export function reasonRequiresEventSelection(reason: SelfServiceVisitReason): boolean {
+  return reason === 'event'
+}
+
+export function reasonUsesContractInputs(reason: SelfServiceVisitReason): boolean {
+  return reason === 'contract_work'
+}
+
+function resolveVisitType(
+  reason: SelfServiceVisitReason,
+  branch?: SelfServiceVisitorBranch
+): SelfServiceVisitType {
+  if (reason === 'recruitment') return 'recruitment'
+  if (reason === 'contract_work') return 'contractor'
+
+  if (!branch) {
+    throw new Error('Select Military or Civilian to continue')
+  }
+
+  return branch === 'military' ? 'military' : 'guest'
+}
+
+function resolveVisitPurpose(reason: SelfServiceVisitReason): VisitPurpose {
+  if (reason === 'contract_work') return 'other'
+  if (reason === 'meeting') return 'appointment'
+  return 'information'
+}
+
+export interface ReasonFirstVisitSummaryInput {
+  reason: SelfServiceVisitReason
+  branch?: SelfServiceVisitorBranch
   organization?: string
-  unit?: string
+  workDescription?: string
+  eventTitle?: string
+  eventDateLabel?: string
   hostDisplayName?: string
-  purposeDetails?: string
-}): string {
-  const parts: string[] = []
-  const details = input.purposeDetails?.trim()
+  rankPrefix?: string
+  unit?: string
+}
 
-  if (input.visitType === 'recruitment' && input.recruitmentStep) {
-    parts.push(getRecruitmentStepLabel(input.recruitmentStep))
-  } else if (input.visitType === 'contractor' && input.organization) {
-    parts.push(`Contractor visit for ${input.organization}`)
-  } else if (input.visitType === 'military' && input.unit) {
-    parts.push(`Military visitor from ${input.unit}`)
-  } else {
-    parts.push(`${getSelfServiceVisitTypeLabel(input.visitType)} visit`)
+export function buildReasonFirstVisitSummary(input: ReasonFirstVisitSummaryInput): string {
+  const parts: string[] = [`Reason: ${getSelfServiceVisitReasonLabel(input.reason)}`]
+
+  if (input.branch) {
+    parts.push(`Category: ${getSelfServiceBranchLabel(input.branch)}`)
   }
 
-  if (input.visitType === 'contractor') {
-    if (details) {
-      parts.push(`Work: ${details}`)
-    }
-
-    return parts.join(' | ')
+  const rankPrefix = trimValue(input.rankPrefix)
+  if (rankPrefix) {
+    parts.push(`Rank: ${rankPrefix}`)
   }
 
-  if (input.hostDisplayName && ['member_invited', 'appointment'].includes(input.visitPurpose)) {
-    parts.push(`${getVisitPurposeLabel(input.visitPurpose)} with ${input.hostDisplayName}`)
-  } else if (!(input.visitPurpose === 'other' && details)) {
-    parts.push(getVisitPurposeLabel(input.visitPurpose))
+  const unit = trimValue(input.unit)
+  if (unit) {
+    parts.push(`Unit: ${unit}`)
   }
 
-  if (details) {
-    parts.push(details)
+  const organization = trimValue(input.organization)
+  if (organization) {
+    parts.push(`Company/Organization: ${organization}`)
+  }
+
+  const workDescription = trimValue(input.workDescription)
+  if (workDescription) {
+    parts.push(`Work: ${workDescription}`)
+  }
+
+  const eventTitle = trimValue(input.eventTitle)
+  if (eventTitle) {
+    const eventDate = trimValue(input.eventDateLabel)
+    parts.push(eventDate ? `Event: ${eventTitle} (${eventDate})` : `Event: ${eventTitle}`)
+  }
+
+  const hostDisplayName = trimValue(input.hostDisplayName)
+  if (hostDisplayName) {
+    parts.push(`Meeting with: ${hostDisplayName}`)
   }
 
   return parts.join(' | ')
+}
+
+export interface BuildReasonFirstVisitorPayloadInput {
+  kioskId: string
+  reason: SelfServiceVisitReason
+  branch?: SelfServiceVisitorBranch
+  firstName?: string
+  lastName?: string
+  initials?: string
+  rankPrefix?: string
+  unit?: string
+  organization?: string
+  workDescription?: string
+  licensePlate?: string
+  hostMemberId?: string
+  hostDisplayName?: string
+  eventId?: string
+  eventTitle?: string
+  eventDateLabel?: string
+}
+
+export function buildReasonFirstVisitorPayload(
+  input: BuildReasonFirstVisitorPayloadInput
+): CreateVisitorInput {
+  const visitType = resolveVisitType(input.reason, input.branch)
+  const visitPurpose = resolveVisitPurpose(input.reason)
+
+  if (reasonRequiresBranch(input.reason) && !input.branch) {
+    throw new Error('Select Military or Civilian to continue')
+  }
+
+  const rankPrefix = trimValue(input.rankPrefix)
+  const unit = trimValue(input.unit)
+
+  const isMilitaryIdentity = input.reason !== 'recruitment' && input.branch === 'military'
+
+  const firstName = isMilitaryIdentity
+    ? requireValue(input.initials, 'Initials are required for military visitors')
+    : requireValue(input.firstName, 'First name is required')
+
+  const lastName = requireValue(input.lastName, 'Last name is required')
+
+  if (isMilitaryIdentity) {
+    if (!rankPrefix) {
+      throw new Error('Rank is required for military visitors')
+    }
+
+    if (!unit) {
+      throw new Error('Unit is required for military visitors')
+    }
+  }
+
+  const payload: CreateVisitorInput = {
+    firstName,
+    lastName,
+    name: [rankPrefix, firstName, lastName].filter(Boolean).join(' '),
+    visitType,
+    kioskId: input.kioskId,
+    checkInMethod: 'kiosk_self_service',
+    visitPurpose,
+    visitReason: buildReasonFirstVisitSummary({
+      reason: input.reason,
+      branch: input.branch,
+      organization: input.organization,
+      workDescription: input.workDescription,
+      eventTitle: input.eventTitle,
+      eventDateLabel: input.eventDateLabel,
+      hostDisplayName: input.hostDisplayName,
+      rankPrefix,
+      unit,
+    }),
+  }
+
+  if (rankPrefix) {
+    payload.rankPrefix = rankPrefix
+  }
+
+  if (unit) {
+    payload.unit = unit
+  }
+
+  const licensePlate = trimValue(input.licensePlate)
+  if (licensePlate) {
+    payload.licensePlate = licensePlate
+  }
+
+  if (input.reason === 'recruitment') {
+    payload.recruitmentStep = RECRUITMENT_DEFAULT_STEP
+  }
+
+  if (input.reason === 'contract_work') {
+    const organization = requireValue(
+      input.organization,
+      'Company/Organization name is required for contract work visits'
+    )
+    const workDescription = requireValue(
+      input.workDescription,
+      'Work description is required for contract work visits'
+    )
+
+    payload.organization = organization
+    payload.purposeDetails = workDescription
+  }
+
+  if (reasonRequiresMemberSelection(input.reason)) {
+    payload.hostMemberId = requireValue(
+      input.hostMemberId,
+      'Select a member for meeting visits before continuing'
+    )
+  } else {
+    const optionalHostMemberId = trimValue(input.hostMemberId)
+    if (optionalHostMemberId) {
+      payload.hostMemberId = optionalHostMemberId
+    }
+  }
+
+  if (reasonRequiresEventSelection(input.reason)) {
+    const eventId = requireValue(input.eventId, 'Select an event before continuing')
+    payload.eventId = eventId
+
+    const eventTitle = trimValue(input.eventTitle)
+    const eventDateLabel = trimValue(input.eventDateLabel)
+
+    if (eventTitle) {
+      payload.purposeDetails = eventDateLabel
+        ? `Event selected: ${eventTitle} (${eventDateLabel})`
+        : `Event selected: ${eventTitle}`
+    } else {
+      payload.purposeDetails = 'Event visit'
+    }
+  }
+
+  return payload
+}
+
+export interface VisitorInstructionInput {
+  visitType: SelfServiceVisitType
+  visitPurpose?: VisitPurpose
+  hostDisplayName?: string
 }
 
 export function getVisitorFinalInstructions(input: VisitorInstructionInput): {

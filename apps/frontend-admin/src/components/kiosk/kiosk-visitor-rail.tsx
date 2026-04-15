@@ -2,14 +2,7 @@
 
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronRight, UserRoundPlus } from 'lucide-react'
-import { AppBadge } from '@/components/ui/AppBadge'
-import {
-  AppCard,
-  AppCardContent,
-  AppCardDescription,
-  AppCardHeader,
-  AppCardTitle,
-} from '@/components/ui/AppCard'
+import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { Chip } from '@/components/ui/chip'
 import {
   VisitorSelfSigninFlow,
@@ -51,8 +44,8 @@ export function KioskVisitorRail({
             className="h-full min-h-full"
           >
             <AppCard
-              status="info"
-              className="flex h-full min-h-0 flex-col border border-base-300 bg-base-100/95 shadow-[var(--shadow-2)] backdrop-blur-sm"
+              status="neutral"
+              className="flex h-full min-h-0 flex-col border border-base-300 bg-base-100/95 shadow-(--shadow-2) backdrop-blur-sm"
             >
               <AppCardHeader
                 className="gap-(--space-3) border-b border-base-300"
@@ -67,21 +60,6 @@ export function KioskVisitorRail({
                   >
                     Visitor Sign-In
                   </Chip>
-                  <AppBadge status="info">ACTIVE</AppBadge>
-                </div>
-                <div className="flex items-start gap-(--space-3)">
-                  <div className="rounded-box border border-secondary/20 bg-secondary-fadded p-(--space-3) text-secondary-fadded-content">
-                    <UserRoundPlus className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <AppCardTitle className="font-display text-3xl leading-tight text-base-content">
-                      Visitor check-in
-                    </AppCardTitle>
-                    <AppCardDescription className="mt-(--space-2) text-sm leading-relaxed text-base-content/72">
-                      Complete your visitor check-in here. Member scan confirmations return when
-                      this flow closes.
-                    </AppCardDescription>
-                  </div>
                 </div>
               </AppCardHeader>
 
@@ -108,7 +86,7 @@ export function KioskVisitorRail({
             className="h-full min-h-full"
           >
             <AppCard
-              status="info"
+              status="neutral"
               className="flex h-full min-h-0 flex-col border border-base-300 bg-base-100/95 shadow-[var(--shadow-2)] backdrop-blur-sm"
             >
               <AppCardHeader className="gap-(--space-4)" style={{ padding: 'var(--space-5)' }}>
@@ -121,60 +99,31 @@ export function KioskVisitorRail({
                   >
                     Visitor Sign-In
                   </Chip>
-                  <AppBadge status="info">READY</AppBadge>
                 </div>
 
                 <div className="flex items-start gap-(--space-3)">
-                  <div className="rounded-box border border-secondary/20 bg-secondary-fadded p-(--space-3) text-secondary-fadded-content">
+                  <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3) text-primary">
                     <UserRoundPlus className="h-7 w-7" />
                   </div>
                   <div>
                     <AppCardTitle className="font-display text-3xl leading-tight text-base-content">
-                      Visitor check-in
+                      Visitor Sign-In
                     </AppCardTitle>
-                    <AppCardDescription className="mt-(--space-2) text-base leading-relaxed text-base-content/72">
-                      Visitors can check themselves in here for family, recruiting, contractor, and
-                      invited guest visits.
-                    </AppCardDescription>
-                  </div>
-                </div>
-
-                <div className="grid gap-(--space-3)">
-                  <div className="rounded-box border border-base-300 bg-base-200/50 px-(--space-4) py-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">
-                      Step 1
-                    </p>
-                    <p className="mt-(--space-1) text-sm leading-relaxed text-base-content/75">
-                      Enter your details and the reason for your visit.
-                    </p>
-                  </div>
-                  <div className="rounded-box border border-base-300 bg-base-200/50 px-(--space-4) py-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">
-                      Step 2
-                    </p>
-                    <p className="mt-(--space-1) text-sm leading-relaxed text-base-content/75">
-                      Review your visit and complete your visitor check-in.
-                    </p>
                   </div>
                 </div>
               </AppCardHeader>
 
               <AppCardContent
-                className="mt-auto"
+                className="mt-auto flex"
                 style={{ padding: '0 var(--space-5) var(--space-5)' }}
               >
                 <button
                   type="button"
-                  className="btn btn-secondary btn-xl h-auto min-h-24 w-full justify-between"
+                  className="btn btn-secondary btn-lg gap-(--space-4) px-(--space-5) py-(--space-4) text-xl"
                   onClick={onStart}
                   disabled={fatalOperationalOutage}
                 >
-                  <span className="text-left">
-                    <span className="block text-lg font-semibold">Start visitor check-in</span>
-                    <span className="mt-(--space-1) block text-sm font-normal opacity-80">
-                      Begin the guided self check-in steps
-                    </span>
-                  </span>
+                  <span className="text-left text-xl font-semibold">Start</span>
                   <ChevronRight className="h-6 w-6" />
                 </button>
               </AppCardContent>

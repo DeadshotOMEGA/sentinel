@@ -39,27 +39,24 @@ export function BadgesFilters({ filters, onFilterChange }: BadgesFiltersProps) {
 
   return (
     <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <fieldset className="fieldset md:col-span-2">
-          <legend className="fieldset-legend">Search</legend>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
-            <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-9"
-              id="badge-search"
-              placeholder="Search by serial number, member name, or service number..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              data-testid={TID.badges.filter.search}
-            />
-          </div>
-        </fieldset>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <label className="input w-full md:col-span-2">
+          <span className="label">Search</span>
+          <Search className="h-4 w-4 text-base-content/60" />
+          <input
+            id="badge-search"
+            className="grow"
+            placeholder="Search by serial number, member name, or service number..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            data-testid={TID.badges.filter.search}
+          />
+        </label>
 
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Status</legend>
+        <label className="select w-full">
+          <span className="label">Status</span>
           <select
             id="badge-status"
-            className="select"
             value={filters.status ?? 'all'}
             onChange={(e) =>
               onFilterChange({ status: e.target.value === 'all' ? undefined : e.target.value })
@@ -73,13 +70,12 @@ export function BadgesFilters({ filters, onFilterChange }: BadgesFiltersProps) {
             <option value="damaged">Damaged</option>
             <option value="decommissioned">Decommissioned</option>
           </select>
-        </fieldset>
+        </label>
 
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Assignment</legend>
+        <label className="select w-full">
+          <span className="label">Assignment</span>
           <select
             id="badge-assignment-type"
-            className="select"
             value={filters.assignmentType ?? 'all'}
             onChange={(e) =>
               onFilterChange({
@@ -93,7 +89,7 @@ export function BadgesFilters({ filters, onFilterChange }: BadgesFiltersProps) {
             <option value="visitor">Visitor</option>
             <option value="unassigned">Unassigned</option>
           </select>
-        </fieldset>
+        </label>
 
         {hasActiveFilters && (
           <div className="flex items-end">

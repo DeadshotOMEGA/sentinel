@@ -123,14 +123,9 @@ export function BulkEditMemberModal({
 
         <div className="space-y-4 py-4">
           {/* Rank */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Rank</legend>
-            <select
-              id="bulk-rank"
-              className="select"
-              value={rank}
-              onChange={(e) => setRank(e.target.value)}
-            >
+          <label className="select w-full">
+            <span className="label">Rank</span>
+            <select id="bulk-rank" value={rank} onChange={(e) => setRank(e.target.value)}>
               <option value={NO_CHANGE}>Don&apos;t change</option>
               {enums?.ranks.map((r: string) => (
                 <option key={r} value={r}>
@@ -138,14 +133,13 @@ export function BulkEditMemberModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Division */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Division</legend>
+          <label className="select w-full">
+            <span className="label">Division</span>
             <select
               id="bulk-division"
-              className="select"
               value={divisionId}
               onChange={(e) => setDivisionId(e.target.value)}
             >
@@ -156,14 +150,13 @@ export function BulkEditMemberModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Member Status */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Status</legend>
+          <label className="select w-full">
+            <span className="label">Status</span>
             <select
               id="bulk-status"
-              className="select"
               value={memberStatusId}
               onChange={(e) => setMemberStatusId(e.target.value)}
             >
@@ -174,14 +167,13 @@ export function BulkEditMemberModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Member Type */}
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Member Type</legend>
+          <label className="select w-full">
+            <span className="label">Member Type</span>
             <select
               id="bulk-type"
-              className="select"
               value={memberTypeId}
               onChange={(e) => setMemberTypeId(e.target.value)}
             >
@@ -192,7 +184,7 @@ export function BulkEditMemberModal({
                 </option>
               ))}
             </select>
-          </fieldset>
+          </label>
 
           {/* Progress indicator */}
           {isSubmitting && (

@@ -1,0 +1,12 @@
+flowchart TD
+    START([Contractor Selected]) --> COMPANY[Step 2: Enter Company Name]
+    COMPANY --> NAME[Step 2: Enter First Name + Last Name]
+    NAME --> OPT[Optional: Mobile Phone + License Plate]
+
+    OPT --> WORK[Step 3: Enter Work Details]
+    WORK --> REQUIRED{Work details provided?}
+    REQUIRED -->|No| BLOCK[Cannot continue]
+    REQUIRED -->|Yes| REVIEW[Step 4: Review]
+
+    REVIEW --> SUBMIT[Submit]
+    SUBMIT --> COMPLETE([Contractor Complete / Report to Duty Desk])

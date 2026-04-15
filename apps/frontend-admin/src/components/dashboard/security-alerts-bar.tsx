@@ -109,17 +109,17 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <label className="label" htmlFor={`note-${alert.id}`}>
-              <span className="label-text">Note (optional)</span>
-            </label>
-            <textarea
-              id={`note-${alert.id}`}
-              className="textarea textarea-bordered w-full"
-              placeholder="Reason for acknowledging, action taken, etc."
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            <fieldset className="fieldset">
+              <legend className="fieldset-legend">Note (optional)</legend>
+              <textarea
+                id={`note-${alert.id}`}
+                className="textarea w-full"
+                placeholder="Reason for acknowledging, action taken, etc."
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </fieldset>
           </div>
           <DialogFooter>
             <DialogClose className="btn btn-outline">Cancel</DialogClose>

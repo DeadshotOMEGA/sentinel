@@ -165,16 +165,16 @@ export function TransferLockupModal({
               </div>
 
               {/* Notes Field */}
-              <fieldset className="fieldset">
-                <legend className="fieldset-legend">Notes (optional)</legend>
+              <label className="input input-bordered w-full">
+                <span className="label">Notes (optional)</span>
                 <input
-                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                   id="transfer-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Reason for transfer..."
                 />
-              </fieldset>
+              </label>
             </div>
 
             <DialogFooter>

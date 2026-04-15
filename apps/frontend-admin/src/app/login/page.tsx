@@ -485,13 +485,13 @@ function LoginPageContent() {
                   </div>
 
                   <form className="space-y-(--space-3)" onSubmit={handleSetupSubmit}>
-                    <fieldset className="fieldset">
-                      <legend className="fieldset-legend">New PIN</legend>
+                    <label className="input input-lg w-full">
+                      <span className="label">New PIN</span>
                       <input
                         type="password"
                         inputMode="numeric"
                         maxLength={4}
-                        className="input input-lg w-full text-center font-mono text-2xl tracking-[0.45em]"
+                        className="grow text-center font-mono text-2xl tracking-[0.45em]"
                         value={newPin}
                         onChange={(changeEvent) =>
                           setNewPin(changeEvent.target.value.replace(/\D/g, '').slice(0, 4))
@@ -502,18 +502,18 @@ function LoginPageContent() {
                         data-testid={TID.auth.setupPinInput}
                         required
                       />
-                      <p className="label text-base-content/60">
-                        Choose a secure 4-digit PIN that is not easy to guess.
-                      </p>
-                    </fieldset>
+                    </label>
+                    <p className="label text-base-content/60">
+                      Choose a secure 4-digit PIN that is not easy to guess.
+                    </p>
 
-                    <fieldset className="fieldset">
-                      <legend className="fieldset-legend">Confirm New PIN</legend>
+                    <label className="input input-lg w-full">
+                      <span className="label">Confirm New PIN</span>
                       <input
                         type="password"
                         inputMode="numeric"
                         maxLength={4}
-                        className="input input-lg w-full text-center font-mono text-2xl tracking-[0.45em]"
+                        className="grow text-center font-mono text-2xl tracking-[0.45em]"
                         value={confirmPin}
                         onChange={(changeEvent) =>
                           setConfirmPin(changeEvent.target.value.replace(/\D/g, '').slice(0, 4))
@@ -524,7 +524,7 @@ function LoginPageContent() {
                         data-testid={TID.auth.setupPinConfirmInput}
                         required
                       />
-                    </fieldset>
+                    </label>
 
                     <div className="grid grid-cols-2 gap-(--space-2)">
                       <button
