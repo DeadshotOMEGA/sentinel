@@ -453,22 +453,25 @@ export default function DdsPage() {
                           }}
                         />
 
-                        <textarea
-                          className="textarea textarea-bordered h-24 w-full"
-                          value={contact.notes ?? ''}
-                          placeholder="Optional notes"
-                          onChange={(event) => {
-                            const nextNotes = normalizeOptionalInput(event.target.value)
-                            updateDraft((current) => {
-                              const nextContacts = [...current.quickContacts]
-                              nextContacts[contactIndex] = {
-                                ...nextContacts[contactIndex],
-                                notes: nextNotes,
-                              }
-                              return { ...current, quickContacts: nextContacts }
-                            })
-                          }}
-                        />
+                        <fieldset className="fieldset">
+                          <legend className="fieldset-legend">Notes (optional)</legend>
+                          <textarea
+                            className="textarea h-24 w-full"
+                            value={contact.notes ?? ''}
+                            placeholder="Optional notes"
+                            onChange={(event) => {
+                              const nextNotes = normalizeOptionalInput(event.target.value)
+                              updateDraft((current) => {
+                                const nextContacts = [...current.quickContacts]
+                                nextContacts[contactIndex] = {
+                                  ...nextContacts[contactIndex],
+                                  notes: nextNotes,
+                                }
+                                return { ...current, quickContacts: nextContacts }
+                              })
+                            }}
+                          />
+                        </fieldset>
                       </section>
                     ))}
 
@@ -1168,22 +1171,25 @@ export default function DdsPage() {
                           </select>
                         </div>
 
-                        <textarea
-                          className="textarea textarea-bordered h-24 w-full"
-                          value={download.description ?? ''}
-                          placeholder="Optional description"
-                          onChange={(event) => {
-                            const nextDescription = normalizeOptionalInput(event.target.value)
-                            updateDraft((current) => {
-                              const nextDownloads = [...current.referenceDownloads]
-                              nextDownloads[downloadIndex] = {
-                                ...nextDownloads[downloadIndex],
-                                description: nextDescription,
-                              }
-                              return { ...current, referenceDownloads: nextDownloads }
-                            })
-                          }}
-                        />
+                        <fieldset className="fieldset">
+                          <legend className="fieldset-legend">Description (optional)</legend>
+                          <textarea
+                            className="textarea h-24 w-full"
+                            value={download.description ?? ''}
+                            placeholder="Optional description"
+                            onChange={(event) => {
+                              const nextDescription = normalizeOptionalInput(event.target.value)
+                              updateDraft((current) => {
+                                const nextDownloads = [...current.referenceDownloads]
+                                nextDownloads[downloadIndex] = {
+                                  ...nextDownloads[downloadIndex],
+                                  description: nextDescription,
+                                }
+                                return { ...current, referenceDownloads: nextDownloads }
+                              })
+                            }}
+                          />
+                        </fieldset>
                       </section>
                     ))}
 

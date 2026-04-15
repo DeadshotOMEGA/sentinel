@@ -652,21 +652,18 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
               </div>
 
               <div className="space-y-2 rounded-box border border-base-300 bg-base-100 p-3">
-                <label
-                  className="text-sm font-medium text-base-content/80"
-                  htmlFor="dds-admin-note"
-                >
-                  Note (optional)
+                <label className="input input-bordered w-full" htmlFor="dds-admin-note">
+                  <span className="label">Note (optional)</span>
+                  <input
+                    id="dds-admin-note"
+                    type="text"
+                    className="grow"
+                    placeholder="e.g., scheduled DDS called in sick"
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                  />
                 </label>
                 <p className="text-xs text-base-content/60">{noteHelper}</p>
-                <input
-                  id="dds-admin-note"
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="e.g., scheduled DDS called in sick"
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                />
               </div>
             </div>
           ) : (
@@ -698,21 +695,18 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
               </div>
 
               <div className="space-y-2">
-                <label
-                  className="text-sm font-medium text-base-content/80"
-                  htmlFor="dds-admin-note"
-                >
-                  Note (optional)
+                <label className="input input-bordered w-full" htmlFor="dds-admin-note">
+                  <span className="label">Note (optional)</span>
+                  <input
+                    id="dds-admin-note"
+                    type="text"
+                    className="grow"
+                    placeholder="e.g., scheduled DDS called in sick"
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                  />
                 </label>
                 <p className="text-xs text-base-content/60">{noteHelper}</p>
-                <input
-                  id="dds-admin-note"
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="e.g., scheduled DDS called in sick"
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                />
               </div>
             </div>
           )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Pencil, AlertTriangle, Trash2 } from 'lucide-react'
+import { AlertTriangle, Trash2 } from 'lucide-react'
 import { useUpdateCheckin, useDeleteCheckin } from '@/hooks/use-checkins'
 import type { CheckinWithMemberResponse } from '@sentinel/contracts'
 import {
@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 
@@ -25,16 +24,6 @@ function formatForDatetimeLocal(isoString: string): string {
   const d = new Date(isoString)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function getDisplayName(checkin: CheckinWithMemberResponse): string {
-  if (checkin.type === 'visitor')
-    return checkin.visitorDisplayName ?? checkin.visitorName ?? 'Unknown Visitor'
-  if (!checkin.member) return 'Unknown Member'
-  return (
-    checkin.member.displayName ??
-    `${checkin.member.rank} ${checkin.member.firstName} ${checkin.member.lastName}`
-  )
 }
 
 export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinModalProps) {
@@ -109,8 +98,6 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
     onOpenChange(false)
   }
 
-  const displayName = getDisplayName(checkin)
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent showCloseButton={false} className="max-w-md">
@@ -119,15 +106,13 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
             className="font-display flex items-center gap-2"
             style={{ gap: 'var(--space-2)' }}
           >
-            <Pencil className="h-5 w-5" aria-hidden="true" />
             Edit Check-In Record
           </DialogTitle>
-          <DialogDescription>{displayName}</DialogDescription>
         </DialogHeader>
 
         {/* Audit warning — informational banner uses fadded variant */}
         <div
-          className="flex items-start rounded border border-warning/30 bg-warning-fadded text-base-content text-sm"
+          className="flex items-start rounded border border-warning bg-warning-fadded text-base-content text-sm"
           role="note"
           aria-label="Audit log notice"
           style={{
@@ -203,20 +188,17 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
           </div>
 
           {/* Edit reason — required */}
-          <div className="form-control">
-            <label className="label" htmlFor="edit-checkin-reason">
-              <span className="label-text font-medium">
-                Reason for Edit{' '}
-                <span className="text-error" aria-hidden="true">
-                  *
-                </span>
-                <span className="sr-only">(required)</span>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">
+              Reason for Edit{' '}
+              <span className="text-error" aria-hidden="true">
+                *
               </span>
-            </label>
+              <span className="sr-only">(required)</span>
+            </legend>
             <textarea
               id="edit-checkin-reason"
-              className="textarea textarea-bordered w-full resize-none"
-              rows={3}
+              className="textarea h-24 w-full resize-none"
               placeholder="e.g. Wrong member was manually checked in. Correcting timestamp from 19:45 to 20:15."
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
@@ -234,7 +216,7 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
                 {editReason.length}/500 characters
               </span>
             </div>
-          </div>
+          </fieldset>
         </div>
 
         {confirmingDelete ? (

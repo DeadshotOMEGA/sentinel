@@ -241,7 +241,7 @@ export function EditVisitorModal({ visitorId, open, onOpenChange }: EditVisitorM
                   <legend className="fieldset-legend">Visit Reason</legend>
                   <textarea
                     id="edit-visitor-reason"
-                    className="textarea textarea-bordered w-full resize-none"
+                    className="textarea w-full resize-none"
                     rows={2}
                     placeholder="Purpose of visit"
                     maxLength={500}
@@ -262,7 +262,7 @@ export function EditVisitorModal({ visitorId, open, onOpenChange }: EditVisitorM
                   <legend className="fieldset-legend">Admin Notes</legend>
                   <textarea
                     id="edit-visitor-notes"
-                    className="textarea textarea-bordered w-full resize-none"
+                    className="textarea w-full resize-none"
                     rows={2}
                     placeholder="Internal notes (optional)"
                     maxLength={1000}

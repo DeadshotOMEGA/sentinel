@@ -3,16 +3,18 @@
 import * as React from 'react'
 import { XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { registerOpenModal } from '@/lib/modal-root-scrollbar-gutter'
 import { MODAL_SIZE, type ModalSize } from '@/lib/constants/modal-sizes'
 
 interface DialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   dismissible?: boolean
+  className?: string
   children: React.ReactNode
 }
 
-function Dialog({ open, onOpenChange, dismissible = true, children }: DialogProps) {
+function Dialog({ open, onOpenChange, dismissible = true, className, children }: DialogProps) {
   const dialogRef = React.useRef<React.ElementRef<'dialog'>>(null)
 
   React.useEffect(() => {
@@ -52,8 +54,13 @@ function Dialog({ open, onOpenChange, dismissible = true, children }: DialogProp
     return () => dialog.removeEventListener('close', handleClose)
   }, [onOpenChange])
 
+  React.useEffect(() => {
+    if (!open) return
+    return registerOpenModal()
+  }, [open])
+
   return (
-    <dialog ref={dialogRef} className="modal" data-slot="dialog">
+    <dialog ref={dialogRef} className={cn('modal', className)} data-slot="dialog">
       {children}
       {dismissible && (
         <form method="dialog" className="modal-backdrop">

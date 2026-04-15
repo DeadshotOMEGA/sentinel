@@ -119,9 +119,7 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
           <>
             {/* Member selector */}
             <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Opening Member</span>
-              </label>
+              <p className="mb-2 text-sm font-medium text-base-content/80">Opening Member</p>
 
               {selectedMember ? (
                 <div className="flex items-center gap-2 p-3 bg-base-200 rounded-lg">
