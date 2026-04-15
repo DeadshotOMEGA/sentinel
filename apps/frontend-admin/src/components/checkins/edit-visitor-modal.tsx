@@ -182,27 +182,31 @@ export function EditVisitorModal({ visitorId, open, onOpenChange }: EditVisitorM
 
               <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 'var(--space-2)' }}>
                 <fieldset className="fieldset">
-                  <legend className="fieldset-legend">
-                    Full Name{' '}
-                    <span className="text-error" aria-hidden="true">
-                      *
-                    </span>
-                    <span className="sr-only">(required)</span>
-                  </legend>
-                  <input
-                    id="edit-visitor-name"
-                    type="text"
+                  <label
                     className={`input input-bordered w-full ${errors.name ? 'input-error' : ''}`}
-                    placeholder="Visitor full name"
-                    maxLength={200}
-                    aria-invalid={errors.name ? 'true' : 'false'}
-                    aria-describedby={errors.name ? 'edit-visitor-name-error' : undefined}
-                    {...register('name', {
-                      required: 'Visitor name is required',
-                      validate: (value) =>
-                        value.trim().length > 0 || 'Visitor name cannot be empty',
-                    })}
-                  />
+                  >
+                    <span className="label">
+                      Full Name{' '}
+                      <span className="text-error" aria-hidden="true">
+                        *
+                      </span>
+                      <span className="sr-only">(required)</span>
+                    </span>
+                    <input
+                      id="edit-visitor-name"
+                      type="text"
+                      className="grow"
+                      placeholder="Visitor full name"
+                      maxLength={200}
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                      aria-describedby={errors.name ? 'edit-visitor-name-error' : undefined}
+                      {...register('name', {
+                        required: 'Visitor name is required',
+                        validate: (value) =>
+                          value.trim().length > 0 || 'Visitor name cannot be empty',
+                      })}
+                    />
+                  </label>
                   {errors.name && (
                     <p id="edit-visitor-name-error" className="label text-error">
                       {errors.name.message}
@@ -210,32 +214,28 @@ export function EditVisitorModal({ visitorId, open, onOpenChange }: EditVisitorM
                   )}
                 </fieldset>
 
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Organization</legend>
+                <label className="input input-bordered w-full">
+                  <span className="label">Organization</span>
                   <input
                     id="edit-visitor-organization"
                     type="text"
-                    className="input input-bordered w-full"
+                    className="grow"
                     placeholder="Company or organization"
                     maxLength={200}
                     {...register('organization')}
                   />
-                </fieldset>
+                </label>
 
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Visit Type</legend>
-                  <select
-                    id="edit-visitor-type"
-                    className="select select-bordered w-full"
-                    {...register('visitType')}
-                  >
+                <label className="select select-bordered w-full">
+                  <span className="label">Visit Type</span>
+                  <select id="edit-visitor-type" {...register('visitType')}>
                     {VISIT_TYPES.map((type) => (
                       <option key={type} value={type}>
                         {VISIT_TYPE_LABELS[type]}
                       </option>
                     ))}
                   </select>
-                </fieldset>
+                </label>
 
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Visit Reason</legend>

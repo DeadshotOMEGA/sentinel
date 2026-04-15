@@ -93,15 +93,16 @@ export function TableSidebar({
     <div className="w-64 border-r bg-base-100 flex flex-col h-full">
       {/* Search */}
       <div className="p-3 border-b">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-base-content/60" />
+        <label className="input h-9 w-full">
+          <span className="label">Search</span>
+          <Search className="h-4 w-4 text-base-content/60" />
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-8 h-9"
+            className="grow"
             placeholder="Search tables..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </label>
       </div>
 
       {/* Table list */}

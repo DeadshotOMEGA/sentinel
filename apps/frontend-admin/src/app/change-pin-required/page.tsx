@@ -109,33 +109,33 @@ function ChangePinRequiredContent() {
           )}
 
           <form className="space-y-(--space-3)" onSubmit={handleSubmit}>
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">New PIN</legend>
+            <label className="input w-full">
+              <span className="label">New PIN</span>
               <input
                 type="password"
                 inputMode="numeric"
                 maxLength={4}
-                className="input font-mono text-center tracking-[0.5em]"
+                className="grow font-mono text-center tracking-[0.5em]"
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 disabled={loading}
                 required
               />
-            </fieldset>
+            </label>
 
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Confirm New PIN</legend>
+            <label className="input w-full">
+              <span className="label">Confirm New PIN</span>
               <input
                 type="password"
                 inputMode="numeric"
                 maxLength={4}
-                className="input font-mono text-center tracking-[0.5em]"
+                className="grow font-mono text-center tracking-[0.5em]"
                 value={confirmPin}
                 onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 disabled={loading}
                 required
               />
-            </fieldset>
+            </label>
 
             <div className="flex items-center justify-end gap-(--space-2) pt-(--space-2)">
               <button

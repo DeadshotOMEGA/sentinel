@@ -146,23 +146,24 @@ export function PinInput({
         </fieldset>
       ) : (
         <fieldset className="fieldset">
-          <legend className="fieldset-legend">Remote system</legend>
-          <select
-            className="select w-full"
-            value={effectiveSelectedRemoteSystem}
-            onChange={(event) => setSelectedRemoteSystem(event.target.value)}
-            disabled={loading}
-            data-testid={TID.auth.remoteSystemSelect}
-          >
-            <option value="" disabled>
-              Select a remote system
-            </option>
-            {remoteSystems.map((system) => (
-              <option key={system.id} value={system.id}>
-                {system.name}
+          <label className="select w-full">
+            <span className="label">Remote system</span>
+            <select
+              value={effectiveSelectedRemoteSystem}
+              onChange={(event) => setSelectedRemoteSystem(event.target.value)}
+              disabled={loading}
+              data-testid={TID.auth.remoteSystemSelect}
+            >
+              <option value="" disabled>
+                Select a remote system
               </option>
-            ))}
-          </select>
+              {remoteSystems.map((system) => (
+                <option key={system.id} value={system.id}>
+                  {system.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <p className="label">
             Required so Sentinel can track which managed station is connected.
           </p>
@@ -180,13 +181,13 @@ export function PinInput({
         </fieldset>
       )}
 
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">PIN</legend>
+      <label className="input input-lg w-full">
+        <span className="label">PIN</span>
         <input
           ref={inputRef}
           type="password"
           inputMode="numeric"
-          className="input input-lg w-full text-center font-mono text-2xl tracking-[0.45em]"
+          className="grow text-center font-mono text-2xl tracking-[0.45em]"
           placeholder="- - - -"
           value={pin}
           onChange={handleChange}
@@ -197,7 +198,7 @@ export function PinInput({
           autoComplete="off"
           data-testid={TID.auth.pinInput}
         />
-      </fieldset>
+      </label>
 
       <div className="grid grid-cols-2 gap-(--space-2)">
         <button

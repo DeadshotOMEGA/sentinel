@@ -174,17 +174,17 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
 
           {/* Timestamp */}
           <div className="form-control">
-            <label className="label" htmlFor="edit-checkin-timestamp">
-              <span className="label-text font-medium">Timestamp</span>
+            <label className="input input-bordered w-full" htmlFor="edit-checkin-timestamp">
+              <span className="label">Timestamp</span>
+              <input
+                id="edit-checkin-timestamp"
+                type="datetime-local"
+                className="grow"
+                value={timestamp}
+                onChange={(e) => setTimestamp(e.target.value)}
+                aria-required="false"
+              />
             </label>
-            <input
-              id="edit-checkin-timestamp"
-              type="datetime-local"
-              className="input input-bordered w-full"
-              value={timestamp}
-              onChange={(e) => setTimestamp(e.target.value)}
-              aria-required="false"
-            />
           </div>
 
           {/* Read-only context fields */}

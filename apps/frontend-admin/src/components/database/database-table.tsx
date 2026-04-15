@@ -182,10 +182,9 @@ export function DatabaseTable({
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between px-4 py-4 border-t">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-base-content/60">Rows per page</span>
+          <label className="select select-bordered w-28">
+            <span className="label">Rows</span>
             <select
-              className="select select-bordered w-20"
               value={limit.toString()}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10))
@@ -197,23 +196,23 @@ export function DatabaseTable({
               <option value="50">50</option>
               <option value="100">100</option>
             </select>
-          </div>
+          </label>
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-base-content/60">
               Page {page} of {data.totalPages}
             </span>
 
-            <div className="flex items-center gap-2">
+            <div className="join">
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= data.totalPages}
               >

@@ -152,12 +152,12 @@ export function EventFormModal({
           <div className="space-y-4 py-4">
             {/* Section 1: Basic Info (always visible) */}
             <div className="space-y-4">
-              <fieldset className="fieldset">
-                <legend className="fieldset-legend">
+              <label className="input input-bordered w-full">
+                <span className="label">
                   Title <span className="text-error">*</span>
-                </legend>
+                </span>
                 <input
-                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -166,13 +166,12 @@ export function EventFormModal({
                   aria-required="true"
                   data-testid={TID.events.form.title}
                 />
-              </fieldset>
+              </label>
 
-              <fieldset className="fieldset">
-                <legend className="fieldset-legend">Event Type</legend>
+              <label className="select w-full">
+                <span className="label">Event Type</span>
                 <select
                   id="event-type"
-                  className="select"
                   value={eventTypeId ?? ''}
                   onChange={(e) => setEventTypeId(e.target.value || null)}
                   data-testid={TID.events.form.type}
@@ -184,15 +183,15 @@ export function EventFormModal({
                     </option>
                   ))}
                 </select>
-              </fieldset>
+              </label>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">
+                <label className="input input-bordered w-full">
+                  <span className="label">
                     Date <span className="text-error">*</span>
-                  </legend>
+                  </span>
                   <input
-                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                     id="event-date"
                     type="date"
                     value={eventDate}
@@ -201,31 +200,31 @@ export function EventFormModal({
                     aria-required="true"
                     data-testid={TID.events.form.date}
                   />
-                </fieldset>
+                </label>
 
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Start Time</legend>
+                <label className="input input-bordered w-full">
+                  <span className="label">Start Time</span>
                   <input
-                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                     id="start-time"
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                     data-testid={TID.events.form.startTime}
                   />
-                </fieldset>
+                </label>
 
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">End Time</legend>
+                <label className="input input-bordered w-full">
+                  <span className="label">End Time</span>
                   <input
-                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                     id="end-time"
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
                     data-testid={TID.events.form.endTime}
                   />
-                </fieldset>
+                </label>
               </div>
             </div>
 
@@ -242,17 +241,17 @@ export function EventFormModal({
                 Location & Details
               </div>
               <div className="collapse-content space-y-4">
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Location</legend>
+                <label className="input input-bordered w-full">
+                  <span className="label">Location</span>
                   <input
-                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     maxLength={200}
                     data-testid={TID.events.form.location}
                   />
-                </fieldset>
+                </label>
 
                 <fieldset className="fieldset">
                   <legend className="fieldset-legend">Description</legend>
@@ -266,16 +265,16 @@ export function EventFormModal({
                   />
                 </fieldset>
 
-                <fieldset className="fieldset">
-                  <legend className="fieldset-legend">Organizer</legend>
+                <label className="input input-bordered w-full">
+                  <span className="label">Organizer</span>
                   <input
-                    className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                     id="organizer"
                     value={organizer}
                     onChange={(e) => setOrganizer(e.target.value)}
                     maxLength={200}
                   />
-                </fieldset>
+                </label>
               </div>
             </div>
 
@@ -364,7 +363,12 @@ export function EventFormModal({
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-md" disabled={isSubmitting} data-testid={TID.events.form.submit}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-md"
+              disabled={isSubmitting}
+              data-testid={TID.events.form.submit}
+            >
               {isSubmitting && <ButtonSpinner />}
               {isEditMode ? 'Update Event' : 'Create Event'}
             </button>

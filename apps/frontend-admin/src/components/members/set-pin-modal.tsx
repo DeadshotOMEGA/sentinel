@@ -108,41 +108,37 @@ export function SetPinModal({
             </div>
           )}
 
-          <div className="form-control">
-            <label className="label" htmlFor="set-new-pin">
-              <span className="label-text">New PIN</span>
-            </label>
+          <label className="input input-bordered w-full" htmlFor="set-new-pin">
+            <span className="label">New PIN</span>
             <input
               id="set-new-pin"
               type="password"
               inputMode="numeric"
               maxLength={4}
-              className="input input-bordered font-mono text-center tracking-[0.5em]"
+              className="grow font-mono text-center tracking-[0.5em]"
               value={newPin}
               onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               disabled={loading}
               autoComplete="off"
               required
             />
-          </div>
+          </label>
 
-          <div className="form-control">
-            <label className="label" htmlFor="set-confirm-pin">
-              <span className="label-text">Confirm PIN</span>
-            </label>
+          <label className="input input-bordered w-full" htmlFor="set-confirm-pin">
+            <span className="label">Confirm PIN</span>
             <input
               id="set-confirm-pin"
               type="password"
               inputMode="numeric"
               maxLength={4}
-              className="input input-bordered font-mono text-center tracking-[0.5em]"
+              className="grow font-mono text-center tracking-[0.5em]"
               value={confirmPin}
               onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               disabled={loading}
               autoComplete="off"
               required
             />
-          </div>
+          </label>
 
           <DialogFooter>
             <button

@@ -184,13 +184,9 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
           </AlertDialogHeader>
 
           <div className="space-y-4 py-4">
-            <fieldset className="fieldset">
-              <legend className="fieldset-legend">Tag</legend>
-              <select
-                className="select"
-                value={assignTagId}
-                onChange={(e) => setAssignTagId(e.target.value)}
-              >
+            <label className="select w-full">
+              <span className="label">Tag</span>
+              <select value={assignTagId} onChange={(e) => setAssignTagId(e.target.value)}>
                 <option value="" disabled>
                   Select tag...
                 </option>
@@ -201,7 +197,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
                   </option>
                 ))}
               </select>
-            </fieldset>
+            </label>
 
             {assignTagId && availableTags && (
               <div className="flex items-center gap-2">

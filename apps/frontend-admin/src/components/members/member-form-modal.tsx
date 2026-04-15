@@ -333,29 +333,28 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                   </AppCardHeader>
                   <AppCardContent className="pt-(--space-3)">
                     <div className="grid gap-(--space-3) md:grid-cols-2 xl:grid-cols-3">
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">
                           Service Number <span className="text-error">*</span>
-                        </legend>
+                        </span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="serviceNumber"
                           {...register('serviceNumber', { required: 'Service number is required' })}
                           placeholder="e.g., V123456"
                           data-testid={TID.members.form.serviceNumber}
                         />
-                        {errors.serviceNumber && (
-                          <span className="label text-error">{errors.serviceNumber.message}</span>
-                        )}
-                      </fieldset>
+                      </label>
+                      {errors.serviceNumber && (
+                        <span className="label text-error">{errors.serviceNumber.message}</span>
+                      )}
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">
+                      <label className="select select-bordered select-sm w-full min-w-0">
+                        <span className="label">
                           Rank <span className="text-error">*</span>
-                        </legend>
+                        </span>
                         <select
                           id="rank"
-                          className="select select-bordered select-sm w-full"
                           value={selectedRank}
                           onChange={(e) =>
                             setValue('rank', e.target.value, { shouldValidate: true })
@@ -371,53 +370,53 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                             </option>
                           ))}
                         </select>
-                        {errors.rank && (
-                          <span className="label text-error">{errors.rank.message}</span>
-                        )}
-                      </fieldset>
+                      </label>
+                      {errors.rank && (
+                        <span className="label text-error">{errors.rank.message}</span>
+                      )}
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">
                           Last Name <span className="text-error">*</span>
-                        </legend>
+                        </span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="lastName"
                           {...register('lastName', { required: 'Last name is required' })}
                           placeholder="Doe"
                           data-testid={TID.members.form.lastName}
                         />
-                        {errors.lastName && (
-                          <span className="label text-error">{errors.lastName.message}</span>
-                        )}
-                      </fieldset>
+                      </label>
+                      {errors.lastName && (
+                        <span className="label text-error">{errors.lastName.message}</span>
+                      )}
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">
                           First Name <span className="text-error">*</span>
-                        </legend>
+                        </span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="firstName"
                           {...register('firstName', { required: 'First name is required' })}
                           placeholder="John"
                           data-testid={TID.members.form.firstName}
                         />
-                        {errors.firstName && (
-                          <span className="label text-error">{errors.firstName.message}</span>
-                        )}
-                      </fieldset>
+                      </label>
+                      {errors.firstName && (
+                        <span className="label text-error">{errors.firstName.message}</span>
+                      )}
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">Initials</legend>
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Initials</span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="middleInitial"
                           {...register('middleInitial')}
                           placeholder="M"
                           maxLength={5}
                         />
-                      </fieldset>
+                      </label>
                     </div>
                   </AppCardContent>
                 </AppCard>
@@ -431,13 +430,12 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                   </AppCardHeader>
                   <AppCardContent className="pt-(--space-3)">
                     <div className="grid gap-(--space-3) md:grid-cols-2">
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">
+                      <label className="select select-bordered select-sm w-full min-w-0">
+                        <span className="label">
                           Division <span className="text-error">*</span>
-                        </legend>
+                        </span>
                         <select
                           id="divisionId"
-                          className="select select-bordered select-sm w-full"
                           value={selectedDivisionId}
                           onChange={(e) =>
                             setValue('divisionId', e.target.value, { shouldValidate: true })
@@ -453,16 +451,15 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                             </option>
                           ))}
                         </select>
-                        {errors.divisionId && (
-                          <span className="label text-error">{errors.divisionId.message}</span>
-                        )}
-                      </fieldset>
+                      </label>
+                      {errors.divisionId && (
+                        <span className="label text-error">{errors.divisionId.message}</span>
+                      )}
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">Member Type</legend>
+                      <label className="select select-bordered select-sm w-full min-w-0">
+                        <span className="label">Member Type</span>
                         <select
                           id="memberTypeId"
-                          className="select select-bordered select-sm w-full"
                           value={selectedMemberTypeId}
                           onChange={(e) =>
                             setValue('memberTypeId', e.target.value, { shouldValidate: true })
@@ -475,13 +472,12 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                             </option>
                           ))}
                         </select>
-                      </fieldset>
+                      </label>
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">Member Status</legend>
+                      <label className="select select-bordered select-sm w-full min-w-0">
+                        <span className="label">Member Status</span>
                         <select
                           id="memberStatusId"
-                          className="select select-bordered select-sm w-full"
                           value={selectedMemberStatusId}
                           onChange={(e) =>
                             setValue('memberStatusId', e.target.value, { shouldValidate: true })
@@ -496,29 +492,29 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                             )
                           )}
                         </select>
-                      </fieldset>
+                      </label>
 
-                      <fieldset className="fieldset min-w-0">
-                        <legend className="fieldset-legend">Phone Number</legend>
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Phone Number</span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="phoneNumber"
                           type="tel"
                           {...register('phoneNumber')}
                           placeholder="555-1234"
                         />
-                      </fieldset>
+                      </label>
 
-                      <fieldset className="fieldset min-w-0 md:col-span-2">
-                        <legend className="fieldset-legend">Email</legend>
+                      <label className="input input-bordered input-sm w-full min-w-0 md:col-span-2">
+                        <span className="label">Email</span>
                         <input
-                          className="input input-bordered input-sm w-full disabled:cursor-not-allowed disabled:opacity-50"
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="email"
                           type="email"
                           {...register('email')}
                           placeholder="john.doe@forces.gc.ca"
                         />
-                      </fieldset>
+                      </label>
                     </div>
                   </AppCardContent>
                 </AppCard>
@@ -596,26 +592,25 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                         </div>
 
                         <fieldset className="fieldset min-w-0">
-                          <legend className="fieldset-legend">Find Badge</legend>
-                          <div className="relative">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/60" />
+                          <label className="input input-bordered input-sm w-full max-w-full">
+                            <span className="label">Find Badge</span>
+                            <Search className="h-4 w-4 text-base-content/60" />
                             <input
-                              className="input input-bordered input-sm w-full max-w-full pl-9"
+                              className="grow"
                               value={badgeSearch}
                               onChange={(event) => setBadgeSearch(event.target.value)}
                               placeholder="Filter badge list by serial number..."
                             />
-                          </div>
+                          </label>
                           <p className="label text-base-content/60">
                             Showing active unassigned badges plus the member&apos;s current badge.
                           </p>
                         </fieldset>
 
-                        <fieldset className="fieldset min-w-0">
-                          <legend className="fieldset-legend">Assigned Badge</legend>
+                        <label className="select select-bordered select-sm w-full max-w-full min-w-0">
+                          <span className="label">Assigned Badge</span>
                           <select
                             id="badgeId"
-                            className="select select-bordered select-sm w-full max-w-full"
                             value={selectedBadgeId}
                             onChange={(event) =>
                               setValue('badgeId', event.target.value, { shouldValidate: true })
@@ -628,14 +623,14 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                               </option>
                             ))}
                           </select>
-                          {isBadgesLoading ? (
-                            <p className="label text-base-content/60">Loading badge inventory...</p>
-                          ) : badgeOptions.length === 0 ? (
-                            <p className="label text-base-content/60">
-                              No matching badges are available for assignment.
-                            </p>
-                          ) : null}
-                        </fieldset>
+                        </label>
+                        {isBadgesLoading ? (
+                          <p className="label text-base-content/60">Loading badge inventory...</p>
+                        ) : badgeOptions.length === 0 ? (
+                          <p className="label text-base-content/60">
+                            No matching badges are available for assignment.
+                          </p>
+                        ) : null}
 
                         <div className="rounded-box border border-base-300 p-(--space-3)">
                           <div className="space-y-(--space-2)">
@@ -678,11 +673,10 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                         </div>
 
                         {canManageAccountLevel && (
-                          <fieldset className="fieldset min-w-0">
-                            <legend className="fieldset-legend">Account Level</legend>
+                          <label className="select select-bordered select-sm w-full max-w-full min-w-0">
+                            <span className="label">Account Level</span>
                             <select
                               id="accountLevel"
-                              className="select select-bordered select-sm w-full max-w-full"
                               value={selectedAccountLevel}
                               onChange={(e) =>
                                 setValue(
@@ -701,7 +695,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                                 <option value={AccountLevel.DEVELOPER}>Developer (6)</option>
                               )}
                             </select>
-                          </fieldset>
+                          </label>
                         )}
 
                         {canShowPinSection && (
@@ -757,11 +751,10 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                         </div>
 
                         {canManageAccountLevel && (
-                          <fieldset className="fieldset min-w-0">
-                            <legend className="fieldset-legend">Account Level</legend>
+                          <label className="select select-bordered select-sm w-full max-w-full min-w-0">
+                            <span className="label">Account Level</span>
                             <select
                               id="accountLevel"
-                              className="select select-bordered select-sm w-full max-w-full"
                               value={selectedAccountLevel}
                               onChange={(e) =>
                                 setValue(
@@ -780,7 +773,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                                 <option value={AccountLevel.DEVELOPER}>Developer (6)</option>
                               )}
                             </select>
-                          </fieldset>
+                          </label>
                         )}
                       </>
                     )}

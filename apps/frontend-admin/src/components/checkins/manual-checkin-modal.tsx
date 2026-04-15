@@ -168,6 +168,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
               <div>
                 {selectedMemberInfo ? (
                   <div className="input input-neutral flex items-center gap-2">
+                    <span className="label">Selected</span>
                     <span className="flex-1 truncate">
                       {selectedMemberInfo.displayName ??
                         `${selectedMemberInfo.rank} ${selectedMemberInfo.lastName}, ${selectedMemberInfo.firstName}`}{' '}
@@ -190,19 +191,20 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                   </div>
                 ) : (
                   <>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60 pointer-events-none" />
+                    <label className="input input-neutral w-full">
+                      <span className="label">Search</span>
+                      <Search className="h-4 w-4 text-base-content/60 pointer-events-none" />
                       <input
                         ref={searchInputRef}
                         type="text"
-                        className="input input-neutral w-full pl-10"
+                        className="grow"
                         placeholder="Search by name or service number..."
                         value={memberSearch}
                         onChange={(e) => setMemberSearch(e.target.value)}
                         disabled={isFormBusy}
                         data-testid={TID.checkins.manualModal.memberSearch}
                       />
-                    </div>
+                    </label>
                     <ul className="menu bg-base-200 rounded-box mt-2 w-full max-h-48 overflow-y-auto">
                       {membersData?.members.length === 0 ? (
                         <li className="disabled">

@@ -164,16 +164,16 @@ export function ExecuteLockupModal({
               )}
 
               {/* Note Field */}
-              <fieldset className="fieldset">
-                <legend className="fieldset-legend">Note (optional)</legend>
+              <label className="input input-bordered w-full">
+                <span className="label">Note (optional)</span>
                 <input
-                  className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="grow disabled:opacity-50 disabled:cursor-not-allowed"
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Any notes about tonight's lockup..."
                 />
-              </fieldset>
+              </label>
             </div>
 
             <DialogFooter>

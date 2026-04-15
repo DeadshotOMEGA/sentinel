@@ -73,15 +73,16 @@ export function MemberPickerModal({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
+        <label className="input input-bordered w-full">
+          <span className="label">Search</span>
+          <Search className="h-4 w-4 text-base-content/60" />
           <input
-            className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-10"
+            className="grow disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Search by name or service number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
+        </label>
 
         <div className="flex-1 overflow-y-auto min-h-[200px] max-h-[400px]">
           {isLoading ? (

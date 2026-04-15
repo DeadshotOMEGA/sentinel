@@ -68,20 +68,26 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-base-content/60">{description}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            className="select select-bordered w-[120px]"
-            value={selectedYear.toString()}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            data-testid={TID.settings.statHoliday.yearSelect}
+        <div className="join">
+          <label className="select select-bordered w-36 join-item">
+            <span className="label">Year</span>
+            <select
+              value={selectedYear.toString()}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              data-testid={TID.settings.statHoliday.yearSelect}
+            >
+              {yearOptions.map((year) => (
+                <option key={year} value={year.toString()}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="btn btn-primary btn-md join-item"
+            onClick={() => setIsCreateModalOpen(true)}
+            data-testid={TID.settings.statHoliday.addBtn}
           >
-            {yearOptions.map((year) => (
-              <option key={year} value={year.toString()}>
-                {year}
-              </option>
-            ))}
-          </select>
-          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)} data-testid={TID.settings.statHoliday.addBtn}>
             <Plus className="h-4 w-4 mr-2" />
             Add Holiday
           </button>
@@ -203,7 +209,9 @@ export function StatHolidayTable({ title, description }: StatHolidayTableProps) 
             </div>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid={TID.settings.statHoliday.deleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid={TID.settings.statHoliday.deleteCancel}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-error text-error-content hover:bg-error/90"

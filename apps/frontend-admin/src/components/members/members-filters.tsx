@@ -56,29 +56,24 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
 
   return (
     <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-        {/* Search */}
-        <fieldset className="fieldset md:col-span-2">
-          <legend className="fieldset-legend">Search</legend>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/60" />
-            <input
-              className="input input-bordered w-full disabled:opacity-50 disabled:cursor-not-allowed pl-9"
-              id="search"
-              placeholder="Search by name or service number..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              data-testid={TID.members.filter.search}
-            />
-          </div>
-        </fieldset>
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <label className="input w-full md:col-span-2">
+          <span className="label">Search</span>
+          <Search className="h-4 w-4 text-base-content/60" />
+          <input
+            id="search"
+            className="grow"
+            placeholder="Search by name or service number..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            data-testid={TID.members.filter.search}
+          />
+        </label>
 
-        {/* Division Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Division</legend>
+        <label className="select w-full">
+          <span className="label">Division</span>
           <select
             id="division"
-            className="select"
             value={filters.divisionId ?? 'all'}
             onChange={(e) =>
               onFilterChange({ divisionId: e.target.value === 'all' ? undefined : e.target.value })
@@ -92,14 +87,12 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
               </option>
             ))}
           </select>
-        </fieldset>
+        </label>
 
-        {/* Rank Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Rank</legend>
+        <label className="select w-full">
+          <span className="label">Rank</span>
           <select
             id="rank"
-            className="select"
             value={filters.rank ?? 'all'}
             onChange={(e) =>
               onFilterChange({ rank: e.target.value === 'all' ? undefined : e.target.value })
@@ -113,14 +106,12 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
               </option>
             ))}
           </select>
-        </fieldset>
+        </label>
 
-        {/* Status Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Status</legend>
+        <label className="select w-full">
+          <span className="label">Status</span>
           <select
             id="status"
-            className="select"
             value={filters.status ?? 'active'}
             onChange={(e) =>
               onFilterChange({ status: e.target.value === 'all' ? undefined : e.target.value })
@@ -131,14 +122,12 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-        </fieldset>
+        </label>
 
-        {/* Qualification Filter */}
-        <fieldset className="fieldset">
-          <legend className="fieldset-legend">Qualification</legend>
+        <label className="select w-full">
+          <span className="label">Qualification</span>
           <select
             id="qualification"
-            className="select"
             value={filters.qualificationCode ?? 'all'}
             onChange={(e) =>
               onFilterChange({
@@ -154,7 +143,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
               </option>
             ))}
           </select>
-        </fieldset>
+        </label>
 
         {/* Clear Filters Button */}
         {hasActiveFilters && (

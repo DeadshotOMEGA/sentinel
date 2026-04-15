@@ -104,53 +104,53 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
             </div>
           )}
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Current PIN</legend>
+          <label className="input w-full">
+            <span className="label">Current PIN</span>
             <input
               id="current-pin"
               type="password"
               inputMode="numeric"
               maxLength={4}
-              className="input font-mono text-center tracking-[0.5em]"
+              className="grow font-mono text-center tracking-[0.5em]"
               value={currentPin}
               onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               disabled={loading}
               autoComplete="off"
               required
             />
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">New PIN</legend>
+          <label className="input w-full">
+            <span className="label">New PIN</span>
             <input
               id="new-pin"
               type="password"
               inputMode="numeric"
               maxLength={4}
-              className="input font-mono text-center tracking-[0.5em]"
+              className="grow font-mono text-center tracking-[0.5em]"
               value={newPin}
               onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               disabled={loading}
               autoComplete="off"
               required
             />
-          </fieldset>
+          </label>
 
-          <fieldset className="fieldset">
-            <legend className="fieldset-legend">Confirm New PIN</legend>
+          <label className="input w-full">
+            <span className="label">Confirm New PIN</span>
             <input
               id="confirm-pin"
               type="password"
               inputMode="numeric"
               maxLength={4}
-              className="input font-mono text-center tracking-[0.5em]"
+              className="grow font-mono text-center tracking-[0.5em]"
               value={confirmPin}
               onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               disabled={loading}
               autoComplete="off"
               required
             />
-          </fieldset>
+          </label>
 
           <DialogFooter>
             <button

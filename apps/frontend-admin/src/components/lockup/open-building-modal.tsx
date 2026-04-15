@@ -140,16 +140,17 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
                 </div>
               ) : (
                 <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/50" />
+                  <label className="input input-bordered w-full">
+                    <span className="label">Search</span>
+                    <Search className="h-4 w-4 text-base-content/50" />
                     <input
                       type="text"
-                      className="input input-bordered w-full pl-10"
+                      className="grow"
                       placeholder="Search by name, rank, or service number..."
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                     />
-                  </div>
+                  </label>
 
                   {/* Search results dropdown */}
                   {memberSearch.trim() && (
@@ -218,18 +219,16 @@ export function OpenBuildingModal({ open, onOpenChange }: OpenBuildingModalProps
             </div>
 
             {/* Note field */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Note (optional)</span>
-              </label>
+            <label className="input input-bordered w-full">
+              <span className="label">Note (optional)</span>
               <input
                 type="text"
-                className="input input-bordered w-full"
+                className="grow"
                 placeholder="e.g., Alarm disarmed, rounds complete"
                 value={openBuildingNote}
                 onChange={(e) => setOpenBuildingNote(e.target.value)}
               />
-            </div>
+            </label>
           </>
         )}
 

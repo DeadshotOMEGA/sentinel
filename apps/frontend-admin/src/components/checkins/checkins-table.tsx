@@ -253,10 +253,9 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between px-4 py-4 border-t">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-base-content/60">Rows per page</span>
+          <label className="select select-bordered w-28">
+            <span className="label">Rows</span>
             <select
-              className="select select-bordered w-20"
               value={filters.limit.toString()}
               onChange={() => onPageChange(1)}
               data-testid={TID.checkins.pagination.rowsPerPage}
@@ -265,16 +264,16 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
               <option value="50">50</option>
               <option value="100">100</option>
             </select>
-          </div>
+          </label>
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-base-content/60">
               Page {data?.page ?? 1} of {data?.totalPages ?? 1}
             </span>
 
-            <div className="flex items-center gap-2">
+            <div className="join">
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(filters.page - 1)}
                 disabled={filters.page === 1}
                 data-testid={TID.checkins.pagination.prev}
@@ -282,7 +281,7 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(filters.page + 1)}
                 disabled={filters.page >= (data?.totalPages ?? 1)}
                 data-testid={TID.checkins.pagination.next}

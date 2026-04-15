@@ -441,10 +441,9 @@ export function BadgesTable({
               <span className="text-sm text-base-content/60">Show decommissioned</span>
             </label>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-base-content/60">Rows per page</span>
+            <label className="select select-sm w-28">
+              <span className="label">Rows</span>
               <select
-                className="select select-sm w-24"
                 value={limit.toString()}
                 onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
                 data-testid={TID.badges.pagination.rowsPerPage}
@@ -453,7 +452,7 @@ export function BadgesTable({
                 <option value="50">50</option>
                 <option value="100">100</option>
               </select>
-            </div>
+            </label>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -466,9 +465,9 @@ export function BadgesTable({
             <span className="text-sm text-base-content/60">
               Page {data?.page ?? 1} of {data?.totalPages ?? 1}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="join">
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page - 1)}
                 disabled={page <= 1}
                 data-testid={TID.badges.pagination.prev}
@@ -476,7 +475,7 @@ export function BadgesTable({
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-sm join-item"
                 onClick={() => onPageChange(page + 1)}
                 disabled={page >= (data?.totalPages ?? 1)}
                 data-testid={TID.badges.pagination.next}
