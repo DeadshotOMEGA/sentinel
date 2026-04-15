@@ -1,0 +1,22 @@
+flowchart TD
+    START([Guest Selected]) --> D2[Step 2: Enter First Name + Last Name]
+    D2 --> D2O[Optional: Mobile Phone + License Plate]
+    D2O --> P3[Step 3: Choose Purpose]
+
+    P3 -->|member_invited or appointment| HOST[Host Search]
+    P3 -->|information| INFO[No host required]
+    P3 -->|other| OTHER[Details required]
+
+    HOST --> HOST_FOUND{Host selected?}
+    HOST_FOUND -->|Yes| REVIEW[Step 4: Review]
+    HOST_FOUND -->|No| FALLBACK[Enter Fallback Details]
+    FALLBACK --> REVIEW
+
+    INFO --> INFO_DETAILS[Additional details optional]
+    INFO_DETAILS --> REVIEW
+
+    OTHER --> OTHER_DETAILS[Visit details required]
+    OTHER_DETAILS --> REVIEW
+
+    REVIEW --> SUBMIT[Submit]
+    SUBMIT --> COMPLETE([Welcome / Report to Duty Desk])

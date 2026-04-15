@@ -1,0 +1,38 @@
+flowchart TD
+    START([Start Visitor Self Sign-In]) --> STEP1[Step 1: Reason for Visit]
+
+    STEP1 -->|Recruitment| R2[Step 2: Routing (Recruitment bypass)]
+    STEP1 -->|Contract Work| C2[Step 2: Military or Civilian]
+    STEP1 -->|Event| E2[Step 2: Military or Civilian + Select Event]
+    STEP1 -->|Museum| MU2[Step 2: Military or Civilian]
+    STEP1 -->|Meeting| M2[Step 2: Military or Civilian + Select Member]
+    STEP1 -->|Other| O2[Step 2: Military or Civilian]
+
+    R2 --> R3[Step 3: Civilian Info Inputs]
+    C2 --> C3[Step 3: Branch Inputs]
+    E2 --> E3[Step 3: Branch Inputs]
+    MU2 --> MU3[Step 3: Branch Inputs]
+    M2 --> M3[Step 3: Branch Inputs]
+    O2 --> O3[Step 3: Branch Inputs]
+
+    R3 --> REVIEW[Step 4: Review]
+    C3 --> C4[Step 4: Contract Work Inputs]
+    C4 --> REVIEW5[Step 5: Review]
+    E3 --> REVIEW[Step 4: Review]
+    MU3 --> REVIEW
+    M3 --> REVIEW
+    O3 --> REVIEW
+
+    REVIEW --> SUBMIT[Submit Visitor Sign-In]
+    REVIEW5 --> SUBMIT
+    SUBMIT --> COMPLETE{Completion Variant}
+
+    COMPLETE -->|Recruitment| C_RECRUIT[Recruitment completion message]
+    COMPLETE -->|Contract Work| C_CONTRACTOR[Contractor completion message]
+    COMPLETE -->|Meeting with selected member| C_HOST[Host-specific welcome message]
+    COMPLETE -->|Information default| C_INFO[Information/general welcome message]
+
+    C_RECRUIT --> END([Flow Complete])
+    C_CONTRACTOR --> END
+    C_HOST --> END
+    C_INFO --> END

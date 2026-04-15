@@ -1,0 +1,83 @@
+---
+config:
+  layout: elk
+  theme: base
+  look: neo
+---
+flowchart TB
+ subgraph SG1["Military Info Inputs"]
+        SG11["Rank"]
+        SG12["Last Name"]
+        SG13["Initials"]
+        SG14["Unit"]
+  end
+ subgraph SG2["Civilian Info Inputs"]
+        SG21["First Name"]
+        SG22["Last Name"]
+  end
+ subgraph SG3["Contract Work Inputs"]
+        SG31["Company Name"]
+        SG32["Work Description"]
+        SG33["License Plate"]
+  end
+    Start["Visitor Sign-in"] ==> Q1["Reason for Visit"]
+    Q1 --> n1["Recruitment"] & n2["Contract Work"] & n3["Event"] & n4["Museum"] & n5["Meeting"] & n6["Other"]
+    n2 --> Q2["Military / Civilian"]
+    Q2 --> n8["Military"] & n9["Civilian"]
+    n8 --> n10["Military Info Inputs"]
+    n9 --> n11["Civilian Info Inputs"]
+    n10 --> n12["Contract Work Inputs"]
+    n11 --> n12
+    n12 --- n15["Summary of Data"]
+    n15 --> n16["Submit"]
+    n1 --> n17@{ label: "<span style=\"padding-left:\">Civilian Info Inputs</span>" }
+    n17 --- n15
+    n5 --> n18["Select Member"]
+    n19["Military / Civilian"] --> n20["Military"] & n21["Civilian"]
+    n20 --> n22["Military Info Inputs"]
+    n21 --> n23["Civilian Info Inputs"]
+    n18 --> n19
+    n23 --- n15
+    n22 --- n15
+    n3 --> n24["Select Event"]
+    n24 --> n19
+    n6 --> n19
+    n4 --> n19
+
+    SG11@{ shape: manual-input}
+    SG12@{ shape: manual-input}
+    SG13@{ shape: manual-input}
+    SG14@{ shape: manual-input}
+    SG21@{ shape: manual-input}
+    SG22@{ shape: manual-input}
+    SG31@{ shape: manual-input}
+    SG32@{ shape: manual-input}
+    SG33@{ shape: manual-input}
+    Start@{ shape: rounded}
+    Q1@{ shape: diam}
+    n1@{ shape: rect}
+    n2@{ shape: rect}
+    n3@{ shape: rect}
+    n4@{ shape: rect}
+    n5@{ shape: rect}
+    n6@{ shape: rect}
+    Q2@{ shape: diam}
+    n8@{ shape: rect}
+    n9@{ shape: rect}
+    n10@{ shape: subproc}
+    n11@{ shape: subproc}
+    n12@{ shape: subproc}
+    n15@{ shape: braces}
+    n16@{ shape: rounded}
+    n17@{ shape: subproc}
+    n18@{ shape: lin-proc}
+    n19@{ shape: diam}
+    n20@{ shape: rect}
+    n21@{ shape: rect}
+    n22@{ shape: subproc}
+    n23@{ shape: subproc}
+    n24@{ shape: lin-proc}
+     SG1:::group
+     SG2:::group
+     SG3:::group
+    classDef group fill:#f0f0f0,stroke:#bbb,stroke-dasharray: 3 3

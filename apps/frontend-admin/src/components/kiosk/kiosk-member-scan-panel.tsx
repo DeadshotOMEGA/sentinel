@@ -87,7 +87,10 @@ export function KioskMemberScanPanel({
       <AppCard
         variant="elevated"
         status={fatalOperationalOutage ? 'error' : undefined}
-        className="flex min-h-0 flex-1 flex-col border border-base-300 bg-base-100/95 shadow-[var(--shadow-2)] backdrop-blur-sm"
+        className={cn(
+          'flex min-h-0 flex-1 flex-col border border-base-300 bg-base-100/95 shadow-[var(--shadow-2)] backdrop-blur-sm',
+          visitorFlowActive && 'bg-base-300/70'
+        )}
       >
         <AppCardHeader
           className="gap-(--space-2)"
@@ -99,9 +102,19 @@ export function KioskMemberScanPanel({
         </AppCardHeader>
 
         <AppCardContent
-          className="flex min-h-0 flex-1 flex-col gap-(--space-4)"
+          className={cn(
+            'relative flex min-h-0 flex-1 flex-col gap-(--space-4)',
+            visitorFlowActive && 'opacity-60 saturate-0'
+          )}
           style={{ padding: 'var(--space-4) var(--space-5) var(--space-5)' }}
+          aria-disabled={visitorFlowActive ? true : undefined}
         >
+          {visitorFlowActive && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 rounded-box bg-base-100/35"
+            />
+          )}
           {degradedOperationalData && !fatalOperationalOutage && (
             <div role="alert" className="alert alert-warning alert-soft">
               <AlertTriangle className="h-5 w-5 shrink-0" />

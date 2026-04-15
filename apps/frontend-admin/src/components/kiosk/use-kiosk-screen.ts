@@ -457,7 +457,7 @@ export function useKioskScreen() {
     }
   }, [queryClient, result.memberId, result.timestamp, visitorCompletion, visitorFlowActive])
 
-  const resultTone = visitorCompletion ? 'success' : visitorFlowActive ? 'info' : result.tone
+  const resultTone = visitorCompletion ? 'success' : visitorFlowActive ? 'neutral' : result.tone
   const stageSurfaceClass = resultToneToSurfaceClass(resultTone)
   const scanningDisabled = scanMutation.isPending || visitorFlowActive || fatalOperationalOutage
   const visitorScanPromptVisible =
