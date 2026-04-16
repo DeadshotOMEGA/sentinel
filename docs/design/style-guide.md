@@ -186,6 +186,27 @@ Use fadded colors for subtle, low-emphasis status backgrounds. Every semantic co
 | `md` | Default, standalone badges    |
 | `lg` | Hero stats, prominent status  |
 
+## Modal UX Pattern
+
+Design each modal around one task and one dominant action.
+
+### Modal Content Structure
+
+1. One primary heading (sentence case)
+2. Blocker or required decision summary
+3. Required inputs with one inline instruction near each relevant control
+4. Primary action button
+5. Secondary actions (cancel/back), visually lower emphasis
+6. Optional details and fully satisfied checks in collapsed sections
+
+### Modal Copy Rules
+
+- Use plain language and sentence case
+- Avoid stacked heading/subheading/helper text unless essential
+- Show only information needed for the next action
+- Emphasize blockers; de-emphasize satisfied conditions
+- Remove duplicate labels and repeated status wording
+
 ## Z-Index Scale
 
 | Token          | Value | Use Case                  |

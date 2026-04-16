@@ -72,7 +72,7 @@ These files inline operational rules so Codex can proceed with minimal indirecti
 - Frontend admin edits (`apps/frontend-admin/**`):
   follow `.claude/rules/frontend-design.md` and `.claude/rules/playwright-cli.md`.
 - Terminology mapping:
-  "DaisyUI MCP" maps to `mcp__daisyui-blueprint__daisyUI-Snippets`.
+  "DaisyUI MCP" maps to `mcp__daisyui__daisyUI_Snippets`.
 
 ## Practical workflow for Codex
 

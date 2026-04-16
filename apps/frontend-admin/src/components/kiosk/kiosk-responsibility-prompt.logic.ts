@@ -42,25 +42,32 @@ function buildBlockedMessage(state: KioskResponsibilityStateResponse): string {
 function buildCommonOpenOnlyOption(
   state: KioskResponsibilityStateResponse
 ): ResponsibilityActionOption {
+  if (state.needsDds) {
+    return {
+      value: 'open_building',
+      title: 'Open building without accepting DDS',
+      description: 'The building will open now. DDS can be accepted later.',
+    }
+  }
+
   return {
     value: 'open_building',
-    title:
-      state.promptVariant === 'expected_dds' ? 'Open building only instead' : 'Open building now',
-    description:
-      'You will hold lockup until DDS is accepted, transferred, or the building is secured again.',
+    title: 'Open building now',
+    description: 'The building will open now, and you will become the current lockup holder.',
   }
 }
 
 function buildAcceptDdsOption(state: KioskResponsibilityStateResponse): ResponsibilityActionOption {
   return {
     value: 'accept_dds',
-    title:
-      state.promptVariant === 'replacement_candidate'
-        ? "I'm the replacement DDS today"
-        : 'Accept DDS now',
+    title: state.promptVariant === 'replacement_candidate' ? 'Replace DDS' : 'Accept DDS now',
     description: state.needsBuildingOpen
-      ? 'DDS will activate, the building will open, and lockup will transfer to you automatically.'
-      : 'DDS will activate now and lockup will transfer to you automatically if needed.',
+      ? state.promptVariant === 'replacement_candidate'
+        ? 'You will take over DDS now, and the building will open.'
+        : 'DDS will activate, the building will open, and lockup will transfer to you automatically.'
+      : state.promptVariant === 'replacement_candidate'
+        ? 'You will take over DDS now.'
+        : 'DDS will activate now and lockup will transfer to you automatically if needed.',
   }
 }
 
@@ -139,11 +146,12 @@ export function getKioskResponsibilityPromptPresentation(
         : 'A DDS-qualified member'
 
       return {
-        headline: 'You are opening the building.',
+        headline: 'Decide how you are opening today.',
         helperText: 'Opening first makes you responsible for the building until DDS is accepted.',
         bannerTone: 'warning',
-        bannerTitle: 'DDS is still unresolved.',
-        bannerDescription: `${expectedName} is still the expected DDS. Only choose the replacement option if you are covering the duty today.`,
+        bannerTitle: `Expected DDS is ${expectedName}`,
+        bannerDescription:
+          'Choose “Replace DDS” only if you are taking over as the DDS for today. Otherwise, open the building without accepting DDS.',
         defaultAction: actionOptions[0]?.value ?? null,
         actionOptions,
         blockedMessage: actionOptions.length === 0 ? buildBlockedMessage(state) : null,
@@ -172,7 +180,7 @@ export function getKioskResponsibilityPromptPresentation(
       const actionOptions = state.canOpenBuilding ? [buildCommonOpenOnlyOption(state)] : []
 
       return {
-        headline: 'You are opening the building.',
+        headline: 'Open the building to continue check-ins.',
         helperText:
           'Opening now records you as responsible for the building until lockup changes hands.',
         bannerTone: 'warning',

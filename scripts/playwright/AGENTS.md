@@ -26,7 +26,9 @@ These scripts are the maintained Playwright CLI utilities for:
   - Badge: `0000000000`
   - PIN: `0000`
 - Support overrides via environment variables when a different account is intentionally required.
+- Treat `apps/frontend-admin` as a desktop-only webapp for these workflows unless the product requirements explicitly change.
 - Browser size for Codex Playwright work in this repo must be `1920x1080`.
+- Do not add mobile, tablet, or responsive-breakpoint capture or test flows for `apps/frontend-admin` unless the task explicitly requires a product change away from the desktop-only constraint.
 - Close sessions when capture is complete.
 - Save authenticated state to `.playwright-cli/auth/bootstrap.json` unless the task explicitly overrides it.
 - Prefer deterministic captures over exploratory flows; load auth state or log in directly instead of relying on leftover local browser state.

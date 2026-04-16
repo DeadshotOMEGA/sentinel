@@ -23,6 +23,15 @@ Before implementing frontend work, read:
 - MUST use `AppCard` for content containers (NOT shadcn Card)
 - MUST use `AppBadge` for status indicators (NOT shadcn Badge)
 - MUST use `Chip` for tag/category labels
+- MUST optimize task flows and modals for glanceability and rapid scanning
+- MUST use one primary heading per modal and avoid stacked heading/subheading/helper text unless essential
+- MUST show only the minimum information needed for the next action
+- MUST emphasize blockers and actionable risk states, while de-emphasizing satisfied conditions
+- MUST prefer one inline instruction near the relevant control instead of detached helper text blocks
+- MUST collapse optional details and fully satisfied checks by default
+- MUST design each modal around one task and one dominant action
+- MUST use plain language and sentence case for modal copy
+- MUST reduce duplicate labels and repeated status wording
 - MUST use `--space-*` tokens for spacing (NOT magic numbers)
 - MUST use OKLCH semantic color tokens (`primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error`)
 - MUST use `-fadded` variants for soft backgrounds/banners (e.g., `bg-success-fadded text-success-fadded-content`)
@@ -40,3 +49,4 @@ Before implementing frontend work, read:
 - SHOULD use `font-display` (DM Sans) for h1-h2, `font-sans` (Roboto) for body, `font-mono` (Roboto Mono) for data/timestamps
 - SHOULD limit transitions to 200-300ms subtle fades
 - SHOULD follow naval operations center aesthetic: dense, professional, utilitarian
+- SHOULD evaluate significant UX changes against the NN/g 10 heuristics baseline in `docs/design/design-principles.md`

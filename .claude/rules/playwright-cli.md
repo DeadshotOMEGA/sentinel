@@ -13,6 +13,9 @@ Applies when editing files under: `apps/frontend-admin/`
 
 - MUST use `playwright-cli` (NOT Playwright MCP or `@playwright/test` directly) for browser interaction
 - MUST take a snapshot after navigation or interaction to verify page state
+- MUST treat `apps/frontend-admin` as a desktop-only webapp for Playwright verification unless product requirements explicitly change
+- MUST use a fixed `1920x1080` browser window for `apps/frontend-admin` verification
+- MUST NOT add mobile, tablet, or responsive-breakpoint Playwright coverage for `apps/frontend-admin` unless the task explicitly requires a product change away from the desktop-only constraint
 - MUST close the browser session when done (`playwright-cli close`)
 - MUST NOT leave browser sessions running after completing a task
 
