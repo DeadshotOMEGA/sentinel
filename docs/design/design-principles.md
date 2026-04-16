@@ -28,6 +28,49 @@ Sentinel's visual language draws from naval operations centers: dense, professio
 - Icons are functional indicators, not decorations
 - Typography prioritizes legibility over style
 
+## Task-Focused Modal UX
+
+Use modals for one clear task with one dominant action.
+
+- Optimize for glanceability and rapid scanning
+- Use one primary heading only
+- Avoid stacked heading/subheading/helper text unless essential
+- Show only the minimum information needed for the next action
+- Emphasize blockers and action-required states
+- De-emphasize already satisfied conditions
+- Prefer one inline instruction near the relevant control
+- Collapse optional details and fully satisfied checks by default
+- Use plain language and sentence case
+- Reduce duplicate labels and repeated status wording
+
+### Modal Content Priority
+
+1. Task heading (one line)
+2. Blocking condition or required decision
+3. Required control input
+4. Dominant action
+5. Secondary actions (cancel/back), visually subordinate
+6. Optional details in collapsible sections
+
+## Usability Heuristics Baseline (NN/g)
+
+Reference: NN/g, "10 Usability Heuristics for User Interface Design" (updated January 30, 2024): https://www.nngroup.com/articles/ten-usability-heuristics/
+
+Apply all 10 heuristics when designing flows and components:
+
+| Heuristic                                                  | Sentinel UX Application                                                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1. Visibility of system status                             | Show immediate feedback for loading, validation, and completion states.                                   |
+| 2. Match between system and real world                     | Use operator language and familiar terms instead of internal jargon.                                      |
+| 3. User control and freedom                                | Provide clear cancel/exit paths and reversible actions for destructive operations.                        |
+| 4. Consistency and standards                               | Reuse Sentinel components, naming, and interaction patterns across screens.                               |
+| 5. Error prevention                                        | Prevent invalid actions with constraints, safe defaults, and confirm-before-commit for high-risk actions. |
+| 6. Recognition rather than recall                          | Keep required context, rules, and labels visible at the point of action.                                  |
+| 7. Flexibility and efficiency of use                       | Support both novice and expert use with progressive disclosure and accelerators where appropriate.        |
+| 8. Aesthetic and minimalist design                         | Remove non-essential content so the next action is always obvious.                                        |
+| 9. Help users recognize, diagnose, and recover from errors | Use plain-language errors that identify the issue and the next corrective step.                           |
+| 10. Help and documentation                                 | Provide concise, searchable, task-focused help in context when needed.                                    |
+
 ## Semantic Color System
 
 Colors communicate meaning. Never use semantic colors for decoration.

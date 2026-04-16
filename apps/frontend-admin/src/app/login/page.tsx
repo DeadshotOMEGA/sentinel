@@ -2,6 +2,7 @@
 
 import { type FormEvent, Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { CircleAlert } from 'lucide-react'
 import {
   DISALLOWED_MEMBER_PINS,
   type AuthMember,
@@ -15,7 +16,6 @@ import { PinInput } from '@/components/auth/pin-input'
 import {
   getKioskResponsibilityPromptPresentation,
   getResponsibilityPrimaryLabel,
-  getResponsibilitySummary,
   type ResponsibilityActionChoice,
 } from '@/components/kiosk/kiosk-responsibility-prompt.logic'
 import { AppBadge } from '@/components/ui/AppBadge'
@@ -126,6 +126,21 @@ function getSetupDescription(reason: LoginPinSetupReason): string {
   return 'This badge does not have a PIN configured yet. Create a secure PIN before you can continue.'
 }
 
+interface StartOfDayBlocker {
+  id: string
+  title: string
+  description: string
+  tone: 'warning' | 'error'
+}
+
+function getStartOfDayBlockerAlertClass(tone: StartOfDayBlocker['tone']): string {
+  if (tone === 'error') {
+    return 'alert alert-soft border border-error bg-error-fadded text-error-fadded-content'
+  }
+
+  return 'alert alert-soft border border-warning bg-warning-fadded text-warning-fadded-content'
+}
+
 export default function LoginPage() {
   return (
     <Suspense fallback={<LoginPageFallback />}>
@@ -160,6 +175,7 @@ function LoginPageContent() {
   const [startOfDayState, setStartOfDayState] = useState<StartOfDayState | null>(null)
   const [selectedStartOfDayAction, setSelectedStartOfDayAction] =
     useState<LoginStartOfDayAction | null>(null)
+  const [startOfDaySubmitAttempted, setStartOfDaySubmitAttempted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -190,6 +206,7 @@ function LoginPageContent() {
   const resetStartOfDayState = () => {
     setStartOfDayState(null)
     setSelectedStartOfDayAction(null)
+    setStartOfDaySubmitAttempted(false)
   }
 
   const returnToBadgeScan = () => {
@@ -296,6 +313,7 @@ function LoginPageContent() {
           responsibilityState: promptState,
         })
         setSelectedStartOfDayAction(defaultAction)
+        setStartOfDaySubmitAttempted(false)
         setStep('start_of_day')
         return
       }
@@ -327,10 +345,11 @@ function LoginPageContent() {
 
   const handleStartOfDaySubmit = async () => {
     if (!startOfDayState || !selectedStartOfDayAction) {
-      setError('Choose how you are opening the unit before signing in')
+      setStartOfDaySubmitAttempted(true)
       return
     }
 
+    setStartOfDaySubmitAttempted(false)
     await handlePinSubmit({
       ...startOfDayState.pinSubmission,
       startOfDayAction: selectedStartOfDayAction,
@@ -575,19 +594,32 @@ function LoginPageContent() {
                   const presentation = getKioskResponsibilityPromptPresentation(
                     startOfDayState.responsibilityState
                   )
+                  const startOfDayBlockers: StartOfDayBlocker[] = []
+
+                  if (presentation.blockedMessage) {
+                    startOfDayBlockers.push({
+                      id: 'no-open-actions',
+                      title: 'No opening options available',
+                      description: presentation.blockedMessage,
+                      tone: 'error',
+                    })
+                  }
+
+                  if (
+                    startOfDaySubmitAttempted &&
+                    !selectedStartOfDayAction &&
+                    presentation.actionOptions.length > 0
+                  ) {
+                    startOfDayBlockers.push({
+                      id: 'action-required',
+                      title: 'No opening option selected',
+                      description: 'Choose how you are opening the unit before signing in.',
+                      tone: 'warning',
+                    })
+                  }
 
                   return (
                     <div className="space-y-(--space-4)" data-testid={TID.auth.startOfDayPrompt}>
-                      <div
-                        role="alert"
-                        className={`alert ${presentation.bannerTone === 'info' ? 'alert-info' : 'alert-warning'} alert-soft`}
-                      >
-                        <div className="space-y-(--space-1)">
-                          <div className="font-semibold">{presentation.bannerTitle}</div>
-                          <div>{presentation.bannerDescription}</div>
-                        </div>
-                      </div>
-
                       <div className="rounded-box border border-base-300 bg-base-200/40 p-(--space-3)">
                         <div className="flex flex-wrap items-center gap-(--space-2)">
                           <AppBadge status="warning" size="sm">
@@ -602,59 +634,84 @@ function LoginPageContent() {
                           {startOfDayState.responsibilityState.member.lastName},{' '}
                           {startOfDayState.responsibilityState.member.firstName}
                         </p>
-                        <p className="mt-(--space-1) text-sm text-base-content/70">
+                        <p className="mt-(--space-1) text-sm text-base-content/80">
                           {presentation.headline}
                         </p>
-                        <p className="mt-(--space-1) text-sm text-base-content/70">
-                          {presentation.helperText}
-                        </p>
+                        {presentation.bannerTone === 'warning' && (
+                          <p className="mt-(--space-1) text-sm text-base-content/70">
+                            {presentation.bannerDescription}
+                          </p>
+                        )}
                       </div>
 
                       <fieldset className="fieldset rounded-box border border-base-300 bg-base-200/70 p-(--space-4)">
                         <legend className="fieldset-legend px-(--space-2)">
                           Choose how you are opening the unit
                         </legend>
+                        <p className="text-sm text-base-content/80">
+                          Choose one option to continue.
+                        </p>
                         <div className="space-y-(--space-3)">
-                          {presentation.actionOptions.map((option) => {
-                            const loginAction = mapResponsibilityActionToLoginAction(option.value)
-                            const checked = selectedStartOfDayAction === loginAction
+                          {presentation.actionOptions.length === 0 ? (
+                            <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3) text-sm text-base-content/70">
+                              No opening actions are available for this badge.
+                            </div>
+                          ) : (
+                            presentation.actionOptions.map((option) => {
+                              const loginAction = mapResponsibilityActionToLoginAction(option.value)
+                              const checked = selectedStartOfDayAction === loginAction
 
-                            return (
-                              <label
-                                key={option.value}
-                                className={`flex cursor-pointer items-start gap-(--space-3) rounded-box border p-(--space-3) transition-colors ${
-                                  checked
-                                    ? 'border-primary bg-primary-fadded text-primary-fadded-content'
-                                    : 'border-base-300 bg-base-100'
-                                }`}
-                                data-testid={TID.auth.startOfDayOption(option.value)}
-                              >
-                                <input
-                                  type="radio"
-                                  name="start-of-day-action"
-                                  className="radio radio-primary mt-[2px]"
-                                  checked={checked}
-                                  onChange={() => setSelectedStartOfDayAction(loginAction)}
-                                  disabled={loading}
-                                />
-                                <div className="space-y-(--space-1)">
-                                  <div className="font-semibold">{option.title}</div>
-                                  <div className="text-sm opacity-80">{option.description}</div>
-                                  <div className="text-xs opacity-70">
-                                    {getResponsibilitySummary(
-                                      startOfDayState.responsibilityState,
-                                      option.value
-                                    )}
+                              return (
+                                <label
+                                  key={option.value}
+                                  className={`flex cursor-pointer items-start gap-(--space-3) rounded-box border p-(--space-3) transition-colors ${
+                                    checked
+                                      ? 'border-primary bg-primary-fadded text-primary-fadded-content'
+                                      : 'border-base-300 bg-base-100'
+                                  }`}
+                                  data-testid={TID.auth.startOfDayOption(option.value)}
+                                >
+                                  <input
+                                    type="radio"
+                                    name="start-of-day-action"
+                                    className="radio radio-primary mt-[2px]"
+                                    checked={checked}
+                                    onChange={() => {
+                                      setSelectedStartOfDayAction(loginAction)
+                                      setStartOfDaySubmitAttempted(false)
+                                    }}
+                                    disabled={loading}
+                                  />
+                                  <div className="space-y-(--space-1)">
+                                    <div className="font-semibold">{option.title}</div>
+                                    <div className="text-sm opacity-80">{option.description}</div>
                                   </div>
-                                </div>
-                              </label>
-                            )
-                          })}
+                                </label>
+                              )
+                            })
+                          )}
                         </div>
-                        {presentation.blockedMessage && (
-                          <p className="label text-error">{presentation.blockedMessage}</p>
-                        )}
                       </fieldset>
+
+                      {startOfDayBlockers.length > 0 && (
+                        <div className="space-y-(--space-2)" role="alert" aria-live="polite">
+                          {startOfDayBlockers.map((blocker) => (
+                            <div
+                              key={blocker.id}
+                              role="alert"
+                              className={getStartOfDayBlockerAlertClass(blocker.tone)}
+                            >
+                              <CircleAlert className="h-5 w-5" />
+                              <div className="space-y-(--space-1)">
+                                <p className="text-sm font-semibold">{blocker.title}</p>
+                                <p className="text-sm text-base-content/80">
+                                  {blocker.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-2 gap-(--space-2)">
                         <button
