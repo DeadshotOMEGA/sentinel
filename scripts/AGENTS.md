@@ -15,7 +15,9 @@ Applies when editing files under: `scripts/`
 - For Codex-driven browser QA, use the Sentinel bootstrap account:
   - Badge: `0000000000`
   - PIN: `0000`
+- Treat `apps/frontend-admin` as desktop-only for Codex Playwright work unless the product requirements explicitly change.
 - Codex Playwright work in this repo must use `1920x1080`.
+- Do not add mobile, tablet, or responsive-breakpoint Playwright coverage for `apps/frontend-admin` unless the task explicitly requires a product change away from the desktop-only constraint.
 - Do not use Playwright MCP tools when `playwright-cli` is available.
 
 ## Editing Guidance

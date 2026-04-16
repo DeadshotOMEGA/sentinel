@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import {
   BookOpenCheck,
-  CheckCircle2,
   ClipboardList,
   Download,
   FileText,
@@ -26,6 +25,7 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
+import { AppAlert } from '@/components/ui/AppAlert'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useDdsChecklist } from '@/hooks/use-dds-checklist'
 import { useOperationalDateKey } from '@/hooks/use-operational-date-key'
@@ -232,23 +232,13 @@ export default function DdsPage() {
         </AppCardHeader>
 
         <AppCardContent>
-          <div
-            role="alert"
-            className="alert alert-info alert-soft alert-vertical sm:alert-horizontal"
+          <AppAlert
+            tone="info"
+            heading="Template is editable"
+            description="Admin/Developer users can update checklist, contacts, call playbooks, and reference downloads when SOP text changes."
+            meta={`Last updated: ${formatUpdatedAt(templateState.updatedAt)}`}
             style={{ marginTop: 'var(--space-2)' }}
-          >
-            <CheckCircle2 className="h-5 w-5" />
-            <div>
-              <h3 className="font-semibold">Template is editable</h3>
-              <p className="text-sm">
-                Admin/Developer users can update checklist, contacts, call playbooks, and reference
-                downloads when SOP text changes.
-              </p>
-            </div>
-            <div className="text-xs text-base-content/70">
-              Last updated: {formatUpdatedAt(templateState.updatedAt)}
-            </div>
-          </div>
+          />
         </AppCardContent>
       </AppCard>
 

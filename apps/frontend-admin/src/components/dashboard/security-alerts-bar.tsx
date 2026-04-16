@@ -5,6 +5,7 @@ import { AlertCircle } from 'lucide-react'
 import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-alerts'
 import { useAuthStore } from '@/store/auth-store'
 import { AccountLevel } from '@/store/auth-store'
+import { AppAlert } from '@/components/ui/AppAlert'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
 import { MotionButton } from '@/components/ui/motion-button'
@@ -59,13 +60,11 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
 
   return (
     <>
-      <div
-        role="alert"
-        className="alert alert-error bg-base-100 text-error-content alert-outline outline-1 shadow-lg alert-vertical sm:alert-horizontal"
-      >
-        <AlertCircle className="h-5 w-5 shrink-0 stroke-current" />
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
+      <AppAlert
+        tone="error"
+        icon={<AlertCircle className="h-6 w-6 shrink-0 text-error" />}
+        heading={
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-display font-bold">Security Alert</h3>
             <Chip variant="flat" color="danger" size="sm">
               {formatAlertType(alert.alertType)}
@@ -75,13 +74,11 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
                 Critical
               </AppBadge>
             )}
-            <span className="ml-auto text-xs font-mono text-base-content/50">
-              {new Date(alert.createdAt).toLocaleTimeString()}
-            </span>
           </div>
-          <p className="text-xs mt-1">{alert.message}</p>
-        </div>
-        <div>
+        }
+        description={alert.message}
+        meta={<span className="font-mono">{new Date(alert.createdAt).toLocaleTimeString()}</span>}
+        actions={
           <MotionButton
             className="btn btn-sm"
             data-help-id="dashboard.security-alerts.acknowledge"
@@ -97,8 +94,9 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
           >
             Acknowledge
           </MotionButton>
-        </div>
-      </div>
+        }
+        className="shadow-lg"
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent size="sm">

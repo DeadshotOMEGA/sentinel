@@ -53,6 +53,7 @@ Assume these unless repo evidence says otherwise:
 Sentinel-specific override:
 
 - In Sentinel frontend-admin work, DaisyUI and Sentinel wrappers (`AppCard`, `AppBadge`, `Chip`) take precedence over generic shadcn-first patterns.
+- In Sentinel `apps/frontend-admin` Playwright verification, treat the product as desktop-only and verify at `1920x1080`; do not require mobile or responsive-breakpoint QA unless the user explicitly changes the product requirement.
 - Read the Sentinel theme token inventory from `apps/frontend-admin/src/app/globals.css` and prefer:
   `base-100/200/300/400/500`, `base-content`, plus each semantic family’s
   base/content/fadded/fadded-content pair for `primary`, `secondary`, `accent`,

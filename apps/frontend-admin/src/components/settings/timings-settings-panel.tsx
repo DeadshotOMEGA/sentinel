@@ -15,6 +15,7 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
+import { AppAlert } from '@/components/ui/AppAlert'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useOperationalTimings, useUpdateOperationalTimings } from '@/hooks/use-operational-timings'
 import { TID } from '@/lib/test-ids'
@@ -224,9 +225,9 @@ export function TimingsSettingsPanel() {
           </AppCardDescription>
         </AppCardHeader>
         <AppCardContent className="space-y-3">
-          <div role="alert" className="alert alert-error alert-soft">
-            <span>{error instanceof Error ? error.message : 'Unknown error'}</span>
-          </div>
+          <AppAlert tone="error">
+            {error instanceof Error ? error.message : 'Unknown error'}
+          </AppAlert>
           <button className="btn btn-sm btn-outline" onClick={() => refetch()}>
             Retry
           </button>
@@ -248,22 +249,16 @@ export function TimingsSettingsPanel() {
           </AppCardDescription>
         </AppCardHeader>
         <AppCardContent className="space-y-3">
-          <div role="alert" className="alert alert-info alert-soft">
-            <span>
-              Source: <strong>{data?.metadata.source ?? 'unknown'}</strong> | Last update:{' '}
-              {formatUpdatedAt(data?.metadata.updatedAt ?? null)}
-            </span>
-          </div>
+          <AppAlert tone="info">
+            Source: <strong>{data?.metadata.source ?? 'unknown'}</strong> | Last update:{' '}
+            {formatUpdatedAt(data?.metadata.updatedAt ?? null)}
+          </AppAlert>
           {!canEdit && (
-            <div role="alert" className="alert alert-warning alert-soft text-base-content">
-              <span>Admin or Developer account level is required to save timing changes.</span>
-            </div>
+            <AppAlert tone="warning">
+              Admin or Developer account level is required to save timing changes.
+            </AppAlert>
           )}
-          {validationMessage && (
-            <div role="alert" className="alert alert-error alert-soft">
-              <span>{validationMessage}</span>
-            </div>
-          )}
+          {validationMessage && <AppAlert tone="error">{validationMessage}</AppAlert>}
           <div className="flex flex-wrap items-center gap-2">
             <button
               className="btn btn-primary btn-sm"
@@ -516,27 +511,25 @@ export function TimingsSettingsPanel() {
           </AppCardDescription>
         </AppCardHeader>
         <AppCardContent className="space-y-4">
-          <div role="alert" className="alert alert-info alert-soft">
-            <Clock3 className="h-5 w-5 shrink-0" />
-            <div>
-              <h3 className="font-semibold">What this controls</h3>
-              <div className="text-xs">
-                Prevents repeat alerts from spamming the dashboard and notifications.
-              </div>
-              <div className="mt-1 text-xs">
-                <strong>Threshold</strong> is how many duplicates are allowed before suppression.
-                <br />
-                <strong>Window (minutes)</strong> is the rolling period used to count duplicates.
-              </div>
+          <AppAlert
+            tone="info"
+            heading="What this controls"
+            description="Prevents repeat alerts from spamming the dashboard and notifications."
+            icon={<Clock3 className="h-6 w-6 shrink-0 text-info" />}
+          >
+            <div className="text-xs">
+              <strong>Threshold</strong> is how many duplicates are allowed before suppression.
+              <br />
+              <strong>Window (minutes)</strong> is the rolling period used to count duplicates.
             </div>
-          </div>
+          </AppAlert>
 
-          <div role="alert" className="alert alert-warning alert-soft text-base-content">
+          <AppAlert tone="warning">
             <span className="text-sm">
               Example: threshold <strong>1</strong> + window <strong>60</strong> means the first
               alert emits, then matching duplicates are suppressed for 60 minutes.
             </span>
-          </div>
+          </AppAlert>
 
           <div className="overflow-x-auto">
             <table className="table table-sm">

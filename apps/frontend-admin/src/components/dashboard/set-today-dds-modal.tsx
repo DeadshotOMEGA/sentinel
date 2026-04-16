@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { AppAlert } from '@/components/ui/AppAlert'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { AppCard, AppCardContent } from '@/components/ui/AppCard'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
@@ -103,14 +104,6 @@ function getBlockerCardCopy(blocker: RequirementCheck): {
     description: blocker.detail,
     tone: blocker.state === 'missing' ? 'warning' : 'error',
   }
-}
-
-function getBlockerAlertClass(tone: 'error' | 'warning'): string {
-  if (tone === 'error') {
-    return 'alert alert-soft border border-error bg-error-fadded text-error-fadded-content'
-  }
-
-  return 'alert alert-soft border border-warning bg-warning-fadded text-warning-fadded-content'
 }
 
 export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) {
@@ -452,17 +445,19 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
                 const blockerCopy = getBlockerCardCopy(blocker)
 
                 return (
-                  <div
+                  <AppAlert
                     key={blocker.id}
-                    role="alert"
-                    className={getBlockerAlertClass(blockerCopy.tone)}
-                  >
-                    <CircleAlert className="h-5 w-5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold">{blockerCopy.title}</p>
-                      <p className="text-sm text-base-content/80">{blockerCopy.description}</p>
-                    </div>
-                  </div>
+                    tone={blockerCopy.tone}
+                    heading={blockerCopy.title}
+                    description={blockerCopy.description}
+                    icon={
+                      <CircleAlert
+                        className={`h-6 w-6 shrink-0 ${
+                          blockerCopy.tone === 'error' ? 'text-error' : 'text-warning'
+                        }`}
+                      />
+                    }
+                  />
                 )
               })}
             </div>
@@ -508,9 +503,7 @@ export function SetTodayDdsModal({ open, onOpenChange }: SetTodayDdsModalProps) 
           </details>
 
           {activeMutation.isError && (
-            <div role="alert" className="alert alert-error alert-soft">
-              <span>{activeMutation.error.message}</span>
-            </div>
+            <AppAlert tone="error">{activeMutation.error.message}</AppAlert>
           )}
         </div>
 

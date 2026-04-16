@@ -41,8 +41,10 @@ description: Enforces Sentinel frontend design quality for apps/frontend-admin w
 4. Perform a post-change visual sanity pass before finishing any layout/UX work:
 
 - Inspect the rendered UI after implementation, not just the code and build output.
-- Check for overflow, clipped focus rings, hidden inputs/actions, duplicate control bands, awkward spacing, unnecessary scrollbars, and broken responsive behavior.
+- For `apps/frontend-admin`, treat the product as desktop-only unless the user explicitly changes the requirement.
+- Check for overflow, clipped focus rings, hidden inputs/actions, duplicate control bands, awkward spacing, and unnecessary scrollbars at the fixed desktop viewport.
 - Use a `1920x1080` browser window for Playwright verification in this repo.
+- Do not run mobile, tablet, or responsive-breakpoint Playwright QA for `apps/frontend-admin` unless the task explicitly requires a product change away from the desktop-only constraint.
 - If the result looks wrong, iterate before presenting the work as complete.
 
 5. Use `playwright-cli` for rendered verification when the change materially affects layout or when the user reports a visual problem:

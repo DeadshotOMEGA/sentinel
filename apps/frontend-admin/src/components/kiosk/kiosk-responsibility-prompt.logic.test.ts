@@ -95,6 +95,22 @@ describe('getKioskResponsibilityPromptPresentation', () => {
       'open_building',
       'accept_dds',
     ])
+    expect(presentation.bannerTitle).toBe('Expected DDS is SLt Jordan West')
+    expect(presentation.bannerDescription).toBe(
+      'Choose “Replace DDS” only if you are taking over as the DDS for today. Otherwise, open the building without accepting DDS.'
+    )
+    expect(presentation.actionOptions).toEqual([
+      {
+        value: 'open_building',
+        title: 'Open building without accepting DDS',
+        description: 'The building will open now. DDS can be accepted later.',
+      },
+      {
+        value: 'accept_dds',
+        title: 'Replace DDS',
+        description: 'You will take over DDS now, and the building will open.',
+      },
+    ])
     expect(
       getResponsibilityPrimaryLabel(state, presentation.defaultAction ?? 'open_building')
     ).toBe('Open Building Now')
@@ -147,5 +163,19 @@ describe('getKioskResponsibilityPromptPresentation', () => {
     expect(presentation.defaultAction).toBeNull()
     expect(presentation.actionOptions).toEqual([])
     expect(presentation.blockedMessage).toContain('cannot take DDS right now')
+  })
+
+  it('shows a blocked message when opening is required but this badge cannot open the building', () => {
+    const state = createState({
+      promptVariant: 'opener_only',
+      canAcceptDds: false,
+      canOpenBuilding: false,
+    })
+
+    const presentation = getKioskResponsibilityPromptPresentation(state)
+
+    expect(presentation.defaultAction).toBeNull()
+    expect(presentation.actionOptions).toEqual([])
+    expect(presentation.blockedMessage).toBeTruthy()
   })
 })

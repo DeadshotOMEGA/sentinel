@@ -12,6 +12,7 @@ import {
   AppCardHeader,
   AppCardTitle,
 } from '@/components/ui/AppCard'
+import { AppAlert } from '@/components/ui/AppAlert'
 import {
   Dialog,
   DialogContent,
@@ -279,13 +280,11 @@ export function NetworkSettingsPanel() {
           <AppCardDescription>Unable to load network settings from the backend.</AppCardDescription>
         </AppCardHeader>
         <AppCardContent>
-          <div role="alert" className="alert alert-error alert-soft">
-            <span>
-              {networkSettingsQuery.error instanceof Error
-                ? networkSettingsQuery.error.message
-                : 'Unknown error'}
-            </span>
-          </div>
+          <AppAlert tone="error">
+            {networkSettingsQuery.error instanceof Error
+              ? networkSettingsQuery.error.message
+              : 'Unknown error'}
+          </AppAlert>
         </AppCardContent>
       </AppCard>
     )
@@ -304,16 +303,14 @@ export function NetworkSettingsPanel() {
           </AppCardDescription>
         </AppCardHeader>
         <AppCardContent className="space-y-3">
-          <div role="alert" className="alert alert-info alert-soft">
-            <span>
-              Source: <strong>{networkSettingsQuery.data?.metadata.source ?? 'unknown'}</strong> |
-              Last update: {formatUpdatedAt(networkSettingsQuery.data?.metadata.updatedAt ?? null)}
-            </span>
-          </div>
+          <AppAlert tone="info">
+            Source: <strong>{networkSettingsQuery.data?.metadata.source ?? 'unknown'}</strong> |
+            Last update: {formatUpdatedAt(networkSettingsQuery.data?.metadata.updatedAt ?? null)}
+          </AppAlert>
           {!canEdit && (
-            <div role="alert" className="alert alert-warning alert-soft">
-              <span>Admin or Developer account level is required to save network settings.</span>
-            </div>
+            <AppAlert tone="warning">
+              Admin or Developer account level is required to save network settings.
+            </AppAlert>
           )}
           <div className="space-y-2">
             {ssidDrafts.map((ssid, index) => (
@@ -408,18 +405,16 @@ export function NetworkSettingsPanel() {
         </AppCardHeader>
         <AppCardContent className="space-y-3">
           {remoteSystemsQuery.isError && (
-            <div role="alert" className="alert alert-error alert-soft">
-              <span>
-                {remoteSystemsQuery.error instanceof Error
-                  ? remoteSystemsQuery.error.message
-                  : 'Failed to load remote systems'}
-              </span>
-            </div>
+            <AppAlert tone="error">
+              {remoteSystemsQuery.error instanceof Error
+                ? remoteSystemsQuery.error.message
+                : 'Failed to load remote systems'}
+            </AppAlert>
           )}
           {!canEdit && (
-            <div role="alert" className="alert alert-warning alert-soft">
-              <span>Admin or Developer account level is required to manage remote systems.</span>
-            </div>
+            <AppAlert tone="warning">
+              Admin or Developer account level is required to manage remote systems.
+            </AppAlert>
           )}
           <div className="overflow-x-auto border border-base-300">
             <table className="table table-sm">
