@@ -2,7 +2,9 @@ import { initServer } from '@ts-rest/express'
 import type { Request } from 'express'
 import { networkSettingContract } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
+import { getRequestClientIp } from '../lib/runtime-context.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { HostHotspotRecoveryService } from '../services/host-hotspot-recovery-service.js'
 import { NetworkSettingsService } from '../services/network-settings-service.js'
 
 const s = initServer()
@@ -85,6 +87,47 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to update network settings',
+        },
+      }
+    }
+  },
+
+  hostHotspotRecovery: async ({ req }) => {
+    const auth = requireAdmin(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      const recoveryService = new HostHotspotRecoveryService()
+      const userAgentHeader = req.headers['user-agent']
+      await recoveryService.queueRecoveryRequest({
+        requestedByMemberId: req.member?.id ?? 'unknown',
+        requestedByMemberName:
+          req.member !== undefined
+            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
+            : 'Unknown member',
+        requestedByRemoteSystemName: req.session?.remoteSystemName ?? null,
+        requestedFromIp: getRequestClientIp(req),
+        requestedFromUserAgent: Array.isArray(userAgentHeader)
+          ? (userAgentHeader[0] ?? null)
+          : (userAgentHeader ?? null),
+      })
+
+      return {
+        status: 202 as const,
+        body: {
+          success: true,
+          message: 'Host hotspot recovery request queued',
+        },
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to queue host hotspot recovery',
         },
       }
     }

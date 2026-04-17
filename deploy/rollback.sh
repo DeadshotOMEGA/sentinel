@@ -89,7 +89,7 @@ if command -v systemctl >/dev/null 2>&1; then
   configure_network_status_telemetry
 fi
 
-configure_captive_portal_recovery
+configure_hotspot_connectivity_helpers
 
 log "Rollback complete. Current version: ${CURRENT_VERSION}"
 warn "If database schema changed incompatibly, use restore.sh with a pre-update backup."

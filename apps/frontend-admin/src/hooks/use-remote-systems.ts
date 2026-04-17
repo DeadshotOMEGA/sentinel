@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   AdminRemoteSystem,
   CreateRemoteSystemInput,
-  RemoteSystemOption,
+  RemoteSystemsResponse,
   UpdateRemoteSystemInput,
 } from '@sentinel/contracts'
 import { apiClient } from '@/lib/api-client'
@@ -26,14 +26,14 @@ function getErrorMessage(body: unknown, fallback: string): string {
 export function useRemoteSystems(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: remoteSystemsQueryKey,
-    queryFn: async (): Promise<RemoteSystemOption[]> => {
+    queryFn: async (): Promise<RemoteSystemsResponse> => {
       const response = await apiClient.remoteSystems.listRemoteSystems()
 
       if (response.status !== 200) {
         throw new Error(getErrorMessage(response.body, 'Failed to load remote systems'))
       }
 
-      return response.body.systems
+      return response.body
     },
     enabled: options?.enabled,
     staleTime: 60_000,

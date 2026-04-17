@@ -50,8 +50,8 @@ sentinel-install-update
    - Use Rufus (or equivalent) to write the ISO to USB.
 3. Boot the laptop from the USB and install Ubuntu 24.04 LTS.
 4. During Ubuntu setup:
-   - Connect to the Unit network.
-   - Complete captive portal checkbox/splash page in Firefox/Chrome if prompted.
+   - Connect to the Unit network or approved Sentinel hotspot.
+   - Verify the laptop can reach the internet before continuing.
 5. Copy this `deploy/` folder to the Ubuntu laptop (USB stick or network share).
 
 ## Fresh install (Ubuntu 24.04)
@@ -67,7 +67,7 @@ sentinel-install-update
 
 ```bash
 cd deploy
-bash ./sentinel_update_quiet.sh
+./install.sh --version vX.Y.Z
 ```
 
 Installer behavior:
@@ -111,9 +111,9 @@ Port defaults in `.env`:
 - `KROKI_IMAGE_TAG=0.30.0` (pin for reproducible self-hosted Kroki)
 - `KROKI_SERVER_URL=http://kroki:8000` (internal Wiki.js renderer target)
 - `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
-- `CAPTIVE_PORTAL_RECOVERY_ENABLED=false` (register local Wi-Fi recovery helper used by Sentinel UI action)
-- `CAPTIVE_PORTAL_AUTO_RECOVER=false` (run the helper automatically in the logged-in Ubuntu session)
-- `CAPTIVE_PORTAL_TAILSCALE_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
+- `HOTSPOT_CONNECTION_NAME=Sentinel Hotspot` (NetworkManager profile name for the hosted hotspot)
+- `NETWORK_REACHABILITY_CHECK_URL=https://connectivitycheck.gstatic.com/generate_204` (host-level internet probe)
+- `NETWORK_REMOTE_REACHABILITY_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
 - `NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS=30` (how often the Ubuntu host writes Wi-Fi/internet telemetry for Sentinel)
 
 Canonical Sentinel port allocation policy (host/LAN):
@@ -135,60 +135,37 @@ Kroki is internal-only by default:
 - Wiki.js reaches it over Docker network at `http://kroki:8000`
 - this keeps diagram source content inside the appliance network boundary
 
-## Captive portal / GHCR reachability failure
+## Network / GHCR reachability failure
 
 If install reports GHCR unreachable:
 
-1. Open browser on the same laptop.
-2. Visit `http://neverssl.com` (or any HTTP site).
-3. Complete the captive portal checkbox/splash flow.
+1. Confirm the laptop has working internet access.
+2. If you are using the Sentinel hotspot, reconnect the laptop to the approved SSID.
+3. If you are using building/public Wi-Fi, complete any required captive portal in a browser.
 4. Re-run install:
 
 ```bash
 ./install.sh --version vX.Y.Z
 ```
 
-## Optional captive portal auto-recovery
+## Hotspot helpers
 
-If your deployment laptop sits behind a hotel/base/public Wi-Fi portal that expires daily, Sentinel can now register a local helper on the Ubuntu laptop.
+Install/update now provisions two hotspot-focused helpers:
 
-Enable it in `/opt/sentinel/deploy/.env`:
+- a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to the approved hotspot, then falls back to Wi-Fi settings
+- a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
 
-```env
-CAPTIVE_PORTAL_RECOVERY_ENABLED=true
-CAPTIVE_PORTAL_AUTO_RECOVER=true
-# Optional but useful when backend access depends on Tailscale:
-CAPTIVE_PORTAL_TAILSCALE_TARGET=100.64.0.10
-```
+Relevant runtime paths:
 
-Then re-run:
+- local reconnect handler: `/opt/sentinel/deploy/sentinel-hotspot-connect.sh`
+- queued recovery requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/requests`
+- processed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/processed`
+- failed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/failed`
 
-```bash
-cd /opt/sentinel/deploy
-./update.sh --version vX.Y.Z
-```
+Relevant systemd units:
 
-What this does:
-
-- registers a local `sentinel-recover://` URL handler on the laptop
-- enables the `Launch Wi-Fi Recovery` action in Sentinel's System Status dropdown
-- optionally starts a user-session watcher after login that checks Wi-Fi + internet access, then opens `http://neverssl.com` and sends the configured `Tab`, `Space`, `Return` sequence when captive-portal recovery is needed
-
-Tuning values in `.env`:
-
-- `CAPTIVE_PORTAL_RECOVERY_CHECK_URL` default `https://connectivitycheck.gstatic.com/generate_204`
-- `CAPTIVE_PORTAL_RECOVERY_PORTAL_URL` default `http://neverssl.com`
-- `CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS` default `8`
-- `CAPTIVE_PORTAL_RECOVERY_TAB_COUNT` default `1`
-- `CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS` default `900`
-- `CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS` default `60`
-- `CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD` default `2`
-
-Notes:
-
-- This helper runs on the Ubuntu desktop session, not inside Docker.
-- `xdotool` only works when a graphical session is logged in.
-- Leave `CAPTIVE_PORTAL_AUTO_RECOVER=false` if you want the manual Sentinel button only.
+- `sentinel-host-hotspot-recovery.path`
+- `sentinel-host-hotspot-recovery.service`
 
 ## Host network telemetry
 
@@ -198,8 +175,9 @@ What it checks:
 
 - whether Wi-Fi is connected
 - the current SSID
+- the host IP address that operators can use on the local hotspot/LAN
 - whether the configured internet reachability URL succeeds
-- whether the optional `CAPTIVE_PORTAL_TAILSCALE_TARGET` is reachable
+- whether the optional `NETWORK_REMOTE_REACHABILITY_TARGET` is reachable
 
 Where it lives:
 
@@ -210,6 +188,8 @@ systemd units installed during install/update/rollback:
 
 - `sentinel-network-status.service`
 - `sentinel-network-status.timer`
+- `sentinel-host-hotspot-recovery.path`
+- `sentinel-host-hotspot-recovery.service`
 
 ## Install and Update
 
@@ -223,7 +203,7 @@ systemd units installed during install/update/rollback:
 
 ```bash
 cd /opt/sentinel/deploy
-bash ./sentinel_update_quiet.sh
+./update.sh --version vX.Y.Z
 ```
 
 This guided flow handles both install and update:
@@ -236,7 +216,7 @@ This guided flow handles both install and update:
 
 ## Automatic upgrade helper
 
-If you want unattended upgrade checks on a deployment laptop, use:
+If you want unattended upgrade checks on the Sentinel server laptop, use:
 
 ```bash
 cd /opt/sentinel/deploy

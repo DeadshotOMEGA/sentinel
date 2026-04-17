@@ -69,11 +69,13 @@ services:
       SENTINEL_AUTO_SEED_ATTEMPTS: ${SENTINEL_AUTO_SEED_ATTEMPTS:-3}
       SENTINEL_AUTO_SEED_RETRY_DELAY_MS: ${SENTINEL_AUTO_SEED_RETRY_DELAY_MS:-3000}
       NETWORK_STATUS_FILE_PATH: /var/run/sentinel/network-status/network-status.json
+      HOST_HOTSPOT_RECOVERY_REQUEST_DIR: /var/run/sentinel/hotspot-recovery/requests
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./runtime/network-status:/var/run/sentinel/network-status:ro
+      - ./runtime/hotspot-recovery:/var/run/sentinel/hotspot-recovery
     healthcheck:
       test:
         [

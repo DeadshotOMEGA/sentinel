@@ -137,8 +137,7 @@ router.post('/login', async (req: Request, res: Response) => {
       if (shouldForceDeploymentRemoteSystem) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message:
-            'Deployment Laptop remote system is not active. Update it in Settings > Network.',
+          message: 'Server remote system is not active. Update it in Settings > Network.',
         })
       }
 

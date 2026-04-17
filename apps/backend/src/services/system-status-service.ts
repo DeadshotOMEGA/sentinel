@@ -325,6 +325,7 @@ export class SystemStatusService {
         }),
         wifiConnected: telemetry?.wifiConnected ?? null,
         currentSsid: telemetry?.currentSsid ?? null,
+        hostIpAddress: telemetry?.hostIpAddress ?? null,
         approvedSsids,
         approvedSsid,
         internetReachable: telemetry?.internetReachable ?? null,

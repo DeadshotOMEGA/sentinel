@@ -54,3 +54,24 @@ export function useUpdateNetworkSettings() {
     },
   })
 }
+
+export function useHostHotspotRecovery() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.networkSettings.hostHotspotRecovery({
+        body: undefined,
+      })
+
+      if (response.status !== 202) {
+        throw new Error(getErrorMessage(response.body, 'Failed to queue host hotspot recovery'))
+      }
+
+      return response.body
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['system-status'] })
+    },
+  })
+}

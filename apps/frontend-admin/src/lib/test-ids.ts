@@ -19,11 +19,13 @@ export const TID = {
   },
   nav: {
     logo: 'nav-logo',
+    remoteSystemBadge: 'nav-remote-system-badge',
     link: (page: string) => `nav-link-${page}`,
     helpBtn: 'nav-help-btn',
     backendStatus: 'nav-backend-status',
     backendStatusDetails: 'nav-backend-status-details',
     backendStatusRecovery: 'nav-backend-status-recovery',
+    backendStatusHostRecovery: 'nav-backend-status-host-recovery',
     backendStatusRemoteSystems: 'nav-backend-status-remote-systems',
     userMenu: 'nav-user-menu',
     changePin: 'nav-change-pin',

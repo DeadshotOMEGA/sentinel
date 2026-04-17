@@ -203,14 +203,14 @@ fi
 ensure_docker_and_compose_v2
 
 if ! check_ghcr_reachability; then
-  print_captive_portal_help
+  print_network_recovery_help
   die "Cannot reach ghcr.io"
 fi
 
 ensure_env_file
 bootstrap_env_defaults
 write_admin_credentials_snapshot
-configure_captive_portal_recovery
+configure_hotspot_connectivity_helpers
 load_state
 
 if [[ -n "${CLI_WITH_OBS}" ]]; then

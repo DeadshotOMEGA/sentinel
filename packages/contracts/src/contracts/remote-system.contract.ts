@@ -23,7 +23,7 @@ export const remoteSystemContract = c.router({
     },
     summary: 'List active remote systems',
     description:
-      'Return the active remote systems available during login, ordered by display order and name.',
+      'Return active remote systems for login, including occupied-state hints and host-device login context.',
   },
 
   listAdminRemoteSystems: {

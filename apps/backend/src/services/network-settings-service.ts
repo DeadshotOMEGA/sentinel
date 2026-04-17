@@ -6,10 +6,10 @@ import { SettingRepository } from '../repositories/setting-repository.js'
 import { logger } from '../lib/logger.js'
 
 const NETWORK_SETTINGS_KEY = 'network.approved_ssids'
-const SENTINEL_SSID = 'Sentinel'
-const LEGACY_SENTINEL_SSID_KEYS = new Set(['hmcschippawa'])
+const DEFAULT_APPROVED_SSID = 'Stone Frigate'
+const LEGACY_DEFAULT_APPROVED_SSID_KEYS = new Set(['hmcschippawa'])
 const DEFAULT_NETWORK_SETTINGS: NetworkSettings = {
-  approvedSsids: [SENTINEL_SSID],
+  approvedSsids: [DEFAULT_APPROVED_SSID],
 }
 
 export interface NetworkSettingsState {
@@ -40,8 +40,8 @@ function normalizeApprovedSsids(settings: NetworkSettings): NetworkSettings {
       continue
     }
 
-    const normalizedValue = LEGACY_SENTINEL_SSID_KEYS.has(normalizeSsidKey(trimmed))
-      ? SENTINEL_SSID
+    const normalizedValue = LEGACY_DEFAULT_APPROVED_SSID_KEYS.has(normalizeSsidKey(trimmed))
+      ? DEFAULT_APPROVED_SSID
       : trimmed
     const dedupeKey = normalizedValue.toLocaleLowerCase()
 
@@ -108,8 +108,7 @@ export class NetworkSettingsService {
     if (existing) {
       const updated = await this.settingRepository.updateByKey(NETWORK_SETTINGS_KEY, {
         value: normalizedSettings,
-        description:
-          'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
+        description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
       })
 
       return {
@@ -125,8 +124,7 @@ export class NetworkSettingsService {
       key: NETWORK_SETTINGS_KEY,
       value: normalizedSettings,
       category: 'network',
-      description:
-        'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
+      description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
     })
 
     return {
@@ -139,4 +137,9 @@ export class NetworkSettingsService {
   }
 }
 
-export { NETWORK_SETTINGS_KEY, DEFAULT_NETWORK_SETTINGS, SENTINEL_SSID, normalizeApprovedSsids }
+export {
+  NETWORK_SETTINGS_KEY,
+  DEFAULT_APPROVED_SSID,
+  DEFAULT_NETWORK_SETTINGS,
+  normalizeApprovedSsids,
+}

@@ -1,6 +1,11 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { Prisma, prisma as defaultPrisma } from '@sentinel/database'
 
+export const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
+export const DEPLOYMENT_REMOTE_SYSTEM_NAME = 'Server'
+export const DEPLOYMENT_REMOTE_SYSTEM_DESCRIPTION =
+  'Server host for the Sentinel hotspot and shared services.'
+
 export interface RemoteSystemRecord {
   id: string
   code: string
@@ -15,6 +20,10 @@ export interface RemoteSystemRecord {
 export interface AdminRemoteSystemRecord extends RemoteSystemRecord {
   usageCount: number
   activeSessionCount: number
+}
+
+export interface LoginRemoteSystemRecord extends RemoteSystemRecord {
+  isOccupied: boolean
 }
 
 export interface CreateRemoteSystemRecordInput {
@@ -32,6 +41,27 @@ export interface UpdateRemoteSystemRecordInput {
   isActive?: boolean
 }
 
+function normalizeRemoteSystemDisplay(remoteSystem: {
+  code: string
+  name: string
+  description: string | null
+}): {
+  name: string
+  description: string | null
+} {
+  if (remoteSystem.code === DEPLOYMENT_REMOTE_SYSTEM_CODE) {
+    return {
+      name: DEPLOYMENT_REMOTE_SYSTEM_NAME,
+      description: DEPLOYMENT_REMOTE_SYSTEM_DESCRIPTION,
+    }
+  }
+
+  return {
+    name: remoteSystem.name,
+    description: remoteSystem.description,
+  }
+}
+
 function toRemoteSystemRecord(remoteSystem: {
   id: string
   code: string
@@ -42,11 +72,13 @@ function toRemoteSystemRecord(remoteSystem: {
   createdAt: Date
   updatedAt: Date
 }): RemoteSystemRecord {
+  const normalizedDisplay = normalizeRemoteSystemDisplay(remoteSystem)
+
   return {
     id: remoteSystem.id,
     code: remoteSystem.code,
-    name: remoteSystem.name,
-    description: remoteSystem.description,
+    name: normalizedDisplay.name,
+    description: normalizedDisplay.description,
     displayOrder: remoteSystem.displayOrder,
     isActive: remoteSystem.isActive,
     createdAt: remoteSystem.createdAt,
@@ -62,22 +94,56 @@ export class RemoteSystemRepository {
   }
 
   async findActiveOptions(): Promise<RemoteSystemRecord[]> {
-    const systems = await this.prisma.remoteSystem.findMany({
-      where: { isActive: true },
-      orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        description: true,
-        displayOrder: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
+    const systems = await this.findActiveLoginOptions()
 
-    return systems.map(toRemoteSystemRecord)
+    return systems.map(({ isOccupied: _isOccupied, ...system }) => system)
+  }
+
+  async findActiveLoginOptions(
+    activeWithinSeconds: number = 120
+  ): Promise<LoginRemoteSystemRecord[]> {
+    const now = new Date()
+    const activeThreshold = new Date(now.getTime() - activeWithinSeconds * 1000)
+
+    const [systems, activeCounts] = await Promise.all([
+      this.prisma.remoteSystem.findMany({
+        where: { isActive: true },
+        orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          description: true,
+          displayOrder: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      this.prisma.memberSession.groupBy({
+        by: ['remoteSystemId'],
+        where: {
+          remoteSystemId: { not: null },
+          endedAt: null,
+          expiresAt: { gt: now },
+          lastSeenAt: { gte: activeThreshold },
+        },
+        _count: { _all: true },
+      }),
+    ])
+
+    const activeCountById = new Map(
+      activeCounts
+        .filter(
+          (item): item is typeof item & { remoteSystemId: string } => item.remoteSystemId !== null
+        )
+        .map((item) => [item.remoteSystemId, item._count._all])
+    )
+
+    return systems.map((system) => ({
+      ...toRemoteSystemRecord(system),
+      isOccupied: (activeCountById.get(system.id) ?? 0) > 0,
+    }))
   }
 
   async findById(id: string): Promise<RemoteSystemRecord | null> {
@@ -99,7 +165,7 @@ export class RemoteSystemRepository {
   }
 
   async findActiveById(id: string): Promise<RemoteSystemRecord | null> {
-    const system = await this.prisma.remoteSystem.findFirst({
+    const systems = await this.prisma.remoteSystem.findMany({
       where: { id, isActive: true },
       select: {
         id: true,
@@ -112,6 +178,8 @@ export class RemoteSystemRepository {
         updatedAt: true,
       },
     })
+
+    const system = systems[0] ?? null
 
     return system ? toRemoteSystemRecord(system) : null
   }

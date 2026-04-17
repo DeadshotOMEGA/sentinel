@@ -3,18 +3,23 @@
 /* global HTMLInputElement */
 
 import { useRef, useEffect, useMemo, useState, type ChangeEvent, type KeyboardEvent } from 'react'
-import type { RemoteSystemOption } from '@sentinel/contracts'
+import type { RemoteSystemLoginContext, RemoteSystemOption } from '@sentinel/contracts'
 import { KeyRound, ArrowLeft, LoaderCircle, LogIn } from 'lucide-react'
 import { TID } from '@/lib/test-ids'
+import {
+  formatRemoteSystemOptionLabel,
+  resolveDefaultRemoteSystemId,
+  resolveEffectiveRemoteSystemId,
+  resolveForcedRemoteSystem,
+  type PinInputInitialSelection,
+} from './pin-input.logic'
+
+export type { PinInputInitialSelection } from './pin-input.logic'
 
 export interface PinInputSubmission {
   pin: string
   remoteSystemId?: string
   useKioskRemoteSystem?: boolean
-}
-
-export interface PinInputInitialSelection {
-  id: string
 }
 
 interface PinInputProps {
@@ -25,6 +30,7 @@ interface PinInputProps {
   remoteSystemsLoading?: boolean
   remoteSystemsError?: string | null
   initialSelection?: PinInputInitialSelection | null
+  loginContext?: RemoteSystemLoginContext | null
   forceKioskRemoteSystem?: boolean
 }
 
@@ -36,6 +42,7 @@ export function PinInput({
   remoteSystemsLoading = false,
   remoteSystemsError = null,
   initialSelection = null,
+  loginContext = null,
   forceKioskRemoteSystem = false,
 }: PinInputProps) {
   const [pin, setPin] = useState('')
@@ -46,29 +53,39 @@ export function PinInput({
     inputRef.current?.focus()
   }, [])
 
+  const forcedRemoteSystem = useMemo(
+    () => resolveForcedRemoteSystem(remoteSystems, loginContext),
+    [loginContext, remoteSystems]
+  )
   const defaultRemoteSystemId = useMemo(() => {
-    if (initialSelection && remoteSystems.some((system) => system.id === initialSelection.id)) {
-      return initialSelection.id
-    }
+    return resolveDefaultRemoteSystemId({
+      remoteSystems,
+      initialSelection,
+      loginContext,
+    })
+  }, [initialSelection, loginContext, remoteSystems])
 
-    const deploymentSystem = remoteSystems.find((system) => system.code === 'deployment_laptop')
-    if (deploymentSystem) {
-      return deploymentSystem.id
-    }
-
-    return remoteSystems[0]?.id ?? ''
-  }, [initialSelection, remoteSystems])
-
-  const effectiveSelectedRemoteSystem = selectedRemoteSystem || defaultRemoteSystemId
+  const effectiveSelectedRemoteSystem = useMemo(
+    () =>
+      resolveEffectiveRemoteSystemId({
+        remoteSystems,
+        selectedRemoteSystem,
+        initialSelection,
+        loginContext,
+      }),
+    [initialSelection, loginContext, remoteSystems, selectedRemoteSystem]
+  )
   const kioskRemoteSystem = remoteSystems.find((system) => system.code === 'kiosk')
   const remoteSystemDescription =
     remoteSystems.find((system) => system.id === effectiveSelectedRemoteSystem)?.description ?? null
-  const hasSelectableRemoteSystems = remoteSystems.length > 0
+  const hasSelectableRemoteSystems = defaultRemoteSystemId.length > 0
+  const isHostDevice = loginContext?.isHostDevice === true
+  const hostRemoteSystemMissing = isHostDevice && !forcedRemoteSystem
   const canSubmit =
     pin.length === 4 &&
     (forceKioskRemoteSystem
       ? Boolean(kioskRemoteSystem) && !remoteSystemsLoading
-      : effectiveSelectedRemoteSystem.length > 0)
+      : effectiveSelectedRemoteSystem.length > 0 && !hostRemoteSystemMissing)
 
   const handleSubmit = () => {
     if (!canSubmit) {
@@ -144,6 +161,34 @@ export function PinInput({
             </p>
           )}
         </fieldset>
+      ) : isHostDevice ? (
+        <fieldset
+          className="rounded-box border border-base-300 bg-base-200/70 px-(--space-3) py-(--space-2)"
+          data-testid={TID.auth.remoteSystemSelect}
+        >
+          <legend className="text-xs font-semibold uppercase tracking-[0.1em] text-base-content/60">
+            Remote system
+          </legend>
+          <p className="text-sm font-semibold text-base-content">
+            {forcedRemoteSystem?.name ?? 'Server'}{' '}
+            <span className="font-normal text-base-content/65">(automatic)</span>
+          </p>
+          {remoteSystemsLoading && (
+            <p className="label mt-(--space-1) text-base-content/60">
+              Loading managed remote systems...
+            </p>
+          )}
+          {!remoteSystemsLoading && hostRemoteSystemMissing && (
+            <p className="label mt-(--space-1) text-error">
+              Server remote system is not active. Ask an admin to restore it in Settings.
+            </p>
+          )}
+          {forcedRemoteSystem?.description && (
+            <p className="label mt-(--space-1) text-base-content/60">
+              {forcedRemoteSystem.description}
+            </p>
+          )}
+        </fieldset>
       ) : (
         <fieldset className="fieldset">
           <label className="select w-full">
@@ -158,8 +203,12 @@ export function PinInput({
                 Select a remote system
               </option>
               {remoteSystems.map((system) => (
-                <option key={system.id} value={system.id}>
-                  {system.name}
+                <option
+                  key={system.id}
+                  value={system.id}
+                  disabled={!system.id || system.isOccupied}
+                >
+                  {formatRemoteSystemOptionLabel(system, loginContext)}
                 </option>
               ))}
             </select>
@@ -167,12 +216,17 @@ export function PinInput({
           <p className="label">
             Required so Sentinel can track which managed station is connected.
           </p>
+          {!remoteSystemsLoading && remoteSystems.some((system) => system.isOccupied) && (
+            <p className="label text-base-content/60">In-use systems stay visible but cannot be selected.</p>
+          )}
           {remoteSystemsLoading && (
             <p className="label text-base-content/60">Loading managed remote systems...</p>
           )}
           {!remoteSystemsLoading && !hasSelectableRemoteSystems && !remoteSystemsError && (
             <p className="label text-error">
-              No active remote systems are configured. Ask an admin to add one in Settings.
+              {remoteSystems.length === 0
+                ? 'No active remote systems are configured. Ask an admin to add one in Settings.'
+                : 'All active remote systems are currently in use. Wait for a station to free up or ask an admin.'}
             </p>
           )}
           {remoteSystemDescription && (

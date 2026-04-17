@@ -497,8 +497,8 @@ const DEFAULT_REMOTE_SYSTEMS: ReadonlyArray<RemoteSystemSeedInput> = [
   },
   {
     code: 'deployment_laptop',
-    name: 'Deployment Laptop',
-    description: 'Deployment laptop local session and operator presence.',
+    name: 'Server',
+    description: 'Server host for the Sentinel hotspot and shared services.',
     displayOrder: 2,
   },
   {
@@ -886,10 +886,9 @@ async function ensureNetworkSettings(): Promise<boolean> {
   await prisma.setting.create({
     data: {
       key: 'network.approved_ssids',
-      value: { approvedSsids: ['Sentinel'] },
+      value: { approvedSsids: ['Stone Frigate'] },
       category: 'network',
-      description:
-        'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
+      description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
     },
   })
 

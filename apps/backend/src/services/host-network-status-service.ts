@@ -7,6 +7,7 @@ export interface HostNetworkTelemetry {
   generatedAt: Date
   wifiConnected: boolean | null
   currentSsid: string | null
+  hostIpAddress: string | null
   internetReachable: boolean | null
   remoteTarget: string | null
   remoteReachable: boolean | null
@@ -50,6 +51,7 @@ function parseTelemetry(payload: unknown): HostNetworkTelemetry | null {
     generatedAt,
     wifiConnected: normalizeNullableBoolean(payload.wifiConnected),
     currentSsid: normalizeNullableString(payload.currentSsid),
+    hostIpAddress: normalizeNullableString(payload.hostIpAddress),
     internetReachable: normalizeNullableBoolean(payload.internetReachable),
     remoteTarget: normalizeNullableString(payload.remoteTarget),
     remoteReachable: normalizeNullableBoolean(payload.remoteReachable),

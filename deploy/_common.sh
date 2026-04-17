@@ -130,15 +130,16 @@ check_ghcr_reachability() {
   esac
 }
 
-print_captive_portal_help() {
+print_network_recovery_help() {
   cat <<'HELP'
 GHCR is unreachable from this network.
 
-1. Open a browser on this laptop and visit any HTTP site (for example http://neverssl.com).
-2. Complete the captive portal splash/checkbox flow.
-3. Re-run this command.
+1. Make sure this laptop is connected to the internet-facing network.
+2. If you use the Sentinel hotspot, reconnect to the approved hotspot SSID and retry.
+3. If you use building/public Wi-Fi, complete any required captive portal in a browser.
+4. Re-run this command.
 
-If portal still does not appear, disconnect/reconnect Wi-Fi and retry.
+If the laptop is still offline, disconnect/reconnect Wi-Fi and retry.
 HELP
 }
 
@@ -292,40 +293,16 @@ bootstrap_env_defaults() {
     upsert_env "WIKI_LAN_PORT" "3020"
   fi
 
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_ENABLED)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_ENABLED" "false"
+  if is_placeholder_env_value "$(env_value HOTSPOT_CONNECTION_NAME)"; then
+    upsert_env "HOTSPOT_CONNECTION_NAME" "Sentinel Hotspot"
   fi
 
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_AUTO_RECOVER)"; then
-    upsert_env "CAPTIVE_PORTAL_AUTO_RECOVER" "false"
+  if is_placeholder_env_value "$(env_value NETWORK_REACHABILITY_CHECK_URL)"; then
+    upsert_env "NETWORK_REACHABILITY_CHECK_URL" "https://connectivitycheck.gstatic.com/generate_204"
   fi
 
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_CHECK_URL)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_CHECK_URL" "https://connectivitycheck.gstatic.com/generate_204"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_PORTAL_URL)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_PORTAL_URL" "http://neverssl.com"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_DELAY_SECONDS" "8"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_TAB_COUNT)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_TAB_COUNT" "1"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_COOLDOWN_SECONDS" "900"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_INTERVAL_SECONDS" "60"
-  fi
-
-  if is_placeholder_env_value "$(env_value CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD)"; then
-    upsert_env "CAPTIVE_PORTAL_RECOVERY_FAILURE_THRESHOLD" "2"
+  if is_placeholder_env_value "$(env_value NETWORK_REMOTE_REACHABILITY_TARGET)"; then
+    upsert_env "NETWORK_REMOTE_REACHABILITY_TARGET" ""
   fi
 
   if is_placeholder_env_value "$(env_value NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS)"; then
@@ -988,107 +965,113 @@ run_as_desktop_user() {
   "$@"
 }
 
-cleanup_captive_portal_recovery() {
+cleanup_hotspot_connectivity_helpers() {
   local desktop_user="${1:-}" home_dir="${2:-}"
   [[ -n "${desktop_user}" && -n "${home_dir}" ]] || return 0
 
+  run_root rm -f "${home_dir}/.local/share/applications/sentinel-hotspot-connect.desktop"
   run_root rm -f "${home_dir}/.local/share/applications/sentinel-captive-portal-recover.desktop"
   run_root rm -f "${home_dir}/.config/autostart/sentinel-captive-portal-watch.desktop"
 }
 
-configure_captive_portal_recovery() {
-  local enabled auto_enabled desktop_user home_dir applications_dir autostart_dir
-  local handler_file autostart_file tmp_file desktop_group
-
-  enabled="$(normalize_boolean_env "$(env_value CAPTIVE_PORTAL_RECOVERY_ENABLED false)")"
-  auto_enabled="$(normalize_boolean_env "$(env_value CAPTIVE_PORTAL_AUTO_RECOVER false)")"
+configure_hotspot_connectivity_helpers() {
+  local desktop_user home_dir applications_dir handler_file tmp_file desktop_group
   desktop_user="$(resolve_desktop_user || true)"
 
   if [[ -z "${desktop_user}" ]]; then
-    warn "Unable to determine desktop user; skipping captive portal recovery helper setup."
-    return 0
-  fi
+    warn "Unable to determine desktop user; skipping hotspot reconnect URI helper setup."
+  else
+    home_dir="$(desktop_user_home "${desktop_user}" || true)"
+    if [[ -z "${home_dir}" ]]; then
+      warn "Unable to resolve home directory for ${desktop_user}; skipping hotspot reconnect URI helper setup."
+    else
+      desktop_group="$(id -gn "${desktop_user}")"
+      applications_dir="${home_dir}/.local/share/applications"
+      handler_file="${applications_dir}/sentinel-hotspot-connect.desktop"
 
-  home_dir="$(desktop_user_home "${desktop_user}" || true)"
-  if [[ -z "${home_dir}" ]]; then
-    warn "Unable to resolve home directory for ${desktop_user}; skipping captive portal recovery helper setup."
-    return 0
-  fi
-  desktop_group="$(id -gn "${desktop_user}")"
+      if ! dpkg -s xdg-utils >/dev/null 2>&1; then
+        log "Installing hotspot reconnect helper dependency (xdg-utils)"
+        run_root apt-get update -y >/dev/null
+        run_root apt-get install -y xdg-utils >/dev/null
+      fi
 
-  applications_dir="${home_dir}/.local/share/applications"
-  autostart_dir="${home_dir}/.config/autostart"
-  handler_file="${applications_dir}/sentinel-captive-portal-recover.desktop"
-  autostart_file="${autostart_dir}/sentinel-captive-portal-watch.desktop"
+      run_root install -d -m 755 -o "${desktop_user}" -g "${desktop_group}" "${applications_dir}"
+      cleanup_hotspot_connectivity_helpers "${desktop_user}" "${home_dir}"
 
-  if [[ "${enabled}" != "true" ]]; then
-    cleanup_captive_portal_recovery "${desktop_user}" "${home_dir}"
-    log "Captive portal recovery helper disabled."
-    return 0
-  fi
-
-  if ! dpkg -s xdotool >/dev/null 2>&1 || ! dpkg -s xdg-utils >/dev/null 2>&1; then
-    log "Installing captive portal recovery helper dependencies (xdotool, xdg-utils)"
-    run_root apt-get update -y >/dev/null
-    run_root apt-get install -y xdotool xdg-utils >/dev/null
-  fi
-
-  run_root install -d -m 755 -o "${desktop_user}" -g "${desktop_group}" "${applications_dir}"
-  run_root install -d -m 755 -o "${desktop_user}" -g "${desktop_group}" "${autostart_dir}"
-
-  tmp_file="$(mktemp)"
-  cat >"${tmp_file}" <<DESKTOP
+      tmp_file="$(mktemp)"
+      cat >"${tmp_file}" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=Sentinel Wi-Fi Recovery
-Comment=Launch the Sentinel captive portal recovery helper
-Exec=${DEPLOY_DIR}/captive-portal-recover.sh --force --uri %u
+Name=Sentinel Hotspot Connect
+Comment=Reconnect this laptop to the approved Sentinel hotspot
+Exec=${DEPLOY_DIR}/sentinel-hotspot-connect.sh --uri %u
 Terminal=false
 NoDisplay=true
-MimeType=x-scheme-handler/sentinel-recover;
+MimeType=x-scheme-handler/sentinel-hotspot;
 Categories=Network;
 DESKTOP
-  run_root install -m 644 "${tmp_file}" "${handler_file}"
-  rm -f "${tmp_file}"
+      run_root install -m 644 "${tmp_file}" "${handler_file}"
+      rm -f "${tmp_file}"
 
-  if [[ "${auto_enabled}" == "true" ]]; then
-    tmp_file="$(mktemp)"
-    cat >"${tmp_file}" <<AUTOSTART
-[Desktop Entry]
-Type=Application
-Version=1.0
-Name=Sentinel Wi-Fi Recovery Watcher
-Comment=Automatically launch captive portal recovery checks for Sentinel deployments
-Exec=${DEPLOY_DIR}/captive-portal-watch.sh
-Terminal=false
-X-GNOME-Autostart-enabled=true
-AUTOSTART
-    run_root install -m 644 "${tmp_file}" "${autostart_file}"
-    rm -f "${tmp_file}"
-  else
-    rm -f "${autostart_file}"
+      run_root chown "${desktop_user}:${desktop_group}" "${handler_file}"
+
+      if command -v update-desktop-database >/dev/null 2>&1; then
+        run_as_desktop_user "${desktop_user}" update-desktop-database "${applications_dir}" >/dev/null 2>&1 || true
+      fi
+
+      if command -v xdg-mime >/dev/null 2>&1; then
+        run_as_desktop_user "${desktop_user}" xdg-mime default sentinel-hotspot-connect.desktop x-scheme-handler/sentinel-hotspot >/dev/null 2>&1 || true
+      fi
+
+      log "Hotspot reconnect URI helper installed for ${desktop_user}."
+    fi
   fi
 
-  run_root chown "${desktop_user}:${desktop_group}" "${handler_file}"
-  if [[ -f "${autostart_file}" ]]; then
-    run_root chown "${desktop_user}:${desktop_group}" "${autostart_file}"
+  if ! command -v systemctl >/dev/null 2>&1; then
+    warn "systemctl is unavailable; skipping host hotspot recovery path setup."
+    return 0
   fi
 
-  if command -v update-desktop-database >/dev/null 2>&1; then
-    run_as_desktop_user "${desktop_user}" update-desktop-database "${applications_dir}" >/dev/null 2>&1 || true
-  fi
+  run_root install -d -m 755 \
+    "${DEPLOY_DIR}/runtime/hotspot-recovery" \
+    "${DEPLOY_DIR}/runtime/hotspot-recovery/requests" \
+    "${DEPLOY_DIR}/runtime/hotspot-recovery/processed" \
+    "${DEPLOY_DIR}/runtime/hotspot-recovery/failed"
+  run_root chmod 755 \
+    "${DEPLOY_DIR}/recover-host-hotspot.sh" \
+    "${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh" \
+    "${DEPLOY_DIR}/sentinel-hotspot-connect.sh" >/dev/null 2>&1 || true
 
-  if command -v xdg-mime >/dev/null 2>&1; then
-    run_as_desktop_user "${desktop_user}" xdg-mime default sentinel-captive-portal-recover.desktop x-scheme-handler/sentinel-recover >/dev/null 2>&1 || true
-  fi
+  run_root tee /etc/systemd/system/sentinel-host-hotspot-recovery.service >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host hotspot recovery processor
+After=network-online.target
+Wants=network-online.target
 
-  log "Captive portal recovery helper installed for ${desktop_user}."
-  if [[ "${auto_enabled}" == "true" ]]; then
-    log "Automatic captive portal recovery watcher enabled for ${desktop_user}."
-  else
-    log "Automatic captive portal recovery watcher disabled; manual launch remains available from Sentinel."
-  fi
+[Service]
+Type=oneshot
+WorkingDirectory=${DEPLOY_DIR}
+ExecStart=${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh
+UNIT
+
+  run_root tee /etc/systemd/system/sentinel-host-hotspot-recovery.path >/dev/null <<UNIT
+[Unit]
+Description=Sentinel host hotspot recovery queue watcher
+
+[Path]
+PathExistsGlob=${DEPLOY_DIR}/runtime/hotspot-recovery/requests/*.json
+Unit=sentinel-host-hotspot-recovery.service
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+  run_root systemctl daemon-reload
+  run_root systemctl enable --now sentinel-host-hotspot-recovery.path
+  run_root systemctl start sentinel-host-hotspot-recovery.service
+
+  log "Host hotspot recovery watcher enabled."
 }
 
 configure_network_status_telemetry() {

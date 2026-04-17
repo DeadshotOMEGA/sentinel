@@ -1,21 +1,14 @@
+import type { AuthMember, SessionMetadata } from '@sentinel/contracts'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-interface AuthMember {
-  id: string
-  firstName: string
-  lastName: string
-  rank: string
-  serviceNumber: string
-  accountLevel: number
-  mustChangePin: boolean
-}
 
 interface AuthState {
   member: AuthMember | null
   token: string | null
+  session: SessionMetadata | null
   isAuthenticated: boolean
-  setAuth: (member: AuthMember, token: string) => void
+  setAuth: (member: AuthMember, token: string, session: SessionMetadata) => void
+  updateSession: (session: SessionMetadata) => void
   logout: () => void
   hasMinimumLevel: (level: number) => boolean
 }
@@ -25,9 +18,11 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       member: null,
       token: null,
+      session: null,
       isAuthenticated: false,
-      setAuth: (member, token) => set({ member, token, isAuthenticated: true }),
-      logout: () => set({ member: null, token: null, isAuthenticated: false }),
+      setAuth: (member, token, session) => set({ member, token, session, isAuthenticated: true }),
+      updateSession: (session) => set((state) => ({ ...state, session })),
+      logout: () => set({ member: null, token: null, session: null, isAuthenticated: false }),
       hasMinimumLevel: (level: number) => {
         const { member } = get()
         return (member?.accountLevel ?? 0) >= level

@@ -13,6 +13,7 @@ import {
 import { BadgeScanInput } from '@/components/auth/badge-scan-input'
 import type { PinInputInitialSelection, PinInputSubmission } from '@/components/auth/pin-input'
 import { PinInput } from '@/components/auth/pin-input'
+import { getSetupDescription } from './login-flow'
 import {
   getKioskResponsibilityPromptPresentation,
   type ResponsibilityActionChoice,
@@ -185,14 +186,6 @@ function getErrorCode(body: unknown): string | null {
   }
 
   return null
-}
-
-function getSetupDescription(reason: LoginPinSetupReason): string {
-  if (reason === 'default') {
-    return 'This badge is still linked to a temporary default PIN. Create a secure PIN before you can continue.'
-  }
-
-  return 'This badge does not have a PIN configured yet. Create a secure PIN before you can continue.'
 }
 
 export default function LoginPage() {
@@ -405,7 +398,13 @@ function LoginPageContent() {
       }
 
       resetStartOfDayState()
-      setAuth(data.member, data.token)
+      setAuth(data.member, data.token, {
+        sessionId: data.sessionId,
+        remoteSystemId: data.remoteSystemId,
+        remoteSystemName: data.remoteSystemName,
+        lastSeenAt: data.lastSeenAt,
+        expiresAt: data.expiresAt,
+      })
       const nextDestination = postLoginDestination
       if (data.member.mustChangePin) {
         router.push(`/change-pin-required?destination=${encodeURIComponent(nextDestination)}`)
@@ -681,7 +680,7 @@ function LoginPageContent() {
                   onSubmit={handlePinSubmit}
                   onBack={returnToBadgeScan}
                   loading={loading}
-                  remoteSystems={remoteSystemsQuery.data ?? []}
+                  remoteSystems={remoteSystemsQuery.data?.systems ?? []}
                   remoteSystemsLoading={remoteSystemsQuery.isLoading}
                   remoteSystemsError={
                     remoteSystemsQuery.error instanceof Error
@@ -689,6 +688,7 @@ function LoginPageContent() {
                       : null
                   }
                   initialSelection={initialSelection}
+                  loginContext={remoteSystemsQuery.data?.loginContext}
                   forceKioskRemoteSystem={isKioskDestination(postLoginDestination)}
                 />
               )}

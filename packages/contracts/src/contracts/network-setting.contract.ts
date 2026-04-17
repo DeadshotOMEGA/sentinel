@@ -2,6 +2,7 @@ import { initContract } from '@ts-rest/core'
 import {
   ErrorResponseSchema,
   NetworkSettingsResponseSchema,
+  SuccessResponseSchema,
   UpdateNetworkSettingsSchema,
 } from '../schemas/index.js'
 
@@ -33,7 +34,22 @@ export const networkSettingContract = c.router(
         500: ErrorResponseSchema,
       },
       summary: 'Update network settings',
-      description: 'Persist the approved Wi-Fi SSID allowlist for deployment-network validation.',
+      description: 'Persist the approved Wi-Fi SSID allowlist for Sentinel hotspot validation.',
+    },
+
+    hostHotspotRecovery: {
+      method: 'POST',
+      path: '/api/network-settings/host-hotspot-recovery',
+      body: c.type<undefined>(),
+      responses: {
+        202: SuccessResponseSchema,
+        401: ErrorResponseSchema,
+        403: ErrorResponseSchema,
+        500: ErrorResponseSchema,
+      },
+      summary: 'Request host hotspot recovery',
+      description:
+        'Queue a host-side Sentinel hotspot recovery request for the deployment server laptop.',
     },
   },
   {

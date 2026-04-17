@@ -3,11 +3,18 @@ import type { Request } from 'express'
 import { remoteSystemContract, type AdminRemoteSystem } from '@sentinel/contracts'
 import { Prisma } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
+import { shouldEnforceMainSystemLoginSelection } from '../lib/runtime-context.js'
 import { AccountLevel } from '../middleware/roles.js'
-import { RemoteSystemRepository } from '../repositories/remote-system-repository.js'
+import {
+  DEPLOYMENT_REMOTE_SYSTEM_CODE,
+  RemoteSystemRepository,
+} from '../repositories/remote-system-repository.js'
 
 const s = initServer()
-const remoteSystemRepository = new RemoteSystemRepository(getPrismaClient())
+
+function getRemoteSystemRepository(): RemoteSystemRepository {
+  return new RemoteSystemRepository(getPrismaClient())
+}
 
 function requireMember(req: Request) {
   if (!req.member) {
@@ -47,9 +54,16 @@ function toAdminRemoteSystem(system: AdminRemoteSystem): AdminRemoteSystem {
 }
 
 export const remoteSystemsRouter = s.router(remoteSystemContract, {
-  listRemoteSystems: async () => {
+  listRemoteSystems: async ({ req }) => {
     try {
-      const systems = await remoteSystemRepository.findActiveOptions()
+      const remoteSystemRepository = getRemoteSystemRepository()
+      const isHostDevice = shouldEnforceMainSystemLoginSelection(req)
+      const [systems, forcedRemoteSystem] = await Promise.all([
+        remoteSystemRepository.findActiveLoginOptions(),
+        isHostDevice
+          ? remoteSystemRepository.findByCode(DEPLOYMENT_REMOTE_SYSTEM_CODE)
+          : Promise.resolve(null),
+      ])
 
       return {
         status: 200 as const,
@@ -60,7 +74,13 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
             name: system.name,
             description: system.description,
             displayOrder: system.displayOrder,
+            isOccupied: system.isOccupied,
           })),
+          loginContext: {
+            isHostDevice,
+            forcedRemoteSystemId:
+              forcedRemoteSystem?.isActive === true ? forcedRemoteSystem.id : null,
+          },
         },
       }
     } catch (error) {
@@ -81,6 +101,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
     }
 
     try {
+      const remoteSystemRepository = getRemoteSystemRepository()
       const systems = await remoteSystemRepository.findAdminSystems()
 
       return {
@@ -120,6 +141,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
     }
 
     try {
+      const remoteSystemRepository = getRemoteSystemRepository()
       const system = await remoteSystemRepository.create({
         code: body.code,
         name: body.name,
@@ -173,6 +195,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
     }
 
     try {
+      const remoteSystemRepository = getRemoteSystemRepository()
       await remoteSystemRepository.reorder(body.remoteSystemIds)
 
       return {
@@ -210,6 +233,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
     }
 
     try {
+      const remoteSystemRepository = getRemoteSystemRepository()
       const system = await remoteSystemRepository.update(params.id, {
         code: body.code,
         name: body.name,
@@ -289,6 +313,7 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
     }
 
     try {
+      const remoteSystemRepository = getRemoteSystemRepository()
       const usageCount = await remoteSystemRepository.countUsage(params.id)
       if (usageCount > 0) {
         return {

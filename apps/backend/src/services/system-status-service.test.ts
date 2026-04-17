@@ -47,7 +47,7 @@ function createService(options?: {
   const networkSettingsService = {
     getNetworkSettings: vi.fn().mockResolvedValue({
       settings: {
-        approvedSsids: options?.approvedSsids ?? ['Sentinel'],
+        approvedSsids: options?.approvedSsids ?? ['Stone Frigate'],
       },
       metadata: {
         source: 'stored',
@@ -100,6 +100,7 @@ describe('SystemStatusService', () => {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           wifiConnected: true,
           currentSsid: 'Coffee-Shop',
+          hostIpAddress: '192.168.8.1',
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -115,18 +116,21 @@ describe('SystemStatusService', () => {
     expect(result.network.status).toBe('warning')
     expect(result.network.approvedSsid).toBe(false)
     expect(result.network.currentSsid).toBe('Coffee-Shop')
+    expect(result.network.hostIpAddress).toBe('192.168.8.1')
     expect(result.network.message).toContain('unapproved Wi-Fi SSID')
+    expect(result.remoteSystems.sessions[0]?.ipAddress).toBe('192.168.0.20')
     expect(result.overall.status).toBe('warning')
   })
 
   it('keeps network status healthy when internet reachability is unavailable but Wi-Fi is approved', async () => {
     const { service } = createService({
-      approvedSsids: ['Sentinel'],
+      approvedSsids: ['Stone Frigate'],
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           wifiConnected: true,
-          currentSsid: 'Sentinel',
+          currentSsid: 'Stone Frigate',
+          hostIpAddress: '192.168.8.1',
           internetReachable: false,
           remoteTarget: null,
           remoteReachable: null,
@@ -141,6 +145,7 @@ describe('SystemStatusService', () => {
 
     expect(result.network.status).toBe('healthy')
     expect(result.network.approvedSsid).toBe(true)
+    expect(result.network.hostIpAddress).toBe('192.168.8.1')
     expect(result.network.message).toBe('Connected to approved Wi-Fi network')
     expect(result.overall.status).toBe('healthy')
   })
