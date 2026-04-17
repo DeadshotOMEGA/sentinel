@@ -43,6 +43,20 @@ function requireAdmin(req: Request) {
   return null
 }
 
+function getRequestedRemoteSystemName(req: Request): string | null {
+  const sessionValue = (req as Request & { session?: unknown }).session
+  if (!sessionValue || typeof sessionValue !== 'object') {
+    return null
+  }
+
+  const remoteSystemName = (sessionValue as { remoteSystemName?: unknown }).remoteSystemName
+  if (typeof remoteSystemName !== 'string' || remoteSystemName.trim().length === 0) {
+    return null
+  }
+
+  return remoteSystemName.trim()
+}
+
 export const networkSettingsRouter = s.router(networkSettingContract, {
   getNetworkSettings: async ({ req }) => {
     const auth = requireMember(req)
@@ -107,7 +121,7 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
           req.member !== undefined
             ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
             : 'Unknown member',
-        requestedByRemoteSystemName: req.session?.remoteSystemName ?? null,
+        requestedByRemoteSystemName: getRequestedRemoteSystemName(req),
         requestedFromIp: getRequestClientIp(req),
         requestedFromUserAgent: Array.isArray(userAgentHeader)
           ? (userAgentHeader[0] ?? null)
