@@ -3,8 +3,9 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 import request from 'supertest'
 import type { PrismaClientInstance } from '@sentinel/database'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { resetPrismaClient, setPrismaClient } from '../lib/database.js'
+import { resetRuntimeContextCachesForTests } from '../lib/runtime-context.js'
 import { authRouter } from './auth.js'
 
 const TEST_BCRYPT_COST = 4
@@ -71,6 +72,19 @@ function createAuthPrismaHarness(initial: {
           }
         }
 
+        if (where.code === 'deployment_laptop') {
+          return {
+            id: 'remote-server',
+            code: 'deployment_laptop',
+            name: 'Server',
+            description: 'Server host for the Sentinel hotspot and shared services.',
+            displayOrder: 2,
+            isActive: true,
+            createdAt: new Date('2026-04-01T00:00:00.000Z'),
+            updatedAt: new Date('2026-04-01T00:00:00.000Z'),
+          }
+        }
+
         return null
       },
       findFirst: async () => null,
@@ -105,7 +119,15 @@ function createAuthPrismaHarness(initial: {
 }
 
 describe('authRouter', () => {
+  const originalNodeEnv = process.env.NODE_ENV
+
+  beforeEach(() => {
+    resetRuntimeContextCachesForTests()
+  })
+
   afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
+    resetRuntimeContextCachesForTests()
     resetPrismaClient()
   })
 
@@ -194,5 +216,31 @@ describe('authRouter', () => {
       },
     })
     expect(successfulLogin.headers['set-cookie']).toBeDefined()
+  })
+
+  it('forces host-device logins onto the Server remote system in production', async () => {
+    process.env.NODE_ENV = 'production'
+
+    const { prisma } = createAuthPrismaHarness({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    setPrismaClient(prisma)
+
+    const app = createTestApp()
+    const response = await request(app)
+      .post('/api/auth/login')
+      .set('x-forwarded-for', '127.0.0.1')
+      .send({
+        serialNumber: 'serial-1',
+        pin: '2468',
+        remoteSystemId: 'remote-other',
+      })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toMatchObject({
+      remoteSystemId: 'remote-server',
+      remoteSystemName: 'Server',
+    })
   })
 })

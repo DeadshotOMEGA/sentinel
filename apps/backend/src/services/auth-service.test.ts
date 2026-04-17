@@ -21,7 +21,7 @@ function createSessionRepositoryMock() {
       token: 'token-1',
       expiresAt: new Date('2026-04-08T12:00:00.000Z'),
       remoteSystemId: 'remote-1',
-      remoteSystemName: 'Deployment Laptop',
+      remoteSystemName: 'Server',
       lastSeenAt: new Date('2026-04-01T12:00:00.000Z'),
     }),
     endById: vi.fn().mockResolvedValue(1),
@@ -192,7 +192,7 @@ describe('AuthService', () => {
         '9876',
         {
           remoteSystemId: 'remote-1',
-          remoteSystemName: 'Deployment Laptop',
+          remoteSystemName: 'Server',
         },
         undefined,
         '127.0.0.1',
@@ -223,7 +223,7 @@ describe('AuthService', () => {
         '1111',
         {
           remoteSystemId: 'remote-1',
-          remoteSystemName: 'Deployment Laptop',
+          remoteSystemName: 'Server',
         },
         undefined,
         '127.0.0.1',
@@ -319,7 +319,7 @@ describe('AuthService', () => {
         '2468',
         {
           remoteSystemId: 'remote-1',
-          remoteSystemName: 'Deployment Laptop',
+          remoteSystemName: 'Server',
         },
         undefined,
         '127.0.0.1',
@@ -369,7 +369,7 @@ describe('AuthService', () => {
       '2468',
       {
         remoteSystemId: 'remote-1',
-        remoteSystemName: 'Deployment Laptop',
+        remoteSystemName: 'Server',
       },
       undefined,
       '127.0.0.1',
@@ -400,7 +400,7 @@ describe('AuthService', () => {
         '2468',
         {
           remoteSystemId: 'remote-1',
-          remoteSystemName: 'Deployment Laptop',
+          remoteSystemName: 'Server',
         },
         undefined,
         '127.0.0.1',
@@ -462,7 +462,7 @@ describe('AuthService', () => {
         '2468',
         {
           remoteSystemId: 'remote-1',
-          remoteSystemName: 'Deployment Laptop',
+          remoteSystemName: 'Server',
         },
         undefined,
         '127.0.0.1',
@@ -516,7 +516,7 @@ describe('AuthService', () => {
       '2468',
       {
         remoteSystemId: 'remote-1',
-        remoteSystemName: 'Deployment Laptop',
+        remoteSystemName: 'Server',
       },
       'open_only',
       '127.0.0.1',
@@ -575,7 +575,7 @@ describe('AuthService', () => {
       '2468',
       {
         remoteSystemId: 'remote-1',
-        remoteSystemName: 'Deployment Laptop',
+        remoteSystemName: 'Server',
       },
       'open_and_accept_dds',
       '127.0.0.1',

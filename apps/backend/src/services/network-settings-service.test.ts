@@ -2,8 +2,8 @@ import type { PrismaClientInstance } from '@sentinel/database'
 import { describe, expect, it, vi } from 'vitest'
 import type { SettingRepository } from '../repositories/setting-repository.js'
 import {
+  DEFAULT_APPROVED_SSID,
   NetworkSettingsService,
-  SENTINEL_SSID,
   type NetworkSettingsState,
 } from './network-settings-service.js'
 
@@ -21,7 +21,7 @@ function createServiceWithRepository(repository: {
 }
 
 describe('NetworkSettingsService', () => {
-  it('normalizes legacy HMCS Chippawa SSID values to Sentinel on read', async () => {
+  it('normalizes legacy HMCS Chippawa SSID values to the default hotspot on read', async () => {
     const service = createServiceWithRepository({
       findByKey: vi.fn().mockResolvedValue({
         key: 'network.approved_ssids',
@@ -36,7 +36,7 @@ describe('NetworkSettingsService', () => {
 
     expect(result).toEqual<NetworkSettingsState>({
       settings: {
-        approvedSsids: [SENTINEL_SSID, 'Guest'],
+        approvedSsids: [DEFAULT_APPROVED_SSID, 'Guest'],
       },
       metadata: {
         source: 'stored',
@@ -45,7 +45,7 @@ describe('NetworkSettingsService', () => {
     })
   })
 
-  it('normalizes legacy HMCS Chippawa SSID values to Sentinel on write', async () => {
+  it('normalizes legacy HMCS Chippawa SSID values to the default hotspot on write', async () => {
     const updateByKey = vi.fn().mockResolvedValue({
       updatedAt: new Date('2026-04-01T11:55:00.000Z'),
     })
@@ -60,16 +60,15 @@ describe('NetworkSettingsService', () => {
     })
 
     const result = await service.updateNetworkSettings({
-      approvedSsids: ['HMCS Chippawa', 'Sentinel', 'Guest'],
+      approvedSsids: ['HMCS Chippawa', DEFAULT_APPROVED_SSID, 'Guest'],
     })
 
     expect(updateByKey).toHaveBeenCalledWith('network.approved_ssids', {
       value: {
-        approvedSsids: [SENTINEL_SSID, 'Guest'],
+        approvedSsids: [DEFAULT_APPROVED_SSID, 'Guest'],
       },
-      description:
-        'Approved Wi-Fi SSID allowlist used for deployment-laptop network status validation.',
+      description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
     })
-    expect(result.settings.approvedSsids).toEqual([SENTINEL_SSID, 'Guest'])
+    expect(result.settings.approvedSsids).toEqual([DEFAULT_APPROVED_SSID, 'Guest'])
   })
 })

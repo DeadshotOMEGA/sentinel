@@ -61,10 +61,17 @@ export const RemoteSystemOptionSchema = v.object({
   name: v.string(),
   description: v.nullable(v.string()),
   displayOrder: v.number(),
+  isOccupied: v.boolean(),
+})
+
+export const RemoteSystemLoginContextSchema = v.object({
+  isHostDevice: v.boolean(),
+  forcedRemoteSystemId: v.nullable(RemoteSystemIdSchema),
 })
 
 export const RemoteSystemsResponseSchema = v.object({
   systems: v.array(RemoteSystemOptionSchema),
+  loginContext: RemoteSystemLoginContextSchema,
 })
 
 export const AdminRemoteSystemSchema = v.object({
@@ -92,6 +99,7 @@ export type CreateRemoteSystemInput = v.InferOutput<typeof CreateRemoteSystemSch
 export type UpdateRemoteSystemInput = v.InferOutput<typeof UpdateRemoteSystemSchema>
 export type ReorderRemoteSystemsInput = v.InferOutput<typeof ReorderRemoteSystemsSchema>
 export type RemoteSystemOption = v.InferOutput<typeof RemoteSystemOptionSchema>
+export type RemoteSystemLoginContext = v.InferOutput<typeof RemoteSystemLoginContextSchema>
 export type RemoteSystemsResponse = v.InferOutput<typeof RemoteSystemsResponseSchema>
 export type AdminRemoteSystem = v.InferOutput<typeof AdminRemoteSystemSchema>
 export type AdminRemoteSystemsResponse = v.InferOutput<typeof AdminRemoteSystemsResponseSchema>

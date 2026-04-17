@@ -5,15 +5,20 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
 import { Menu, PanelLeftOpen } from 'lucide-react'
+import { toast } from 'sonner'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
+import { Chip } from '@/components/ui/chip'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
+import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
-import { useAuthStore } from '@/store/auth-store'
+import { AccountLevel, useAuthStore } from '@/store/auth-store'
+import { getWirelessRecoveryState } from './app-navbar.logic'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -50,6 +55,10 @@ interface LatestReleaseState {
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const member = useAuthStore((state) => state.member)
+  const authSession = useAuthStore((state) => state.session)
+  const queryClient = useQueryClient()
+  const hostHotspotRecovery = useHostHotspotRecovery()
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
   const systemStatus = systemStatusQuery.data ?? null
   const isStatusLoading = !isAuthenticated || systemStatusQuery.isLoading
@@ -117,9 +126,13 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const frontendTooltip = getFrontendTooltip(browserOrigin)
   const activeRemoteSessions = systemStatus?.remoteSystems.sessions ?? []
   const remoteSystemOverflowCount = systemStatus?.remoteSystems.overflowCount ?? 0
-  const shouldShowLaptopRecovery =
-    systemStatus !== null &&
-    [databaseStatus, backendStatus, networkStatus].some((status) => status !== 'success')
+  const hasAdminAccess = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
+  const wirelessRecovery = getWirelessRecoveryState({
+    systemStatus,
+    isLoading: isStatusLoading,
+    isError: systemStatusQuery.isError,
+    hasAdminAccess,
+  })
   const [latestRelease, setLatestRelease] = useState<LatestReleaseState>({
     tag: null,
     releaseUrl: null,
@@ -129,6 +142,22 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const versionStatusLabel = getVersionStatus(currentVersion, latestRelease.tag)
   const updateAvailable = isUpdateAvailable(currentVersion, latestRelease.tag)
   const updateTargetUrl = latestRelease.downloadUrl ?? latestRelease.releaseUrl
+
+  const handleHostHotspotRecovery = async () => {
+    try {
+      const result = await hostHotspotRecovery.mutateAsync()
+      toast.success(result.message)
+      ;[2_000, 5_000, 10_000, 20_000].forEach((delayMs) => {
+        window.setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: ['system-status'] })
+        }, delayMs)
+      })
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to queue host hotspot recovery'
+      )
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -173,7 +202,21 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
 
         {/* Logo with backend status indicator */}
         <div className="max-w-48 truncate sm:max-w-none" data-testid={TID.nav.logo}>
-          <span className="px-2 text-lg font-bold sm:px-4 sm:text-2xl">HMCS Chippawa</span>
+          <div className="flex items-center gap-(--space-2) px-2 sm:px-4">
+            <span className="text-lg font-bold sm:text-2xl">HMCS Chippawa</span>
+            {authSession?.remoteSystemName && (
+              <Chip
+                variant="light"
+                color="info"
+                size="sm"
+                className="max-w-32 truncate"
+                data-testid={TID.nav.remoteSystemBadge}
+                title={authSession.remoteSystemName}
+              >
+                {authSession.remoteSystemName}
+              </Chip>
+            )}
+          </div>
         </div>
       </div>
 
@@ -295,6 +338,20 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
               >
                 <p className="text-xs font-semibold uppercase tracking-wide">Network Detail</p>
                 <p className="mt-1 text-xs leading-relaxed">{networkMessage}</p>
+                <dl className="mt-2 space-y-1 text-[11px] text-current/80">
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>Host IP</dt>
+                    <dd className="font-mono text-right">
+                      {systemStatus?.network.hostIpAddress ?? 'Unavailable'}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>Approved SSID</dt>
+                    <dd className="font-mono text-right">
+                      {systemStatus?.network.approvedSsids[0] ?? 'Not configured'}
+                    </dd>
+                  </div>
+                </dl>
               </div>
               <div
                 className="border-t border-base-300 pt-2"
@@ -318,6 +375,9 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                           <p className="text-[11px] text-base-content/60">
                             {session.memberRank} {session.memberName}
                           </p>
+                          <p className="font-mono text-[11px] text-base-content/60">
+                            {session.ipAddress ?? 'IP unavailable'}
+                          </p>
                         </div>
                         <AppBadge status="success" size="sm">
                           {formatRecentTimestamp(session.lastSeenAt)}
@@ -338,7 +398,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                   </p>
                 )}
               </div>
-              {shouldShowLaptopRecovery && (
+              {wirelessRecovery.showSection && (
                 <div
                   className={cn(
                     'mt-1 rounded-box border p-(--space-2)',
@@ -347,22 +407,41 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       : 'border-base-300 bg-base-200 text-base-content'
                   )}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide">Laptop Recovery</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide">
+                    Wireless Recovery
+                  </p>
                   <p className="mt-1 text-xs leading-relaxed">
-                    Open the local Wi-Fi recovery helper if this laptop is off the Sentinel wireless
-                    network or needs help reconnecting to the approved SSID.
+                    Reconnect this laptop to the approved hotspot SSID, or ask the host server to
+                    requeue a hotspot repair.
                   </p>
                   <div className="mt-2 flex flex-wrap gap-(--space-2)">
-                    <a
-                      href="sentinel-recover://run"
-                      className={cn(
-                        'btn btn-xs',
-                        networkStatus === 'error' ? 'btn-warning' : 'btn-outline'
-                      )}
-                      data-testid={TID.nav.backendStatusRecovery}
-                    >
-                      Launch Wi-Fi Recovery
-                    </a>
+                    {wirelessRecovery.connectLaptopHref ? (
+                      <a
+                        href={wirelessRecovery.connectLaptopHref}
+                        className={cn(
+                          'btn btn-xs',
+                          networkStatus === 'error' ? 'btn-warning' : 'btn-outline'
+                        )}
+                        data-testid={TID.nav.backendStatusRecovery}
+                      >
+                        Connect this laptop
+                      </a>
+                    ) : wirelessRecovery.showConnectLaptop ? (
+                      <span className="text-[11px] text-base-content/70">
+                        No approved hotspot SSID is configured yet.
+                      </span>
+                    ) : null}
+                    {wirelessRecovery.showRepairHostHotspot && (
+                      <button
+                        type="button"
+                        className="btn btn-xs btn-outline"
+                        onClick={() => void handleHostHotspotRecovery()}
+                        disabled={hostHotspotRecovery.isPending}
+                        data-testid={TID.nav.backendStatusHostRecovery}
+                      >
+                        {hostHotspotRecovery.isPending ? 'Queueing...' : 'Repair host hotspot'}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

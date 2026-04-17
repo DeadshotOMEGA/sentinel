@@ -148,7 +148,7 @@ Notable deployment capabilities:
 
 - Debian package distribution (`sentinel_<version>_all.deb`)
 - Automated upgrade flow with release selection
-- Captive portal recovery helper + optional auto-recovery watcher
+- Hotspot reconnect URI helper + queued host-hotspot recovery bridge
 - Optional observability profile and LAN publishing controls
 
 ## System Status and Recovery
@@ -160,10 +160,10 @@ The Frontend Admin status dropdown tracks:
 - Frontend
 - Wiki
 
-It also supports deployment-laptop recovery actions when connectivity is degraded:
+It also supports hotspot recovery actions when connectivity is degraded:
 
-- `sentinel-recover://run` launcher
-- fallback portal open (`http://neverssl.com`)
+- `sentinel-hotspot://connect?ssid=<approved-ssid>` launcher for reconnecting the current laptop
+- admin-triggered host hotspot repair requests queued from the webapp to the deployment server
 
 ## Versioning and Release Policy
 
@@ -201,7 +201,7 @@ Compared across all published GitHub releases from `v1.0.0` through `v2.1.0`:
 - `v1.6.x`: kiosk redesign and major lockup/DDS/dashboard behavior fixes
 - `v1.7.x`: CI/release-track robustness and database/deploy diagnostics hardening
 - `v2.0.0`: milestone release with DDS drawer and workflow polish
-- `v2.1.0`: captive portal recovery automation, richer system status/health context, and root-driven workspace version governance
+- `v2.1.0`: operator network recovery automation, richer system status/health context, and root-driven workspace version governance
 
 ### Published GitHub Releases
 

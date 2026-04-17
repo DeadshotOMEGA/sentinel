@@ -25,6 +25,7 @@ export const NetworkFactsSchema = v.object({
   message: v.string(),
   wifiConnected: v.nullable(v.boolean()),
   currentSsid: v.nullable(v.string()),
+  hostIpAddress: v.nullable(v.string()),
   approvedSsids: v.array(v.string()),
   approvedSsid: v.nullable(v.boolean()),
   internetReachable: v.nullable(v.boolean()),

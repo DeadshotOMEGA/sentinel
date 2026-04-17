@@ -19,7 +19,7 @@ import { useAuthStore } from '@/store/auth-store'
 export function AuthHydrator() {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, setAuth, logout } = useAuthStore()
+  const { isAuthenticated, setAuth, updateSession, logout } = useAuthStore()
   const hasValidated = useRef(false)
 
   const validateSession = useEffectEvent(async () => {
@@ -28,7 +28,13 @@ export function AuthHydrator() {
 
       if (response.status === 200) {
         const data = response.body
-        setAuth(data.member, '')
+        setAuth(data.member, '', {
+          sessionId: data.sessionId,
+          remoteSystemId: data.remoteSystemId,
+          remoteSystemName: data.remoteSystemName,
+          lastSeenAt: data.lastSeenAt,
+          expiresAt: data.expiresAt,
+        })
 
         if (
           data.member.mustChangePin &&
@@ -71,6 +77,11 @@ export function AuthHydrator() {
 
     try {
       const response = await apiClient.auth.heartbeat()
+
+      if (response.status === 200) {
+        updateSession(response.body)
+        return
+      }
 
       if (response.status === 401) {
         logout()

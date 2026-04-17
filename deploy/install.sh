@@ -150,7 +150,7 @@ fi
 ensure_docker_and_compose_v2
 
 if ! check_ghcr_reachability; then
-  print_captive_portal_help
+  print_network_recovery_help
   die "Cannot reach ghcr.io"
 fi
 
@@ -215,7 +215,7 @@ fi
 
 ensure_mdns_hostname
 ensure_local_wiki_host_alias
-configure_captive_portal_recovery
+configure_hotspot_connectivity_helpers
 MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
 WIKI_DOMAIN="$(env_value WIKI_DOMAIN docs.sentinel.local)"
 
