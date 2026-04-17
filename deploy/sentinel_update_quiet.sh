@@ -23,12 +23,11 @@ set -Eeuo pipefail
 #   - This wrapper suppresses noisy Docker pull/progress chatter only for automated runs.
 #
 # Usage:
-#   chmod +x sentinel_update.sh
-#   ./sentinel_update.sh
+#   bash ./sentinel_update_quiet.sh
 #
 # Optional environment overrides:
-#   SSID=MySSID CAPTIVE_URL=http://neverssl.com ./sentinel_update.sh
-#   SENTINEL_SHOW_PROGRESS=1 ./sentinel_update.sh   # show full update.sh output
+#   SSID=MySSID CAPTIVE_URL=http://neverssl.com bash ./sentinel_update_quiet.sh
+#   SENTINEL_SHOW_PROGRESS=1 bash ./sentinel_update_quiet.sh   # show full update.sh output
 
 #######################################
 # Configuration

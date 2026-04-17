@@ -18,7 +18,7 @@ Usage: ./deploy/deb/build-deb.sh [--version vX.Y.Z] [--output-dir path]
 
 Builds a Debian package that installs:
   - /opt/sentinel/deploy (installer/update bundle)
-  - App launcher entries in GNOME application menu
+  - App launcher entry in GNOME application menu
 USAGE
 }
 
@@ -98,23 +98,11 @@ rsync -a \
   "${DEPLOY_DIR}/" "${PKG_ROOT}/opt/sentinel/deploy/"
 
 install -D -m 755 \
-  "${SCRIPT_DIR}/assets/usr/local/bin/sentinel-install" \
-  "${PKG_ROOT}/usr/local/bin/sentinel-install"
-install -D -m 755 \
-  "${SCRIPT_DIR}/assets/usr/local/bin/sentinel-update" \
-  "${PKG_ROOT}/usr/local/bin/sentinel-update"
-install -D -m 755 \
-  "${SCRIPT_DIR}/assets/usr/local/bin/sentinel-upgrade" \
-  "${PKG_ROOT}/usr/local/bin/sentinel-upgrade"
+  "${SCRIPT_DIR}/assets/usr/local/bin/sentinel-install-update" \
+  "${PKG_ROOT}/usr/local/bin/sentinel-install-update"
 install -D -m 644 \
-  "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-install.desktop" \
-  "${PKG_ROOT}/usr/share/applications/sentinel-install.desktop"
-install -D -m 644 \
-  "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-update.desktop" \
-  "${PKG_ROOT}/usr/share/applications/sentinel-update.desktop"
-install -D -m 644 \
-  "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-upgrade.desktop" \
-  "${PKG_ROOT}/usr/share/applications/sentinel-upgrade.desktop"
+  "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-install-update.desktop" \
+  "${PKG_ROOT}/usr/share/applications/sentinel-install-update.desktop"
 
 for size in "${ICON_SIZES[@]}"; do
   install -D -m 644 \
@@ -135,7 +123,7 @@ Conflicts: sentinel-appliance-tools
 Maintainer: Sentinel Team <noreply@sentinel.local>
 Description: Sentinel appliance installer and updater bundle
  Installs Sentinel deployment scripts to /opt/sentinel/deploy and provides
- desktop app launchers for guided install/update workflows.
+ a desktop app launcher for guided install/update workflows.
 CONTROL
 
 cat >"${PKG_ROOT}/DEBIAN/postinst" <<'POSTINST'

@@ -34,16 +34,12 @@ sudo apt install ./sentinel_<version>_all.deb
 
 Then launch from app menu:
 
-- `Install Sentinel Appliance`
-- `Update Sentinel Appliance`
-- `Upgrade Sentinel`
+- `Sentinel Install and Update`
 
 Or run directly:
 
 ```bash
-sentinel-install
-sentinel-update
-sentinel-upgrade
+sentinel-install-update
 ```
 
 ## If your laptop currently runs Windows
@@ -63,15 +59,15 @@ sentinel-upgrade
 ### Easiest (double-click launcher)
 
 1. Open the `deploy` folder in Files.
-2. Double-click `Install Sentinel Appliance.desktop`.
+2. Double-click `Sentinel Install and Update.desktop`.
 3. If Ubuntu prompts, choose **Allow Launching**.
-4. Enter version tag when prompted (example: `v1.1.8`).
+4. A terminal window opens and prompts for the version number to install or update (example: `1.1.8`).
 
 ### Terminal fallback
 
 ```bash
 cd deploy
-./install.sh --version vX.Y.Z
+bash ./sentinel_update_quiet.sh
 ```
 
 Installer behavior:
@@ -215,69 +211,27 @@ systemd units installed during install/update/rollback:
 - `sentinel-network-status.service`
 - `sentinel-network-status.timer`
 
-## Update
+## Install and Update
 
 ### Easiest (double-click launcher)
 
 1. Open `/opt/sentinel/deploy` in Files.
-2. Double-click `Update Sentinel Appliance.desktop`.
-3. Enter target version tag when prompted.
+2. Double-click `Sentinel Install and Update.desktop`.
+3. Enter the target Sentinel version when prompted in the terminal.
 
 ### Terminal fallback
 
 ```bash
 cd /opt/sentinel/deploy
-./update.sh --version vX.Y.Z
+bash ./sentinel_update_quiet.sh
 ```
 
-This performs automatic pre-update backup, image pull, one-shot migration deploy, migration status verification, and health gate verification.
-When update is launched from a newer deploy bundle outside `/opt/sentinel/deploy`, it now auto-syncs scripts into `/opt/sentinel/deploy` first (while preserving `.env` and `.appliance-state`) and then re-runs from the synced location.
+This guided flow handles both install and update:
 
-## Upgrade Sentinel (recommended patch workflow)
-
-Use the new upgrade flow when you want to:
-
-- upgrade to latest stable quickly,
-- upgrade or downgrade to a specific release tag,
-- refresh `/opt/sentinel/deploy` from the new package before running update logic.
-
-Desktop:
-
-1. Open `/opt/sentinel/deploy`.
-2. Double-click `Upgrade Sentinel.desktop`.
-3. Choose one:
-   - latest stable,
-   - a recent release from list,
-   - or manual `vX.Y.Z` entry.
-4. Review advanced options:
-   - Observability stack (`--with-obs`) default ON
-   - Publish Grafana on LAN (`--allow-grafana-lan`) default ON
-   - Publish Wiki on LAN (`--allow-wiki-lan`) default ON
-   - Dry run (validation only) default OFF
-
-CLI:
-
-```bash
-sentinel-upgrade
-```
-
-or for explicit targets:
-
-```bash
-sentinel-upgrade --latest
-sentinel-upgrade --version v1.4.4
-# non-interactive (for scripts/automation):
-sentinel-upgrade --latest --yes
-```
-
-The upgrade launcher verifies package checksums before install, installs the selected `.deb`, then executes the updated `/opt/sentinel/deploy/update.sh`.
-This deployment-tooling change is released as a patch update (for example `v1.4.4`), not a minor release.
-
-Optional update flags:
-
-- `--with-obs` / `--without-obs`
-- `--allow-grafana-lan` / `--disallow-grafana-lan`
-- `--allow-wiki-lan` / `--disallow-wiki-lan`
+- prompts for the release version,
+- downloads the matching Debian package from GitHub Releases,
+- installs the package,
+- runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`.
 - `--no-firewall`
 
 ## Automatic upgrade helper

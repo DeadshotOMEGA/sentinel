@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Sentinel Install and Update
+Comment=Install or update Sentinel with a guided terminal prompt
+Exec=/usr/local/bin/sentinel-install-update
+Icon=sentinel-appliance
+Terminal=true
+Categories=System;
