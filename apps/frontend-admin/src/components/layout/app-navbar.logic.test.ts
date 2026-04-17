@@ -27,6 +27,9 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
       wifiConnected: true,
       currentSsid: 'Stone Frigate',
       hostIpAddress: '192.168.8.1',
+      hotspotSsid: 'Stone Frigate',
+      hotspotScanDevice: 'wlp2s0',
+      hotspotSsidVisibleFromLaptop: true,
       approvedSsids: ['Stone Frigate'],
       approvedSsid: true,
       internetReachable: true,
@@ -102,5 +105,22 @@ describe('app-navbar logic', () => {
         hasAdminAccess: true,
       }).showRepairHostHotspot
     ).toBe(true)
+  })
+
+  it('keeps wireless recovery section visible when hotspot SSID is not visible from laptop Wi-Fi', () => {
+    const result = getWirelessRecoveryState({
+      systemStatus: createSystemStatus({
+        network: {
+          ...createSystemStatus().network,
+          hotspotSsidVisibleFromLaptop: false,
+        },
+      }),
+      isLoading: false,
+      isError: false,
+      hasAdminAccess: false,
+    })
+
+    expect(result.showSection).toBe(true)
+    expect(result.showRepairHostHotspot).toBe(false)
   })
 })

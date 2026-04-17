@@ -64,6 +64,58 @@ hotspot_connection_device() {
     head -n1
 }
 
+hotspot_connection_ssid() {
+  if ! command -v nmcli >/dev/null 2>&1; then
+    return 0
+  fi
+
+  nmcli -g 802-11-wireless.ssid connection show "${HOTSPOT_CONNECTION_NAME}" 2>/dev/null |
+    head -n1
+}
+
+resolve_hotspot_scan_device() {
+  local hotspot_device="${1:-}"
+
+  if ! command -v nmcli >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local connected_device
+  connected_device="$(
+    nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null |
+      awk -F: -v dev="${hotspot_device}" '$2 == "wifi" && $1 != dev && $3 == "connected" { print $1; exit }'
+  )"
+  if [[ -n "${connected_device}" ]]; then
+    printf '%s\n' "${connected_device}"
+    return 0
+  fi
+
+  nmcli -t -f DEVICE,TYPE device status 2>/dev/null |
+    awk -F: -v dev="${hotspot_device}" '$2 == "wifi" && $1 != dev { print $1; exit }'
+}
+
+is_ssid_visible_on_device() {
+  local scan_device="${1:-}"
+  local ssid="${2:-}"
+
+  if [[ -z "${scan_device}" || -z "${ssid}" ]]; then
+    return 2
+  fi
+
+  if ! command -v nmcli >/dev/null 2>&1; then
+    return 2
+  fi
+
+  if nmcli -t -f SSID,CHAN,SECURITY device wifi list ifname "${scan_device}" 2>/dev/null |
+    awk -F: -v ssid="${ssid}" '$1 == ssid { found = 1 } END { exit found ? 0 : 1 }'; then
+    return 0
+  fi
+
+  nmcli device wifi rescan ifname "${scan_device}" >/dev/null 2>&1 || true
+  nmcli -t -f SSID,CHAN,SECURITY device wifi list ifname "${scan_device}" 2>/dev/null |
+    awk -F: -v ssid="${ssid}" '$1 == ssid { found = 1 } END { exit found ? 0 : 1 }'
+}
+
 interface_ipv4() {
   local device="${1:-}"
   [[ -n "${device}" ]] || return 0
@@ -136,6 +188,9 @@ remote_reachable_value="null"
 portal_recovery_likely_value="null"
 message_value="Telemetry snapshot captured"
 hotspot_device_value="$(hotspot_connection_device || true)"
+hotspot_ssid_value="$(hotspot_connection_ssid || true)"
+hotspot_scan_device_value="$(resolve_hotspot_scan_device "${hotspot_device_value}")"
+hotspot_ssid_visible_from_laptop_value="null"
 host_ip_address_value="$(resolve_host_ip_address "${hotspot_device_value}")"
 
 if wifi_connected; then
@@ -146,6 +201,12 @@ elif [[ $? -eq 1 ]]; then
 fi
 
 current_ssid_value="$(current_ssid || true)"
+
+if is_ssid_visible_on_device "${hotspot_scan_device_value}" "${hotspot_ssid_value}"; then
+  hotspot_ssid_visible_from_laptop_value="true"
+elif [[ $? -eq 1 ]]; then
+  hotspot_ssid_visible_from_laptop_value="false"
+fi
 
 if check_url "${CHECK_URL}"; then
   internet_reachable_value="true"
@@ -181,6 +242,9 @@ cat >"${tmp_file}" <<JSON
   "wifiConnected": ${wifi_connected_value},
   "currentSsid": $(json_string_or_null "${current_ssid_value}"),
   "hostIpAddress": $(json_string_or_null "${host_ip_address_value}"),
+  "hotspotSsid": $(json_string_or_null "${hotspot_ssid_value}"),
+  "hotspotScanDevice": $(json_string_or_null "${hotspot_scan_device_value}"),
+  "hotspotSsidVisibleFromLaptop": ${hotspot_ssid_visible_from_laptop_value},
   "internetReachable": ${internet_reachable_value},
   "remoteTarget": $(json_string_or_null "${REMOTE_TARGET}"),
   "remoteReachable": ${remote_reachable_value},

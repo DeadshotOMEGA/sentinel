@@ -10,6 +10,7 @@ import {
 } from '../lib/metrics.js'
 import { logger } from '../lib/logger.js'
 import { isDevelopmentBuild, isRunningInsideContainer } from '../lib/runtime-context.js'
+import { DEPLOYMENT_REMOTE_SYSTEM_CODE } from '../repositories/remote-system-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { HostNetworkStatusService } from './host-network-status-service.js'
 import { NetworkSettingsService } from './network-settings-service.js'
@@ -84,6 +85,8 @@ function resolveNetworkStatusMessage(input: {
   approvedSsidsConfigured: boolean
   wifiConnected: boolean | null
   approvedSsid: boolean | null
+  hotspotSsid: string | null
+  hotspotSsidVisibleFromLaptop: boolean | null
   internetReachable: boolean | null
   remoteTarget: string | null
   remoteReachable: boolean | null
@@ -117,6 +120,14 @@ function resolveNetworkStatusMessage(input: {
     return 'Connected to an unapproved Wi-Fi SSID'
   }
 
+  if (input.hotspotSsidVisibleFromLaptop === false) {
+    if (input.hotspotSsid) {
+      return `Hotspot SSID "${input.hotspotSsid}" is not visible from the laptop Wi-Fi adapter`
+    }
+
+    return 'Hosted hotspot SSID is not visible from the laptop Wi-Fi adapter'
+  }
+
   if (input.remoteTarget && input.remoteReachable === false) {
     return `Remote reachability check failed for ${input.remoteTarget}`
   }
@@ -138,6 +149,7 @@ function resolveNetworkStatus(input: {
   telemetryAgeSeconds: number | null
   wifiConnected: boolean | null
   approvedSsid: boolean | null
+  hotspotSsidVisibleFromLaptop: boolean | null
   internetReachable: boolean | null
   remoteTarget: string | null
   remoteReachable: boolean | null
@@ -162,6 +174,10 @@ function resolveNetworkStatus(input: {
   }
 
   if (input.approvedSsid === false) {
+    return 'warning'
+  }
+
+  if (input.hotspotSsidVisibleFromLaptop === false) {
     return 'warning'
   }
 
@@ -276,6 +292,7 @@ export class SystemStatusService {
       telemetryAgeSeconds,
       wifiConnected: telemetry?.wifiConnected ?? null,
       approvedSsid,
+      hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
       internetReachable: telemetry?.internetReachable ?? null,
       remoteTarget: telemetry?.remoteTarget ?? null,
       remoteReachable: telemetry?.remoteReachable ?? null,
@@ -317,6 +334,8 @@ export class SystemStatusService {
           approvedSsidsConfigured: approvedSsids.length > 0,
           wifiConnected: telemetry?.wifiConnected ?? null,
           approvedSsid,
+          hotspotSsid: telemetry?.hotspotSsid ?? null,
+          hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
           internetReachable: telemetry?.internetReachable ?? null,
           remoteTarget: telemetry?.remoteTarget ?? null,
           remoteReachable: telemetry?.remoteReachable ?? null,
@@ -326,6 +345,9 @@ export class SystemStatusService {
         wifiConnected: telemetry?.wifiConnected ?? null,
         currentSsid: telemetry?.currentSsid ?? null,
         hostIpAddress: telemetry?.hostIpAddress ?? null,
+        hotspotSsid: telemetry?.hotspotSsid ?? null,
+        hotspotScanDevice: telemetry?.hotspotScanDevice ?? null,
+        hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
         approvedSsids,
         approvedSsid,
         internetReachable: telemetry?.internetReachable ?? null,
@@ -345,9 +367,13 @@ export class SystemStatusService {
           memberName: session.memberName,
           memberRank: session.memberRank,
           remoteSystemId: session.remoteSystemId,
+          remoteSystemCode: session.remoteSystemCode,
           remoteSystemName: session.remoteSystemName,
           lastSeenAt: session.lastSeenAt.toISOString(),
-          ipAddress: session.ipAddress,
+          ipAddress:
+            session.remoteSystemCode === DEPLOYMENT_REMOTE_SYSTEM_CODE
+              ? (telemetry?.hostIpAddress ?? session.ipAddress)
+              : session.ipAddress,
         })),
       },
       lastCheckedAt: lastCheckedAt.toISOString(),

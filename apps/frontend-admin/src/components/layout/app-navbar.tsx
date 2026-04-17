@@ -14,7 +14,7 @@ import { Chip } from '@/components/ui/chip'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
-import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
+import { useHostHotspotRecovery, useQueueLatestSystemUpdate } from '@/hooks/use-network-settings'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
@@ -45,6 +45,7 @@ const GITHUB_LATEST_RELEASE_URL =
 const WIKI_LAN_FALLBACK_PORT = '3020'
 const WIKI_LOCAL_DEV_PORT = '3002'
 const NETWORK_TELEMETRY_STALE_WARNING_SECONDS = 120
+const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
 
 interface LatestReleaseState {
   tag: string | null
@@ -59,6 +60,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const authSession = useAuthStore((state) => state.session)
   const queryClient = useQueryClient()
   const hostHotspotRecovery = useHostHotspotRecovery()
+  const queueLatestSystemUpdate = useQueueLatestSystemUpdate()
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
   const systemStatus = systemStatusQuery.data ?? null
   const isStatusLoading = !isAuthenticated || systemStatusQuery.isLoading
@@ -155,6 +157,17 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to queue host hotspot recovery'
+      )
+    }
+  }
+
+  const handleQueueLatestSystemUpdate = async () => {
+    try {
+      const result = await queueLatestSystemUpdate.mutateAsync()
+      toast.success(result.message)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to queue latest system update'
       )
     }
   }
@@ -351,6 +364,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       {systemStatus?.network.approvedSsids[0] ?? 'Not configured'}
                     </dd>
                   </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>AP visibility</dt>
+                    <dd className="font-mono text-right">
+                      {formatHotspotVisibility(systemStatus)}
+                    </dd>
+                  </div>
                 </dl>
               </div>
               <div
@@ -376,7 +395,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                             {session.memberRank} {session.memberName}
                           </p>
                           <p className="font-mono text-[11px] text-base-content/60">
-                            {session.ipAddress ?? 'IP unavailable'}
+                            {resolveRemoteSystemIpAddress(session, systemStatus)}
                           </p>
                         </div>
                         <AppBadge status="success" size="sm">
@@ -452,16 +471,32 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                     <span className="text-base-content/75"> ({versionStatusLabel})</span>
                   )}
                 </p>
-                {updateAvailable && latestRelease.tag && updateTargetUrl && (
+                {updateAvailable && latestRelease.tag && (
                   <p>
-                    <a
-                      href={updateTargetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="link link-primary text-xs"
-                    >
-                      Update to {latestRelease.tag}
-                    </a>
+                    {hasAdminAccess ? (
+                      <button
+                        type="button"
+                        className="btn btn-xs btn-outline"
+                        onClick={() => void handleQueueLatestSystemUpdate()}
+                        disabled={queueLatestSystemUpdate.isPending}
+                        data-testid={TID.nav.backendStatusSystemUpdate}
+                      >
+                        {queueLatestSystemUpdate.isPending
+                          ? 'Queueing update...'
+                          : `Update to ${latestRelease.tag}`}
+                      </button>
+                    ) : (
+                      updateTargetUrl && (
+                        <a
+                          href={updateTargetUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link link-primary text-xs"
+                        >
+                          Update to {latestRelease.tag}
+                        </a>
+                      )
+                    )}
                   </p>
                 )}
                 <p>
@@ -511,6 +546,31 @@ function formatUptime(uptimeSeconds: number | undefined): string {
   }
 
   return `${minutes}m`
+}
+
+function formatHotspotVisibility(systemStatus: SystemStatusResponse | null): string {
+  const visibility = systemStatus?.network.hotspotSsidVisibleFromLaptop ?? null
+  if (visibility === true) {
+    return 'Visible'
+  }
+  if (visibility === false) {
+    return 'Not visible'
+  }
+  return 'Check unavailable'
+}
+
+function resolveRemoteSystemIpAddress(
+  session: SystemStatusResponse['remoteSystems']['sessions'][number],
+  systemStatus: SystemStatusResponse | null
+): string {
+  if (
+    session.remoteSystemCode === DEPLOYMENT_REMOTE_SYSTEM_CODE &&
+    systemStatus?.network.hostIpAddress
+  ) {
+    return systemStatus.network.hostIpAddress
+  }
+
+  return session.ipAddress ?? 'IP unavailable'
 }
 
 function formatTimestamp(value: string | null): string {
@@ -846,6 +906,9 @@ function getNetworkTooltip(
     reason = 'Red because Wi-Fi is disconnected.'
   } else if (network.approvedSsid === false) {
     reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
+  } else if (network.hotspotSsidVisibleFromLaptop === false) {
+    const hotspotSsidLabel = network.hotspotSsid ?? 'approved hotspot'
+    reason = `Yellow because "${hotspotSsidLabel}" is not visible from the laptop Wi-Fi adapter.`
   } else if (network.remoteTarget && network.remoteReachable === false) {
     reason = `Yellow because the remote reachability check to ${network.remoteTarget} failed.`
   } else if (network.telemetryAvailable && network.wifiConnected === true) {
@@ -863,6 +926,7 @@ function getNetworkTooltip(
     `Detail: ${network.message}`,
     `SSID: ${currentSsid}`,
     `Approved SSIDs: ${approvedSsids}`,
+    `AP visibility: ${formatBooleanLabel(network.hotspotSsidVisibleFromLaptop)}`,
     `Remote target: ${remoteTarget}`,
     `Remote reachable: ${formatBooleanLabel(network.remoteReachable)}`,
     `Telemetry age: ${formatTelemetryAge(network.telemetryAgeSeconds)}`,

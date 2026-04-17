@@ -8,6 +8,9 @@ export interface HostNetworkTelemetry {
   wifiConnected: boolean | null
   currentSsid: string | null
   hostIpAddress: string | null
+  hotspotSsid: string | null
+  hotspotScanDevice: string | null
+  hotspotSsidVisibleFromLaptop: boolean | null
   internetReachable: boolean | null
   remoteTarget: string | null
   remoteReachable: boolean | null
@@ -52,6 +55,9 @@ function parseTelemetry(payload: unknown): HostNetworkTelemetry | null {
     wifiConnected: normalizeNullableBoolean(payload.wifiConnected),
     currentSsid: normalizeNullableString(payload.currentSsid),
     hostIpAddress: normalizeNullableString(payload.hostIpAddress),
+    hotspotSsid: normalizeNullableString(payload.hotspotSsid),
+    hotspotScanDevice: normalizeNullableString(payload.hotspotScanDevice),
+    hotspotSsidVisibleFromLaptop: normalizeNullableBoolean(payload.hotspotSsidVisibleFromLaptop),
     internetReachable: normalizeNullableBoolean(payload.internetReachable),
     remoteTarget: normalizeNullableString(payload.remoteTarget),
     remoteReachable: normalizeNullableBoolean(payload.remoteReachable),

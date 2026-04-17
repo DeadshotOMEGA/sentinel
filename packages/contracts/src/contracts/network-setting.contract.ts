@@ -51,6 +51,21 @@ export const networkSettingContract = c.router(
       description:
         'Queue a host-side Sentinel hotspot recovery request for the deployment server laptop.',
     },
+
+    queueLatestSystemUpdate: {
+      method: 'POST',
+      path: '/api/network-settings/system-update-latest',
+      body: c.type<undefined>(),
+      responses: {
+        202: SuccessResponseSchema,
+        401: ErrorResponseSchema,
+        403: ErrorResponseSchema,
+        500: ErrorResponseSchema,
+      },
+      summary: 'Queue latest system update',
+      description:
+        'Queue a host-side Sentinel system update request that upgrades to the latest release.',
+    },
   },
   {
     pathPrefix: '',

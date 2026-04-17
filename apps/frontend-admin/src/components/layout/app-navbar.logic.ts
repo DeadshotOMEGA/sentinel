@@ -26,9 +26,14 @@ export function getWirelessRecoveryState(input: {
       ? `sentinel-hotspot://connect?ssid=${encodeURIComponent(primaryApprovedSsid)}`
       : null
   const showRepairHostHotspot = hasAdminAccess && !isLoading && !isError
+  const hotspotVisibilityIssue =
+    !isLoading &&
+    !isError &&
+    systemStatus !== null &&
+    systemStatus.network.hotspotSsidVisibleFromLaptop === false
 
   return {
-    showSection: showConnectLaptop || showRepairHostHotspot,
+    showSection: showConnectLaptop || showRepairHostHotspot || hotspotVisibilityIssue,
     showConnectLaptop,
     connectLaptopHref,
     showRepairHostHotspot,

@@ -26,6 +26,7 @@ export const TID = {
     backendStatusDetails: 'nav-backend-status-details',
     backendStatusRecovery: 'nav-backend-status-recovery',
     backendStatusHostRecovery: 'nav-backend-status-host-recovery',
+    backendStatusSystemUpdate: 'nav-backend-status-system-update',
     backendStatusRemoteSystems: 'nav-backend-status-remote-systems',
     userMenu: 'nav-user-menu',
     changePin: 'nav-change-pin',
