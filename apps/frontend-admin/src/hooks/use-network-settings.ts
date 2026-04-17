@@ -60,9 +60,7 @@ export function useHostHotspotRecovery() {
 
   return useMutation({
     mutationFn: async () => {
-      const response = await apiClient.networkSettings.hostHotspotRecovery({
-        body: undefined,
-      })
+      const response = await apiClient.networkSettings.hostHotspotRecovery()
 
       if (response.status !== 202) {
         throw new Error(getErrorMessage(response.body, 'Failed to queue host hotspot recovery'))
