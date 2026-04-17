@@ -54,6 +54,39 @@ POST_KEY_WAIT="${POST_KEY_WAIT:-6}"
 
 # Set to 1 to show the full raw update.sh output live.
 SENTINEL_SHOW_PROGRESS="${SENTINEL_SHOW_PROGRESS:-0}"
+USE_GH_CLI="false"
+
+path_has_entry() {
+  local needle="${1:-}"
+  [[ -n "${needle}" ]] || return 1
+  case ":${PATH}:" in
+    *":${needle}:"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+append_path_if_dir_exists() {
+  local dir="${1:-}"
+  [[ -n "${dir}" && -d "${dir}" ]] || return 0
+  if ! path_has_entry "${dir}"; then
+    PATH="${PATH}:${dir}"
+  fi
+}
+
+normalize_runtime_path() {
+  local primary_user primary_home
+  primary_user="${SUDO_USER:-${USER:-}}"
+  if [[ -n "${primary_user}" ]]; then
+    primary_home="$(getent passwd "${primary_user}" | cut -d: -f6 || true)"
+    append_path_if_dir_exists "${primary_home}/.local/bin"
+  fi
+
+  append_path_if_dir_exists "/snap/bin"
+  append_path_if_dir_exists "/usr/local/bin"
+  append_path_if_dir_exists "/usr/bin"
+
+  export PATH
+}
 
 #######################################
 # Logging
@@ -189,10 +222,16 @@ filter_update_output() {
 check_dependencies() {
   require_cmd nmcli
   require_cmd curl
-  require_cmd gh
   require_cmd sudo
   require_cmd apt-get
   require_cmd dpkg-query
+
+  if command -v gh >/dev/null 2>&1; then
+    USE_GH_CLI="true"
+  else
+    USE_GH_CLI="false"
+    warn "GitHub CLI (gh) not found. Falling back to GitHub API + direct release download via curl."
+  fi
 
   if ! pick_browser >/dev/null 2>&1; then
     warn "No known browser launcher found. Portal opening may fail."
@@ -347,12 +386,42 @@ handle_captive_portal() {
 # GitHub helpers
 #######################################
 gh_is_authenticated() {
+  if [[ "${USE_GH_CLI}" != "true" ]]; then
+    return 0
+  fi
+
+  if [[ "${EUID}" -eq 0 && -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+    local gh_bin
+    gh_bin="$(command -v gh || true)"
+    if [[ -n "${gh_bin}" ]]; then
+      runuser -u "${SUDO_USER}" -- "${gh_bin}" auth status >/dev/null 2>&1
+      return $?
+    fi
+  fi
+
   gh auth status >/dev/null 2>&1
+}
+
+run_gh() {
+  if [[ "${EUID}" -eq 0 && -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+    local gh_bin
+    gh_bin="$(command -v gh || true)"
+    [[ -n "${gh_bin}" ]] || return 127
+    runuser -u "${SUDO_USER}" -- "${gh_bin}" "$@"
+    return $?
+  fi
+
+  gh "$@"
 }
 
 validate_release_exists() {
   log "Checking GitHub release tag exists: ${TAG}"
-  gh release view "$TAG" -R "$REPO" >/dev/null
+  if [[ "${USE_GH_CLI}" == "true" ]]; then
+    run_gh release view "$TAG" -R "$REPO" >/dev/null
+    return 0
+  fi
+
+  curl -fsSL --max-time 20 "https://api.github.com/repos/${REPO}/releases/tags/${TAG}" >/dev/null
 }
 
 download_release_deb() {
@@ -362,10 +431,15 @@ download_release_deb() {
   rm -f "$DEB_FILE"
 
   log "Downloading asset '${DEB_FILE}' from ${REPO} release ${TAG}"
-  retry 3 5 gh release download "$TAG" \
-    -R "$REPO" \
-    -p "$DEB_FILE" \
-    -D "$DOWNLOAD_DIR"
+  if [[ "${USE_GH_CLI}" == "true" ]]; then
+    retry 3 5 run_gh release download "$TAG" \
+      -R "$REPO" \
+      -p "$DEB_FILE" \
+      -D "$DOWNLOAD_DIR"
+  else
+    local release_asset_url="https://github.com/${REPO}/releases/download/${TAG}/${DEB_FILE}"
+    retry 3 5 curl -fL --max-time 180 -o "${DOWNLOAD_DIR}/${DEB_FILE}" "${release_asset_url}"
+  fi
 
   [[ -f "${DOWNLOAD_DIR}/${DEB_FILE}" ]] || die "Expected package was not found after download: ${DOWNLOAD_DIR}/${DEB_FILE}"
 
@@ -444,6 +518,7 @@ run_post_update_hotspot_recovery() {
 main() {
   log "Sentinel update script starting..."
   log "Log file: ${LOG_FILE}"
+  normalize_runtime_path
 
   check_dependencies
   prompt_version
@@ -456,27 +531,38 @@ main() {
     log "Wi-Fi is already ON."
   fi
 
-  log "Checking whether we're connected to the target SSID..."
-  if ! connected_to_target_ssid; then
-    warn "Not currently connected to '${SSID}'."
-    retry 2 3 connect_to_ssid || die "Unable to connect to SSID: ${SSID}"
-  else
-    log "Already connected to '${SSID}'."
-  fi
-
-  if ! connected_to_target_ssid; then
-    die "Connection check failed: expected SSID '${SSID}', got '${CURRENT_SSID:-$(current_ssid)}'."
-  fi
-
   log "Checking real Internet access..."
-  if ! has_internet_access; then
-    handle_captive_portal
-  else
+  if has_internet_access; then
     log "Internet access is available."
+    log "Skipping strict SSID enforcement because internet connectivity already passes."
+  else
+    log "Internet access not detected; enforcing target SSID before captive portal recovery."
+    if ! connected_to_target_ssid; then
+      warn "Not currently connected to '${SSID}'."
+      retry 2 3 connect_to_ssid || die "Unable to connect to SSID: ${SSID}"
+    else
+      log "Already connected to '${SSID}'."
+    fi
+
+    if ! connected_to_target_ssid; then
+      die "Connection check failed: expected SSID '${SSID}', got '${CURRENT_SSID:-$(current_ssid)}'."
+    fi
+
+    handle_captive_portal
   fi
 
   log "Checking GitHub CLI authentication..."
-  gh_is_authenticated || die "GitHub CLI is not authenticated. Run: gh auth login"
+  if [[ "${USE_GH_CLI}" == "true" ]]; then
+    if gh_is_authenticated; then
+      log "GitHub CLI authentication is available."
+    else
+      warn "GitHub CLI authentication is unavailable in this execution context."
+      warn "Falling back to GitHub API + direct release download via curl."
+      USE_GH_CLI="false"
+    fi
+  else
+    log "Skipping GitHub CLI auth check because gh is unavailable."
+  fi
 
   if same_version_installed; then
     warn "Sentinel ${VERSION} is already installed."

@@ -220,8 +220,8 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             {authSession?.remoteSystemName && (
               <Chip
                 variant="light"
-                color="info"
-                size="sm"
+                color="secondary"
+                size="lg"
                 className="max-w-32 truncate"
                 data-testid={TID.nav.remoteSystemBadge}
                 title={authSession.remoteSystemName}
