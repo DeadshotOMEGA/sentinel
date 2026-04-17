@@ -14,7 +14,8 @@ set -Eeuo pipefail
 #   7) Downloads the matching .deb from GitHub Releases
 #   8) Installs the .deb
 #   9) Runs /opt/sentinel/deploy/update.sh --version v#.#.#
-#  10) Logs everything and reports errors clearly
+#  10) Runs host hotspot recovery after a successful update
+#  11) Logs everything and reports errors clearly
 #
 # Notes:
 #   - The captive portal automation is best-effort and is most reliable on X11.
@@ -39,6 +40,7 @@ DEPLOY_DIR="${DEPLOY_DIR:-/opt/sentinel/deploy}"
 CAPTIVE_URL="${CAPTIVE_URL:-http://neverssl.com}"
 CONNECTIVITY_TEST_URL="${CONNECTIVITY_TEST_URL:-http://connectivitycheck.gstatic.com/generate_204}"
 FALLBACK_TEST_URL="${FALLBACK_TEST_URL:-https://github.com}"
+HOTSPOT_CONNECTION_NAME="${HOTSPOT_CONNECTION_NAME:-Sentinel Hotspot}"
 
 LOG_DIR="${LOG_DIR:-/tmp}"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -418,6 +420,24 @@ run_update() {
   return "$update_rc"
 }
 
+run_post_update_hotspot_recovery() {
+  local recovery_script="${DEPLOY_DIR}/recover-host-hotspot.sh"
+
+  if [[ ! -x "${recovery_script}" ]]; then
+    warn "Hotspot recovery script not found or not executable: ${recovery_script}"
+    return 0
+  fi
+
+  log "Running post-update hotspot recovery for connection: ${HOTSPOT_CONNECTION_NAME}"
+  if sudo "${recovery_script}" "${HOTSPOT_CONNECTION_NAME}"; then
+    log "Post-update hotspot recovery completed."
+    return 0
+  fi
+
+  warn "Post-update hotspot recovery failed. Review logs above."
+  return 0
+}
+
 #######################################
 # Main
 #######################################
@@ -470,6 +490,7 @@ main() {
   download_release_deb
   install_deb
   run_update
+  run_post_update_hotspot_recovery
 
   log "Sentinel update completed successfully."
   log "Log saved to: ${LOG_FILE}"

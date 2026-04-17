@@ -150,10 +150,12 @@ If install reports GHCR unreachable:
 
 ## Hotspot helpers
 
-Install/update now provisions two hotspot-focused helpers:
+Install/update now provisions hotspot and update helpers:
 
 - a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to the approved hotspot, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
+- a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
+- a host-side update queue watched by systemd so the webapp can request a non-interactive `--latest` upgrade run
 
 Relevant runtime paths:
 
@@ -161,11 +163,16 @@ Relevant runtime paths:
 - queued recovery requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/requests`
 - processed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/processed`
 - failed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/failed`
+- queued system-update requests: `/opt/sentinel/deploy/runtime/system-update/requests`
+- processed system-update requests: `/opt/sentinel/deploy/runtime/system-update/processed`
+- failed system-update requests: `/opt/sentinel/deploy/runtime/system-update/failed`
 
 Relevant systemd units:
 
 - `sentinel-host-hotspot-recovery.path`
 - `sentinel-host-hotspot-recovery.service`
+- `sentinel-system-update-request.path`
+- `sentinel-system-update-request.service`
 
 ## Host network telemetry
 
@@ -176,6 +183,7 @@ What it checks:
 - whether Wi-Fi is connected
 - the current SSID
 - the host IP address that operators can use on the local hotspot/LAN
+- whether the configured Sentinel hotspot SSID is visible from the laptop's non-host Wi-Fi adapter (when available)
 - whether the configured internet reachability URL succeeds
 - whether the optional `NETWORK_REMOTE_REACHABILITY_TARGET` is reachable
 
@@ -190,6 +198,8 @@ systemd units installed during install/update/rollback:
 - `sentinel-network-status.timer`
 - `sentinel-host-hotspot-recovery.path`
 - `sentinel-host-hotspot-recovery.service`
+- `sentinel-system-update-request.path`
+- `sentinel-system-update-request.service`
 
 ## Install and Update
 

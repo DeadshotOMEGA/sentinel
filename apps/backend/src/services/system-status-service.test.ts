@@ -22,6 +22,7 @@ function createSessionRepositoryMock(): SessionRepositoryMock {
           memberName: 'Alex Example',
           memberRank: 'PO2',
           remoteSystemId: 'remote-1',
+          remoteSystemCode: 'brow',
           remoteSystemName: 'Brow',
           lastSeenAt: new Date('2026-04-01T11:59:30.000Z'),
           ipAddress: '192.168.0.20',
@@ -101,6 +102,9 @@ describe('SystemStatusService', () => {
           wifiConnected: true,
           currentSsid: 'Coffee-Shop',
           hostIpAddress: '192.168.8.1',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlan0',
+          hotspotSsidVisibleFromLaptop: true,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -131,6 +135,9 @@ describe('SystemStatusService', () => {
           wifiConnected: true,
           currentSsid: 'Stone Frigate',
           hostIpAddress: '192.168.8.1',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlan0',
+          hotspotSsidVisibleFromLaptop: true,
           internetReachable: false,
           remoteTarget: null,
           remoteReachable: null,
@@ -148,6 +155,77 @@ describe('SystemStatusService', () => {
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
     expect(result.network.message).toBe('Connected to approved Wi-Fi network')
     expect(result.overall.status).toBe('healthy')
+  })
+
+  it('marks network status warning when hotspot SSID is not visible from laptop Wi-Fi', async () => {
+    const { service } = createService({
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          wifiConnected: true,
+          currentSsid: 'Stone Frigate',
+          hostIpAddress: '10.42.0.1',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp2s0',
+          hotspotSsidVisibleFromLaptop: false,
+          internetReachable: true,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'Connected to Wi-Fi and internet is reachable',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('warning')
+    expect(result.network.hotspotSsidVisibleFromLaptop).toBe(false)
+    expect(result.network.message).toContain('not visible')
+  })
+
+  it('uses host hotspot IP for deployment-laptop remote sessions', async () => {
+    const { service, sessionRepository } = createService({
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          wifiConnected: true,
+          currentSsid: 'Stone Frigate',
+          hostIpAddress: '10.42.0.1',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp2s0',
+          hotspotSsidVisibleFromLaptop: true,
+          internetReachable: true,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'Connected to approved Wi-Fi network',
+        },
+        error: null,
+      },
+    })
+    sessionRepository.findActiveRemoteSessions.mockResolvedValue({
+      activeCount: 1,
+      overflowCount: 0,
+      sessions: [
+        {
+          sessionId: 'session-deployment',
+          memberId: 'member-1',
+          memberName: 'Alex Example',
+          memberRank: 'PO2',
+          remoteSystemId: 'remote-1',
+          remoteSystemCode: 'deployment_laptop',
+          remoteSystemName: 'Deployment Laptop',
+          lastSeenAt: new Date('2026-04-01T11:59:30.000Z'),
+          ipAddress: '172.18.0.1',
+        },
+      ],
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.remoteSystems.sessions[0]?.ipAddress).toBe('10.42.0.1')
   })
 
   it('reports host telemetry unavailable when the snapshot file is missing', async () => {

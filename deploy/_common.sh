@@ -974,6 +974,28 @@ cleanup_hotspot_connectivity_helpers() {
   run_root rm -f "${home_dir}/.config/autostart/sentinel-captive-portal-watch.desktop"
 }
 
+configure_hotspot_recovery_sudoers() {
+  local desktop_user="${1:-}" sudoers_file systemctl_path tmp_file
+  [[ -n "${desktop_user}" ]] || return 0
+
+  systemctl_path="$(command -v systemctl || true)"
+  if [[ -z "${systemctl_path}" ]]; then
+    warn "systemctl is unavailable; skipping hotspot recovery sudoers helper."
+    return 0
+  fi
+
+  sudoers_file="/etc/sudoers.d/sentinel-hotspot-recovery"
+  tmp_file="$(mktemp)"
+  cat >"${tmp_file}" <<SUDOERS
+# Managed by Sentinel deploy helpers. Allows non-interactive hotspot recovery.
+Cmnd_Alias SENTINEL_HOTSPOT_RECOVERY_CMDS = ${systemctl_path} start sentinel-host-hotspot-recovery.service, ${systemctl_path} restart sentinel-host-hotspot-recovery.service, ${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh, ${DEPLOY_DIR}/recover-host-hotspot.sh *
+${desktop_user} ALL=(root) NOPASSWD: SENTINEL_HOTSPOT_RECOVERY_CMDS
+SUDOERS
+
+  run_root install -m 440 "${tmp_file}" "${sudoers_file}"
+  rm -f "${tmp_file}"
+}
+
 configure_hotspot_connectivity_helpers() {
   local desktop_user home_dir applications_dir handler_file tmp_file desktop_group
   desktop_user="$(resolve_desktop_user || true)"
@@ -1033,14 +1055,21 @@ DESKTOP
     return 0
   fi
 
+  configure_hotspot_recovery_sudoers "${desktop_user}"
+
   run_root install -d -m 755 \
     "${DEPLOY_DIR}/runtime/hotspot-recovery" \
     "${DEPLOY_DIR}/runtime/hotspot-recovery/requests" \
     "${DEPLOY_DIR}/runtime/hotspot-recovery/processed" \
-    "${DEPLOY_DIR}/runtime/hotspot-recovery/failed"
+    "${DEPLOY_DIR}/runtime/hotspot-recovery/failed" \
+    "${DEPLOY_DIR}/runtime/system-update" \
+    "${DEPLOY_DIR}/runtime/system-update/requests" \
+    "${DEPLOY_DIR}/runtime/system-update/processed" \
+    "${DEPLOY_DIR}/runtime/system-update/failed"
   run_root chmod 755 \
     "${DEPLOY_DIR}/recover-host-hotspot.sh" \
     "${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh" \
+    "${DEPLOY_DIR}/process-system-update-requests.sh" \
     "${DEPLOY_DIR}/sentinel-hotspot-connect.sh" >/dev/null 2>&1 || true
 
   run_root tee /etc/systemd/system/sentinel-host-hotspot-recovery.service >/dev/null <<UNIT
@@ -1072,6 +1101,36 @@ UNIT
   run_root systemctl start sentinel-host-hotspot-recovery.service
 
   log "Host hotspot recovery watcher enabled."
+
+  run_root tee /etc/systemd/system/sentinel-system-update-request.service >/dev/null <<UNIT
+[Unit]
+Description=Sentinel queued latest-system-update request processor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=${DEPLOY_DIR}
+ExecStart=${DEPLOY_DIR}/process-system-update-requests.sh
+UNIT
+
+  run_root tee /etc/systemd/system/sentinel-system-update-request.path >/dev/null <<UNIT
+[Unit]
+Description=Sentinel queued latest-system-update watcher
+
+[Path]
+PathExistsGlob=${DEPLOY_DIR}/runtime/system-update/requests/*.json
+Unit=sentinel-system-update-request.service
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+  run_root systemctl daemon-reload
+  run_root systemctl enable --now sentinel-system-update-request.path
+  run_root systemctl start sentinel-system-update-request.service
+
+  log "System update request watcher enabled."
 }
 
 configure_network_status_telemetry() {

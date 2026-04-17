@@ -73,3 +73,22 @@ export function useHostHotspotRecovery() {
     },
   })
 }
+
+export function useQueueLatestSystemUpdate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.networkSettings.queueLatestSystemUpdate()
+
+      if (response.status !== 202) {
+        throw new Error(getErrorMessage(response.body, 'Failed to queue latest system update'))
+      }
+
+      return response.body
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['system-status'] })
+    },
+  })
+}

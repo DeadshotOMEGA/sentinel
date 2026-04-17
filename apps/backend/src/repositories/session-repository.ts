@@ -45,6 +45,7 @@ export interface ActiveRemoteSessionRecord {
   memberName: string
   memberRank: string
   remoteSystemId: string | null
+  remoteSystemCode: string | null
   remoteSystemName: string
   lastSeenAt: Date
   ipAddress: string | null
@@ -203,6 +204,11 @@ export class SessionRepository {
           remoteSystemNameSnapshot: true,
           lastSeenAt: true,
           ipAddress: true,
+          remoteSystem: {
+            select: {
+              code: true,
+            },
+          },
           member: {
             select: {
               firstName: true,
@@ -225,6 +231,7 @@ export class SessionRepository {
         memberName: `${session.member.firstName} ${session.member.lastName}`.trim(),
         memberRank: session.member.rank,
         remoteSystemId: session.remoteSystemId,
+        remoteSystemCode: session.remoteSystem?.code ?? null,
         remoteSystemName: session.remoteSystemNameSnapshot,
         lastSeenAt: session.lastSeenAt,
         ipAddress: session.ipAddress,

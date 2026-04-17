@@ -40,12 +40,19 @@ function createTestApp(accountLevel?: number) {
 
 describe('networkSettingsRouter', () => {
   const originalRequestDir = process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR
+  const originalSystemUpdateRequestDir = process.env.SYSTEM_UPDATE_REQUEST_DIR
 
   afterEach(async () => {
     if (originalRequestDir === undefined) {
       delete process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR
     } else {
       process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR = originalRequestDir
+    }
+
+    if (originalSystemUpdateRequestDir === undefined) {
+      delete process.env.SYSTEM_UPDATE_REQUEST_DIR
+    } else {
+      process.env.SYSTEM_UPDATE_REQUEST_DIR = originalSystemUpdateRequestDir
     }
   })
 
@@ -91,6 +98,55 @@ describe('networkSettingsRouter', () => {
       requestedByMemberName: 'PO2 Alex Example',
       requestedByRemoteSystemName: 'Server',
       requestedFromUserAgent: 'vitest',
+    })
+
+    await rm(requestDir, { recursive: true, force: true })
+  })
+
+  it('requires admin access for latest system update queueing', async () => {
+    const app = createTestApp(1)
+    const response = await request(app).post('/api/network-settings/system-update-latest')
+
+    expect(response.status).toBe(403)
+    expect(response.body).toMatchObject({
+      error: 'FORBIDDEN',
+    })
+  })
+
+  it('queues a latest system update request for admins', async () => {
+    const requestDir = await mkdtemp(join(tmpdir(), 'sentinel-system-update-'))
+    process.env.SYSTEM_UPDATE_REQUEST_DIR = requestDir
+
+    const app = createTestApp(5)
+    const response = await request(app)
+      .post('/api/network-settings/system-update-latest')
+      .set('user-agent', 'vitest-update')
+
+    expect(response.status).toBe(202)
+    expect(response.body).toEqual({
+      success: true,
+      message: 'System update request queued for latest release',
+    })
+
+    const requestFiles = await readdir(requestDir)
+    expect(requestFiles).toHaveLength(1)
+
+    const payload = JSON.parse(
+      await readFile(join(requestDir, requestFiles[0] as string), 'utf-8')
+    ) as {
+      requestedByMemberId: string
+      requestedByMemberName: string
+      requestedByRemoteSystemName: string | null
+      requestedTarget: string
+      requestedFromUserAgent: string | null
+    }
+
+    expect(payload).toMatchObject({
+      requestedByMemberId: 'member-1',
+      requestedByMemberName: 'PO2 Alex Example',
+      requestedByRemoteSystemName: 'Server',
+      requestedTarget: 'latest',
+      requestedFromUserAgent: 'vitest-update',
     })
 
     await rm(requestDir, { recursive: true, force: true })
