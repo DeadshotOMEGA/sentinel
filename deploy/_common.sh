@@ -350,9 +350,17 @@ SNAPSHOT
 upsert_env() {
   local key="${1}" value="${2}" file="${3:-$ENV_FILE}"
   if grep -qE "^${key}=" "${file}"; then
-    sed -i "s#^${key}=.*#${key}=${value}#" "${file}"
+    if [[ -w "${file}" && -w "$(dirname "${file}")" ]]; then
+      sed -i "s#^${key}=.*#${key}=${value}#" "${file}"
+    else
+      run_root sed -i "s#^${key}=.*#${key}=${value}#" "${file}"
+    fi
   else
-    printf '%s=%s\n' "${key}" "${value}" >>"${file}"
+    if [[ -w "${file}" ]]; then
+      printf '%s=%s\n' "${key}" "${value}" >>"${file}"
+    else
+      printf '%s=%s\n' "${key}" "${value}" | run_root tee -a "${file}" >/dev/null
+    fi
   fi
 }
 
