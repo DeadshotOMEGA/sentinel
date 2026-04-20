@@ -3,6 +3,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import type {
+  CreateUnitEventTypeInput,
+  UpdateUnitEventTypeInput,
   CreateUnitEventInput,
   UpdateUnitEventInput,
   CreateUnitEventPositionInput,
@@ -11,6 +13,8 @@ import type {
   UnitEventStatus,
   UnitEventCategory,
 } from '@sentinel/contracts'
+
+export type EventTypeInput = CreateUnitEventTypeInput
 
 // ============================================================================
 // Event Types
@@ -27,6 +31,68 @@ export function useEventTypes() {
       return response.body.data
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - event types rarely change
+  })
+}
+
+export function useCreateEventType() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateUnitEventTypeInput) => {
+      const response = await apiClient.unitEvents.createEventType({
+        body: data,
+      })
+      if (response.status !== 201) {
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(errorBody?.message || 'Failed to create event type')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-types'] })
+    },
+  })
+}
+
+export function useUpdateEventType() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateUnitEventTypeInput }) => {
+      const response = await apiClient.unitEvents.updateEventType({
+        params: { id },
+        body: data,
+      })
+      if (response.status !== 200) {
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(errorBody?.message || 'Failed to update event type')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-types'] })
+    },
+  })
+}
+
+export function useDeleteEventType() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.unitEvents.deleteEventType({
+        params: { id },
+        body: undefined,
+      })
+      if (response.status !== 200) {
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(errorBody?.message || 'Failed to delete event type')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-types'] })
+    },
   })
 }
 

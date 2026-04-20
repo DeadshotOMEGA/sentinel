@@ -182,6 +182,14 @@ export const TID = {
       remoteSystemSubmit: 'settings-network-remote-system-submit',
       remoteSystemCancel: 'settings-network-remote-system-cancel',
     },
+    eventTypes: {
+      tab: 'settings-event-types-tab',
+      addBtn: 'settings-event-types-add-btn',
+      editBtn: (id: string) => `settings-event-types-edit-${id}`,
+      deleteBtn: (id: string) => `settings-event-types-delete-${id}`,
+      deleteConfirm: 'settings-event-types-delete-confirm',
+      deleteCancel: 'settings-event-types-delete-cancel',
+    },
     timings: {
       tab: 'settings-timings-tab',
       form: 'settings-timings-form',

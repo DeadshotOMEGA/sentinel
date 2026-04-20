@@ -2,9 +2,12 @@ import { initServer } from '@ts-rest/express'
 import { unitEventContract } from '@sentinel/contracts'
 import type {
   UnitEventListQuery,
+  UnitEventTypeIdParam,
   UnitEventIdParam,
   UnitEventPositionParams,
   UnitEventAssignmentParams,
+  CreateUnitEventTypeInput,
+  UpdateUnitEventTypeInput,
   CreateUnitEventInput,
   UpdateUnitEventInput,
   UpdateUnitEventStatusInput,
@@ -254,6 +257,62 @@ export const unitEventsRouter = s.router(unitEventContract, {
       return {
         status: 200 as const,
         body: { data: types.map(eventTypeToApiFormat) },
+      }
+    } catch (error) {
+      return handleError(error)
+    }
+  },
+
+  createEventType: async ({ body }: { body: CreateUnitEventTypeInput }) => {
+    try {
+      const created = await unitEventService.createEventType({
+        name: body.name,
+        category: body.category,
+        defaultDurationMinutes: body.defaultDurationMinutes,
+        requiresDutyWatch: body.requiresDutyWatch,
+        defaultMetadata: body.defaultMetadata ?? null,
+        displayOrder: body.displayOrder,
+      })
+      return {
+        status: 201 as const,
+        body: eventTypeToApiFormat(created),
+      }
+    } catch (error) {
+      return handleError(error)
+    }
+  },
+
+  updateEventType: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventTypeIdParam
+    body: UpdateUnitEventTypeInput
+  }) => {
+    try {
+      const updated = await unitEventService.updateEventType(params.id, {
+        name: body.name,
+        category: body.category,
+        defaultDurationMinutes: body.defaultDurationMinutes,
+        requiresDutyWatch: body.requiresDutyWatch,
+        defaultMetadata: body.defaultMetadata,
+        displayOrder: body.displayOrder,
+      })
+      return {
+        status: 200 as const,
+        body: eventTypeToApiFormat(updated),
+      }
+    } catch (error) {
+      return handleError(error)
+    }
+  },
+
+  deleteEventType: async ({ params }: { params: UnitEventTypeIdParam }) => {
+    try {
+      await unitEventService.deleteEventType(params.id)
+      return {
+        status: 200 as const,
+        body: { success: true, message: 'Event type deleted successfully' },
       }
     } catch (error) {
       return handleError(error)

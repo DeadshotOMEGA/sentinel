@@ -132,6 +132,24 @@ export interface UpdateUnitEventInput {
   notes?: string | null
 }
 
+export interface CreateUnitEventTypeInput {
+  name: string
+  category: string
+  defaultDurationMinutes: number
+  requiresDutyWatch?: boolean
+  defaultMetadata?: Record<string, unknown> | null
+  displayOrder?: number
+}
+
+export interface UpdateUnitEventTypeInput {
+  name?: string
+  category?: string
+  defaultDurationMinutes?: number
+  requiresDutyWatch?: boolean
+  defaultMetadata?: Record<string, unknown> | null
+  displayOrder?: number
+}
+
 /**
  * Unit event list filter options
  */
@@ -265,6 +283,77 @@ export class UnitEventRepository {
       where: { id },
     })
     return type
+  }
+
+  /**
+   * Find an event type by exact case-insensitive name
+   */
+  async findEventTypeByName(name: string): Promise<UnitEventTypeEntity | null> {
+    const type = await this.prisma.unitEventType.findFirst({
+      where: {
+        name: { equals: name, mode: 'insensitive' },
+      },
+    })
+    return type
+  }
+
+  /**
+   * Create an event type
+   */
+  async createEventType(input: CreateUnitEventTypeInput): Promise<UnitEventTypeEntity> {
+    const data: Prisma.UnitEventTypeCreateInput = {
+      name: input.name,
+      category: input.category,
+      defaultDurationMinutes: input.defaultDurationMinutes,
+      requiresDutyWatch: input.requiresDutyWatch ?? false,
+      defaultMetadata: input.defaultMetadata,
+      displayOrder: input.displayOrder ?? 0,
+    }
+
+    const type = await this.prisma.unitEventType.create({ data })
+    return type
+  }
+
+  /**
+   * Update an event type
+   */
+  async updateEventType(id: string, input: UpdateUnitEventTypeInput): Promise<UnitEventTypeEntity> {
+    const data: Prisma.UnitEventTypeUpdateInput = {}
+
+    if (input.name !== undefined) data.name = input.name
+    if (input.category !== undefined) data.category = input.category
+    if (input.defaultDurationMinutes !== undefined) {
+      data.defaultDurationMinutes = input.defaultDurationMinutes
+    }
+    if (input.requiresDutyWatch !== undefined) data.requiresDutyWatch = input.requiresDutyWatch
+    if (input.defaultMetadata !== undefined) data.defaultMetadata = input.defaultMetadata
+    if (input.displayOrder !== undefined) data.displayOrder = input.displayOrder
+
+    const type = await this.prisma.unitEventType.update({
+      where: { id },
+      data,
+    })
+
+    return type
+  }
+
+  /**
+   * Delete an event type
+   */
+  async deleteEventType(id: string): Promise<void> {
+    await this.prisma.unitEventType.delete({
+      where: { id },
+    })
+  }
+
+  /**
+   * Count events associated with an event type
+   */
+  async countEventsForEventType(eventTypeId: string): Promise<number> {
+    const count = await this.prisma.unitEvent.count({
+      where: { eventTypeId },
+    })
+    return count
   }
 
   // ==========================================================================

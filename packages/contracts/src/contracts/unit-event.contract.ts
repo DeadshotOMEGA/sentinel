@@ -1,10 +1,13 @@
 import { initContract } from '@ts-rest/core'
 import {
   UnitEventTypeListResponseSchema,
+  UnitEventTypeResponseSchema,
   UnitEventWithDetailsResponseSchema,
   UnitEventListResponseSchema,
   UnitEventDutyPositionResponseSchema,
   UnitEventDutyAssignmentResponseSchema,
+  CreateUnitEventTypeInputSchema,
+  UpdateUnitEventTypeInputSchema,
   CreateUnitEventInputSchema,
   UpdateUnitEventInputSchema,
   UpdateUnitEventStatusInputSchema,
@@ -12,6 +15,7 @@ import {
   UpdateUnitEventPositionInputSchema,
   CreateUnitEventAssignmentInputSchema,
   UnitEventListQuerySchema,
+  UnitEventTypeIdParamSchema,
   UnitEventIdParamSchema,
   UnitEventPositionParamsSchema,
   UnitEventAssignmentParamsSchema,
@@ -44,6 +48,63 @@ export const unitEventContract = c.router({
     },
     summary: 'List event types',
     description: 'Get all event type templates (mess dinner, ceremonial, etc.)',
+  },
+
+  /**
+   * Create event type template
+   */
+  createEventType: {
+    method: 'POST',
+    path: '/api/unit-events/types',
+    body: CreateUnitEventTypeInputSchema,
+    responses: {
+      201: UnitEventTypeResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create event type',
+    description: 'Create a new unit event type template used by event creation workflows',
+  },
+
+  /**
+   * Update event type template
+   */
+  updateEventType: {
+    method: 'PATCH',
+    path: '/api/unit-events/types/:id',
+    pathParams: UnitEventTypeIdParamSchema,
+    body: UpdateUnitEventTypeInputSchema,
+    responses: {
+      200: UnitEventTypeResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Update event type',
+    description: 'Update a unit event type template',
+  },
+
+  /**
+   * Delete event type template
+   */
+  deleteEventType: {
+    method: 'DELETE',
+    path: '/api/unit-events/types/:id',
+    pathParams: UnitEventTypeIdParamSchema,
+    body: c.type<undefined>(),
+    responses: {
+      200: c.type<{ success: boolean; message: string }>(),
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Delete event type',
+    description: 'Delete a unit event type template',
   },
 
   // ==========================================================================

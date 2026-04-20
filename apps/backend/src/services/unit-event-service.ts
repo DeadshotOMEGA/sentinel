@@ -8,6 +8,8 @@ import {
   type UnitEventDutyPositionEntity,
   type UnitEventDutyAssignmentEntity,
   type UnitEventListFilter,
+  type CreateUnitEventTypeInput,
+  type UpdateUnitEventTypeInput,
   type CreateUnitEventInput,
   type UpdateUnitEventInput,
 } from '../repositories/unit-event-repository.js'
@@ -52,6 +54,52 @@ export class UnitEventService {
 
   async getAllEventTypes(): Promise<UnitEventTypeEntity[]> {
     return this.repository.findAllEventTypes()
+  }
+
+  async createEventType(input: CreateUnitEventTypeInput): Promise<UnitEventTypeEntity> {
+    const name = input.name.trim()
+    const existing = await this.repository.findEventTypeByName(name)
+    if (existing) {
+      throw new ConflictError(`Event type '${name}' already exists`)
+    }
+
+    return this.repository.createEventType({
+      ...input,
+      name,
+    })
+  }
+
+  async updateEventType(id: string, input: UpdateUnitEventTypeInput): Promise<UnitEventTypeEntity> {
+    const existing = await this.repository.findEventTypeById(id)
+    if (!existing) {
+      throw new NotFoundError('Unit Event Type', id)
+    }
+
+    let normalizedInput = input
+    if (input.name !== undefined) {
+      const normalizedName = input.name.trim()
+      const duplicate = await this.repository.findEventTypeByName(normalizedName)
+      if (duplicate && duplicate.id !== id) {
+        throw new ConflictError(`Event type '${normalizedName}' already exists`)
+      }
+      normalizedInput = { ...input, name: normalizedName }
+    }
+
+    return this.repository.updateEventType(id, normalizedInput)
+  }
+
+  async deleteEventType(id: string): Promise<void> {
+    const existing = await this.repository.findEventTypeById(id)
+    if (!existing) {
+      throw new NotFoundError('Unit Event Type', id)
+    }
+
+    const usageCount = await this.repository.countEventsForEventType(id)
+    if (usageCount > 0) {
+      throw new ConflictError('Cannot delete event type that is already used by one or more events')
+    }
+
+    await this.repository.deleteEventType(id)
   }
 
   // ==========================================================================
