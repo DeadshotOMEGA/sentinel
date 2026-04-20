@@ -306,7 +306,11 @@ export class UnitEventRepository {
       category: input.category,
       defaultDurationMinutes: input.defaultDurationMinutes,
       requiresDutyWatch: input.requiresDutyWatch ?? false,
-      defaultMetadata: input.defaultMetadata,
+      defaultMetadata: input.defaultMetadata === null
+        ? Prisma.JsonNull
+        : input.defaultMetadata !== undefined
+          ? (input.defaultMetadata as Prisma.InputJsonValue)
+          : undefined,
       displayOrder: input.displayOrder ?? 0,
     }
 
@@ -326,7 +330,11 @@ export class UnitEventRepository {
       data.defaultDurationMinutes = input.defaultDurationMinutes
     }
     if (input.requiresDutyWatch !== undefined) data.requiresDutyWatch = input.requiresDutyWatch
-    if (input.defaultMetadata !== undefined) data.defaultMetadata = input.defaultMetadata
+    if (input.defaultMetadata !== undefined) {
+      data.defaultMetadata = input.defaultMetadata === null
+        ? Prisma.JsonNull
+        : (input.defaultMetadata as Prisma.InputJsonValue)
+    }
     if (input.displayOrder !== undefined) data.displayOrder = input.displayOrder
 
     const type = await this.prisma.unitEventType.update({
