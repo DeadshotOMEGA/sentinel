@@ -82,7 +82,6 @@ export function useDeleteEventType() {
     mutationFn: async (id: string) => {
       const response = await apiClient.unitEvents.deleteEventType({
         params: { id },
-        body: undefined,
       })
       if (response.status !== 200) {
         const errorBody = response.body as { error?: string; message?: string }
