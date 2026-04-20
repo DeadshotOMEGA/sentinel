@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AccountLevelSettingsPanel } from '@/components/settings/account-level-settings-panel'
 import { DashboardPersonCardSortSettingsPanel } from '@/components/settings/dashboard-person-card-sort-settings-panel'
 import { EnumTable } from '@/components/settings/enum-table'
+import { EventTypeTable } from '@/components/settings/event-type-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { NetworkSettingsPanel } from '@/components/settings/network-settings-panel'
 import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
@@ -19,6 +20,7 @@ import {
   Award,
   ArrowUpDown,
   Calendar,
+  CalendarClock,
   Clock3,
   Wifi,
 } from 'lucide-react'
@@ -43,6 +45,14 @@ export default function SettingsPage() {
           <TabsTrigger value="visit-types" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             <span className="hidden sm:inline">Visit Types</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="event-types"
+            className="flex items-center gap-2"
+            data-testid={TID.settings.eventTypes.tab}
+          >
+            <CalendarClock className="h-4 w-4" />
+            <span className="hidden sm:inline">Event Types</span>
           </TabsTrigger>
           <TabsTrigger value="qualifications" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
@@ -111,6 +121,13 @@ export default function SettingsPage() {
             enumType="visit-types"
             title="Visit Types"
             description="Categories for visitor classification"
+          />
+        </TabsContent>
+
+        <TabsContent value="event-types">
+          <EventTypeTable
+            title="Event Types"
+            description="Templates for event category, default duration, and duty-watch defaults"
           />
         </TabsContent>
 

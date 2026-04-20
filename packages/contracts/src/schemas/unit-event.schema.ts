@@ -32,6 +32,48 @@ export const UnitEventTypeListResponseSchema = v.object({
   data: v.array(UnitEventTypeResponseSchema),
 })
 
+export const CreateUnitEventTypeInputSchema = v.object({
+  name: v.pipe(
+    v.string('Event type name is required'),
+    v.minLength(1, 'Event type name cannot be empty'),
+    v.maxLength(100, 'Event type name must be at most 100 characters')
+  ),
+  category: UnitEventCategorySchema,
+  defaultDurationMinutes: v.pipe(
+    v.number('Default duration is required'),
+    v.minValue(15, 'Default duration must be at least 15 minutes'),
+    v.maxValue(1440, 'Default duration must be at most 1440 minutes')
+  ),
+  requiresDutyWatch: v.optional(v.boolean()),
+  defaultMetadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
+  displayOrder: v.optional(
+    v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))
+  ),
+})
+
+export const UpdateUnitEventTypeInputSchema = v.object({
+  name: v.optional(
+    v.pipe(
+      v.string(),
+      v.minLength(1, 'Event type name cannot be empty'),
+      v.maxLength(100, 'Event type name must be at most 100 characters')
+    )
+  ),
+  category: v.optional(UnitEventCategorySchema),
+  defaultDurationMinutes: v.optional(
+    v.pipe(
+      v.number(),
+      v.minValue(15, 'Default duration must be at least 15 minutes'),
+      v.maxValue(1440, 'Default duration must be at most 1440 minutes')
+    )
+  ),
+  requiresDutyWatch: v.optional(v.boolean()),
+  defaultMetadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
+  displayOrder: v.optional(
+    v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))
+  ),
+})
+
 // ============================================================================
 // Unit Event Schemas
 // ============================================================================
@@ -314,6 +356,10 @@ export const UnitEventIdParamSchema = v.object({
   id: v.pipe(v.string('Event ID is required'), v.uuid('Invalid event ID format')),
 })
 
+export const UnitEventTypeIdParamSchema = v.object({
+  id: v.pipe(v.string('Event type ID is required'), v.uuid('Invalid event type ID format')),
+})
+
 export const UnitEventPositionParamsSchema = v.object({
   id: v.pipe(v.string('Event ID is required'), v.uuid('Invalid event ID format')),
   positionId: v.pipe(
@@ -339,6 +385,8 @@ export type UnitEventStatus = v.InferOutput<typeof UnitEventStatusSchema>
 export type UnitEventDutyAssignmentStatus = v.InferOutput<typeof UnitEventDutyAssignmentStatusSchema>
 export type UnitEventTypeResponse = v.InferOutput<typeof UnitEventTypeResponseSchema>
 export type UnitEventTypeListResponse = v.InferOutput<typeof UnitEventTypeListResponseSchema>
+export type CreateUnitEventTypeInput = v.InferOutput<typeof CreateUnitEventTypeInputSchema>
+export type UpdateUnitEventTypeInput = v.InferOutput<typeof UpdateUnitEventTypeInputSchema>
 export type UnitEventDutyPositionResponse = v.InferOutput<typeof UnitEventDutyPositionResponseSchema>
 export type UnitEventDutyAssignmentResponse = v.InferOutput<typeof UnitEventDutyAssignmentResponseSchema>
 export type UnitEventResponse = v.InferOutput<typeof UnitEventResponseSchema>
@@ -352,5 +400,6 @@ export type UpdateUnitEventPositionInput = v.InferOutput<typeof UpdateUnitEventP
 export type CreateUnitEventAssignmentInput = v.InferOutput<typeof CreateUnitEventAssignmentInputSchema>
 export type UnitEventListQuery = v.InferOutput<typeof UnitEventListQuerySchema>
 export type UnitEventIdParam = v.InferOutput<typeof UnitEventIdParamSchema>
+export type UnitEventTypeIdParam = v.InferOutput<typeof UnitEventTypeIdParamSchema>
 export type UnitEventPositionParams = v.InferOutput<typeof UnitEventPositionParamsSchema>
 export type UnitEventAssignmentParams = v.InferOutput<typeof UnitEventAssignmentParamsSchema>
