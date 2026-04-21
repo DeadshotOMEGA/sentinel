@@ -11,6 +11,7 @@ import { Menu, PanelLeftOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
+import { ADMIN_NAV_ROUTES, isAdminNavPath } from '@/lib/admin-routes'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -26,13 +27,6 @@ const navLinks = [
   { href: '/members', label: 'Members' },
   { href: '/events', label: 'Events' },
   { href: '/schedules', label: 'Schedules' },
-]
-
-const adminLinks = [
-  { href: '/settings', label: 'Settings' },
-  { href: '/badges', label: 'Badges' },
-  { href: '/database', label: 'Database' },
-  { href: '/logs', label: 'Logs' },
 ]
 
 interface AppNavbarProps {
@@ -69,7 +63,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     isLoading: isStatusLoading,
     isError: systemStatusQuery.isError,
   })
-  const isAdminRoute = adminLinks.some((link) => pathname === link.href)
+  const isAdminRoute = isAdminNavPath(pathname)
   const isClient = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -155,9 +149,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         }, delayMs)
       })
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to queue host hotspot recovery'
-      )
+      toast.error(error instanceof Error ? error.message : 'Failed to queue host hotspot recovery')
     }
   }
 
@@ -166,9 +158,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       const result = await queueLatestSystemUpdate.mutateAsync()
       toast.success(result.message)
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to queue latest system update'
-      )
+      toast.error(error instanceof Error ? error.message : 'Failed to queue latest system update')
     }
   }
 
@@ -271,7 +261,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 tabIndex={-1}
                 className="dropdown-content z-20 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-xl"
               >
-                {adminLinks.map((link) => (
+                {ADMIN_NAV_ROUTES.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
@@ -426,9 +416,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       : 'border-base-300 bg-base-200 text-base-content'
                   )}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide">
-                    Wireless Recovery
-                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-wide">Wireless Recovery</p>
                   <p className="mt-1 text-xs leading-relaxed">
                     Reconnect this laptop to the approved hotspot SSID, or ask the host server to
                     requeue a hotspot repair.

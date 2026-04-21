@@ -23,6 +23,37 @@ export interface LogFilters {
   correlationId: string
 }
 
+export const LOG_STREAM_LEVELS = [
+  'error',
+  'warn',
+  'info',
+  'http',
+  'verbose',
+  'debug',
+  'silly',
+] as const
+
+export type LogStreamLevel = (typeof LOG_STREAM_LEVELS)[number]
+
+export const DEFAULT_LOG_FILTERS: LogFilters = {
+  levels: [],
+  modules: [],
+  search: '',
+  correlationId: '',
+}
+
+export const DEFAULT_LOG_STREAM_LEVEL: LogStreamLevel = 'info'
+
+const LOG_LEVEL_VALUE: Record<LogStreamLevel, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  verbose: 4,
+  debug: 5,
+  silly: 6,
+}
+
 interface LogViewerState {
   logs: LogEntry[]
   filters: LogFilters
@@ -30,6 +61,7 @@ interface LogViewerState {
   isPaused: boolean
   selectedLogId: string | null
   bufferedEntries: LogEntry[]
+  streamLevel: LogStreamLevel
 
   // Actions
   subscribe: () => void
@@ -41,53 +73,47 @@ interface LogViewerState {
   addLog: (entry: LogEntry) => void
   setHistory: (logs: LogEntry[]) => void
   setConnected: (connected: boolean) => void
+  setStreamLevel: (level: LogStreamLevel) => void
 }
 
 const MAX_LOGS = 2000
 
-export const useLogViewerStore = create<LogViewerState>((set, get) => ({
+export const useLogViewerStore = create<LogViewerState>((set) => ({
   logs: [],
-  filters: {
-    levels: [],
-    modules: [],
-    search: '',
-    correlationId: '',
-  },
+  filters: { ...DEFAULT_LOG_FILTERS },
   isConnected: false,
   isPaused: false,
   selectedLogId: null,
   bufferedEntries: [],
+  streamLevel: DEFAULT_LOG_STREAM_LEVEL,
 
   subscribe: () => {
-    set({ isConnected: true })
     websocketManager.connect()
+    set({ isConnected: websocketManager.isSocketConnected })
     websocketManager.subscribe('logs')
-
-    const handleHistory = (data: unknown) => {
-      if (Array.isArray(data)) {
-        get().setHistory(data as LogEntry[])
-      }
-    }
-
-    const handleEntry = (data: unknown) => {
-      if (data && typeof data === 'object' && 'id' in data) {
-        get().addLog(data as LogEntry)
-      }
-    }
-
     websocketManager.on('log:history', handleHistory)
     websocketManager.on('log:entry', handleEntry)
+    websocketManager.on('connect', handleConnect)
+    websocketManager.on('disconnect', handleDisconnect)
   },
 
   unsubscribe: () => {
     set({ isConnected: false })
-    websocketManager.unsubscribe('logs')
-    websocketManager.off('log:history')
-    websocketManager.off('log:entry')
+    if (websocketManager.hasSocket) {
+      websocketManager.unsubscribe('logs')
+      websocketManager.off('log:history', handleHistory)
+      websocketManager.off('log:entry', handleEntry)
+      websocketManager.off('connect', handleConnect)
+      websocketManager.off('disconnect', handleDisconnect)
+    }
   },
 
   clearLogs: () => {
-    set({ logs: [], bufferedEntries: [] })
+    if (websocketManager.hasSocket) {
+      websocketManager.emit('logs:clear-history')
+    }
+
+    set({ logs: [], bufferedEntries: [], selectedLogId: null })
   },
 
   setFilter: (partial: Partial<LogFilters>) => {
@@ -97,7 +123,17 @@ export const useLogViewerStore = create<LogViewerState>((set, get) => ({
   },
 
   togglePause: () => {
-    set((state) => ({ isPaused: !state.isPaused }))
+    set((state) => {
+      if (!state.isPaused) {
+        return { isPaused: true }
+      }
+
+      return {
+        isPaused: false,
+        logs: trimLogs([...state.bufferedEntries, ...state.logs]),
+        bufferedEntries: [],
+      }
+    })
   },
 
   setSelectedLogId: (id: string | null) => {
@@ -106,44 +142,106 @@ export const useLogViewerStore = create<LogViewerState>((set, get) => ({
 
   addLog: (entry: LogEntry) => {
     set((state) => {
-      const newLogs = [entry, ...state.logs]
-      if (newLogs.length > MAX_LOGS) {
-        newLogs.length = MAX_LOGS
-      }
-
       if (state.isPaused) {
         return {
-          logs: newLogs,
-          bufferedEntries: [entry, ...state.bufferedEntries],
+          bufferedEntries: trimLogs([entry, ...state.bufferedEntries]),
         }
       }
 
-      return { logs: newLogs }
+      return { logs: trimLogs([entry, ...state.logs]) }
     })
   },
 
   setHistory: (logs: LogEntry[]) => {
-    const sorted = [...logs].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    )
-    set({ logs: sorted.slice(0, MAX_LOGS) })
+    set((state) => {
+      const sorted = trimLogs(sortLogs(logs))
+
+      return {
+        logs: sorted,
+        streamLevel: inferStreamLevel(sorted, state.streamLevel),
+      }
+    })
   },
 
   setConnected: (connected: boolean) => {
     set({ isConnected: connected })
   },
+
+  setStreamLevel: (level: LogStreamLevel) => {
+    set((state) => ({
+      streamLevel: level,
+      bufferedEntries: filterEntriesByStreamLevel(state.bufferedEntries, level),
+    }))
+
+    if (websocketManager.hasSocket) {
+      websocketManager.emit('logs:set-level', level)
+      websocketManager.emit('logs:subscribe')
+    }
+  },
 }))
 
-export function useLogViewer() {
+function sortLogs(logs: LogEntry[]): LogEntry[] {
+  return [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+}
+
+function trimLogs(logs: LogEntry[]): LogEntry[] {
+  return logs.slice(0, MAX_LOGS)
+}
+
+function getLevelValue(level: string): number {
+  return LOG_LEVEL_VALUE[level as LogStreamLevel] ?? LOG_LEVEL_VALUE.info
+}
+
+function filterEntriesByStreamLevel(logs: LogEntry[], level: LogStreamLevel): LogEntry[] {
+  const threshold = LOG_LEVEL_VALUE[level]
+  return trimLogs(logs.filter((entry) => getLevelValue(entry.level) <= threshold))
+}
+
+function inferStreamLevel(logs: LogEntry[], fallback: LogStreamLevel): LogStreamLevel {
+  return logs.reduce<LogStreamLevel>((current, entry) => {
+    const nextLevel = entry.level as LogStreamLevel
+    if (!LOG_STREAM_LEVELS.includes(nextLevel)) {
+      return current
+    }
+
+    return LOG_LEVEL_VALUE[nextLevel] > LOG_LEVEL_VALUE[current] ? nextLevel : current
+  }, fallback)
+}
+
+function handleHistory(data: unknown) {
+  if (Array.isArray(data)) {
+    useLogViewerStore.getState().setHistory(data as LogEntry[])
+  }
+}
+
+function handleEntry(data: unknown) {
+  if (data && typeof data === 'object' && 'id' in data) {
+    useLogViewerStore.getState().addLog(data as LogEntry)
+  }
+}
+
+function handleConnect() {
+  useLogViewerStore.getState().setConnected(true)
+}
+
+function handleDisconnect() {
+  useLogViewerStore.getState().setConnected(false)
+}
+
+export function useLogViewer(enabled = true) {
   const subscribe = useLogViewerStore((s) => s.subscribe)
   const unsubscribe = useLogViewerStore((s) => s.unsubscribe)
 
   useEffect(() => {
+    if (!enabled) {
+      return
+    }
+
     subscribe()
     return () => {
       unsubscribe()
     }
-  }, [subscribe, unsubscribe])
+  }, [enabled, subscribe, unsubscribe])
 }
 
 export function useFilteredLogs(): LogEntry[] {
@@ -165,7 +263,9 @@ export function useFilteredLogs(): LogEntry[] {
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
         const messageMatch = log.message.toLowerCase().includes(searchLower)
-        const metadataMatch = log.metadata ? JSON.stringify(log.metadata).toLowerCase().includes(searchLower) : false
+        const metadataMatch = log.metadata
+          ? JSON.stringify(log.metadata).toLowerCase().includes(searchLower)
+          : false
         if (!messageMatch && !metadataMatch) {
           return false
         }

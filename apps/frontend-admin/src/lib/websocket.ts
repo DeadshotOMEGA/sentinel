@@ -4,6 +4,14 @@ import { io, Socket } from 'socket.io-client'
 class WebSocketManager {
   private socket: Socket | null = null
 
+  get hasSocket(): boolean {
+    return this.socket !== null
+  }
+
+  get isSocketConnected(): boolean {
+    return this.socket?.connected ?? false
+  }
+
   connect() {
     if (this.socket) return
 
