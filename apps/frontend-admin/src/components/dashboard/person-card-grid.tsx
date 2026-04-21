@@ -10,6 +10,7 @@ import { useDdsStatus } from '@/hooks/use-dds'
 import { useCurrentDds } from '@/hooks/use-schedules'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
+import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import {
   MemberActionPanel,
   type MemberActionDrawerSide,
@@ -21,6 +22,7 @@ import { TID } from '@/lib/test-ids'
 import { MotionButton } from '@/components/ui/motion-button'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
 import { applyDashboardPersonCardSort } from '@/lib/dashboard-person-card-sort'
+import { canEditHistoryEntries, getCurrentDdsEditorId } from '@/lib/history-permissions'
 import { cn } from '@/lib/utils'
 
 type FilterType = 'all' | 'member' | 'visitor'
@@ -38,11 +40,14 @@ export function PersonCardGrid() {
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
+  const [isManualCheckinModalOpen, setIsManualCheckinModalOpen] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
   const [selectedMemberActionView, setSelectedMemberActionView] = useState<MemberActionView>('menu')
   const [selectedMemberActionSide, setSelectedMemberActionSide] =
     useState<MemberActionDrawerSide>('right')
   const [isPending, startTransition] = useTransition()
+  const currentDdsMemberId = getCurrentDdsEditorId(scheduledDds)
+  const canCreateManualCheckin = canEditHistoryEntries(member, currentDdsMemberId)
 
   // Current DDS member ID (only when assignment is active/pending)
   const ddsMemberId = ddsStatus?.assignment?.memberId ?? null
@@ -237,6 +242,16 @@ export function PersonCardGrid() {
               Simulate Scan
             </MotionButton>
           )}
+          {canCreateManualCheckin && (
+            <MotionButton
+              className="btn btn-xs btn-outline border-base-300 bg-base-100 text-base-content/80 hover:border-primary/40 hover:bg-primary-fadded hover:text-primary-fadded-content"
+              onClick={() => setIsManualCheckinModalOpen(true)}
+              data-testid={TID.dashboard.quickAction.manualCheckin}
+            >
+              <UsersRound className="size-[1em] shrink-0" />
+              Manual in/out
+            </MotionButton>
+          )}
           <label className="input input-bordered input-sm w-full sm:w-56">
             <span className="label">Search</span>
             <Search size={14} className="text-base-content/40" />
@@ -255,6 +270,12 @@ export function PersonCardGrid() {
 
       {(isDevMode || isSentinelSystem) && (
         <SimulateScanModal open={isScanModalOpen} onOpenChange={setIsScanModalOpen} />
+      )}
+      {canCreateManualCheckin && (
+        <ManualCheckinModal
+          open={isManualCheckinModalOpen}
+          onOpenChange={setIsManualCheckinModalOpen}
+        />
       )}
 
       <div

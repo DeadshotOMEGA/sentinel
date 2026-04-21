@@ -11,6 +11,7 @@ import {
   type LoginStartOfDayAction,
 } from '@sentinel/contracts'
 import { BadgeScanInput } from '@/components/auth/badge-scan-input'
+import { PinField } from '@/components/auth/pin-field'
 import type { PinInputInitialSelection, PinInputSubmission } from '@/components/auth/pin-input'
 import { PinInput } from '@/components/auth/pin-input'
 import { getSetupDescription } from './login-flow'
@@ -608,46 +609,32 @@ function LoginPageContent() {
                   </div>
 
                   <form className="space-y-(--space-3)" onSubmit={handleSetupSubmit}>
-                    <label className="input input-lg w-full">
-                      <span className="label">New PIN</span>
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        maxLength={4}
-                        className="grow text-center font-mono text-2xl tracking-[0.45em]"
-                        value={newPin}
-                        onChange={(changeEvent) =>
-                          setNewPin(changeEvent.target.value.replace(/\D/g, '').slice(0, 4))
-                        }
-                        disabled={loading}
-                        autoComplete="off"
-                        aria-label="New PIN"
-                        data-testid={TID.auth.setupPinInput}
-                        required
-                      />
-                    </label>
+                    <PinField
+                      label="New PIN"
+                      value={newPin}
+                      onValueChange={setNewPin}
+                      size="large"
+                      disabled={loading}
+                      ariaLabel="New PIN"
+                      className="input-lg"
+                      data-testid={TID.auth.setupPinInput}
+                      required
+                    />
                     <p className="label text-base-content/60">
                       Choose a secure 4-digit PIN that is not easy to guess.
                     </p>
 
-                    <label className="input input-lg w-full">
-                      <span className="label">Confirm New PIN</span>
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        maxLength={4}
-                        className="grow text-center font-mono text-2xl tracking-[0.45em]"
-                        value={confirmPin}
-                        onChange={(changeEvent) =>
-                          setConfirmPin(changeEvent.target.value.replace(/\D/g, '').slice(0, 4))
-                        }
-                        disabled={loading}
-                        autoComplete="off"
-                        aria-label="Confirm new PIN"
-                        data-testid={TID.auth.setupPinConfirmInput}
-                        required
-                      />
-                    </label>
+                    <PinField
+                      label="Confirm New PIN"
+                      value={confirmPin}
+                      onValueChange={setConfirmPin}
+                      size="large"
+                      disabled={loading}
+                      ariaLabel="Confirm new PIN"
+                      className="input-lg"
+                      data-testid={TID.auth.setupPinConfirmInput}
+                      required
+                    />
 
                     <div className="grid grid-cols-2 gap-(--space-2)">
                       <button

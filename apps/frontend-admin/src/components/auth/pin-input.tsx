@@ -2,7 +2,7 @@
 
 /* global HTMLInputElement */
 
-import { useRef, useEffect, useMemo, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { useRef, useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import type { RemoteSystemLoginContext, RemoteSystemOption } from '@sentinel/contracts'
 import { KeyRound, ArrowLeft, LoaderCircle, LogIn } from 'lucide-react'
 import { TID } from '@/lib/test-ids'
@@ -13,6 +13,7 @@ import {
   resolveForcedRemoteSystem,
   type PinInputInitialSelection,
 } from './pin-input.logic'
+import { PinField } from './pin-field'
 
 export type { PinInputInitialSelection } from './pin-input.logic'
 
@@ -104,11 +105,6 @@ export function PinInput({
       pin,
       remoteSystemId: effectiveSelectedRemoteSystem,
     })
-  }
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 4)
-    setPin(value)
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -217,7 +213,9 @@ export function PinInput({
             Required so Sentinel can track which managed station is connected.
           </p>
           {!remoteSystemsLoading && remoteSystems.some((system) => system.isOccupied) && (
-            <p className="label text-base-content/60">In-use systems stay visible but cannot be selected.</p>
+            <p className="label text-base-content/60">
+              In-use systems stay visible but cannot be selected.
+            </p>
           )}
           {remoteSystemsLoading && (
             <p className="label text-base-content/60">Loading managed remote systems...</p>
@@ -235,24 +233,19 @@ export function PinInput({
         </fieldset>
       )}
 
-      <label className="input input-lg w-full">
-        <span className="label">PIN</span>
-        <input
-          ref={inputRef}
-          type="password"
-          inputMode="numeric"
-          className="grow text-center font-mono text-2xl tracking-[0.45em]"
-          placeholder="- - - -"
-          value={pin}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          maxLength={4}
-          disabled={loading}
-          aria-label="PIN"
-          autoComplete="off"
-          data-testid={TID.auth.pinInput}
-        />
-      </label>
+      <PinField
+        ref={inputRef}
+        label="PIN"
+        value={pin}
+        onValueChange={setPin}
+        size="large"
+        placeholderStyle="slots"
+        onKeyDown={handleKeyDown}
+        disabled={loading}
+        ariaLabel="PIN"
+        className="input-lg"
+        data-testid={TID.auth.pinInput}
+      />
 
       <div className="grid grid-cols-2 gap-(--space-2)">
         <button

@@ -78,6 +78,7 @@ export default function CheckinsPage() {
               className="btn btn-primary btn-md"
               onClick={() => setIsManualCheckinModalOpen(true)}
               aria-label="Create manual check-in"
+              data-testid={TID.checkins.manualCheckinBtn}
             >
               <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Manual Check-in
