@@ -128,6 +128,7 @@ export const TID = {
       rowsPerPage: 'checkins-rows-per-page',
     },
     manualModal: {
+      dialog: 'manual-checkin-dialog',
       memberSearch: 'manual-checkin-member-search',
       clearMember: 'manual-checkin-clear-member',
       memberOption: (id: string) => `manual-checkin-member-${id}`,
