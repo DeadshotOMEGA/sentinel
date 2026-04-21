@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { PinField } from '@/components/auth/pin-field'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
@@ -108,37 +109,25 @@ export function SetPinModal({
             </div>
           )}
 
-          <label className="input input-bordered w-full" htmlFor="set-new-pin">
-            <span className="label">New PIN</span>
-            <input
-              id="set-new-pin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="grow font-mono text-center tracking-[0.5em]"
-              value={newPin}
-              onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              disabled={loading}
-              autoComplete="off"
-              required
-            />
-          </label>
+          <PinField
+            id="set-new-pin"
+            label="New PIN"
+            value={newPin}
+            onValueChange={setNewPin}
+            className="input-bordered"
+            disabled={loading}
+            required
+          />
 
-          <label className="input input-bordered w-full" htmlFor="set-confirm-pin">
-            <span className="label">Confirm PIN</span>
-            <input
-              id="set-confirm-pin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="grow font-mono text-center tracking-[0.5em]"
-              value={confirmPin}
-              onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              disabled={loading}
-              autoComplete="off"
-              required
-            />
-          </label>
+          <PinField
+            id="set-confirm-pin"
+            label="Confirm PIN"
+            value={confirmPin}
+            onValueChange={setConfirmPin}
+            className="input-bordered"
+            disabled={loading}
+            required
+          />
 
           <DialogFooter>
             <button

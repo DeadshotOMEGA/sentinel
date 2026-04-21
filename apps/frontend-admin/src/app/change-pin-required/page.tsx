@@ -4,6 +4,7 @@
 import { FormEvent, Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
+import { PinField } from '@/components/auth/pin-field'
 import { resolvePostLoginDestination } from '@/lib/post-login-destination'
 import { useAuthStore } from '@/store/auth-store'
 
@@ -109,33 +110,21 @@ function ChangePinRequiredContent() {
           )}
 
           <form className="space-y-(--space-3)" onSubmit={handleSubmit}>
-            <label className="input w-full">
-              <span className="label">New PIN</span>
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                className="grow font-mono text-center tracking-[0.5em]"
-                value={newPin}
-                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                disabled={loading}
-                required
-              />
-            </label>
+            <PinField
+              label="New PIN"
+              value={newPin}
+              onValueChange={setNewPin}
+              disabled={loading}
+              required
+            />
 
-            <label className="input w-full">
-              <span className="label">Confirm New PIN</span>
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                className="grow font-mono text-center tracking-[0.5em]"
-                value={confirmPin}
-                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                disabled={loading}
-                required
-              />
-            </label>
+            <PinField
+              label="Confirm New PIN"
+              value={confirmPin}
+              onValueChange={setConfirmPin}
+              disabled={loading}
+              required
+            />
 
             <div className="flex items-center justify-end gap-(--space-2) pt-(--space-2)">
               <button

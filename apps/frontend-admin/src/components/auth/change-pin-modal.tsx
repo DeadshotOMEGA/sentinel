@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { PinField } from './pin-field'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
@@ -104,53 +105,32 @@ export function ChangePinModal({ open, onOpenChange }: ChangePinModalProps) {
             </div>
           )}
 
-          <label className="input w-full">
-            <span className="label">Current PIN</span>
-            <input
-              id="current-pin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="grow font-mono text-center tracking-[0.5em]"
-              value={currentPin}
-              onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              disabled={loading}
-              autoComplete="off"
-              required
-            />
-          </label>
+          <PinField
+            id="current-pin"
+            label="Current PIN"
+            value={currentPin}
+            onValueChange={setCurrentPin}
+            disabled={loading}
+            required
+          />
 
-          <label className="input w-full">
-            <span className="label">New PIN</span>
-            <input
-              id="new-pin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="grow font-mono text-center tracking-[0.5em]"
-              value={newPin}
-              onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              disabled={loading}
-              autoComplete="off"
-              required
-            />
-          </label>
+          <PinField
+            id="new-pin"
+            label="New PIN"
+            value={newPin}
+            onValueChange={setNewPin}
+            disabled={loading}
+            required
+          />
 
-          <label className="input w-full">
-            <span className="label">Confirm New PIN</span>
-            <input
-              id="confirm-pin"
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              className="grow font-mono text-center tracking-[0.5em]"
-              value={confirmPin}
-              onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              disabled={loading}
-              autoComplete="off"
-              required
-            />
-          </label>
+          <PinField
+            id="confirm-pin"
+            label="Confirm New PIN"
+            value={confirmPin}
+            onValueChange={setConfirmPin}
+            disabled={loading}
+            required
+          />
 
           <DialogFooter>
             <button
