@@ -56,7 +56,12 @@ log() {
 }
 
 setup_logging() {
-  mkdir -p "${LOG_DIR}"
+  if ! mkdir -p "${LOG_DIR}" 2>/dev/null || [[ ! -w "${LOG_DIR}" ]]; then
+    local fallback_root
+    fallback_root="${XDG_STATE_HOME:-${HOME:-/tmp}/.local/state}"
+    LOG_DIR="${fallback_root}/sentinel"
+    mkdir -p "${LOG_DIR}"
+  fi
   LOG_FILE="${LOG_DIR}/upgrade-$(date +%Y%m%d-%H%M%S).log"
   exec > >(tee -a "${LOG_FILE}") 2>&1
   log "Log file: ${LOG_FILE}"
@@ -207,16 +212,16 @@ extract_release_brief() {
   RELEASE_HIGHLIGHTS=""
 
   if command_exists python3; then
-    mapfile -t parsed < <(printf '%s' "${json}" | python3 - <<'PY'
+    mapfile -t parsed < <(python3 -c '
 import json
 import sys
 
 d = json.load(sys.stdin)
-name = d.get('name') or ''
-tag = d.get('tag_name') or ''
-published = d.get('published_at') or ''
-url = d.get('html_url') or ''
-body = d.get('body') or ''
+name = d.get("name") or ""
+tag = d.get("tag_name") or ""
+published = d.get("published_at") or ""
+url = d.get("html_url") or ""
+body = d.get("body") or ""
 
 print(name)
 print(tag)
@@ -228,13 +233,12 @@ for raw in body.splitlines():
     line = raw.strip()
     if not line:
         continue
-    if line.startswith(('- ', '* ', '##', '###')):
+    if line.startswith(("- ", "* ", "##", "###")):
         print(line)
         count += 1
         if count >= 5:
             break
-PY
-)
+' <<<"${json}")
 
     RELEASE_TITLE="${parsed[0]:-}"
     local parsed_tag="${parsed[1]:-}"
@@ -714,7 +718,7 @@ curl -fL --retry 3 --retry-delay 1 -o "${CHECKSUM_FILE}" "${CHECKSUM_URL}"
 
 EXPECTED_HASH="$(awk -v file="$(basename "${DEB_FILE}")" '
   {
-    gsub("*", "", $2)
+    gsub(/\*/, "", $2)
     if ($2 == file) {
       print $1
       exit
