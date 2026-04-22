@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { authLogger } from '../lib/logger.js'
 import { requestContext } from '../lib/logger.js'
+import { recordAuthAttempt } from '../lib/metrics.js'
+import {
+  authenticateKioskDeviceApiKey,
+  extractKioskDeviceApiKeyFromCookies,
+} from '../lib/kiosk-device-auth.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { isSentinelBootstrapServiceNumber } from '../lib/system-bootstrap.js'
@@ -76,7 +81,7 @@ function extractApiKey(req: Request): string | null {
     return authHeader.slice(7)
   }
 
-  return null
+  return extractKioskDeviceApiKeyFromCookies(req.cookies)
 }
 
 function isPinChangeExemptPath(req: Request): boolean {
@@ -112,6 +117,7 @@ export function requireAuth(required: boolean = true) {
         const session = await sessionRepo.findByToken(sessionToken)
 
         if (session) {
+          recordAuthAttempt('success', 'session')
           req.member = {
             id: session.member.id,
             firstName: session.member.firstName,
@@ -143,14 +149,34 @@ export function requireAuth(required: boolean = true) {
           return next()
         }
 
+        recordAuthAttempt('failure', 'session')
         authLogger.debug('Session validation failed: invalid or expired token')
       }
 
       // Try API key authentication
       const apiKey = extractApiKey(req)
       if (apiKey) {
-        // TODO: Implement custom API key validation
-        authLogger.debug('API key authentication not yet implemented')
+        const authenticatedApiKey = authenticateKioskDeviceApiKey(apiKey)
+
+        if (authenticatedApiKey) {
+          recordAuthAttempt('success', 'apikey')
+          req.apiKey = authenticatedApiKey
+
+          const store = requestContext.getStore()
+          if (store) {
+            store.apiKeyId = authenticatedApiKey.id
+          }
+
+          authLogger.debug('API key authenticated', {
+            apiKeyId: authenticatedApiKey.id,
+            apiKeyName: authenticatedApiKey.name,
+          })
+
+          return next()
+        }
+
+        recordAuthAttempt('failure', 'apikey')
+        authLogger.debug('API key authentication failed')
       }
 
       // No valid authentication found

@@ -9,6 +9,7 @@ import {
   buildLoginUrl,
   resolvePostLoginDestinationHint,
 } from '@/lib/post-login-destination'
+import { isKioskRoute } from '@/lib/kiosk-device-auth'
 import { useAuthStore } from '@/store/auth-store'
 
 /**
@@ -21,6 +22,7 @@ export function AuthHydrator() {
   const pathname = usePathname()
   const { isAuthenticated, setAuth, updateSession, logout } = useAuthStore()
   const hasValidated = useRef(false)
+  const kioskRoute = isKioskRoute(pathname)
 
   const validateSession = useEffectEvent(async () => {
     try {
@@ -53,7 +55,7 @@ export function AuthHydrator() {
 
       if (response.status === 401) {
         logout()
-        if (pathname !== '/login') {
+        if (pathname !== '/login' && !kioskRoute) {
           router.replace(buildForcedReauthLoginUrl())
         }
         return
@@ -61,7 +63,7 @@ export function AuthHydrator() {
 
       if (isAuthenticated) {
         logout()
-        if (pathname !== '/login') {
+        if (pathname !== '/login' && !kioskRoute) {
           router.replace(buildLoginUrl(pathname, window.location.search))
         }
       }
@@ -85,7 +87,7 @@ export function AuthHydrator() {
 
       if (response.status === 401) {
         logout()
-        if (pathname !== '/login') {
+        if (pathname !== '/login' && !kioskRoute) {
           router.replace(buildForcedReauthLoginUrl())
         }
       }
@@ -130,7 +132,7 @@ export function AuthHydrator() {
       window.removeEventListener('focus', handleFocus)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, kioskRoute])
 
   return null
 }
