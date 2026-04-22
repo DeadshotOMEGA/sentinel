@@ -3,6 +3,7 @@ set -euo pipefail
 
 DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${DEPLOY_DIR}/.env"
+CANONICAL_ENV_FILE="/etc/sentinel/appliance.env"
 STATE_FILE="${DEPLOY_DIR}/.appliance-state"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
 GRAFANA_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.grafana-lan.yml"
@@ -158,6 +159,35 @@ require_explicit_version() {
 }
 
 ensure_env_file() {
+  local resolved_env_file canonical_dir env_dir
+  canonical_dir="$(dirname "${CANONICAL_ENV_FILE}")"
+  env_dir="$(dirname "${ENV_FILE}")"
+
+  if [[ -f "${CANONICAL_ENV_FILE}" ]]; then
+    if [[ -f "${ENV_FILE}" && ! -L "${ENV_FILE}" ]]; then
+      if ! cmp -s "${ENV_FILE}" "${CANONICAL_ENV_FILE}" 2>/dev/null; then
+        if [[ -w "${CANONICAL_ENV_FILE}" ]] || [[ -w "${canonical_dir}" ]]; then
+          cp "${ENV_FILE}" "${CANONICAL_ENV_FILE}"
+          chmod 600 "${CANONICAL_ENV_FILE}"
+        else
+          run_root cp "${ENV_FILE}" "${CANONICAL_ENV_FILE}"
+          run_root chmod 600 "${CANONICAL_ENV_FILE}"
+        fi
+      fi
+      if [[ -w "${env_dir}" ]]; then
+        ln -sfn "${CANONICAL_ENV_FILE}" "${ENV_FILE}"
+      else
+        run_root ln -sfn "${CANONICAL_ENV_FILE}" "${ENV_FILE}"
+      fi
+    elif [[ ! -e "${ENV_FILE}" && ! -L "${ENV_FILE}" ]]; then
+      if [[ -w "${env_dir}" ]]; then
+        ln -sfn "${CANONICAL_ENV_FILE}" "${ENV_FILE}"
+      else
+        run_root ln -sfn "${CANONICAL_ENV_FILE}" "${ENV_FILE}"
+      fi
+    fi
+  fi
+
   if [[ ! -f "${ENV_FILE}" ]]; then
     [[ -f "${DEPLOY_DIR}/.env.example" ]] || die "Missing .env.example"
 
@@ -169,15 +199,17 @@ ensure_env_file() {
     fi
   fi
 
+  resolved_env_file="$(resolve_managed_file_path "${ENV_FILE}")"
+
   if [[ "${EUID}" -ne 0 ]]; then
-    if [[ ! -w "${ENV_FILE}" ]]; then
-      run_root chown "${USER}:$(id -gn "${USER}")" "${ENV_FILE}"
-      chmod 600 "${ENV_FILE}"
+    if [[ ! -w "${resolved_env_file}" ]]; then
+      run_root chown "${USER}:$(id -gn "${USER}")" "${resolved_env_file}"
+      chmod 600 "${resolved_env_file}"
     fi
   elif [[ -n "${SUDO_USER:-}" ]]; then
-    if [[ ! -w "${ENV_FILE}" ]]; then
-      run_root chown "${SUDO_USER}:$(id -gn "${SUDO_USER}")" "${ENV_FILE}"
-      chmod 600 "${ENV_FILE}"
+    if [[ ! -w "${resolved_env_file}" ]]; then
+      run_root chown "${SUDO_USER}:$(id -gn "${SUDO_USER}")" "${resolved_env_file}"
+      chmod 600 "${resolved_env_file}"
     fi
   fi
 }
@@ -349,19 +381,33 @@ SNAPSHOT
 
 upsert_env() {
   local key="${1}" value="${2}" file="${3:-$ENV_FILE}"
-  if grep -qE "^${key}=" "${file}"; then
-    if [[ -w "${file}" && -w "$(dirname "${file}")" ]]; then
-      sed -i "s#^${key}=.*#${key}=${value}#" "${file}"
+  local resolved_file
+  resolved_file="$(resolve_managed_file_path "${file}")"
+
+  if grep -qE "^${key}=" "${resolved_file}"; then
+    if [[ -w "${resolved_file}" && -w "$(dirname "${resolved_file}")" ]]; then
+      sed -i "s#^${key}=.*#${key}=${value}#" "${resolved_file}"
     else
-      run_root sed -i "s#^${key}=.*#${key}=${value}#" "${file}"
+      run_root sed -i "s#^${key}=.*#${key}=${value}#" "${resolved_file}"
     fi
   else
-    if [[ -w "${file}" ]]; then
-      printf '%s=%s\n' "${key}" "${value}" >>"${file}"
+    if [[ -w "${resolved_file}" ]]; then
+      printf '%s=%s\n' "${key}" "${value}" >>"${resolved_file}"
     else
-      printf '%s=%s\n' "${key}" "${value}" | run_root tee -a "${file}" >/dev/null
+      printf '%s=%s\n' "${key}" "${value}" | run_root tee -a "${resolved_file}" >/dev/null
     fi
   fi
+}
+
+resolve_managed_file_path() {
+  local path="${1:-}"
+
+  if [[ -L "${path}" || -e "${path}" ]]; then
+    readlink -f "${path}" 2>/dev/null || printf '%s\n' "${path}"
+    return 0
+  fi
+
+  printf '%s\n' "${path}"
 }
 
 load_state() {

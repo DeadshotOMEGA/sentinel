@@ -1,6 +1,6 @@
 {
   "name": "sentinel-monorepo",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "private": true,
   "description": "RFID Attendance Tracking System for HMCS Chippawa",
   "scripts": {
