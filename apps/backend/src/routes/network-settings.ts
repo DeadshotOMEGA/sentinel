@@ -2,14 +2,17 @@ import { initServer } from '@ts-rest/express'
 import type { Request } from 'express'
 import { networkSettingContract } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
+import { logRequestAudit } from '../lib/audit-log.js'
 import { getRequestClientIp } from '../lib/runtime-context.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { HostHotspotRecoveryService } from '../services/host-hotspot-recovery-service.js'
 import { NetworkSettingsService } from '../services/network-settings-service.js'
 import { SystemUpdateRequestService } from '../services/system-update-request-service.js'
 
 const s = initServer()
 const networkSettingsService = new NetworkSettingsService(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 function requireMember(req: Request) {
   if (!req.member) {
@@ -90,7 +93,20 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
     }
 
     try {
+      const previousState = await networkSettingsService.getNetworkSettings()
       const state = await networkSettingsService.updateNetworkSettings(body.settings)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'network_settings_update',
+        entityType: 'network_settings',
+        entityId: null,
+        details: {
+          previousSettings: previousState.settings,
+          nextSettings: state.settings,
+          previousMetadata: previousState.metadata,
+          nextMetadata: state.metadata,
+        },
+      })
 
       return {
         status: 200 as const,
@@ -141,8 +157,7 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
         status: 500 as const,
         body: {
           error: 'INTERNAL_ERROR',
-          message:
-            error instanceof Error ? error.message : 'Failed to queue host hotspot recovery',
+          message: error instanceof Error ? error.message : 'Failed to queue host hotspot recovery',
         },
       }
     }

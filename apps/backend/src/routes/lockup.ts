@@ -1,6 +1,9 @@
 import { initServer } from '@ts-rest/express'
 import { lockupContract } from '@sentinel/contracts'
+import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { LockupService } from '../services/lockup-service.js'
+import { MemberRepository } from '../repositories/member-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { AccountLevel } from '../middleware/roles.js'
@@ -8,6 +11,8 @@ import { AccountLevel } from '../middleware/roles.js'
 const s = initServer()
 
 const lockupService = new LockupService(getPrismaClient())
+const memberRepository = new MemberRepository(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 const badgeRepository = new BadgeRepository(getPrismaClient())
 
 /**
@@ -95,9 +100,25 @@ export const lockupRouter = s.router(lockupContract, {
   /**
    * Transfer lockup to another qualified member
    */
-  transferLockup: async ({ body }) => {
+  transferLockup: async ({ body, req }) => {
     try {
+      const previousStatus = await lockupService.getCurrentStatus()
       const result = await lockupService.transferLockup(body.toMemberId, body.reason, body.notes)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'lockup_transfer',
+        entityType: 'lockup',
+        entityId: result.transfer.id,
+        details: {
+          fromMemberName: previousStatus.currentHolder
+            ? formatAuditMemberName(previousStatus.currentHolder)
+            : null,
+          toMemberName: formatAuditMemberName(result.newHolder),
+          reason: result.transfer.reason,
+          notes: result.transfer.notes,
+          transferredAt: result.transfer.transferredAt.toISOString(),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -240,9 +261,21 @@ export const lockupRouter = s.router(lockupContract, {
   /**
    * Acquire lockup (for initial assignment or when no holder exists)
    */
-  acquireLockup: async ({ params, body }) => {
+  acquireLockup: async ({ params, body, req }) => {
     try {
       await lockupService.acquireLockup(params.id, body?.notes)
+
+      const member = await memberRepository.findById(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'lockup_acquire',
+        entityType: 'lockup',
+        entityId: params.id,
+        details: {
+          holderName: formatAuditMemberName(member),
+          notes: body?.notes ?? null,
+        },
+      })
 
       return {
         status: 200 as const,
@@ -316,9 +349,22 @@ export const lockupRouter = s.router(lockupContract, {
   /**
    * Open building (transition from secured to open)
    */
-  openBuilding: async ({ params, body }) => {
+  openBuilding: async ({ params, body, req }) => {
     try {
       const status = await lockupService.openBuilding(params.id, body.note)
+
+      const member = await memberRepository.findById(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'lockup_open',
+        entityType: 'lockup',
+        entityId: params.id,
+        details: {
+          openerName: formatAuditMemberName(member),
+          note: body.note ?? null,
+          buildingStatus: status.buildingStatus,
+        },
+      })
 
       return {
         status: 200 as const,
@@ -551,9 +597,24 @@ export const lockupRouter = s.router(lockupContract, {
   /**
    * Execute building lockup
    */
-  executeLockup: async ({ params, body }) => {
+  executeLockup: async ({ params, body, req }) => {
     try {
       const result = await lockupService.executeLockup(params.id, body.note)
+
+      const member = await memberRepository.findById(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'lockup_execute',
+        entityType: 'lockup',
+        entityId: result.executionId,
+        details: {
+          executedByName: formatAuditMemberName(member),
+          note: body.note ?? null,
+          membersCheckedOut: result.checkedOut.members.length,
+          visitorsCheckedOut: result.checkedOut.visitors.length,
+          totalCheckedOut: result.checkedOut.members.length + result.checkedOut.visitors.length,
+        },
+      })
 
       return {
         status: 200 as const,

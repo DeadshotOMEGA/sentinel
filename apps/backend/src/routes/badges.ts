@@ -8,6 +8,9 @@ import type {
   DeleteBadgeInput,
   IdParam,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
+import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -18,6 +21,25 @@ const s = initServer()
 
 const badgeRepo = new BadgeRepository(getPrismaClient())
 const memberRepo = new MemberRepository(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
+
+async function getAssignedMemberAuditDetails(memberId?: string | null) {
+  if (!memberId) {
+    return {
+      assignedMemberId: null,
+      assignedMemberName: null,
+      assignedMemberServiceNumber: null,
+    }
+  }
+
+  const member = await memberRepo.findById(memberId)
+
+  return {
+    assignedMemberId: member?.id ?? memberId,
+    assignedMemberName: formatAuditMemberName(member),
+    assignedMemberServiceNumber: member?.serviceNumber ?? null,
+  }
+}
 
 /**
  * Badges route implementation using ts-rest
@@ -271,7 +293,7 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Create new badge
    */
-  createBadge: async ({ body }: { body: CreateBadgeInput }) => {
+  createBadge: async ({ body, req }: { body: CreateBadgeInput; req: Request }) => {
     try {
       const initialAssignmentType =
         body.assignmentType === 'member' ? 'unassigned' : (body.assignmentType ?? 'unassigned')
@@ -298,6 +320,18 @@ export const badgesRouter = s.router(badgeContract, {
           }
         }
       }
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'badge_create',
+        entityType: 'badge',
+        entityId: badge.id,
+        details: {
+          badgeSerialNumber: badge.serialNumber,
+          status: badge.status,
+          assignmentType: badge.assignmentType,
+          ...(await getAssignedMemberAuditDetails(badge.assignedToId)),
+        },
+      })
 
       return {
         status: 201 as const,
@@ -362,11 +396,19 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Update existing badge
    */
-  updateBadge: async ({ params, body }: { params: IdParam; body: UpdateBadgeInput }) => {
+  updateBadge: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: UpdateBadgeInput
+    req: Request
+  }) => {
     try {
       // Update badge status if provided
-      let badge = await badgeRepo.findById(params.id)
-      if (!badge) {
+      const existingBadge = await badgeRepo.findById(params.id)
+      if (!existingBadge) {
         return {
           status: 404 as const,
           body: {
@@ -375,6 +417,7 @@ export const badgesRouter = s.router(badgeContract, {
           },
         }
       }
+      let badge = existingBadge
 
       if (body.status) {
         badge = await badgeService.updateStatus(params.id, body.status)
@@ -407,6 +450,37 @@ export const badgesRouter = s.router(badgeContract, {
             type: 'member',
           }
         }
+      }
+
+      if (existingBadge.status !== badge.status) {
+        await logRequestAudit(auditRepo, req, {
+          action: 'badge_status_change',
+          entityType: 'badge',
+          entityId: badge.id,
+          details: {
+            badgeSerialNumber: badge.serialNumber,
+            previousStatus: existingBadge.status,
+            currentStatus: badge.status,
+          },
+        })
+      }
+
+      if (
+        existingBadge.assignmentType !== badge.assignmentType ||
+        existingBadge.assignedToId !== badge.assignedToId
+      ) {
+        await logRequestAudit(auditRepo, req, {
+          action: badge.assignmentType === 'unassigned' ? 'badge_unassign' : 'badge_assign',
+          entityType: 'badge',
+          entityId: badge.id,
+          details: {
+            badgeSerialNumber: badge.serialNumber,
+            previousAssignmentType: existingBadge.assignmentType,
+            currentAssignmentType: badge.assignmentType,
+            previousAssignedMember: await getAssignedMemberAuditDetails(existingBadge.assignedToId),
+            currentAssignedMember: await getAssignedMemberAuditDetails(badge.assignedToId),
+          },
+        })
       }
 
       return {
@@ -471,8 +545,27 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Assign badge to member or visitor
    */
-  assignBadge: async ({ params, body }: { params: IdParam; body: AssignBadgeInput }) => {
+  assignBadge: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: AssignBadgeInput
+    req: Request
+  }) => {
     try {
+      const existingBadge = await badgeRepo.findById(params.id)
+      if (!existingBadge) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Badge with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       // Validate that the assigned entity exists
       if (body.assignmentType === 'member') {
         const member = await memberRepo.findById(body.assignedToId)
@@ -503,6 +596,19 @@ export const badgesRouter = s.router(badgeContract, {
           }
         }
       }
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'badge_assign',
+        entityType: 'badge',
+        entityId: badge.id,
+        details: {
+          badgeSerialNumber: badge.serialNumber,
+          previousAssignmentType: existingBadge.assignmentType,
+          currentAssignmentType: badge.assignmentType,
+          previousAssignedMember: await getAssignedMemberAuditDetails(existingBadge.assignedToId),
+          currentAssignedMember: await getAssignedMemberAuditDetails(badge.assignedToId),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -559,9 +665,33 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Unassign badge
    */
-  unassignBadge: async ({ params }: { params: IdParam }) => {
+  unassignBadge: async ({ params, req }: { params: IdParam; req: Request }) => {
     try {
+      const existingBadge = await badgeRepo.findById(params.id)
+      if (!existingBadge) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Badge with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       const badge = await badgeService.unassign(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'badge_unassign',
+        entityType: 'badge',
+        entityId: badge.id,
+        details: {
+          badgeSerialNumber: badge.serialNumber,
+          previousAssignmentType: existingBadge.assignmentType,
+          currentAssignmentType: badge.assignmentType,
+          previousAssignedMember: await getAssignedMemberAuditDetails(existingBadge.assignedToId),
+          currentAssignedMember: await getAssignedMemberAuditDetails(badge.assignedToId),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -602,9 +732,41 @@ export const badgesRouter = s.router(badgeContract, {
   /**
    * Delete badge
    */
-  deleteBadge: async ({ params, body }: { params: IdParam; body: DeleteBadgeInput }) => {
+  deleteBadge: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: IdParam
+    body: DeleteBadgeInput
+    req: Request
+  }) => {
     try {
+      const existingBadge = await badgeRepo.findById(params.id)
+      if (!existingBadge) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Badge with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       await badgeService.delete(params.id, body)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'badge_delete',
+        entityType: 'badge',
+        entityId: params.id,
+        details: {
+          badgeSerialNumber: existingBadge.serialNumber,
+          status: existingBadge.status,
+          assignmentType: existingBadge.assignmentType,
+          assignedMember: await getAssignedMemberAuditDetails(existingBadge.assignedToId),
+          unassignFirst: body.unassignFirst ?? false,
+        },
+      })
 
       return {
         status: 200 as const,

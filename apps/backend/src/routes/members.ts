@@ -8,19 +8,23 @@ import type {
   PreviewImportRequest,
   ExecuteImportRequest,
 } from '@sentinel/contracts'
+import type { Request } from 'express'
 import type { MemberStatus } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { AutoQualificationService } from '../services/auto-qualification-service.js'
 import { badgeService } from '../services/badge-service.js'
 import { importService } from '../services/import-service.js'
 import { memberService } from '../services/member-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { AccountLevel } from '../middleware/roles.js'
 import { ConflictError, NotFoundError } from '../middleware/error-handler.js'
 
 const s = initServer()
 
 const memberRepo = new MemberRepository(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 const autoQualService = new AutoQualificationService(getPrismaClient())
 
 /**
@@ -203,13 +207,7 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Create new member
    */
-  createMember: async ({
-    body,
-    req,
-  }: {
-    body: CreateMemberInput
-    req: { member?: { id?: string; accountLevel?: number } }
-  }) => {
+  createMember: async ({ body, req }: { body: CreateMemberInput; req: Request }) => {
     try {
       const actorLevel = req.member?.accountLevel ?? 0
       if (!req.member) {
@@ -265,6 +263,21 @@ export const membersRouter = s.router(memberContract, {
       } catch {
         // Non-blocking: don't fail create if sync errors
       }
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'member_create',
+        entityType: 'member',
+        entityId: member.id,
+        details: {
+          memberName: formatAuditMemberName(member),
+          serviceNumber: member.serviceNumber,
+          divisionId: member.divisionId ?? null,
+          badgeId: member.badgeId ?? null,
+          accountLevel: member.accountLevel,
+          memberTypeId: member.memberTypeId ?? null,
+          memberStatusId: member.memberStatusId ?? null,
+        },
+      })
 
       return {
         status: 201 as const,
@@ -324,7 +337,7 @@ export const membersRouter = s.router(memberContract, {
   }: {
     params: IdParam
     body: UpdateMemberInput
-    req: { member?: { id?: string; accountLevel?: number } }
+    req: Request
   }) => {
     try {
       const actorLevel = req.member?.accountLevel ?? 0
@@ -356,6 +369,17 @@ export const membersRouter = s.router(memberContract, {
               message: `Your account level (${actorLevel}) cannot assign level ${body.accountLevel}`,
             },
           }
+        }
+      }
+
+      const existingMember = await memberRepo.findById(params.id)
+      if (!existingMember) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Member with ID '${params.id}' not found`,
+          },
         }
       }
 
@@ -396,6 +420,45 @@ export const membersRouter = s.router(memberContract, {
           // Non-blocking: don't fail update if sync errors
         }
       }
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'member_update',
+        entityType: 'member',
+        entityId: finalMember.id,
+        details: {
+          memberName: formatAuditMemberName(finalMember),
+          serviceNumber: finalMember.serviceNumber,
+          requestedChanges: body,
+          previousState: {
+            serviceNumber: existingMember.serviceNumber,
+            rank: existingMember.rank,
+            firstName: existingMember.firstName,
+            lastName: existingMember.lastName,
+            middleInitial: existingMember.initials ?? null,
+            divisionId: existingMember.divisionId ?? null,
+            email: existingMember.email ?? null,
+            phoneNumber: existingMember.mobilePhone ?? null,
+            badgeId: existingMember.badgeId ?? null,
+            accountLevel: existingMember.accountLevel,
+            memberTypeId: existingMember.memberTypeId ?? null,
+            memberStatusId: existingMember.memberStatusId ?? null,
+          },
+          currentState: {
+            serviceNumber: finalMember.serviceNumber,
+            rank: finalMember.rank,
+            firstName: finalMember.firstName,
+            lastName: finalMember.lastName,
+            middleInitial: finalMember.initials ?? null,
+            divisionId: finalMember.divisionId ?? null,
+            email: finalMember.email ?? null,
+            phoneNumber: finalMember.mobilePhone ?? null,
+            badgeId: finalMember.badgeId ?? null,
+            accountLevel: finalMember.accountLevel,
+            memberTypeId: finalMember.memberTypeId ?? null,
+            memberStatusId: finalMember.memberStatusId ?? null,
+          },
+        },
+      })
 
       return {
         status: 200 as const,
@@ -482,9 +545,33 @@ export const membersRouter = s.router(memberContract, {
   /**
    * Delete member
    */
-  deleteMember: async ({ params }: { params: IdParam }) => {
+  deleteMember: async ({ params, req }: { params: IdParam; req: Request }) => {
     try {
+      const existingMember = await memberRepo.findById(params.id)
+      if (!existingMember) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Member with ID '${params.id}' not found`,
+          },
+        }
+      }
+
       await memberService.deactivate(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'member_delete',
+        entityType: 'member',
+        entityId: params.id,
+        details: {
+          memberName: formatAuditMemberName(existingMember),
+          serviceNumber: existingMember.serviceNumber,
+          divisionId: existingMember.divisionId ?? null,
+          badgeId: existingMember.badgeId ?? null,
+          archived: true,
+        },
+      })
 
       return {
         status: 200 as const,

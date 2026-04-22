@@ -22,6 +22,7 @@ import { LiveDutyAssignmentService } from '../services/live-duty-assignment-serv
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
+import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { canMemberEditHistory } from '../lib/history-permissions.js'
 import type { PrismaClientInstance } from '@sentinel/database'
 
@@ -736,7 +737,7 @@ export const checkinsRouter = s.router(checkinContract, {
   /**
    * Create new checkin
    */
-  createCheckin: async ({ body }: { body: CreateCheckinInput }) => {
+  createCheckin: async ({ body, req }: { body: CreateCheckinInput; req: Request }) => {
     try {
       // Block checkout if member holds lockup responsibility
       if (body.direction === 'out' && body.memberId) {
@@ -783,6 +784,22 @@ export const checkinsRouter = s.router(checkinContract, {
 
       if (!checkinWithMember) {
         throw new Error('Failed to fetch created checkin')
+      }
+
+      if (req.member) {
+        await logRequestAudit(auditRepo, req, {
+          action: 'checkin_manual_create',
+          entityType: 'checkin',
+          entityId: checkinWithMember.id,
+          details: {
+            memberName: formatAuditMemberName(checkinWithMember.member),
+            subjectMemberId: checkinWithMember.memberId ?? null,
+            direction: checkinWithMember.direction,
+            timestamp: checkinWithMember.timestamp.toISOString(),
+            kioskId: checkinWithMember.kioskId,
+            method: checkinWithMember.method ?? null,
+          },
+        })
       }
 
       // Broadcast checkin event for real-time updates

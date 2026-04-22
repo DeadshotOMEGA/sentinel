@@ -12,12 +12,15 @@ import type { Request } from 'express'
 import { DdsService } from '../services/dds-service.js'
 import { PresenceService } from '../services/presence-service.js'
 import { getPrismaClient } from '../lib/database.js'
+import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 
 const s = initServer()
 
 const ddsService = new DdsService(getPrismaClient())
 const presenceService = new PresenceService(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 interface DdsAssignmentData {
   id: string
@@ -229,6 +232,30 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       const assignment = await ddsService.acceptDds(params.id)
 
+      await auditRepo.log({
+        adminUserId: null,
+        action: 'dds_accept',
+        entityType: 'dds',
+        entityId: assignment.id,
+        details: {
+          actorMemberId: assignment.member.id,
+          actorName: formatAuditMemberName(assignment.member),
+          actorType: 'member',
+          memberName: formatAuditMemberName(assignment.member),
+          assignedDate:
+            assignment.assignedDate instanceof Date
+              ? assignment.assignedDate.toISOString()
+              : String(assignment.assignedDate),
+          acceptedAt:
+            assignment.acceptedAt instanceof Date
+              ? assignment.acceptedAt.toISOString()
+              : assignment.acceptedAt
+                ? String(assignment.acceptedAt)
+                : null,
+        },
+        ipAddress: 'unknown',
+      })
+
       return {
         status: 200 as const,
         body: {
@@ -307,7 +334,25 @@ export const ddsRouter = s.router(ddsContract, {
         }
       }
 
+      const previousAssignment = await ddsService.getCurrentDds()
       const assignment = await ddsService.setTodayDds(body.memberId, req.member.id, body.notes)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'dds_assign',
+        entityType: 'dds',
+        entityId: assignment.id,
+        details: {
+          memberName: formatAuditMemberName(assignment.member),
+          previousHolderName: previousAssignment?.member
+            ? formatAuditMemberName(previousAssignment.member)
+            : null,
+          notes: body.notes ?? null,
+          assignedDate:
+            assignment.assignedDate instanceof Date
+              ? assignment.assignedDate.toISOString()
+              : String(assignment.assignedDate),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -368,7 +413,25 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       const adminId = req.member?.id ?? 'system'
 
+      const previousAssignment = await ddsService.getCurrentDds()
       const assignment = await ddsService.assignDds(body.memberId, adminId, body.notes)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'dds_assign',
+        entityType: 'dds',
+        entityId: assignment.id,
+        details: {
+          memberName: formatAuditMemberName(assignment.member),
+          previousHolderName: previousAssignment?.member
+            ? formatAuditMemberName(previousAssignment.member)
+            : null,
+          notes: body.notes ?? null,
+          assignedDate:
+            assignment.assignedDate instanceof Date
+              ? assignment.assignedDate.toISOString()
+              : String(assignment.assignedDate),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -429,7 +492,25 @@ export const ddsRouter = s.router(ddsContract, {
     try {
       const adminId = req.member?.id ?? 'system'
 
+      const previousAssignment = await ddsService.getCurrentDds()
       const assignment = await ddsService.transferDds(body.toMemberId, adminId, body.notes)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'dds_transfer',
+        entityType: 'dds',
+        entityId: assignment.id,
+        details: {
+          fromMemberName: previousAssignment?.member
+            ? formatAuditMemberName(previousAssignment.member)
+            : null,
+          toMemberName: formatAuditMemberName(assignment.member),
+          notes: body.notes ?? null,
+          assignedDate:
+            assignment.assignedDate instanceof Date
+              ? assignment.assignedDate.toISOString()
+              : String(assignment.assignedDate),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -489,12 +570,25 @@ export const ddsRouter = s.router(ddsContract, {
   releaseDds: async ({ body, req }: { body: ReleaseDdsInput; req: Request }) => {
     try {
       const adminId = req.member?.id ?? 'system'
+      const previousAssignment = await ddsService.getCurrentDds()
 
       await ddsService.releaseDds(adminId, body.notes)
       const [nextDds, handover] = await Promise.all([
         ddsService.getNextWeekDds(),
         ddsService.getCurrentHandoverStatus(),
       ])
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'dds_release',
+        entityType: 'dds',
+        entityId: previousAssignment?.id ?? null,
+        details: {
+          previousHolderName: previousAssignment?.member
+            ? formatAuditMemberName(previousAssignment.member)
+            : null,
+          notes: body.notes ?? null,
+        },
+      })
 
       return {
         status: 200 as const,

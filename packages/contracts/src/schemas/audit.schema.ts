@@ -83,7 +83,7 @@ export const AuditLogWithAdminResponseSchema = v.object({
 export const AuditLogListQuerySchema = v.object({
   page: v.optional(v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1))),
   limit: v.optional(
-    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(100))
+    v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(250))
   ),
   adminUserId: v.optional(v.pipe(v.string(), v.uuid())),
   entityType: v.optional(v.string()),

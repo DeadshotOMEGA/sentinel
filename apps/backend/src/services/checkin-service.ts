@@ -1,6 +1,8 @@
 import type { PrismaClient } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
+import { formatAuditMemberName } from '../lib/audit-log.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { BadgeRepository } from '../repositories/badge-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { PresenceService } from './presence-service.js'
@@ -38,6 +40,7 @@ interface CheckinResult {
 
 export class CheckinService {
   private checkinRepo: CheckinRepository
+  private auditRepo: AuditRepository
   private badgeRepo: BadgeRepository
   private memberRepo: MemberRepository
   private presenceService: PresenceService
@@ -45,6 +48,7 @@ export class CheckinService {
   constructor(prismaClient?: PrismaClient) {
     const prisma = prismaClient || getPrismaClient()
     this.checkinRepo = new CheckinRepository(prisma)
+    this.auditRepo = new AuditRepository(prisma)
     this.badgeRepo = new BadgeRepository(prisma)
     this.memberRepo = new MemberRepository(prisma)
     this.presenceService = new PresenceService(prisma)
@@ -183,6 +187,26 @@ export class CheckinService {
       direction,
       badgeSerial: serialNumber,
       kioskId: options.kioskId,
+    })
+
+    await this.auditRepo.log({
+      adminUserId: null,
+      action: 'checkin_scan',
+      entityType: 'checkin',
+      entityId: checkin.id,
+      details: {
+        actorMemberId: member.id,
+        actorName: formatAuditMemberName(member),
+        actorServiceNumber: member.serviceNumber,
+        actorType: 'member',
+        memberName: formatAuditMemberName(member),
+        memberRank: member.rank,
+        direction,
+        badgeSerialNumber: serialNumber,
+        kioskId: options.kioskId ?? null,
+        method: 'badge',
+      },
+      ipAddress: 'unknown',
     })
 
     return {

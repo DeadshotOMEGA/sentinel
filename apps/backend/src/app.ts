@@ -9,6 +9,7 @@ import {
   checkinContract,
   divisionContract,
   badgeContract,
+  auditContract,
   eventContract,
   visitorContract,
   securityAlertContract,
@@ -54,6 +55,7 @@ import { membersRouter } from './routes/members.js'
 import { checkinsRouter } from './routes/checkins.js'
 import { divisionsRouter } from './routes/divisions.js'
 import { badgesRouter } from './routes/badges.js'
+import { auditLogsRouter } from './routes/audit-logs.js'
 import { eventsRouter } from './routes/events.js'
 import { visitorsRouter } from './routes/visitors.js'
 import { securityAlertsRouter } from './routes/security-alerts.js'
@@ -204,6 +206,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(badgeContract, badgesRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(auditContract, auditLogsRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

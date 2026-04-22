@@ -6,7 +6,9 @@ import {
   type KioskResponsibilityStateResponse,
   type LoginStartOfDayAction,
 } from '@sentinel/contracts'
+import { formatAuditMemberName } from '../lib/audit-log.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import type { SessionMetadata, SessionWithMember } from '../repositories/session-repository.js'
 import { authLogger } from '../lib/logger.js'
@@ -91,6 +93,7 @@ export class AuthService {
   private prisma: PrismaClientInstance
   private sessionRepo: SessionRepository
   private checkinRepo: CheckinRepository
+  private auditRepo: AuditRepository
   private presenceService: PresenceService
   private ddsService: DdsService
   private lockupService: LockupService
@@ -99,6 +102,7 @@ export class AuthService {
     this.prisma = prisma
     this.sessionRepo = new SessionRepository(prisma)
     this.checkinRepo = new CheckinRepository(prisma)
+    this.auditRepo = new AuditRepository(prisma)
     this.presenceService = new PresenceService(prisma)
     this.ddsService = new DdsService(prisma)
     this.lockupService = new LockupService(prisma)
@@ -200,6 +204,23 @@ export class AuthService {
       remoteSystemId: remoteSystem.remoteSystemId,
       remoteSystemName: remoteSystem.remoteSystemName,
       ip: ipAddress,
+    })
+
+    await this.auditRepo.log({
+      adminUserId: null,
+      action: 'login',
+      entityType: 'session',
+      entityId: session.id,
+      details: {
+        actorMemberId: member.id,
+        actorName: formatAuditMemberName(member),
+        actorServiceNumber: member.serviceNumber,
+        actorType: 'member',
+        remoteSystemId: remoteSystem.remoteSystemId,
+        remoteSystemName: remoteSystem.remoteSystemName,
+        sessionId: session.id,
+      },
+      ipAddress: ipAddress ?? 'unknown',
     })
 
     return {
@@ -536,6 +557,7 @@ export class AuthService {
         firstName: true,
         lastName: true,
         displayName: true,
+        serviceNumber: true,
         division: {
           select: {
             name: true,
@@ -569,6 +591,25 @@ export class AuthService {
     })
 
     await this.presenceService.broadcastStatsUpdate()
+
+    await this.auditRepo.log({
+      adminUserId: null,
+      action: 'checkin_login',
+      entityType: 'checkin',
+      entityId: checkin.id,
+      details: {
+        actorMemberId: member.id,
+        actorName: formatAuditMemberName(member),
+        actorServiceNumber: member.serviceNumber,
+        actorType: 'member',
+        memberName: formatAuditMemberName(member),
+        memberRank: member.rank,
+        direction: 'in',
+        kioskId: remoteSystemId,
+        method: 'login',
+      },
+      ipAddress: 'unknown',
+    })
 
     return {
       created: true,
