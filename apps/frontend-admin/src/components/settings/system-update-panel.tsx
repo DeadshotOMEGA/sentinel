@@ -12,6 +12,7 @@ import {
   AppCardTitle,
 } from '@/components/ui/AppCard'
 import { AppAlert } from '@/components/ui/AppAlert'
+import { AppBadge } from '@/components/ui/AppBadge'
 import {
   Dialog,
   DialogContent,
@@ -74,6 +75,34 @@ function formatTimestamp(value: string | null): string {
   return timestamp.toLocaleString()
 }
 
+function getPrimaryStepDescription(
+  step: SystemUpdateJobStatus,
+  currentJob: SystemUpdateJob | null
+): string {
+  if (!currentJob) {
+    return step === 'completed' ? 'Sentinel returns to steady state after verification.' : 'Pending'
+  }
+
+  const currentIndex = PRIMARY_FLOW.indexOf(currentJob.status)
+  const stepIndex = PRIMARY_FLOW.indexOf(step)
+  const isActive = currentJob.status === step
+  const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
+
+  if (isActive) {
+    return currentJob.message
+  }
+
+  if (isCompleted) {
+    if (step === 'completed' && currentJob.status === 'completed') {
+      return currentJob.message
+    }
+
+    return 'Completed'
+  }
+
+  return step === 'completed' ? 'Sentinel returns to steady state after verification.' : 'Pending'
+}
+
 function getCardStatus(job: SystemUpdateJob | null, updateAvailable: boolean) {
   if (job && isFailureStatus(job.status)) {
     return 'warning' as const
@@ -84,7 +113,7 @@ function getCardStatus(job: SystemUpdateJob | null, updateAvailable: boolean) {
   }
 
   if (updateAvailable) {
-    return 'warning' as const
+    return 'info' as const
   }
 
   return 'success' as const
@@ -132,6 +161,68 @@ function getSummaryHeading(job: SystemUpdateJob | null, updateAvailable: boolean
   }
 
   return 'Sentinel is up to date'
+}
+
+function getTerminalJobBadgeStatus(status: SystemUpdateJobStatus) {
+  switch (status) {
+    case 'completed':
+      return 'success'
+    case 'failed':
+      return 'error'
+    case 'rollback_attempted':
+    case 'rolled_back':
+      return 'warning'
+    default:
+      return 'info'
+  }
+}
+
+function getUpdateStateBadge(job: SystemUpdateJob | null, updateAvailable: boolean) {
+  if (job) {
+    if (job.status === 'completed') {
+      return { status: 'success' as const, label: 'Completed' }
+    }
+
+    if (job.status === 'failed') {
+      return { status: 'error' as const, label: 'Failed' }
+    }
+
+    if (job.status === 'rollback_attempted' || job.status === 'rolled_back') {
+      return { status: 'warning' as const, label: formatStepLabel(job.status) }
+    }
+
+    return { status: 'info' as const, label: formatStepLabel(job.status) }
+  }
+
+  if (updateAvailable) {
+    return { status: 'info' as const, label: 'Update available' }
+  }
+
+  return { status: 'success' as const, label: 'Current' }
+}
+
+function getNextActionGuidance(job: SystemUpdateJob | null, updateAvailable: boolean) {
+  if (job && !isTerminalStatus(job.status)) {
+    return 'The appliance updater is running on the host and will keep going if this page reconnects.'
+  }
+
+  if (job?.status === 'completed') {
+    return 'No action is needed until a newer stable release is published.'
+  }
+
+  if (job?.status === 'rolled_back' || job?.status === 'rollback_attempted') {
+    return 'Review the rollback result before starting another update.'
+  }
+
+  if (job?.status === 'failed') {
+    return 'Review the last failure summary before retrying the update.'
+  }
+
+  if (updateAvailable) {
+    return 'Review the latest stable release and start the update when you are ready.'
+  }
+
+  return 'No action is needed until a newer stable release is published.'
 }
 
 export function SystemUpdatePanel() {
@@ -205,6 +296,8 @@ export function SystemUpdatePanel() {
 
   const summaryTone = getSummaryTone(currentJob, status.updateAvailable)
   const summaryHeading = getSummaryHeading(currentJob, status.updateAvailable)
+  const showLiveProgress = currentJob ? !isTerminalStatus(currentJob.status) : false
+  const updateStateBadge = getUpdateStateBadge(currentJob, status.updateAvailable)
 
   return (
     <div className="space-y-4" data-testid={TID.settings.updates.panel}>
@@ -274,15 +367,15 @@ export function SystemUpdatePanel() {
 
           <div className="stats stats-vertical w-full border border-base-300 bg-base-200 lg:stats-horizontal">
             <div className="stat">
-              <div className="stat-title">Current version</div>
-              <div className="stat-value text-2xl font-mono">
+              <div className="stat-title">Installed version</div>
+              <div className="stat-value text-2xl font-mono text-base-content">
                 {status.currentVersion ?? 'Unknown'}
               </div>
               <div className="stat-desc">Installed Sentinel package/runtime version</div>
             </div>
             <div className="stat">
               <div className="stat-title">Latest stable</div>
-              <div className="stat-value text-2xl font-mono">
+              <div className="stat-value text-2xl font-mono text-base-content">
                 {status.latestVersion ?? 'Unknown'}
               </div>
               <div className="stat-desc">
@@ -303,36 +396,27 @@ export function SystemUpdatePanel() {
             </div>
             <div className="stat">
               <div className="stat-title">Update state</div>
-              <div className="stat-value text-xl">
-                {currentJob
-                  ? formatStepLabel(currentJob.status)
-                  : status.updateAvailable
-                    ? 'Available'
-                    : 'Current'}
+              <div className="mt-2">
+                <AppBadge status={updateStateBadge.status}>{updateStateBadge.label}</AppBadge>
               </div>
-              <div className="stat-desc">
+              <div className="stat-desc mt-3">
                 {currentJob
-                  ? `Job ${currentJob.jobId.slice(0, 20)}...`
+                  ? `Requested ${formatTimestamp(currentJob.requestedAt)}`
                   : status.updateAvailable
-                    ? `Target ${status.latestVersion ?? 'unknown'}`
-                    : 'No active job'}
+                    ? 'Ready to start from this page'
+                    : 'No update currently running'}
               </div>
             </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
             <section className="rounded-box border border-base-300 bg-base-100 p-(--space-4)">
-              <div className="flex items-center justify-between gap-(--space-3)">
-                <div>
-                  <h3 className="text-base font-semibold">Next action</h3>
-                  <p className="mt-1 text-sm text-base-content/70">
-                    The backend only requests updates. The host-side updater owns install, restart,
-                    health checks, and rollback.
-                  </p>
-                </div>
-                <div className="badge badge-outline badge-lg">
-                  {status.updateAvailable ? 'Update available' : 'No update queued'}
-                </div>
+              <div>
+                <h3 className="text-base font-semibold">Next action</h3>
+                <p className="mt-1 text-sm text-base-content/70">
+                  Start updates here and let the appliance finish them in the background, even if
+                  this page reconnects while services restart.
+                </p>
               </div>
 
               <dl className="mt-4 grid gap-(--space-3) text-sm sm:grid-cols-2">
@@ -346,12 +430,10 @@ export function SystemUpdatePanel() {
                 </div>
                 <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
                   <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                    Eligibility
+                    Guidance
                   </dt>
                   <dd className="mt-1 text-base-content">
-                    {status.updateAvailable
-                      ? 'A newer stable release is available.'
-                      : 'This appliance is already on the latest known stable release.'}
+                    {getNextActionGuidance(currentJob, status.updateAvailable)}
                   </dd>
                 </div>
                 <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
@@ -380,7 +462,9 @@ export function SystemUpdatePanel() {
                     ) : (
                       <ServerCog className="h-4 w-4 text-info" />
                     )}
-                    <h4 className="text-sm font-semibold">Current job details</h4>
+                    <h4 className="text-sm font-semibold">
+                      {hasActiveJob ? 'Current job details' : 'Latest job details'}
+                    </h4>
                   </div>
                   <dl className="mt-3 grid gap-(--space-2) text-sm">
                     <div className="flex items-start justify-between gap-(--space-3)">
@@ -414,63 +498,135 @@ export function SystemUpdatePanel() {
             </section>
 
             <section className="rounded-box border border-base-300 bg-base-100 p-(--space-4)">
-              <h3 className="text-base font-semibold">Progress</h3>
+              <h3 className="text-base font-semibold">
+                {showLiveProgress ? 'Progress' : 'Last run'}
+              </h3>
               <p className="mt-1 text-sm text-base-content/70">
-                The updater persists job state on disk, so this view can reconnect after backend or
-                browser restarts.
+                {showLiveProgress
+                  ? 'The updater persists job state on disk, so this view can reconnect after backend or browser restarts.'
+                  : currentJob
+                    ? 'The most recent finished update request stays visible here after the live progress timeline clears.'
+                    : 'No update is running right now. Start a new request when a newer stable release is available.'}
               </p>
 
-              <ul className="steps steps-vertical mt-4 w-full">
-                {PRIMARY_FLOW.map((step) => {
-                  const currentIndex = currentJob ? PRIMARY_FLOW.indexOf(currentJob.status) : -1
-                  const stepIndex = PRIMARY_FLOW.indexOf(step)
-                  const isActive = currentJob?.status === step
-                  const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
-
-                  return (
-                    <li
-                      key={step}
-                      className={`step ${isCompleted || isActive ? 'step-primary' : ''}`}
-                    >
-                      <div className="text-left">
-                        <div className="font-medium">{formatStepLabel(step)}</div>
-                        <div className="text-xs text-base-content/60">
-                          {isActive
-                            ? currentJob?.message
-                            : step === 'completed'
-                              ? 'Sentinel returns to steady state after verification.'
-                              : 'Pending'}
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              {currentJob && isFailureStatus(currentJob.status) && (
-                <div className="mt-4 border-t border-base-300 pt-(--space-4)">
-                  <h4 className="text-sm font-semibold">Recovery states</h4>
-                  <ul className="steps steps-vertical mt-3 w-full">
-                    {FAILURE_FLOW.map((step) => {
-                      const currentIndex = FAILURE_FLOW.indexOf(currentJob.status)
-                      const stepIndex = FAILURE_FLOW.indexOf(step)
+              {showLiveProgress ? (
+                <>
+                  <ul className="steps steps-vertical mt-4 w-full">
+                    {PRIMARY_FLOW.map((step) => {
+                      const currentIndex = currentJob ? PRIMARY_FLOW.indexOf(currentJob.status) : -1
+                      const stepIndex = PRIMARY_FLOW.indexOf(step)
+                      const isActive = currentJob?.status === step
                       const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
 
                       return (
-                        <li key={step} className={`step ${isCompleted ? 'step-warning' : ''}`}>
+                        <li
+                          key={step}
+                          className={`step ${isCompleted || isActive ? 'step-primary' : ''}`}
+                        >
                           <div className="text-left">
-                            <div className="flex items-center gap-(--space-2)">
-                              {step === 'rolled_back' && <RotateCcw className="h-3.5 w-3.5" />}
-                              <span className="font-medium">{formatStepLabel(step)}</span>
-                            </div>
+                            <div className="font-medium">{formatStepLabel(step)}</div>
                             <div className="text-xs text-base-content/60">
-                              {step === currentJob.status ? currentJob.message : 'Not reached'}
+                              {getPrimaryStepDescription(step, currentJob)}
                             </div>
                           </div>
                         </li>
                       )
                     })}
                   </ul>
+
+                  {currentJob && isFailureStatus(currentJob.status) && (
+                    <div className="mt-4 border-t border-base-300 pt-(--space-4)">
+                      <h4 className="text-sm font-semibold">Recovery states</h4>
+                      <ul className="steps steps-vertical mt-3 w-full">
+                        {FAILURE_FLOW.map((step) => {
+                          const currentIndex = FAILURE_FLOW.indexOf(currentJob.status)
+                          const stepIndex = FAILURE_FLOW.indexOf(step)
+                          const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
+
+                          return (
+                            <li key={step} className={`step ${isCompleted ? 'step-warning' : ''}`}>
+                              <div className="text-left">
+                                <div className="flex items-center gap-(--space-2)">
+                                  {step === 'rolled_back' && <RotateCcw className="h-3.5 w-3.5" />}
+                                  <span className="font-medium">{formatStepLabel(step)}</span>
+                                </div>
+                                <div className="text-xs text-base-content/60">
+                                  {step === currentJob.status ? currentJob.message : 'Not reached'}
+                                </div>
+                              </div>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              ) : currentJob ? (
+                <div className="mt-4 space-y-4">
+                  <div className="rounded-box border border-base-300 bg-base-200 p-(--space-4)">
+                    <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
+                      <div className="space-y-(--space-1)">
+                        <p className="text-sm font-semibold">Most recent update request</p>
+                        <p className="text-sm text-base-content/70">{currentJob.message}</p>
+                      </div>
+                      <AppBadge status={getTerminalJobBadgeStatus(currentJob.status)} size="sm">
+                        {formatStepLabel(currentJob.status)}
+                      </AppBadge>
+                    </div>
+
+                    <dl className="mt-4 grid gap-(--space-3) text-sm sm:grid-cols-2">
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Target version
+                        </dt>
+                        <dd className="mt-1 font-mono text-base-content">
+                          {currentJob.targetVersion}
+                        </dd>
+                      </div>
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Finished
+                        </dt>
+                        <dd className="mt-1 text-base-content">
+                          {formatTimestamp(currentJob.finishedAt ?? currentJob.startedAt)}
+                        </dd>
+                      </div>
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Requested by
+                        </dt>
+                        <dd className="mt-1 text-base-content">
+                          {currentJob.requestedBy.memberName}
+                        </dd>
+                      </div>
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Next action
+                        </dt>
+                        <dd className="mt-1 text-base-content">
+                          {currentJob.status === 'completed'
+                            ? 'No action needed.'
+                            : currentJob.status === 'rolled_back'
+                              ? 'Review the appliance before retrying another update.'
+                              : 'Review the failure summary and updater logs before retrying.'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {currentJob.failureSummary && (
+                    <AppAlert
+                      tone={currentJob.status === 'failed' ? 'error' : 'warning'}
+                      heading="Last run summary"
+                    >
+                      {currentJob.failureSummary}
+                    </AppAlert>
+                  )}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-box border border-base-300 bg-base-200 p-(--space-4) text-sm text-base-content/70">
+                  No update is currently running. When a newer stable release is available, start it
+                  here and this panel will switch to a live progress timeline.
                 </div>
               )}
             </section>

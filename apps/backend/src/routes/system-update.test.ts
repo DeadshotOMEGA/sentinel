@@ -98,6 +98,7 @@ async function createBridgeServer(
 describe('systemUpdateRouter', () => {
   const originalAppVersion = process.env.APP_VERSION
   const originalStateRoot = process.env.SYSTEM_UPDATE_STATE_ROOT
+  const originalApplianceStatePath = process.env.SENTINEL_APPLIANCE_STATE
   const originalSocketPath = process.env.SYSTEM_UPDATE_BRIDGE_SOCKET_PATH
   const originalReleaseRepository = process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY
 
@@ -112,6 +113,12 @@ describe('systemUpdateRouter', () => {
       delete process.env.SYSTEM_UPDATE_STATE_ROOT
     } else {
       process.env.SYSTEM_UPDATE_STATE_ROOT = originalStateRoot
+    }
+
+    if (originalApplianceStatePath === undefined) {
+      delete process.env.SENTINEL_APPLIANCE_STATE
+    } else {
+      process.env.SENTINEL_APPLIANCE_STATE = originalApplianceStatePath
     }
 
     if (originalSocketPath === undefined) {
@@ -168,6 +175,7 @@ describe('systemUpdateRouter', () => {
 
     process.env.APP_VERSION = 'v2.6.1'
     process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
     process.env.SYSTEM_UPDATE_BRIDGE_SOCKET_PATH = socketPath
     process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
 
@@ -220,6 +228,7 @@ describe('systemUpdateRouter', () => {
 
     process.env.APP_VERSION = 'v2.6.1'
     process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
     process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
 
     try {
@@ -237,11 +246,93 @@ describe('systemUpdateRouter', () => {
     }
   })
 
+  it('reports the appliance state version after a completed update even if the backend process is older', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const applianceStatePath = join(stateRoot, 'appliance-state.json')
+    await mkdir(join(stateRoot, 'jobs'), { recursive: true })
+    await writeJson(
+      join(stateRoot, 'current-job.json'),
+      createJob({
+        status: 'completed',
+        currentVersion: 'v2.6.3',
+        latestVersion: 'v2.6.3',
+        targetVersion: 'v2.6.3',
+        finishedAt: '2026-04-22T12:10:00.000Z',
+        message: 'Sentinel updated successfully to v2.6.3.',
+      })
+    )
+    await writeJson(applianceStatePath, {
+      schemaVersion: 1,
+      withObs: false,
+      allowGrafanaLan: false,
+      allowWikiLan: false,
+      lanCidr: '192.168.0.0/16',
+      currentVersion: 'v2.6.3',
+      previousVersion: 'v2.6.2',
+    })
+
+    process.env.APP_VERSION = 'v2.6.2'
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = applianceStatePath
+    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        currentVersion: 'v2.6.3',
+        currentJob: {
+          status: 'completed',
+          currentVersion: 'v2.6.3',
+        },
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects starting the same target again when appliance state is already on that version', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const applianceStatePath = join(stateRoot, 'appliance-state.json')
+    await writeJson(applianceStatePath, {
+      schemaVersion: 1,
+      withObs: false,
+      allowGrafanaLan: false,
+      allowWikiLan: false,
+      lanCidr: '192.168.0.0/16',
+      currentVersion: 'v2.6.3',
+      previousVersion: 'v2.6.2',
+    })
+
+    process.env.APP_VERSION = 'v2.6.2'
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = applianceStatePath
+    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app)
+        .post('/api/admin/system/update')
+        .send({ targetVersion: 'v2.6.3' })
+
+      expect(response.status).toBe(409)
+      expect(response.body).toMatchObject({
+        error: 'CONFLICT',
+        message: 'Target version v2.6.3 is not newer than the current version v2.6.3',
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
   it('surfaces bridge/socket failures as internal errors', async () => {
     const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
 
     process.env.APP_VERSION = 'v2.6.1'
     process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
     process.env.SYSTEM_UPDATE_BRIDGE_SOCKET_PATH = join(stateRoot, 'missing.sock')
     process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
 

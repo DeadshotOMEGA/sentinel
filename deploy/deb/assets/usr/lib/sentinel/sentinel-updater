@@ -91,6 +91,10 @@ def configure_logging() -> None:
     )
 
 
+def normalize_health_version(value: str | None) -> str | None:
+    return normalize_version_tag(value)
+
+
 def load_job(path: Path) -> dict[str, Any]:
     job = read_json_file(path)
     if not isinstance(job, dict):
@@ -342,20 +346,48 @@ def install_deb(deb_path: Path, job_logger: JobLogger) -> None:
         raise UpdaterError("installing", "Package installation failed in both the primary and fallback paths.")
 
 
-def wait_for_health(job_logger: JobLogger) -> None:
+def wait_for_health(job_logger: JobLogger, expected_version: str | None = None) -> None:
     deadline = time.monotonic() + HEALTH_TIMEOUT_SECONDS
     request = urllib.request.Request(HEALTH_URL, headers={"User-Agent": "sentinel-updater/1.0"})
     while time.monotonic() < deadline:
         try:
             with urllib.request.urlopen(request, timeout=5) as response:
                 if 200 <= response.status < 300:
-                    job_logger.write_line(f"Health check passed at {HEALTH_URL}")
+                    payload = json.loads(response.read().decode("utf-8"))
+                    if expected_version is not None:
+                        reported_version = None
+                        if isinstance(payload, dict):
+                            raw_version = payload.get("version")
+                            if isinstance(raw_version, str):
+                                reported_version = normalize_health_version(raw_version.strip())
+
+                        if reported_version != expected_version:
+                            job_logger.write_line(
+                                "Health endpoint responded but reported version "
+                                f"{reported_version or 'unknown'} instead of {expected_version}"
+                            )
+                            time.sleep(3)
+                            continue
+
+                    job_logger.write_line(
+                        f"Health check passed at {HEALTH_URL}"
+                        + (
+                            f" with expected version {expected_version}"
+                            if expected_version is not None
+                            else ""
+                        )
+                    )
                     return
         except Exception:  # noqa: BLE001
             pass
         time_left = max(0, int(deadline - time.monotonic()))
         job_logger.write_line(f"Waiting for {HEALTH_URL} ({time_left}s remaining)")
         time.sleep(3)
+    if expected_version is not None:
+        raise UpdaterError(
+            "health_check",
+            f"Health check did not confirm Sentinel {expected_version} at {HEALTH_URL}.",
+        )
     raise UpdaterError("health_check", f"Health check did not succeed at {HEALTH_URL}.")
 
 
@@ -481,7 +513,7 @@ def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger:
 
     install_deb(Path(previous_artifact["debPath"]), job_logger)
     restart_stack(previous_state, job_logger)
-    wait_for_health(job_logger)
+    wait_for_health(job_logger, expected_version=previous_artifact["version"])
 
     job["currentVersion"] = previous_artifact["version"]
     update_job(
@@ -562,7 +594,7 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
 
     update_job(job, status="health_check", message="Running post-update verification.", job_logger=job_logger)
     run_backend_post_update(state, job_logger)
-    wait_for_health(job_logger)
+    wait_for_health(job_logger, expected_version=target_version)
 
     job["currentVersion"] = target_version
     update_job(

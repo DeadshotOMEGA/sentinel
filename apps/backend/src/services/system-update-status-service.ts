@@ -7,9 +7,10 @@ import {
   isStableVersionTag,
   resolveServiceVersionTag,
 } from '../lib/service-version.js'
-import { sanitizeSystemUpdateJob } from '../lib/system-update-state.js'
+import { isSystemUpdateJobTerminal, sanitizeSystemUpdateJob } from '../lib/system-update-state.js'
 
 const DEFAULT_STATE_ROOT = '/var/lib/sentinel/updater'
+const DEFAULT_APPLIANCE_STATE_PATH = '/var/lib/sentinel/appliance/state.json'
 const DEFAULT_RELEASE_API_BASE = 'https://api.github.com/repos'
 
 interface LatestReleaseSummary {
@@ -23,16 +24,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export class SystemUpdateStatusService {
   private readonly stateRoot: string
+  private readonly applianceStatePath: string
   private readonly releaseRepository: string
   private readonly releaseApiBase: string
 
   constructor(options?: {
     stateRoot?: string
+    applianceStatePath?: string
     releaseRepository?: string
     releaseApiBase?: string
   }) {
     this.stateRoot =
       options?.stateRoot ?? process.env.SYSTEM_UPDATE_STATE_ROOT ?? DEFAULT_STATE_ROOT
+    this.applianceStatePath =
+      options?.applianceStatePath ??
+      process.env.SENTINEL_APPLIANCE_STATE ??
+      DEFAULT_APPLIANCE_STATE_PATH
     this.releaseRepository =
       options?.releaseRepository ??
       process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY ??
@@ -46,7 +53,15 @@ export class SystemUpdateStatusService {
   async getStatus(): Promise<SystemUpdateStatusResponse> {
     const currentJob = await this.readCurrentJob()
     const releaseSummary = await this.fetchLatestReleaseSummary()
-    const currentVersion = resolveServiceVersionTag() ?? currentJob?.currentVersion ?? null
+    const applianceStateVersion = await this.readApplianceCurrentVersion()
+    const completedJobVersion =
+      currentJob && isSystemUpdateJobTerminal(currentJob.status) ? currentJob.currentVersion : null
+    const currentVersion =
+      applianceStateVersion ??
+      completedJobVersion ??
+      resolveServiceVersionTag() ??
+      currentJob?.currentVersion ??
+      null
     const latestVersion = releaseSummary.latestVersion ?? currentJob?.latestVersion ?? null
 
     return {
@@ -153,6 +168,41 @@ export class SystemUpdateStatusService {
         latestVersion: null,
         latestReleaseUrl: null,
       }
+    }
+  }
+
+  private async readApplianceCurrentVersion(): Promise<string | null> {
+    let rawText: string
+
+    try {
+      rawText = await readFile(this.applianceStatePath, 'utf-8')
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        return null
+      }
+
+      serviceLogger.warn('Unable to read Sentinel appliance state', {
+        path: this.applianceStatePath,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      return null
+    }
+
+    try {
+      const payload: unknown = JSON.parse(rawText)
+      if (!isRecord(payload)) {
+        return null
+      }
+
+      const currentVersion =
+        typeof payload.currentVersion === 'string' ? payload.currentVersion.trim() : ''
+      return isStableVersionTag(currentVersion) ? currentVersion : null
+    } catch (error) {
+      serviceLogger.warn('Unable to parse Sentinel appliance state', {
+        path: this.applianceStatePath,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      return null
     }
   }
 }
