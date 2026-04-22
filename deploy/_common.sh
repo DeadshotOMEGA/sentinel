@@ -4,7 +4,11 @@ set -euo pipefail
 DEPLOY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${DEPLOY_DIR}/.env"
 CANONICAL_ENV_FILE="/etc/sentinel/appliance.env"
+CANONICAL_STATE_FILE="/var/lib/sentinel/appliance/state.json"
 STATE_FILE="${DEPLOY_DIR}/.appliance-state"
+UPDATER_STATE_ROOT="/var/lib/sentinel/updater"
+CURRENT_JOB_FILE="${UPDATER_STATE_ROOT}/current-job.json"
+UPDATER_JOBS_DIR="${UPDATER_STATE_ROOT}/jobs"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
 GRAFANA_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.grafana-lan.yml"
 WIKI_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.wiki-lan.yml"
@@ -410,6 +414,99 @@ resolve_managed_file_path() {
   printf '%s\n' "${path}"
 }
 
+json_escape() {
+  printf '%s' "${1:-}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
+}
+
+json_bool() {
+  if [[ "${1:-false}" == "true" ]]; then
+    printf 'true'
+  else
+    printf 'false'
+  fi
+}
+
+write_canonical_state() {
+  local state_dir tmp_file updated_at
+  state_dir="$(dirname "${CANONICAL_STATE_FILE}")"
+  tmp_file="$(mktemp)"
+  updated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+  cat >"${tmp_file}" <<JSON
+{
+  "allowGrafanaLan": $(json_bool "${ALLOW_GRAFANA_LAN:-false}"),
+  "allowWikiLan": $(json_bool "${ALLOW_WIKI_LAN:-false}"),
+  "currentVersion": "$(json_escape "${CURRENT_VERSION:-}")",
+  "lanCidr": "$(json_escape "${LAN_CIDR:-}")",
+  "previousVersion": "$(json_escape "${PREVIOUS_VERSION:-}")",
+  "schemaVersion": 1,
+  "updatedAt": "$(json_escape "${updated_at}")",
+  "withObs": $(json_bool "${WITH_OBS:-false}")
+}
+JSON
+
+  run_root install -d -m 755 "${state_dir}"
+  run_root install -m 644 "${tmp_file}" "${CANONICAL_STATE_FILE}"
+  rm -f "${tmp_file}"
+}
+
+archive_superseded_terminal_job() {
+  local current_version archived_path
+  current_version="${CURRENT_VERSION:-}"
+
+  [[ -n "${current_version}" ]] || return 0
+
+  if ! archived_path="$(
+    run_root python3 - "${CURRENT_JOB_FILE}" "${UPDATER_JOBS_DIR}" "${current_version}" <<'PY'
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+current_job_path = Path(sys.argv[1])
+jobs_dir = Path(sys.argv[2])
+current_version = sys.argv[3].strip()
+
+if not current_job_path.exists():
+    raise SystemExit(0)
+
+with current_job_path.open("r", encoding="utf-8") as handle:
+    job = json.load(handle)
+
+status = str(job.get("status", "")).strip()
+if status not in {"completed", "failed", "rollback_attempted", "rolled_back"}:
+    raise SystemExit(0)
+
+job_current_version = str(job.get("currentVersion", "")).strip()
+job_target_version = str(job.get("targetVersion", "")).strip()
+job_version = job_current_version or (job_target_version if status == "completed" else "")
+
+if not job_version or job_version == current_version:
+    raise SystemExit(0)
+
+job_id = str(job.get("jobId", "current-job")).strip() or "current-job"
+safe_job_id = re.sub(r"[^A-Za-z0-9._-]+", "-", job_id)
+timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d-%H%M%S")
+
+jobs_dir.mkdir(parents=True, exist_ok=True)
+archive_path = jobs_dir / f"{safe_job_id}-manual-superseded-{timestamp}.json"
+shutil.move(str(current_job_path), archive_path)
+print(archive_path)
+PY
+  )"; then
+    warn "Unable to reconcile updater history with the manual Sentinel version ${current_version}."
+    return 0
+  fi
+
+  if [[ -n "${archived_path}" ]]; then
+    log "Archived superseded updater history at ${archived_path}."
+  fi
+}
+
 load_state() {
   if [[ -f "${STATE_FILE}" ]]; then
     # shellcheck disable=SC1090
@@ -430,6 +527,8 @@ LAN_CIDR=${LAN_CIDR:-}
 CURRENT_VERSION=${CURRENT_VERSION:-}
 PREVIOUS_VERSION=${PREVIOUS_VERSION:-}
 STATE
+
+  write_canonical_state
 }
 
 set_compose_file_args() {

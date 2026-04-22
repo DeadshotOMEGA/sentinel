@@ -73,7 +73,6 @@ CURRENT_VERSION="${TARGET_VERSION}"
 PREVIOUS_VERSION="${PREV_FOR_SWAP}"
 
 upsert_env "SENTINEL_VERSION" "${TARGET_VERSION}"
-save_state
 
 ensure_compose_pull_with_login_fallback
 compose up -d
@@ -83,6 +82,9 @@ if ! wait_for_healthz 240; then
   print_health_diagnostics
   die "Rollback failed health gate check at /healthz"
 fi
+
+save_state
+archive_superseded_terminal_job
 
 if command -v systemctl >/dev/null 2>&1; then
   write_systemd_unit

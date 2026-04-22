@@ -51,9 +51,12 @@ export class SystemUpdateStatusService {
   }
 
   async getStatus(): Promise<SystemUpdateStatusResponse> {
-    const currentJob = await this.readCurrentJob()
-    const releaseSummary = await this.fetchLatestReleaseSummary()
     const applianceStateVersion = await this.readApplianceCurrentVersion()
+    const currentJob = this.filterSupersededTerminalJob(
+      await this.readCurrentJob(),
+      applianceStateVersion
+    )
+    const releaseSummary = await this.fetchLatestReleaseSummary()
     const completedJobVersion =
       currentJob && isSystemUpdateJobTerminal(currentJob.status) ? currentJob.currentVersion : null
     const currentVersion =
@@ -74,6 +77,43 @@ export class SystemUpdateStatusService {
         compareVersionTags(currentVersion, latestVersion) < 0,
       currentJob,
     }
+  }
+
+  private filterSupersededTerminalJob(
+    currentJob: SystemUpdateJob | null,
+    applianceStateVersion: string | null
+  ): SystemUpdateJob | null {
+    if (!currentJob || !applianceStateVersion || !isSystemUpdateJobTerminal(currentJob.status)) {
+      return currentJob
+    }
+
+    const terminalJobVersion = this.resolveTerminalJobVersion(currentJob)
+    if (terminalJobVersion === null) {
+      return currentJob
+    }
+
+    if (compareVersionTags(terminalJobVersion, applianceStateVersion) === 0) {
+      return currentJob
+    }
+
+    serviceLogger.warn(
+      'Ignoring stale terminal Sentinel updater job that no longer matches the appliance version',
+      {
+        jobId: currentJob.jobId,
+        jobStatus: currentJob.status,
+        terminalJobVersion,
+        applianceStateVersion,
+      }
+    )
+    return null
+  }
+
+  private resolveTerminalJobVersion(currentJob: SystemUpdateJob): string | null {
+    if (currentJob.currentVersion) {
+      return currentJob.currentVersion
+    }
+
+    return currentJob.status === 'completed' ? currentJob.targetVersion : null
   }
 
   async getJob(jobId: string): Promise<SystemUpdateJob | null> {

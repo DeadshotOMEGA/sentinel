@@ -268,8 +268,6 @@ if [[ -n "${SERVER_IP}" && ",${CURRENT_CORS}," != *",http://${SERVER_IP},"* ]]; 
 fi
 upsert_env "CORS_ORIGIN" "${CURRENT_CORS}"
 
-save_state
-
 ensure_compose_pull_with_login_fallback
 compose up -d
 
@@ -282,6 +280,9 @@ if ! wait_for_healthz 240; then
   print_health_diagnostics
   die "Update failed health gate check at /healthz"
 fi
+
+save_state
+archive_superseded_terminal_job
 
 if command -v systemctl >/dev/null 2>&1; then
   write_systemd_unit
