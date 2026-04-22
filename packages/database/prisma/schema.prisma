@@ -200,6 +200,7 @@ model Member {
   divisionId                 String?                   @map("division_id") @db.Uuid
   badgeId                    String?                   @map("badge_id") @db.Uuid
   memberType                 String                    @map("member_type") @db.VarChar(20)
+  memberSource               String                    @default("nominal_roll") @map("member_source") @db.VarChar(30)
   status                     String                    @default("active") @db.VarChar(20)
   memberTypeId               String?                   @map("member_type_id") @db.Uuid
   memberStatusId             String?                   @map("member_status_id") @db.Uuid
@@ -255,6 +256,7 @@ model Member {
   @@index([serviceNumber], map: "idx_members_service_number")
   @@index([status], map: "idx_members_status")
   @@index([email], map: "idx_members_email")
+  @@index([memberSource], map: "idx_members_member_source")
   @@index([memberTypeId], map: "idx_members_member_type_id")
   @@index([memberStatusId], map: "idx_members_member_status_id")
   @@map("members")

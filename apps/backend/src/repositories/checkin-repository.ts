@@ -47,7 +47,7 @@ export interface PresentMember {
   division: string
   divisionCode: string
   divisionId: string | null
-  memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
+  memberType: MemberType
   mess: string | null
   activeCheckinId: string
   checkedInAt: string
@@ -422,6 +422,7 @@ export class CheckinRepository {
         mess: checkin.member.mess ?? undefined,
         moc: checkin.member.moc ?? undefined,
         memberType: checkin.member.memberType as unknown as MemberType,
+        memberSource: checkin.member.memberSource as MemberWithDivision['memberSource'],
         accountLevel: checkin.member.accountLevel,
         mustChangePin: checkin.member.mustChangePin,
         classDetails: checkin.member.classDetails ?? undefined,
@@ -494,6 +495,7 @@ export class CheckinRepository {
               email: c.member!.email || undefined,
               mobilePhone: c.member!.mobilePhone || undefined,
               memberType: c.member!.memberType as MemberType,
+              memberSource: c.member!.memberSource as MemberWithDivision['memberSource'],
               accountLevel: c.member!.accountLevel,
               mustChangePin: c.member!.mustChangePin,
               status: c.member!.status as MemberStatus,
@@ -600,6 +602,7 @@ export class CheckinRepository {
             email: c.member.email || undefined,
             mobilePhone: c.member.mobilePhone || undefined,
             memberType: c.member.memberType as MemberType,
+            memberSource: c.member.memberSource as MemberWithDivision['memberSource'],
             accountLevel: c.member.accountLevel,
             mustChangePin: c.member.mustChangePin,
             status: c.member.status as MemberStatus,
@@ -827,7 +830,7 @@ export class CheckinRepository {
       division: row.division_name,
       divisionCode: row.division_code,
       divisionId: row.division_id,
-      memberType: row.member_type as 'class_a' | 'class_b' | 'class_c' | 'reg_force',
+      memberType: row.member_type as MemberType,
       mess: row.mess,
       activeCheckinId: row.active_checkin_id,
       checkedInAt: row.checked_in_at.toISOString(),
@@ -853,6 +856,7 @@ export class CheckinRepository {
         mess: string | null
         moc: string | null
         member_type: string
+        member_source: string
         account_level: number
         must_change_pin: boolean
         class_details: string | null
@@ -882,7 +886,7 @@ export class CheckinRepository {
     >`
       SELECT
         m.id, m.service_number, m.employee_number, m.first_name, m.last_name, m.initials, m.rank,
-        m.division_id, m.mess, m.moc, m.member_type, m.account_level, m.must_change_pin, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
+        m.division_id, m.mess, m.moc, m.member_type, m.member_source, m.account_level, m.must_change_pin, m.class_details, m.status, m.email, m.home_phone, m.mobile_phone,
         m.badge_id, m.created_at as member_created_at, m.updated_at as member_updated_at,
         d.id as division_id, d.name as division_name, d.code as division_code,
         d.description as division_description, d.created_at as division_created_at,
@@ -916,6 +920,7 @@ export class CheckinRepository {
         mess: row.mess ?? undefined,
         moc: row.moc ?? undefined,
         memberType: row.member_type as unknown as MemberType,
+        memberSource: row.member_source as MemberWithDivision['memberSource'],
         accountLevel: row.account_level,
         mustChangePin: row.must_change_pin,
         classDetails: row.class_details ?? undefined,

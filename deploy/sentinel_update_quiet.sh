@@ -35,8 +35,8 @@ set -Eeuo pipefail
 #######################################
 SSID="${SSID:-HMCS_Chippawa_publicguestaccess}"
 REPO="${REPO:-DeadshotOMEGA/sentinel}"
-DOWNLOAD_DIR="${DOWNLOAD_DIR:-/tmp/sentinel-deb}"
 DEPLOY_DIR="${DEPLOY_DIR:-/opt/sentinel/deploy}"
+DOWNLOAD_DIR="${DOWNLOAD_DIR:-${DEPLOY_DIR}/runtime/downloads}"
 CAPTIVE_URL="${CAPTIVE_URL:-http://neverssl.com}"
 CONNECTIVITY_TEST_URL="${CONNECTIVITY_TEST_URL:-http://connectivitycheck.gstatic.com/generate_204}"
 FALLBACK_TEST_URL="${FALLBACK_TEST_URL:-https://github.com}"
@@ -414,6 +414,36 @@ run_gh() {
   gh "$@"
 }
 
+run_update_cmd() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    "$@"
+    return $?
+  fi
+
+  sudo "$@"
+}
+
+ensure_download_dir_writable() {
+  mkdir -p "$DOWNLOAD_DIR"
+
+  if [[ "${EUID}" -eq 0 && -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+    local owner_group
+    owner_group="$(id -gn "${SUDO_USER}" 2>/dev/null || true)"
+    if [[ -n "${owner_group}" ]]; then
+      chown "${SUDO_USER}:${owner_group}" "$DOWNLOAD_DIR"
+    else
+      chown "${SUDO_USER}" "$DOWNLOAD_DIR"
+    fi
+
+    if ! runuser -u "${SUDO_USER}" -- test -w "$DOWNLOAD_DIR"; then
+      die "Download directory is not writable by ${SUDO_USER}: ${DOWNLOAD_DIR}"
+    fi
+    return 0
+  fi
+
+  [[ -w "$DOWNLOAD_DIR" ]] || die "Download directory is not writable: ${DOWNLOAD_DIR}"
+}
+
 validate_release_exists() {
   log "Checking GitHub release tag exists: ${TAG}"
   if [[ "${USE_GH_CLI}" == "true" ]]; then
@@ -425,7 +455,7 @@ validate_release_exists() {
 }
 
 download_release_deb() {
-  mkdir -p "$DOWNLOAD_DIR"
+  ensure_download_dir_writable
   cd "$DOWNLOAD_DIR"
 
   rm -f "$DEB_FILE"
@@ -467,11 +497,11 @@ run_update() {
 
   if [[ "$SENTINEL_SHOW_PROGRESS" == "1" ]]; then
     log "Full update progress output enabled."
-    ./update.sh --version "$TAG" 2>&1 | tee -a "$RAW_UPDATE_LOG"
+    run_update_cmd ./update.sh --version "$TAG" 2>&1 | tee -a "$RAW_UPDATE_LOG"
   else
     log "Suppressing noisy Docker pull progress in live output."
     log "Full raw update output is still being saved to: ${RAW_UPDATE_LOG}"
-    ./update.sh --version "$TAG" 2>&1 | tee -a "$RAW_UPDATE_LOG" | filter_update_output
+    run_update_cmd ./update.sh --version "$TAG" 2>&1 | tee -a "$RAW_UPDATE_LOG" | filter_update_output
   fi
 
   local update_rc=${PIPESTATUS[0]}

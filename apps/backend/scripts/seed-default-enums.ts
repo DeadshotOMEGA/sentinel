@@ -145,6 +145,14 @@ const DEFAULT_MEMBER_TYPES: ReadonlyArray<EnumSeedInput> = [
     chipVariant: 'light',
     chipColor: 'error',
   },
+  {
+    code: 'civilian_staff',
+    name: 'Civilian Staff',
+    description:
+      'Civilian museum staff who use member-style badge access without being managed by nominal roll imports.',
+    chipVariant: 'light',
+    chipColor: 'info',
+  },
 ]
 
 const DEFAULT_VISIT_TYPES: ReadonlyArray<EnumSeedInput> = [

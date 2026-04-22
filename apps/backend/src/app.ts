@@ -42,6 +42,7 @@ import {
   remoteSystemContract,
   networkSettingContract,
   systemStatusContract,
+  systemUpdateContract,
 } from '@sentinel/contracts'
 import { requireAuth } from './middleware/auth.js'
 import { requestLogger } from './middleware/request-logger.js'
@@ -90,6 +91,7 @@ import { operationalTimingsRouter } from './routes/operational-timings.js'
 import { remoteSystemsRouter } from './routes/remote-systems.js'
 import { networkSettingsRouter } from './routes/network-settings.js'
 import { systemStatusRouter } from './routes/system-status.js'
+import { systemUpdateRouter } from './routes/system-update.js'
 import { authRouter } from './routes/auth.js'
 import authRfidRouter from './routes/auth-rfid.js'
 import adminRouter from './routes/admin.js'
@@ -350,6 +352,15 @@ export function createApp(): Express {
     },
   })
   createExpressEndpoints(systemStatusContract, systemStatusRouter, app, {
+    requestValidationErrorHandler: (err, _req, res) => {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Request validation failed',
+        issues: err.body?.issues || err.pathParams?.issues || err.query?.issues || [],
+      })
+    },
+  })
+  createExpressEndpoints(systemUpdateContract, systemUpdateRouter, app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',

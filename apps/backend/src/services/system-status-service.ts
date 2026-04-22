@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
 import { prisma as defaultPrisma } from '@sentinel/database'
@@ -10,6 +9,7 @@ import {
 } from '../lib/metrics.js'
 import { logger } from '../lib/logger.js'
 import { isDevelopmentBuild, isRunningInsideContainer } from '../lib/runtime-context.js'
+import { resolveServiceVersionDisplay } from '../lib/service-version.js'
 import { DEPLOYMENT_REMOTE_SYSTEM_CODE } from '../repositories/remote-system-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { HostNetworkStatusService } from './host-network-status-service.js'
@@ -18,43 +18,6 @@ import { NetworkSettingsService } from './network-settings-service.js'
 const REMOTE_SESSION_LIMIT = 5
 const ACTIVE_REMOTE_SESSION_THRESHOLD_SECONDS = 120
 const TELEMETRY_STALE_WARNING_SECONDS = 120
-
-function normalizeVersion(value: string): string {
-  const trimmed = value.trim()
-  if (trimmed.length === 0) {
-    return 'unknown'
-  }
-
-  return trimmed.startsWith('v') ? trimmed.slice(1) : trimmed
-}
-
-function resolveServiceVersion(): string {
-  const appVersion = process.env.APP_VERSION
-  if (typeof appVersion === 'string' && appVersion.trim().length > 0) {
-    return normalizeVersion(appVersion)
-  }
-
-  try {
-    const packageJsonPath = new globalThis.URL('../../package.json', import.meta.url)
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
-      version?: unknown
-    }
-    if (typeof packageJson.version === 'string' && packageJson.version.length > 0) {
-      return normalizeVersion(packageJson.version)
-    }
-  } catch (error) {
-    logger.warn('Unable to resolve backend version from package.json', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
-  }
-
-  const processVersion = process.env.npm_package_version || process.env.SENTINEL_VERSION
-  if (typeof processVersion === 'string' && processVersion.trim().length > 0) {
-    return normalizeVersion(processVersion)
-  }
-
-  return 'unknown'
-}
 
 function resolveDatabaseAddress(): string | null {
   const databaseUrl = process.env.DATABASE_URL
@@ -314,7 +277,7 @@ export class SystemStatusService {
       backend: {
         status: 'healthy',
         environment: process.env.NODE_ENV || 'development',
-        version: resolveServiceVersion(),
+        version: resolveServiceVersionDisplay(),
         uptimeSeconds: process.uptime(),
         serviceTimestamp: lastCheckedAt.toISOString(),
       },

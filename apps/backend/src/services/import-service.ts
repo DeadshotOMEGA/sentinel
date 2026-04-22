@@ -571,15 +571,20 @@ export class ImportService {
     // Exclude protected Sentinel bootstrap account from import workflow.
     const importRows = rows.filter((row) => !this.isProtectedSystemMember(row.serviceNumber))
 
-    // Get existing members by service numbers
+    // Get existing nominal-roll members by service numbers
     const serviceNumbers = importRows.map((r) => r.serviceNumber)
-    const existingMembers = await this.memberRepository.findByServiceNumbers(serviceNumbers)
+    const existingMembers = await this.memberRepository.findByServiceNumbers(serviceNumbers, {
+      memberSource: 'nominal_roll',
+    })
     const existingMembersMap = new Map(existingMembers.map((m) => [m.serviceNumber, m]))
 
-    // Get all active members to check for deactivations
-    const allActiveMembers = (await this.memberRepository.findAll({ status: 'active' })).filter(
-      (member) => !this.isProtectedSystemMember(member.serviceNumber)
-    )
+    // Get all active nominal-roll members to check for deactivations
+    const allActiveMembers = (
+      await this.memberRepository.findAll({
+        status: 'active',
+        memberSource: 'nominal_roll',
+      })
+    ).filter((member) => !this.isProtectedSystemMember(member.serviceNumber))
     const csvServiceNumbers = new Set(serviceNumbers)
 
     // Categorize rows
@@ -824,6 +829,7 @@ export class ImportService {
           mess: row.mess,
           moc: row.moc,
           memberType,
+          memberSource: 'nominal_roll',
           memberTypeId: memberTypeMapping[memberType],
           classDetails: row.details,
           status: 'active',
@@ -873,6 +879,7 @@ export class ImportService {
           mess: item.incoming.mess,
           moc: item.incoming.moc,
           memberType,
+          memberSource: 'nominal_roll',
           memberTypeId: memberTypeMapping[memberType],
           classDetails: item.incoming.details,
           email: item.incoming.email,

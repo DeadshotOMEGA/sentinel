@@ -6,10 +6,12 @@ import { MembersTable } from '@/components/members/members-table'
 import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
 import { NominalRollImportDialog } from '@/components/members/nominal-roll-import-dialog'
+import { useAuthStore, AccountLevel } from '@/store/auth-store'
 
-import { UsersRound, Plus, Upload, RefreshCw } from 'lucide-react'
+import { UsersRound, Plus, Upload, RefreshCw, BriefcaseBusiness } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useSyncAllAutoQualifications } from '@/hooks/use-qualifications'
+import { TID } from '@/lib/test-ids'
 import { toast } from 'sonner'
 
 function MembersPageContent() {
@@ -21,11 +23,17 @@ function MembersPageContent() {
   const initialLimit = parseInt(searchParams.get('limit') || '200', 10)
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isCreateCivilianModalOpen, setIsCreateCivilianModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const syncAutoQuals = useSyncAllAutoQualifications()
+  const signedInMember = useAuthStore((state) => state.member)
+  const canViewPersonnelScope = (signedInMember?.accountLevel ?? 0) >= AccountLevel.ADMIN
   const [page, setPage] = useState(initialPage)
   const [limit, setLimit] = useState(initialLimit)
   const [filters, setFilters] = useState({
+    scope:
+      (searchParams.get('scope') as 'nominal_roll' | 'civilian_manual' | 'all' | null) ??
+      'nominal_roll',
     divisionId: searchParams.get('divisionId') || undefined,
     rank: searchParams.get('rank') || undefined,
     status: searchParams.get('status') || 'active',
@@ -39,6 +47,7 @@ function MembersPageContent() {
     const params = new URLSearchParams()
     if (page !== 1) params.set('page', page.toString())
     if (limit !== 200) params.set('limit', limit.toString())
+    if (filters.scope && filters.scope !== 'nominal_roll') params.set('scope', filters.scope)
     if (filters.divisionId) params.set('divisionId', filters.divisionId)
     if (filters.rank) params.set('rank', filters.rank)
     if (filters.status && filters.status !== 'active') params.set('status', filters.status)
@@ -107,6 +116,14 @@ function MembersPageContent() {
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
           </button>
+          <button
+            className="btn btn-outline btn-md"
+            onClick={() => setIsCreateCivilianModalOpen(true)}
+            data-testid={TID.members.newCivilianBtn}
+          >
+            <BriefcaseBusiness className="h-4 w-4 mr-2" />
+            New Civilian Staff
+          </button>
           <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Member
@@ -114,7 +131,11 @@ function MembersPageContent() {
         </div>
       </div>
 
-      <MembersFilters filters={filters} onFilterChange={handleFilterChange} />
+      <MembersFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        canViewPersonnelScope={canViewPersonnelScope}
+      />
 
       <MembersTable
         filters={filters}
@@ -124,7 +145,18 @@ function MembersPageContent() {
         onLimitChange={handleLimitChange}
       />
 
-      <MemberFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} mode="create" />
+      <MemberFormModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        mode="create"
+        createProfile="member"
+      />
+      <MemberFormModal
+        open={isCreateCivilianModalOpen}
+        onOpenChange={setIsCreateCivilianModalOpen}
+        mode="create"
+        createProfile="civilian"
+      />
       <NominalRollImportDialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen} />
     </div>
   )

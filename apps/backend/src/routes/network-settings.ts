@@ -8,7 +8,6 @@ import { AccountLevel } from '../middleware/roles.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { HostHotspotRecoveryService } from '../services/host-hotspot-recovery-service.js'
 import { NetworkSettingsService } from '../services/network-settings-service.js'
-import { SystemUpdateRequestService } from '../services/system-update-request-service.js'
 
 const s = initServer()
 const networkSettingsService = new NetworkSettingsService(getPrismaClient())
@@ -158,46 +157,6 @@ export const networkSettingsRouter = s.router(networkSettingContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to queue host hotspot recovery',
-        },
-      }
-    }
-  },
-
-  queueLatestSystemUpdate: async ({ req }) => {
-    const auth = requireAdmin(req)
-    if (auth) {
-      return auth
-    }
-
-    try {
-      const updateRequestService = new SystemUpdateRequestService()
-      const userAgentHeader = req.headers['user-agent']
-      await updateRequestService.queueLatestUpdateRequest({
-        requestedByMemberId: req.member?.id ?? 'unknown',
-        requestedByMemberName:
-          req.member !== undefined
-            ? `${req.member.rank} ${req.member.firstName} ${req.member.lastName}`
-            : 'Unknown member',
-        requestedByRemoteSystemName: getRequestedRemoteSystemName(req),
-        requestedFromIp: getRequestClientIp(req),
-        requestedFromUserAgent: Array.isArray(userAgentHeader)
-          ? (userAgentHeader[0] ?? null)
-          : (userAgentHeader ?? null),
-      })
-
-      return {
-        status: 202 as const,
-        body: {
-          success: true,
-          message: 'System update request queued for latest release',
-        },
-      }
-    } catch (error) {
-      return {
-        status: 500 as const,
-        body: {
-          error: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Failed to queue system update request',
         },
       }
     }

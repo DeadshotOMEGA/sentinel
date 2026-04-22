@@ -55,6 +55,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   } = useMembers({
     limit: 100,
     search: showMemberList && memberSearch ? memberSearch : undefined,
+    scope: 'all',
   })
   const {
     data: presentPeopleData,

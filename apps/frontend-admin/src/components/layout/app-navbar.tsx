@@ -1,12 +1,15 @@
 'use client'
 /* global process */
-/* global AbortController */
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
+import type {
+  SystemHealthStatus,
+  SystemStatusResponse,
+  SystemUpdateJobStatus,
+} from '@sentinel/contracts'
 import { Menu, PanelLeftOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
@@ -15,8 +18,9 @@ import { ADMIN_NAV_ROUTES, isAdminNavPath } from '@/lib/admin-routes'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
-import { useHostHotspotRecovery, useQueueLatestSystemUpdate } from '@/hooks/use-network-settings'
+import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
 import { useSystemStatus } from '@/hooks/use-system-status'
+import { useSystemUpdateStatus } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
 import { getWirelessRecoveryState } from './app-navbar.logic'
@@ -34,18 +38,10 @@ interface AppNavbarProps {
   isDrawerOpen: boolean
 }
 
-const GITHUB_LATEST_RELEASE_URL =
-  'https://api.github.com/repos/DeadshotOMEGA/sentinel/releases/latest'
 const WIKI_LAN_FALLBACK_PORT = '3020'
 const WIKI_LOCAL_DEV_PORT = '3002'
 const NETWORK_TELEMETRY_STALE_WARNING_SECONDS = 120
 const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
-
-interface LatestReleaseState {
-  tag: string | null
-  releaseUrl: string | null
-  downloadUrl: string | null
-}
 
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const pathname = usePathname()
@@ -54,9 +50,13 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const authSession = useAuthStore((state) => state.session)
   const queryClient = useQueryClient()
   const hostHotspotRecovery = useHostHotspotRecovery()
-  const queueLatestSystemUpdate = useQueueLatestSystemUpdate()
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
+  const systemUpdateQuery = useSystemUpdateStatus({
+    enabled: isAuthenticated,
+    refetchIntervalMs: 30_000,
+  })
   const systemStatus = systemStatusQuery.data ?? null
+  const systemUpdateStatus = systemUpdateQuery.data ?? null
   const isStatusLoading = !isAuthenticated || systemStatusQuery.isLoading
   const { dot, label, badgeStatus } = getSystemSummaryBadge({
     systemStatus,
@@ -129,15 +129,16 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     isError: systemStatusQuery.isError,
     hasAdminAccess,
   })
-  const [latestRelease, setLatestRelease] = useState<LatestReleaseState>({
-    tag: null,
-    releaseUrl: null,
-    downloadUrl: null,
-  })
-  const currentVersion = systemStatus?.backend.version ?? 'unknown'
-  const versionStatusLabel = getVersionStatus(currentVersion, latestRelease.tag)
-  const updateAvailable = isUpdateAvailable(currentVersion, latestRelease.tag)
-  const updateTargetUrl = latestRelease.downloadUrl ?? latestRelease.releaseUrl
+  const currentVersion =
+    systemUpdateStatus?.currentVersion ??
+    normalizeVersionTag(systemStatus?.backend.version ?? null) ??
+    'unknown'
+  const latestVersion = systemUpdateStatus?.latestVersion ?? null
+  const versionStatusLabel = getVersionStatus(currentVersion, latestVersion)
+  const updateAvailable = systemUpdateStatus?.updateAvailable ?? false
+  const currentSystemUpdateJob = systemUpdateStatus?.currentJob ?? null
+  const hasActiveSystemUpdate =
+    currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob.status)
 
   const handleHostHotspotRecovery = async () => {
     try {
@@ -152,45 +153,6 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       toast.error(error instanceof Error ? error.message : 'Failed to queue host hotspot recovery')
     }
   }
-
-  const handleQueueLatestSystemUpdate = async () => {
-    try {
-      const result = await queueLatestSystemUpdate.mutateAsync()
-      toast.success(result.message)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to queue latest system update')
-    }
-  }
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    async function fetchLatestRelease() {
-      try {
-        const response = await fetch(GITHUB_LATEST_RELEASE_URL, {
-          signal: controller.signal,
-          cache: 'no-store',
-          headers: { Accept: 'application/vnd.github+json' },
-        })
-
-        if (!response.ok) {
-          return
-        }
-
-        const payload: unknown = await response.json()
-        const release = parseLatestRelease(payload)
-        setLatestRelease(release)
-      } catch {
-        // Release lookup is best-effort only; keep current version display even when unavailable.
-      }
-    }
-
-    fetchLatestRelease()
-
-    return () => {
-      controller.abort()
-    }
-  }, [])
 
   return (
     <div className="navbar w-full shadow-lg bg-primary text-primary-content">
@@ -459,34 +421,29 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                     <span className="text-base-content/75"> ({versionStatusLabel})</span>
                   )}
                 </p>
-                {updateAvailable && latestRelease.tag && (
-                  <p>
-                    {hasAdminAccess ? (
-                      <button
-                        type="button"
-                        className="btn btn-xs btn-outline"
-                        onClick={() => void handleQueueLatestSystemUpdate()}
-                        disabled={queueLatestSystemUpdate.isPending}
-                        data-testid={TID.nav.backendStatusSystemUpdate}
-                      >
-                        {queueLatestSystemUpdate.isPending
-                          ? 'Queueing update...'
-                          : `Update to ${latestRelease.tag}`}
-                      </button>
-                    ) : (
-                      updateTargetUrl && (
-                        <a
-                          href={updateTargetUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="link link-primary text-xs"
-                        >
-                          Update to {latestRelease.tag}
-                        </a>
-                      )
-                    )}
+                <div
+                  className="mt-2 rounded-box border border-base-300 bg-base-200 p-(--space-2)"
+                  data-testid={TID.nav.backendStatusSystemUpdate}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide">Updates</p>
+                  <p className="mt-1 text-xs leading-relaxed">
+                    {hasActiveSystemUpdate && currentSystemUpdateJob
+                      ? `Update ${currentSystemUpdateJob.targetVersion} is ${formatSystemUpdateStatus(currentSystemUpdateJob.status).toLowerCase()}.`
+                      : updateAvailable && latestVersion
+                        ? `${latestVersion} is available for this appliance.`
+                        : 'Sentinel is on the latest known stable release.'}
                   </p>
-                )}
+                  <div className="mt-2 flex flex-wrap items-center gap-(--space-2)">
+                    <Link href="/settings?tab=updates" className="btn btn-xs btn-outline">
+                      Open updates
+                    </Link>
+                    {hasActiveSystemUpdate && currentSystemUpdateJob && (
+                      <AppBadge status="warning" size="sm">
+                        {formatSystemUpdateStatus(currentSystemUpdateJob.status)}
+                      </AppBadge>
+                    )}
+                  </div>
+                </div>
                 <p>
                   Environment:{' '}
                   <span className="font-mono text-base-content">
@@ -1004,29 +961,17 @@ function safeParseUrl(value: string) {
   }
 }
 
-function parseLatestRelease(payload: unknown): LatestReleaseState {
-  if (!isRecord(payload)) {
-    return { tag: null, releaseUrl: null, downloadUrl: null }
-  }
+function isSystemUpdateJobTerminal(status: SystemUpdateJobStatus): boolean {
+  return (
+    status === 'completed' ||
+    status === 'failed' ||
+    status === 'rollback_attempted' ||
+    status === 'rolled_back'
+  )
+}
 
-  const tag = typeof payload.tag_name === 'string' ? payload.tag_name : null
-  const releaseUrl = typeof payload.html_url === 'string' ? payload.html_url : null
-  const assets = Array.isArray(payload.assets) ? payload.assets : []
-  const downloadUrl = assets
-    .map((asset) => {
-      if (!isRecord(asset)) {
-        return null
-      }
-      const url = typeof asset.browser_download_url === 'string' ? asset.browser_download_url : null
-      const name = typeof asset.name === 'string' ? asset.name.toLowerCase() : ''
-      if (!url || !name.endsWith('.deb')) {
-        return null
-      }
-      return name.includes('sentinel') ? url : null
-    })
-    .find((url): url is string => typeof url === 'string')
-
-  return { tag, releaseUrl, downloadUrl: downloadUrl ?? null }
+function formatSystemUpdateStatus(status: SystemUpdateJobStatus): string {
+  return status.replace(/_/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase())
 }
 
 function getVersionStatus(currentVersion: string, latestTag: string | null): string {
@@ -1047,17 +992,6 @@ function getVersionStatus(currentVersion: string, latestTag: string | null): str
   }
 
   return `Ahead of ${normalizedLatest}`
-}
-
-function isUpdateAvailable(currentVersion: string, latestTag: string | null): boolean {
-  const normalizedCurrent = normalizeVersionTag(currentVersion)
-  const normalizedLatest = normalizeVersionTag(latestTag)
-
-  if (!normalizedCurrent || !normalizedLatest) {
-    return false
-  }
-
-  return compareVersionTags(normalizedCurrent, normalizedLatest) < 0
 }
 
 function normalizeVersionTag(version: string | null): string | null {
@@ -1099,10 +1033,6 @@ function parseVersionParts(tag: string): [number, number, number] {
     Number.isNaN(minor) ? 0 : minor,
     Number.isNaN(patch) ? 0 : patch,
   ]
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 interface StatusRowProps {

@@ -1080,6 +1080,11 @@ DESKTOP
     "${DEPLOY_DIR}/process-system-update-requests.sh" \
     "${DEPLOY_DIR}/sentinel-hotspot-connect.sh" >/dev/null 2>&1 || true
 
+  if getent group sentinel-backend >/dev/null 2>&1; then
+    run_root chgrp -R sentinel-backend "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
+    run_root chmod -R g+rwX "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
+  fi
+
   run_root tee /etc/systemd/system/sentinel-host-hotspot-recovery.service >/dev/null <<UNIT
 [Unit]
 Description=Sentinel host hotspot recovery processor

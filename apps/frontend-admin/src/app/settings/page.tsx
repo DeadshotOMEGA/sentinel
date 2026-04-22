@@ -1,5 +1,7 @@
 'use client'
 
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AccountLevelSettingsPanel } from '@/components/settings/account-level-settings-panel'
 import { DashboardPersonCardSortSettingsPanel } from '@/components/settings/dashboard-person-card-sort-settings-panel'
@@ -8,7 +10,9 @@ import { EventTypeTable } from '@/components/settings/event-type-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { NetworkSettingsPanel } from '@/components/settings/network-settings-panel'
 import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
+import { SystemUpdatePanel } from '@/components/settings/system-update-panel'
 import { TimingsSettingsPanel } from '@/components/settings/timings-settings-panel'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { TID } from '@/lib/test-ids'
 import {
   Users,
@@ -22,13 +26,61 @@ import {
   Calendar,
   CalendarClock,
   Clock3,
+  Download,
   Wifi,
 } from 'lucide-react'
 
-export default function SettingsPage() {
+const SETTINGS_TAB_VALUES = [
+  'member-types',
+  'member-statuses',
+  'badge-statuses',
+  'visit-types',
+  'event-types',
+  'qualifications',
+  'tags',
+  'stat-holidays',
+  'timings',
+  'network',
+  'updates',
+  'account-levels',
+  'dashboard-sorting',
+] as const
+
+type SettingsTabValue = (typeof SETTINGS_TAB_VALUES)[number]
+
+function isSettingsTabValue(value: string | null): value is SettingsTabValue {
+  return value !== null && SETTINGS_TAB_VALUES.includes(value as SettingsTabValue)
+}
+
+function SettingsPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const requestedTab = searchParams.get('tab')
+  const currentTab: SettingsTabValue = isSettingsTabValue(requestedTab)
+    ? requestedTab
+    : 'member-types'
+
+  const handleTabChange = (nextTab: string) => {
+    if (!isSettingsTabValue(nextTab)) {
+      return
+    }
+
+    const params = new globalThis.URLSearchParams(searchParams.toString())
+    if (nextTab === 'member-types') {
+      params.delete('tab')
+    } else {
+      params.set('tab', nextTab)
+    }
+
+    const queryString = params.toString()
+    router.replace(queryString ? `/settings?${queryString}` : '/settings', {
+      scroll: false,
+    })
+  }
+
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="member-types" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="member-types" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -81,6 +133,14 @@ export default function SettingsPage() {
           >
             <Wifi className="h-4 w-4" />
             <span className="hidden sm:inline">Network</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="updates"
+            className="flex items-center gap-2"
+            data-testid={TID.settings.updates.tab}
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Updates</span>
           </TabsTrigger>
           <TabsTrigger value="account-levels" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
@@ -161,6 +221,10 @@ export default function SettingsPage() {
           <NetworkSettingsPanel />
         </TabsContent>
 
+        <TabsContent value="updates">
+          <SystemUpdatePanel />
+        </TabsContent>
+
         <TabsContent value="account-levels">
           <AccountLevelSettingsPanel />
         </TabsContent>
@@ -170,5 +234,19 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" className="text-base-content/60" />
+        </div>
+      }
+    >
+      <SettingsPageContent />
+    </Suspense>
   )
 }

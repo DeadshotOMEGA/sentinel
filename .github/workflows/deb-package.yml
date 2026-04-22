@@ -50,9 +50,11 @@ jobs:
           deploy/deb/build-deb.sh --version "${{ steps.version.outputs.value }}" --output-dir dist
           ls -la dist
 
-      - name: Upload .deb artifact
+      - name: Upload .deb and checksum artifacts
         uses: actions/upload-artifact@v7
         with:
           name: sentinel-deb-${{ steps.version.outputs.value }}
-          path: dist/*.deb
+          path: |
+            dist/*.deb
+            dist/SHA256SUMS.txt
           retention-days: 30

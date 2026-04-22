@@ -95,7 +95,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: appliance-deb
-          path: dist/*.deb
+          path: |
+            dist/*.deb
+            dist/SHA256SUMS.txt
           retention-days: 30
 
       - name: Create GitHub Release
@@ -106,3 +108,4 @@ jobs:
           files: |
             build-info.env
             dist/*.deb
+            dist/SHA256SUMS.txt

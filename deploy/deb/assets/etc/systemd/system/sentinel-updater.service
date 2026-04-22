@@ -1,0 +1,16 @@
+[Unit]
+Description=Sentinel self-update executor
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/sentinel/appliance.env
+ExecStart=/usr/lib/sentinel/sentinel-updater run-current-job
+User=root
+Group=root
+WorkingDirectory=/opt/sentinel/deploy
+UMask=0077
+TimeoutStartSec=3600
+StandardOutput=journal
+StandardError=journal

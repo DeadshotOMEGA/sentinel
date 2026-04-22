@@ -41,6 +41,7 @@ interface MemberFormModalProps {
   onOpenChange: (open: boolean) => void
   mode: 'create' | 'edit'
   member?: MemberResponse
+  createProfile?: 'member' | 'civilian'
 }
 
 type FormData = Omit<CreateMemberInput, 'rank' | 'divisionId'> & {
@@ -112,7 +113,13 @@ function formatBadgeOptionLabel(
   return suffix.length > 0 ? `${badge.serialNumber} (${suffix.join(', ')})` : badge.serialNumber
 }
 
-export function MemberFormModal({ open, onOpenChange, mode, member }: MemberFormModalProps) {
+export function MemberFormModal({
+  open,
+  onOpenChange,
+  mode,
+  member,
+  createProfile = 'member',
+}: MemberFormModalProps) {
   const queryClient = useQueryClient()
   const [badgeSearch, setBadgeSearch] = useState('')
   const [pinModalOpen, setPinModalOpen] = useState(false)
@@ -151,6 +158,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
       phoneNumber: '',
       divisionId: '',
       badgeId: '',
+      memberSource: 'nominal_roll',
       memberTypeId: '',
       memberStatusId: '',
       accountLevel: AccountLevel.BASIC,
@@ -167,6 +175,14 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
   const canManageAccountLevel = actorLevel >= AccountLevel.ADMIN
   const canManagePin = actorLevel >= AccountLevel.ADMIN
   const canShowPinSection = mode === 'edit' && Boolean(member) && canManagePin
+  const civilianMemberTypeId =
+    enums?.memberTypes.find(
+      (memberType: { id: string; code: string }) => memberType.code === 'civilian_staff'
+    )?.id ?? ''
+  const isCivilianProfile =
+    mode === 'create'
+      ? createProfile === 'civilian'
+      : resolvedMember?.memberSource === 'civilian_manual'
 
   useEffect(() => {
     if (mode === 'edit' && resolvedMember) {
@@ -180,6 +196,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         phoneNumber: resolvedMember.phoneNumber ?? '',
         divisionId: resolvedMember.divisionId ?? '',
         badgeId: resolvedMember.badgeId ?? '',
+        memberSource: resolvedMember.memberSource,
         memberTypeId: resolvedMember.memberTypeId ?? '',
         memberStatusId: resolvedMember.memberStatusId ?? '',
         accountLevel: resolvedMember.accountLevel,
@@ -187,7 +204,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
     } else {
       reset({
         serviceNumber: '',
-        rank: '',
+        rank: createProfile === 'civilian' ? 'CIV' : '',
         firstName: '',
         lastName: '',
         middleInitial: '',
@@ -195,14 +212,15 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         phoneNumber: '',
         divisionId: '',
         badgeId: '',
-        memberTypeId: '',
+        memberSource: createProfile === 'civilian' ? 'civilian_manual' : 'nominal_roll',
+        memberTypeId: createProfile === 'civilian' ? civilianMemberTypeId : '',
         memberStatusId: '',
         accountLevel: AccountLevel.BASIC,
       })
     }
 
     setBadgeSearch('')
-  }, [mode, resolvedMember, reset])
+  }, [mode, resolvedMember, reset, createProfile, civilianMemberTypeId])
 
   const currentBadge = useMemo(() => {
     if (!resolvedMember?.badgeId) {
@@ -260,6 +278,10 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
 
   const onSubmit = async (data: FormData) => {
     try {
+      if (isCivilianProfile && !civilianMemberTypeId) {
+        throw new Error('Civilian Staff member type is not configured. Seed default enums first.')
+      }
+
       if (mode === 'create') {
         const memberData: CreateMemberInput = {
           serviceNumber: data.serviceNumber,
@@ -270,13 +292,16 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
           divisionId: data.divisionId,
           email: data.email || undefined,
           phoneNumber: data.phoneNumber || undefined,
+          memberSource: data.memberSource,
           memberTypeId: data.memberTypeId || undefined,
           memberStatusId: data.memberStatusId || undefined,
           accountLevel: canManageAccountLevel ? data.accountLevel : undefined,
         }
 
         await createMember.mutateAsync(memberData)
-        toast.success(`Created member ${data.firstName} ${data.lastName}`)
+        toast.success(
+          `Created ${isCivilianProfile ? 'civilian staff record' : 'member'} ${data.firstName} ${data.lastName}`
+        )
       } else if (resolvedMember) {
         const memberData: UpdateMemberInput = {
           serviceNumber: data.serviceNumber,
@@ -287,6 +312,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
           divisionId: data.divisionId,
           email: data.email || undefined,
           phoneNumber: data.phoneNumber || undefined,
+          memberSource: data.memberSource,
           badgeId: data.badgeId ? data.badgeId : null,
           memberTypeId: data.memberTypeId || undefined,
           memberStatusId: data.memberStatusId || undefined,
@@ -312,18 +338,44 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
         testId={TID.members.form.modal}
       >
         <DialogHeader className="border-b border-base-300 px-(--space-6) py-(--space-4) pr-(--space-10)">
-          <DialogTitle>{mode === 'create' ? 'Create Member' : 'Member Details'}</DialogTitle>
+          <DialogTitle>
+            {mode === 'create'
+              ? isCivilianProfile
+                ? 'Create civilian staff'
+                : 'Create member'
+              : resolvedMember?.memberSource === 'civilian_manual'
+                ? 'Civilian staff details'
+                : 'Member details'}
+          </DialogTitle>
           <DialogDescription>
             {mode === 'create'
-              ? 'Add the member profile first. Badge assignment and PIN access can be configured after creation.'
+              ? isCivilianProfile
+                ? 'Create a museum staff record that can use the normal member badge scan flow without entering the nominal roll.'
+                : 'Add the member profile first. Badge assignment and PIN access can be configured after creation.'
               : `Review profile, unit placement, and badge access for ${resolvedMember?.displayName ?? 'this member'}.`}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex max-h-[calc(92vh-7.5rem)] flex-col">
+          <input type="hidden" {...register('memberSource')} />
           <div className="min-h-0 overflow-y-auto overflow-x-hidden px-(--space-6) py-(--space-4)">
             <div className="grid gap-(--space-4) 2xl:grid-cols-[minmax(0,1.55fr)_minmax(24rem,26rem)]">
               <div className="min-w-0 space-y-(--space-3)">
+                {isCivilianProfile && (
+                  <AppCard className="min-w-0 border border-info/30 bg-info-fadded text-info-fadded-content shadow-sm">
+                    <AppCardContent className="py-(--space-3)">
+                      <p className="text-sm font-medium">
+                        Civilian staff records stay outside the nominal roll and use the standard
+                        member badge scan path.
+                      </p>
+                      <p className="mt-(--space-1) text-sm opacity-80">
+                        Use a service number in the `CIV-####` format. Rank stays `CIV` and member
+                        type stays `Civilian Staff`.
+                      </p>
+                    </AppCardContent>
+                  </AppCard>
+                )}
+
                 <AppCard className="min-w-0 border border-base-300 shadow-sm">
                   <AppCardHeader className="border-b border-base-300 pb-(--space-3)">
                     <AppCardTitle>Identity</AppCardTitle>
@@ -341,7 +393,7 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                           className="grow disabled:cursor-not-allowed disabled:opacity-50"
                           id="serviceNumber"
                           {...register('serviceNumber', { required: 'Service number is required' })}
-                          placeholder="e.g., V123456"
+                          placeholder={isCivilianProfile ? 'e.g., CIV-0001' : 'e.g., V123456'}
                           data-testid={TID.members.form.serviceNumber}
                         />
                       </label>
@@ -349,28 +401,43 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                         <span className="label text-error">{errors.serviceNumber.message}</span>
                       )}
 
-                      <label className="select select-bordered select-sm w-full min-w-0">
-                        <span className="label">
-                          Rank <span className="text-error">*</span>
-                        </span>
-                        <select
-                          id="rank"
-                          value={selectedRank}
-                          onChange={(e) =>
-                            setValue('rank', e.target.value, { shouldValidate: true })
-                          }
-                          data-testid={TID.members.form.rank}
-                        >
-                          <option value="" disabled>
-                            Select rank
-                          </option>
-                          {enums?.ranks.map((rank: string) => (
-                            <option key={rank} value={rank}>
-                              {rank}
+                      {isCivilianProfile ? (
+                        <label className="input input-bordered input-sm w-full min-w-0">
+                          <span className="label">
+                            Rank <span className="text-error">*</span>
+                          </span>
+                          <input
+                            className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                            value="CIV"
+                            disabled
+                            readOnly
+                            data-testid={TID.members.form.rank}
+                          />
+                        </label>
+                      ) : (
+                        <label className="select select-bordered select-sm w-full min-w-0">
+                          <span className="label">
+                            Rank <span className="text-error">*</span>
+                          </span>
+                          <select
+                            id="rank"
+                            value={selectedRank}
+                            onChange={(e) =>
+                              setValue('rank', e.target.value, { shouldValidate: true })
+                            }
+                            data-testid={TID.members.form.rank}
+                          >
+                            <option value="" disabled>
+                              Select rank
                             </option>
-                          ))}
-                        </select>
-                      </label>
+                            {enums?.ranks.map((rank: string) => (
+                              <option key={rank} value={rank}>
+                                {rank}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       {errors.rank && (
                         <span className="label text-error">{errors.rank.message}</span>
                       )}
@@ -430,6 +497,18 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                   </AppCardHeader>
                   <AppCardContent className="pt-(--space-3)">
                     <div className="grid gap-(--space-3) md:grid-cols-2">
+                      <label className="input input-bordered input-sm w-full min-w-0">
+                        <span className="label">Record Source</span>
+                        <input
+                          className="grow disabled:cursor-not-allowed disabled:opacity-50"
+                          value={
+                            isCivilianProfile ? 'Civilian manual record' : 'Nominal roll record'
+                          }
+                          disabled
+                          readOnly
+                        />
+                      </label>
+
                       <label className="select select-bordered select-sm w-full min-w-0">
                         <span className="label">
                           Division <span className="text-error">*</span>
@@ -464,13 +543,16 @@ export function MemberFormModal({ open, onOpenChange, mode, member }: MemberForm
                           onChange={(e) =>
                             setValue('memberTypeId', e.target.value, { shouldValidate: true })
                           }
+                          disabled={isCivilianProfile}
                         >
                           <option value="">No member type assigned</option>
-                          {enums?.memberTypes.map((memberType: { id: string; name: string }) => (
-                            <option key={memberType.id} value={memberType.id}>
-                              {memberType.name}
-                            </option>
-                          ))}
+                          {enums?.memberTypes.map(
+                            (memberType: { id: string; name: string; code: string }) => (
+                              <option key={memberType.id} value={memberType.id}>
+                                {memberType.name}
+                              </option>
+                            )
+                          )}
                         </select>
                       </label>
 

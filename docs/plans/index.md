@@ -2,7 +2,7 @@
 
 **Purpose:** Central registry of all implementation plans
 
-**Last Updated:** 2026-01-27
+**Last Updated:** 2026-04-22
 
 ---
 
@@ -10,11 +10,11 @@
 
 Currently executing plans tracked here:
 
-| Plan              | Started | Status | Current Phase | Progress |
-| ----------------- | ------- | ------ | ------------- | -------- |
-| _No active plans_ | -       | -      | -             | -        |
+| Plan | Started | Status | Current Phase | Progress |
+| ---- | ------- | ------ | ------------- | -------- |
+| [Sentinel Self-Update V2](active/2026-04-22-sentinel-self-update-v2.md) | 2026-04-22 | Active | Phases 4-6 validation | Phases 1-3 manually validated on an Ubuntu VM; backend bridge/systemd path validated; published-release, UI, and rollback validation still pending |
 
-**Total Active:** 0
+**Total Active:** 1
 
 ---
 
@@ -47,10 +47,10 @@ Plans that were cancelled, superseded, or no longer relevant:
 
 ## Plan Statistics
 
-- **Active:** 0
+- **Active:** 1
 - **Completed:** 4
 - **Archived:** 0
-- **Success Rate:** 100% (4/4 completed successfully)
+- **Success Rate:** 100% (4 completed successfully, 1 active)
 - **Average Duration:** ~3.3 days
 
 ---

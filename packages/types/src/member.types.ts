@@ -4,7 +4,8 @@ import type { Badge } from './badge.types'
 import type { Tag } from './tag.types'
 
 export type MemberStatus = 'active' | 'inactive' | 'transferred' | 'retired' | 'pending_review'
-export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force'
+export type MemberType = 'class_a' | 'class_b' | 'class_c' | 'reg_force' | 'civilian_staff'
+export type MemberSource = 'nominal_roll' | 'civilian_manual'
 
 export interface Member {
   id: string
@@ -19,6 +20,7 @@ export interface Member {
   mess?: string
   moc?: string
   memberType: MemberType
+  memberSource: MemberSource
   memberTypeId?: string
   memberStatusId?: string
   classDetails?: string
@@ -73,7 +75,8 @@ export interface CreateMemberInput {
   divisionId: string
   mess?: string
   moc?: string
-  memberType: MemberType
+  memberType?: MemberType
+  memberSource?: MemberSource
   memberTypeId?: string
   memberStatusId?: string
   classDetails?: string
@@ -96,6 +99,7 @@ export interface UpdateMemberInput {
   mess?: string
   moc?: string
   memberType?: MemberType
+  memberSource?: MemberSource
   memberTypeId?: string
   memberStatusId?: string
   classDetails?: string
@@ -118,6 +122,7 @@ export interface MemberFilterParams {
   moc?: string
   division?: string
   contract?: 'active' | 'expiring_soon' | 'expired'
+  memberSource?: MemberSource
   tags?: string[]
   excludeTags?: string[]
 }
