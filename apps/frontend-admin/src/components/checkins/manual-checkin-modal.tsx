@@ -22,6 +22,7 @@ import { TID } from '@/lib/test-ids'
 import {
   evaluateManualCheckinEligibility,
   formatManualCheckinMemberLabel,
+  resolveManualCheckinTimestamp,
   type ManualCheckinDirection,
   type ManualCheckinMemberOption,
 } from './manual-checkin-modal.logic'
@@ -35,6 +36,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   // eslint-disable-next-line no-undef -- DOM type available in browser build
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [memberSearch, setMemberSearch] = useState('')
+  const [recordedAt, setRecordedAt] = useState('')
   const [direction, setDirection] = useState<ManualCheckinDirection>('in')
   const [selectedMemberInfo, setSelectedMemberInfo] = useState<{
     id: string
@@ -113,15 +115,18 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
         presentMemberIds,
         direction,
         selectedMemberId: selectedMemberInfo?.id ?? null,
+        selectedMember: selectedMemberInfo,
       }),
-    [direction, members, presentMemberIds, selectedMemberInfo?.id]
+    [direction, members, presentMemberIds, selectedMemberInfo]
   )
+  const timestampResolution = useMemo(() => resolveManualCheckinTimestamp(recordedAt), [recordedAt])
 
   // Reset state when modal closes
   useEffect(() => {
     if (!open) {
       setPendingCheckout(null)
       setMemberSearch('')
+      setRecordedAt('')
       setDirection('in')
       setSelectedMemberInfo(null)
       setSubmitError(null)
@@ -147,6 +152,10 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
 
     setSubmitError(null)
 
+    if (timestampResolution.error) {
+      return
+    }
+
     if (direction === 'out' && holdsLockup && !canCheckoutNormally) {
       setPendingCheckout({ memberId: selectedMemberInfo.id, direction })
       setShowLockupOptions(true)
@@ -159,6 +168,9 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
         direction,
         kioskId: 'ADMIN_MANUAL',
         method: 'manual',
+        ...(timestampResolution.isoTimestamp
+          ? { timestamp: timestampResolution.isoTimestamp }
+          : {}),
       }
       await createCheckin.mutateAsync(checkinData)
       onOpenChange(false)
@@ -177,6 +189,9 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
           direction: pendingCheckout.direction,
           kioskId: 'ADMIN_MANUAL',
           method: 'manual',
+          ...(timestampResolution.isoTimestamp
+            ? { timestamp: timestampResolution.isoTimestamp }
+            : {}),
         }
         await createCheckin.mutateAsync(checkinData)
       } catch (error) {
@@ -212,6 +227,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
   const canSubmit =
     hasSelectedMember &&
     eligibility.selectedMemberEligible &&
+    !timestampResolution.error &&
     !isFormBusy &&
     !(direction === 'out' && selectedMemberId && loadingCheckoutOptions)
 
@@ -284,6 +300,35 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                 </button>
               </div>
             </fieldset>
+
+            <div className="grid gap-(--space-2)">
+              <label
+                className="input input-bordered input-sm w-full"
+                htmlFor={TID.checkins.manualModal.timestamp}
+              >
+                <span className="label">Recorded time</span>
+                <input
+                  id={TID.checkins.manualModal.timestamp}
+                  type="datetime-local"
+                  className="grow"
+                  value={recordedAt}
+                  onChange={(event) => {
+                    setRecordedAt(event.target.value)
+                    setSubmitError(null)
+                  }}
+                  disabled={isFormBusy}
+                  data-testid={TID.checkins.manualModal.timestamp}
+                />
+              </label>
+              <p className="text-xs text-base-content/55">
+                Leave blank to use the current local time.
+              </p>
+              {timestampResolution.error ? (
+                <p className="text-xs text-error" role="alert">
+                  {timestampResolution.error}
+                </p>
+              ) : null}
+            </div>
 
             <div className="grid gap-(--space-2)">
               <label className="input input-bordered input-sm w-full">

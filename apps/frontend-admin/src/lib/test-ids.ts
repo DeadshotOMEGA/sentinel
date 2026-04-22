@@ -129,6 +129,7 @@ export const TID = {
     },
     manualModal: {
       dialog: 'manual-checkin-dialog',
+      timestamp: 'manual-checkin-timestamp',
       memberSearch: 'manual-checkin-member-search',
       clearMember: 'manual-checkin-clear-member',
       memberOption: (id: string) => `manual-checkin-member-${id}`,

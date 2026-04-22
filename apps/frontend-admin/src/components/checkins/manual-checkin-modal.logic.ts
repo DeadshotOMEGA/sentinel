@@ -15,6 +15,11 @@ export interface ManualCheckinEligibilityResult {
   selectedMemberReason: string | null
 }
 
+export interface ManualCheckinTimestampResolution {
+  isoTimestamp?: string
+  error: string | null
+}
+
 function getFormattedName(member: ManualCheckinMemberOption): string {
   return (
     member.displayName?.trim() || `${member.rank} ${member.lastName}, ${member.firstName}`.trim()
@@ -25,16 +30,43 @@ export function formatManualCheckinMemberLabel(member: ManualCheckinMemberOption
   return `${getFormattedName(member)} (${member.serviceNumber.slice(-3)})`
 }
 
+export function resolveManualCheckinTimestamp(value: string): ManualCheckinTimestampResolution {
+  const trimmedValue = value.trim()
+
+  if (trimmedValue.length === 0) {
+    return {
+      isoTimestamp: undefined,
+      error: null,
+    }
+  }
+
+  const parsedTimestamp = new Date(trimmedValue)
+
+  if (Number.isNaN(parsedTimestamp.getTime())) {
+    return {
+      isoTimestamp: undefined,
+      error: 'Enter a valid date and time or leave it blank.',
+    }
+  }
+
+  return {
+    isoTimestamp: parsedTimestamp.toISOString(),
+    error: null,
+  }
+}
+
 export function evaluateManualCheckinEligibility({
   members,
   presentMemberIds,
   direction,
   selectedMemberId,
+  selectedMember,
 }: {
   members: ManualCheckinMemberOption[]
   presentMemberIds: Set<string>
   direction: ManualCheckinDirection
   selectedMemberId: string | null
+  selectedMember?: ManualCheckinMemberOption | null
 }): ManualCheckinEligibilityResult {
   const eligibleMembers = members.filter((member) => {
     const isPresent = presentMemberIds.has(member.id)
@@ -49,9 +81,11 @@ export function evaluateManualCheckinEligibility({
     }
   }
 
-  const selectedMember = members.find((member) => member.id === selectedMemberId)
+  const resolvedSelectedMember =
+    members.find((member) => member.id === selectedMemberId) ??
+    (selectedMember?.id === selectedMemberId ? selectedMember : undefined)
 
-  if (!selectedMember) {
+  if (!resolvedSelectedMember) {
     return {
       eligibleMembers,
       selectedMemberEligible: false,
@@ -59,13 +93,13 @@ export function evaluateManualCheckinEligibility({
     }
   }
 
-  const isPresent = presentMemberIds.has(selectedMember.id)
+  const isPresent = presentMemberIds.has(resolvedSelectedMember.id)
 
   if (direction === 'in' && isPresent) {
     return {
       eligibleMembers,
       selectedMemberEligible: false,
-      selectedMemberReason: `${getFormattedName(selectedMember)} is already checked in.`,
+      selectedMemberReason: `${getFormattedName(resolvedSelectedMember)} is already checked in.`,
     }
   }
 
@@ -73,7 +107,7 @@ export function evaluateManualCheckinEligibility({
     return {
       eligibleMembers,
       selectedMemberEligible: false,
-      selectedMemberReason: `${getFormattedName(selectedMember)} is not currently checked in.`,
+      selectedMemberReason: `${getFormattedName(resolvedSelectedMember)} is not currently checked in.`,
     }
   }
 
