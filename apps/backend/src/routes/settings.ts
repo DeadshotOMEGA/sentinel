@@ -1,7 +1,9 @@
 import { initServer } from '@ts-rest/express'
 import { settingContract } from '@sentinel/contracts'
 import { SettingRepository } from '../repositories/setting-repository.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { getPrismaClient } from '../lib/database.js'
+import { logRequestAudit } from '../lib/audit-log.js'
 import type { Setting } from '../repositories/setting-repository.js'
 import type { SettingResponse } from '@sentinel/contracts'
 import type { Request } from 'express'
@@ -10,6 +12,7 @@ import { AccountLevel } from '../middleware/roles.js'
 const s = initServer()
 
 const settingRepo = new SettingRepository(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 function requireMember(req: Request) {
   if (!req.member) {
@@ -163,6 +166,20 @@ export const settingsRouter = s.router(settingContract, {
         description: body.description,
       })
 
+      await logRequestAudit(auditRepo, req, {
+        action: 'setting_create',
+        entityType: 'settings',
+        entityId: setting.id,
+        details: {
+          settingKey: setting.key,
+          category: setting.category,
+          description: setting.description ?? null,
+          valueSnapshot: {
+            [setting.key]: setting.value,
+          },
+        },
+      })
+
       return {
         status: 201 as const,
         body: toApiFormat(setting),
@@ -199,9 +216,39 @@ export const settingsRouter = s.router(settingContract, {
     }
 
     try {
+      const existingSetting = await settingRepo.findByKey(params.key)
+      if (!existingSetting) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Setting with key '${params.key}' not found`,
+          },
+        }
+      }
+
       const setting = await settingRepo.updateByKey(params.key, {
         value: body.value,
         description: body.description,
+      })
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'setting_update',
+        entityType: 'settings',
+        entityId: setting.id,
+        details: {
+          settingKey: setting.key,
+          category: setting.category,
+          description: setting.description ?? null,
+          previousValue: {
+            [setting.key]: existingSetting.value,
+          },
+          nextValue: {
+            [setting.key]: setting.value,
+          },
+          previousDescription: existingSetting.description ?? null,
+          nextDescription: setting.description ?? null,
+        },
       })
 
       return {
@@ -249,7 +296,32 @@ export const settingsRouter = s.router(settingContract, {
     }
 
     try {
+      const existingSetting = await settingRepo.findByKey(params.key)
+      if (!existingSetting) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Setting with key '${params.key}' not found`,
+          },
+        }
+      }
+
       await settingRepo.deleteByKey(params.key)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'setting_delete',
+        entityType: 'settings',
+        entityId: existingSetting.id,
+        details: {
+          settingKey: existingSetting.key,
+          category: existingSetting.category,
+          description: existingSetting.description ?? null,
+          deletedValue: {
+            [existingSetting.key]: existingSetting.value,
+          },
+        },
+      })
 
       return {
         status: 200 as const,

@@ -3,6 +3,7 @@ import {
   evaluateManualCheckinEligibility,
   formatManualCheckinMemberLabel,
   type ManualCheckinMemberOption,
+  resolveManualCheckinTimestamp,
 } from './manual-checkin-modal.logic'
 
 function createMember(
@@ -75,6 +76,22 @@ describe('evaluateManualCheckinEligibility', () => {
     expect(result.selectedMemberEligible).toBe(false)
     expect(result.selectedMemberReason).toContain('not currently checked in')
   })
+
+  it('keeps the selected member eligible when they are no longer in the current member page', () => {
+    const members = [createMember('1')]
+    const selectedMember = createMember('999')
+
+    const result = evaluateManualCheckinEligibility({
+      members,
+      presentMemberIds: new Set(),
+      direction: 'in',
+      selectedMemberId: '999',
+      selectedMember,
+    })
+
+    expect(result.selectedMemberEligible).toBe(true)
+    expect(result.selectedMemberReason).toBeNull()
+  })
 })
 
 describe('formatManualCheckinMemberLabel', () => {
@@ -87,5 +104,30 @@ describe('formatManualCheckinMemberLabel', () => {
         })
       )
     ).toBe('PO2 Taylor Hunt (890)')
+  })
+})
+
+describe('resolveManualCheckinTimestamp', () => {
+  it('omits the timestamp when the field is blank', () => {
+    expect(resolveManualCheckinTimestamp('')).toEqual({
+      isoTimestamp: undefined,
+      error: null,
+    })
+  })
+
+  it('converts a local datetime value to ISO', () => {
+    const value = '2026-04-21T19:45'
+
+    expect(resolveManualCheckinTimestamp(value)).toEqual({
+      isoTimestamp: new Date(value).toISOString(),
+      error: null,
+    })
+  })
+
+  it('reports invalid datetime input', () => {
+    expect(resolveManualCheckinTimestamp('not-a-date')).toEqual({
+      isoTimestamp: undefined,
+      error: 'Enter a valid date and time or leave it blank.',
+    })
   })
 })

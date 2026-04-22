@@ -3,14 +3,17 @@ import type { Request } from 'express'
 import { remoteSystemContract, type AdminRemoteSystem } from '@sentinel/contracts'
 import { Prisma } from '@sentinel/database'
 import { getPrismaClient } from '../lib/database.js'
+import { logRequestAudit } from '../lib/audit-log.js'
 import { shouldEnforceMainSystemLoginSelection } from '../lib/runtime-context.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import {
   DEPLOYMENT_REMOTE_SYSTEM_CODE,
   RemoteSystemRepository,
 } from '../repositories/remote-system-repository.js'
 
 const s = initServer()
+const auditRepo = new AuditRepository(getPrismaClient())
 
 function getRemoteSystemRepository(): RemoteSystemRepository {
   return new RemoteSystemRepository(getPrismaClient())
@@ -150,6 +153,19 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
       })
       const usageCount = await remoteSystemRepository.countUsage(system.id)
 
+      await logRequestAudit(auditRepo, req, {
+        action: 'remote_system_create',
+        entityType: 'remote_system',
+        entityId: system.id,
+        details: {
+          remoteSystemCode: system.code,
+          remoteSystemName: system.name,
+          description: system.description ?? null,
+          displayOrder: system.displayOrder,
+          isActive: system.isActive,
+        },
+      })
+
       return {
         status: 201 as const,
         body: {
@@ -196,7 +212,30 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
 
     try {
       const remoteSystemRepository = getRemoteSystemRepository()
+      const beforeSystems = await remoteSystemRepository.findAdminSystems()
       await remoteSystemRepository.reorder(body.remoteSystemIds)
+
+      const afterSystems = await remoteSystemRepository.findAdminSystems()
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'remote_system_reorder',
+        entityType: 'remote_system',
+        entityId: null,
+        details: {
+          previousOrder: beforeSystems.map((system) => ({
+            id: system.id,
+            code: system.code,
+            name: system.name,
+            displayOrder: system.displayOrder,
+          })),
+          nextOrder: afterSystems.map((system) => ({
+            id: system.id,
+            code: system.code,
+            name: system.name,
+            displayOrder: system.displayOrder,
+          })),
+        },
+      })
 
       return {
         status: 200 as const,
@@ -234,6 +273,17 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
 
     try {
       const remoteSystemRepository = getRemoteSystemRepository()
+      const existingSystem = await remoteSystemRepository.findById(params.id)
+      if (!existingSystem) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: 'Remote system not found',
+          },
+        }
+      }
+
       const system = await remoteSystemRepository.update(params.id, {
         code: body.code,
         name: body.name,
@@ -247,6 +297,31 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
       ])
       const activeSessionCount =
         systems.find((item) => item.id === system.id)?.activeSessionCount ?? 0
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'remote_system_update',
+        entityType: 'remote_system',
+        entityId: system.id,
+        details: {
+          remoteSystemCode: system.code,
+          remoteSystemName: system.name,
+          requestedChanges: body,
+          previousState: {
+            code: existingSystem.code,
+            name: existingSystem.name,
+            description: existingSystem.description ?? null,
+            displayOrder: existingSystem.displayOrder,
+            isActive: existingSystem.isActive,
+          },
+          currentState: {
+            code: system.code,
+            name: system.name,
+            description: system.description ?? null,
+            displayOrder: system.displayOrder,
+            isActive: system.isActive,
+          },
+        },
+      })
 
       return {
         status: 200 as const,
@@ -314,6 +389,17 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
 
     try {
       const remoteSystemRepository = getRemoteSystemRepository()
+      const existingSystem = await remoteSystemRepository.findById(params.id)
+      if (!existingSystem) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: 'Remote system not found',
+          },
+        }
+      }
+
       const usageCount = await remoteSystemRepository.countUsage(params.id)
       if (usageCount > 0) {
         return {
@@ -326,6 +412,19 @@ export const remoteSystemsRouter = s.router(remoteSystemContract, {
       }
 
       await remoteSystemRepository.delete(params.id)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'remote_system_delete',
+        entityType: 'remote_system',
+        entityId: params.id,
+        details: {
+          remoteSystemCode: existingSystem.code,
+          remoteSystemName: existingSystem.name,
+          description: existingSystem.description ?? null,
+          displayOrder: existingSystem.displayOrder,
+          isActive: existingSystem.isActive,
+        },
+      })
 
       return {
         status: 200 as const,

@@ -3,12 +3,15 @@ import { operationalTimingContract } from '@sentinel/contracts'
 import * as v from 'valibot'
 import { OperationalTimingsSettingsSchema } from '@sentinel/contracts'
 import type { Request } from 'express'
+import { logRequestAudit } from '../lib/audit-log.js'
 import { AccountLevel } from '../middleware/roles.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { OperationalTimingsService } from '../services/operational-timings-service.js'
 import { getPrismaClient } from '../lib/database.js'
 
 const s = initServer()
 const operationalTimingsService = new OperationalTimingsService(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 function requireMember(req: Request) {
   if (!req.member) {
@@ -85,7 +88,19 @@ export const operationalTimingsRouter = s.router(operationalTimingContract, {
     }
 
     try {
+      const previousSettings = await operationalTimingsService.getOperationalTimings()
       const updated = await operationalTimingsService.updateOperationalTimings(parsed.output)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'operational_timings_update',
+        entityType: 'operational_timings',
+        entityId: null,
+        details: {
+          previousSettings: previousSettings.settings,
+          nextSettings: updated.settings,
+        },
+      })
+
       return {
         status: 200 as const,
         body: updated,

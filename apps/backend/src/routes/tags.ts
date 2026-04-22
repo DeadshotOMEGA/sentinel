@@ -1,6 +1,9 @@
 import { initServer } from '@ts-rest/express'
 import { tagContract } from '@sentinel/contracts'
 import type { AssignTagInput } from '@sentinel/contracts'
+import type { Request } from 'express'
+import { logRequestAudit, formatAuditMemberName } from '../lib/audit-log.js'
+import { AuditRepository } from '../repositories/audit-repository.js'
 import { TagRepository } from '../repositories/tag-repository.js'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -9,6 +12,7 @@ const s = initServer()
 
 const tagRepo = new TagRepository(getPrismaClient())
 const memberRepo = new MemberRepository(getPrismaClient())
+const auditRepo = new AuditRepository(getPrismaClient())
 
 /**
  * Tags route implementation using ts-rest
@@ -99,7 +103,15 @@ export const tagsRouter = s.router(tagContract, {
   /**
    * Assign a tag to a member
    */
-  assignTag: async ({ params, body }: { params: { memberId: string }; body: AssignTagInput }) => {
+  assignTag: async ({
+    params,
+    body,
+    req,
+  }: {
+    params: { memberId: string }
+    body: AssignTagInput
+    req: Request
+  }) => {
     try {
       // Verify member exists
       const member = await memberRepo.findById(params.memberId)
@@ -114,6 +126,18 @@ export const tagsRouter = s.router(tagContract, {
       }
 
       const memberTag = await tagRepo.assignTagToMember(params.memberId, body.tagId)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'member_tag_add',
+        entityType: 'member',
+        entityId: params.memberId,
+        details: {
+          memberName: formatAuditMemberName(member),
+          serviceNumber: member.serviceNumber,
+          tagId: memberTag.tagId,
+          tagName: memberTag.tag.name,
+        },
+      })
 
       return {
         status: 201 as const,
@@ -166,7 +190,13 @@ export const tagsRouter = s.router(tagContract, {
   /**
    * Remove a tag from a member
    */
-  removeTag: async ({ params }: { params: { memberId: string; tagId: string } }) => {
+  removeTag: async ({
+    params,
+    req,
+  }: {
+    params: { memberId: string; tagId: string }
+    req: Request
+  }) => {
     try {
       // Verify member exists
       const member = await memberRepo.findById(params.memberId)
@@ -180,7 +210,20 @@ export const tagsRouter = s.router(tagContract, {
         }
       }
 
+      const tag = await tagRepo.findById(params.tagId)
       await tagRepo.removeTagFromMember(params.memberId, params.tagId)
+
+      await logRequestAudit(auditRepo, req, {
+        action: 'member_tag_remove',
+        entityType: 'member',
+        entityId: params.memberId,
+        details: {
+          memberName: formatAuditMemberName(member),
+          serviceNumber: member.serviceNumber,
+          tagId: params.tagId,
+          tagName: tag?.name ?? null,
+        },
+      })
 
       return {
         status: 200 as const,
