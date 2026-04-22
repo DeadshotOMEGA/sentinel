@@ -293,6 +293,50 @@ describe('systemUpdateRouter', () => {
     }
   })
 
+  it('suppresses a stale completed updater job when the appliance version moved ahead manually', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const applianceStatePath = join(stateRoot, 'appliance-state.json')
+    await mkdir(join(stateRoot, 'jobs'), { recursive: true })
+    await writeJson(
+      join(stateRoot, 'current-job.json'),
+      createJob({
+        status: 'completed',
+        currentVersion: 'v2.6.3',
+        latestVersion: 'v2.6.3',
+        targetVersion: 'v2.6.3',
+        finishedAt: '2026-04-22T12:10:00.000Z',
+        message: 'Sentinel updated successfully to v2.6.3.',
+      })
+    )
+    await writeJson(applianceStatePath, {
+      schemaVersion: 1,
+      withObs: false,
+      allowGrafanaLan: false,
+      allowWikiLan: false,
+      lanCidr: '192.168.0.0/16',
+      currentVersion: 'v2.6.4',
+      previousVersion: 'v2.6.3',
+    })
+
+    process.env.APP_VERSION = 'v2.6.3'
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = applianceStatePath
+    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        currentVersion: 'v2.6.4',
+        currentJob: null,
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
   it('rejects starting the same target again when appliance state is already on that version', async () => {
     const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
     const applianceStatePath = join(stateRoot, 'appliance-state.json')
