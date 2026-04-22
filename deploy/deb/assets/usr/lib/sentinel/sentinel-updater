@@ -1,0 +1,672 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import fcntl
+import hashlib
+import json
+import logging
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+from typing import Any
+
+CURRENT_DIR = Path(__file__).resolve().parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
+from sentinel_update_common import (
+    APPLIANCE_ENV_PATH,
+    BACKUPS_DIR,
+    CURRENT_JOB_PATH,
+    DEPLOY_DIR,
+    DOWNLOADS_DIR,
+    HEALTH_URL,
+    JOBS_DIR,
+    LOCK_PATH,
+    LOG_ROOT,
+    VERSION_PATTERN,
+    compose_command,
+    ensure_runtime_directories,
+    is_terminal_status,
+    load_appliance_state,
+    normalize_version_tag,
+    read_env_file,
+    read_json_file,
+    resolve_release_repository,
+    sanitize_failure_summary,
+    save_appliance_state,
+    upsert_env_value,
+    utc_now,
+    write_json_file,
+)
+
+LOGGER = logging.getLogger("sentinel-updater")
+RELEASE_API_BASE = os.environ.get("SENTINEL_RELEASE_API_BASE", "https://api.github.com/repos")
+NONINTERACTIVE_ENV = {
+    "PATH": os.environ.get("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"),
+    "HOME": "/root",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "DEBIAN_FRONTEND": "noninteractive",
+}
+INSTALL_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_INSTALL_TIMEOUT_SECONDS", "1800"))
+COMMAND_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_COMMAND_TIMEOUT_SECONDS", "900"))
+HEALTH_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_HEALTH_TIMEOUT_SECONDS", "240"))
+CHECKSUM_NAME_PATTERN = re.compile(r"(sha256|checksum)", re.IGNORECASE)
+
+
+class UpdaterError(RuntimeError):
+    def __init__(self, step: str, message: str) -> None:
+        super().__init__(message)
+        self.step = step
+
+
+class JobLogger:
+    def __init__(self, job_id: str) -> None:
+        self.path = LOG_ROOT / f"system-update-{job_id}.log"
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._handle = self.path.open("a", encoding="utf-8")
+
+    def write_line(self, line: str) -> None:
+        text = line.rstrip()
+        self._handle.write(text + "\n")
+        self._handle.flush()
+        LOGGER.info(text)
+
+    def close(self) -> None:
+        self._handle.close()
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+        format="[sentinel-updater] %(message)s",
+        stream=sys.stdout,
+    )
+
+
+def load_job(path: Path) -> dict[str, Any]:
+    job = read_json_file(path)
+    if not isinstance(job, dict):
+        raise UpdaterError("requested", f"Update job is missing or invalid at {path}")
+    return job
+
+
+def persist_job(job: dict[str, Any]) -> None:
+    write_json_file(JOBS_DIR / f"{job['jobId']}.json", job, mode=0o644)
+    write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
+
+
+def update_job(
+    job: dict[str, Any],
+    *,
+    status: str,
+    message: str,
+    job_logger: JobLogger | None = None,
+    failure_summary: str | None = None,
+    finished: bool = False,
+) -> None:
+    if status == "authorized" and not job.get("startedAt"):
+        job["startedAt"] = utc_now()
+    job["status"] = status
+    job["message"] = message
+    job["failureSummary"] = failure_summary
+    if finished:
+        job["finishedAt"] = utc_now()
+    persist_job(job)
+    if job_logger is not None:
+        job_logger.write_line(f"{utc_now()} {status}: {message}")
+
+
+def current_version_from_env() -> str | None:
+    return normalize_version_tag(read_env_file(APPLIANCE_ENV_PATH).get("SENTINEL_VERSION"))
+
+
+def compare_version_tags(left: str, right: str) -> int:
+    def parse(tag: str) -> tuple[int, int, int]:
+        cleaned = tag[1:] if tag.startswith("v") else tag
+        major_raw, minor_raw, patch_raw = cleaned.split(".")
+        return int(major_raw), int(minor_raw), int(patch_raw)
+
+    left_parts = parse(left)
+    right_parts = parse(right)
+    if left_parts < right_parts:
+        return -1
+    if left_parts > right_parts:
+        return 1
+    return 0
+
+
+def github_request(path: str) -> dict[str, Any]:
+    request = urllib.request.Request(
+        f"{RELEASE_API_BASE.rstrip('/')}/{resolve_release_repository()}{path}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "sentinel-updater/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        raise UpdaterError("downloading", f"Release metadata request failed with HTTP {error.code}") from error
+    except urllib.error.URLError as error:
+        raise UpdaterError("downloading", f"Release metadata request failed: {error.reason}") from error
+
+    if not isinstance(payload, dict):
+        raise UpdaterError("downloading", "Release metadata response was not a JSON object.")
+    return payload
+
+
+def fetch_release(tag: str) -> dict[str, Any]:
+    return github_request(f"/releases/tags/{tag}")
+
+
+def fetch_latest_release() -> dict[str, Any]:
+    return github_request("/releases/latest")
+
+
+def select_release_asset(release: dict[str, Any], version_tag: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    version = version_tag.removeprefix("v")
+    expected_name = f"sentinel_{version}_all.deb"
+    assets = release.get("assets")
+    if not isinstance(assets, list):
+        raise UpdaterError("verifying", "Release asset list was missing.")
+
+    deb_asset: dict[str, Any] | None = None
+    checksum_asset: dict[str, Any] | None = None
+
+    for asset in assets:
+        if not isinstance(asset, dict):
+            continue
+        name = str(asset.get("name", ""))
+        if name == expected_name:
+            deb_asset = asset
+        if CHECKSUM_NAME_PATTERN.search(name):
+            checksum_asset = asset
+
+    if deb_asset is None:
+        raise UpdaterError("verifying", f"Release {version_tag} did not contain {expected_name}.")
+    if checksum_asset is None:
+        raise UpdaterError("verifying", f"Release {version_tag} did not contain a checksum asset.")
+    return deb_asset, checksum_asset
+
+
+def download_asset(url: str, destination: Path) -> None:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/octet-stream",
+            "User-Agent": "sentinel-updater/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            with destination.open("wb") as handle:
+                while True:
+                    chunk = response.read(1024 * 64)
+                    if not chunk:
+                        break
+                    handle.write(chunk)
+    except urllib.error.HTTPError as error:
+        raise UpdaterError("downloading", f"Asset download failed with HTTP {error.code}") from error
+    except urllib.error.URLError as error:
+        raise UpdaterError("downloading", f"Asset download failed: {error.reason}") from error
+
+
+def checksum_from_file(checksum_file: Path, file_name: str) -> str:
+    for raw_line in checksum_file.read_text(encoding="utf-8").splitlines():
+        parts = raw_line.replace("*", " ").split()
+        if len(parts) >= 2 and parts[1] == file_name:
+            return parts[0]
+    raise UpdaterError("verifying", f"Checksum file did not contain an entry for {file_name}.")
+
+
+def sha256sum(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while True:
+            chunk = handle.read(1024 * 64)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def cached_paths(version_tag: str) -> tuple[Path, Path]:
+    version = version_tag.removeprefix("v")
+    return DOWNLOADS_DIR / f"sentinel_{version}_all.deb", DOWNLOADS_DIR / f"SHA256SUMS-{version}.txt"
+
+
+def cache_verified_release(version_tag: str, job_logger: JobLogger) -> dict[str, str]:
+    release = fetch_release(version_tag)
+    release_tag = str(release.get("tag_name", "")).strip()
+    if release_tag != version_tag:
+        raise UpdaterError("verifying", f"Release metadata tag mismatch for {version_tag}.")
+
+    deb_asset, checksum_asset = select_release_asset(release, version_tag)
+    deb_path, checksum_path = cached_paths(version_tag)
+
+    if not deb_path.exists():
+        update_line = f"Downloading {deb_asset['name']} to {deb_path}"
+        job_logger.write_line(update_line)
+        download_asset(str(deb_asset["browser_download_url"]), deb_path)
+    if not checksum_path.exists():
+        job_logger.write_line(f"Downloading {checksum_asset['name']} to {checksum_path}")
+        download_asset(str(checksum_asset["browser_download_url"]), checksum_path)
+
+    expected_hash = checksum_from_file(checksum_path, deb_path.name)
+    actual_hash = sha256sum(deb_path)
+    if actual_hash != expected_hash:
+        raise UpdaterError("verifying", f"Checksum mismatch for {deb_path.name}.")
+
+    return {
+        "version": version_tag,
+        "debPath": str(deb_path),
+        "checksumPath": str(checksum_path),
+        "checksum": actual_hash,
+        "releaseUrl": str(release.get("html_url", "")),
+    }
+
+
+def run_command(
+    command: list[str],
+    *,
+    job_logger: JobLogger,
+    timeout: int,
+    step: str,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    job_logger.write_line(f"Running command: {' '.join(command)}")
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            env=env,
+            stdin=subprocess.DEVNULL,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise UpdaterError(step, f"Command timed out after {timeout}s: {' '.join(command)}") from error
+
+    stdout = result.stdout.strip()
+    stderr = result.stderr.strip()
+    if stdout:
+        job_logger.write_line("stdout:")
+        for line in stdout.splitlines():
+            job_logger.write_line(f"  {line}")
+    if stderr:
+        job_logger.write_line("stderr:")
+        for line in stderr.splitlines():
+            job_logger.write_line(f"  {line}")
+    return result
+
+
+def install_deb(deb_path: Path, job_logger: JobLogger) -> None:
+    install_env = dict(NONINTERACTIVE_ENV)
+    install_env["APT_LISTCHANGES_FRONTEND"] = "none"
+    primary = run_command(
+        ["apt-get", "install", "-y", str(deb_path)],
+        job_logger=job_logger,
+        timeout=INSTALL_TIMEOUT_SECONDS,
+        step="installing",
+        env=install_env,
+    )
+    if primary.returncode == 0:
+        return
+
+    job_logger.write_line("Primary install path failed. Attempting the defined fallback path.")
+    fallback_dpkg = run_command(
+        ["dpkg", "-i", str(deb_path)],
+        job_logger=job_logger,
+        timeout=INSTALL_TIMEOUT_SECONDS,
+        step="installing",
+        env=install_env,
+    )
+    fallback_fix = run_command(
+        ["apt-get", "-f", "install", "-y"],
+        job_logger=job_logger,
+        timeout=INSTALL_TIMEOUT_SECONDS,
+        step="installing",
+        env=install_env,
+    )
+    if fallback_dpkg.returncode != 0 or fallback_fix.returncode != 0:
+        raise UpdaterError("installing", "Package installation failed in both the primary and fallback paths.")
+
+
+def wait_for_health(job_logger: JobLogger) -> None:
+    deadline = time.monotonic() + HEALTH_TIMEOUT_SECONDS
+    request = urllib.request.Request(HEALTH_URL, headers={"User-Agent": "sentinel-updater/1.0"})
+    while time.monotonic() < deadline:
+        try:
+            with urllib.request.urlopen(request, timeout=5) as response:
+                if 200 <= response.status < 300:
+                    job_logger.write_line(f"Health check passed at {HEALTH_URL}")
+                    return
+        except Exception:  # noqa: BLE001
+            pass
+        time_left = max(0, int(deadline - time.monotonic()))
+        job_logger.write_line(f"Waiting for {HEALTH_URL} ({time_left}s remaining)")
+        time.sleep(3)
+    raise UpdaterError("health_check", f"Health check did not succeed at {HEALTH_URL}.")
+
+
+def prepare_backup(job: dict[str, Any], job_logger: JobLogger) -> dict[str, Any]:
+    backup_script = DEPLOY_DIR / "backup.sh"
+    metadata = {
+        "attempted": False,
+        "succeeded": False,
+        "outputDir": None,
+        "completedAt": None,
+    }
+    if not backup_script.exists():
+        job_logger.write_line("No backup.sh helper was found. Proceeding without a pre-update backup.")
+        return metadata
+
+    output_dir = BACKUPS_DIR / job["jobId"]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    metadata["attempted"] = True
+    metadata["outputDir"] = str(output_dir)
+    result = run_command(
+        [str(backup_script), "--scope", "all", "--output-dir", str(output_dir)],
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="staging",
+        env=dict(os.environ),
+    )
+    if result.returncode != 0:
+        raise UpdaterError("staging", "Pre-update backup failed.")
+
+    metadata["succeeded"] = True
+    metadata["completedAt"] = utc_now()
+    return metadata
+
+
+def update_runtime_version(target_version: str) -> None:
+    upsert_env_value(APPLIANCE_ENV_PATH, "SENTINEL_VERSION", target_version)
+
+
+def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> None:
+    commands = [
+        compose_command(
+            state,
+            "exec",
+            "-T",
+            "backend",
+            "sh",
+            "-lc",
+            "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe",
+        ),
+        compose_command(
+            state,
+            "exec",
+            "-T",
+            "backend",
+            "sh",
+            "-lc",
+            "cd /app && pnpm --filter @sentinel/database exec prisma migrate status",
+        ),
+        compose_command(
+            state,
+            "exec",
+            "-T",
+            "backend",
+            "sh",
+            "-lc",
+            "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account",
+        ),
+        compose_command(
+            state,
+            "exec",
+            "-T",
+            "backend",
+            "sh",
+            "-lc",
+            "cd /app && pnpm --filter @sentinel/backend sentinel:seed-default-enums",
+        ),
+    ]
+    for command in commands:
+        result = run_command(
+            command,
+            job_logger=job_logger,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+            step="health_check",
+        )
+        if result.returncode != 0:
+            raise UpdaterError("health_check", f"Backend post-update command failed: {' '.join(command)}")
+
+
+def restart_stack(state: dict[str, Any], job_logger: JobLogger) -> None:
+    pull_result = run_command(
+        compose_command(state, "pull"),
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="post_install",
+    )
+    if pull_result.returncode != 0:
+        raise UpdaterError("post_install", "docker compose pull failed.")
+
+    up_result = run_command(
+        compose_command(state, "up", "-d"),
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="restarting",
+    )
+    if up_result.returncode != 0:
+        raise UpdaterError("restarting", "docker compose up -d failed.")
+
+
+def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger: JobLogger) -> None:
+    job["rollbackAttempted"] = True
+    update_job(
+        job,
+        status="rollback_attempted",
+        message=f"Attempting rollback to {previous_artifact['version']}.",
+        job_logger=job_logger,
+    )
+
+    previous_state = load_appliance_state()
+    previous_state["previousVersion"] = job.get("targetVersion", "")
+    previous_state["currentVersion"] = previous_artifact["version"]
+    save_appliance_state(previous_state)
+    update_runtime_version(previous_artifact["version"])
+
+    install_deb(Path(previous_artifact["debPath"]), job_logger)
+    restart_stack(previous_state, job_logger)
+    wait_for_health(job_logger)
+
+    job["currentVersion"] = previous_artifact["version"]
+    update_job(
+        job,
+        status="rolled_back",
+        message=f"Rollback completed to {previous_artifact['version']}.",
+        job_logger=job_logger,
+        finished=True,
+    )
+
+
+def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
+    target_version = str(job.get("targetVersion", "")).strip()
+    if not VERSION_PATTERN.match(target_version):
+        raise UpdaterError("authorized", "Target version did not match the stable version contract.")
+
+    current_version = current_version_from_env()
+    if current_version is None:
+        raise UpdaterError("authorized", "Current Sentinel version could not be determined.")
+
+    if compare_version_tags(target_version, current_version) <= 0:
+        raise UpdaterError(
+            "authorized",
+            f"Target version {target_version} is not newer than the current version {current_version}.",
+        )
+
+    latest_release = fetch_latest_release()
+    job["currentVersion"] = current_version
+    job["latestVersion"] = normalize_version_tag(str(latest_release.get("tag_name", "")).strip())
+
+    update_job(
+        job,
+        status="authorized",
+        message=f"Update request for {target_version} was authorized.",
+        job_logger=job_logger,
+    )
+
+    update_job(job, status="staging", message="Preparing update artifacts and rollback metadata.", job_logger=job_logger)
+    backup_metadata = prepare_backup(job, job_logger)
+
+    previous_artifact: dict[str, str] | None = None
+    try:
+        previous_artifact = cache_verified_release(current_version, job_logger)
+    except UpdaterError as error:
+        # Older published releases may not have shipped rollback metadata such as
+        # a checksum asset yet. Record that explicitly, but keep validating the
+        # forward update path instead of failing before the target release is checked.
+        job_logger.write_line(
+            "Rollback artifact preparation was skipped for the current version "
+            f"{current_version}: {error}"
+        )
+
+    update_job(job, status="downloading", message=f"Downloading Sentinel release {target_version}.", job_logger=job_logger)
+    target_artifact = cache_verified_release(target_version, job_logger)
+
+    update_job(job, status="verifying", message=f"Verifying release artifacts for {target_version}.", job_logger=job_logger)
+    job["artifacts"] = {
+        "target": target_artifact,
+    }
+    if previous_artifact is not None:
+        job["artifacts"]["previous"] = previous_artifact
+    job["preUpdateBackup"] = backup_metadata
+    persist_job(job)
+
+    update_job(job, status="installing", message=f"Installing Sentinel package {target_version}.", job_logger=job_logger)
+    install_deb(Path(target_artifact["debPath"]), job_logger)
+
+    state = load_appliance_state()
+    state["previousVersion"] = current_version
+    state["currentVersion"] = target_version
+    save_appliance_state(state)
+    update_runtime_version(target_version)
+
+    update_job(job, status="post_install", message="Applying updated appliance configuration.", job_logger=job_logger)
+    restart_stack(state, job_logger)
+
+    update_job(job, status="restarting", message="Restarting Sentinel services.", job_logger=job_logger)
+
+    update_job(job, status="health_check", message="Running post-update verification.", job_logger=job_logger)
+    run_backend_post_update(state, job_logger)
+    wait_for_health(job_logger)
+
+    job["currentVersion"] = target_version
+    update_job(
+        job,
+        status="completed",
+        message=f"Sentinel updated successfully to {target_version}.",
+        job_logger=job_logger,
+        finished=True,
+    )
+
+
+def run_current_job() -> int:
+    ensure_runtime_directories()
+    lock_handle = LOCK_PATH.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        LOGGER.info("Another updater instance is already running.")
+        return 0
+
+    job = load_job(CURRENT_JOB_PATH)
+    if is_terminal_status(str(job.get("status", ""))):
+        LOGGER.info("Current job %s is already terminal; nothing to do.", job.get("jobId"))
+        return 0
+
+    job_logger = JobLogger(str(job["jobId"]))
+    job["jobLogPath"] = str(job_logger.path)
+    persist_job(job)
+
+    try:
+        execute_update(job, job_logger)
+    except UpdaterError as error:
+        failure_summary = sanitize_failure_summary(str(error))
+        should_rollback = str(job.get("status", "")) in {"post_install", "restarting", "health_check"}
+        update_job(
+            job,
+            status="failed",
+            message=str(error),
+            failure_summary=failure_summary,
+            job_logger=job_logger,
+            finished=not should_rollback,
+        )
+
+        if should_rollback:
+            previous_artifact = job.get("artifacts", {}).get("previous")
+            if isinstance(previous_artifact, dict):
+                try:
+                    rollback(job, previous_artifact, job_logger)
+                except Exception as rollback_error:  # noqa: BLE001
+                    update_job(
+                        job,
+                        status="rollback_attempted",
+                        message=f"Rollback failed: {rollback_error}",
+                        failure_summary=sanitize_failure_summary(str(rollback_error)),
+                        job_logger=job_logger,
+                        finished=True,
+                    )
+            else:
+                update_job(
+                    job,
+                    status="rollback_attempted",
+                    message="Rollback could not start because the previous artifact metadata was unavailable.",
+                    failure_summary="Rollback metadata was unavailable.",
+                    job_logger=job_logger,
+                    finished=True,
+                )
+        return 1
+    finally:
+        job_logger.close()
+
+    return 0
+
+
+def show_job(path: Path) -> int:
+    payload = read_json_file(path)
+    if payload is None:
+        print("null")
+        return 1
+    json.dump(payload, sys.stdout, indent=2, sort_keys=True)
+    print()
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Sentinel appliance updater")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser("run-current-job")
+    subparsers.add_parser("show-current-job")
+    show_job_parser = subparsers.add_parser("show-job")
+    show_job_parser.add_argument("job_id")
+    return parser.parse_args()
+
+
+def main() -> int:
+    configure_logging()
+    args = parse_args()
+    if args.command == "run-current-job":
+        return run_current_job()
+    if args.command == "show-current-job":
+        return show_job(CURRENT_JOB_PATH)
+    if args.command == "show-job":
+        return show_job(JOBS_DIR / f"{args.job_id}.json")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@sentinel/database'
+import type { MemberType } from '@sentinel/types'
 import { getPrismaClient } from '../lib/database.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { VisitorRepository } from '../repositories/visitor-repository.js'
@@ -33,7 +34,7 @@ interface LockupPresentData {
     rank: string
     division: string
     divisionId: string | null
-    memberType: 'class_a' | 'class_b' | 'class_c' | 'reg_force'
+    memberType: MemberType
     mess: string | null
     checkedInAt: string
     kioskId?: string

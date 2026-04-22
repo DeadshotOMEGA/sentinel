@@ -28,6 +28,8 @@ ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 
 RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
+RUN addgroup -g 10001 -S sentinel-backend \
+  && adduser -u 10001 -S -G sentinel-backend sentinel-backend
 
 WORKDIR /app
 
@@ -47,6 +49,8 @@ RUN pnpm install --frozen-lockfile --ignore-scripts \
   --filter @sentinel/database... \
   --filter @sentinel/contracts... \
   --filter @sentinel/types...
+RUN mkdir -p /app/apps/backend/logs \
+  && chown -R sentinel-backend:sentinel-backend /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -54,6 +58,7 @@ ENV PORT=3000
 WORKDIR /app/apps/backend
 
 EXPOSE 3000
+USER sentinel-backend
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=5 \
   CMD node -e "require('http').get('http://127.0.0.1:3000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))"

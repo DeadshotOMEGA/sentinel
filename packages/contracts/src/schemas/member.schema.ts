@@ -1,5 +1,8 @@
 import * as v from 'valibot'
 
+export const MemberSourceSchema = v.picklist(['nominal_roll', 'civilian_manual'])
+export const MemberScopeSchema = v.picklist(['nominal_roll', 'civilian_manual', 'all'])
+
 /**
  * Member rank code validation schema
  * Validates that rank code is a valid string (actual validation happens at API level)
@@ -36,6 +39,7 @@ export const CreateMemberSchema = v.object({
   divisionId: v.pipe(v.string('Division is required'), v.uuid('Invalid division ID')),
   email: v.optional(v.pipe(v.string(), v.email('Invalid email address'))),
   phoneNumber: v.optional(v.string()),
+  memberSource: v.optional(MemberSourceSchema),
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
   badgeId: v.optional(v.pipe(v.string(), v.uuid('Invalid badge ID'))),
@@ -81,6 +85,7 @@ export const UpdateMemberSchema = v.object({
   divisionId: v.optional(v.pipe(v.string(), v.uuid('Invalid division ID'))),
   email: v.optional(v.pipe(v.string(), v.email('Invalid email address'))),
   phoneNumber: v.optional(v.string()),
+  memberSource: v.optional(MemberSourceSchema),
   memberTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid member type ID'))),
   memberStatusId: v.optional(v.pipe(v.string(), v.uuid('Invalid member status ID'))),
   badgeId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid badge ID')))),
@@ -138,6 +143,7 @@ export const MemberResponseSchema = v.object({
   moc: v.nullable(v.string()),
   classDetails: v.nullable(v.string()),
   memberType: v.string(),
+  memberSource: MemberSourceSchema,
   email: v.nullable(v.string()),
   phoneNumber: v.nullable(v.string()),
   divisionId: v.nullable(v.string()),
@@ -164,6 +170,7 @@ export const MemberListQuerySchema = v.object({
     v.pipe(v.string(), v.transform(Number), v.number(), v.minValue(1), v.maxValue(500))
   ),
   search: v.optional(v.string()),
+  scope: v.optional(MemberScopeSchema),
   divisionId: v.optional(v.pipe(v.string(), v.uuid())),
   rank: v.optional(v.string()),
   ranks: v.optional(

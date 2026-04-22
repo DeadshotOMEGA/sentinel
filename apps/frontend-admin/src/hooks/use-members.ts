@@ -8,6 +8,7 @@ import type { CreateMemberInput, UpdateMemberInput } from '@sentinel/contracts'
 interface MembersQueryParams {
   page?: number
   limit?: number
+  scope?: 'nominal_roll' | 'civilian_manual' | 'all'
   divisionId?: string
   rank?: string
   ranks?: string[]
@@ -39,6 +40,7 @@ export function useMembers(params: MembersQueryParams = {}) {
         query: {
           page: params.page?.toString() ?? '1',
           limit: params.limit?.toString() ?? '50',
+          scope: params.scope,
           divisionId: params.divisionId,
           rank: params.rank,
           ranks: params.ranks?.length ? params.ranks.join(',') : undefined,
@@ -82,7 +84,7 @@ export function useCreateMember() {
         body: data,
       })
       if (response.status !== 201) {
-        throw new Error('Failed to create member')
+        throw new Error(getApiErrorMessage(response.body, 'Failed to create member'))
       }
       return response.body
     },
@@ -103,7 +105,7 @@ export function useUpdateMember() {
         body: data,
       })
       if (response.status !== 200) {
-        throw new Error('Failed to update member')
+        throw new Error(getApiErrorMessage(response.body, 'Failed to update member'))
       }
       return response.body
     },

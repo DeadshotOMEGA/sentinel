@@ -195,6 +195,7 @@ export function VisitorSelfSigninFlow({
           page: '1',
           limit: '8',
           search: deferredMemberSearch,
+          scope: 'all',
         },
       })
 

@@ -1,0 +1,312 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import socket
+import struct
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+CURRENT_DIR = Path(__file__).resolve().parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
+from sentinel_update_common import (
+    CURRENT_JOB_PATH,
+    JOB_ID_PATTERN,
+    JOBS_DIR,
+    VERSION_PATTERN,
+    ensure_runtime_directories,
+    is_terminal_status,
+    read_json_file,
+    utc_now,
+    write_json_file,
+)
+
+LOGGER = logging.getLogger("sentinel-update-bridge")
+MAX_REQUEST_BYTES = 4096
+BACKEND_UID = int(os.environ.get("SENTINEL_BACKEND_SERVICE_UID", "10001"))
+BACKEND_GID = int(os.environ.get("SENTINEL_BACKEND_SERVICE_GID", "10001"))
+POLKIT_ACTION_ID = os.environ.get(
+    "SENTINEL_UPDATE_POLKIT_ACTION_ID", "com.deadshotomega.sentinel.update.start"
+)
+UPDATER_UNIT = os.environ.get("SENTINEL_UPDATER_UNIT", "sentinel-updater.service")
+SOCKET_PATH = Path(os.environ.get("SENTINEL_UPDATE_BRIDGE_SOCKET_PATH", "/run/sentinel/update-bridge.sock"))
+
+ALLOWED_KEYS = {
+    "jobId",
+    "targetVersion",
+    "requestedByAccountLevel",
+    "requestedByMemberId",
+    "requestedByMemberName",
+    "requestedFromIp",
+}
+
+
+class BridgeError(RuntimeError):
+    def __init__(self, message: str, *, status: int = 400) -> None:
+        super().__init__(message)
+        self.status = status
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+        format="[sentinel-update-bridge] %(message)s",
+        stream=sys.stdout,
+    )
+
+
+def get_listener(socket_path: Path) -> socket.socket:
+    listen_fds = int(os.environ.get("LISTEN_FDS", "0"))
+    if listen_fds >= 1:
+        return socket.fromfd(3, socket.AF_UNIX, socket.SOCK_STREAM)
+
+    socket_path.parent.mkdir(parents=True, exist_ok=True)
+    if socket_path.exists():
+        socket_path.unlink()
+
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(socket_path))
+    listener.listen()
+    return listener
+
+
+def get_peer_credentials(connection: socket.socket) -> tuple[int, int, int]:
+    raw = connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i"))
+    return struct.unpack("3i", raw)
+
+
+def receive_payload(connection: socket.socket) -> dict[str, Any]:
+    chunks: list[bytes] = []
+    received = 0
+
+    while True:
+        chunk = connection.recv(1024)
+        if not chunk:
+            break
+        chunks.append(chunk)
+        received += len(chunk)
+        if received > MAX_REQUEST_BYTES:
+            raise BridgeError("Request payload exceeds maximum size.", status=413)
+
+    if not chunks:
+        raise BridgeError("Empty update request.", status=400)
+
+    try:
+        payload = json.loads(b"".join(chunks).decode("utf-8"))
+    except json.JSONDecodeError as error:
+        raise BridgeError(f"Invalid JSON payload: {error.msg}", status=400) from error
+
+    if not isinstance(payload, dict):
+        raise BridgeError("Update request must be a JSON object.", status=400)
+
+    unexpected = set(payload) - ALLOWED_KEYS
+    if unexpected:
+        raise BridgeError(
+            f"Unexpected request fields: {', '.join(sorted(unexpected))}.", status=400
+        )
+
+    required = {"jobId", "targetVersion", "requestedByMemberId", "requestedByMemberName"}
+    missing = required - set(payload)
+    if missing:
+        raise BridgeError(f"Missing request fields: {', '.join(sorted(missing))}.", status=400)
+
+    job_id = str(payload.get("jobId", "")).strip()
+    target_version = str(payload.get("targetVersion", "")).strip()
+    member_id = str(payload.get("requestedByMemberId", "")).strip()
+    member_name = str(payload.get("requestedByMemberName", "")).strip()
+    requester_level = payload.get("requestedByAccountLevel", None)
+    requester_ip = payload.get("requestedFromIp", None)
+
+    if not JOB_ID_PATTERN.match(job_id):
+        raise BridgeError("Invalid jobId.", status=400)
+    if not VERSION_PATTERN.match(target_version):
+        raise BridgeError("Invalid targetVersion.", status=400)
+    if not member_id or len(member_id) > 128:
+        raise BridgeError("Invalid requestedByMemberId.", status=400)
+    if not member_name or len(member_name) > 160:
+        raise BridgeError("Invalid requestedByMemberName.", status=400)
+    if requester_level is not None and not isinstance(requester_level, int):
+        raise BridgeError("Invalid requestedByAccountLevel.", status=400)
+    if requester_ip is not None and (not isinstance(requester_ip, str) or len(requester_ip) > 64):
+        raise BridgeError("Invalid requestedFromIp.", status=400)
+
+    return {
+        "jobId": job_id,
+        "targetVersion": target_version,
+        "requestedByMemberId": member_id,
+        "requestedByMemberName": member_name,
+        "requestedByAccountLevel": requester_level,
+        "requestedFromIp": requester_ip,
+    }
+
+
+def current_job_is_active() -> bool:
+    job = read_json_file(CURRENT_JOB_PATH)
+    if not isinstance(job, dict):
+        return False
+    return not is_terminal_status(str(job.get("status", "")))
+
+
+def run_polkit_check() -> None:
+    result = subprocess.run(
+        [
+            "pkcheck",
+            "--action-id",
+            POLKIT_ACTION_ID,
+            "--process",
+            str(os.getpid()),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    if result.returncode != 0:
+        stderr = (result.stderr or result.stdout or "").strip() or "polkit check failed"
+        raise BridgeError(f"Authorization failed: {stderr}", status=403)
+
+
+def start_updater_unit() -> None:
+    result = subprocess.run(
+        ["systemctl", "start", "--no-block", UPDATER_UNIT],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    if result.returncode != 0:
+        stderr = (result.stderr or result.stdout or "").strip() or "systemctl start failed"
+        raise BridgeError(f"Failed to start updater service: {stderr}", status=500)
+
+
+def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
+    if current_job_is_active():
+        raise BridgeError("An update is already in progress.", status=409)
+
+    job = {
+        "schemaVersion": 1,
+        "jobId": payload["jobId"],
+        "status": "requested",
+        "message": "Update request accepted and waiting for the updater service.",
+        "requestedAt": utc_now(),
+        "startedAt": None,
+        "finishedAt": None,
+        "currentVersion": None,
+        "latestVersion": None,
+        "targetVersion": payload["targetVersion"],
+        "failureSummary": None,
+        "rollbackAttempted": False,
+        "requestedBy": {
+            "memberId": payload["requestedByMemberId"],
+            "memberName": payload["requestedByMemberName"],
+            "accountLevel": payload["requestedByAccountLevel"],
+            "fromIp": payload["requestedFromIp"],
+        },
+    }
+    write_json_file(JOBS_DIR / f"{payload['jobId']}.json", job, mode=0o644)
+    write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
+    return job
+
+
+def mark_job_failed(job: dict[str, Any], message: str) -> dict[str, Any]:
+    failed_job = {
+        **job,
+        "status": "failed",
+        "message": message,
+        "failureSummary": message,
+        "finishedAt": utc_now(),
+    }
+    write_json_file(JOBS_DIR / f"{job['jobId']}.json", failed_job, mode=0o644)
+    write_json_file(CURRENT_JOB_PATH, failed_job, mode=0o644)
+    return failed_job
+
+
+def write_response(connection: socket.socket, payload: dict[str, Any], status: int = 200) -> None:
+    response = json.dumps({"status": status, **payload}).encode("utf-8")
+    connection.sendall(response)
+
+
+def handle_connection(connection: socket.socket) -> None:
+    pid, uid, gid = get_peer_credentials(connection)
+    LOGGER.info("Received bridge connection from pid=%s uid=%s gid=%s", pid, uid, gid)
+
+    if uid != BACKEND_UID or gid != BACKEND_GID:
+        raise BridgeError("Caller is not permitted to access the update bridge.", status=403)
+
+    payload = receive_payload(connection)
+    if current_job_is_active():
+        raise BridgeError("An update is already in progress.", status=409)
+
+    run_polkit_check()
+    job = persist_initial_job(payload)
+    try:
+        start_updater_unit()
+    except BridgeError as error:
+        mark_job_failed(job, str(error))
+        raise
+    write_response(
+        connection,
+        {
+            "success": True,
+            "message": "System update request accepted.",
+            "job": job,
+        },
+        status=202,
+    )
+
+
+def serve_forever(listener: socket.socket) -> None:
+    while True:
+        connection, _ = listener.accept()
+        try:
+            handle_connection(connection)
+        except BridgeError as error:
+            LOGGER.warning("%s", error)
+            try:
+                write_response(
+                    connection,
+                    {"success": False, "message": str(error)},
+                    status=error.status,
+                )
+            except OSError:
+                LOGGER.warning("Unable to write bridge error response back to caller.")
+        except Exception as error:  # noqa: BLE001
+            LOGGER.exception("Unhandled bridge error")
+            try:
+                write_response(
+                    connection,
+                    {"success": False, "message": f"Unhandled bridge error: {error}"},
+                    status=500,
+                )
+            except OSError:
+                LOGGER.warning("Unable to write bridge failure response back to caller.")
+        finally:
+            connection.close()
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Sentinel update bridge")
+    parser.add_argument("--socket", default=str(SOCKET_PATH))
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    configure_logging()
+    ensure_runtime_directories()
+    socket_path = Path(args.socket)
+    listener = get_listener(socket_path)
+    LOGGER.info("Listening for update requests on %s", socket_path)
+    serve_forever(listener)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

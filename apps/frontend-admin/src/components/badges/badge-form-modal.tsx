@@ -37,6 +37,7 @@ export function BadgeFormModal({ open, onOpenChange, mode, badge }: BadgeFormMod
   const { data: membersData, isLoading: isMembersLoading } = useMembers({
     limit: 500,
     status: 'active',
+    scope: 'all',
   })
 
   const [serialNumber, setSerialNumber] = useState('')

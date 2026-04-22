@@ -10,6 +10,7 @@ import { TID } from '@/lib/test-ids'
 
 interface MembersFiltersProps {
   filters: {
+    scope?: 'nominal_roll' | 'civilian_manual' | 'all'
     divisionId?: string
     rank?: string
     status?: string
@@ -17,9 +18,14 @@ interface MembersFiltersProps {
     qualificationCode?: string
   }
   onFilterChange: (filters: Partial<MembersFiltersProps['filters']>) => void
+  canViewPersonnelScope: boolean
 }
 
-export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps) {
+export function MembersFilters({
+  filters,
+  onFilterChange,
+  canViewPersonnelScope,
+}: MembersFiltersProps) {
   const { data: divisions } = useDivisions()
   const { data: enums } = useEnums()
   const { data: qualificationTypes } = useQualificationTypes()
@@ -39,6 +45,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
   const handleClearFilters = () => {
     setSearchInput('')
     onFilterChange({
+      scope: 'nominal_roll',
       divisionId: undefined,
       rank: undefined,
       status: 'active',
@@ -48,6 +55,7 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
   }
 
   const hasActiveFilters =
+    (canViewPersonnelScope && filters.scope && filters.scope !== 'nominal_roll') ||
     filters.divisionId ||
     filters.rank ||
     (filters.status && filters.status !== 'active') ||
@@ -56,7 +64,9 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
 
   return (
     <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div
+        className={`grid grid-cols-1 gap-4 ${canViewPersonnelScope ? 'md:grid-cols-7' : 'md:grid-cols-6'}`}
+      >
         <label className="input w-full md:col-span-2">
           <span className="label">Search</span>
           <Search className="h-4 w-4 text-base-content/60" />
@@ -69,6 +79,26 @@ export function MembersFilters({ filters, onFilterChange }: MembersFiltersProps)
             data-testid={TID.members.filter.search}
           />
         </label>
+
+        {canViewPersonnelScope && (
+          <label className="select w-full">
+            <span className="label">Roster Scope</span>
+            <select
+              id="scope"
+              value={filters.scope ?? 'nominal_roll'}
+              onChange={(e) =>
+                onFilterChange({
+                  scope: e.target.value as 'nominal_roll' | 'civilian_manual' | 'all',
+                })
+              }
+              data-testid={TID.members.filter.scope}
+            >
+              <option value="nominal_roll">Nominal Roll</option>
+              <option value="civilian_manual">Civilian Staff</option>
+              <option value="all">All Personnel</option>
+            </select>
+          </label>
+        )}
 
         <label className="select w-full">
           <span className="label">Division</span>

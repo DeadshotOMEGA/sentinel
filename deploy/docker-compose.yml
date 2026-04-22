@@ -70,14 +70,17 @@ services:
       SENTINEL_AUTO_SEED_RETRY_DELAY_MS: ${SENTINEL_AUTO_SEED_RETRY_DELAY_MS:-3000}
       NETWORK_STATUS_FILE_PATH: /var/run/sentinel/network-status/network-status.json
       HOST_HOTSPOT_RECOVERY_REQUEST_DIR: /var/run/sentinel/hotspot-recovery/requests
-      SYSTEM_UPDATE_REQUEST_DIR: /var/run/sentinel/system-update/requests
+      SYSTEM_UPDATE_BRIDGE_SOCKET_PATH: /run/sentinel/update-bridge.sock
+      SYSTEM_UPDATE_STATE_ROOT: /var/lib/sentinel/updater
+      SYSTEM_UPDATE_RELEASE_REPOSITORY: ${GHCR_OWNER:-deadshotomega}/sentinel
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./runtime/network-status:/var/run/sentinel/network-status:ro
       - ./runtime/hotspot-recovery:/var/run/sentinel/hotspot-recovery
-      - ./runtime/system-update:/var/run/sentinel/system-update
+      - /run/sentinel:/run/sentinel
+      - /var/lib/sentinel/updater:/var/lib/sentinel/updater:ro
     healthcheck:
       test:
         [

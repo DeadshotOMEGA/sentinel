@@ -1,0 +1,17 @@
+[Unit]
+Description=Sentinel update bridge
+Requires=sentinel-update-bridge.socket
+After=sentinel-update-bridge.socket
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/sentinel/sentinel-update-bridge --socket /run/sentinel/update-bridge.sock
+User=sentinel-updater-bridge
+Group=sentinel-updater-bridge
+Restart=always
+RestartSec=2
+UMask=0077
+NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
+

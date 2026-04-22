@@ -56,6 +56,7 @@ import type { MemberResponse } from '@sentinel/contracts'
 
 interface MembersTableProps {
   filters: {
+    scope?: 'nominal_roll' | 'civilian_manual' | 'all'
     divisionId?: string
     rank?: string
     status?: string

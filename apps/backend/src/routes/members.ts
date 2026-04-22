@@ -9,7 +9,7 @@ import type {
   ExecuteImportRequest,
 } from '@sentinel/contracts'
 import type { Request } from 'express'
-import type { MemberStatus } from '@sentinel/types'
+import type { Member, MemberStatus, MemberWithDivision } from '@sentinel/types'
 import { MemberRepository } from '../repositories/member-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
 import { AutoQualificationService } from '../services/auto-qualification-service.js'
@@ -18,6 +18,7 @@ import { importService } from '../services/import-service.js'
 import { memberService } from '../services/member-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
+import { resolveMemberScope } from '../lib/member-records.js'
 import { AccountLevel } from '../middleware/roles.js'
 import { ConflictError, NotFoundError } from '../middleware/error-handler.js'
 
@@ -26,6 +27,56 @@ const s = initServer()
 const memberRepo = new MemberRepository(getPrismaClient())
 const auditRepo = new AuditRepository(getPrismaClient())
 const autoQualService = new AutoQualificationService(getPrismaClient())
+
+function toMemberResponse(member: Member | MemberWithDivision) {
+  const memberWithDetails = member as MemberWithDivision
+
+  return {
+    id: member.id,
+    serviceNumber: member.serviceNumber,
+    rank: member.rank,
+    displayName: member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    middleInitial: member.initials || null,
+    moc: member.moc || null,
+    classDetails: member.classDetails || null,
+    memberType: member.memberType,
+    memberSource: member.memberSource,
+    email: member.email || null,
+    phoneNumber: member.mobilePhone || member.homePhone || null,
+    divisionId: member.divisionId ?? null,
+    badgeId: member.badgeId || null,
+    accountLevel: member.accountLevel,
+    mustChangePin: member.mustChangePin,
+    badgeStatus: memberWithDetails.badge?.badgeStatusSummary
+      ? {
+          name: memberWithDetails.badge.badgeStatusSummary.name,
+          chipVariant: memberWithDetails.badge.badgeStatusSummary.chipVariant,
+          chipColor: memberWithDetails.badge.badgeStatusSummary.chipColor,
+        }
+      : undefined,
+    memberTypeId: member.memberTypeId || null,
+    memberStatusId: member.memberStatusId || null,
+    qualifications: memberWithDetails.qualifications?.map((qualification) => ({
+      code: qualification.code,
+      name: qualification.name,
+      chipVariant: qualification.chipVariant ?? undefined,
+      chipColor: qualification.chipColor ?? undefined,
+      tagId: qualification.tagId ?? undefined,
+    })),
+    tags: memberWithDetails.tags?.map((tag) => ({
+      id: tag.id,
+      name: tag.name,
+      chipVariant: tag.chipVariant ?? 'solid',
+      chipColor: tag.chipColor ?? 'default',
+    })),
+    missedCheckoutCount: member.missedCheckoutCount ?? 0,
+    lastMissedCheckout: member.lastMissedCheckout?.toISOString() ?? null,
+    createdAt: member.createdAt.toISOString(),
+    updatedAt: member.updatedAt?.toISOString() || null,
+  }
+}
 
 /**
  * Members route implementation using ts-rest
@@ -48,6 +99,7 @@ export const membersRouter = s.router(memberContract, {
       // Only admin+ users can see hidden members
       const isAdmin = (req.member?.accountLevel ?? 0) >= 5
       const includeHidden = query.includeHidden === true && isAdmin
+      const scope = resolveMemberScope(query.scope, isAdmin)
 
       const filters: {
         divisionId?: string
@@ -57,6 +109,7 @@ export const membersRouter = s.router(memberContract, {
         tags?: string[]
         qualificationCode?: string
         includeHidden?: boolean
+        memberSource?: 'nominal_roll' | 'civilian_manual'
       } = {
         divisionId: query.divisionId,
         search: query.search,
@@ -69,6 +122,7 @@ export const membersRouter = s.router(memberContract, {
         tags: query.tags,
         qualificationCode: query.qualificationCode,
         includeHidden,
+        memberSource: scope === 'all' ? undefined : scope,
       }
       if (query.status) {
         filters.status = query.status as MemberStatus
@@ -81,51 +135,7 @@ export const membersRouter = s.router(memberContract, {
       return {
         status: 200 as const,
         body: {
-          members: result.members.map((member) => ({
-            id: member.id,
-            serviceNumber: member.serviceNumber,
-            rank: member.rank,
-            displayName:
-              member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            middleInitial: member.initials || null,
-            moc: member.moc || null,
-            classDetails: member.classDetails || null,
-            memberType: member.memberType,
-            email: member.email || null,
-            phoneNumber: member.mobilePhone || member.homePhone || null,
-            divisionId: member.divisionId ?? null,
-            badgeId: member.badgeId || null,
-            accountLevel: member.accountLevel,
-            mustChangePin: member.mustChangePin,
-            badgeStatus: member.badge?.badgeStatusSummary
-              ? {
-                  name: member.badge.badgeStatusSummary.name,
-                  chipVariant: member.badge.badgeStatusSummary.chipVariant,
-                  chipColor: member.badge.badgeStatusSummary.chipColor,
-                }
-              : undefined,
-            memberTypeId: member.memberTypeId || null,
-            memberStatusId: member.memberStatusId || null,
-            qualifications: member.qualifications?.map((q) => ({
-              code: q.code,
-              name: q.name,
-              chipVariant: q.chipVariant ?? undefined,
-              chipColor: q.chipColor ?? undefined,
-              tagId: q.tagId ?? undefined,
-            })),
-            tags: member.tags?.map((t) => ({
-              id: t.id,
-              name: t.name,
-              chipVariant: t.chipVariant ?? 'solid',
-              chipColor: t.chipColor ?? 'default',
-            })),
-            missedCheckoutCount: member.missedCheckoutCount ?? 0,
-            lastMissedCheckout: member.lastMissedCheckout?.toISOString() ?? null,
-            createdAt: member.createdAt.toISOString(),
-            updatedAt: member.updatedAt?.toISOString() || null,
-          })),
+          members: result.members.map(toMemberResponse),
           total: result.total,
           page,
           limit,
@@ -162,36 +172,7 @@ export const membersRouter = s.router(memberContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: member.id,
-          serviceNumber: member.serviceNumber,
-          rank: member.rank,
-          displayName:
-            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          middleInitial: member.initials || null,
-          moc: member.moc || null,
-          classDetails: member.classDetails || null,
-          memberType: member.memberType,
-          email: member.email || null,
-          phoneNumber: member.mobilePhone || member.homePhone || null,
-          divisionId: member.divisionId ?? null,
-          badgeId: member.badgeId || null,
-          accountLevel: member.accountLevel,
-          mustChangePin: member.mustChangePin,
-          memberTypeId: member.memberTypeId || null,
-          memberStatusId: member.memberStatusId || null,
-          badgeStatus: member.badge?.badgeStatusSummary
-            ? {
-                name: member.badge.badgeStatusSummary.name,
-                chipVariant: member.badge.badgeStatusSummary.chipVariant,
-                chipColor: member.badge.badgeStatusSummary.chipColor,
-              }
-            : undefined,
-          createdAt: member.createdAt.toISOString(),
-          updatedAt: member.updatedAt?.toISOString() || null,
-        },
+        body: toMemberResponse(member),
       }
     } catch (error) {
       return {
@@ -250,7 +231,7 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
-        memberType: 'class_a', // TODO: Map from memberTypeId when FK migration complete
+        memberSource: body.memberSource,
         memberTypeId: body.memberTypeId,
         memberStatusId: body.memberStatusId,
         badgeId: body.badgeId,
@@ -276,34 +257,13 @@ export const membersRouter = s.router(memberContract, {
           accountLevel: member.accountLevel,
           memberTypeId: member.memberTypeId ?? null,
           memberStatusId: member.memberStatusId ?? null,
+          memberSource: member.memberSource,
         },
       })
 
       return {
         status: 201 as const,
-        body: {
-          id: member.id,
-          serviceNumber: member.serviceNumber,
-          rank: member.rank,
-          displayName:
-            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          middleInitial: member.initials || null,
-          moc: member.moc || null,
-          classDetails: member.classDetails || null,
-          memberType: member.memberType,
-          email: member.email || null,
-          phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId ?? null,
-          badgeId: member.badgeId || null,
-          accountLevel: member.accountLevel,
-          mustChangePin: member.mustChangePin,
-          memberTypeId: null,
-          memberStatusId: null,
-          createdAt: member.createdAt.toISOString(),
-          updatedAt: member.updatedAt?.toISOString() || null,
-        },
+        body: toMemberResponse(member),
       }
     } catch (error) {
       // Handle Prisma unique constraint violations
@@ -392,6 +352,7 @@ export const membersRouter = s.router(memberContract, {
         divisionId: body.divisionId,
         email: body.email,
         mobilePhone: body.phoneNumber,
+        memberSource: body.memberSource,
         memberTypeId: body.memberTypeId,
         memberStatusId: body.memberStatusId,
         accountLevel: body.accountLevel,
@@ -440,6 +401,7 @@ export const membersRouter = s.router(memberContract, {
             phoneNumber: existingMember.mobilePhone ?? null,
             badgeId: existingMember.badgeId ?? null,
             accountLevel: existingMember.accountLevel,
+            memberSource: existingMember.memberSource,
             memberTypeId: existingMember.memberTypeId ?? null,
             memberStatusId: existingMember.memberStatusId ?? null,
           },
@@ -454,6 +416,7 @@ export const membersRouter = s.router(memberContract, {
             phoneNumber: finalMember.mobilePhone ?? null,
             badgeId: finalMember.badgeId ?? null,
             accountLevel: finalMember.accountLevel,
+            memberSource: finalMember.memberSource,
             memberTypeId: finalMember.memberTypeId ?? null,
             memberStatusId: finalMember.memberStatusId ?? null,
           },
@@ -462,37 +425,7 @@ export const membersRouter = s.router(memberContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: finalMember.id,
-          serviceNumber: finalMember.serviceNumber,
-          rank: finalMember.rank,
-          displayName:
-            finalMember.displayName ??
-            `${finalMember.rank} ${finalMember.lastName}, ${finalMember.firstName}`,
-          firstName: finalMember.firstName,
-          lastName: finalMember.lastName,
-          middleInitial: finalMember.initials || null,
-          moc: finalMember.moc || null,
-          classDetails: finalMember.classDetails || null,
-          memberType: finalMember.memberType,
-          email: finalMember.email || null,
-          phoneNumber: finalMember.mobilePhone || null,
-          divisionId: finalMember.divisionId ?? null,
-          badgeId: finalMember.badgeId || null,
-          accountLevel: finalMember.accountLevel,
-          mustChangePin: finalMember.mustChangePin,
-          memberStatusId: finalMember.memberStatusId || null,
-          memberTypeId: finalMember.memberTypeId || null,
-          badgeStatus: finalMember.badge?.badgeStatusSummary
-            ? {
-                name: finalMember.badge.badgeStatusSummary.name,
-                chipVariant: finalMember.badge.badgeStatusSummary.chipVariant,
-                chipColor: finalMember.badge.badgeStatusSummary.chipColor,
-              }
-            : undefined,
-          createdAt: finalMember.createdAt.toISOString(),
-          updatedAt: finalMember.updatedAt?.toISOString() || null,
-        },
+        body: toMemberResponse(finalMember),
       }
     } catch (error) {
       if (error instanceof ConflictError) {
@@ -629,29 +562,7 @@ export const membersRouter = s.router(memberContract, {
 
       return {
         status: 200 as const,
-        body: {
-          id: member.id,
-          serviceNumber: member.serviceNumber,
-          rank: member.rank,
-          displayName:
-            member.displayName ?? `${member.rank} ${member.lastName}, ${member.firstName}`,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          middleInitial: member.initials || null,
-          moc: member.moc || null,
-          classDetails: member.classDetails || null,
-          memberType: member.memberType,
-          email: member.email || null,
-          phoneNumber: member.mobilePhone || null,
-          divisionId: member.divisionId ?? null,
-          badgeId: member.badgeId || null,
-          accountLevel: member.accountLevel,
-          mustChangePin: member.mustChangePin,
-          memberTypeId: null,
-          memberStatusId: null,
-          createdAt: member.createdAt.toISOString(),
-          updatedAt: member.updatedAt?.toISOString() || null,
-        },
+        body: toMemberResponse(member),
       }
     } catch (error) {
       return {

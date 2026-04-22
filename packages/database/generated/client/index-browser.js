@@ -245,6 +245,7 @@ exports.Prisma.MemberScalarFieldEnum = {
   divisionId: 'divisionId',
   badgeId: 'badgeId',
   memberType: 'memberType',
+  memberSource: 'memberSource',
   status: 'status',
   memberTypeId: 'memberTypeId',
   memberStatusId: 'memberStatusId',

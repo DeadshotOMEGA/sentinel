@@ -1,0 +1,167 @@
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import type { SystemUpdateJob, SystemUpdateStatusResponse } from '@sentinel/contracts'
+import { serviceLogger } from '../lib/logger.js'
+import {
+  compareVersionTags,
+  isStableVersionTag,
+  resolveServiceVersionTag,
+} from '../lib/service-version.js'
+import { sanitizeSystemUpdateJob } from '../lib/system-update-state.js'
+
+const DEFAULT_STATE_ROOT = '/var/lib/sentinel/updater'
+const DEFAULT_RELEASE_API_BASE = 'https://api.github.com/repos'
+
+interface LatestReleaseSummary {
+  latestVersion: string | null
+  latestReleaseUrl: string | null
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+export class SystemUpdateStatusService {
+  private readonly stateRoot: string
+  private readonly releaseRepository: string
+  private readonly releaseApiBase: string
+
+  constructor(options?: {
+    stateRoot?: string
+    releaseRepository?: string
+    releaseApiBase?: string
+  }) {
+    this.stateRoot =
+      options?.stateRoot ?? process.env.SYSTEM_UPDATE_STATE_ROOT ?? DEFAULT_STATE_ROOT
+    this.releaseRepository =
+      options?.releaseRepository ??
+      process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY ??
+      `${process.env.GHCR_OWNER?.trim() || 'deadshotomega'}/sentinel`
+    this.releaseApiBase =
+      options?.releaseApiBase ??
+      process.env.SYSTEM_UPDATE_RELEASE_API_BASE ??
+      DEFAULT_RELEASE_API_BASE
+  }
+
+  async getStatus(): Promise<SystemUpdateStatusResponse> {
+    const currentJob = await this.readCurrentJob()
+    const releaseSummary = await this.fetchLatestReleaseSummary()
+    const currentVersion = resolveServiceVersionTag() ?? currentJob?.currentVersion ?? null
+    const latestVersion = releaseSummary.latestVersion ?? currentJob?.latestVersion ?? null
+
+    return {
+      currentVersion,
+      latestVersion,
+      latestReleaseUrl: releaseSummary.latestReleaseUrl,
+      updateAvailable:
+        currentVersion !== null &&
+        latestVersion !== null &&
+        compareVersionTags(currentVersion, latestVersion) < 0,
+      currentJob,
+    }
+  }
+
+  async getJob(jobId: string): Promise<SystemUpdateJob | null> {
+    return this.readJobFromPath(join(this.stateRoot, 'jobs', `${jobId}.json`))
+  }
+
+  private async readCurrentJob(): Promise<SystemUpdateJob | null> {
+    return this.readJobFromPath(join(this.stateRoot, 'current-job.json'))
+  }
+
+  private async readJobFromPath(path: string): Promise<SystemUpdateJob | null> {
+    let rawText: string
+
+    try {
+      rawText = await readFile(path, 'utf-8')
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        return null
+      }
+
+      throw error
+    }
+
+    let payload: unknown
+    try {
+      payload = JSON.parse(rawText)
+    } catch (error) {
+      throw new Error(
+        `Unable to parse updater job state at ${path}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
+
+    return sanitizeSystemUpdateJob(payload)
+  }
+
+  private async fetchLatestReleaseSummary(): Promise<LatestReleaseSummary> {
+    const repository = this.releaseRepository.trim()
+    if (repository.length === 0) {
+      return {
+        latestVersion: null,
+        latestReleaseUrl: null,
+      }
+    }
+
+    try {
+      const response = await globalThis.fetch(
+        `${this.releaseApiBase.replace(/\/+$/, '')}/${repository}/releases/latest`,
+        {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            'User-Agent': 'sentinel-backend/system-update-status',
+          },
+          signal: globalThis.AbortSignal.timeout(10_000),
+        }
+      )
+
+      if (!response.ok) {
+        serviceLogger.warn('Latest Sentinel release lookup failed', {
+          repository,
+          status: response.status,
+        })
+
+        return {
+          latestVersion: null,
+          latestReleaseUrl: null,
+        }
+      }
+
+      const payload: unknown = await response.json()
+      if (!isRecord(payload)) {
+        return {
+          latestVersion: null,
+          latestReleaseUrl: null,
+        }
+      }
+
+      const tagName = typeof payload.tag_name === 'string' ? payload.tag_name.trim() : ''
+      const latestVersion = isStableVersionTag(tagName) ? tagName : null
+      const latestReleaseUrl = typeof payload.html_url === 'string' ? payload.html_url : null
+
+      return {
+        latestVersion,
+        latestReleaseUrl,
+      }
+    } catch (error) {
+      serviceLogger.warn('Latest Sentinel release lookup raised an error', {
+        repository,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+
+      return {
+        latestVersion: null,
+        latestReleaseUrl: null,
+      }
+    }
+  }
+}
+
+function isMissingFileError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: unknown }).code === 'ENOENT'
+  )
+}

@@ -47,6 +47,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
   const { data: membersData } = useMembers({
     limit: 50,
     search: showMemberList && memberSearch ? memberSearch : undefined,
+    scope: 'all',
   })
 
   const { data: eventsData } = useUnitEvents({

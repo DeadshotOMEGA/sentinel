@@ -8,6 +8,7 @@ REPO_DIR="$(cd "${DEPLOY_DIR}/.." && pwd)"
 PKG_NAME="sentinel"
 VERSION_INPUT=""
 OUTPUT_DIR="${SCRIPT_DIR}/dist"
+ASSETS_DIR="${SCRIPT_DIR}/assets"
 LOGO_SOURCE="${REPO_DIR}/Logo.png"
 ICON_NAME="sentinel-appliance"
 ICON_SIZES=(64 128 256 512 1024)
@@ -97,12 +98,21 @@ rsync -a \
   --exclude 'deb' \
   "${DEPLOY_DIR}/" "${PKG_ROOT}/opt/sentinel/deploy/"
 
-install -D -m 755 \
-  "${SCRIPT_DIR}/assets/usr/local/bin/sentinel-install-update" \
-  "${PKG_ROOT}/usr/local/bin/sentinel-install-update"
-install -D -m 644 \
-  "${SCRIPT_DIR}/assets/usr/share/applications/sentinel-install-update.desktop" \
-  "${PKG_ROOT}/usr/share/applications/sentinel-install-update.desktop"
+rsync -a "${ASSETS_DIR}/" "${PKG_ROOT}/"
+
+chmod 755 \
+  "${PKG_ROOT}/usr/local/bin/sentinel-install-update" \
+  "${PKG_ROOT}/usr/lib/sentinel/sentinel-update-bridge" \
+  "${PKG_ROOT}/usr/lib/sentinel/sentinel-updater"
+
+chmod 644 \
+  "${PKG_ROOT}/usr/lib/sentinel/sentinel_update_common.py" \
+  "${PKG_ROOT}/usr/share/applications/sentinel-install-update.desktop" \
+  "${PKG_ROOT}/usr/share/polkit-1/actions/com.deadshotomega.sentinel.update.start.policy" \
+  "${PKG_ROOT}/etc/polkit-1/rules.d/49-sentinel-updater.rules" \
+  "${PKG_ROOT}/etc/systemd/system/sentinel-update-bridge.service" \
+  "${PKG_ROOT}/etc/systemd/system/sentinel-update-bridge.socket" \
+  "${PKG_ROOT}/etc/systemd/system/sentinel-updater.service"
 
 for size in "${ICON_SIZES[@]}"; do
   install -D -m 644 \
@@ -116,7 +126,7 @@ Version: ${DEB_VERSION}
 Section: admin
 Priority: optional
 Architecture: all
-Depends: bash, coreutils, curl, grep, sed, sudo
+Depends: bash, coreutils, curl, grep, sed, sudo, python3, ca-certificates, policykit-1, systemd
 Provides: sentinel-appliance-tools
 Replaces: sentinel-appliance-tools
 Conflicts: sentinel-appliance-tools
@@ -130,9 +140,99 @@ cat >"${PKG_ROOT}/DEBIAN/postinst" <<'POSTINST'
 #!/bin/sh
 set -e
 
+ensure_group() {
+  name="$1"
+  gid="$2"
+  if getent group "$name" >/dev/null 2>&1; then
+    return 0
+  fi
+  addgroup --system --gid "$gid" "$name"
+}
+
+ensure_user() {
+  name="$1"
+  uid="$2"
+  group="$3"
+  if id "$name" >/dev/null 2>&1; then
+    return 0
+  fi
+  adduser --system --uid "$uid" --ingroup "$group" --home /nonexistent --shell /usr/sbin/nologin "$name"
+}
+
+ensure_group sentinel-backend 10001
+ensure_group sentinel-updater-bridge 10002
+ensure_user sentinel-updater-bridge 10002 sentinel-updater-bridge
+
+install -d -m 755 /etc/sentinel /var/lib/sentinel /var/lib/sentinel/appliance /run/sentinel
+install -d -m 775 /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups
+install -d -m 750 /var/log/sentinel
+chown root:sentinel-updater-bridge /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups
+chmod 775 /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups
+
 if [ -d /opt/sentinel/deploy ]; then
   chmod +x /opt/sentinel/deploy/*.sh 2>/dev/null || true
   chmod +x /opt/sentinel/deploy/*.desktop 2>/dev/null || true
+fi
+chmod 755 /usr/lib/sentinel/sentinel-update-bridge /usr/lib/sentinel/sentinel-updater
+
+if [ ! -f /etc/sentinel/appliance.env ] && [ -f /opt/sentinel/deploy/.env ]; then
+  cp /opt/sentinel/deploy/.env /etc/sentinel/appliance.env
+  chmod 600 /etc/sentinel/appliance.env
+fi
+
+if [ -f /etc/sentinel/appliance.env ]; then
+  ln -sfn /etc/sentinel/appliance.env /opt/sentinel/deploy/.env
+fi
+
+if [ ! -f /var/lib/sentinel/appliance/state.json ] && [ -f /opt/sentinel/deploy/.appliance-state ]; then
+  WITH_OBS=false
+  ALLOW_GRAFANA_LAN=false
+  ALLOW_WIKI_LAN=false
+  LAN_CIDR=
+  CURRENT_VERSION=
+  PREVIOUS_VERSION=
+  . /opt/sentinel/deploy/.appliance-state || true
+  cat >/var/lib/sentinel/appliance/state.json <<EOF
+{
+  "schemaVersion": 1,
+  "withObs": ${WITH_OBS:-false},
+  "allowGrafanaLan": ${ALLOW_GRAFANA_LAN:-false},
+  "allowWikiLan": ${ALLOW_WIKI_LAN:-false},
+  "lanCidr": "${LAN_CIDR:-}",
+  "currentVersion": "${CURRENT_VERSION:-}",
+  "previousVersion": "${PREVIOUS_VERSION:-}"
+}
+EOF
+  chmod 644 /var/lib/sentinel/appliance/state.json
+fi
+
+if [ -f /var/lib/sentinel/appliance/state.json ] && [ ! -f /opt/sentinel/deploy/.appliance-state ]; then
+  current_version="$(sed -n 's/.*"currentVersion":[[:space:]]*"\([^"]*\)".*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  previous_version="$(sed -n 's/.*"previousVersion":[[:space:]]*"\([^"]*\)".*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  with_obs="$(sed -n 's/.*"withObs":[[:space:]]*\(true\|false\).*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  allow_grafana="$(sed -n 's/.*"allowGrafanaLan":[[:space:]]*\(true\|false\).*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  allow_wiki="$(sed -n 's/.*"allowWikiLan":[[:space:]]*\(true\|false\).*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  lan_cidr="$(sed -n 's/.*"lanCidr":[[:space:]]*"\([^"]*\)".*/\1/p' /var/lib/sentinel/appliance/state.json | head -n1)"
+  cat >/opt/sentinel/deploy/.appliance-state <<EOF
+WITH_OBS=${with_obs:-false}
+ALLOW_GRAFANA_LAN=${allow_grafana:-false}
+ALLOW_WIKI_LAN=${allow_wiki:-false}
+LAN_CIDR=${lan_cidr:-}
+CURRENT_VERSION=${current_version:-}
+PREVIOUS_VERSION=${previous_version:-}
+EOF
+  chmod 644 /opt/sentinel/deploy/.appliance-state
+fi
+
+if [ -d /opt/sentinel/deploy/runtime/hotspot-recovery ]; then
+  chgrp -R sentinel-backend /opt/sentinel/deploy/runtime/hotspot-recovery || true
+  chmod -R g+rwX /opt/sentinel/deploy/runtime/hotspot-recovery || true
+fi
+
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl disable --now sentinel-system-update-request.path sentinel-system-update-request.service >/dev/null 2>&1 || true
+  systemctl daemon-reload || true
+  systemctl enable --now sentinel-update-bridge.socket >/dev/null 2>&1 || true
 fi
 
 if command -v update-desktop-database >/dev/null 2>&1; then
@@ -150,5 +250,9 @@ chmod 755 "${PKG_ROOT}/DEBIAN/postinst"
 mkdir -p "${OUTPUT_DIR}"
 OUTPUT_FILE="${OUTPUT_DIR}/${PKG_NAME}_${DEB_VERSION}_all.deb"
 dpkg-deb --build --root-owner-group "${PKG_ROOT}" "${OUTPUT_FILE}"
+(
+  cd "${OUTPUT_DIR}"
+  sha256sum "$(basename "${OUTPUT_FILE}")" >SHA256SUMS.txt
+)
 
 echo "Built package: ${OUTPUT_FILE}"

@@ -42,8 +42,10 @@ export const TID = {
     syncQualsBtn: 'members-sync-quals-btn',
     importCsvBtn: 'members-import-csv-btn',
     newMemberBtn: 'members-new-member-btn',
+    newCivilianBtn: 'members-new-civilian-btn',
     filter: {
       search: 'members-filter-search',
+      scope: 'members-filter-scope',
       division: 'members-filter-division',
       rank: 'members-filter-rank',
       status: 'members-filter-status',
@@ -183,6 +185,15 @@ export const TID = {
       remoteSystemActive: 'settings-network-remote-system-active',
       remoteSystemSubmit: 'settings-network-remote-system-submit',
       remoteSystemCancel: 'settings-network-remote-system-cancel',
+    },
+    updates: {
+      tab: 'settings-updates-tab',
+      panel: 'settings-updates-panel',
+      refresh: 'settings-updates-refresh',
+      start: 'settings-updates-start',
+      confirmDialog: 'settings-updates-confirm-dialog',
+      confirmStart: 'settings-updates-confirm-start',
+      confirmCancel: 'settings-updates-confirm-cancel',
     },
     eventTypes: {
       tab: 'settings-event-types-tab',

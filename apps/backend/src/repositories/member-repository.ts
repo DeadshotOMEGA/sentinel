@@ -4,6 +4,7 @@ import type {
   CreateMemberInput,
   UpdateMemberInput,
   MemberType,
+  MemberSource,
   MemberStatus,
   PaginationParams,
   MemberFilterParams,
@@ -23,10 +24,12 @@ import {
   hasValidMemberBadgeAssignment,
   normalizeBadgeAssignmentType,
 } from '../lib/badge-state.js'
+import { resolveMemberTypePersistence } from '../lib/member-records.js'
 
 interface MemberFilters extends MemberFilterParams {
   divisionId?: string
   memberType?: MemberType
+  memberSource?: MemberSource
   status?: MemberStatus
   search?: string
   ranks?: string[]
@@ -52,6 +55,7 @@ function toMember(prismaMember: PrismaMember): Member {
     mess: prismaMember.mess ?? undefined,
     moc: prismaMember.moc ?? undefined,
     memberType: prismaMember.memberType as MemberType,
+    memberSource: prismaMember.memberSource as MemberSource,
     memberTypeId: prismaMember.memberTypeId ?? undefined,
     memberStatusId: prismaMember.memberStatusId ?? undefined,
     classDetails: prismaMember.classDetails ?? undefined,
@@ -260,58 +264,52 @@ export class MemberRepository {
     }
   }
 
-  private async recomputeDisplayNamesByKeys(
+  private async resolveMemberTypeSelection(
     tx: PrismaClientInstance,
-    keys: Set<string>
-  ): Promise<void> {
-    const normalizedKeys = Array.from(keys).filter(Boolean)
-    if (normalizedKeys.length === 0) return
-
-    const members = await tx.member.findMany({
-      select: {
-        id: true,
-        rank: true,
-        firstName: true,
-        lastName: true,
-        initials: true,
-      },
-    })
-
-    const collisionCounts = new Map<string, number>()
-    for (const member of members) {
-      const key = this.getDisplayKeyForMember(member)
-      if (!key) continue
-      collisionCounts.set(key, (collisionCounts.get(key) ?? 0) + 1)
-    }
-
-    const updates = members
-      .filter((member) => normalizedKeys.includes(this.getDisplayKeyForMember(member)))
-      .map((member) => {
-        const key = this.getDisplayKeyForMember(member)
-        const useLongForm = (collisionCounts.get(key) ?? 0) > 1
-        const displayName = buildMemberDisplayName({
-          rank: member.rank,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          initials: member.initials,
-          useLongForm,
-          fallback: `${member.firstName} ${member.lastName}`.trim(),
-        })
-        return tx.member.update({
-          where: { id: member.id },
-          data: { displayName },
-        })
+    data: { memberType?: MemberType; memberTypeId?: string | null },
+    mode: 'create' | 'update'
+  ): Promise<{ memberType?: string; memberTypeId?: string | null }> {
+    let resolvedMemberTypeCodeById: string | null | undefined
+    if (data.memberTypeId !== undefined && data.memberTypeId !== null) {
+      const memberTypeRef = await tx.memberType.findUnique({
+        where: { id: data.memberTypeId },
+        select: { code: true },
       })
-
-    if (updates.length > 0) {
-      await Promise.all(updates)
+      if (!memberTypeRef) {
+        throw new Error(`Invalid member type ID: ${data.memberTypeId}`)
+      }
+      resolvedMemberTypeCodeById = memberTypeRef.code
     }
+
+    let resolvedMemberTypeIdByCode: string | null | undefined
+    const memberTypeCodeForLookup =
+      data.memberType !== undefined && data.memberType !== null
+        ? String(data.memberType)
+        : undefined
+    if (memberTypeCodeForLookup) {
+      const memberTypeRef = await tx.memberType.findUnique({
+        where: { code: memberTypeCodeForLookup },
+        select: { id: true },
+      })
+      resolvedMemberTypeIdByCode = memberTypeRef?.id ?? null
+    } else if (mode === 'create' && data.memberTypeId === undefined) {
+      const defaultMemberTypeRef = await tx.memberType.findUnique({
+        where: { code: 'class_a' },
+        select: { id: true },
+      })
+      resolvedMemberTypeIdByCode = defaultMemberTypeRef?.id ?? null
+    }
+
+    return resolveMemberTypePersistence({
+      mode,
+      requestedMemberType: data.memberType !== undefined ? String(data.memberType) : undefined,
+      requestedMemberTypeId: data.memberTypeId,
+      resolvedMemberTypeCodeById,
+      resolvedMemberTypeIdByCode,
+    })
   }
 
-  /**
-   * Find all members with optional filters
-   */
-  async findAll(filters?: MemberFilters): Promise<MemberWithDivision[]> {
+  private buildMemberWhere(filters?: MemberFilters): Record<string, unknown> {
     const where: Record<string, unknown> = {}
 
     if (filters?.divisionId) {
@@ -320,6 +318,10 @@ export class MemberRepository {
 
     if (filters?.memberType) {
       where.memberType = filters.memberType
+    }
+
+    if (filters?.memberSource) {
+      where.memberSource = filters.memberSource
     }
 
     if (filters?.status) {
@@ -421,7 +423,6 @@ export class MemberRepository {
       ]
     }
 
-    // Exclude members with hidden statuses unless explicitly included
     if (!filters?.includeHidden) {
       const existingAnd = (where.AND as Record<string, unknown>[]) ?? []
       where.AND = [
@@ -431,6 +432,63 @@ export class MemberRepository {
         },
       ]
     }
+
+    return where
+  }
+
+  private async recomputeDisplayNamesByKeys(
+    tx: PrismaClientInstance,
+    keys: Set<string>
+  ): Promise<void> {
+    const normalizedKeys = Array.from(keys).filter(Boolean)
+    if (normalizedKeys.length === 0) return
+
+    const members = await tx.member.findMany({
+      select: {
+        id: true,
+        rank: true,
+        firstName: true,
+        lastName: true,
+        initials: true,
+      },
+    })
+
+    const collisionCounts = new Map<string, number>()
+    for (const member of members) {
+      const key = this.getDisplayKeyForMember(member)
+      if (!key) continue
+      collisionCounts.set(key, (collisionCounts.get(key) ?? 0) + 1)
+    }
+
+    const updates = members
+      .filter((member) => normalizedKeys.includes(this.getDisplayKeyForMember(member)))
+      .map((member) => {
+        const key = this.getDisplayKeyForMember(member)
+        const useLongForm = (collisionCounts.get(key) ?? 0) > 1
+        const displayName = buildMemberDisplayName({
+          rank: member.rank,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          initials: member.initials,
+          useLongForm,
+          fallback: `${member.firstName} ${member.lastName}`.trim(),
+        })
+        return tx.member.update({
+          where: { id: member.id },
+          data: { displayName },
+        })
+      })
+
+    if (updates.length > 0) {
+      await Promise.all(updates)
+    }
+  }
+
+  /**
+   * Find all members with optional filters
+   */
+  async findAll(filters?: MemberFilters): Promise<MemberWithDivision[]> {
+    const where = this.buildMemberWhere(filters)
 
     const members = await this.prisma.member.findMany({
       where,
@@ -503,126 +561,7 @@ export class MemberRepository {
 
     const skip = (page - 1) * limit
 
-    // Build where conditions (same as findAll)
-    const where: Record<string, unknown> = {}
-
-    if (filters?.divisionId) {
-      where.divisionId = filters.divisionId
-    }
-
-    if (filters?.memberType) {
-      where.memberType = filters.memberType
-    }
-
-    if (filters?.status) {
-      where.status = filters.status
-    }
-
-    if (filters?.ranks && filters.ranks.length > 0) {
-      where.rank = {
-        in: filters.ranks,
-      }
-    }
-
-    if (filters?.mess) {
-      where.mess = filters.mess
-    }
-
-    if (filters?.moc) {
-      where.moc = filters.moc
-    }
-
-    if (filters?.division) {
-      where.division = {
-        code: filters.division,
-      }
-    }
-
-    if (filters?.contract) {
-      const now = new Date()
-      const thirtyDaysFromNow = new Date(now)
-      thirtyDaysFromNow.setDate(now.getDate() + 30)
-
-      if (filters.contract === 'active') {
-        where.contract_end = {
-          gte: now,
-        }
-      } else if (filters.contract === 'expiring_soon') {
-        where.contract_end = {
-          gte: now,
-          lte: thirtyDaysFromNow,
-        }
-      } else if (filters.contract === 'expired') {
-        where.contract_end = {
-          lt: now,
-        }
-      }
-    }
-
-    if (filters?.tags && filters.tags.length > 0) {
-      where.memberTags = {
-        some: {
-          tag: {
-            name: {
-              in: filters.tags,
-            },
-          },
-        },
-      }
-    }
-
-    if (filters?.excludeTags && filters.excludeTags.length > 0) {
-      where.NOT = {
-        memberTags: {
-          some: {
-            tag: {
-              name: {
-                in: filters.excludeTags,
-              },
-            },
-          },
-        },
-      }
-    }
-
-    if (filters?.hasBadge !== undefined) {
-      if (filters.hasBadge) {
-        where.badgeId = { not: null }
-      } else {
-        where.badgeId = null
-      }
-    }
-
-    if (filters?.qualificationCode) {
-      where.qualifications = {
-        some: {
-          status: 'active',
-          qualificationType: {
-            code: filters.qualificationCode,
-          },
-        },
-      }
-    }
-
-    if (filters?.search) {
-      where.OR = [
-        { displayName: { contains: filters.search, mode: 'insensitive' } },
-        { firstName: { contains: filters.search, mode: 'insensitive' } },
-        { lastName: { contains: filters.search, mode: 'insensitive' } },
-        { serviceNumber: { contains: filters.search, mode: 'insensitive' } },
-      ]
-    }
-
-    // Exclude members with hidden statuses unless explicitly included
-    if (!filters?.includeHidden) {
-      const existingAnd = (where.AND as Record<string, unknown>[]) ?? []
-      where.AND = [
-        ...existingAnd,
-        {
-          OR: [{ memberStatusId: null }, { memberStatusRef: { isHidden: false } }],
-        },
-      ]
-    }
+    const where = this.buildMemberWhere(filters)
 
     // Execute count and data queries in parallel
     const [total, members] = await Promise.all([
@@ -730,6 +669,15 @@ export class MemberRepository {
     }
 
     const member = await this.prisma.$transaction(async (tx) => {
+      const memberTypeSelection = await this.resolveMemberTypeSelection(
+        tx as unknown as PrismaClientInstance,
+        {
+          memberType: data.memberType,
+          memberTypeId: data.memberTypeId,
+        },
+        'create'
+      )
+
       const created = await tx.member.create({
         data: {
           serviceNumber: data.serviceNumber,
@@ -742,8 +690,9 @@ export class MemberRepository {
           divisionId: data.divisionId,
           mess: data.mess !== undefined ? data.mess : null,
           moc: data.moc !== undefined ? data.moc : null,
-          memberType: data.memberType !== undefined ? data.memberType : 'regular',
-          memberTypeId: data.memberTypeId !== undefined ? data.memberTypeId : null,
+          memberType: memberTypeSelection.memberType ?? 'class_a',
+          memberSource: data.memberSource !== undefined ? data.memberSource : 'nominal_roll',
+          memberTypeId: memberTypeSelection.memberTypeId ?? null,
           memberStatusId: data.memberStatusId !== undefined ? data.memberStatusId : null,
           classDetails: data.classDetails !== undefined ? data.classDetails : null,
           status: data.status !== undefined ? data.status : 'active',
@@ -808,14 +757,11 @@ export class MemberRepository {
     if (data.moc !== undefined) {
       updateData.moc = data.moc
     }
-    if (data.memberType !== undefined) {
-      updateData.memberType = data.memberType
-    }
-    if (data.memberTypeId !== undefined) {
-      updateData.memberTypeId = data.memberTypeId
-    }
     if (data.classDetails !== undefined) {
       updateData.classDetails = data.classDetails
+    }
+    if (data.memberSource !== undefined) {
+      updateData.memberSource = data.memberSource
     }
     if (data.status !== undefined) {
       updateData.status = data.status
@@ -855,6 +801,21 @@ export class MemberRepository {
         where: { id },
         select: { id: true, rank: true, firstName: true, lastName: true, initials: true },
       })
+
+      const memberTypeSelection = await this.resolveMemberTypeSelection(
+        tx as unknown as PrismaClientInstance,
+        {
+          memberType: data.memberType,
+          memberTypeId: data.memberTypeId,
+        },
+        'update'
+      )
+      if (memberTypeSelection.memberType !== undefined) {
+        updateData.memberType = memberTypeSelection.memberType
+      }
+      if (memberTypeSelection.memberTypeId !== undefined) {
+        updateData.memberTypeId = memberTypeSelection.memberTypeId
+      }
 
       const keysToRecompute = new Set<string>()
       const oldKey = this.getDisplayKeyForMember(existing)
@@ -1002,7 +963,7 @@ export class MemberRepository {
   /**
    * Find members by service numbers (for import operations)
    */
-  async findByServiceNumbers(serviceNumbers: string[]): Promise<Member[]> {
+  async findByServiceNumbers(serviceNumbers: string[], filters?: MemberFilters): Promise<Member[]> {
     if (serviceNumbers.length === 0) {
       return []
     }
@@ -1010,6 +971,7 @@ export class MemberRepository {
     const members = await this.prisma.member.findMany({
       where: {
         serviceNumber: { in: serviceNumbers },
+        ...(filters?.memberSource ? { memberSource: filters.memberSource } : {}),
       },
     })
 
@@ -1089,6 +1051,15 @@ export class MemberRepository {
           throw new Error(`Invalid rank code: ${memberData.rank}`)
         }
 
+        const memberTypeSelection = await this.resolveMemberTypeSelection(
+          tx as unknown as PrismaClientInstance,
+          {
+            memberType: memberData.memberType,
+            memberTypeId: memberData.memberTypeId,
+          },
+          'create'
+        )
+
         await tx.member.create({
           data: {
             serviceNumber: memberData.serviceNumber,
@@ -1102,8 +1073,10 @@ export class MemberRepository {
             divisionId: memberData.divisionId,
             mess: memberData.mess !== undefined ? memberData.mess : null,
             moc: memberData.moc !== undefined ? memberData.moc : null,
-            memberType: memberData.memberType,
-            memberTypeId: memberData.memberTypeId !== undefined ? memberData.memberTypeId : null,
+            memberType: memberTypeSelection.memberType ?? 'class_a',
+            memberSource:
+              memberData.memberSource !== undefined ? memberData.memberSource : 'nominal_roll',
+            memberTypeId: memberTypeSelection.memberTypeId ?? null,
             classDetails: memberData.classDetails !== undefined ? memberData.classDetails : null,
             status: memberData.status !== undefined ? memberData.status : 'active',
             email: memberData.email !== undefined ? memberData.email : null,
@@ -1222,14 +1195,11 @@ export class MemberRepository {
         if (data.moc !== undefined) {
           updateData.moc = data.moc
         }
-        if (data.memberType !== undefined) {
-          updateData.memberType = data.memberType
-        }
-        if (data.memberTypeId !== undefined) {
-          updateData.memberTypeId = data.memberTypeId
-        }
         if (data.classDetails !== undefined) {
           updateData.classDetails = data.classDetails
+        }
+        if (data.memberSource !== undefined) {
+          updateData.memberSource = data.memberSource
         }
         if (data.status !== undefined) {
           updateData.status = data.status
@@ -1248,6 +1218,21 @@ export class MemberRepository {
         }
         if (data.accountLevel !== undefined) {
           updateData.accountLevel = data.accountLevel
+        }
+
+        const memberTypeSelection = await this.resolveMemberTypeSelection(
+          tx as unknown as PrismaClientInstance,
+          {
+            memberType: data.memberType,
+            memberTypeId: data.memberTypeId,
+          },
+          'update'
+        )
+        if (memberTypeSelection.memberType !== undefined) {
+          updateData.memberType = memberTypeSelection.memberType
+        }
+        if (memberTypeSelection.memberTypeId !== undefined) {
+          updateData.memberTypeId = memberTypeSelection.memberTypeId
         }
 
         if (Object.keys(updateData).length === 0) {
