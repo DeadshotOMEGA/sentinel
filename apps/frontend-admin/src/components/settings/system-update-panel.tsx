@@ -30,6 +30,7 @@ import {
 } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
+import { getPreferredUpdateTargetVersion } from './system-update-panel.logic'
 
 const PRIMARY_FLOW: readonly SystemUpdateJobStatus[] = [
   'requested',
@@ -256,10 +257,24 @@ export function SystemUpdatePanel() {
   const currentJob = status?.currentJob ?? null
   const hasActiveJob = currentJob ? !isTerminalStatus(currentJob.status) : false
   const autoOpenTraceLog = shouldAutoOpenTraceLog(currentJob)
+  const preferredTargetVersion = status ? getPreferredUpdateTargetVersion(status, currentJob) : null
+  const retryingLastTarget =
+    status !== null && status.latestVersion === null && preferredTargetVersion !== null
+  const startActionLabel =
+    preferredTargetVersion === null
+      ? 'Update to latest'
+      : retryingLastTarget
+        ? `Retry ${preferredTargetVersion}`
+        : `Update to ${preferredTargetVersion}`
+  const confirmActionLabel =
+    preferredTargetVersion === null
+      ? 'Start update'
+      : retryingLastTarget
+        ? `Retry ${preferredTargetVersion}`
+        : `Start update to ${preferredTargetVersion}`
   const canStartNow =
     canStartUpdates &&
-    status?.updateAvailable === true &&
-    status.latestVersion !== null &&
+    preferredTargetVersion !== null &&
     !hasActiveJob &&
     !startSystemUpdate.isPending
   const traceQuery = useSystemUpdateTrace({
@@ -287,13 +302,13 @@ export function SystemUpdatePanel() {
   }
 
   const handleStartUpdate = async () => {
-    if (!status?.latestVersion) {
+    if (!preferredTargetVersion) {
       return
     }
 
     try {
       const result = await startSystemUpdate.mutateAsync({
-        targetVersion: status.latestVersion,
+        targetVersion: preferredTargetVersion,
       })
       setConfirmOpen(false)
       toast.success(result.message)
@@ -376,7 +391,7 @@ export function SystemUpdatePanel() {
                 disabled={!canStartNow}
                 data-testid={TID.settings.updates.start}
               >
-                Update to {status.latestVersion ?? 'latest'}
+                {startActionLabel}
               </button>
             </div>
           </div>
@@ -395,6 +410,13 @@ export function SystemUpdatePanel() {
             <AppAlert tone="warning" heading="Admin or Developer access required">
               You can view update status here, but only Admin or Developer accounts can start a new
               Sentinel update.
+            </AppAlert>
+          )}
+
+          {retryingLastTarget && currentJob && (
+            <AppAlert tone="info" heading="Retry target is still available">
+              Latest release lookup is temporarily unavailable, but you can retry the last requested
+              target {currentJob.targetVersion} from this page.
             </AppAlert>
           )}
 
@@ -784,8 +806,8 @@ export function SystemUpdatePanel() {
             <DialogTitle>Start Sentinel update</DialogTitle>
             <DialogDescription>
               This will ask the host appliance updater to install{' '}
-              {status.latestVersion ?? 'the latest stable release'}. The UI may reconnect while
-              services restart, but the update will keep running on the appliance.
+              {preferredTargetVersion ?? 'the selected Sentinel release'}. The UI may reconnect
+              while services restart, but the update will keep running on the appliance.
             </DialogDescription>
           </DialogHeader>
 
@@ -800,7 +822,7 @@ export function SystemUpdatePanel() {
               <div className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
                 Target version
               </div>
-              <div className="mt-1 font-mono">{status.latestVersion ?? 'Unknown'}</div>
+              <div className="mt-1 font-mono">{preferredTargetVersion ?? 'Unknown'}</div>
             </div>
             <AppAlert tone="info">
               No root or sudo password should be requested here. Sentinel will hand the request to
@@ -831,7 +853,7 @@ export function SystemUpdatePanel() {
                   Starting...
                 </>
               ) : (
-                `Start update to ${status.latestVersion ?? 'latest'}`
+                confirmActionLabel
               )}
             </button>
           </DialogFooter>

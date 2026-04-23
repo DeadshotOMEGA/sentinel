@@ -162,8 +162,8 @@ def compare_version_tags(left: str, right: str) -> int:
     return 0
 
 
-def github_request(path: str) -> dict[str, Any]:
-    trace("info", f"Fetching GitHub release metadata from {path}.")
+def github_request(path: str, *, purpose: str = "release metadata") -> dict[str, Any]:
+    trace("info", f"Fetching GitHub {purpose} from {path}.")
     request = urllib.request.Request(
         f"{RELEASE_API_BASE.rstrip('/')}/{resolve_release_repository()}{path}",
         headers={
@@ -184,15 +184,20 @@ def github_request(path: str) -> dict[str, Any]:
     return payload
 
 
-def fetch_release(tag: str) -> dict[str, Any]:
-    return github_request(f"/releases/tags/{tag}")
+def fetch_release(tag: str, *, purpose: str = "release metadata") -> dict[str, Any]:
+    return github_request(f"/releases/tags/{tag}", purpose=purpose)
 
 
 def fetch_latest_release() -> dict[str, Any]:
-    return github_request("/releases/latest")
+    return github_request("/releases/latest", purpose="latest release metadata")
 
 
-def select_release_asset(release: dict[str, Any], version_tag: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def select_release_asset(
+    release: dict[str, Any],
+    version_tag: str,
+    *,
+    purpose: str = "release",
+) -> tuple[dict[str, Any], dict[str, Any]]:
     version = version_tag.removeprefix("v")
     expected_name = f"sentinel_{version}_all.deb"
     assets = release.get("assets")
@@ -217,7 +222,7 @@ def select_release_asset(release: dict[str, Any], version_tag: str) -> tuple[dic
         raise UpdaterError("verifying", f"Release {version_tag} did not contain a checksum asset.")
     trace(
         "info",
-        "Selected release assets for "
+        f"Selected {purpose} assets for "
         f"{version_tag}: package={deb_asset.get('name', expected_name)}, checksum={checksum_asset.get('name', 'unknown')}.",
     )
     return deb_asset, checksum_asset
@@ -270,28 +275,34 @@ def cached_paths(version_tag: str) -> tuple[Path, Path]:
     return DOWNLOADS_DIR / f"sentinel_{version}_all.deb", DOWNLOADS_DIR / f"SHA256SUMS-{version}.txt"
 
 
-def cache_verified_release(version_tag: str, job_logger: JobLogger) -> dict[str, str]:
-    release = fetch_release(version_tag)
+def cache_verified_release(
+    version_tag: str,
+    job_logger: JobLogger,
+    *,
+    purpose: str,
+) -> dict[str, str]:
+    trace("info", f"Preparing {purpose} artifacts for {version_tag}.")
+    release = fetch_release(version_tag, purpose=f"{purpose} metadata")
     release_tag = str(release.get("tag_name", "")).strip()
     if release_tag != version_tag:
         raise UpdaterError("verifying", f"Release metadata tag mismatch for {version_tag}.")
 
-    deb_asset, checksum_asset = select_release_asset(release, version_tag)
+    deb_asset, checksum_asset = select_release_asset(release, version_tag, purpose=purpose)
     deb_path, checksum_path = cached_paths(version_tag)
 
     if not deb_path.exists():
-        update_line = f"Downloading {deb_asset['name']} to {deb_path}"
+        update_line = f"Downloading {purpose} package {deb_asset['name']} to {deb_path}"
         job_logger.write_line(update_line)
         download_asset(str(deb_asset["browser_download_url"]), deb_path)
     if not checksum_path.exists():
-        job_logger.write_line(f"Downloading {checksum_asset['name']} to {checksum_path}")
+        job_logger.write_line(f"Downloading {purpose} checksum {checksum_asset['name']} to {checksum_path}")
         download_asset(str(checksum_asset["browser_download_url"]), checksum_path)
 
     expected_hash = checksum_from_file(checksum_path, deb_path.name)
     actual_hash = sha256sum(deb_path)
     if actual_hash != expected_hash:
         raise UpdaterError("verifying", f"Checksum mismatch for {deb_path.name}.")
-    trace("info", f"Verified checksum for {deb_path.name}: {actual_hash}.")
+    trace("info", f"Verified {purpose} checksum for {deb_path.name}: {actual_hash}.")
 
     return {
         "version": version_tag,
@@ -334,16 +345,23 @@ def run_command(
             job_logger.write_line(f"  {line}")
             trace("info", f"stdout: {line}")
     if stderr:
+        stderr_level = "warning" if result.returncode != 0 else "info"
         job_logger.write_line("stderr:")
-        trace("warning", f"Command produced stderr for step {step}.")
+        trace(stderr_level, f"Command produced stderr for step {step}.")
         for line in stderr.splitlines():
             job_logger.write_line(f"  {line}")
-            trace("warning", f"stderr: {line}")
+            trace(stderr_level, f"stderr: {line}")
     trace(
         "info" if result.returncode == 0 else "warning",
         f"Command for step {step} exited with status {result.returncode}.",
     )
     return result
+
+
+def refreshed_appliance_env() -> dict[str, str]:
+    env = dict(os.environ)
+    env.update(read_env_file(APPLIANCE_ENV_PATH))
+    return env
 
 
 def install_deb(deb_path: Path, job_logger: JobLogger) -> None:
@@ -469,7 +487,7 @@ def prepare_backup(job: dict[str, Any], job_logger: JobLogger) -> dict[str, Any]
         job_logger=job_logger,
         timeout=COMMAND_TIMEOUT_SECONDS,
         step="staging",
-        env=dict(os.environ),
+        env=refreshed_appliance_env(),
     )
     if result.returncode != 0:
         raise UpdaterError("staging", "Pre-update backup failed.")
@@ -483,10 +501,12 @@ def prepare_backup(job: dict[str, Any], job_logger: JobLogger) -> dict[str, Any]
 def update_runtime_version(target_version: str) -> None:
     trace("info", f"Updating SENTINEL_VERSION in {APPLIANCE_ENV_PATH} to {target_version}.")
     upsert_env_value(APPLIANCE_ENV_PATH, "SENTINEL_VERSION", target_version)
+    os.environ["SENTINEL_VERSION"] = target_version
 
 
 def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> None:
     trace("info", "Running backend post-update database and bootstrap commands.")
+    command_env = refreshed_appliance_env()
     commands = [
         compose_command(
             state,
@@ -531,6 +551,7 @@ def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> Non
             job_logger=job_logger,
             timeout=COMMAND_TIMEOUT_SECONDS,
             step="health_check",
+            env=command_env,
         )
         if result.returncode != 0:
             raise UpdaterError("health_check", f"Backend post-update command failed: {' '.join(command)}")
@@ -539,11 +560,13 @@ def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> Non
 
 def restart_stack(state: dict[str, Any], job_logger: JobLogger) -> None:
     trace("info", "Pulling fresh container images for the Sentinel stack.")
+    command_env = refreshed_appliance_env()
     pull_result = run_command(
         compose_command(state, "pull"),
         job_logger=job_logger,
         timeout=COMMAND_TIMEOUT_SECONDS,
         step="post_install",
+        env=command_env,
     )
     if pull_result.returncode != 0:
         raise UpdaterError("post_install", "docker compose pull failed.")
@@ -554,10 +577,72 @@ def restart_stack(state: dict[str, Any], job_logger: JobLogger) -> None:
         job_logger=job_logger,
         timeout=COMMAND_TIMEOUT_SECONDS,
         step="restarting",
+        env=command_env,
     )
     if up_result.returncode != 0:
         raise UpdaterError("restarting", "docker compose up -d failed.")
     trace("info", "Sentinel stack restart completed.")
+
+
+def read_hotspot_report(job_logger: JobLogger) -> dict[str, Any] | None:
+    ensure_script = DEPLOY_DIR / "ensure-host-hotspot-profile.sh"
+    if not ensure_script.exists():
+        return None
+
+    report_result = run_command(
+        [str(ensure_script), "--report-json"],
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="health_check",
+        env=refreshed_appliance_env(),
+    )
+    report_raw = report_result.stdout.strip()
+    if not report_raw:
+        return None
+
+    try:
+        payload = json.loads(report_raw)
+    except json.JSONDecodeError:
+        trace("warning", "Shared hotspot report returned invalid JSON after an update step.")
+        return None
+
+    return payload if isinstance(payload, dict) else None
+
+
+def run_shared_hotspot_recovery(job_logger: JobLogger, *, context: str) -> str | None:
+    recovery_script = DEPLOY_DIR / "recover-host-hotspot.sh"
+    if not recovery_script.exists():
+        trace("warning", f"Shared hotspot recovery script is missing after {context}.")
+        return "Shared hotspot recovery script is missing."
+
+    trace("info", f"Running shared hotspot recovery after {context}.")
+    result = run_command(
+        [str(recovery_script)],
+        job_logger=job_logger,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+        step="health_check",
+        env=refreshed_appliance_env(),
+    )
+
+    degraded_message: str | None = None
+    if result.returncode not in {0, 2}:
+        degraded_message = f"Shared hotspot recovery failed with exit code {result.returncode}."
+    elif result.returncode == 2:
+        degraded_message = "Shared hotspot recovery completed, but hotspot visibility verification still needs attention."
+
+    report = read_hotspot_report(job_logger)
+    if isinstance(report, dict):
+        issue_code = report.get("issueCode")
+        report_message = report.get("message")
+        if issue_code != "none" and isinstance(report_message, str) and report_message.strip():
+            degraded_message = report_message.strip()
+
+    if degraded_message is None:
+        trace("info", f"Shared hotspot recovery completed cleanly after {context}.")
+    else:
+        trace("warning", f"Shared hotspot recovery is degraded after {context}: {degraded_message}")
+
+    return degraded_message
 
 
 def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger: JobLogger) -> None:
@@ -579,12 +664,23 @@ def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger:
     install_deb(Path(previous_artifact["debPath"]), job_logger)
     restart_stack(previous_state, job_logger)
     wait_for_health(job_logger, expected_version=previous_artifact["version"])
+    hotspot_warning = run_shared_hotspot_recovery(
+        job_logger,
+        context=f"rollback to {previous_artifact['version']}",
+    )
 
     job["currentVersion"] = previous_artifact["version"]
     update_job(
         job,
         status="rolled_back",
-        message=f"Rollback completed to {previous_artifact['version']}.",
+        message=(
+            f"Rollback completed to {previous_artifact['version']}."
+            if hotspot_warning is None
+            else (
+                f"Rollback completed to {previous_artifact['version']}. "
+                f"Host hotspot still needs attention: {hotspot_warning}"
+            )
+        ),
         job_logger=job_logger,
         finished=True,
     )
@@ -610,9 +706,23 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
             f"Target version {target_version} is not newer than the current version {current_version}.",
         )
 
-    latest_release = fetch_latest_release()
     job["currentVersion"] = current_version
-    job["latestVersion"] = normalize_version_tag(str(latest_release.get("tag_name", "")).strip())
+    job["latestVersion"] = None
+
+    try:
+        latest_release = fetch_latest_release()
+    except UpdaterError as error:
+        job_logger.write_line(
+            "Latest release metadata lookup failed while authorizing the update. "
+            f"Continuing with the explicit target {target_version}: {error}"
+        )
+        trace(
+            "warning",
+            "Latest release metadata lookup failed while authorizing "
+            f"{target_version}; continuing with the explicit target. Reason: {error}",
+        )
+    else:
+        job["latestVersion"] = normalize_version_tag(str(latest_release.get("tag_name", "")).strip())
 
     update_job(
         job,
@@ -626,7 +736,7 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
 
     previous_artifact: dict[str, str] | None = None
     try:
-        previous_artifact = cache_verified_release(current_version, job_logger)
+        previous_artifact = cache_verified_release(current_version, job_logger, purpose="rollback")
     except UpdaterError as error:
         # Older published releases may not have shipped rollback metadata such as
         # a checksum asset yet. Record that explicitly, but keep validating the
@@ -642,7 +752,7 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         )
 
     update_job(job, status="downloading", message=f"Downloading Sentinel release {target_version}.", job_logger=job_logger)
-    target_artifact = cache_verified_release(target_version, job_logger)
+    target_artifact = cache_verified_release(target_version, job_logger, purpose="target release")
 
     update_job(job, status="verifying", message=f"Verifying release artifacts for {target_version}.", job_logger=job_logger)
     job["artifacts"] = {
@@ -671,12 +781,23 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
     update_job(job, status="health_check", message="Running post-update verification.", job_logger=job_logger)
     run_backend_post_update(state, job_logger)
     wait_for_health(job_logger, expected_version=target_version)
+    hotspot_warning = run_shared_hotspot_recovery(
+        job_logger,
+        context=f"update to {target_version}",
+    )
 
     job["currentVersion"] = target_version
     update_job(
         job,
         status="completed",
-        message=f"Sentinel updated successfully to {target_version}.",
+        message=(
+            f"Sentinel updated successfully to {target_version}."
+            if hotspot_warning is None
+            else (
+                f"Sentinel updated successfully to {target_version}. "
+                f"Host hotspot still needs attention: {hotspot_warning}"
+            )
+        ),
         job_logger=job_logger,
         finished=True,
     )

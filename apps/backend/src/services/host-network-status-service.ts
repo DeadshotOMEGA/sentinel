@@ -5,9 +5,14 @@ const DEFAULT_NETWORK_STATUS_FILE_PATH = '/var/run/sentinel/network-status/netwo
 
 export interface HostNetworkTelemetry {
   generatedAt: Date
+  issueCode: string | null
   wifiConnected: boolean | null
   currentSsid: string | null
   hostIpAddress: string | null
+  hotspotProfilePresent: boolean | null
+  hotspotAdapterApproved: boolean | null
+  scanAdapterPresent: boolean | null
+  hotspotDevice: string | null
   hotspotSsid: string | null
   hotspotScanDevice: string | null
   hotspotSsidVisibleFromLaptop: boolean | null
@@ -52,9 +57,14 @@ function parseTelemetry(payload: unknown): HostNetworkTelemetry | null {
 
   return {
     generatedAt,
+    issueCode: normalizeNullableString(payload.issueCode),
     wifiConnected: normalizeNullableBoolean(payload.wifiConnected),
     currentSsid: normalizeNullableString(payload.currentSsid),
     hostIpAddress: normalizeNullableString(payload.hostIpAddress),
+    hotspotProfilePresent: normalizeNullableBoolean(payload.hotspotProfilePresent),
+    hotspotAdapterApproved: normalizeNullableBoolean(payload.hotspotAdapterApproved),
+    scanAdapterPresent: normalizeNullableBoolean(payload.scanAdapterPresent),
+    hotspotDevice: normalizeNullableString(payload.hotspotDevice),
     hotspotSsid: normalizeNullableString(payload.hotspotSsid),
     hotspotScanDevice: normalizeNullableString(payload.hotspotScanDevice),
     hotspotSsidVisibleFromLaptop: normalizeNullableBoolean(payload.hotspotSsidVisibleFromLaptop),

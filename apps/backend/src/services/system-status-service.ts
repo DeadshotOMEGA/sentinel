@@ -1,5 +1,9 @@
 import type { PrismaClientInstance } from '@sentinel/database'
-import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
+import type {
+  NetworkIssueCode,
+  SystemHealthStatus,
+  SystemStatusResponse,
+} from '@sentinel/contracts'
 import { prisma as defaultPrisma } from '@sentinel/database'
 import {
   activeRemoteSessions,
@@ -40,119 +44,149 @@ function resolveDatabaseAddress(): string | null {
   }
 }
 
-function resolveNetworkStatusMessage(input: {
+function normalizeTelemetryIssueCode(value: string | null): NetworkIssueCode {
+  switch (value) {
+    case 'telemetry_unavailable':
+    case 'telemetry_stale':
+    case 'wifi_disconnected':
+    case 'unapproved_ssid':
+    case 'hotspot_profile_missing':
+    case 'approved_hotspot_adapter_missing':
+    case 'scan_adapter_missing':
+    case 'hotspot_not_visible':
+    case 'remote_reachability_failed':
+      return value
+    default:
+      return 'none'
+  }
+}
+
+function resolveNetworkIssueCode(input: {
   telemetryAvailable: boolean
   developmentBuild: boolean
-  runningInsideContainer: boolean
   telemetryAgeSeconds: number | null
-  approvedSsidsConfigured: boolean
   wifiConnected: boolean | null
   approvedSsid: boolean | null
-  hotspotSsid: string | null
-  hotspotSsidVisibleFromLaptop: boolean | null
-  internetReachable: boolean | null
+  telemetryIssueCode: string | null
   remoteTarget: string | null
   remoteReachable: boolean | null
-  portalRecoveryLikely: boolean | null
-  fallbackMessage: string | null
-}): string {
+}): NetworkIssueCode {
   if (!input.telemetryAvailable) {
-    if (input.developmentBuild) {
-      if (input.runningInsideContainer) {
-        return 'Development build running in container; host telemetry checks are optional'
-      }
-
-      return 'Local development build detected on this laptop; host telemetry checks are optional'
-    }
-
-    return 'Host telemetry unavailable'
+    return input.developmentBuild ? 'none' : 'telemetry_unavailable'
   }
 
   if (
     input.telemetryAgeSeconds !== null &&
     input.telemetryAgeSeconds > TELEMETRY_STALE_WARNING_SECONDS
   ) {
-    return 'Host telemetry is stale'
+    return 'telemetry_stale'
   }
 
   if (input.wifiConnected === false) {
-    return 'Wi-Fi disconnected'
+    return 'wifi_disconnected'
   }
 
   if (input.approvedSsid === false) {
-    return 'Connected to an unapproved Wi-Fi SSID'
+    return 'unapproved_ssid'
   }
 
-  if (input.hotspotSsidVisibleFromLaptop === false) {
-    if (input.hotspotSsid) {
-      return `Hotspot SSID "${input.hotspotSsid}" is not visible from the laptop Wi-Fi adapter`
-    }
-
-    return 'Hosted hotspot SSID is not visible from the laptop Wi-Fi adapter'
+  const telemetryIssueCode = normalizeTelemetryIssueCode(input.telemetryIssueCode)
+  if (telemetryIssueCode !== 'none') {
+    return telemetryIssueCode
   }
 
   if (input.remoteTarget && input.remoteReachable === false) {
-    return `Remote reachability check failed for ${input.remoteTarget}`
+    return 'remote_reachability_failed'
   }
 
-  if (input.fallbackMessage) {
-    return input.fallbackMessage
+  return 'none'
+}
+
+function resolveNetworkStatusMessage(input: {
+  issueCode: NetworkIssueCode
+  telemetryAvailable: boolean
+  developmentBuild: boolean
+  runningInsideContainer: boolean
+  approvedSsidsConfigured: boolean
+  wifiConnected: boolean | null
+  approvedSsid: boolean | null
+  hotspotSsid: string | null
+  remoteTarget: string | null
+  fallbackMessage: string | null
+}): string {
+  if (!input.telemetryAvailable && input.developmentBuild) {
+    if (input.runningInsideContainer) {
+      return 'Development build running in container; host telemetry checks are optional'
+    }
+
+    return 'Local development build detected on this laptop; host telemetry checks are optional'
+  }
+
+  switch (input.issueCode) {
+    case 'telemetry_unavailable':
+      return 'Host telemetry unavailable'
+    case 'telemetry_stale':
+      return 'Host telemetry is stale'
+    case 'wifi_disconnected':
+      return 'Wi-Fi disconnected'
+    case 'unapproved_ssid':
+      return 'Connected to an unapproved Wi-Fi SSID'
+    case 'hotspot_profile_missing':
+      return 'The managed Sentinel hotspot profile is missing.'
+    case 'approved_hotspot_adapter_missing':
+      return 'No approved hotspot dongle is available on this laptop.'
+    case 'scan_adapter_missing':
+      return 'A second Wi-Fi radio is unavailable for hotspot verification.'
+    case 'hotspot_not_visible':
+      if (input.hotspotSsid) {
+        return `Hotspot SSID "${input.hotspotSsid}" is not visible from the laptop Wi-Fi adapter`
+      }
+
+      return 'Hosted hotspot SSID is not visible from the laptop Wi-Fi adapter'
+    case 'remote_reachability_failed':
+      return input.remoteTarget
+        ? `Remote reachability check failed for ${input.remoteTarget}`
+        : 'Remote reachability check failed'
+    case 'none':
+    default:
+      break
   }
 
   if (input.approvedSsidsConfigured && input.approvedSsid === true) {
     return 'Connected to approved Wi-Fi network'
   }
 
+  if (input.fallbackMessage) {
+    return input.fallbackMessage
+  }
+
+  if (input.wifiConnected === true) {
+    return 'Connected to Wi-Fi network'
+  }
+
   return 'Connected to Wi-Fi network'
 }
 
 function resolveNetworkStatus(input: {
+  issueCode: NetworkIssueCode
   telemetryAvailable: boolean
   developmentBuild: boolean
-  telemetryAgeSeconds: number | null
   wifiConnected: boolean | null
-  approvedSsid: boolean | null
-  hotspotSsidVisibleFromLaptop: boolean | null
-  internetReachable: boolean | null
-  remoteTarget: string | null
-  remoteReachable: boolean | null
 }): SystemHealthStatus {
-  if (!input.telemetryAvailable) {
-    if (input.developmentBuild) {
-      return 'healthy'
-    }
-
-    return 'unknown'
-  }
-
-  if (
-    input.telemetryAgeSeconds !== null &&
-    input.telemetryAgeSeconds > TELEMETRY_STALE_WARNING_SECONDS
-  ) {
-    return 'warning'
-  }
-
-  if (input.wifiConnected === false) {
-    return 'error'
-  }
-
-  if (input.approvedSsid === false) {
-    return 'warning'
-  }
-
-  if (input.hotspotSsidVisibleFromLaptop === false) {
-    return 'warning'
-  }
-
-  if (input.remoteTarget && input.remoteReachable === false) {
-    return 'warning'
-  }
-
-  if (input.wifiConnected === true) {
+  if (!input.telemetryAvailable && input.developmentBuild) {
     return 'healthy'
   }
 
-  return 'unknown'
+  switch (input.issueCode) {
+    case 'none':
+      return input.wifiConnected === true ? 'healthy' : 'unknown'
+    case 'telemetry_unavailable':
+      return 'unknown'
+    case 'wifi_disconnected':
+      return 'error'
+    default:
+      return 'warning'
+  }
 }
 
 function resolveOverallStatus(input: {
@@ -249,16 +283,21 @@ export class SystemStatusService {
           )
         : null
 
-    const networkStatus = resolveNetworkStatus({
+    const networkIssueCode = resolveNetworkIssueCode({
       telemetryAvailable: telemetry !== null,
       developmentBuild,
       telemetryAgeSeconds,
       wifiConnected: telemetry?.wifiConnected ?? null,
       approvedSsid,
-      hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
-      internetReachable: telemetry?.internetReachable ?? null,
+      telemetryIssueCode: telemetry?.issueCode ?? null,
       remoteTarget: telemetry?.remoteTarget ?? null,
       remoteReachable: telemetry?.remoteReachable ?? null,
+    })
+    const networkStatus = resolveNetworkStatus({
+      issueCode: networkIssueCode,
+      telemetryAvailable: telemetry !== null,
+      developmentBuild,
+      wifiConnected: telemetry?.wifiConnected ?? null,
     })
 
     if (networkStatus === 'warning' || networkStatus === 'error') {
@@ -289,25 +328,26 @@ export class SystemStatusService {
         status: networkStatus,
         telemetryAvailable: telemetry !== null,
         telemetryAgeSeconds,
+        issueCode: networkIssueCode,
         message: resolveNetworkStatusMessage({
+          issueCode: networkIssueCode,
           telemetryAvailable: telemetry !== null,
           developmentBuild,
           runningInsideContainer,
-          telemetryAgeSeconds,
           approvedSsidsConfigured: approvedSsids.length > 0,
           wifiConnected: telemetry?.wifiConnected ?? null,
           approvedSsid,
           hotspotSsid: telemetry?.hotspotSsid ?? null,
-          hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
-          internetReachable: telemetry?.internetReachable ?? null,
           remoteTarget: telemetry?.remoteTarget ?? null,
-          remoteReachable: telemetry?.remoteReachable ?? null,
-          portalRecoveryLikely: telemetry?.portalRecoveryLikely ?? null,
           fallbackMessage: telemetry?.message ?? null,
         }),
         wifiConnected: telemetry?.wifiConnected ?? null,
         currentSsid: telemetry?.currentSsid ?? null,
         hostIpAddress: telemetry?.hostIpAddress ?? null,
+        hotspotProfilePresent: telemetry?.hotspotProfilePresent ?? null,
+        hotspotAdapterApproved: telemetry?.hotspotAdapterApproved ?? null,
+        scanAdapterPresent: telemetry?.scanAdapterPresent ?? null,
+        hotspotDevice: telemetry?.hotspotDevice ?? null,
         hotspotSsid: telemetry?.hotspotSsid ?? null,
         hotspotScanDevice: telemetry?.hotspotScanDevice ?? null,
         hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,

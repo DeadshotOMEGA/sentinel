@@ -2,12 +2,17 @@
 
 set -euo pipefail
 
-CONNECTION_NAME="${1:-${HOTSPOT_CONNECTION_NAME:-Sentinel Hotspot}}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/ensure-host-hotspot-profile.sh"
+
+CONNECTION_NAME="${1:-$(env_value HOTSPOT_CONNECTION_NAME 'Sentinel Hotspot')}"
 SSID_WAIT_TIMEOUT="${SSID_WAIT_TIMEOUT:-20}"
 SSID_POLL_INTERVAL="${SSID_POLL_INTERVAL:-2}"
-HOTSPOT_BAND="${HOTSPOT_BAND:-bg}"
-HOTSPOT_CHANNEL="${HOTSPOT_CHANNEL:-1}"
+HOTSPOT_BAND="$(env_value HOTSPOT_BAND 'bg')"
+HOTSPOT_CHANNEL="$(env_value HOTSPOT_CHANNEL '1')"
 LOCK_FILE="${LOCK_FILE:-/run/lock/sentinel-host-hotspot-recover.lock}"
+export HOTSPOT_CONNECTION_NAME_OVERRIDE="${CONNECTION_NAME}"
 
 log() {
   printf '[host-hotspot-recover] %s\n' "$*"
@@ -29,6 +34,21 @@ wait_for_path() {
 
   while (( SECONDS < end )); do
     if [[ -e "${path}" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  return 1
+}
+
+wait_for_nm_device() {
+  local device="$1"
+  local timeout="${2:-20}"
+  local end=$((SECONDS + timeout))
+
+  while (( SECONDS < end )); do
+    if nmcli -t -f DEVICE device status | grep -Fxq "${device}"; then
       return 0
     fi
     sleep 1
@@ -63,6 +83,14 @@ stop_hotspot() {
 }
 
 start_hotspot() {
+  local device="${1:-}"
+
+  if [[ -n "${device}" ]]; then
+    log "Bringing hotspot connection up on ${device}"
+    nmcli -w 30 connection up "${CONNECTION_NAME}" ifname "${device}" >/dev/null
+    return 0
+  fi
+
   log "Bringing hotspot connection up"
   nmcli -w 30 connection up "${CONNECTION_NAME}" >/dev/null
 }
@@ -121,16 +149,29 @@ if ! flock -n 9; then
   die "Host hotspot recovery is already running"
 fi
 
-if ! nmcli -t -f NAME connection show | grep -Fxq "${CONNECTION_NAME}"; then
+skip_visibility_check="false"
+if ensure_host_hotspot_profile; then
+  :
+else
+  ensure_rc=$?
+  if [[ "${ensure_rc}" -eq 2 ]]; then
+    skip_visibility_check="true"
+    log "Hotspot profile is configured, but no second Wi-Fi radio is available for visibility verification."
+  else
+    die "Unable to ensure the canonical hotspot profile for \"${CONNECTION_NAME}\""
+  fi
+fi
+
+if ! hotspot_connection_exists; then
   die "NetworkManager connection \"${CONNECTION_NAME}\" was not found"
 fi
 
-SSID="$(nmcli -g 802-11-wireless.ssid connection show "${CONNECTION_NAME}" | head -n1)"
-DEVICE="$(nmcli -g connection.interface-name connection show "${CONNECTION_NAME}" | head -n1)"
+SSID="$(hotspot_connection_ssid || true)"
+DEVICE="$(hotspot_connection_device || true)"
 KEY_MGMT="$(nmcli -g 802-11-wireless-security.key-mgmt connection show "${CONNECTION_NAME}" | head -n1)"
 
 if [[ -z "${DEVICE}" ]]; then
-  DEVICE="$(nmcli -t -f NAME,TYPE,DEVICE connection show --active | awk -F: -v conn="${CONNECTION_NAME}" '$1 == conn && ($2 == "wifi" || $2 == "802-11-wireless") { print $3; exit }')"
+  DEVICE="${HOTSPOT_STATE_HOTSPOT_DEVICE:-}"
 fi
 
 [[ -n "${DEVICE}" ]] || die "Could not determine the hotspot interface for \"${CONNECTION_NAME}\""
@@ -150,7 +191,10 @@ USB_AUTHORIZED="/sys/bus/usb/devices/${USB_DEVICE_NAME}/authorized"
 USB_UNBIND="/sys/bus/usb/drivers/usb/unbind"
 USB_BIND="/sys/bus/usb/drivers/usb/bind"
 
-SCAN_DEVICE="$(nmcli -t -f DEVICE,TYPE device status | awk -F: -v dev="${DEVICE}" '$2 == "wifi" && $1 != dev { print $1; exit }')"
+SCAN_DEVICE="${HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE:-}"
+if [[ -z "${SCAN_DEVICE}" ]]; then
+  SCAN_DEVICE="$(hotspot_pick_scan_device "${DEVICE}")"
+fi
 
 log "Connection: ${CONNECTION_NAME}"
 log "SSID: ${SSID:-unknown}"
@@ -182,8 +226,9 @@ if have_command udevadm; then
 fi
 
 wait_for_path "/sys/class/net/${DEVICE}" 20 || die "Interface ${DEVICE} did not come back after reset"
+wait_for_nm_device "${DEVICE}" 20 || die "NetworkManager did not rediscover ${DEVICE} after reset"
 
-start_hotspot
+start_hotspot "${DEVICE}"
 
 if have_command iw; then
   iw dev "${DEVICE}" set power_save off >/dev/null 2>&1 || true
@@ -191,6 +236,11 @@ fi
 
 if have_command iwconfig; then
   iwconfig "${DEVICE}" power off >/dev/null 2>&1 || true
+fi
+
+if [[ "${skip_visibility_check}" == "true" || -z "${SCAN_DEVICE}" || -z "${SSID}" ]]; then
+  log "Host hotspot recovery complete without a scan-radio visibility check"
+  exit 0
 fi
 
 if [[ -n "${SCAN_DEVICE}" && -n "${SSID}" ]]; then

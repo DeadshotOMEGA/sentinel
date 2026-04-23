@@ -10,6 +10,7 @@ OUTPUT_FILE="${OUTPUT_DIR}/network-status.json"
 CHECK_URL="$(env_value NETWORK_REACHABILITY_CHECK_URL "$(env_value CAPTIVE_PORTAL_RECOVERY_CHECK_URL https://connectivitycheck.gstatic.com/generate_204)")"
 REMOTE_TARGET="$(env_value NETWORK_REMOTE_REACHABILITY_TARGET "$(env_value CAPTIVE_PORTAL_TAILSCALE_TARGET)")"
 HOTSPOT_CONNECTION_NAME="$(env_value HOTSPOT_CONNECTION_NAME 'Sentinel Hotspot')"
+BACKEND_READER_GROUP="${BACKEND_READER_GROUP:-sentinel-backend}"
 
 json_escape() {
   printf '%s' "${1:-}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
@@ -177,6 +178,25 @@ check_target() {
   esac
 }
 
+set_output_permissions() {
+  local path="$1"
+
+  if [[ -z "${path}" || ! -e "${path}" ]]; then
+    return 0
+  fi
+
+  if getent group "${BACKEND_READER_GROUP}" >/dev/null 2>&1; then
+    chgrp "${BACKEND_READER_GROUP}" "${path}" >/dev/null 2>&1 || true
+    chmod 640 "${path}" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  chmod 644 "${path}" >/dev/null 2>&1 || true
+}
+
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/ensure-host-hotspot-profile.sh"
+
 mkdir -p "${OUTPUT_DIR}"
 
 generated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
@@ -187,11 +207,28 @@ internet_reachable_value="null"
 remote_reachable_value="null"
 portal_recovery_likely_value="null"
 message_value="Telemetry snapshot captured"
-hotspot_device_value="$(hotspot_connection_device || true)"
-hotspot_ssid_value="$(hotspot_connection_ssid || true)"
-hotspot_scan_device_value="$(resolve_hotspot_scan_device "${hotspot_device_value}")"
+hotspot_issue_code_value="none"
+hotspot_profile_present_value="false"
+hotspot_adapter_approved_value="false"
+scan_adapter_present_value="false"
+hotspot_device_value=""
+hotspot_ssid_value="$(env_value HOTSPOT_SSID 'Stone Frigate')"
+hotspot_scan_device_value=""
 hotspot_ssid_visible_from_laptop_value="null"
+hotspot_collect_runtime_state || true
+hotspot_issue_code_value="${HOTSPOT_STATE_ISSUE_CODE:-none}"
+hotspot_profile_present_value="${HOTSPOT_STATE_PROFILE_PRESENT:-false}"
+hotspot_adapter_approved_value="${HOTSPOT_STATE_HOTSPOT_ADAPTER_APPROVED:-false}"
+scan_adapter_present_value="${HOTSPOT_STATE_SCAN_ADAPTER_PRESENT:-false}"
+hotspot_device_value="${HOTSPOT_STATE_HOTSPOT_DEVICE:-}"
+hotspot_ssid_value="${HOTSPOT_STATE_HOTSPOT_SSID:-${hotspot_ssid_value}}"
+hotspot_scan_device_value="${HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE:-}"
+hotspot_ssid_visible_from_laptop_value="${HOTSPOT_STATE_HOTSPOT_VISIBILITY:-null}"
 host_ip_address_value="$(resolve_host_ip_address "${hotspot_device_value}")"
+
+if [[ "${hotspot_issue_code_value}" != "none" && -n "${HOTSPOT_STATE_MESSAGE:-}" ]]; then
+  message_value="${HOTSPOT_STATE_MESSAGE}"
+fi
 
 if wifi_connected; then
   wifi_connected_value="true"
@@ -202,20 +239,14 @@ fi
 
 current_ssid_value="$(current_ssid || true)"
 
-if is_ssid_visible_on_device "${hotspot_scan_device_value}" "${hotspot_ssid_value}"; then
-  hotspot_ssid_visible_from_laptop_value="true"
-elif [[ $? -eq 1 ]]; then
-  hotspot_ssid_visible_from_laptop_value="false"
-fi
-
 if check_url "${CHECK_URL}"; then
   internet_reachable_value="true"
 elif command -v curl >/dev/null 2>&1; then
   internet_reachable_value="false"
-  if [[ "${wifi_connected_value}" == "true" ]]; then
+  if [[ "${wifi_connected_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
     portal_recovery_likely_value="true"
     message_value="Internet reachability failed while Wi-Fi is connected"
-  else
+  elif [[ "${hotspot_issue_code_value}" == "none" ]]; then
     message_value="Internet reachability failed"
   fi
 fi
@@ -225,13 +256,13 @@ if [[ -n "${REMOTE_TARGET}" ]]; then
     remote_reachable_value="true"
   else
     remote_reachable_value="false"
-    if [[ "${internet_reachable_value}" == "true" ]]; then
+    if [[ "${internet_reachable_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
       message_value="Remote reachability failed for ${REMOTE_TARGET}"
     fi
   fi
 fi
 
-if [[ "${wifi_connected_value}" == "true" && "${internet_reachable_value}" == "true" ]]; then
+if [[ "${wifi_connected_value}" == "true" && "${internet_reachable_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
   message_value="Connected to Wi-Fi and internet is reachable"
 fi
 
@@ -239,9 +270,14 @@ tmp_file="$(mktemp "${OUTPUT_DIR}/network-status.XXXXXX")"
 cat >"${tmp_file}" <<JSON
 {
   "generatedAt": "${generated_at}",
+  "issueCode": "$(json_escape "${hotspot_issue_code_value}")",
   "wifiConnected": ${wifi_connected_value},
   "currentSsid": $(json_string_or_null "${current_ssid_value}"),
   "hostIpAddress": $(json_string_or_null "${host_ip_address_value}"),
+  "hotspotProfilePresent": $(json_bool "${hotspot_profile_present_value}"),
+  "hotspotAdapterApproved": $(json_bool "${hotspot_adapter_approved_value}"),
+  "scanAdapterPresent": $(json_bool "${scan_adapter_present_value}"),
+  "hotspotDevice": $(json_string_or_null "${hotspot_device_value}"),
   "hotspotSsid": $(json_string_or_null "${hotspot_ssid_value}"),
   "hotspotScanDevice": $(json_string_or_null "${hotspot_scan_device_value}"),
   "hotspotSsidVisibleFromLaptop": ${hotspot_ssid_visible_from_laptop_value},
@@ -252,4 +288,5 @@ cat >"${tmp_file}" <<JSON
   "message": $(json_string_or_null "${message_value}")
 }
 JSON
+set_output_permissions "${tmp_file}"
 mv "${tmp_file}" "${OUTPUT_FILE}"

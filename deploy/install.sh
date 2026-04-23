@@ -224,6 +224,7 @@ fi
 ensure_mdns_hostname
 ensure_local_wiki_host_alias
 configure_hotspot_connectivity_helpers
+run_host_hotspot_recovery_nonblocking
 MDNS_HOSTNAME="$(env_value MDNS_HOSTNAME sentinel)"
 WIKI_DOMAIN="$(env_value WIKI_DOMAIN docs.sentinel.local)"
 

@@ -12,10 +12,18 @@ import { isSystemUpdateJobTerminal, sanitizeSystemUpdateJob } from '../lib/syste
 const DEFAULT_STATE_ROOT = '/var/lib/sentinel/updater'
 const DEFAULT_APPLIANCE_STATE_PATH = '/var/lib/sentinel/appliance/state.json'
 const DEFAULT_RELEASE_API_BASE = 'https://api.github.com/repos'
+const DEFAULT_RELEASE_LOOKUP_CACHE_TTL_MS = 5 * 60 * 1000
+const DEFAULT_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 1000
+const MAX_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 60 * 1000
 
 interface LatestReleaseSummary {
   latestVersion: string | null
   latestReleaseUrl: string | null
+}
+
+interface LatestReleaseCacheEntry {
+  summary: LatestReleaseSummary
+  expiresAt: number
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -27,12 +35,18 @@ export class SystemUpdateStatusService {
   private readonly applianceStatePath: string
   private readonly releaseRepository: string
   private readonly releaseApiBase: string
+  private readonly latestReleaseCacheTtlMs: number
+  private readonly latestReleaseErrorCacheTtlMs: number
+  private latestReleaseCache: LatestReleaseCacheEntry | null = null
+  private latestReleaseRequest: Promise<LatestReleaseSummary> | null = null
 
   constructor(options?: {
     stateRoot?: string
     applianceStatePath?: string
     releaseRepository?: string
     releaseApiBase?: string
+    latestReleaseCacheTtlMs?: number
+    latestReleaseErrorCacheTtlMs?: number
   }) {
     this.stateRoot =
       options?.stateRoot ?? process.env.SYSTEM_UPDATE_STATE_ROOT ?? DEFAULT_STATE_ROOT
@@ -48,6 +62,10 @@ export class SystemUpdateStatusService {
       options?.releaseApiBase ??
       process.env.SYSTEM_UPDATE_RELEASE_API_BASE ??
       DEFAULT_RELEASE_API_BASE
+    this.latestReleaseCacheTtlMs =
+      options?.latestReleaseCacheTtlMs ?? DEFAULT_RELEASE_LOOKUP_CACHE_TTL_MS
+    this.latestReleaseErrorCacheTtlMs =
+      options?.latestReleaseErrorCacheTtlMs ?? DEFAULT_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS
   }
 
   async getStatus(): Promise<SystemUpdateStatusResponse> {
@@ -158,6 +176,34 @@ export class SystemUpdateStatusService {
       }
     }
 
+    const cachedEntry = this.latestReleaseCache
+    if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
+      return cachedEntry.summary
+    }
+
+    if (this.latestReleaseRequest) {
+      return this.latestReleaseRequest
+    }
+
+    this.latestReleaseRequest = this.fetchLatestReleaseSummaryUncached(repository)
+      .then(({ summary, cacheTtlMs }) => {
+        this.latestReleaseCache = {
+          summary,
+          expiresAt: Date.now() + cacheTtlMs,
+        }
+
+        return summary
+      })
+      .finally(() => {
+        this.latestReleaseRequest = null
+      })
+
+    return this.latestReleaseRequest
+  }
+
+  private async fetchLatestReleaseSummaryUncached(
+    repository: string
+  ): Promise<{ summary: LatestReleaseSummary; cacheTtlMs: number }> {
     try {
       const response = await globalThis.fetch(
         `${this.releaseApiBase.replace(/\/+$/, '')}/${repository}/releases/latest`,
@@ -177,16 +223,22 @@ export class SystemUpdateStatusService {
         })
 
         return {
-          latestVersion: null,
-          latestReleaseUrl: null,
+          summary: {
+            latestVersion: null,
+            latestReleaseUrl: null,
+          },
+          cacheTtlMs: this.getReleaseLookupErrorCacheTtl(response),
         }
       }
 
       const payload: unknown = await response.json()
       if (!isRecord(payload)) {
         return {
-          latestVersion: null,
-          latestReleaseUrl: null,
+          summary: {
+            latestVersion: null,
+            latestReleaseUrl: null,
+          },
+          cacheTtlMs: this.latestReleaseCacheTtlMs,
         }
       }
 
@@ -195,8 +247,11 @@ export class SystemUpdateStatusService {
       const latestReleaseUrl = typeof payload.html_url === 'string' ? payload.html_url : null
 
       return {
-        latestVersion,
-        latestReleaseUrl,
+        summary: {
+          latestVersion,
+          latestReleaseUrl,
+        },
+        cacheTtlMs: this.latestReleaseCacheTtlMs,
       }
     } catch (error) {
       serviceLogger.warn('Latest Sentinel release lookup raised an error', {
@@ -205,10 +260,35 @@ export class SystemUpdateStatusService {
       })
 
       return {
-        latestVersion: null,
-        latestReleaseUrl: null,
+        summary: {
+          latestVersion: null,
+          latestReleaseUrl: null,
+        },
+        cacheTtlMs: this.latestReleaseErrorCacheTtlMs,
       }
     }
+  }
+
+  private getReleaseLookupErrorCacheTtl(response: globalThis.Response): number {
+    if (response.status !== 403 || response.headers.get('x-ratelimit-remaining') !== '0') {
+      return this.latestReleaseErrorCacheTtlMs
+    }
+
+    const resetRaw = response.headers.get('x-ratelimit-reset')
+    const resetSeconds = Number.parseInt(resetRaw ?? '', 10)
+    if (Number.isNaN(resetSeconds)) {
+      return this.latestReleaseErrorCacheTtlMs
+    }
+
+    const resetDelayMs = resetSeconds * 1000 - Date.now()
+    if (resetDelayMs <= 0) {
+      return this.latestReleaseErrorCacheTtlMs
+    }
+
+    return Math.max(
+      this.latestReleaseErrorCacheTtlMs,
+      Math.min(resetDelayMs, MAX_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS)
+    )
   }
 
   private async readApplianceCurrentVersion(): Promise<string | null> {

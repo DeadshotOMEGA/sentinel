@@ -61,7 +61,7 @@ sentinel-install-update
 1. Open the `deploy` folder in Files.
 2. Double-click `Sentinel Install and Update.desktop`.
 3. If Ubuntu prompts, choose **Allow Launching**.
-4. A terminal window opens and prompts for the version number to install or update (example: `1.1.8`).
+4. A guided Zenity wizard asks whether you are installing or updating, confirms the target release, and runs hotspot preflight before Sentinel starts the long-running install/update work in the terminal.
 
 ### Terminal fallback
 
@@ -112,6 +112,9 @@ Port defaults in `.env`:
 - `KROKI_SERVER_URL=http://kroki:8000` (internal Wiki.js renderer target)
 - `WIKI_LAN_PORT=3020` (only used if `--allow-wiki-lan`)
 - `HOTSPOT_CONNECTION_NAME=Sentinel Hotspot` (NetworkManager profile name for the hosted hotspot)
+- `HOTSPOT_SSID=Stone Frigate` (canonical hosted SSID Sentinel will create/repair)
+- `HOTSPOT_PSK=...` (fixed hotspot password supplied by the release package or operator-managed `.env`)
+- `HOTSPOT_APPROVED_DONGLES_FILE=hardware/approved-hotspot-dongles.json` (approved external AP dongle allowlist)
 - `NETWORK_REACHABILITY_CHECK_URL=https://connectivitycheck.gstatic.com/generate_204` (host-level internet probe)
 - `NETWORK_REMOTE_REACHABILITY_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
 - `NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS=30` (how often the Ubuntu host writes Wi-Fi/internet telemetry for Sentinel)
@@ -152,6 +155,8 @@ If install reports GHCR unreachable:
 
 Install/update now provisions hotspot and update helpers:
 
+- supported hotspot hosting expects exactly one approved external AP dongle plus a second Wi-Fi radio for verification
+- a canonical `ensure-host-hotspot-profile.sh` helper that detects approved AP dongles, creates or repairs the managed `Sentinel Hotspot` profile, and keeps the profile bound to the correct adapter
 - a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to the approved hotspot, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
 - a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
@@ -160,6 +165,7 @@ Install/update now provisions hotspot and update helpers:
 Relevant runtime paths:
 
 - local reconnect handler: `/opt/sentinel/deploy/sentinel-hotspot-connect.sh`
+- canonical hotspot helper: `/opt/sentinel/deploy/ensure-host-hotspot-profile.sh`
 - queued recovery requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/requests`
 - processed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/processed`
 - failed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/failed`
@@ -183,6 +189,10 @@ What it checks:
 - whether Wi-Fi is connected
 - the current SSID
 - the host IP address that operators can use on the local hotspot/LAN
+- whether the managed hotspot profile exists
+- whether an approved AP dongle is present
+- whether a second Wi-Fi radio is available for hotspot verification
+- which hotspot adapter and scan adapter Sentinel selected
 - whether the configured Sentinel hotspot SSID is visible from the laptop's non-host Wi-Fi adapter (when available)
 - whether the configured internet reachability URL succeeds
 - whether the optional `NETWORK_REMOTE_REACHABILITY_TARGET` is reachable
@@ -207,7 +217,7 @@ systemd units installed during install/update/rollback:
 
 1. Open `/opt/sentinel/deploy` in Files.
 2. Double-click `Sentinel Install and Update.desktop`.
-3. Enter the target Sentinel version when prompted in the terminal.
+3. Follow the guided wizard for release selection, hotspot preflight, and recovery choices before Sentinel starts the terminal-driven install/update run.
 
 ### Terminal fallback
 
@@ -218,10 +228,11 @@ cd /opt/sentinel/deploy
 
 This guided flow handles both install and update:
 
-- prompts for the release version,
+- prompts for the workflow and release version,
+- runs hotspot provisioning/recovery preflight with explicit retry/continue/cancel choices,
 - downloads the matching Debian package from GitHub Releases,
 - installs the package,
-- runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`.
+- runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`, including shared hotspot recovery.
 - `--no-firewall`
 
 ## Automatic upgrade helper
