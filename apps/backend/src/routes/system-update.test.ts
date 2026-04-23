@@ -6,7 +6,8 @@ import { createExpressEndpoints } from '@ts-rest/express'
 import { systemUpdateContract } from '@sentinel/contracts'
 import express from 'express'
 import request from 'supertest'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { SystemUpdateStatusService } from '../services/system-update-status-service.js'
 import { createSystemUpdateRouter } from './system-update.js'
 
 function createMember(accountLevel: number) {
@@ -21,7 +22,12 @@ function createMember(accountLevel: number) {
   }
 }
 
-function createTestApp(accountLevel?: number) {
+function createTestApp(
+  accountLevel?: number,
+  options?: {
+    statusService?: SystemUpdateStatusService
+  }
+) {
   const app = express()
   app.use(express.json())
   app.use((req, _res, next) => {
@@ -32,7 +38,7 @@ function createTestApp(accountLevel?: number) {
     }
     next()
   })
-  createExpressEndpoints(systemUpdateContract, createSystemUpdateRouter(), app, {
+  createExpressEndpoints(systemUpdateContract, createSystemUpdateRouter(options), app, {
     requestValidationErrorHandler: (err, _req, res) => {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
@@ -42,6 +48,17 @@ function createTestApp(accountLevel?: number) {
     },
   })
   return app
+}
+
+function createStatusResponse(overrides?: Partial<Record<string, unknown>>) {
+  return {
+    currentVersion: 'v2.6.1',
+    latestVersion: 'v2.6.2',
+    latestReleaseUrl: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.2',
+    updateAvailable: true,
+    currentJob: null,
+    ...overrides,
+  }
 }
 
 function createJob(overrides?: Partial<Record<string, unknown>>) {
@@ -155,6 +172,20 @@ describe('systemUpdateRouter', () => {
     expect(response.body).toMatchObject({
       error: 'UNAUTHORIZED',
     })
+  })
+
+  it('forwards forceRefresh status queries to the status service', async () => {
+    const getStatus = vi.fn().mockResolvedValue(createStatusResponse())
+    const statusService = {
+      getStatus,
+      getJob: vi.fn(),
+    } as unknown as SystemUpdateStatusService
+
+    const app = createTestApp(5, { statusService })
+    const response = await request(app).get('/api/admin/system/update?forceRefresh=true')
+
+    expect(response.status).toBe(200)
+    expect(getStatus).toHaveBeenCalledWith({ forceRefresh: true })
   })
 
   it('requires authentication for the update trace endpoint', async () => {

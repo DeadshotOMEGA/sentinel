@@ -68,13 +68,15 @@ export class SystemUpdateStatusService {
       options?.latestReleaseErrorCacheTtlMs ?? DEFAULT_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS
   }
 
-  async getStatus(): Promise<SystemUpdateStatusResponse> {
+  async getStatus(options?: { forceRefresh?: boolean }): Promise<SystemUpdateStatusResponse> {
     const applianceStateVersion = await this.readApplianceCurrentVersion()
     const currentJob = this.filterSupersededTerminalJob(
       await this.readCurrentJob(),
       applianceStateVersion
     )
-    const releaseSummary = await this.fetchLatestReleaseSummary()
+    const releaseSummary = await this.fetchLatestReleaseSummary({
+      forceRefresh: options?.forceRefresh === true,
+    })
     const completedJobVersion =
       currentJob && isSystemUpdateJobFinished(currentJob) ? currentJob.currentVersion : null
     const currentVersion =
@@ -167,7 +169,9 @@ export class SystemUpdateStatusService {
     return sanitizeSystemUpdateJob(payload)
   }
 
-  private async fetchLatestReleaseSummary(): Promise<LatestReleaseSummary> {
+  private async fetchLatestReleaseSummary(options?: {
+    forceRefresh?: boolean
+  }): Promise<LatestReleaseSummary> {
     const repository = this.releaseRepository.trim()
     if (repository.length === 0) {
       return {
@@ -176,8 +180,9 @@ export class SystemUpdateStatusService {
       }
     }
 
+    const forceRefresh = options?.forceRefresh === true
     const cachedEntry = this.latestReleaseCache
-    if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
+    if (!forceRefresh && cachedEntry && cachedEntry.expiresAt > Date.now()) {
       return cachedEntry.summary
     }
 
