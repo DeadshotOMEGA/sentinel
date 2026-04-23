@@ -24,9 +24,14 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
       telemetryAvailable: true,
       telemetryAgeSeconds: 5,
       message: 'Connected to approved Wi-Fi network',
+      issueCode: 'none',
       wifiConnected: true,
       currentSsid: 'Stone Frigate',
       hostIpAddress: '192.168.8.1',
+      hotspotProfilePresent: true,
+      hotspotAdapterApproved: true,
+      scanAdapterPresent: true,
+      hotspotDevice: 'wlxb8fbb3c4e8ae',
       hotspotSsid: 'Stone Frigate',
       hotspotScanDevice: 'wlp2s0',
       hotspotSsidVisibleFromLaptop: true,
@@ -73,6 +78,7 @@ describe('app-navbar logic', () => {
         network: {
           ...createSystemStatus().network,
           status: 'error',
+          issueCode: 'wifi_disconnected',
           wifiConnected: false,
         },
       }),
@@ -82,9 +88,7 @@ describe('app-navbar logic', () => {
     })
 
     expect(result.showConnectLaptop).toBe(true)
-    expect(result.connectLaptopHref).toBe(
-      'sentinel-hotspot://connect?ssid=Stone%20Frigate'
-    )
+    expect(result.connectLaptopHref).toBe('sentinel-hotspot://connect?ssid=Stone%20Frigate')
   })
 
   it('gates host hotspot repair to admin-capable users', () => {
@@ -112,6 +116,7 @@ describe('app-navbar logic', () => {
       systemStatus: createSystemStatus({
         network: {
           ...createSystemStatus().network,
+          issueCode: 'hotspot_not_visible',
           hotspotSsidVisibleFromLaptop: false,
         },
       }),

@@ -18,14 +18,35 @@ export const DatabaseHealthSchema = v.object({
   address: v.nullable(v.string()),
 })
 
+export const NetworkIssueCodeSchema = v.picklist(
+  [
+    'none',
+    'telemetry_unavailable',
+    'telemetry_stale',
+    'wifi_disconnected',
+    'unapproved_ssid',
+    'hotspot_profile_missing',
+    'approved_hotspot_adapter_missing',
+    'scan_adapter_missing',
+    'hotspot_not_visible',
+    'remote_reachability_failed',
+  ],
+  'Choose a valid network issue code'
+)
+
 export const NetworkFactsSchema = v.object({
   status: SystemHealthStatusSchema,
   telemetryAvailable: v.boolean(),
   telemetryAgeSeconds: v.nullable(v.number()),
   message: v.string(),
+  issueCode: NetworkIssueCodeSchema,
   wifiConnected: v.nullable(v.boolean()),
   currentSsid: v.nullable(v.string()),
   hostIpAddress: v.nullable(v.string()),
+  hotspotProfilePresent: v.nullable(v.boolean()),
+  hotspotAdapterApproved: v.nullable(v.boolean()),
+  scanAdapterPresent: v.nullable(v.boolean()),
+  hotspotDevice: v.nullable(v.string()),
   hotspotSsid: v.nullable(v.string()),
   hotspotScanDevice: v.nullable(v.string()),
   hotspotSsidVisibleFromLaptop: v.nullable(v.boolean()),
@@ -75,6 +96,7 @@ export const SystemStatusResponseSchema = v.object({
 export type SystemHealthStatus = v.InferOutput<typeof SystemHealthStatusSchema>
 export type BackendHealth = v.InferOutput<typeof BackendHealthSchema>
 export type DatabaseHealth = v.InferOutput<typeof DatabaseHealthSchema>
+export type NetworkIssueCode = v.InferOutput<typeof NetworkIssueCodeSchema>
 export type NetworkFacts = v.InferOutput<typeof NetworkFactsSchema>
 export type ActiveRemoteSession = v.InferOutput<typeof ActiveRemoteSessionSchema>
 export type ActiveRemoteSystemsSummary = v.InferOutput<typeof ActiveRemoteSystemsSummarySchema>

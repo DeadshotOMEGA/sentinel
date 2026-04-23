@@ -449,6 +449,18 @@ bootstrap_env_defaults() {
     upsert_env "HOTSPOT_CONNECTION_NAME" "Sentinel Hotspot"
   fi
 
+  if is_placeholder_env_value "$(env_value HOTSPOT_SSID)"; then
+    upsert_env "HOTSPOT_SSID" "Stone Frigate"
+  fi
+
+  if is_placeholder_env_value "$(env_value HOTSPOT_PSK)"; then
+    upsert_env "HOTSPOT_PSK" "replace-this-fixed-hotspot-password"
+  fi
+
+  if is_placeholder_env_value "$(env_value HOTSPOT_APPROVED_DONGLES_FILE)"; then
+    upsert_env "HOTSPOT_APPROVED_DONGLES_FILE" "hardware/approved-hotspot-dongles.json"
+  fi
+
   if is_placeholder_env_value "$(env_value NETWORK_REACHABILITY_CHECK_URL)"; then
     upsert_env "NETWORK_REACHABILITY_CHECK_URL" "https://connectivitycheck.gstatic.com/generate_204"
   fi
@@ -1341,6 +1353,7 @@ DESKTOP
     "${DEPLOY_DIR}/runtime/system-update/processed" \
     "${DEPLOY_DIR}/runtime/system-update/failed"
   run_root chmod 755 \
+    "${DEPLOY_DIR}/ensure-host-hotspot-profile.sh" \
     "${DEPLOY_DIR}/recover-host-hotspot.sh" \
     "${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh" \
     "${DEPLOY_DIR}/process-system-update-requests.sh" \
@@ -1412,6 +1425,67 @@ UNIT
   log "System update request watcher enabled."
 }
 
+run_host_hotspot_recovery_nonblocking() {
+  local recovery_script report_script connection_name recovery_rc report_json report_issue report_message
+  recovery_script="${DEPLOY_DIR}/recover-host-hotspot.sh"
+  report_script="${DEPLOY_DIR}/ensure-host-hotspot-profile.sh"
+  connection_name="$(env_value HOTSPOT_CONNECTION_NAME 'Sentinel Hotspot')"
+
+  if [[ ! -x "${recovery_script}" ]]; then
+    warn "Hotspot recovery script not found or not executable: ${recovery_script}"
+    return 0
+  fi
+
+  log "Running shared hotspot recovery for connection: ${connection_name}"
+  if run_root "${recovery_script}" "${connection_name}"; then
+    log "Shared hotspot recovery completed."
+    recovery_rc=0
+  else
+    recovery_rc=$?
+  fi
+
+  report_issue="none"
+  report_message=""
+  if [[ -x "${report_script}" && -n "$(command -v python3 || true)" ]]; then
+    report_json="$("${report_script}" --report-json 2>/dev/null || true)"
+    if [[ -n "${report_json}" ]]; then
+      report_issue="$(
+        printf '%s' "${report_json}" |
+          python3 -c 'import json,sys; payload=json.load(sys.stdin); print(payload.get("issueCode", "none"))'
+      )"
+      report_message="$(
+        printf '%s' "${report_json}" |
+          python3 -c 'import json,sys; payload=json.load(sys.stdin); print(payload.get("message", ""))'
+      )"
+    fi
+  fi
+
+  if [[ "${recovery_rc}" -eq 0 && "${report_issue}" == "none" ]]; then
+    return 0
+  fi
+
+  if [[ "${recovery_rc}" -eq 0 && "${report_issue}" != "none" && -n "${report_message}" ]]; then
+    warn "Shared hotspot recovery completed with degraded verification: ${report_message}"
+    return 0
+  fi
+
+  if [[ "${recovery_rc}" -eq 2 ]]; then
+    if [[ -n "${report_message}" ]]; then
+      warn "Shared hotspot recovery completed with degraded verification: ${report_message}"
+    else
+      warn "Shared hotspot recovery completed with degraded verification. Sentinel will keep the update and surface the networking issue in the UI."
+    fi
+    return 0
+  fi
+
+  if [[ -n "${report_message}" ]]; then
+    warn "Shared hotspot recovery failed: ${report_message}"
+  else
+    warn "Shared hotspot recovery failed. Sentinel will keep the current install/update state and surface the networking issue in the UI."
+  fi
+  return 0
+}
+
 configure_network_status_telemetry() {
   local interval_seconds runtime_dir
 
@@ -1428,6 +1502,10 @@ configure_network_status_telemetry() {
   runtime_dir="${DEPLOY_DIR}/runtime/network-status"
   run_root install -d -m 755 "${runtime_dir}"
   run_root chmod 755 "${NETWORK_STATUS_SCRIPT}" >/dev/null 2>&1 || true
+  if getent group sentinel-backend >/dev/null 2>&1; then
+    run_root chgrp sentinel-backend "${runtime_dir}" >/dev/null 2>&1 || true
+    run_root chmod 2755 "${runtime_dir}" >/dev/null 2>&1 || true
+  fi
 
   run_root tee /etc/systemd/system/sentinel-network-status.service >/dev/null <<UNIT
 [Unit]

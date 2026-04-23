@@ -13,9 +13,8 @@ set -Eeuo pipefail
 #   6) Verifies GitHub CLI authentication
 #   7) Downloads the matching .deb from GitHub Releases
 #   8) Installs the .deb
-#   9) Runs /opt/sentinel/deploy/update.sh --version v#.#.#
-#  10) Runs host hotspot recovery after a successful update
-#  11) Logs everything and reports errors clearly
+#   9) Runs /opt/sentinel/deploy/update.sh --version v#.#.#, including shared hotspot recovery
+#  10) Logs everything and reports errors clearly
 #
 # Notes:
 #   - The captive portal automation is best-effort and is most reliable on X11.
@@ -29,6 +28,7 @@ set -Eeuo pipefail
 # Optional environment overrides:
 #   SSID=MySSID CAPTIVE_URL=http://neverssl.com bash ./sentinel_update_quiet.sh
 #   SENTINEL_SHOW_PROGRESS=1 bash ./sentinel_update_quiet.sh   # show full update.sh output
+#   SENTINEL_TARGET_VERSION=v2.6.8 bash ./sentinel_update_quiet.sh
 
 #######################################
 # Configuration
@@ -40,7 +40,7 @@ DOWNLOAD_DIR="${DOWNLOAD_DIR:-${DEPLOY_DIR}/runtime/downloads}"
 CAPTIVE_URL="${CAPTIVE_URL:-http://neverssl.com}"
 CONNECTIVITY_TEST_URL="${CONNECTIVITY_TEST_URL:-http://connectivitycheck.gstatic.com/generate_204}"
 FALLBACK_TEST_URL="${FALLBACK_TEST_URL:-https://github.com}"
-HOTSPOT_CONNECTION_NAME="${HOTSPOT_CONNECTION_NAME:-Sentinel Hotspot}"
+SENTINEL_TARGET_VERSION="${SENTINEL_TARGET_VERSION:-}"
 
 LOG_DIR="${LOG_DIR:-/tmp}"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -149,6 +149,19 @@ pick_browser() {
 
 prompt_version() {
   local version
+  if [[ -n "${SENTINEL_TARGET_VERSION}" ]]; then
+    version="${SENTINEL_TARGET_VERSION#v}"
+    if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      VERSION="$version"
+      TAG="v${VERSION}"
+      DEB_FILE="sentinel_${VERSION}_all.deb"
+      log "Using version from SENTINEL_TARGET_VERSION: ${VERSION}"
+      return 0
+    fi
+
+    die "Invalid SENTINEL_TARGET_VERSION value: ${SENTINEL_TARGET_VERSION}. Expected v#.#.# or #.#.#"
+  fi
+
   while true; do
     read -r -p "Enter Sentinel version (#.#.#, example 2.1.2): " version
     if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -524,24 +537,6 @@ run_update() {
   return "$update_rc"
 }
 
-run_post_update_hotspot_recovery() {
-  local recovery_script="${DEPLOY_DIR}/recover-host-hotspot.sh"
-
-  if [[ ! -x "${recovery_script}" ]]; then
-    warn "Hotspot recovery script not found or not executable: ${recovery_script}"
-    return 0
-  fi
-
-  log "Running post-update hotspot recovery for connection: ${HOTSPOT_CONNECTION_NAME}"
-  if sudo "${recovery_script}" "${HOTSPOT_CONNECTION_NAME}"; then
-    log "Post-update hotspot recovery completed."
-    return 0
-  fi
-
-  warn "Post-update hotspot recovery failed. Review logs above."
-  return 0
-}
-
 #######################################
 # Main
 #######################################
@@ -606,7 +601,6 @@ main() {
   download_release_deb
   install_deb
   run_update
-  run_post_update_hotspot_recovery
 
   log "Sentinel update completed successfully."
   log "Log saved to: ${LOG_FILE}"

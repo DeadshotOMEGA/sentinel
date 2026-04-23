@@ -882,6 +882,7 @@ async function ensureRemoteSystems(): Promise<number> {
 }
 
 async function ensureNetworkSettings(): Promise<boolean> {
+  const defaultApprovedSsid = process.env.HOTSPOT_SSID?.trim() || 'Stone Frigate'
   const existing = await prisma.setting.findUnique({
     where: { key: 'network.approved_ssids' },
     select: { id: true },
@@ -894,7 +895,7 @@ async function ensureNetworkSettings(): Promise<boolean> {
   await prisma.setting.create({
     data: {
       key: 'network.approved_ssids',
-      value: { approvedSsids: ['Stone Frigate'] },
+      value: { approvedSsids: [defaultApprovedSsid] },
       category: 'network',
       description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
     },

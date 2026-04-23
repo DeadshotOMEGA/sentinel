@@ -99,9 +99,14 @@ describe('SystemStatusService', () => {
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'none',
           wifiConnected: true,
           currentSsid: 'Coffee-Shop',
           hostIpAddress: '192.168.8.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlan0',
           hotspotSsidVisibleFromLaptop: true,
@@ -118,6 +123,7 @@ describe('SystemStatusService', () => {
     const result = await service.getSystemStatus()
 
     expect(result.network.status).toBe('warning')
+    expect(result.network.issueCode).toBe('unapproved_ssid')
     expect(result.network.approvedSsid).toBe(false)
     expect(result.network.currentSsid).toBe('Coffee-Shop')
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
@@ -132,9 +138,14 @@ describe('SystemStatusService', () => {
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'none',
           wifiConnected: true,
           currentSsid: 'Stone Frigate',
           hostIpAddress: '192.168.8.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlan0',
           hotspotSsidVisibleFromLaptop: true,
@@ -151,6 +162,7 @@ describe('SystemStatusService', () => {
     const result = await service.getSystemStatus()
 
     expect(result.network.status).toBe('healthy')
+    expect(result.network.issueCode).toBe('none')
     expect(result.network.approvedSsid).toBe(true)
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
     expect(result.network.message).toBe('Connected to approved Wi-Fi network')
@@ -162,9 +174,14 @@ describe('SystemStatusService', () => {
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'hotspot_not_visible',
           wifiConnected: true,
           currentSsid: 'Stone Frigate',
           hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlp2s0',
           hotspotSsidVisibleFromLaptop: false,
@@ -181,8 +198,77 @@ describe('SystemStatusService', () => {
     const result = await service.getSystemStatus()
 
     expect(result.network.status).toBe('warning')
+    expect(result.network.issueCode).toBe('hotspot_not_visible')
     expect(result.network.hotspotSsidVisibleFromLaptop).toBe(false)
     expect(result.network.message).toContain('not visible')
+  })
+
+  it('marks network status warning when a second scan radio is unavailable', async () => {
+    const { service } = createService({
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'scan_adapter_missing',
+          wifiConnected: true,
+          currentSsid: 'Stone Frigate',
+          hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: false,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: null,
+          hotspotSsidVisibleFromLaptop: null,
+          internetReachable: true,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'A second Wi-Fi radio is unavailable for hotspot verification.',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('warning')
+    expect(result.network.issueCode).toBe('scan_adapter_missing')
+    expect(result.network.scanAdapterPresent).toBe(false)
+    expect(result.network.message).toContain('second Wi-Fi radio')
+  })
+
+  it('marks network status warning when the managed hotspot profile is missing', async () => {
+    const { service } = createService({
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'hotspot_profile_missing',
+          wifiConnected: true,
+          currentSsid: 'Stone Frigate',
+          hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: false,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp2s0',
+          hotspotSsidVisibleFromLaptop: null,
+          internetReachable: true,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'The managed Sentinel hotspot profile is missing.',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('warning')
+    expect(result.network.issueCode).toBe('hotspot_profile_missing')
+    expect(result.network.hotspotProfilePresent).toBe(false)
+    expect(result.network.message).toContain('profile is missing')
   })
 
   it('uses host hotspot IP for deployment-laptop remote sessions', async () => {
@@ -190,9 +276,14 @@ describe('SystemStatusService', () => {
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'none',
           wifiConnected: true,
           currentSsid: 'Stone Frigate',
           hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlp2s0',
           hotspotSsidVisibleFromLaptop: true,
@@ -242,6 +333,7 @@ describe('SystemStatusService', () => {
 
     expect(result.network.telemetryAvailable).toBe(false)
     expect(result.network.status).toBe('unknown')
+    expect(result.network.issueCode).toBe('telemetry_unavailable')
     expect(result.network.message).toBe('Host telemetry unavailable')
     expect(result.overall.status).toBe('warning')
   })
@@ -260,6 +352,7 @@ describe('SystemStatusService', () => {
 
     expect(result.network.telemetryAvailable).toBe(false)
     expect(result.network.status).toBe('healthy')
+    expect(result.network.issueCode).toBe('none')
     expect(result.network.message).toContain('Local development build detected')
     expect(result.overall.status).toBe('healthy')
   })

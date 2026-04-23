@@ -99,6 +99,7 @@ if command -v systemctl >/dev/null 2>&1; then
 fi
 
 configure_hotspot_connectivity_helpers
+run_host_hotspot_recovery_nonblocking
 
 log "Rollback complete. Current version: ${CURRENT_VERSION}"
 warn "If database schema changed incompatibly, use restore.sh with a pre-update backup."

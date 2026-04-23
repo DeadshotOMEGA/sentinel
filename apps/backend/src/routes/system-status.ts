@@ -17,6 +17,7 @@ function toKioskSafeSystemStatus(status: SystemStatusResponse): SystemStatusResp
     network: {
       ...status.network,
       hostIpAddress: null,
+      hotspotDevice: null,
       hotspotScanDevice: null,
       remoteTarget: null,
     },

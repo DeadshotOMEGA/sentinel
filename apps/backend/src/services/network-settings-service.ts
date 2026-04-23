@@ -6,7 +6,7 @@ import { SettingRepository } from '../repositories/setting-repository.js'
 import { logger } from '../lib/logger.js'
 
 const NETWORK_SETTINGS_KEY = 'network.approved_ssids'
-const DEFAULT_APPROVED_SSID = 'Stone Frigate'
+const DEFAULT_APPROVED_SSID = process.env.HOTSPOT_SSID?.trim() || 'Stone Frigate'
 const LEGACY_DEFAULT_APPROVED_SSID_KEYS = new Set(['hmcschippawa'])
 const DEFAULT_NETWORK_SETTINGS: NetworkSettings = {
   approvedSsids: [DEFAULT_APPROVED_SSID],

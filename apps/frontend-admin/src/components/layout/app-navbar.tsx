@@ -40,7 +40,6 @@ interface AppNavbarProps {
 
 const WIKI_LAN_FALLBACK_PORT = '3020'
 const WIKI_LOCAL_DEV_PORT = '3002'
-const NETWORK_TELEMETRY_STALE_WARNING_SECONDS = 120
 const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
 
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
@@ -305,6 +304,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 <p className="mt-1 text-xs leading-relaxed">{networkMessage}</p>
                 <dl className="mt-2 space-y-1 text-[11px] text-current/80">
                   <div className="flex items-center justify-between gap-2">
+                    <dt>Issue</dt>
+                    <dd className="font-mono text-right">
+                      {formatNetworkIssueLabel(systemStatus?.network.issueCode ?? null)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
                     <dt>Host IP</dt>
                     <dd className="font-mono text-right">
                       {systemStatus?.network.hostIpAddress ?? 'Unavailable'}
@@ -315,6 +320,20 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                     <dd className="font-mono text-right">
                       {systemStatus?.network.approvedSsids[0] ?? 'Not configured'}
                     </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>AP profile</dt>
+                    <dd className="font-mono text-right">
+                      {formatHotspotProfilePresence(systemStatus)}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>AP adapter</dt>
+                    <dd className="font-mono text-right">{formatHotspotAdapter(systemStatus)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <dt>Scan radio</dt>
+                    <dd className="font-mono text-right">{formatScanRadio(systemStatus)}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <dt>AP visibility</dt>
@@ -380,8 +399,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide">Wireless Recovery</p>
                   <p className="mt-1 text-xs leading-relaxed">
-                    Reconnect this laptop to the approved hotspot SSID, or ask the host server to
-                    requeue a hotspot repair.
+                    {getWirelessRecoveryCopy(
+                      systemStatus,
+                      isStatusLoading,
+                      systemStatusQuery.isError,
+                      wirelessRecovery.primaryApprovedSsid
+                    )}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-(--space-2)">
                     {wirelessRecovery.connectLaptopHref ? (
@@ -493,7 +516,89 @@ function formatUptime(uptimeSeconds: number | undefined): string {
   return `${minutes}m`
 }
 
+function formatNetworkIssueLabel(
+  issueCode: SystemStatusResponse['network']['issueCode'] | null
+): string {
+  switch (issueCode) {
+    case 'telemetry_unavailable':
+      return 'Telemetry unavailable'
+    case 'telemetry_stale':
+      return 'Telemetry stale'
+    case 'wifi_disconnected':
+      return 'Wi-Fi disconnected'
+    case 'unapproved_ssid':
+      return 'Wrong SSID'
+    case 'hotspot_profile_missing':
+      return 'Profile missing'
+    case 'approved_hotspot_adapter_missing':
+      return 'AP dongle missing'
+    case 'scan_adapter_missing':
+      return 'Scan radio missing'
+    case 'hotspot_not_visible':
+      return 'AP not visible'
+    case 'remote_reachability_failed':
+      return 'Remote check failed'
+    case 'none':
+      return 'None'
+    default:
+      return 'Unknown'
+  }
+}
+
+function formatHotspotProfilePresence(systemStatus: SystemStatusResponse | null): string {
+  const value = systemStatus?.network.hotspotProfilePresent ?? null
+  if (value === true) {
+    return 'Present'
+  }
+  if (value === false) {
+    return 'Missing'
+  }
+  return 'Unknown'
+}
+
+function formatHotspotAdapter(systemStatus: SystemStatusResponse | null): string {
+  const network = systemStatus?.network
+  if (!network) {
+    return 'Unknown'
+  }
+
+  if (network.hotspotAdapterApproved === true) {
+    return network.hotspotDevice ?? 'Approved'
+  }
+
+  if (network.hotspotDevice) {
+    return `${network.hotspotDevice} (unapproved)`
+  }
+
+  if (network.hotspotAdapterApproved === false) {
+    return 'Unavailable'
+  }
+
+  return 'Unknown'
+}
+
+function formatScanRadio(systemStatus: SystemStatusResponse | null): string {
+  const network = systemStatus?.network
+  if (!network) {
+    return 'Unknown'
+  }
+
+  if (network.scanAdapterPresent === true) {
+    return network.hotspotScanDevice ?? 'Available'
+  }
+
+  if (network.scanAdapterPresent === false) {
+    return 'Unavailable'
+  }
+
+  return 'Unknown'
+}
+
 function formatHotspotVisibility(systemStatus: SystemStatusResponse | null): string {
+  if (systemStatus?.network.scanAdapterPresent === false) {
+    return 'Check unavailable'
+  }
+
   const visibility = systemStatus?.network.hotspotSsidVisibleFromLaptop ?? null
   if (visibility === true) {
     return 'Visible'
@@ -502,6 +607,42 @@ function formatHotspotVisibility(systemStatus: SystemStatusResponse | null): str
     return 'Not visible'
   }
   return 'Check unavailable'
+}
+
+function getWirelessRecoveryCopy(
+  systemStatus: SystemStatusResponse | null,
+  isLoading: boolean,
+  isError: boolean,
+  primaryApprovedSsid: string | null
+): string {
+  if (isLoading) {
+    return 'Checking host hotspot telemetry and verification state.'
+  }
+
+  if (isError || !systemStatus) {
+    return 'Unable to load the current host hotspot state right now.'
+  }
+
+  const approvedSsidLabel =
+    primaryApprovedSsid ?? systemStatus.network.hotspotSsid ?? 'the approved hotspot'
+  switch (systemStatus.network.issueCode) {
+    case 'wifi_disconnected':
+      return `Reconnect this laptop to ${approvedSsidLabel}, then requeue a host repair if the hotspot still needs attention.`
+    case 'unapproved_ssid':
+      return `This laptop is on the wrong SSID. Reconnect it to ${approvedSsidLabel}, or requeue a host repair if the hotspot needs to be rebuilt.`
+    case 'hotspot_profile_missing':
+      return 'The host server is missing the managed hotspot profile. Requeue a host repair to recreate it.'
+    case 'approved_hotspot_adapter_missing':
+      return 'The host server cannot find an approved AP dongle. Re-seat the external adapter, then requeue a host repair.'
+    case 'scan_adapter_missing':
+      return 'Hotspot hosting is configured, but Sentinel cannot verify visibility because no second Wi-Fi radio is available.'
+    case 'hotspot_not_visible':
+      return `Sentinel cannot see ${approvedSsidLabel} from the scan radio yet. Requeue a host repair after checking the AP dongle seating.`
+    case 'telemetry_unavailable':
+      return 'The host telemetry snapshot is unavailable. Requeue a host repair to reprovision the hotspot and refresh telemetry.'
+    default:
+      return 'Reconnect this laptop to the approved hotspot SSID, or ask the host server to requeue a hotspot repair.'
+  }
 }
 
 function resolveRemoteSystemIpAddress(
@@ -838,25 +979,49 @@ function getNetworkTooltip(
 
   let reason = `Yellow because ${network.message}.`
 
-  if (!network.telemetryAvailable) {
-    reason = isDevelopmentEnvironment
-      ? 'Green because this is a development build and host telemetry is optional.'
-      : 'Yellow because host telemetry is unavailable.'
-  } else if (
-    network.telemetryAgeSeconds !== null &&
-    network.telemetryAgeSeconds > NETWORK_TELEMETRY_STALE_WARNING_SECONDS
+  switch (network.issueCode) {
+    case 'telemetry_unavailable':
+      reason = isDevelopmentEnvironment
+        ? 'Green because this is a development build and host telemetry is optional.'
+        : 'Yellow because host telemetry is unavailable.'
+      break
+    case 'telemetry_stale':
+      reason = `Yellow because the host network snapshot is stale (${formatTelemetryAge(network.telemetryAgeSeconds)}).`
+      break
+    case 'wifi_disconnected':
+      reason = 'Red because Wi-Fi is disconnected.'
+      break
+    case 'unapproved_ssid':
+      reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
+      break
+    case 'hotspot_profile_missing':
+      reason = 'Yellow because the managed host hotspot profile is missing.'
+      break
+    case 'approved_hotspot_adapter_missing':
+      reason = 'Yellow because no approved AP dongle is available for the hosted hotspot.'
+      break
+    case 'scan_adapter_missing':
+      reason =
+        'Yellow because Sentinel cannot find a second Wi-Fi radio to verify hotspot visibility.'
+      break
+    case 'hotspot_not_visible': {
+      const hotspotSsidLabel = network.hotspotSsid ?? 'approved hotspot'
+      reason = `Yellow because "${hotspotSsidLabel}" is not visible from the laptop Wi-Fi adapter.`
+      break
+    }
+    case 'remote_reachability_failed':
+      reason = `Yellow because the remote reachability check to ${network.remoteTarget} failed.`
+      break
+    case 'none':
+    default:
+      break
+  }
+
+  if (
+    network.issueCode === 'none' &&
+    network.telemetryAvailable &&
+    network.wifiConnected === true
   ) {
-    reason = `Yellow because the host network snapshot is stale (${formatTelemetryAge(network.telemetryAgeSeconds)}).`
-  } else if (network.wifiConnected === false) {
-    reason = 'Red because Wi-Fi is disconnected.'
-  } else if (network.approvedSsid === false) {
-    reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
-  } else if (network.hotspotSsidVisibleFromLaptop === false) {
-    const hotspotSsidLabel = network.hotspotSsid ?? 'approved hotspot'
-    reason = `Yellow because "${hotspotSsidLabel}" is not visible from the laptop Wi-Fi adapter.`
-  } else if (network.remoteTarget && network.remoteReachable === false) {
-    reason = `Yellow because the remote reachability check to ${network.remoteTarget} failed.`
-  } else if (network.telemetryAvailable && network.wifiConnected === true) {
     if (network.approvedSsids.length === 0) {
       reason = 'Green because Wi-Fi is connected and no approved SSID allowlist is configured.'
     } else if (network.approvedSsid === true) {
@@ -869,8 +1034,12 @@ function getNetworkTooltip(
   return joinTooltipLines([
     reason,
     `Detail: ${network.message}`,
+    `Issue: ${formatNetworkIssueLabel(network.issueCode)}`,
     `SSID: ${currentSsid}`,
     `Approved SSIDs: ${approvedSsids}`,
+    `AP profile: ${formatHotspotProfilePresence(systemStatus)}`,
+    `AP adapter: ${formatHotspotAdapter(systemStatus)}`,
+    `Scan radio: ${formatScanRadio(systemStatus)}`,
     `AP visibility: ${formatBooleanLabel(network.hotspotSsidVisibleFromLaptop)}`,
     `Remote target: ${remoteTarget}`,
     `Remote reachable: ${formatBooleanLabel(network.remoteReachable)}`,

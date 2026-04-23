@@ -1,0 +1,10 @@
+{
+  "dongles": [
+    {
+      "vendorId": "2357",
+      "productId": "0138",
+      "driver": "rtw88_8822bu",
+      "label": "TP-Link 802.11ac NIC"
+    }
+  ]
+}

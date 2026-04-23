@@ -6,6 +6,7 @@ export interface WirelessRecoveryState {
   connectLaptopHref: string | null
   showRepairHostHotspot: boolean
   primaryApprovedSsid: string | null
+  issueCode: SystemStatusResponse['network']['issueCode'] | null
 }
 
 export function getWirelessRecoveryState(input: {
@@ -16,11 +17,12 @@ export function getWirelessRecoveryState(input: {
 }): WirelessRecoveryState {
   const { systemStatus, isLoading, isError, hasAdminAccess } = input
   const primaryApprovedSsid = systemStatus?.network.approvedSsids[0] ?? null
+  const issueCode = systemStatus?.network.issueCode ?? null
   const showConnectLaptop =
     !isLoading &&
     !isError &&
     systemStatus !== null &&
-    (systemStatus.network.wifiConnected === false || systemStatus.network.approvedSsid === false)
+    (issueCode === 'wifi_disconnected' || issueCode === 'unapproved_ssid')
   const connectLaptopHref =
     showConnectLaptop && primaryApprovedSsid
       ? `sentinel-hotspot://connect?ssid=${encodeURIComponent(primaryApprovedSsid)}`
@@ -30,7 +32,11 @@ export function getWirelessRecoveryState(input: {
     !isLoading &&
     !isError &&
     systemStatus !== null &&
-    systemStatus.network.hotspotSsidVisibleFromLaptop === false
+    (issueCode === 'hotspot_not_visible' ||
+      issueCode === 'hotspot_profile_missing' ||
+      issueCode === 'approved_hotspot_adapter_missing' ||
+      issueCode === 'scan_adapter_missing' ||
+      issueCode === 'telemetry_unavailable')
 
   return {
     showSection: showConnectLaptop || showRepairHostHotspot || hotspotVisibilityIssue,
@@ -38,5 +44,6 @@ export function getWirelessRecoveryState(input: {
     connectLaptopHref,
     showRepairHostHotspot,
     primaryApprovedSsid,
+    issueCode,
   }
 }

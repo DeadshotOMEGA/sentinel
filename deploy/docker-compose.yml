@@ -68,6 +68,7 @@ services:
       SENTINEL_AUTO_SEED_ENUMS: ${SENTINEL_AUTO_SEED_ENUMS:-true}
       SENTINEL_AUTO_SEED_ATTEMPTS: ${SENTINEL_AUTO_SEED_ATTEMPTS:-3}
       SENTINEL_AUTO_SEED_RETRY_DELAY_MS: ${SENTINEL_AUTO_SEED_RETRY_DELAY_MS:-3000}
+      HOTSPOT_SSID: ${HOTSPOT_SSID:-Stone Frigate}
       NETWORK_STATUS_FILE_PATH: /var/run/sentinel/network-status/network-status.json
       HOST_HOTSPOT_RECOVERY_REQUEST_DIR: /var/run/sentinel/hotspot-recovery/requests
       SYSTEM_UPDATE_BRIDGE_SOCKET_PATH: /run/sentinel/update-bridge.sock
