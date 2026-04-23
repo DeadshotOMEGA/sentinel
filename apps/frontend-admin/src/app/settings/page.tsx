@@ -66,6 +66,10 @@ function SettingsPageContent() {
     }
 
     const params = new globalThis.URLSearchParams(searchParams.toString())
+    if (nextTab !== 'updates') {
+      params.delete('trace')
+    }
+
     if (nextTab === 'member-types') {
       params.delete('tab')
     } else {

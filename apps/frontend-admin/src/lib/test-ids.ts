@@ -279,6 +279,11 @@ export const TID = {
     row: 'log-row',
   },
   dashboard: {
+    updateBanner: {
+      panel: 'dashboard-update-banner',
+      updatesLink: 'dashboard-update-banner-updates-link',
+      traceLink: 'dashboard-update-banner-trace-link',
+    },
     ddsDrawer: {
       open: 'dashboard-dds-drawer-open',
       close: 'dashboard-dds-drawer-close',
