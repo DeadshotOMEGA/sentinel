@@ -3,6 +3,8 @@ import type { SystemUpdateJob, SystemUpdateStatusResponse } from '@sentinel/cont
 import {
   getPreferredUpdateTargetVersion,
   getRetryableTargetVersion,
+  getSystemUpdatePhaseProgress,
+  isSystemUpdateJobTerminal,
 } from './system-update-panel.logic'
 
 function createJob(overrides?: Partial<SystemUpdateJob>): SystemUpdateJob {
@@ -17,6 +19,19 @@ function createJob(overrides?: Partial<SystemUpdateJob>): SystemUpdateJob {
     currentVersion: 'v2.6.6',
     latestVersion: null,
     targetVersion: 'v2.6.7',
+    phase: {
+      key: 'recovery',
+      label: 'Recovery',
+      description: 'Attempt rollback or point the operator to restore guidance.',
+      kind: 'recovery',
+      order: 5,
+      total: 5,
+    },
+    checkpoint: {
+      key: 'update_failed',
+      label: 'Update failed',
+      detail: 'The update stopped and needs operator attention before retrying.',
+    },
     failureSummary: 'Release metadata request failed with HTTP 403',
     rollbackAttempted: false,
     requestedBy: {
@@ -62,5 +77,59 @@ describe('system-update-panel logic', () => {
     )
 
     expect(targetVersion).toBeNull()
+  })
+
+  it('marks rollback_attempted as active until it has a finished timestamp', () => {
+    expect(
+      isSystemUpdateJobTerminal(
+        createJob({
+          status: 'rollback_attempted',
+          step: 'rollback_attempted',
+          finishedAt: null,
+        })
+      )
+    ).toBe(false)
+
+    expect(
+      isSystemUpdateJobTerminal(
+        createJob({
+          status: 'rollback_attempted',
+          step: 'rollback_attempted',
+          finishedAt: '2026-04-23T10:33:40Z',
+        })
+      )
+    ).toBe(true)
+  })
+
+  it('builds phase progress from updater-owned phase and checkpoint fields', () => {
+    const phases = getSystemUpdatePhaseProgress(
+      createJob({
+        status: 'health_check',
+        step: 'health_check',
+        finishedAt: null,
+        phase: {
+          key: 'verify_and_finalize',
+          label: 'Verify and finalize',
+          description: 'Run health checks and final appliance recovery tasks.',
+          kind: 'primary',
+          order: 5,
+          total: 5,
+        },
+        checkpoint: {
+          key: 'recovering_hotspot',
+          label: 'Checking hotspot recovery',
+          detail: 'Checking hosted hotspot recovery.',
+        },
+      })
+    )
+
+    expect(phases.map((phase) => phase.state)).toEqual([
+      'complete',
+      'complete',
+      'complete',
+      'complete',
+      'active',
+    ])
+    expect(phases[4]?.caption).toBe('Checking hosted hotspot recovery.')
   })
 })

@@ -3,7 +3,7 @@ import { initServer } from '@ts-rest/express'
 import type { Request } from 'express'
 import { systemUpdateContract } from '@sentinel/contracts'
 import { compareVersionTags } from '../lib/service-version.js'
-import { hasSystemUpdatePermission, isSystemUpdateJobTerminal } from '../lib/system-update-state.js'
+import { hasSystemUpdatePermission, isSystemUpdateJobFinished } from '../lib/system-update-state.js'
 import { getRequestClientIp } from '../lib/runtime-context.js'
 import {
   SystemUpdateBridgeClient,
@@ -99,7 +99,7 @@ export function createSystemUpdateRouter(options?: {
       try {
         const status = await statusService.getStatus()
 
-        if (status.currentJob && !isSystemUpdateJobTerminal(status.currentJob.status)) {
+        if (status.currentJob && !isSystemUpdateJobFinished(status.currentJob)) {
           return {
             status: 409 as const,
             body: {

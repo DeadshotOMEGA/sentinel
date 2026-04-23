@@ -56,6 +56,19 @@ function createJob(overrides?: Partial<Record<string, unknown>>) {
     currentVersion: 'v2.6.1',
     latestVersion: 'v2.6.2',
     targetVersion: 'v2.6.2',
+    phase: {
+      key: 'prepare_update',
+      label: 'Prepare update',
+      description: 'Confirm the requested release and gather trusted metadata.',
+      kind: 'primary',
+      order: 1,
+      total: 5,
+    },
+    checkpoint: {
+      key: 'request_accepted',
+      label: 'Update request accepted',
+      detail: 'Queued for update.',
+    },
     failureSummary: null,
     rollbackAttempted: false,
     requestedBy: {
@@ -260,6 +273,92 @@ describe('systemUpdateRouter', () => {
       expect(response.status).toBe(409)
       expect(response.body).toMatchObject({
         error: 'CONFLICT',
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('treats an unfinished rollback as an active update job', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    await mkdir(join(stateRoot, 'jobs'), { recursive: true })
+    await writeJson(
+      join(stateRoot, 'current-job.json'),
+      createJob({
+        status: 'rollback_attempted',
+        finishedAt: null,
+        message: 'Attempting rollback to v2.6.1.',
+        phase: {
+          key: 'recovery',
+          label: 'Recovery',
+          description: 'Attempt rollback or point the operator to restore guidance.',
+          kind: 'recovery',
+          order: 5,
+          total: 5,
+        },
+        checkpoint: {
+          key: 'attempting_rollback',
+          label: 'Attempting rollback',
+          detail: 'Rolling back to the last known good Sentinel release.',
+        },
+      })
+    )
+
+    process.env.APP_VERSION = 'v2.6.1'
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
+    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app)
+        .post('/api/admin/system/update')
+        .send({ targetVersion: 'v2.6.2' })
+
+      expect(response.status).toBe(409)
+      expect(response.body).toMatchObject({
+        error: 'CONFLICT',
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('derives phase and checkpoint fields for legacy updater job payloads', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    await mkdir(join(stateRoot, 'jobs'), { recursive: true })
+
+    const legacyJob = createJob({
+      status: 'health_check',
+      finishedAt: null,
+      message: 'Waiting for Sentinel health checks to pass.',
+    }) as Record<string, unknown>
+    delete legacyJob.phase
+    delete legacyJob.checkpoint
+
+    await writeJson(join(stateRoot, 'current-job.json'), legacyJob)
+
+    process.env.APP_VERSION = 'v2.6.1'
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+    process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
+    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        currentJob: {
+          status: 'health_check',
+          phase: {
+            key: 'verify_and_finalize',
+          },
+          checkpoint: {
+            key: 'waiting_for_health_endpoint',
+            detail: 'Waiting for Sentinel health checks to pass.',
+          },
+        },
       })
     } finally {
       await rm(stateRoot, { recursive: true, force: true })

@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type {
   SystemHealthStatus,
+  SystemUpdateJob,
   SystemStatusResponse,
   SystemUpdateJobStatus,
 } from '@sentinel/contracts'
@@ -137,7 +138,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const updateAvailable = systemUpdateStatus?.updateAvailable ?? false
   const currentSystemUpdateJob = systemUpdateStatus?.currentJob ?? null
   const hasActiveSystemUpdate =
-    currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob.status)
+    currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob)
 
   const handleHostHotspotRecovery = async () => {
     try {
@@ -1130,13 +1131,18 @@ function safeParseUrl(value: string) {
   }
 }
 
-function isSystemUpdateJobTerminal(status: SystemUpdateJobStatus): boolean {
-  return (
-    status === 'completed' ||
-    status === 'failed' ||
-    status === 'rollback_attempted' ||
-    status === 'rolled_back'
-  )
+function isSystemUpdateJobTerminal(
+  job: Pick<SystemUpdateJob, 'status' | 'finishedAt'> | null
+): boolean {
+  if (!job) {
+    return true
+  }
+
+  if (job.status === 'rollback_attempted') {
+    return job.finishedAt !== null
+  }
+
+  return job.status === 'completed' || job.status === 'failed' || job.status === 'rolled_back'
 }
 
 function formatSystemUpdateStatus(status: SystemUpdateJobStatus): string {
