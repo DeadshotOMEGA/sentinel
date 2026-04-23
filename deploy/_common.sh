@@ -9,6 +9,8 @@ STATE_FILE="${DEPLOY_DIR}/.appliance-state"
 UPDATER_STATE_ROOT="/var/lib/sentinel/updater"
 CURRENT_JOB_FILE="${UPDATER_STATE_ROOT}/current-job.json"
 UPDATER_JOBS_DIR="${UPDATER_STATE_ROOT}/jobs"
+UPDATER_BACKUPS_DIR="${UPDATER_STATE_ROOT}/backups"
+UPDATER_LOCK_FILE="${UPDATER_STATE_ROOT}/update.lock"
 UPDATE_TRACE_FILE="${UPDATER_STATE_ROOT}/update-trace.log"
 UPDATE_TRACE_ARCHIVE_DIR="${UPDATER_STATE_ROOT}/traces"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
@@ -46,6 +48,31 @@ format_update_trace_line() {
 
 ensure_update_trace_dirs() {
   run_root install -d -m 775 "${UPDATER_STATE_ROOT}" "${UPDATE_TRACE_ARCHIVE_DIR}"
+}
+
+ensure_updater_runtime_dirs() {
+  run_root install -d -m 775 "${UPDATER_STATE_ROOT}" "${UPDATER_JOBS_DIR}" "${UPDATER_BACKUPS_DIR}" "${UPDATE_TRACE_ARCHIVE_DIR}"
+  if [[ ! -e "${UPDATER_LOCK_FILE}" ]]; then
+    run_root install -m 664 /dev/null "${UPDATER_LOCK_FILE}"
+  fi
+}
+
+acquire_updater_lock() {
+  if [[ "${SENTINEL_UPDATER_LOCK_HELD:-false}" == "true" ]]; then
+    return 0
+  fi
+
+  command -v flock >/dev/null 2>&1 || die "flock is required for updater locking"
+  ensure_updater_runtime_dirs
+
+  # shellcheck disable=SC3045
+  exec {SENTINEL_UPDATER_LOCK_FD}> "${UPDATER_LOCK_FILE}"
+  if ! flock -n "${SENTINEL_UPDATER_LOCK_FD}"; then
+    die "Another Sentinel update, backup, rollback, or restore operation is already running."
+  fi
+
+  export SENTINEL_UPDATER_LOCK_HELD="true"
+  export SENTINEL_UPDATER_LOCK_FD
 }
 
 append_update_trace_line() {
@@ -554,11 +581,108 @@ json_bool() {
   fi
 }
 
+humanize_bytes() {
+  local bytes="${1:-0}"
+  python3 - "${bytes}" <<'PY'
+from __future__ import annotations
+import sys
+
+value = int(sys.argv[1])
+units = ["B", "KiB", "MiB", "GiB", "TiB"]
+size = float(max(value, 0))
+unit = units[0]
+for candidate in units:
+    unit = candidate
+    if size < 1024 or candidate == units[-1]:
+        break
+    size /= 1024
+
+if unit == "B":
+    print(f"{int(size)} {unit}")
+else:
+    print(f"{size:.1f} {unit}")
+PY
+}
+
+disk_free_bytes() {
+  local path="${1:-}"
+  local resolved_path
+  resolved_path="${path}"
+  if [[ -n "${resolved_path}" && ! -e "${resolved_path}" ]]; then
+    resolved_path="$(dirname "${resolved_path}")"
+  fi
+  df -B1 --output=avail "${resolved_path}" 2>/dev/null | tail -n1 | tr -d '[:space:]'
+}
+
+require_free_space() {
+  local path="${1:-}" required_bytes="${2:-0}" label="${3:-path}"
+  local available_bytes
+  available_bytes="$(disk_free_bytes "${path}")"
+  [[ "${available_bytes}" =~ ^[0-9]+$ ]] || die "Unable to determine free space for ${label} (${path})"
+  if (( available_bytes < required_bytes )); then
+    die "Insufficient free space for ${label}: need $(humanize_bytes "${required_bytes}"), have $(humanize_bytes "${available_bytes}") at ${path}"
+  fi
+}
+
+sha256_file() {
+  local path="${1:-}"
+  sha256sum "${path}" | awk '{print $1}'
+}
+
+write_manifest_file() {
+  local file_path="${1:-}" kind="${2:-artifact}" scope="${3:-unknown}" related_version="${4:-}" job_id="${5:-}"
+  local manifest_path
+  manifest_path="${file_path}.manifest.json"
+  python3 - "${file_path}" "${manifest_path}" "${kind}" "${scope}" "${related_version}" "${job_id}" <<'PY'
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+file_path = Path(sys.argv[1])
+manifest_path = Path(sys.argv[2])
+kind = sys.argv[3]
+scope = sys.argv[4]
+related_version = sys.argv[5]
+job_id = sys.argv[6]
+
+digest = hashlib.sha256()
+with file_path.open("rb") as handle:
+    while True:
+        chunk = handle.read(1024 * 64)
+        if not chunk:
+            break
+        digest.update(chunk)
+
+payload = {
+    "schemaVersion": 2,
+    "kind": kind,
+    "scope": scope,
+    "relatedVersion": related_version,
+    "jobId": job_id or None,
+    "filename": file_path.name,
+    "path": str(file_path),
+    "sizeBytes": file_path.stat().st_size,
+    "sha256": digest.hexdigest(),
+    "createdAt": datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+}
+
+manifest_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+  printf '%s\n' "${manifest_path}"
+}
+
 write_canonical_state() {
   local state_dir tmp_file updated_at
   state_dir="$(dirname "${CANONICAL_STATE_FILE}")"
   tmp_file="$(mktemp)"
   updated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+  LAST_KNOWN_GOOD_VERSION="${LAST_KNOWN_GOOD_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_ATTEMPTED_VERSION="${LAST_ATTEMPTED_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_FAILED_VERSION="${LAST_FAILED_VERSION:-}"
 
   cat >"${tmp_file}" <<JSON
 {
@@ -566,8 +690,11 @@ write_canonical_state() {
   "allowWikiLan": $(json_bool "${ALLOW_WIKI_LAN:-false}"),
   "currentVersion": "$(json_escape "${CURRENT_VERSION:-}")",
   "lanCidr": "$(json_escape "${LAN_CIDR:-}")",
+  "lastAttemptedVersion": "$(json_escape "${LAST_ATTEMPTED_VERSION:-}")",
+  "lastFailedVersion": "$(json_escape "${LAST_FAILED_VERSION:-}")",
+  "lastKnownGoodVersion": "$(json_escape "${LAST_KNOWN_GOOD_VERSION:-}")",
   "previousVersion": "$(json_escape "${PREVIOUS_VERSION:-}")",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "updatedAt": "$(json_escape "${updated_at}")",
   "withObs": $(json_bool "${WITH_OBS:-false}")
 }
@@ -644,10 +771,16 @@ load_state() {
   WITH_OBS="${WITH_OBS:-false}"
   ALLOW_GRAFANA_LAN="${ALLOW_GRAFANA_LAN:-false}"
   ALLOW_WIKI_LAN="${ALLOW_WIKI_LAN:-false}"
+  LAST_KNOWN_GOOD_VERSION="${LAST_KNOWN_GOOD_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_ATTEMPTED_VERSION="${LAST_ATTEMPTED_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_FAILED_VERSION="${LAST_FAILED_VERSION:-}"
 }
 
 save_state() {
   log "Persisting appliance state to legacy and canonical state files"
+  LAST_KNOWN_GOOD_VERSION="${LAST_KNOWN_GOOD_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_ATTEMPTED_VERSION="${LAST_ATTEMPTED_VERSION:-${CURRENT_VERSION:-}}"
+  LAST_FAILED_VERSION="${LAST_FAILED_VERSION:-}"
   cat >"${STATE_FILE}" <<STATE
 WITH_OBS=${WITH_OBS}
 ALLOW_GRAFANA_LAN=${ALLOW_GRAFANA_LAN}
@@ -655,9 +788,109 @@ ALLOW_WIKI_LAN=${ALLOW_WIKI_LAN}
 LAN_CIDR=${LAN_CIDR:-}
 CURRENT_VERSION=${CURRENT_VERSION:-}
 PREVIOUS_VERSION=${PREVIOUS_VERSION:-}
+LAST_KNOWN_GOOD_VERSION=${LAST_KNOWN_GOOD_VERSION:-}
+LAST_ATTEMPTED_VERSION=${LAST_ATTEMPTED_VERSION:-}
+LAST_FAILED_VERSION=${LAST_FAILED_VERSION:-}
 STATE
 
   write_canonical_state
+}
+
+new_operation_report_id() {
+  local operation="${1:-operation}"
+  printf '%s-%s-%04d\n' "${operation}" "$(date +%s%3N)" "$(( RANDOM % 10000 ))"
+}
+
+emit_operation_report() {
+  local report_id="${1:-}" operation="${2:-}" status="${3:-}" result="${4:-}" requested_version="${5:-}" attempted_version="${6:-}" previous_version="${7:-}" last_known_good="${8:-}" started_at="${9:-}" finished_at="${10:-}" healthz_passed="${11:-}" log_path="${12:-}" trace_path="${13:-}" next_action="${14:-}" source="${15:-manual}" artifact_json="${16:-{}}" backup_json="${17:-{}}" rollback_json="${18:-{}}" migration_json="${19:-{}}" network_json="${20:-{}}" warnings_text="${21:-}" operation_path
+  operation_path="${UPDATER_JOBS_DIR}/${report_id}.json"
+  ensure_updater_runtime_dirs
+
+  python3 - "${operation_path}" "${report_id}" "${operation}" "${status}" "${result}" "${requested_version}" "${attempted_version}" "${previous_version}" "${last_known_good}" "${started_at}" "${finished_at}" "${healthz_passed}" "${log_path}" "${trace_path}" "${next_action}" "${source}" "${artifact_json}" "${backup_json}" "${rollback_json}" "${migration_json}" "${network_json}" "${warnings_text}" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from datetime import datetime
+from pathlib import Path
+
+(
+    operation_path,
+    report_id,
+    operation,
+    status,
+    result,
+    requested_version,
+    attempted_version,
+    previous_version,
+    last_known_good,
+    started_at,
+    finished_at,
+    healthz_passed,
+    log_path,
+    trace_path,
+    next_action,
+    source,
+    artifact_json,
+    backup_json,
+    rollback_json,
+    migration_json,
+    network_json,
+    warnings_text,
+) = sys.argv[1:]
+
+def parse_json(raw: str) -> object:
+    if not raw:
+        return {}
+    return json.loads(raw)
+
+def parse_bool(raw: str):
+    normalized = raw.strip().lower()
+    if normalized in {"true", "1", "yes", "y"}:
+        return True
+    if normalized in {"false", "0", "no", "n"}:
+        return False
+    return None
+
+duration = None
+if started_at and finished_at:
+    try:
+        started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+        finished = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+    except ValueError:
+        duration = None
+    else:
+        duration = max(0, int((finished - started).total_seconds()))
+
+payload = {
+    "schemaVersion": 2,
+    "jobId": report_id,
+    "operation": operation,
+    "source": source,
+    "status": status,
+    "result": result,
+    "requestedVersion": requested_version or None,
+    "attemptedVersion": attempted_version or None,
+    "previousVersion": previous_version or None,
+    "lastKnownGoodVersion": last_known_good or None,
+    "startedAt": started_at or None,
+    "finishedAt": finished_at or None,
+    "durationSeconds": duration,
+    "healthzPassed": parse_bool(healthz_passed),
+    "artifact": parse_json(artifact_json),
+    "backup": parse_json(backup_json),
+    "rollback": parse_json(rollback_json),
+    "migration": parse_json(migration_json),
+    "network": parse_json(network_json),
+    "warnings": [line for line in warnings_text.splitlines() if line.strip()],
+    "logPath": log_path or None,
+    "tracePath": trace_path or None,
+    "nextAction": next_action or None,
+}
+
+Path(operation_path).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+  printf '%s\n' "${operation_path}"
 }
 
 set_compose_file_args() {
@@ -1274,7 +1507,7 @@ configure_hotspot_recovery_sudoers() {
   tmp_file="$(mktemp)"
   cat >"${tmp_file}" <<SUDOERS
 # Managed by Sentinel deploy helpers. Allows non-interactive hotspot recovery.
-Cmnd_Alias SENTINEL_HOTSPOT_RECOVERY_CMDS = ${systemctl_path} start sentinel-host-hotspot-recovery.service, ${systemctl_path} restart sentinel-host-hotspot-recovery.service, ${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh, ${DEPLOY_DIR}/recover-host-hotspot.sh *
+Cmnd_Alias SENTINEL_HOTSPOT_RECOVERY_CMDS = ${systemctl_path} start sentinel-host-hotspot-recovery.service, ${systemctl_path} restart sentinel-host-hotspot-recovery.service
 ${desktop_user} ALL=(root) NOPASSWD: SENTINEL_HOTSPOT_RECOVERY_CMDS
 SUDOERS
 
@@ -1347,16 +1580,11 @@ DESKTOP
     "${DEPLOY_DIR}/runtime/hotspot-recovery" \
     "${DEPLOY_DIR}/runtime/hotspot-recovery/requests" \
     "${DEPLOY_DIR}/runtime/hotspot-recovery/processed" \
-    "${DEPLOY_DIR}/runtime/hotspot-recovery/failed" \
-    "${DEPLOY_DIR}/runtime/system-update" \
-    "${DEPLOY_DIR}/runtime/system-update/requests" \
-    "${DEPLOY_DIR}/runtime/system-update/processed" \
-    "${DEPLOY_DIR}/runtime/system-update/failed"
+    "${DEPLOY_DIR}/runtime/hotspot-recovery/failed"
   run_root chmod 755 \
     "${DEPLOY_DIR}/ensure-host-hotspot-profile.sh" \
     "${DEPLOY_DIR}/recover-host-hotspot.sh" \
     "${DEPLOY_DIR}/process-host-hotspot-recovery-requests.sh" \
-    "${DEPLOY_DIR}/process-system-update-requests.sh" \
     "${DEPLOY_DIR}/sentinel-hotspot-connect.sh" >/dev/null 2>&1 || true
 
   if getent group sentinel-backend >/dev/null 2>&1; then
@@ -1393,36 +1621,6 @@ UNIT
   run_root systemctl start sentinel-host-hotspot-recovery.service
 
   log "Host hotspot recovery watcher enabled."
-
-  run_root tee /etc/systemd/system/sentinel-system-update-request.service >/dev/null <<UNIT
-[Unit]
-Description=Sentinel queued latest-system-update request processor
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-WorkingDirectory=${DEPLOY_DIR}
-ExecStart=${DEPLOY_DIR}/process-system-update-requests.sh
-UNIT
-
-  run_root tee /etc/systemd/system/sentinel-system-update-request.path >/dev/null <<UNIT
-[Unit]
-Description=Sentinel queued latest-system-update watcher
-
-[Path]
-PathExistsGlob=${DEPLOY_DIR}/runtime/system-update/requests/*.json
-Unit=sentinel-system-update-request.service
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-
-  run_root systemctl daemon-reload
-  run_root systemctl enable --now sentinel-system-update-request.path
-  run_root systemctl start sentinel-system-update-request.service
-
-  log "System update request watcher enabled."
 }
 
 run_host_hotspot_recovery_nonblocking() {

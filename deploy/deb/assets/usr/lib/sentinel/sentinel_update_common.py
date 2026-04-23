@@ -15,6 +15,7 @@ DOWNLOADS_DIR = STATE_ROOT / "downloads"
 BACKUPS_DIR = STATE_ROOT / "backups"
 TRACE_LOG_PATH = STATE_ROOT / "update-trace.log"
 TRACE_ARCHIVE_DIR = STATE_ROOT / "traces"
+TRACE_SESSION_PATH = STATE_ROOT / "update-trace-session.json"
 LOCK_PATH = STATE_ROOT / "update.lock"
 
 APPLIANCE_ENV_PATH = Path(os.environ.get("SENTINEL_APPLIANCE_ENV", "/etc/sentinel/appliance.env"))
@@ -31,6 +32,8 @@ DEFAULT_RELEASE_REPOSITORY = os.environ.get(
     "SENTINEL_RELEASE_REPOSITORY",
     f"{os.environ.get('GHCR_OWNER', 'deadshotomega').strip() or 'deadshotomega'}/sentinel",
 )
+STATE_SCHEMA_VERSION = 2
+REPORT_SCHEMA_VERSION = 2
 
 VERSION_PATTERN = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+$")
 JOB_ID_PATTERN = re.compile(r"^system-update-[0-9]{13}-[0-9a-f-]{36}$")
@@ -81,16 +84,69 @@ def append_trace_line(component: str, level: str, message: str) -> None:
         pass
 
 
+def write_trace_session(
+    component: str,
+    *,
+    session_job_id: str | None = None,
+) -> None:
+    payload = {
+        "tracePath": str(TRACE_LOG_PATH),
+        "resetAt": utc_now(),
+        "resetBy": component,
+        "jobId": session_job_id or None,
+    }
+    ensure_directory(TRACE_SESSION_PATH.parent)
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=str(TRACE_SESSION_PATH.parent), delete=False
+    ) as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        tmp_name = handle.name
+
+    os.chmod(tmp_name, 0o664)
+    os.replace(tmp_name, TRACE_SESSION_PATH)
+
+
+def clear_trace_session() -> None:
+    try:
+        TRACE_SESSION_PATH.unlink(missing_ok=True)
+    except TypeError:
+        if TRACE_SESSION_PATH.exists():
+            TRACE_SESSION_PATH.unlink()
+
+
+def previous_trace_session_job_id() -> str | None:
+    try:
+        payload = read_json_file(TRACE_SESSION_PATH)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+
+    raw_job_id = payload.get("jobId")
+    if not isinstance(raw_job_id, str):
+        return None
+
+    job_id = raw_job_id.strip()
+    return job_id or None
+
+
 def archive_and_reset_trace(
     component: str,
     message: str,
     *,
     archive_suffix: str | None = None,
+    session_job_id: str | None = None,
 ) -> Path:
     ensure_runtime_directories()
     if TRACE_LOG_PATH.exists() and TRACE_LOG_PATH.stat().st_size > 0:
         timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d-%H%M%S")
-        safe_suffix = re.sub(r"[^A-Za-z0-9._-]+", "-", (archive_suffix or component).strip()) or component
+        archived_job_id = previous_trace_session_job_id()
+        safe_suffix = re.sub(
+            r"[^A-Za-z0-9._-]+", "-",
+            (archived_job_id or archive_suffix or component).strip(),
+        ) or component
         archive_path = TRACE_ARCHIVE_DIR / f"update-trace-{timestamp}-{safe_suffix}.log"
         os.replace(TRACE_LOG_PATH, archive_path)
 
@@ -99,6 +155,11 @@ def archive_and_reset_trace(
         os.chmod(TRACE_LOG_PATH, 0o664)
     except PermissionError:
         pass
+
+    if session_job_id is not None and session_job_id.strip():
+        write_trace_session(component, session_job_id=session_job_id.strip())
+    else:
+        clear_trace_session()
 
     append_trace_line(component, "info", message)
     return TRACE_LOG_PATH
@@ -110,6 +171,14 @@ def read_json_file(path: Path) -> dict[str, Any] | None:
 
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def load_trace_session() -> dict[str, Any] | None:
+    try:
+        payload = read_json_file(TRACE_SESSION_PATH)
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
 
 
 def write_json_file(path: Path, payload: dict[str, Any], mode: int = 0o644) -> None:
@@ -176,42 +245,74 @@ def resolve_release_repository() -> str:
 
 def parse_legacy_state() -> dict[str, Any]:
     raw = read_env_file(LEGACY_STATE_PATH)
+    current_version = raw.get("LAST_KNOWN_GOOD_VERSION") or raw.get("CURRENT_VERSION", "")
+    previous_version = raw.get("PREVIOUS_VERSION", "")
+    last_attempted_version = raw.get("LAST_ATTEMPTED_VERSION") or current_version
+    last_failed_version = raw.get("LAST_FAILED_VERSION", "")
     return {
-        "schemaVersion": 1,
+        "schemaVersion": STATE_SCHEMA_VERSION,
         "withObs": normalize_bool(raw.get("WITH_OBS", "false")),
         "allowGrafanaLan": normalize_bool(raw.get("ALLOW_GRAFANA_LAN", "false")),
         "allowWikiLan": normalize_bool(raw.get("ALLOW_WIKI_LAN", "false")),
         "lanCidr": raw.get("LAN_CIDR", ""),
-        "currentVersion": raw.get("CURRENT_VERSION", ""),
-        "previousVersion": raw.get("PREVIOUS_VERSION", ""),
+        "currentVersion": current_version,
+        "previousVersion": previous_version,
+        "lastKnownGoodVersion": current_version,
+        "lastAttemptedVersion": last_attempted_version,
+        "lastFailedVersion": last_failed_version,
     }
 
 
 def load_appliance_state() -> dict[str, Any]:
     state = read_json_file(APPLIANCE_STATE_PATH)
-    if state is not None:
-        return {
-            "schemaVersion": int(state.get("schemaVersion", 1)),
-            "withObs": bool(state.get("withObs", False)),
-            "allowGrafanaLan": bool(state.get("allowGrafanaLan", False)),
-            "allowWikiLan": bool(state.get("allowWikiLan", False)),
-            "lanCidr": str(state.get("lanCidr", "")),
-            "currentVersion": str(state.get("currentVersion", "")),
-            "previousVersion": str(state.get("previousVersion", "")),
-        }
+    if state is None:
+        state = parse_legacy_state()
 
-    return parse_legacy_state()
+    current_version = normalize_version_tag(str(state.get("currentVersion", ""))) or ""
+    previous_version = normalize_version_tag(str(state.get("previousVersion", ""))) or ""
+    last_known_good_version = (
+        normalize_version_tag(str(state.get("lastKnownGoodVersion", ""))) or current_version
+    )
+    last_attempted_version = (
+        normalize_version_tag(str(state.get("lastAttemptedVersion", ""))) or last_known_good_version
+    )
+    last_failed_version = normalize_version_tag(str(state.get("lastFailedVersion", ""))) or ""
 
-
-def save_appliance_state(state: dict[str, Any]) -> None:
-    payload = {
-        "schemaVersion": 1,
+    return {
+        "schemaVersion": STATE_SCHEMA_VERSION,
         "withObs": bool(state.get("withObs", False)),
         "allowGrafanaLan": bool(state.get("allowGrafanaLan", False)),
         "allowWikiLan": bool(state.get("allowWikiLan", False)),
         "lanCidr": str(state.get("lanCidr", "")),
-        "currentVersion": str(state.get("currentVersion", "")),
-        "previousVersion": str(state.get("previousVersion", "")),
+        "currentVersion": last_known_good_version,
+        "previousVersion": previous_version,
+        "lastKnownGoodVersion": last_known_good_version,
+        "lastAttemptedVersion": last_attempted_version,
+        "lastFailedVersion": last_failed_version,
+    }
+
+
+def save_appliance_state(state: dict[str, Any]) -> None:
+    current_version = normalize_version_tag(str(state.get("currentVersion", ""))) or ""
+    previous_version = normalize_version_tag(str(state.get("previousVersion", ""))) or ""
+    last_known_good_version = (
+        normalize_version_tag(str(state.get("lastKnownGoodVersion", ""))) or current_version
+    )
+    last_attempted_version = (
+        normalize_version_tag(str(state.get("lastAttemptedVersion", ""))) or last_known_good_version
+    )
+    last_failed_version = normalize_version_tag(str(state.get("lastFailedVersion", ""))) or ""
+    payload = {
+        "schemaVersion": STATE_SCHEMA_VERSION,
+        "withObs": bool(state.get("withObs", False)),
+        "allowGrafanaLan": bool(state.get("allowGrafanaLan", False)),
+        "allowWikiLan": bool(state.get("allowWikiLan", False)),
+        "lanCidr": str(state.get("lanCidr", "")),
+        "currentVersion": last_known_good_version,
+        "previousVersion": previous_version,
+        "lastKnownGoodVersion": last_known_good_version,
+        "lastAttemptedVersion": last_attempted_version,
+        "lastFailedVersion": last_failed_version,
         "updatedAt": utc_now(),
     }
     write_json_file(APPLIANCE_STATE_PATH, payload, mode=0o644)
@@ -225,6 +326,9 @@ def save_appliance_state(state: dict[str, Any]) -> None:
                 f"LAN_CIDR={payload['lanCidr']}",
                 f"CURRENT_VERSION={payload['currentVersion']}",
                 f"PREVIOUS_VERSION={payload['previousVersion']}",
+                f"LAST_KNOWN_GOOD_VERSION={payload['lastKnownGoodVersion']}",
+                f"LAST_ATTEMPTED_VERSION={payload['lastAttemptedVersion']}",
+                f"LAST_FAILED_VERSION={payload['lastFailedVersion']}",
                 "",
             ]
         ),
