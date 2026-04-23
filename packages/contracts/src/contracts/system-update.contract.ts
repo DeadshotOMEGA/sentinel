@@ -5,6 +5,7 @@ import {
   StartSystemUpdateSchema,
   SystemUpdateJobParamsSchema,
   SystemUpdateJobSchema,
+  SystemUpdateStatusQuerySchema,
   SystemUpdateStatusResponseSchema,
   SystemUpdateTraceResponseSchema,
 } from '../schemas/index.js'
@@ -16,6 +17,7 @@ export const systemUpdateContract = c.router(
     getSystemUpdateStatus: {
       method: 'GET',
       path: '/api/admin/system/update',
+      query: SystemUpdateStatusQuerySchema,
       responses: {
         200: SystemUpdateStatusResponseSchema,
         401: ErrorResponseSchema,

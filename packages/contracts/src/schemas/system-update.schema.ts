@@ -104,6 +104,16 @@ export const SystemUpdateStatusResponseSchema = v.object({
   currentJob: v.nullable(SystemUpdateJobSchema),
 })
 
+export const SystemUpdateStatusQuerySchema = v.object({
+  forceRefresh: v.optional(
+    v.pipe(
+      v.string('forceRefresh must be true or false'),
+      v.picklist(['true', 'false'], 'forceRefresh must be true or false'),
+      v.transform((value) => value === 'true')
+    )
+  ),
+})
+
 export const SystemUpdateTraceResponseSchema = v.object({
   available: v.boolean(),
   path: v.string(),
@@ -132,6 +142,7 @@ export type SystemUpdateCheckpoint = v.InferOutput<typeof SystemUpdateCheckpoint
 export type SystemUpdateRequestedBy = v.InferOutput<typeof SystemUpdateRequestedBySchema>
 export type SystemUpdateJob = v.InferOutput<typeof SystemUpdateJobSchema>
 export type SystemUpdateStatusResponse = v.InferOutput<typeof SystemUpdateStatusResponseSchema>
+export type SystemUpdateStatusQuery = v.InferOutput<typeof SystemUpdateStatusQuerySchema>
 export type SystemUpdateTraceResponse = v.InferOutput<typeof SystemUpdateTraceResponseSchema>
 export type StartSystemUpdateInput = v.InferOutput<typeof StartSystemUpdateSchema>
 export type StartSystemUpdateResponse = v.InferOutput<typeof StartSystemUpdateResponseSchema>

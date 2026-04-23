@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
+  useRefreshSystemUpdateStatus,
   useStartSystemUpdate,
   useSystemUpdateStatus,
   useSystemUpdateTrace,
@@ -230,6 +231,7 @@ export function SystemUpdatePanel() {
     refetchIntervalMs: 5_000,
   })
   const startSystemUpdate = useStartSystemUpdate()
+  const refreshSystemUpdate = useRefreshSystemUpdateStatus()
 
   const status = systemUpdateQuery.data ?? null
   const currentJob = status?.currentJob ?? null
@@ -276,9 +278,13 @@ export function SystemUpdatePanel() {
   }, [traceRequested])
 
   const handleRefresh = async () => {
-    await systemUpdateQuery.refetch()
-    if (tracePanelOpen && canStartUpdates) {
-      await traceQuery.refetch()
+    try {
+      await refreshSystemUpdate.mutateAsync()
+      if (tracePanelOpen && canStartUpdates) {
+        await traceQuery.refetch()
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to refresh system update status')
     }
   }
 
@@ -381,10 +387,10 @@ export function SystemUpdatePanel() {
                 type="button"
                 className="btn btn-sm btn-outline"
                 onClick={() => void handleRefresh()}
-                disabled={systemUpdateQuery.isFetching}
+                disabled={systemUpdateQuery.isFetching || refreshSystemUpdate.isPending}
                 data-testid={TID.settings.updates.refresh}
               >
-                {systemUpdateQuery.isFetching ? (
+                {systemUpdateQuery.isFetching || refreshSystemUpdate.isPending ? (
                   <LoadingSpinner size="xs" className="mr-2" />
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />

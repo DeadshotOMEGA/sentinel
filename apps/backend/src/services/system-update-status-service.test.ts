@@ -64,6 +64,49 @@ describe('SystemUpdateStatusService', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('bypasses the successful release cache when force refresh is requested', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new globalThis.Response(
+          JSON.stringify({
+            tag_name: 'v2.6.7',
+            html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.7',
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new globalThis.Response(
+          JSON.stringify({
+            tag_name: 'v2.6.8',
+            html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.8',
+          }),
+          {
+            status: 200,
+            headers: {
+              'content-type': 'application/json',
+            },
+          }
+        )
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const service = await createService()
+
+    const firstStatus = await service.getStatus()
+    const refreshedStatus = await service.getStatus({ forceRefresh: true })
+
+    expect(firstStatus.latestVersion).toBe('v2.6.7')
+    expect(refreshedStatus.latestVersion).toBe('v2.6.8')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('caches rate-limited latest release failures until the GitHub reset window passes', async () => {
     const rateLimitResetSeconds = Math.floor(Date.now() / 1000) + 120
     const fetchMock = vi.fn().mockResolvedValue(
