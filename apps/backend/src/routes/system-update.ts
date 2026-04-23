@@ -14,7 +14,11 @@ import { SystemUpdateTraceService } from '../services/system-update-trace-servic
 
 const s = initServer()
 
-function requireMember(req: Request) {
+type RequestWithMember = {
+  member?: Request['member']
+}
+
+function requireMember(req: RequestWithMember) {
   if (!req.member) {
     return {
       status: 401 as const,
@@ -28,7 +32,7 @@ function requireMember(req: Request) {
   return null
 }
 
-function requireSystemUpdateAccess(req: Request) {
+function requireSystemUpdateAccess(req: RequestWithMember) {
   const auth = requireMember(req)
   if (auth) {
     return auth
@@ -47,7 +51,7 @@ function requireSystemUpdateAccess(req: Request) {
   return null
 }
 
-function buildRequesterName(req: Request): string {
+function buildRequesterName(req: RequestWithMember): string {
   if (!req.member) {
     return 'Unknown member'
   }
@@ -67,14 +71,16 @@ export function createSystemUpdateRouter(options?: {
   const traceService = options?.traceService ?? new SystemUpdateTraceService()
 
   return s.router(systemUpdateContract, {
-    getSystemUpdateStatus: async ({ req }) => {
+    getSystemUpdateStatus: async ({ req, query }) => {
       const auth = requireMember(req)
       if (auth) {
         return auth
       }
 
       try {
-        const status = await statusService.getStatus()
+        const status = await statusService.getStatus({
+          forceRefresh: query.forceRefresh === true,
+        })
         return {
           status: 200 as const,
           body: status,

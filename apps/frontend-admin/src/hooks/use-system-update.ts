@@ -24,22 +24,40 @@ function getErrorMessage(body: unknown, fallback: string): string {
   return fallback
 }
 
+async function fetchSystemUpdateStatus(options?: {
+  forceRefresh?: boolean
+}): Promise<SystemUpdateStatusResponse> {
+  const response = await apiClient.systemUpdate.getSystemUpdateStatus(
+    options?.forceRefresh ? { query: { forceRefresh: 'true' } } : {}
+  )
+
+  if (response.status !== 200) {
+    throw new Error(getErrorMessage(response.body, 'Failed to load system update status'))
+  }
+
+  return response.body
+}
+
 export function useSystemUpdateStatus(options?: { enabled?: boolean; refetchIntervalMs?: number }) {
   return useQuery({
     queryKey: systemUpdateStatusQueryKey,
-    queryFn: async (): Promise<SystemUpdateStatusResponse> => {
-      const response = await apiClient.systemUpdate.getSystemUpdateStatus()
-
-      if (response.status !== 200) {
-        throw new Error(getErrorMessage(response.body, 'Failed to load system update status'))
-      }
-
-      return response.body
-    },
+    queryFn: async (): Promise<SystemUpdateStatusResponse> => fetchSystemUpdateStatus(),
     enabled: options?.enabled,
     refetchInterval: options?.refetchIntervalMs ?? 30_000,
     refetchOnWindowFocus: true,
     retry: 1,
+  })
+}
+
+export function useRefreshSystemUpdateStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (): Promise<SystemUpdateStatusResponse> =>
+      fetchSystemUpdateStatus({ forceRefresh: true }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(systemUpdateStatusQueryKey, data)
+    },
   })
 }
 
