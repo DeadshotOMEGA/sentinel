@@ -317,7 +317,7 @@ main() {
     bash "${SCRIPT_DIR}/install.sh" --version "${version_tag}"
     exit_code=$?
   else
-    SENTINEL_TARGET_VERSION="${version_tag}" bash "${SCRIPT_DIR}/sentinel_update_quiet.sh"
+    bash "${SCRIPT_DIR}/update.sh" --version "${version_tag}"
     exit_code=$?
   fi
   set -e

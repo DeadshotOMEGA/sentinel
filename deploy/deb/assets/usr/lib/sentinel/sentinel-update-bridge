@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import logging
 import os
@@ -17,15 +18,19 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from sentinel_update_common import (
+    APPLIANCE_ENV_PATH,
     CURRENT_JOB_PATH,
     JOB_ID_PATTERN,
     JOBS_DIR,
+    LOCK_PATH,
     TRACE_LOG_PATH,
     VERSION_PATTERN,
     append_trace_line,
     archive_and_reset_trace,
     ensure_runtime_directories,
     is_terminal_status,
+    load_appliance_state,
+    read_env_file,
     read_json_file,
     utc_now,
     write_json_file,
@@ -203,38 +208,78 @@ def start_updater_unit() -> None:
 
 
 def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
-    if current_job_is_active():
-        trace_if_exists("warning", "Rejected a new update request because another update job is already active.")
-        raise BridgeError("An update is already in progress.", status=409)
+    lock_handle = LOCK_PATH.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        trace_if_exists("warning", "Rejected a new update request because another updater operation already holds the lock.")
+        raise BridgeError("An update or updater maintenance task is already in progress.", status=409) from error
 
-    job = {
-        "schemaVersion": 1,
-        "jobId": payload["jobId"],
-        "status": "requested",
-        "message": "Update request accepted and waiting for the updater service.",
-        "requestedAt": utc_now(),
-        "startedAt": None,
-        "finishedAt": None,
-        "currentVersion": None,
-        "latestVersion": None,
-        "targetVersion": payload["targetVersion"],
-        "failureSummary": None,
-        "rollbackAttempted": False,
-        "requestedBy": {
-            "memberId": payload["requestedByMemberId"],
-            "memberName": payload["requestedByMemberName"],
-            "accountLevel": payload["requestedByAccountLevel"],
-            "fromIp": payload["requestedFromIp"],
-        },
-    }
-    write_json_file(JOBS_DIR / f"{payload['jobId']}.json", job, mode=0o644)
-    write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
-    trace(
-        "info",
-        "Persisted new update job "
-        f"{payload['jobId']} targeting {payload['targetVersion']} for {payload['requestedByMemberName']}.",
-    )
-    return job
+    try:
+        if current_job_is_active():
+            trace_if_exists("warning", "Rejected a new update request because another update job is already active.")
+            raise BridgeError("An update is already in progress.", status=409)
+
+        state = load_appliance_state()
+        appliance_env = read_env_file(APPLIANCE_ENV_PATH)
+        current_version = appliance_env.get("SENTINEL_VERSION") or state.get("currentVersion")
+        job = {
+            "schemaVersion": 2,
+            "operation": "update",
+            "source": "frontend-admin",
+            "jobId": payload["jobId"],
+            "status": "requested",
+            "message": "Update request accepted and waiting for the updater service.",
+            "requestedAt": utc_now(),
+            "startedAt": None,
+            "finishedAt": None,
+            "durationSeconds": None,
+            "currentVersion": current_version or None,
+            "latestVersion": None,
+            "targetVersion": payload["targetVersion"],
+            "requestedVersion": payload["targetVersion"],
+            "attemptedVersion": payload["targetVersion"],
+            "previousVersion": current_version or None,
+            "lastKnownGoodVersion": str(state.get("lastKnownGoodVersion") or current_version or "") or None,
+            "lastFailedVersion": str(state.get("lastFailedVersion") or "") or None,
+            "failureSummary": None,
+            "rollbackAttempted": False,
+            "rollbackResult": "not_needed",
+            "restoreRecommended": False,
+            "healthzPassed": None,
+            "requestedBy": {
+                "memberId": payload["requestedByMemberId"],
+                "memberName": payload["requestedByMemberName"],
+                "accountLevel": payload["requestedByAccountLevel"],
+                "fromIp": payload["requestedFromIp"],
+            },
+            "requestedConfig": {},
+            "artifact": {},
+            "backup": {"attempted": False, "succeeded": False, "paths": [], "manifests": []},
+            "rollback": {
+                "attempted": False,
+                "result": "not_needed",
+                "currentVersion": current_version or None,
+            },
+            "migration": {"mode": None, "status": "pending"},
+            "network": {"status": "pending", "message": "Not started."},
+            "warnings": [],
+            "tracePath": str(TRACE_LOG_PATH),
+            "jobLogPath": None,
+            "logPath": None,
+            "nextAction": "Wait for the updater to complete or inspect the active update trace.",
+        }
+        write_json_file(JOBS_DIR / f"{payload['jobId']}.json", job, mode=0o644)
+        write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
+        trace(
+            "info",
+            "Persisted new update job "
+            f"{payload['jobId']} targeting {payload['targetVersion']} for {payload['requestedByMemberName']}.",
+        )
+        return job
+    finally:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+        lock_handle.close()
 
 
 def mark_job_failed(job: dict[str, Any], message: str) -> dict[str, Any]:
@@ -279,6 +324,7 @@ def handle_connection(connection: socket.socket) -> None:
             f"{payload['targetVersion']} from {payload['requestedByMemberName']}."
         ),
         archive_suffix=payload["jobId"],
+        session_job_id=payload["jobId"],
     )
     trace("info", "Reset the active update trace log for the newly accepted update run.")
     trace("info", f"Received bridge connection from pid={pid} uid={uid} gid={gid}.")

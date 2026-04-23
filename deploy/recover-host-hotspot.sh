@@ -27,6 +27,12 @@ have_command() {
   command -v "$1" >/dev/null 2>&1
 }
 
+safe_readlink_path() {
+  local path="${1:-}"
+  [[ -n "${path}" ]] || return 0
+  readlink -f "${path}" 2>/dev/null || true
+}
+
 wait_for_path() {
   local path="$1"
   local timeout="${2:-20}"
@@ -146,7 +152,8 @@ have_command flock || die "flock is required"
 mkdir -p "$(dirname "${LOCK_FILE}")"
 exec 9>"${LOCK_FILE}"
 if ! flock -n 9; then
-  die "Host hotspot recovery is already running"
+  log "Host hotspot recovery is already running; reusing the active recovery attempt"
+  exit 0
 fi
 
 skip_visibility_check="false"
@@ -168,7 +175,7 @@ fi
 
 SSID="$(hotspot_connection_ssid || true)"
 DEVICE="$(hotspot_connection_device || true)"
-KEY_MGMT="$(nmcli -g 802-11-wireless-security.key-mgmt connection show "${CONNECTION_NAME}" | head -n1)"
+KEY_MGMT="$(nmcli -g 802-11-wireless-security.key-mgmt connection show "${CONNECTION_NAME}" 2>/dev/null | head -n1 || true)"
 
 if [[ -z "${DEVICE}" ]]; then
   DEVICE="${HOTSPOT_STATE_HOTSPOT_DEVICE:-}"
@@ -177,19 +184,37 @@ fi
 [[ -n "${DEVICE}" ]] || die "Could not determine the hotspot interface for \"${CONNECTION_NAME}\""
 [[ -d "/sys/class/net/${DEVICE}" ]] || die "Interface ${DEVICE} is not present"
 
-USB_FUNCTION_PATH="$(readlink -f "/sys/class/net/${DEVICE}/device")"
-USB_DEVICE_PATH="$(readlink -f "/sys/class/net/${DEVICE}/device/..")"
-DRIVER_PATH="$(readlink -f "/sys/class/net/${DEVICE}/device/driver")"
+USB_FUNCTION_PATH="$(safe_readlink_path "/sys/class/net/${DEVICE}/device")"
+USB_DEVICE_PATH="$(safe_readlink_path "/sys/class/net/${DEVICE}/device/..")"
+DRIVER_PATH="$(safe_readlink_path "/sys/class/net/${DEVICE}/device/driver")"
 
-USB_FUNCTION_NAME="$(basename "${USB_FUNCTION_PATH}")"
-USB_DEVICE_NAME="$(basename "${USB_DEVICE_PATH}")"
-DRIVER_NAME="$(basename "${DRIVER_PATH}")"
+USB_FUNCTION_NAME=""
+USB_DEVICE_NAME=""
+DRIVER_NAME=""
+if [[ -n "${USB_FUNCTION_PATH}" ]]; then
+  USB_FUNCTION_NAME="$(basename "${USB_FUNCTION_PATH}")"
+fi
+if [[ -n "${USB_DEVICE_PATH}" ]]; then
+  USB_DEVICE_NAME="$(basename "${USB_DEVICE_PATH}")"
+fi
+if [[ -n "${DRIVER_PATH}" ]]; then
+  DRIVER_NAME="$(basename "${DRIVER_PATH}")"
+fi
 
-DRIVER_UNBIND="/sys/bus/usb/drivers/${DRIVER_NAME}/unbind"
-DRIVER_BIND="/sys/bus/usb/drivers/${DRIVER_NAME}/bind"
-USB_AUTHORIZED="/sys/bus/usb/devices/${USB_DEVICE_NAME}/authorized"
-USB_UNBIND="/sys/bus/usb/drivers/usb/unbind"
-USB_BIND="/sys/bus/usb/drivers/usb/bind"
+DRIVER_UNBIND=""
+DRIVER_BIND=""
+USB_AUTHORIZED=""
+USB_UNBIND=""
+USB_BIND=""
+if [[ -n "${DRIVER_NAME}" ]]; then
+  DRIVER_UNBIND="/sys/bus/usb/drivers/${DRIVER_NAME}/unbind"
+  DRIVER_BIND="/sys/bus/usb/drivers/${DRIVER_NAME}/bind"
+fi
+if [[ -n "${USB_DEVICE_NAME}" ]]; then
+  USB_AUTHORIZED="/sys/bus/usb/devices/${USB_DEVICE_NAME}/authorized"
+  USB_UNBIND="/sys/bus/usb/drivers/usb/unbind"
+  USB_BIND="/sys/bus/usb/drivers/usb/bind"
+fi
 
 SCAN_DEVICE="${HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE:-}"
 if [[ -z "${SCAN_DEVICE}" ]]; then
@@ -199,15 +224,15 @@ fi
 log "Connection: ${CONNECTION_NAME}"
 log "SSID: ${SSID:-unknown}"
 log "Hotspot device: ${DEVICE}"
-log "USB device: ${USB_DEVICE_NAME}"
-log "Driver: ${DRIVER_NAME}"
+log "USB device: ${USB_DEVICE_NAME:-unknown}"
+log "Driver: ${DRIVER_NAME:-unknown}"
 log "Security mode: ${KEY_MGMT:-unknown}"
 
 log "Reapplying known-good hotspot radio settings"
 nmcli connection modify "${CONNECTION_NAME}" \
   802-11-wireless.band "${HOTSPOT_BAND}" \
   802-11-wireless.channel "${HOTSPOT_CHANNEL}" \
-  802-11-wireless.powersave 2
+  802-11-wireless.powersave 2 || die "Failed to reapply hotspot radio settings for ${CONNECTION_NAME}"
 
 if [[ "${KEY_MGMT}" == "sae" ]]; then
   log "WPA3-only (sae) is less reliable on some adapters; mixed WPA2/WPA3 may recover more reliably."
@@ -215,20 +240,30 @@ fi
 
 stop_hotspot
 
-if ! reset_driver_binding "${DRIVER_UNBIND}" "${DRIVER_BIND}" "${USB_FUNCTION_NAME}"; then
+hardware_reset_applied="false"
+if [[ -n "${USB_FUNCTION_NAME}" && -n "${DRIVER_NAME}" ]] && reset_driver_binding "${DRIVER_UNBIND}" "${DRIVER_BIND}" "${USB_FUNCTION_NAME}"; then
+  hardware_reset_applied="true"
+elif [[ -n "${USB_DEVICE_NAME}" ]]; then
   log "Driver rebind path was not available; falling back to a USB reset"
-  reset_usb_device "${USB_AUTHORIZED}" "${USB_UNBIND}" "${USB_BIND}" "${USB_DEVICE_NAME}" ||
-    die "Could not reset ${USB_DEVICE_NAME}"
+  if reset_usb_device "${USB_AUTHORIZED}" "${USB_UNBIND}" "${USB_BIND}" "${USB_DEVICE_NAME}"; then
+    hardware_reset_applied="true"
+  else
+    log "USB reset path was not available for ${USB_DEVICE_NAME}; continuing with a soft hotspot restart"
+  fi
+else
+  log "USB/driver sysfs metadata is unavailable for ${DEVICE}; continuing with a soft hotspot restart"
 fi
 
-if have_command udevadm; then
+if [[ "${hardware_reset_applied}" == "true" ]] && have_command udevadm; then
   udevadm settle || true
 fi
 
-wait_for_path "/sys/class/net/${DEVICE}" 20 || die "Interface ${DEVICE} did not come back after reset"
-wait_for_nm_device "${DEVICE}" 20 || die "NetworkManager did not rediscover ${DEVICE} after reset"
+wait_for_path "/sys/class/net/${DEVICE}" 20 || die "Interface ${DEVICE} did not come back after recovery"
+wait_for_nm_device "${DEVICE}" 20 || die "NetworkManager did not rediscover ${DEVICE} after recovery"
 
-start_hotspot "${DEVICE}"
+if ! start_hotspot "${DEVICE}"; then
+  die "Failed to bring hotspot connection ${CONNECTION_NAME} up on ${DEVICE}"
+fi
 
 if have_command iw; then
   iw dev "${DEVICE}" set power_save off >/dev/null 2>&1 || true

@@ -1,0 +1,15 @@
+[Unit]
+Description=Sentinel updater retention prune
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/sentinel/appliance.env
+ExecStart=/usr/lib/sentinel/sentinel-updater prune
+User=root
+Group=root
+WorkingDirectory=/opt/sentinel/deploy
+UMask=0077
+StandardOutput=journal
+StandardError=journal
