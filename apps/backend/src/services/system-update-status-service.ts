@@ -7,7 +7,7 @@ import {
   isStableVersionTag,
   resolveServiceVersionTag,
 } from '../lib/service-version.js'
-import { isSystemUpdateJobTerminal, sanitizeSystemUpdateJob } from '../lib/system-update-state.js'
+import { isSystemUpdateJobFinished, sanitizeSystemUpdateJob } from '../lib/system-update-state.js'
 
 const DEFAULT_STATE_ROOT = '/var/lib/sentinel/updater'
 const DEFAULT_APPLIANCE_STATE_PATH = '/var/lib/sentinel/appliance/state.json'
@@ -76,7 +76,7 @@ export class SystemUpdateStatusService {
     )
     const releaseSummary = await this.fetchLatestReleaseSummary()
     const completedJobVersion =
-      currentJob && isSystemUpdateJobTerminal(currentJob.status) ? currentJob.currentVersion : null
+      currentJob && isSystemUpdateJobFinished(currentJob) ? currentJob.currentVersion : null
     const currentVersion =
       applianceStateVersion ??
       completedJobVersion ??
@@ -101,7 +101,7 @@ export class SystemUpdateStatusService {
     currentJob: SystemUpdateJob | null,
     applianceStateVersion: string | null
   ): SystemUpdateJob | null {
-    if (!currentJob || !applianceStateVersion || !isSystemUpdateJobTerminal(currentJob.status)) {
+    if (!currentJob || !applianceStateVersion || !isSystemUpdateJobFinished(currentJob)) {
       return currentJob
     }
 

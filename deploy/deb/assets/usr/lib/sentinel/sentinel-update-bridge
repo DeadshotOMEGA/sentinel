@@ -25,9 +25,12 @@ from sentinel_update_common import (
     LOCK_PATH,
     TRACE_LOG_PATH,
     VERSION_PATTERN,
+    apply_job_progress,
+    ensure_job_progress,
     append_trace_line,
     archive_and_reset_trace,
     ensure_runtime_directories,
+    is_terminal_job,
     is_terminal_status,
     load_appliance_state,
     read_env_file,
@@ -167,9 +170,7 @@ def receive_payload(connection: socket.socket) -> dict[str, Any]:
 
 def current_job_is_active() -> bool:
     job = read_json_file(CURRENT_JOB_PATH)
-    if not isinstance(job, dict):
-        return False
-    return not is_terminal_status(str(job.get("status", "")))
+    return not is_terminal_job(job)
 
 
 def run_polkit_check() -> None:
@@ -264,6 +265,19 @@ def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
             "migration": {"mode": None, "status": "pending"},
             "network": {"status": "pending", "message": "Not started."},
             "warnings": [],
+            "phase": {
+                "key": "prepare_update",
+                "label": "Prepare update",
+                "description": "Confirm the requested release and gather trusted metadata.",
+                "kind": "primary",
+                "order": 1,
+                "total": 5,
+            },
+            "checkpoint": {
+                "key": "request_accepted",
+                "label": "Update request accepted",
+                "detail": "Update request accepted and waiting for the updater service.",
+            },
             "tracePath": str(TRACE_LOG_PATH),
             "jobLogPath": None,
             "logPath": None,
@@ -290,6 +304,13 @@ def mark_job_failed(job: dict[str, Any], message: str) -> dict[str, Any]:
         "failureSummary": message,
         "finishedAt": utc_now(),
     }
+    apply_job_progress(
+        failed_job,
+        phase_key="recovery",
+        checkpoint_key="update_failed",
+        checkpoint_detail=message,
+    )
+    ensure_job_progress(failed_job)
     write_json_file(JOBS_DIR / f"{job['jobId']}.json", failed_job, mode=0o644)
     write_json_file(CURRENT_JOB_PATH, failed_job, mode=0o644)
     trace("error", f"Marked update job {job['jobId']} as failed before updater handoff: {message}")

@@ -38,10 +38,270 @@ REPORT_SCHEMA_VERSION = 2
 VERSION_PATTERN = re.compile(r"^v[0-9]+\.[0-9]+\.[0-9]+$")
 JOB_ID_PATTERN = re.compile(r"^system-update-[0-9]{13}-[0-9a-f-]{36}$")
 TERMINAL_JOB_STATUSES = {"completed", "failed", "rollback_attempted", "rolled_back"}
+PRIMARY_UPDATE_PHASE_KEYS = (
+    "prepare_update",
+    "protect_current_system",
+    "install_release",
+    "bring_services_back",
+    "verify_and_finalize",
+)
+UPDATE_PHASE_DEFINITIONS = {
+    "prepare_update": {
+        "key": "prepare_update",
+        "label": "Prepare update",
+        "description": "Confirm the requested release and gather trusted metadata.",
+        "kind": "primary",
+        "order": 1,
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+    "protect_current_system": {
+        "key": "protect_current_system",
+        "label": "Protect current system",
+        "description": "Create recovery assets before applying the new release.",
+        "kind": "primary",
+        "order": 2,
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+    "install_release": {
+        "key": "install_release",
+        "label": "Install release",
+        "description": "Download, verify, and install the requested Sentinel package.",
+        "kind": "primary",
+        "order": 3,
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+    "bring_services_back": {
+        "key": "bring_services_back",
+        "label": "Bring services back",
+        "description": "Pull updated images and restart the Sentinel stack.",
+        "kind": "primary",
+        "order": 4,
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+    "verify_and_finalize": {
+        "key": "verify_and_finalize",
+        "label": "Verify and finalize",
+        "description": "Run health checks and final appliance recovery tasks.",
+        "kind": "primary",
+        "order": 5,
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+    "recovery": {
+        "key": "recovery",
+        "label": "Recovery",
+        "description": "Attempt rollback or point the operator to restore guidance.",
+        "kind": "recovery",
+        "order": len(PRIMARY_UPDATE_PHASE_KEYS),
+        "total": len(PRIMARY_UPDATE_PHASE_KEYS),
+    },
+}
+UPDATE_CHECKPOINT_DEFINITIONS = {
+    "request_accepted": {
+        "key": "request_accepted",
+        "label": "Update request accepted",
+        "detail": "The updater has accepted the update request and is waiting to continue.",
+    },
+    "request_authorized": {
+        "key": "request_authorized",
+        "label": "Request authorized",
+        "detail": "The requested Sentinel release was validated and authorized to continue.",
+    },
+    "creating_pre_update_backup": {
+        "key": "creating_pre_update_backup",
+        "label": "Creating pre-update backup",
+        "detail": "Creating Sentinel and Wiki.js backups before any changes are applied.",
+    },
+    "preparing_rollback_artifact": {
+        "key": "preparing_rollback_artifact",
+        "label": "Preparing rollback artifact",
+        "detail": "Caching the current Sentinel release so rollback remains available.",
+    },
+    "downloading_release": {
+        "key": "downloading_release",
+        "label": "Downloading release",
+        "detail": "Downloading the requested Sentinel package and release metadata.",
+    },
+    "verifying_release_artifacts": {
+        "key": "verifying_release_artifacts",
+        "label": "Verifying release artifacts",
+        "detail": "Checking release checksums and manifests before installation.",
+    },
+    "installing_package": {
+        "key": "installing_package",
+        "label": "Installing package",
+        "detail": "Installing the requested Sentinel package on the host appliance.",
+    },
+    "pulling_container_images": {
+        "key": "pulling_container_images",
+        "label": "Pulling container images",
+        "detail": "Pulling the updated container images for the Sentinel stack.",
+    },
+    "restarting_services": {
+        "key": "restarting_services",
+        "label": "Restarting services",
+        "detail": "Recreating the Sentinel stack and waiting for containers to report healthy.",
+    },
+    "applying_database_migrations": {
+        "key": "applying_database_migrations",
+        "label": "Applying database migrations",
+        "detail": "Running safe database migrations inside the backend container.",
+    },
+    "checking_migration_status": {
+        "key": "checking_migration_status",
+        "label": "Checking migration status",
+        "detail": "Confirming the Sentinel database schema is up to date.",
+    },
+    "refreshing_bootstrap_account": {
+        "key": "refreshing_bootstrap_account",
+        "label": "Refreshing bootstrap account",
+        "detail": "Refreshing the Sentinel bootstrap account after the upgrade.",
+    },
+    "seeding_default_enums": {
+        "key": "seeding_default_enums",
+        "label": "Seeding defaults",
+        "detail": "Seeding default enums and appliance configuration values.",
+    },
+    "waiting_for_health_endpoint": {
+        "key": "waiting_for_health_endpoint",
+        "label": "Waiting for health checks",
+        "detail": "Waiting for Sentinel to report healthy at the local health endpoint.",
+    },
+    "recovering_hotspot": {
+        "key": "recovering_hotspot",
+        "label": "Checking hotspot recovery",
+        "detail": "Running shared hotspot recovery checks before finalizing the update.",
+    },
+    "update_completed": {
+        "key": "update_completed",
+        "label": "Update completed",
+        "detail": "Sentinel finished the update and returned to steady state.",
+    },
+    "update_failed": {
+        "key": "update_failed",
+        "label": "Update failed",
+        "detail": "The update stopped and needs operator attention before retrying.",
+    },
+    "attempting_rollback": {
+        "key": "attempting_rollback",
+        "label": "Attempting rollback",
+        "detail": "Rolling back to the last known good Sentinel release.",
+    },
+    "rollback_completed": {
+        "key": "rollback_completed",
+        "label": "Rollback completed",
+        "detail": "Sentinel rolled back to the previous known good release.",
+    },
+    "rollback_failed": {
+        "key": "rollback_failed",
+        "label": "Rollback failed",
+        "detail": "Rollback did not finish cleanly. Restore guidance is required.",
+    },
+}
 
 
 def utc_now() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def derive_progress_from_status(status: str, message: str | None = None) -> tuple[str, str]:
+    normalized_status = status.strip()
+    if normalized_status == "requested":
+        return "prepare_update", "request_accepted"
+    if normalized_status == "authorized":
+        return "prepare_update", "request_authorized"
+    if normalized_status == "staging":
+        return "protect_current_system", "creating_pre_update_backup"
+    if normalized_status == "downloading":
+        return "install_release", "downloading_release"
+    if normalized_status == "verifying":
+        return "install_release", "verifying_release_artifacts"
+    if normalized_status == "installing":
+        return "install_release", "installing_package"
+    if normalized_status == "post_install":
+        return "bring_services_back", "pulling_container_images"
+    if normalized_status == "restarting":
+        return "bring_services_back", "restarting_services"
+    if normalized_status == "health_check":
+        return "verify_and_finalize", "waiting_for_health_endpoint"
+    if normalized_status == "completed":
+        return "verify_and_finalize", "update_completed"
+    if normalized_status == "rolled_back":
+        return "recovery", "rollback_completed"
+    if normalized_status in {"failed", "rollback_attempted"}:
+        if message and "rollback failed" in message.lower():
+            return "recovery", "rollback_failed"
+        if normalized_status == "rollback_attempted":
+            return "recovery", "attempting_rollback"
+        return "recovery", "update_failed"
+    return "prepare_update", "request_accepted"
+
+
+def build_update_phase(phase_key: str) -> dict[str, Any]:
+    definition = UPDATE_PHASE_DEFINITIONS.get(phase_key) or UPDATE_PHASE_DEFINITIONS["prepare_update"]
+    return dict(definition)
+
+
+def build_update_checkpoint(checkpoint_key: str, *, detail: str | None = None) -> dict[str, Any]:
+    definition = UPDATE_CHECKPOINT_DEFINITIONS.get(checkpoint_key) or UPDATE_CHECKPOINT_DEFINITIONS[
+        "request_accepted"
+    ]
+    payload = dict(definition)
+    if detail is not None and detail.strip():
+        payload["detail"] = detail.strip()
+    return payload
+
+
+def apply_job_progress(
+    job: dict[str, Any],
+    *,
+    phase_key: str,
+    checkpoint_key: str,
+    checkpoint_detail: str | None = None,
+) -> None:
+    job["phase"] = build_update_phase(phase_key)
+    job["checkpoint"] = build_update_checkpoint(checkpoint_key, detail=checkpoint_detail)
+
+
+def ensure_job_progress(job: dict[str, Any]) -> None:
+    status = str(job.get("status", "")).strip()
+    message = str(job.get("message", "")).strip()
+
+    raw_phase = job.get("phase")
+    raw_checkpoint = job.get("checkpoint")
+    phase_key = (
+        str(raw_phase.get("key", "")).strip()
+        if isinstance(raw_phase, dict)
+        else ""
+    )
+    checkpoint_key = (
+        str(raw_checkpoint.get("key", "")).strip()
+        if isinstance(raw_checkpoint, dict)
+        else ""
+    )
+
+    if not phase_key or phase_key not in UPDATE_PHASE_DEFINITIONS:
+        phase_key, derived_checkpoint_key = derive_progress_from_status(status, message)
+    else:
+        derived_checkpoint_key = ""
+
+    if not checkpoint_key or checkpoint_key not in UPDATE_CHECKPOINT_DEFINITIONS:
+        checkpoint_key = derived_checkpoint_key or derive_progress_from_status(status, message)[1]
+
+    checkpoint_detail = None
+    if isinstance(raw_checkpoint, dict):
+        raw_detail = raw_checkpoint.get("detail")
+        if isinstance(raw_detail, str) and raw_detail.strip():
+            checkpoint_detail = raw_detail.strip()
+
+    if checkpoint_detail is None:
+        checkpoint_detail = message or None
+
+    apply_job_progress(
+        job,
+        phase_key=phase_key,
+        checkpoint_key=checkpoint_key,
+        checkpoint_detail=checkpoint_detail,
+    )
 
 
 def ensure_directory(path: Path, mode: int | None = None) -> None:
@@ -355,6 +615,18 @@ def normalize_version_tag(value: str | None) -> str | None:
 
 def is_terminal_status(status: str | None) -> bool:
     return bool(status and status in TERMINAL_JOB_STATUSES)
+
+
+def is_terminal_job(job: dict[str, Any] | None) -> bool:
+    if not isinstance(job, dict):
+        return True
+
+    status = str(job.get("status", "")).strip()
+    if status == "rollback_attempted":
+        finished_at = job.get("finishedAt")
+        return isinstance(finished_at, str) and bool(finished_at.strip())
+
+    return is_terminal_status(status)
 
 
 def compose_command(state: dict[str, Any], *subcommand: str) -> list[str]:

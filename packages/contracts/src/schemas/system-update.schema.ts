@@ -35,6 +35,40 @@ export const SystemUpdateJobStatusSchema = v.picklist(
   'Choose a valid system update job status'
 )
 
+export const SystemUpdatePhaseSchema = v.object({
+  key: v.pipe(v.string('Phase key is required'), v.minLength(1, 'Phase key is required')),
+  label: v.pipe(v.string('Phase label is required'), v.minLength(1, 'Phase label is required')),
+  description: v.nullable(
+    v.pipe(
+      v.string('Phase description must be a string'),
+      v.minLength(1, 'Phase description is required')
+    )
+  ),
+  kind: v.pipe(v.string('Phase kind is required'), v.minLength(1, 'Phase kind is required')),
+  order: v.pipe(
+    v.number('Phase order is required'),
+    v.integer('Phase order must be an integer'),
+    v.minValue(1, 'Phase order must be at least 1')
+  ),
+  total: v.pipe(
+    v.number('Phase total is required'),
+    v.integer('Phase total must be an integer'),
+    v.minValue(1, 'Phase total must be at least 1')
+  ),
+})
+
+export const SystemUpdateCheckpointSchema = v.object({
+  key: v.pipe(v.string('Checkpoint key is required'), v.minLength(1, 'Checkpoint key is required')),
+  label: v.pipe(
+    v.string('Checkpoint label is required'),
+    v.minLength(1, 'Checkpoint label is required')
+  ),
+  detail: v.pipe(
+    v.string('Checkpoint detail is required'),
+    v.minLength(1, 'Checkpoint detail is required')
+  ),
+})
+
 const NullableVersionSchema = v.nullable(SystemUpdateVersionSchema)
 
 export const SystemUpdateRequestedBySchema = v.object({
@@ -55,6 +89,8 @@ export const SystemUpdateJobSchema = v.object({
   currentVersion: NullableVersionSchema,
   latestVersion: NullableVersionSchema,
   targetVersion: SystemUpdateVersionSchema,
+  phase: SystemUpdatePhaseSchema,
+  checkpoint: SystemUpdateCheckpointSchema,
   failureSummary: v.nullable(v.string()),
   rollbackAttempted: v.boolean(),
   requestedBy: SystemUpdateRequestedBySchema,
@@ -91,6 +127,8 @@ export const SystemUpdateJobParamsSchema = v.object({
 
 export type SystemUpdateVersion = v.InferOutput<typeof SystemUpdateVersionSchema>
 export type SystemUpdateJobStatus = v.InferOutput<typeof SystemUpdateJobStatusSchema>
+export type SystemUpdatePhase = v.InferOutput<typeof SystemUpdatePhaseSchema>
+export type SystemUpdateCheckpoint = v.InferOutput<typeof SystemUpdateCheckpointSchema>
 export type SystemUpdateRequestedBy = v.InferOutput<typeof SystemUpdateRequestedBySchema>
 export type SystemUpdateJob = v.InferOutput<typeof SystemUpdateJobSchema>
 export type SystemUpdateStatusResponse = v.InferOutput<typeof SystemUpdateStatusResponseSchema>

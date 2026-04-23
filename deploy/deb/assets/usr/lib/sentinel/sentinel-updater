@@ -38,10 +38,13 @@ from sentinel_update_common import (
     TRACE_LOG_PATH,
     TRACE_ARCHIVE_DIR,
     VERSION_PATTERN,
+    apply_job_progress,
     archive_and_reset_trace,
     append_trace_line,
     compose_command,
+    ensure_job_progress,
     ensure_runtime_directories,
+    is_terminal_job,
     is_terminal_status,
     load_appliance_state,
     load_trace_session,
@@ -230,6 +233,7 @@ def report_path_for_job(job: dict[str, Any]) -> Path:
 def update_report_metadata(job: dict[str, Any]) -> None:
     job["schemaVersion"] = REPORT_SCHEMA_VERSION
     job["tracePath"] = active_trace_path()
+    ensure_job_progress(job)
     if isinstance(job.get("jobLogPath"), str):
         job["logPath"] = job.get("jobLogPath")
     result = report_result_for_job(job)
@@ -307,12 +311,24 @@ def update_job(
     job_logger: JobLogger | None = None,
     failure_summary: str | None = None,
     finished: bool = False,
+    phase_key: str | None = None,
+    checkpoint_key: str | None = None,
+    checkpoint_detail: str | None = None,
 ) -> None:
     if status == "authorized" and not job.get("startedAt"):
         job["startedAt"] = utc_now()
     job["status"] = status
     job["message"] = message
     job["failureSummary"] = failure_summary
+    if phase_key is not None or checkpoint_key is not None:
+        apply_job_progress(
+            job,
+            phase_key=phase_key or "prepare_update",
+            checkpoint_key=checkpoint_key or "request_accepted",
+            checkpoint_detail=checkpoint_detail or message,
+        )
+    else:
+        ensure_job_progress(job)
     if finished:
         job["finishedAt"] = utc_now()
         if "durationSeconds" not in job:
@@ -353,9 +369,7 @@ def parse_release_asset_size(release_asset: dict[str, Any]) -> int:
 
 def current_job_is_active() -> bool:
     job = read_json_file(CURRENT_JOB_PATH)
-    if not isinstance(job, dict):
-        return False
-    return not is_terminal_status(str(job.get("status", "")))
+    return not is_terminal_job(job)
 
 
 def persist_initial_job(job: dict[str, Any]) -> dict[str, Any]:
@@ -855,6 +869,7 @@ def update_runtime_version(target_version: str) -> None:
 
 
 def run_backend_post_update(
+    job: dict[str, Any],
     state: dict[str, Any],
     job_logger: JobLogger,
     *,
@@ -865,44 +880,69 @@ def run_backend_post_update(
         overrides={"SENTINEL_VERSION": version_override} if version_override else None
     )
     commands = [
-        compose_command(
-            state,
-            "exec",
-            "-T",
-            "backend",
-            "sh",
-            "-lc",
-            "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe",
+        (
+            "applying_database_migrations",
+            "Applying safe database migrations.",
+            compose_command(
+                state,
+                "exec",
+                "-T",
+                "backend",
+                "sh",
+                "-lc",
+                "cd /app && pnpm --filter @sentinel/database prisma:migrate:deploy:safe",
+            ),
         ),
-        compose_command(
-            state,
-            "exec",
-            "-T",
-            "backend",
-            "sh",
-            "-lc",
-            "cd /app && pnpm --filter @sentinel/database exec prisma migrate status",
+        (
+            "checking_migration_status",
+            "Checking Sentinel database migration status.",
+            compose_command(
+                state,
+                "exec",
+                "-T",
+                "backend",
+                "sh",
+                "-lc",
+                "cd /app && pnpm --filter @sentinel/database exec prisma migrate status",
+            ),
         ),
-        compose_command(
-            state,
-            "exec",
-            "-T",
-            "backend",
-            "sh",
-            "-lc",
-            "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account",
+        (
+            "refreshing_bootstrap_account",
+            "Refreshing the Sentinel bootstrap account.",
+            compose_command(
+                state,
+                "exec",
+                "-T",
+                "backend",
+                "sh",
+                "-lc",
+                "cd /app && pnpm --filter @sentinel/backend sentinel:bootstrap-account",
+            ),
         ),
-        compose_command(
-            state,
-            "exec",
-            "-T",
-            "backend",
-            "sh",
-            "-lc",
-            "cd /app && pnpm --filter @sentinel/backend sentinel:seed-default-enums",
+        (
+            "seeding_default_enums",
+            "Seeding default enums and appliance defaults.",
+            compose_command(
+                state,
+                "exec",
+                "-T",
+                "backend",
+                "sh",
+                "-lc",
+                "cd /app && pnpm --filter @sentinel/backend sentinel:seed-default-enums",
+            ),
         ),
     ]
-    for command in commands:
+    for checkpoint_key, message, command in commands:
+        update_job(
+            job,
+            status="health_check",
+            message=message,
+            job_logger=job_logger,
+            phase_key="verify_and_finalize",
+            checkpoint_key=checkpoint_key,
+            checkpoint_detail=message,
+        )
         result = run_command(
             command,
             job_logger=job_logger,
@@ -915,7 +955,7 @@ def run_backend_post_update(
     trace("info", "Backend post-update commands completed successfully.")
 
 
-def restart_stack(
+def pull_stack_images(
     state: dict[str, Any],
     job_logger: JobLogger,
     *,
@@ -935,7 +975,17 @@ def restart_stack(
     if pull_result.returncode != 0:
         raise UpdaterError("post_install", "docker compose pull failed.")
 
+
+def restart_stack_services(
+    state: dict[str, Any],
+    job_logger: JobLogger,
+    *,
+    version_override: str | None = None,
+) -> None:
     trace("info", "Recreating the Sentinel stack with docker compose up -d.")
+    command_env = refreshed_appliance_env(
+        overrides={"SENTINEL_VERSION": version_override} if version_override else None
+    )
     up_result = run_command(
         compose_command(state, "up", "-d"),
         job_logger=job_logger,
@@ -1125,6 +1175,19 @@ def enqueue_manual_update(args: argparse.Namespace) -> int:
         "migration": {"mode": None, "status": "pending"},
         "network": {"status": "pending", "message": "Not started."},
         "warnings": [],
+        "phase": {
+            "key": "prepare_update",
+            "label": "Prepare update",
+            "description": "Confirm the requested release and gather trusted metadata.",
+            "kind": "primary",
+            "order": 1,
+            "total": 5,
+        },
+        "checkpoint": {
+            "key": "request_accepted",
+            "label": "Update request accepted",
+            "detail": f"Manual update request accepted for {target_version}.",
+        },
         "jobLogPath": str(job_log_path),
         "logPath": str(job_log_path),
         "tracePath": active_trace_path(),
@@ -1171,11 +1234,30 @@ def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger:
         status="rollback_attempted",
         message=f"Attempting rollback to {previous_artifact['version']}.",
         job_logger=job_logger,
+        phase_key="recovery",
+        checkpoint_key="attempting_rollback",
     )
 
     previous_state = build_runtime_state(load_appliance_state(), job)
     install_deb(Path(previous_artifact["debPath"]), job_logger)
-    restart_stack(previous_state, job_logger, version_override=previous_artifact["version"])
+    update_job(
+        job,
+        status="rollback_attempted",
+        message="Pulling container images for rollback.",
+        job_logger=job_logger,
+        phase_key="recovery",
+        checkpoint_key="attempting_rollback",
+    )
+    pull_stack_images(previous_state, job_logger, version_override=previous_artifact["version"])
+    update_job(
+        job,
+        status="rollback_attempted",
+        message=f"Restarting Sentinel services for rollback to {previous_artifact['version']}.",
+        job_logger=job_logger,
+        phase_key="recovery",
+        checkpoint_key="attempting_rollback",
+    )
+    restart_stack_services(previous_state, job_logger, version_override=previous_artifact["version"])
     wait_for_health(job_logger, expected_version=previous_artifact["version"])
     hotspot_warning = run_shared_hotspot_recovery(
         job_logger,
@@ -1218,6 +1300,8 @@ def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger:
         ),
         job_logger=job_logger,
         finished=True,
+        phase_key="recovery",
+        checkpoint_key="rollback_completed",
     )
     trace("warning", f"Rollback completed successfully to {previous_artifact['version']}.")
 
@@ -1277,9 +1361,28 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         status="authorized",
         message=f"Update request for {target_version} was authorized.",
         job_logger=job_logger,
+        phase_key="prepare_update",
+        checkpoint_key="request_authorized",
     )
 
-    update_job(job, status="staging", message="Preparing update artifacts and rollback metadata.", job_logger=job_logger)
+    update_job(
+        job,
+        status="staging",
+        message="Creating a pre-update backup of Sentinel and Wiki.js.",
+        job_logger=job_logger,
+        phase_key="protect_current_system",
+        checkpoint_key="creating_pre_update_backup",
+    )
+    backup_metadata = prepare_backup(job, job_logger)
+
+    update_job(
+        job,
+        status="staging",
+        message=f"Preparing rollback artifacts for {current_version}.",
+        job_logger=job_logger,
+        phase_key="protect_current_system",
+        checkpoint_key="preparing_rollback_artifact",
+    )
     previous_artifact: dict[str, str] | None = None
     try:
         previous_artifact = cache_verified_release(current_version, job_logger, purpose="rollback")
@@ -1291,11 +1394,25 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         record_warning(job, f"Rollback artifact preparation was skipped for {current_version}: {error}")
         job["rollback"]["result"] = "not_available"
 
-    update_job(job, status="downloading", message=f"Downloading Sentinel release {target_version}.", job_logger=job_logger)
+    update_job(
+        job,
+        status="downloading",
+        message=f"Downloading Sentinel release {target_version}.",
+        job_logger=job_logger,
+        phase_key="install_release",
+        checkpoint_key="downloading_release",
+    )
     target_artifact = cache_verified_release(target_version, job_logger, purpose="target release")
     run_update_disk_preflight(target_artifact=target_artifact, job_logger=job_logger)
 
-    update_job(job, status="verifying", message=f"Verifying release artifacts for {target_version}.", job_logger=job_logger)
+    update_job(
+        job,
+        status="verifying",
+        message=f"Verifying release checksums and manifests for {target_version}.",
+        job_logger=job_logger,
+        phase_key="install_release",
+        checkpoint_key="verifying_release_artifacts",
+    )
     job["artifact"] = {"target": target_artifact}
     target_manifest_path = write_artifact_manifest(
         target_artifact,
@@ -1314,7 +1431,6 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         if previous_manifest_path is not None:
             job["artifact"]["previous"]["manifestPath"] = previous_manifest_path
 
-    backup_metadata = prepare_backup(job, job_logger)
     backup_output_dir = backup_metadata.get("outputDir")
     if isinstance(backup_output_dir, str) and backup_output_dir:
         output_dir = Path(backup_output_dir)
@@ -1329,19 +1445,64 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
     save_appliance_state(current_state)
     persist_job(job)
 
-    update_job(job, status="installing", message=f"Installing Sentinel package {target_version}.", job_logger=job_logger)
+    update_job(
+        job,
+        status="installing",
+        message=f"Installing Sentinel package {target_version}.",
+        job_logger=job_logger,
+        phase_key="install_release",
+        checkpoint_key="installing_package",
+    )
     install_deb(Path(target_artifact["debPath"]), job_logger)
 
-    update_job(job, status="post_install", message="Applying updated appliance configuration.", job_logger=job_logger)
-    restart_stack(runtime_state, job_logger, version_override=target_version)
+    update_job(
+        job,
+        status="post_install",
+        message="Pulling updated container images.",
+        job_logger=job_logger,
+        phase_key="bring_services_back",
+        checkpoint_key="pulling_container_images",
+    )
+    pull_stack_images(runtime_state, job_logger, version_override=target_version)
 
-    update_job(job, status="restarting", message="Restarting Sentinel services.", job_logger=job_logger)
+    update_job(
+        job,
+        status="restarting",
+        message="Restarting Sentinel services.",
+        job_logger=job_logger,
+        phase_key="bring_services_back",
+        checkpoint_key="restarting_services",
+    )
+    restart_stack_services(runtime_state, job_logger, version_override=target_version)
 
-    update_job(job, status="health_check", message="Running post-update verification.", job_logger=job_logger)
-    run_backend_post_update(runtime_state, job_logger, version_override=target_version)
+    update_job(
+        job,
+        status="health_check",
+        message="Applying safe database migrations.",
+        job_logger=job_logger,
+        phase_key="verify_and_finalize",
+        checkpoint_key="applying_database_migrations",
+    )
+    run_backend_post_update(job, runtime_state, job_logger, version_override=target_version)
+    update_job(
+        job,
+        status="health_check",
+        message="Waiting for Sentinel health checks to pass.",
+        job_logger=job_logger,
+        phase_key="verify_and_finalize",
+        checkpoint_key="waiting_for_health_endpoint",
+    )
     wait_for_health(job_logger, expected_version=target_version)
     job["healthzPassed"] = True
     job["migration"] = {"mode": "deploy", "status": "completed"}
+    update_job(
+        job,
+        status="health_check",
+        message="Checking hosted hotspot recovery.",
+        job_logger=job_logger,
+        phase_key="verify_and_finalize",
+        checkpoint_key="recovering_hotspot",
+    )
     hotspot_warning = run_shared_hotspot_recovery(
         job_logger,
         context=f"update to {target_version}",
@@ -1383,6 +1544,8 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         ),
         job_logger=job_logger,
         finished=True,
+        phase_key="verify_and_finalize",
+        checkpoint_key="update_completed",
     )
 
 
@@ -1397,7 +1560,7 @@ def run_current_job() -> int:
         return 0
 
     job = load_job(CURRENT_JOB_PATH)
-    if is_terminal_status(str(job.get("status", ""))):
+    if is_terminal_job(job):
         LOGGER.info("Current job %s is already terminal; nothing to do.", job.get("jobId"))
         trace("info", f"Current job {job.get('jobId')} is already terminal; nothing to do.")
         return 0
@@ -1445,6 +1608,8 @@ def run_current_job() -> int:
             failure_summary=failure_summary,
             job_logger=job_logger,
             finished=not should_rollback,
+            phase_key="recovery",
+            checkpoint_key="update_failed",
         )
 
         if should_rollback:
@@ -1473,6 +1638,8 @@ def run_current_job() -> int:
                         failure_summary=sanitize_failure_summary(str(rollback_error)),
                         job_logger=job_logger,
                         finished=True,
+                        phase_key="recovery",
+                        checkpoint_key="rollback_failed",
                     )
             else:
                 trace(
@@ -1501,6 +1668,8 @@ def run_current_job() -> int:
                     failure_summary="Rollback metadata was unavailable.",
                     job_logger=job_logger,
                     finished=True,
+                    phase_key="recovery",
+                    checkpoint_key="rollback_failed",
                 )
         return 1
     finally:

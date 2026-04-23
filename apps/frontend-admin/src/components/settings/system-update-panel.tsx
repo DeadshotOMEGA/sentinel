@@ -30,43 +30,20 @@ import {
 } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
-import { getPreferredUpdateTargetVersion } from './system-update-panel.logic'
-
-const PRIMARY_FLOW: readonly SystemUpdateJobStatus[] = [
-  'requested',
-  'authorized',
-  'staging',
-  'downloading',
-  'verifying',
-  'installing',
-  'post_install',
-  'restarting',
-  'health_check',
-  'completed',
-]
+import {
+  formatSystemUpdateStatusLabel,
+  getPreferredUpdateTargetVersion,
+  getSystemUpdateActiveCheckpoint,
+  getSystemUpdatePhaseProgress,
+  isSystemUpdateJobFailure,
+  isSystemUpdateJobTerminal,
+} from './system-update-panel.logic'
 
 const FAILURE_FLOW: readonly SystemUpdateJobStatus[] = [
   'failed',
   'rollback_attempted',
   'rolled_back',
 ]
-
-function isTerminalStatus(status: SystemUpdateJobStatus): boolean {
-  return (
-    status === 'completed' ||
-    status === 'failed' ||
-    status === 'rollback_attempted' ||
-    status === 'rolled_back'
-  )
-}
-
-function isFailureStatus(status: SystemUpdateJobStatus): boolean {
-  return status === 'failed' || status === 'rollback_attempted' || status === 'rolled_back'
-}
-
-function formatStepLabel(status: SystemUpdateJobStatus): string {
-  return status.replace(/_/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase())
-}
 
 function formatTimestamp(value: string | null): string {
   if (!value) {
@@ -81,40 +58,16 @@ function formatTimestamp(value: string | null): string {
   return timestamp.toLocaleString()
 }
 
-function getPrimaryStepDescription(
-  step: SystemUpdateJobStatus,
-  currentJob: SystemUpdateJob | null
-): string {
-  if (!currentJob) {
-    return step === 'completed' ? 'Sentinel returns to steady state after verification.' : 'Pending'
-  }
-
-  const currentIndex = PRIMARY_FLOW.indexOf(currentJob.status)
-  const stepIndex = PRIMARY_FLOW.indexOf(step)
-  const isActive = currentJob.status === step
-  const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
-
-  if (isActive) {
-    return currentJob.message
-  }
-
-  if (isCompleted) {
-    if (step === 'completed' && currentJob.status === 'completed') {
-      return currentJob.message
-    }
-
-    return 'Completed'
-  }
-
-  return step === 'completed' ? 'Sentinel returns to steady state after verification.' : 'Pending'
-}
-
 function getCardStatus(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job && isFailureStatus(job.status)) {
+  if (isSystemUpdateJobFailure(job)) {
     return 'warning' as const
   }
 
-  if (job && !isTerminalStatus(job.status)) {
+  if (job?.phase.kind === 'recovery') {
+    return 'warning' as const
+  }
+
+  if (job && !isSystemUpdateJobTerminal(job)) {
     return 'info' as const
   }
 
@@ -126,11 +79,15 @@ function getCardStatus(job: SystemUpdateJob | null, updateAvailable: boolean) {
 }
 
 function getSummaryTone(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job && isFailureStatus(job.status)) {
+  if (isSystemUpdateJobFailure(job)) {
     return 'warning' as const
   }
 
-  if (job && !isTerminalStatus(job.status)) {
+  if (job?.phase.kind === 'recovery') {
+    return 'warning' as const
+  }
+
+  if (job && !isSystemUpdateJobTerminal(job)) {
     return 'info' as const
   }
 
@@ -142,8 +99,12 @@ function getSummaryTone(job: SystemUpdateJob | null, updateAvailable: boolean) {
 }
 
 function getSummaryHeading(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job && !isTerminalStatus(job.status)) {
-    return `Update ${job.targetVersion} is ${formatStepLabel(job.status).toLowerCase()}`
+  if (job && !isSystemUpdateJobTerminal(job)) {
+    if (job.phase.kind === 'recovery') {
+      return 'Rollback in progress'
+    }
+
+    return `Updating to ${job.targetVersion}`
   }
 
   if (job?.status === 'rolled_back') {
@@ -185,6 +146,14 @@ function getTerminalJobBadgeStatus(status: SystemUpdateJobStatus) {
 
 function getUpdateStateBadge(job: SystemUpdateJob | null, updateAvailable: boolean) {
   if (job) {
+    if (!isSystemUpdateJobTerminal(job)) {
+      if (job.phase.kind === 'recovery') {
+        return { status: 'warning' as const, label: job.phase.label }
+      }
+
+      return { status: 'info' as const, label: job.phase.label }
+    }
+
     if (job.status === 'completed') {
       return { status: 'success' as const, label: 'Completed' }
     }
@@ -194,10 +163,10 @@ function getUpdateStateBadge(job: SystemUpdateJob | null, updateAvailable: boole
     }
 
     if (job.status === 'rollback_attempted' || job.status === 'rolled_back') {
-      return { status: 'warning' as const, label: formatStepLabel(job.status) }
+      return { status: 'warning' as const, label: formatSystemUpdateStatusLabel(job.status) }
     }
 
-    return { status: 'info' as const, label: formatStepLabel(job.status) }
+    return { status: 'info' as const, label: formatSystemUpdateStatusLabel(job.status) }
   }
 
   if (updateAvailable) {
@@ -208,7 +177,11 @@ function getUpdateStateBadge(job: SystemUpdateJob | null, updateAvailable: boole
 }
 
 function getNextActionGuidance(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job && !isTerminalStatus(job.status)) {
+  if (job?.phase.kind === 'recovery' && !isSystemUpdateJobTerminal(job)) {
+    return 'Sentinel is actively attempting recovery. Keep this page open if you want live progress.'
+  }
+
+  if (job && !isSystemUpdateJobTerminal(job)) {
     return 'The appliance updater is running on the host and will keep going if this page reconnects.'
   }
 
@@ -236,7 +209,7 @@ function shouldAutoOpenTraceLog(job: SystemUpdateJob | null): boolean {
     return false
   }
 
-  return !isTerminalStatus(job.status) || isFailureStatus(job.status)
+  return !isSystemUpdateJobTerminal(job) || isSystemUpdateJobFailure(job)
 }
 
 export function SystemUpdatePanel() {
@@ -244,20 +217,28 @@ export function SystemUpdatePanel() {
   const canStartUpdates = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
   const searchParams = useSearchParams()
   const traceRequested = searchParams.get('trace') === 'open'
+  const [isHydrated, setIsHydrated] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [tracePanelOpen, setTracePanelOpen] = useState(traceRequested)
 
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
   const systemUpdateQuery = useSystemUpdateStatus({
-    enabled: Boolean(member),
+    enabled: isHydrated && Boolean(member),
     refetchIntervalMs: 5_000,
   })
   const startSystemUpdate = useStartSystemUpdate()
 
   const status = systemUpdateQuery.data ?? null
   const currentJob = status?.currentJob ?? null
-  const hasActiveJob = currentJob ? !isTerminalStatus(currentJob.status) : false
+  const awaitingSessionContext = !isHydrated || (!member && !status && !systemUpdateQuery.isError)
+  const hasActiveJob = currentJob ? !isSystemUpdateJobTerminal(currentJob) : false
   const autoOpenTraceLog = shouldAutoOpenTraceLog(currentJob)
   const preferredTargetVersion = status ? getPreferredUpdateTargetVersion(status, currentJob) : null
+  const phaseProgress = getSystemUpdatePhaseProgress(currentJob)
+  const activeCheckpoint = getSystemUpdateActiveCheckpoint(currentJob)
   const retryingLastTarget =
     status !== null && status.latestVersion === null && preferredTargetVersion !== null
   const startActionLabel =
@@ -278,7 +259,7 @@ export function SystemUpdatePanel() {
     !hasActiveJob &&
     !startSystemUpdate.isPending
   const traceQuery = useSystemUpdateTrace({
-    enabled: Boolean(member) && canStartUpdates && tracePanelOpen,
+    enabled: isHydrated && Boolean(member) && canStartUpdates && tracePanelOpen,
     refetchIntervalMs: tracePanelOpen && hasActiveJob ? 5_000 : false,
   })
 
@@ -326,6 +307,28 @@ export function SystemUpdatePanel() {
     )
   }
 
+  if (awaitingSessionContext) {
+    return (
+      <AppCard status="info">
+        <AppCardHeader>
+          <AppCardTitle className="flex items-center gap-(--space-2)">
+            <ServerCog className="h-5 w-5" />
+            Updates
+          </AppCardTitle>
+          <AppCardDescription>
+            Restoring your authenticated Sentinel session before loading updater status.
+          </AppCardDescription>
+        </AppCardHeader>
+        <AppCardContent>
+          <div className="flex items-center gap-(--space-3) text-sm text-base-content/70">
+            <LoadingSpinner size="sm" className="text-base-content/60" />
+            <span>Loading update progress from the appliance host.</span>
+          </div>
+        </AppCardContent>
+      </AppCard>
+    )
+  }
+
   if (systemUpdateQuery.isError || !status) {
     return (
       <AppCard status="error">
@@ -351,8 +354,12 @@ export function SystemUpdatePanel() {
 
   const summaryTone = getSummaryTone(currentJob, status.updateAvailable)
   const summaryHeading = getSummaryHeading(currentJob, status.updateAvailable)
-  const showLiveProgress = currentJob ? !isTerminalStatus(currentJob.status) : false
+  const showLiveProgress = currentJob ? !isSystemUpdateJobTerminal(currentJob) : false
   const updateStateBadge = getUpdateStateBadge(currentJob, status.updateAvailable)
+  const activeCheckpointPanelClass =
+    currentJob?.phase.kind === 'recovery'
+      ? 'border-warning/35 bg-warning-fadded text-warning-fadded-content'
+      : 'border-info/35 bg-info-fadded text-info-fadded-content'
 
   return (
     <div className="space-y-4" data-testid={TID.settings.updates.panel}>
@@ -421,9 +428,17 @@ export function SystemUpdatePanel() {
           )}
 
           {currentJob?.status === 'rollback_attempted' && (
-            <AppAlert tone="warning" heading="Rollback needs operator follow-up">
-              Sentinel attempted a rollback but did not finish cleanly. Review the updater logs and
-              appliance state before retrying another update.
+            <AppAlert
+              tone="warning"
+              heading={
+                currentJob.finishedAt === null
+                  ? 'Rollback is in progress'
+                  : 'Rollback needs operator follow-up'
+              }
+            >
+              {currentJob.finishedAt === null
+                ? 'Sentinel is actively rolling back to the last known good release.'
+                : 'Sentinel attempted a rollback but did not finish cleanly. Review the updater logs and appliance state before retrying another update.'}
             </AppAlert>
           )}
 
@@ -519,7 +534,7 @@ export function SystemUpdatePanel() {
               {currentJob && (
                 <div className="mt-4 rounded-box border border-base-300 bg-base-200 p-(--space-4)">
                   <div className="flex items-center gap-(--space-2)">
-                    {isFailureStatus(currentJob.status) ? (
+                    {isSystemUpdateJobFailure(currentJob) ? (
                       <ShieldAlert className="h-4 w-4 text-warning" />
                     ) : (
                       <ServerCog className="h-4 w-4 text-info" />
@@ -542,8 +557,18 @@ export function SystemUpdatePanel() {
                       <dd className="text-right">{formatTimestamp(currentJob.startedAt)}</dd>
                     </div>
                     <div className="flex items-start justify-between gap-(--space-3)">
+                      <dt className="text-base-content/60">Phase</dt>
+                      <dd className="text-right">{currentJob.phase.label}</dd>
+                    </div>
+                    <div className="flex items-start justify-between gap-(--space-3)">
+                      <dt className="text-base-content/60">Checkpoint</dt>
+                      <dd className="text-right">{currentJob.checkpoint.label}</dd>
+                    </div>
+                    <div className="flex items-start justify-between gap-(--space-3)">
                       <dt className="text-base-content/60">Status</dt>
-                      <dd className="text-right">{formatStepLabel(currentJob.status)}</dd>
+                      <dd className="text-right">
+                        {formatSystemUpdateStatusLabel(currentJob.status)}
+                      </dd>
                     </div>
                   </dl>
                   {currentJob.failureSummary && (
@@ -573,47 +598,71 @@ export function SystemUpdatePanel() {
 
               {showLiveProgress ? (
                 <>
-                  <ul className="steps steps-vertical mt-4 w-full">
-                    {PRIMARY_FLOW.map((step) => {
-                      const currentIndex = currentJob ? PRIMARY_FLOW.indexOf(currentJob.status) : -1
-                      const stepIndex = PRIMARY_FLOW.indexOf(step)
-                      const isActive = currentJob?.status === step
-                      const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
-
-                      return (
+                  {currentJob?.phase.kind === 'primary' && (
+                    <ul className="steps steps-vertical mt-4 w-full">
+                      {phaseProgress.map((phase) => (
                         <li
-                          key={step}
-                          className={`step ${isCompleted || isActive ? 'step-primary' : ''}`}
+                          key={phase.key}
+                          className={`step ${phase.state !== 'pending' ? 'step-primary' : ''}`}
                         >
                           <div className="text-left">
-                            <div className="font-medium">{formatStepLabel(step)}</div>
-                            <div className="text-xs text-base-content/60">
-                              {getPrimaryStepDescription(step, currentJob)}
-                            </div>
+                            <div className="font-medium">{phase.label}</div>
+                            <div className="text-xs text-base-content/60">{phase.caption}</div>
                           </div>
                         </li>
-                      )
-                    })}
-                  </ul>
+                      ))}
+                    </ul>
+                  )}
 
-                  {currentJob && isFailureStatus(currentJob.status) && (
+                  {activeCheckpoint && currentJob && (
+                    <div
+                      className={`mt-4 rounded-box border p-(--space-4) ${activeCheckpointPanelClass}`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide opacity-70">
+                            Active checkpoint
+                          </p>
+                          <p className="mt-1 text-sm font-semibold">{activeCheckpoint.label}</p>
+                        </div>
+                        <AppBadge
+                          status={currentJob.phase.kind === 'recovery' ? 'warning' : 'info'}
+                          size="sm"
+                        >
+                          {currentJob.phase.label}
+                        </AppBadge>
+                      </div>
+                      <p className="mt-3 text-sm">{activeCheckpoint.detail}</p>
+                    </div>
+                  )}
+
+                  {currentJob && currentJob.phase.kind === 'recovery' && (
                     <div className="mt-4 border-t border-base-300 pt-(--space-4)">
                       <h4 className="text-sm font-semibold">Recovery states</h4>
                       <ul className="steps steps-vertical mt-3 w-full">
                         {FAILURE_FLOW.map((step) => {
                           const currentIndex = FAILURE_FLOW.indexOf(currentJob.status)
                           const stepIndex = FAILURE_FLOW.indexOf(step)
-                          const isCompleted = currentIndex >= 0 && stepIndex <= currentIndex
+                          const isActive = currentJob.status === step
+                          const isCompleted =
+                            currentIndex >= 0 &&
+                            (stepIndex < currentIndex ||
+                              (stepIndex === currentIndex && currentJob.finishedAt !== null))
 
                           return (
-                            <li key={step} className={`step ${isCompleted ? 'step-warning' : ''}`}>
+                            <li
+                              key={step}
+                              className={`step ${isCompleted || isActive ? 'step-warning' : ''}`}
+                            >
                               <div className="text-left">
                                 <div className="flex items-center gap-(--space-2)">
                                   {step === 'rolled_back' && <RotateCcw className="h-3.5 w-3.5" />}
-                                  <span className="font-medium">{formatStepLabel(step)}</span>
+                                  <span className="font-medium">
+                                    {formatSystemUpdateStatusLabel(step)}
+                                  </span>
                                 </div>
                                 <div className="text-xs text-base-content/60">
-                                  {step === currentJob.status ? currentJob.message : 'Not reached'}
+                                  {isActive ? currentJob.message : 'Not reached'}
                                 </div>
                               </div>
                             </li>
@@ -632,7 +681,7 @@ export function SystemUpdatePanel() {
                         <p className="text-sm text-base-content/70">{currentJob.message}</p>
                       </div>
                       <AppBadge status={getTerminalJobBadgeStatus(currentJob.status)} size="sm">
-                        {formatStepLabel(currentJob.status)}
+                        {formatSystemUpdateStatusLabel(currentJob.status)}
                       </AppBadge>
                     </div>
 
@@ -660,6 +709,18 @@ export function SystemUpdatePanel() {
                         <dd className="mt-1 text-base-content">
                           {currentJob.requestedBy.memberName}
                         </dd>
+                      </div>
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Final phase
+                        </dt>
+                        <dd className="mt-1 text-base-content">{currentJob.phase.label}</dd>
+                      </div>
+                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
+                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                          Final checkpoint
+                        </dt>
+                        <dd className="mt-1 text-base-content">{currentJob.checkpoint.label}</dd>
                       </div>
                       <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
                         <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
