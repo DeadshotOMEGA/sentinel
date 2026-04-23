@@ -3,7 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
-UPGRADE_LAUNCHER="${SCRIPT_DIR}/upgrade-launcher.sh"
 
 log() {
   printf '[auto-upgrade] %s\n' "$*"
@@ -51,9 +50,39 @@ fetch_latest_release_tag() {
     | head -n1
 }
 
-[[ -x "${UPGRADE_LAUNCHER}" ]] || die "Missing executable upgrade launcher: ${UPGRADE_LAUNCHER}"
+resolve_updater_cli() {
+  if [[ -x "/usr/lib/sentinel/sentinel-updater" ]]; then
+    printf '%s\n' "/usr/lib/sentinel/sentinel-updater"
+    return 0
+  fi
+
+  if [[ -x "${SCRIPT_DIR}/deb/assets/usr/lib/sentinel/sentinel-updater" ]]; then
+    printf '%s\n' "${SCRIPT_DIR}/deb/assets/usr/lib/sentinel/sentinel-updater"
+    return 0
+  fi
+
+  die "Unable to locate the packaged Sentinel updater CLI."
+}
+
+run_updater_as_root() {
+  local updater_cli="${1}"
+  shift
+
+  if [[ "${EUID}" -eq 0 ]]; then
+    env SENTINEL_DEPLOY_DIR="${SCRIPT_DIR}" "${updater_cli}" "$@"
+  else
+    sudo env SENTINEL_DEPLOY_DIR="${SCRIPT_DIR}" "${updater_cli}" "$@"
+  fi
+}
+
+json_field() {
+  local field="${1}"
+  python3 -c 'import json, sys; payload = json.load(sys.stdin); value = payload.get(sys.argv[1]); print("" if value is None else value)' "${field}"
+}
+
 command -v curl >/dev/null 2>&1 || die "curl is required"
 
+UPDATER_CLI="$(resolve_updater_cli)"
 GH_OWNER="${GH_OWNER:-$(env_value GHCR_OWNER deadshotomega)}"
 CURRENT_VERSION="$(env_value SENTINEL_VERSION)"
 LATEST_VERSION="$(fetch_latest_release_tag "${GH_OWNER}" || true)"
@@ -70,26 +99,31 @@ WITH_OBS="$(normalize_bool "${AUTO_UPGRADE_WITH_OBS:-true}")"
 ALLOW_GRAFANA_LAN="$(normalize_bool "${AUTO_UPGRADE_ALLOW_GRAFANA_LAN:-true}")"
 ALLOW_WIKI_LAN="$(normalize_bool "${AUTO_UPGRADE_ALLOW_WIKI_LAN:-true}")"
 
-UPGRADE_ARGS=(--latest --yes)
+QUEUE_ARGS=(enqueue-manual-update --version "${LATEST_VERSION}" --source auto-upgrade --requested-by "Automatic upgrade")
 
 if [[ "${WITH_OBS}" == "true" ]]; then
-  UPGRADE_ARGS+=(--with-obs)
+  QUEUE_ARGS+=(--with-obs)
 else
-  UPGRADE_ARGS+=(--without-obs)
+  QUEUE_ARGS+=(--without-obs)
 fi
 
 if [[ "${ALLOW_GRAFANA_LAN}" == "true" ]]; then
-  UPGRADE_ARGS+=(--allow-grafana-lan)
+  QUEUE_ARGS+=(--allow-grafana-lan)
 else
-  UPGRADE_ARGS+=(--disallow-grafana-lan)
+  QUEUE_ARGS+=(--disallow-grafana-lan)
 fi
 
 if [[ "${ALLOW_WIKI_LAN}" == "true" ]]; then
-  UPGRADE_ARGS+=(--allow-wiki-lan)
+  QUEUE_ARGS+=(--allow-wiki-lan)
 else
-  UPGRADE_ARGS+=(--disallow-wiki-lan)
+  QUEUE_ARGS+=(--disallow-wiki-lan)
 fi
 
-log "Current ${CURRENT_VERSION}; latest ${LATEST_VERSION}. Starting automated upgrade."
-"${UPGRADE_LAUNCHER}" "${UPGRADE_ARGS[@]}"
-log "Automated upgrade completed."
+log "Current ${CURRENT_VERSION}; latest ${LATEST_VERSION}. Queueing automated upgrade."
+QUEUE_JSON="$(run_updater_as_root "${UPDATER_CLI}" "${QUEUE_ARGS[@]}")"
+JOB_ID="$(printf '%s' "${QUEUE_JSON}" | json_field jobId)"
+LOG_PATH="$(printf '%s' "${QUEUE_JSON}" | json_field logPath)"
+TRACE_PATH="$(printf '%s' "${QUEUE_JSON}" | json_field tracePath)"
+log "Automated upgrade request accepted as job ${JOB_ID}."
+[[ -n "${LOG_PATH}" ]] && log "Log path: ${LOG_PATH}"
+[[ -n "${TRACE_PATH}" ]] && log "Trace path: ${TRACE_PATH}"

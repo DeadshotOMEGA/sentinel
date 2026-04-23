@@ -160,7 +160,7 @@ Install/update now provisions hotspot and update helpers:
 - a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to the approved hotspot, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
 - a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
-- a host-side update queue watched by systemd so the webapp can request a non-interactive `--latest` upgrade run
+- a packaged updater bridge/socket pair so the webapp and local CLI wrappers both use the same canonical update engine
 
 Relevant runtime paths:
 
@@ -169,16 +169,19 @@ Relevant runtime paths:
 - queued recovery requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/requests`
 - processed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/processed`
 - failed requests: `/opt/sentinel/deploy/runtime/hotspot-recovery/failed`
-- queued system-update requests: `/opt/sentinel/deploy/runtime/system-update/requests`
-- processed system-update requests: `/opt/sentinel/deploy/runtime/system-update/processed`
-- failed system-update requests: `/opt/sentinel/deploy/runtime/system-update/failed`
+- updater state root: `/var/lib/sentinel/updater`
+- updater downloads: `/var/lib/sentinel/updater/downloads`
+- updater reports: `/var/lib/sentinel/updater/jobs`
+- updater traces: `/var/lib/sentinel/updater/traces`
 
 Relevant systemd units:
 
 - `sentinel-host-hotspot-recovery.path`
 - `sentinel-host-hotspot-recovery.service`
-- `sentinel-system-update-request.path`
-- `sentinel-system-update-request.service`
+- `sentinel-update-bridge.socket`
+- `sentinel-update-bridge.service`
+- `sentinel-updater.service`
+- `sentinel-updater-prune.timer`
 
 ## Host network telemetry
 
@@ -208,8 +211,10 @@ systemd units installed during install/update/rollback:
 - `sentinel-network-status.timer`
 - `sentinel-host-hotspot-recovery.path`
 - `sentinel-host-hotspot-recovery.service`
-- `sentinel-system-update-request.path`
-- `sentinel-system-update-request.service`
+- `sentinel-update-bridge.socket`
+- `sentinel-update-bridge.service`
+- `sentinel-updater.service`
+- `sentinel-updater-prune.timer`
 
 ## Install and Update
 
@@ -230,9 +235,9 @@ This guided flow handles both install and update:
 
 - prompts for the workflow and release version,
 - runs hotspot provisioning/recovery preflight with explicit retry/continue/cancel choices,
-- downloads the matching Debian package from GitHub Releases,
-- installs the package,
-- runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`, including shared hotspot recovery.
+- queues the canonical packaged updater engine for the requested version,
+- writes unified updater job state, traces, and reports under `/var/lib/sentinel/updater`,
+- runs `/opt/sentinel/deploy/update.sh --version vX.Y.Z`, which is now a compatibility wrapper around the packaged updater.
 - `--no-firewall`
 
 ## Automatic upgrade helper
@@ -248,7 +253,7 @@ Behavior:
 
 - reads current `SENTINEL_VERSION` from `.env`
 - checks latest GitHub release for the configured owner (`GHCR_OWNER`)
-- runs non-interactive `upgrade-launcher.sh --latest --yes` only when a newer version exists
+- queues `sentinel-updater enqueue-manual-update --source auto-upgrade` only when a newer version exists
 - applies `AUTO_UPGRADE_WITH_OBS`, `AUTO_UPGRADE_ALLOW_GRAFANA_LAN`, `AUTO_UPGRADE_ALLOW_WIKI_LAN` when set in `.env`
 
 To schedule it, run the script from cron or a systemd timer as root.
@@ -276,7 +281,7 @@ cd /opt/sentinel/deploy
 Defaults:
 
 - Scope defaults to `all` and writes both Sentinel + Wiki dump files.
-- Output directory defaults to `/opt/sentinel/deploy/backups`.
+- Output directory defaults to `/var/lib/sentinel/updater/backups/manual`.
 
 Single-scope examples:
 
@@ -311,6 +316,8 @@ Non-interactive restore:
 ```bash
 ./restore.sh --scope sentinel --file /opt/sentinel/backups/file.dump --yes
 ```
+
+By default, restore now creates a fresh pre-restore backup unless `--no-pre-restore-backup` is passed.
 
 ## Service management
 

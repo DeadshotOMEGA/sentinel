@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily Sentinel updater retention prune
+
+[Timer]
+OnBootSec=15m
+OnUnitActiveSec=1d
+RandomizedDelaySec=30m
+Persistent=true
+Unit=sentinel-updater-prune.service
+
+[Install]
+WantedBy=timers.target

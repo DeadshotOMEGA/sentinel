@@ -8,13 +8,16 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
@@ -22,6 +25,7 @@ if str(CURRENT_DIR) not in sys.path:
 
 from sentinel_update_common import (
     APPLIANCE_ENV_PATH,
+    REPORT_SCHEMA_VERSION,
     BACKUPS_DIR,
     CURRENT_JOB_PATH,
     DEPLOY_DIR,
@@ -30,12 +34,17 @@ from sentinel_update_common import (
     JOBS_DIR,
     LOCK_PATH,
     LOG_ROOT,
+    STATE_ROOT,
+    TRACE_LOG_PATH,
+    TRACE_ARCHIVE_DIR,
     VERSION_PATTERN,
+    archive_and_reset_trace,
     append_trace_line,
     compose_command,
     ensure_runtime_directories,
     is_terminal_status,
     load_appliance_state,
+    load_trace_session,
     normalize_version_tag,
     read_env_file,
     read_json_file,
@@ -61,6 +70,13 @@ COMMAND_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_COMMAND_TIMEOUT_SECONDS",
 HEALTH_TIMEOUT_SECONDS = int(os.environ.get("SENTINEL_HEALTH_TIMEOUT_SECONDS", "240"))
 CHECKSUM_NAME_PATTERN = re.compile(r"(sha256|checksum)", re.IGNORECASE)
 TRACE_COMPONENT = "updater"
+UPDATER_UNIT = os.environ.get("SENTINEL_UPDATER_UNIT", "sentinel-updater.service")
+DEFAULT_MANUAL_REQUESTED_BY = os.environ.get("SENTINEL_UPDATER_MANUAL_REQUESTED_BY", "Local operator")
+DEFAULT_PRUNE_KEEP_LOG_DAYS = int(os.environ.get("SENTINEL_PRUNE_KEEP_LOG_DAYS", "30"))
+DEFAULT_PRUNE_KEEP_TRACE_DAYS = int(os.environ.get("SENTINEL_PRUNE_KEEP_TRACE_DAYS", "90"))
+DEFAULT_DISK_SAFETY_MARGIN_BYTES = int(
+    os.environ.get("SENTINEL_DISK_SAFETY_MARGIN_BYTES", str(1024 * 1024 * 1024))
+)
 
 
 class UpdaterError(RuntimeError):
@@ -93,6 +109,167 @@ def configure_logging() -> None:
     )
 
 
+def utc_datetime() -> datetime:
+    return datetime.now(tz=timezone.utc)
+
+
+def parse_timestamp(value: str | None) -> datetime | None:
+    if value is None:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def duration_seconds(started_at: str | None, finished_at: str | None) -> int | None:
+    started = parse_timestamp(started_at)
+    finished = parse_timestamp(finished_at)
+    if started is None or finished is None:
+        return None
+    return max(0, int((finished - started).total_seconds()))
+
+
+def humanize_bytes(value: int) -> str:
+    units = ["B", "KiB", "MiB", "GiB", "TiB"]
+    size = float(max(value, 0))
+    unit = units[0]
+    for candidate in units:
+        unit = candidate
+        if size < 1024 or candidate == units[-1]:
+            break
+        size /= 1024
+    if unit == "B":
+        return f"{int(size)} {unit}"
+    return f"{size:.1f} {unit}"
+
+
+def sort_timestamp(payload: dict[str, Any]) -> datetime:
+    for key in ("finishedAt", "startedAt", "requestedAt", "createdAt"):
+        raw = payload.get(key)
+        if isinstance(raw, str):
+            parsed = parse_timestamp(raw)
+            if parsed is not None:
+                return parsed
+    return datetime.fromtimestamp(0, tz=timezone.utc)
+
+
+def record_warning(job: dict[str, Any], message: str) -> None:
+    warnings = job.setdefault("warnings", [])
+    if not isinstance(warnings, list):
+        warnings = []
+        job["warnings"] = warnings
+    if message not in warnings:
+        warnings.append(message)
+    trace("warning", message)
+
+
+def set_next_action(job: dict[str, Any], message: str | None) -> None:
+    job["nextAction"] = message
+
+
+def active_trace_path() -> str:
+    return str(TRACE_LOG_PATH)
+
+
+def protected_versions(state: dict[str, Any]) -> set[str]:
+    versions = {
+        normalize_version_tag(str(state.get("currentVersion", ""))) or "",
+        normalize_version_tag(str(state.get("lastKnownGoodVersion", ""))) or "",
+        normalize_version_tag(str(state.get("lastAttemptedVersion", ""))) or "",
+    }
+    return {value for value in versions if value}
+
+
+def latest_backup_size_bytes() -> int:
+    latest_size = 0
+    if not BACKUPS_DIR.exists():
+        return latest_size
+
+    for path in BACKUPS_DIR.rglob("*"):
+        if path.is_file():
+            try:
+                latest_size = max(latest_size, path.stat().st_size)
+            except OSError:
+                continue
+    return latest_size
+
+
+def disk_usage_available(path: Path) -> int:
+    try:
+        return shutil.disk_usage(path).free
+    except FileNotFoundError:
+        return shutil.disk_usage(path.parent).free
+
+
+def ensure_free_space(path: Path, required_bytes: int, *, label: str) -> None:
+    available_bytes = disk_usage_available(path)
+    if available_bytes < required_bytes:
+        raise UpdaterError(
+            "staging",
+            f"Insufficient free space for {label}: need {humanize_bytes(required_bytes)}, "
+            f"have {humanize_bytes(available_bytes)} at {path}.",
+        )
+
+
+def report_result_for_job(job: dict[str, Any]) -> str | None:
+    status = str(job.get("status", "")).strip()
+    if status == "completed":
+        return "degraded" if job.get("warnings") else "success"
+    if status == "rolled_back":
+        return "rolled_back"
+    if status in {"failed", "rollback_attempted"}:
+        return "failed"
+    return None
+
+
+def report_path_for_job(job: dict[str, Any]) -> Path:
+    return JOBS_DIR / f"{job['jobId']}.json"
+
+
+def update_report_metadata(job: dict[str, Any]) -> None:
+    job["schemaVersion"] = REPORT_SCHEMA_VERSION
+    job["tracePath"] = active_trace_path()
+    if isinstance(job.get("jobLogPath"), str):
+        job["logPath"] = job.get("jobLogPath")
+    result = report_result_for_job(job)
+    if result is not None:
+        job["result"] = result
+    duration = duration_seconds(
+        job.get("startedAt") if isinstance(job.get("startedAt"), str) else None,
+        job.get("finishedAt") if isinstance(job.get("finishedAt"), str) else None,
+    )
+    if duration is not None:
+        job["durationSeconds"] = duration
+
+
+def print_report_summary(report: dict[str, Any]) -> int:
+    operation = str(report.get("operation", "unknown")).strip() or "unknown"
+    status = str(report.get("status", "unknown")).strip() or "unknown"
+    result = str(report.get("result", status)).strip() or status
+    requested = str(report.get("requestedVersion", "")).strip() or "n/a"
+    attempted = str(report.get("attemptedVersion", "")).strip() or "n/a"
+    current = str(report.get("lastKnownGoodVersion", "")).strip() or "n/a"
+    backup_created = "yes" if report.get("backup", {}).get("succeeded") else "no"
+    health_passed = report.get("healthzPassed")
+    health_text = "n/a" if health_passed is None else ("passed" if health_passed else "failed")
+    print(f"Operation: {operation}")
+    print(f"Result: {result}")
+    print(f"Status: {status}")
+    print(f"Requested version: {requested}")
+    print(f"Attempted version: {attempted}")
+    print(f"Last known good version: {current}")
+    print(f"Backup created: {backup_created}")
+    print(f"Health check: {health_text}")
+    if isinstance(report.get("logPath"), str):
+        print(f"Log path: {report['logPath']}")
+    if isinstance(report.get("tracePath"), str):
+        print(f"Trace path: {report['tracePath']}")
+    if isinstance(report.get("nextAction"), str) and report["nextAction"].strip():
+        print(f"Next action: {report['nextAction']}")
+    return 0
+
+
 def trace(level: str, message: str) -> None:
     append_trace_line(TRACE_COMPONENT, level, message)
 
@@ -117,6 +294,7 @@ def load_job(path: Path) -> dict[str, Any]:
 
 
 def persist_job(job: dict[str, Any]) -> None:
+    update_report_metadata(job)
     write_json_file(JOBS_DIR / f"{job['jobId']}.json", job, mode=0o644)
     write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
 
@@ -137,6 +315,10 @@ def update_job(
     job["failureSummary"] = failure_summary
     if finished:
         job["finishedAt"] = utc_now()
+        if "durationSeconds" not in job:
+            duration = duration_seconds(job.get("startedAt"), job.get("finishedAt"))
+            if duration is not None:
+                job["durationSeconds"] = duration
     persist_job(job)
     trace(trace_level_for_status(status), f"{status}: {message}")
     if job_logger is not None:
@@ -160,6 +342,98 @@ def compare_version_tags(left: str, right: str) -> int:
     if left_parts > right_parts:
         return 1
     return 0
+
+
+def parse_release_asset_size(release_asset: dict[str, Any]) -> int:
+    raw_size = release_asset.get("size")
+    if isinstance(raw_size, int) and raw_size > 0:
+        return raw_size
+    return 0
+
+
+def current_job_is_active() -> bool:
+    job = read_json_file(CURRENT_JOB_PATH)
+    if not isinstance(job, dict):
+        return False
+    return not is_terminal_status(str(job.get("status", "")))
+
+
+def persist_initial_job(job: dict[str, Any]) -> dict[str, Any]:
+    lock_handle = LOCK_PATH.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        raise UpdaterError(
+            "requested",
+            "Another updater job or maintenance operation is already active.",
+        ) from error
+
+    try:
+        if current_job_is_active():
+            raise UpdaterError("requested", "Another updater job is already active.")
+        persist_job(job)
+    finally:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+        lock_handle.close()
+    return job
+
+
+def start_updater_unit() -> None:
+    if shutil.which("systemctl"):
+        result = subprocess.run(
+            ["systemctl", "start", "--no-block", UPDATER_UNIT],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=15,
+        )
+        if result.returncode == 0:
+            trace("info", f"Updater unit {UPDATER_UNIT} was started for a manual request.")
+            return
+
+        stderr = (result.stderr or result.stdout or "").strip() or "systemctl start failed"
+        trace(
+            "warning",
+            f"systemctl could not start {UPDATER_UNIT}; falling back to a background updater process. Reason: {stderr}",
+        )
+
+    else:
+        trace("warning", "systemctl is unavailable; running the updater through a background subprocess.")
+    subprocess.Popen(
+        [sys.executable, str(Path(__file__).resolve()), "run-current-job"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+        close_fds=True,
+    )
+
+
+def resolve_requested_flag(value: bool | None, current_value: bool) -> bool:
+    if value is None:
+        return current_value
+    return value
+
+
+def build_runtime_state(base_state: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]:
+    requested_config = job.get("requestedConfig")
+    if not isinstance(requested_config, dict):
+        requested_config = {}
+
+    runtime_state = dict(base_state)
+    runtime_state["withObs"] = resolve_requested_flag(
+        requested_config.get("withObs") if "withObs" in requested_config else None,
+        bool(base_state.get("withObs", False)),
+    )
+    runtime_state["allowGrafanaLan"] = resolve_requested_flag(
+        requested_config.get("allowGrafanaLan") if "allowGrafanaLan" in requested_config else None,
+        bool(base_state.get("allowGrafanaLan", False)),
+    )
+    runtime_state["allowWikiLan"] = resolve_requested_flag(
+        requested_config.get("allowWikiLan") if "allowWikiLan" in requested_config else None,
+        bool(base_state.get("allowWikiLan", False)),
+    )
+    return runtime_state
 
 
 def github_request(path: str, *, purpose: str = "release metadata") -> dict[str, Any]:
@@ -309,8 +583,73 @@ def cache_verified_release(
         "debPath": str(deb_path),
         "checksumPath": str(checksum_path),
         "checksum": actual_hash,
+        "verificationMode": "checksum",
+        "verifiedAt": utc_now(),
+        "sizeBytes": parse_release_asset_size(deb_asset),
         "releaseUrl": str(release.get("html_url", "")),
     }
+
+
+def run_update_disk_preflight(
+    *,
+    target_artifact: dict[str, Any],
+    job_logger: JobLogger,
+) -> None:
+    artifact_size = int(target_artifact.get("sizeBytes", 0) or 0)
+    latest_backup_bytes = latest_backup_size_bytes()
+    state_root_required = max(
+        DEFAULT_DISK_SAFETY_MARGIN_BYTES,
+        artifact_size + latest_backup_bytes + DEFAULT_DISK_SAFETY_MARGIN_BYTES,
+    )
+    docker_required = DEFAULT_DISK_SAFETY_MARGIN_BYTES + max(
+        artifact_size * 2,
+        512 * 1024 * 1024,
+    )
+
+    ensure_free_space(
+        STATE_ROOT,
+        state_root_required,
+        label="updater state root",
+    )
+    ensure_free_space(
+        Path("/var/lib/docker"),
+        docker_required,
+        label="Docker image storage",
+    )
+    job_logger.write_line(
+        "Disk preflight passed: "
+        f"state root requires {humanize_bytes(state_root_required)}, "
+        f"Docker requires {humanize_bytes(docker_required)}."
+    )
+
+
+def write_artifact_manifest(artifact: dict[str, Any], *, job_id: str, purpose: str) -> str | None:
+    deb_path_raw = artifact.get("debPath")
+    if not isinstance(deb_path_raw, str) or not deb_path_raw.strip():
+        return None
+    deb_path = Path(deb_path_raw)
+    if not deb_path.exists():
+        return None
+
+    manifest_path = deb_path.with_suffix(deb_path.suffix + ".manifest.json")
+    payload = {
+        "schemaVersion": REPORT_SCHEMA_VERSION,
+        "kind": "release-artifact",
+        "purpose": purpose,
+        "jobId": job_id,
+        "createdAt": utc_now(),
+        "filename": deb_path.name,
+        "path": str(deb_path),
+        "sizeBytes": deb_path.stat().st_size,
+        "sha256": str(artifact.get("checksum", "")),
+        "relatedVersion": str(artifact.get("version", "")),
+        "verificationMode": str(artifact.get("verificationMode", "checksum")),
+        "releaseUrl": str(artifact.get("releaseUrl", "")),
+        "checksumPath": str(artifact.get("checksumPath", "")),
+        "verifiedAt": str(artifact.get("verifiedAt", "")),
+    }
+    write_json_file(manifest_path, payload, mode=0o664)
+    return str(manifest_path)
 
 
 def run_command(
@@ -358,9 +697,12 @@ def run_command(
     return result
 
 
-def refreshed_appliance_env() -> dict[str, str]:
+def refreshed_appliance_env(*, overrides: dict[str, str] | None = None) -> dict[str, str]:
     env = dict(os.environ)
     env.update(read_env_file(APPLIANCE_ENV_PATH))
+    env["SENTINEL_UPDATER_LOCK_HELD"] = "true"
+    if overrides:
+        env.update(overrides)
     return env
 
 
@@ -483,7 +825,15 @@ def prepare_backup(job: dict[str, Any], job_logger: JobLogger) -> dict[str, Any]
     metadata["outputDir"] = str(output_dir)
     trace("info", f"Starting pre-update backup into {output_dir}.")
     result = run_command(
-        [str(backup_script), "--scope", "all", "--output-dir", str(output_dir)],
+        [
+            str(backup_script),
+            "--scope",
+            "all",
+            "--output-dir",
+            str(output_dir),
+            "--source",
+            "update-preflight",
+        ],
         job_logger=job_logger,
         timeout=COMMAND_TIMEOUT_SECONDS,
         step="staging",
@@ -504,9 +854,16 @@ def update_runtime_version(target_version: str) -> None:
     os.environ["SENTINEL_VERSION"] = target_version
 
 
-def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> None:
+def run_backend_post_update(
+    state: dict[str, Any],
+    job_logger: JobLogger,
+    *,
+    version_override: str | None = None,
+) -> None:
     trace("info", "Running backend post-update database and bootstrap commands.")
-    command_env = refreshed_appliance_env()
+    command_env = refreshed_appliance_env(
+        overrides={"SENTINEL_VERSION": version_override} if version_override else None
+    )
     commands = [
         compose_command(
             state,
@@ -558,9 +915,16 @@ def run_backend_post_update(state: dict[str, Any], job_logger: JobLogger) -> Non
     trace("info", "Backend post-update commands completed successfully.")
 
 
-def restart_stack(state: dict[str, Any], job_logger: JobLogger) -> None:
+def restart_stack(
+    state: dict[str, Any],
+    job_logger: JobLogger,
+    *,
+    version_override: str | None = None,
+) -> None:
     trace("info", "Pulling fresh container images for the Sentinel stack.")
-    command_env = refreshed_appliance_env()
+    command_env = refreshed_appliance_env(
+        overrides={"SENTINEL_VERSION": version_override} if version_override else None
+    )
     pull_result = run_command(
         compose_command(state, "pull"),
         job_logger=job_logger,
@@ -609,6 +973,24 @@ def read_hotspot_report(job_logger: JobLogger) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def summarize_command_output(result: subprocess.CompletedProcess[str]) -> str | None:
+    for stream in (result.stderr, result.stdout):
+        lines = [line.strip() for line in stream.splitlines() if line.strip()]
+        if not lines:
+            continue
+
+        message = lines[-1]
+        for prefix in ("[host-hotspot-recover]", "[host-hotspot-profile]"):
+            if message.startswith(prefix):
+                message = message[len(prefix) :].strip()
+                break
+
+        if message:
+            return message
+
+    return None
+
+
 def run_shared_hotspot_recovery(job_logger: JobLogger, *, context: str) -> str | None:
     recovery_script = DEPLOY_DIR / "recover-host-hotspot.sh"
     if not recovery_script.exists():
@@ -625,8 +1007,13 @@ def run_shared_hotspot_recovery(job_logger: JobLogger, *, context: str) -> str |
     )
 
     degraded_message: str | None = None
+    command_summary = summarize_command_output(result)
     if result.returncode not in {0, 2}:
-        degraded_message = f"Shared hotspot recovery failed with exit code {result.returncode}."
+        degraded_message = (
+            command_summary
+            if command_summary is not None
+            else f"Shared hotspot recovery failed with exit code {result.returncode}."
+        )
     elif result.returncode == 2:
         degraded_message = "Shared hotspot recovery completed, but hotspot visibility verification still needs attention."
 
@@ -645,8 +1032,139 @@ def run_shared_hotspot_recovery(job_logger: JobLogger, *, context: str) -> str |
     return degraded_message
 
 
+def trace_session_matches_job(job: dict[str, Any]) -> bool:
+    job_id = str(job.get("jobId", "")).strip()
+    if not job_id or not TRACE_LOG_PATH.exists():
+        return False
+
+    trace_session = load_trace_session()
+    if not isinstance(trace_session, dict):
+        return False
+
+    return str(trace_session.get("jobId", "")).strip() == job_id
+
+
+def mark_job_failed(job: dict[str, Any], message: str) -> dict[str, Any]:
+    failed_job = {
+        **job,
+        "status": "failed",
+        "message": message,
+        "failureSummary": message,
+        "finishedAt": utc_now(),
+        "result": "failed",
+    }
+    persist_job(failed_job)
+    trace("error", f"Marked updater job {job['jobId']} as failed before execution: {message}")
+    return failed_job
+
+
+def build_requested_config(args: argparse.Namespace) -> dict[str, bool | None]:
+    return {
+        "withObs": args.with_obs,
+        "allowGrafanaLan": args.allow_grafana_lan,
+        "allowWikiLan": args.allow_wiki_lan,
+    }
+
+
+def enqueue_manual_update(args: argparse.Namespace) -> int:
+    ensure_runtime_directories()
+
+    target_version = str(args.version).strip()
+    if not VERSION_PATTERN.match(target_version):
+        raise UpdaterError("requested", f"Target version {target_version} did not match the stable version contract.")
+
+    current_version = current_version_from_env()
+    if current_version is None:
+        raise UpdaterError("requested", "Current Sentinel version could not be determined.")
+    if compare_version_tags(target_version, current_version) <= 0:
+        raise UpdaterError(
+            "requested",
+            f"Target version {target_version} is not newer than the current version {current_version}.",
+        )
+
+    state = load_appliance_state()
+    job_id = f"system-update-{int(time.time() * 1000)}-{uuid4()}"
+    requested_by = str(args.requested_by or DEFAULT_MANUAL_REQUESTED_BY).strip() or DEFAULT_MANUAL_REQUESTED_BY
+    requested_config = build_requested_config(args)
+    operation_source = str(args.source or "cli").strip() or "cli"
+    job_log_path = LOG_ROOT / f"system-update-{job_id}.log"
+    job = {
+        "schemaVersion": REPORT_SCHEMA_VERSION,
+        "operation": "update",
+        "source": operation_source,
+        "jobId": job_id,
+        "status": "requested",
+        "message": f"Manual update request accepted for {target_version}.",
+        "requestedAt": utc_now(),
+        "startedAt": None,
+        "finishedAt": None,
+        "durationSeconds": None,
+        "currentVersion": current_version,
+        "latestVersion": None,
+        "targetVersion": target_version,
+        "requestedVersion": target_version,
+        "attemptedVersion": target_version,
+        "previousVersion": current_version,
+        "lastKnownGoodVersion": str(state.get("lastKnownGoodVersion", current_version)),
+        "lastFailedVersion": str(state.get("lastFailedVersion", "")),
+        "failureSummary": None,
+        "rollbackAttempted": False,
+        "rollbackResult": "not_needed",
+        "restoreRecommended": False,
+        "healthzPassed": None,
+        "requestedBy": {
+            "memberId": f"manual-{operation_source}",
+            "memberName": requested_by,
+            "accountLevel": None,
+            "fromIp": None,
+        },
+        "requestedConfig": requested_config,
+        "artifact": {},
+        "backup": {"attempted": False, "succeeded": False, "paths": [], "manifests": []},
+        "rollback": {"attempted": False, "result": "not_needed", "currentVersion": current_version},
+        "migration": {"mode": None, "status": "pending"},
+        "network": {"status": "pending", "message": "Not started."},
+        "warnings": [],
+        "jobLogPath": str(job_log_path),
+        "logPath": str(job_log_path),
+        "tracePath": active_trace_path(),
+        "nextAction": "Wait for the updater to complete or inspect the active update trace.",
+    }
+
+    archive_and_reset_trace(
+        TRACE_COMPONENT,
+        f"Accepted a manual update request for {target_version} from {requested_by}.",
+        archive_suffix=job_id,
+        session_job_id=job_id,
+    )
+    persist_initial_job(job)
+    try:
+        start_updater_unit()
+    except UpdaterError as error:
+        mark_job_failed(job, str(error))
+        raise
+
+    print(
+        json.dumps(
+            {
+                "success": True,
+                "jobId": job_id,
+                "jobPath": str(report_path_for_job(job)),
+                "logPath": str(job_log_path),
+                "tracePath": active_trace_path(),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger: JobLogger) -> None:
     job["rollbackAttempted"] = True
+    job.setdefault("rollback", {})
+    job["rollback"]["attempted"] = True
+    job["rollback"]["targetVersion"] = previous_artifact["version"]
     trace("warning", f"Starting rollback to {previous_artifact['version']}.")
     update_job(
         job,
@@ -655,21 +1173,38 @@ def rollback(job: dict[str, Any], previous_artifact: dict[str, str], job_logger:
         job_logger=job_logger,
     )
 
-    previous_state = load_appliance_state()
-    previous_state["previousVersion"] = job.get("targetVersion", "")
-    previous_state["currentVersion"] = previous_artifact["version"]
-    save_appliance_state(previous_state)
-    update_runtime_version(previous_artifact["version"])
-
+    previous_state = build_runtime_state(load_appliance_state(), job)
     install_deb(Path(previous_artifact["debPath"]), job_logger)
-    restart_stack(previous_state, job_logger)
+    restart_stack(previous_state, job_logger, version_override=previous_artifact["version"])
     wait_for_health(job_logger, expected_version=previous_artifact["version"])
     hotspot_warning = run_shared_hotspot_recovery(
         job_logger,
         context=f"rollback to {previous_artifact['version']}",
     )
 
+    current_state = load_appliance_state()
+    current_state["previousVersion"] = str(job.get("targetVersion", ""))
+    current_state["currentVersion"] = previous_artifact["version"]
+    current_state["lastKnownGoodVersion"] = previous_artifact["version"]
+    current_state["lastAttemptedVersion"] = str(job.get("attemptedVersion") or job.get("targetVersion") or "")
+    current_state["lastFailedVersion"] = str(job.get("attemptedVersion") or job.get("targetVersion") or "")
+    save_appliance_state(current_state)
+    update_runtime_version(previous_artifact["version"])
+
     job["currentVersion"] = previous_artifact["version"]
+    job["lastKnownGoodVersion"] = previous_artifact["version"]
+    job["lastFailedVersion"] = str(job.get("attemptedVersion") or job.get("targetVersion") or "")
+    job["healthzPassed"] = True
+    job["rollbackResult"] = "succeeded"
+    job["rollback"]["result"] = "succeeded"
+    job["rollback"]["currentVersion"] = previous_artifact["version"]
+    job["restoreRecommended"] = False
+    set_next_action(job, f"Review the update log and trace. Sentinel was rolled back to {previous_artifact['version']}.")
+    if hotspot_warning is not None:
+        record_warning(job, hotspot_warning)
+        job["network"] = {"status": "degraded", "message": hotspot_warning}
+    else:
+        job["network"] = {"status": "ok", "message": "Rollback networking checks passed."}
     update_job(
         job,
         status="rolled_back",
@@ -695,6 +1230,8 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
     current_version = current_version_from_env()
     if current_version is None:
         raise UpdaterError("authorized", "Current Sentinel version could not be determined.")
+    current_state = load_appliance_state()
+    runtime_state = build_runtime_state(current_state, job)
     trace(
         "info",
         f"Beginning update job {job.get('jobId')} from {current_version} to {target_version}.",
@@ -707,7 +1244,18 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
         )
 
     job["currentVersion"] = current_version
+    job["previousVersion"] = current_version
+    job["requestedVersion"] = target_version
+    job["attemptedVersion"] = target_version
+    job["lastKnownGoodVersion"] = str(current_state.get("lastKnownGoodVersion", current_version))
+    job["lastFailedVersion"] = str(current_state.get("lastFailedVersion", ""))
     job["latestVersion"] = None
+    job["healthzPassed"] = None
+    job.setdefault("artifact", {})
+    job.setdefault("backup", {"attempted": False, "succeeded": False, "paths": [], "manifests": []})
+    job.setdefault("rollback", {"attempted": False, "result": "not_needed"})
+    job.setdefault("migration", {"mode": "deploy", "status": "pending"})
+    job.setdefault("network", {"status": "pending", "message": "Not started."})
 
     try:
         latest_release = fetch_latest_release()
@@ -732,61 +1280,96 @@ def execute_update(job: dict[str, Any], job_logger: JobLogger) -> None:
     )
 
     update_job(job, status="staging", message="Preparing update artifacts and rollback metadata.", job_logger=job_logger)
-    backup_metadata = prepare_backup(job, job_logger)
-
     previous_artifact: dict[str, str] | None = None
     try:
         previous_artifact = cache_verified_release(current_version, job_logger, purpose="rollback")
     except UpdaterError as error:
-        # Older published releases may not have shipped rollback metadata such as
-        # a checksum asset yet. Record that explicitly, but keep validating the
-        # forward update path instead of failing before the target release is checked.
         job_logger.write_line(
             "Rollback artifact preparation was skipped for the current version "
             f"{current_version}: {error}"
         )
-        trace(
-            "warning",
-            "Rollback artifact preparation was skipped for "
-            f"{current_version}: {error}",
-        )
+        record_warning(job, f"Rollback artifact preparation was skipped for {current_version}: {error}")
+        job["rollback"]["result"] = "not_available"
 
     update_job(job, status="downloading", message=f"Downloading Sentinel release {target_version}.", job_logger=job_logger)
     target_artifact = cache_verified_release(target_version, job_logger, purpose="target release")
+    run_update_disk_preflight(target_artifact=target_artifact, job_logger=job_logger)
 
     update_job(job, status="verifying", message=f"Verifying release artifacts for {target_version}.", job_logger=job_logger)
-    job["artifacts"] = {
-        "target": target_artifact,
-    }
+    job["artifact"] = {"target": target_artifact}
+    target_manifest_path = write_artifact_manifest(
+        target_artifact,
+        job_id=str(job["jobId"]),
+        purpose="target",
+    )
+    if target_manifest_path is not None:
+        job["artifact"]["target"]["manifestPath"] = target_manifest_path
     if previous_artifact is not None:
-        job["artifacts"]["previous"] = previous_artifact
-    job["preUpdateBackup"] = backup_metadata
+        job["artifact"]["previous"] = previous_artifact
+        previous_manifest_path = write_artifact_manifest(
+            previous_artifact,
+            job_id=str(job["jobId"]),
+            purpose="rollback",
+        )
+        if previous_manifest_path is not None:
+            job["artifact"]["previous"]["manifestPath"] = previous_manifest_path
+
+    backup_metadata = prepare_backup(job, job_logger)
+    backup_output_dir = backup_metadata.get("outputDir")
+    if isinstance(backup_output_dir, str) and backup_output_dir:
+        output_dir = Path(backup_output_dir)
+        backup_metadata["paths"] = [str(path) for path in sorted(output_dir.glob("*")) if path.is_file()]
+        backup_metadata["manifests"] = [
+            str(path) for path in sorted(output_dir.glob("*.manifest.json")) if path.is_file()
+        ]
+    job["backup"] = backup_metadata
+
+    current_state["lastAttemptedVersion"] = target_version
+    current_state["lastFailedVersion"] = ""
+    save_appliance_state(current_state)
     persist_job(job)
 
     update_job(job, status="installing", message=f"Installing Sentinel package {target_version}.", job_logger=job_logger)
     install_deb(Path(target_artifact["debPath"]), job_logger)
 
-    state = load_appliance_state()
-    state["previousVersion"] = current_version
-    state["currentVersion"] = target_version
-    trace("info", f"Saving appliance state for target version {target_version}.")
-    save_appliance_state(state)
-    update_runtime_version(target_version)
-
     update_job(job, status="post_install", message="Applying updated appliance configuration.", job_logger=job_logger)
-    restart_stack(state, job_logger)
+    restart_stack(runtime_state, job_logger, version_override=target_version)
 
     update_job(job, status="restarting", message="Restarting Sentinel services.", job_logger=job_logger)
 
     update_job(job, status="health_check", message="Running post-update verification.", job_logger=job_logger)
-    run_backend_post_update(state, job_logger)
+    run_backend_post_update(runtime_state, job_logger, version_override=target_version)
     wait_for_health(job_logger, expected_version=target_version)
+    job["healthzPassed"] = True
+    job["migration"] = {"mode": "deploy", "status": "completed"}
     hotspot_warning = run_shared_hotspot_recovery(
         job_logger,
         context=f"update to {target_version}",
     )
 
+    current_state["withObs"] = bool(runtime_state.get("withObs", False))
+    current_state["allowGrafanaLan"] = bool(runtime_state.get("allowGrafanaLan", False))
+    current_state["allowWikiLan"] = bool(runtime_state.get("allowWikiLan", False))
+    current_state["previousVersion"] = current_version
+    current_state["currentVersion"] = target_version
+    current_state["lastKnownGoodVersion"] = target_version
+    current_state["lastAttemptedVersion"] = target_version
+    current_state["lastFailedVersion"] = ""
+    save_appliance_state(current_state)
+    update_runtime_version(target_version)
+
     job["currentVersion"] = target_version
+    job["lastKnownGoodVersion"] = target_version
+    job["lastFailedVersion"] = ""
+    job["rollbackResult"] = "not_needed"
+    job["rollback"]["result"] = "not_needed"
+    if hotspot_warning is not None:
+        record_warning(job, hotspot_warning)
+        job["network"] = {"status": "degraded", "message": hotspot_warning}
+        set_next_action(job, "Review hotspot recovery details in the trace log.")
+    else:
+        job["network"] = {"status": "ok", "message": "Shared hotspot recovery completed cleanly."}
+        set_next_action(job, "No action required.")
     update_job(
         job,
         status="completed",
@@ -819,6 +1402,19 @@ def run_current_job() -> int:
         trace("info", f"Current job {job.get('jobId')} is already terminal; nothing to do.")
         return 0
 
+    if trace_session_matches_job(job):
+        trace("info", f"Continuing active update trace for job {job.get('jobId')}.")
+    else:
+        archive_and_reset_trace(
+            TRACE_COMPONENT,
+            (
+                "Re-synced the active update trace for "
+                f"job {job.get('jobId')} targeting {job.get('targetVersion')}."
+            ),
+            archive_suffix=str(job.get("jobId", "")).strip() or TRACE_COMPONENT,
+            session_job_id=str(job.get("jobId", "")).strip() or None,
+        )
+
     job_logger = JobLogger(str(job["jobId"]))
     job["jobLogPath"] = str(job_logger.path)
     persist_job(job)
@@ -828,7 +1424,20 @@ def run_current_job() -> int:
     except UpdaterError as error:
         failure_summary = sanitize_failure_summary(str(error))
         should_rollback = str(job.get("status", "")) in {"post_install", "restarting", "health_check"}
+        attempted_version = str(job.get("attemptedVersion") or job.get("targetVersion") or "").strip()
+        failure_state = load_appliance_state()
+        if attempted_version:
+            failure_state["lastAttemptedVersion"] = attempted_version
+            failure_state["lastFailedVersion"] = attempted_version
+            save_appliance_state(failure_state)
+        job["healthzPassed"] = False
+        job["migration"] = {
+            "mode": "deploy",
+            "status": "failed" if str(job.get("status", "")) == "health_check" else job.get("migration", {}).get("status", "pending"),
+        }
         trace("error", f"Update job {job.get('jobId')} failed: {error}")
+        if not should_rollback:
+            set_next_action(job, "Inspect the update trace and correct the staging error before retrying.")
         update_job(
             job,
             status="failed",
@@ -839,12 +1448,24 @@ def run_current_job() -> int:
         )
 
         if should_rollback:
-            previous_artifact = job.get("artifacts", {}).get("previous")
+            previous_artifact = job.get("artifact", {}).get("previous")
             if isinstance(previous_artifact, dict):
                 try:
                     rollback(job, previous_artifact, job_logger)
                 except Exception as rollback_error:  # noqa: BLE001
                     trace("error", f"Rollback failed for job {job.get('jobId')}: {rollback_error}")
+                    job["rollbackResult"] = "failed"
+                    job["rollback"]["result"] = "failed"
+                    job["restoreRecommended"] = True
+                    backup_paths = job.get("backup", {}).get("paths", [])
+                    if isinstance(backup_paths, list) and backup_paths:
+                        set_next_action(
+                            job,
+                            "Restore from the pre-update backup if needed: "
+                            + ", ".join(str(path) for path in backup_paths),
+                        )
+                    else:
+                        set_next_action(job, "Inspect the update trace and restore from the latest known good backup.")
                     update_job(
                         job,
                         status="rollback_attempted",
@@ -858,6 +1479,21 @@ def run_current_job() -> int:
                     "warning",
                     f"Rollback could not start for job {job.get('jobId')} because previous artifact metadata was unavailable.",
                 )
+                job["rollbackResult"] = "not_available"
+                job["rollback"]["result"] = "not_available"
+                job["restoreRecommended"] = True
+                backup_paths = job.get("backup", {}).get("paths", [])
+                if isinstance(backup_paths, list) and backup_paths:
+                    set_next_action(
+                        job,
+                        "Rollback metadata was unavailable. Restore from the pre-update backup if needed: "
+                        + ", ".join(str(path) for path in backup_paths),
+                    )
+                else:
+                    set_next_action(
+                        job,
+                        "Rollback metadata was unavailable. Inspect the trace and restore from the latest known good backup if needed.",
+                    )
                 update_job(
                     job,
                     status="rollback_attempted",
@@ -884,6 +1520,208 @@ def show_job(path: Path) -> int:
     return 0
 
 
+def iter_report_payloads(*, operation: str | None = None) -> list[dict[str, Any]]:
+    reports: list[dict[str, Any]] = []
+    seen_paths: set[Path] = set()
+    for path in [CURRENT_JOB_PATH, *sorted(JOBS_DIR.glob("*.json"))]:
+        if path in seen_paths or not path.exists():
+            continue
+        seen_paths.add(path)
+        payload = read_json_file(path)
+        if not isinstance(payload, dict):
+            continue
+        if operation is not None and str(payload.get("operation", "")).strip() != operation:
+            continue
+        reports.append(payload)
+    reports.sort(key=sort_timestamp, reverse=True)
+    return reports
+
+
+def show_last_report(operation: str | None) -> int:
+    reports = iter_report_payloads(operation=operation)
+    if not reports:
+        print("No matching updater report was found.")
+        return 1
+    return print_report_summary(reports[0])
+
+
+def version_from_download_name(path: Path) -> str | None:
+    match = re.fullmatch(r"sentinel_([0-9]+\.[0-9]+\.[0-9]+)_all\.deb", path.name)
+    if match is None:
+        return None
+    return f"v{match.group(1)}"
+
+
+def remove_path(path: Path, *, dry_run: bool) -> None:
+    if dry_run:
+        print(f"Would remove {path}")
+        return
+    if path.is_dir():
+        shutil.rmtree(path, ignore_errors=True)
+    else:
+        path.unlink(missing_ok=True)
+
+
+def prune_downloads(*, dry_run: bool) -> int:
+    state = load_appliance_state()
+    keep_versions = protected_versions(state)
+    download_paths = sorted(DOWNLOADS_DIR.glob("sentinel_*_all.deb"))
+    remaining_versions = sorted(
+        {
+            version
+            for path in download_paths
+            if (version := version_from_download_name(path)) is not None and version not in keep_versions
+        },
+        key=lambda value: tuple(int(part) for part in value.removeprefix("v").split(".")),
+        reverse=True,
+    )
+    if remaining_versions:
+        keep_versions.add(remaining_versions[0])
+
+    removed = 0
+    for path in download_paths:
+        version = version_from_download_name(path)
+        if version is None or version in keep_versions:
+            continue
+        checksum_path = DOWNLOADS_DIR / f"SHA256SUMS-{version.removeprefix('v')}.txt"
+        manifest_path = path.with_suffix(path.suffix + ".manifest.json")
+        remove_path(path, dry_run=dry_run)
+        remove_path(checksum_path, dry_run=dry_run)
+        remove_path(manifest_path, dry_run=dry_run)
+        removed += 1
+    return removed
+
+
+def prune_logs(*, dry_run: bool) -> int:
+    cutoff = utc_datetime() - timedelta(days=DEFAULT_PRUNE_KEEP_LOG_DAYS)
+    removed = 0
+    for path in sorted(LOG_ROOT.glob("system-update-*.log")):
+        try:
+            modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        except OSError:
+            continue
+        if modified < cutoff:
+            remove_path(path, dry_run=dry_run)
+            removed += 1
+    return removed
+
+
+def prune_traces(*, dry_run: bool) -> int:
+    cutoff = utc_datetime() - timedelta(days=DEFAULT_PRUNE_KEEP_TRACE_DAYS)
+    removed = 0
+    for path in sorted(TRACE_ARCHIVE_DIR.glob("update-trace-*.log")):
+        try:
+            modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        except OSError:
+            continue
+        if modified < cutoff:
+            remove_path(path, dry_run=dry_run)
+            removed += 1
+
+    for path in sorted(JOBS_DIR.glob("*.json")):
+        payload = read_json_file(path)
+        if not isinstance(payload, dict):
+            continue
+        finished_at = parse_timestamp(str(payload.get("finishedAt", "")))
+        if finished_at is not None and finished_at < cutoff:
+            remove_path(path, dry_run=dry_run)
+            removed += 1
+    return removed
+
+
+def backup_entry_related_version(path: Path) -> str | None:
+    manifest_candidates = [path] if path.is_file() and path.name.endswith(".manifest.json") else list(path.glob("*.manifest.json")) if path.is_dir() else []
+    for manifest_path in manifest_candidates:
+        payload = read_json_file(manifest_path)
+        if not isinstance(payload, dict):
+            continue
+        version = payload.get("relatedVersion")
+        if isinstance(version, str) and version.strip():
+            return normalize_version_tag(version.strip())
+    return None
+
+
+def backup_entry_timestamp(path: Path) -> datetime:
+    candidates = [path] if path.is_file() else [path]
+    latest = datetime.fromtimestamp(0, tz=timezone.utc)
+    for candidate in candidates:
+        try:
+            latest = max(latest, datetime.fromtimestamp(candidate.stat().st_mtime, tz=timezone.utc))
+        except OSError:
+            continue
+    return latest
+
+
+def backup_entry_key(path: Path) -> tuple[str, str]:
+    timestamp = backup_entry_timestamp(path)
+    return timestamp.date().isoformat(), f"{timestamp.isocalendar().year}-W{timestamp.isocalendar().week:02d}"
+
+
+def prune_backups(*, dry_run: bool) -> int:
+    keep_version = normalize_version_tag(str(load_appliance_state().get("currentVersion", "")))
+    entries = [path for path in sorted(BACKUPS_DIR.iterdir()) if path.exists()]
+    dated_entries = sorted(entries, key=backup_entry_timestamp, reverse=True)
+    keep_paths: set[Path] = set()
+    daily_seen: set[str] = set()
+    weekly_seen: set[str] = set()
+    monthly_seen: set[str] = set()
+
+    for path in dated_entries:
+        related_version = backup_entry_related_version(path)
+        timestamp = backup_entry_timestamp(path)
+        day_key, week_key = backup_entry_key(path)
+        month_key = f"{timestamp.year}-{timestamp.month:02d}"
+        if keep_version and related_version == keep_version:
+            keep_paths.add(path)
+            continue
+        if len(daily_seen) < 7 and day_key not in daily_seen:
+            keep_paths.add(path)
+            daily_seen.add(day_key)
+            continue
+        if len(weekly_seen) < 4 and week_key not in weekly_seen:
+            keep_paths.add(path)
+            weekly_seen.add(week_key)
+            continue
+        if len(monthly_seen) < 3 and month_key not in monthly_seen:
+            keep_paths.add(path)
+            monthly_seen.add(month_key)
+            continue
+
+    removed = 0
+    for path in dated_entries:
+        if path in keep_paths:
+            continue
+        remove_path(path, dry_run=dry_run)
+        removed += 1
+    return removed
+
+
+def run_prune(args: argparse.Namespace) -> int:
+    ensure_runtime_directories()
+    selected = {
+        "downloads": args.downloads,
+        "logs": args.logs,
+        "traces": args.traces,
+        "backups": args.backups,
+    }
+    if not any(selected.values()):
+        selected = {key: True for key in selected}
+
+    counts: dict[str, int] = {}
+    if selected["downloads"]:
+        counts["downloads"] = prune_downloads(dry_run=args.dry_run)
+    if selected["logs"]:
+        counts["logs"] = prune_logs(dry_run=args.dry_run)
+    if selected["traces"]:
+        counts["traces"] = prune_traces(dry_run=args.dry_run)
+    if selected["backups"]:
+        counts["backups"] = prune_backups(dry_run=args.dry_run)
+
+    for key, value in counts.items():
+        print(f"{key}: {value}")
+    return 0
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Sentinel appliance updater")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -891,18 +1729,48 @@ def parse_args() -> argparse.Namespace:
     subparsers.add_parser("show-current-job")
     show_job_parser = subparsers.add_parser("show-job")
     show_job_parser.add_argument("job_id")
+    enqueue_manual_parser = subparsers.add_parser("enqueue-manual-update")
+    enqueue_manual_parser.add_argument("--version", required=True)
+    with_obs_group = enqueue_manual_parser.add_mutually_exclusive_group()
+    with_obs_group.add_argument("--with-obs", dest="with_obs", action="store_true")
+    with_obs_group.add_argument("--without-obs", dest="with_obs", action="store_false")
+    enqueue_manual_parser.set_defaults(with_obs=None)
+    grafana_group = enqueue_manual_parser.add_mutually_exclusive_group()
+    grafana_group.add_argument("--allow-grafana-lan", dest="allow_grafana_lan", action="store_true")
+    grafana_group.add_argument("--disallow-grafana-lan", dest="allow_grafana_lan", action="store_false")
+    enqueue_manual_parser.set_defaults(allow_grafana_lan=None)
+    wiki_group = enqueue_manual_parser.add_mutually_exclusive_group()
+    wiki_group.add_argument("--allow-wiki-lan", dest="allow_wiki_lan", action="store_true")
+    wiki_group.add_argument("--disallow-wiki-lan", dest="allow_wiki_lan", action="store_false")
+    enqueue_manual_parser.set_defaults(allow_wiki_lan=None)
+    enqueue_manual_parser.add_argument("--requested-by", default=DEFAULT_MANUAL_REQUESTED_BY)
+    enqueue_manual_parser.add_argument("--source", choices=["desktop", "cli", "auto-upgrade"], default="cli")
+    show_last_report_parser = subparsers.add_parser("show-last-report")
+    show_last_report_parser.add_argument("--operation", choices=["update", "rollback", "backup", "restore"])
+    prune_parser = subparsers.add_parser("prune")
+    prune_parser.add_argument("--downloads", action="store_true")
+    prune_parser.add_argument("--logs", action="store_true")
+    prune_parser.add_argument("--traces", action="store_true")
+    prune_parser.add_argument("--backups", action="store_true")
+    prune_parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     configure_logging()
     args = parse_args()
+    if args.command == "enqueue-manual-update":
+        return enqueue_manual_update(args)
     if args.command == "run-current-job":
         return run_current_job()
     if args.command == "show-current-job":
         return show_job(CURRENT_JOB_PATH)
     if args.command == "show-job":
         return show_job(JOBS_DIR / f"{args.job_id}.json")
+    if args.command == "show-last-report":
+        return show_last_report(args.operation)
+    if args.command == "prune":
+        return run_prune(args)
     return 1
 
 

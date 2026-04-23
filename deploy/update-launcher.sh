@@ -65,10 +65,10 @@ else
   VERSION="$(prompt_version_terminal "${DEFAULT_VERSION}")"
 fi
 
-if [[ -z "${VERSION}" || "${VERSION}" == "latest" ]]; then
+if [[ -z "${VERSION}" || ! "${VERSION}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   printf 'Invalid version: must be explicit SemVer tag like v1.1.8\n' >&2
   exit 1
 fi
 
-cd "${SCRIPT_DIR}"
-exec ./update.sh --version "${VERSION}"
+printf '[sentinel] update-launcher.sh is deprecated and now forwards to update.sh\n' >&2
+exec "${SCRIPT_DIR}/update.sh" --version "${VERSION}"
