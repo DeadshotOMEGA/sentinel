@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { SystemUpdateJob, SystemUpdateJobStatus } from '@sentinel/contracts'
 import { Download, ExternalLink, RefreshCw, RotateCcw, ServerCog, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
@@ -240,8 +241,10 @@ function shouldAutoOpenTraceLog(job: SystemUpdateJob | null): boolean {
 export function SystemUpdatePanel() {
   const member = useAuthStore((state) => state.member)
   const canStartUpdates = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
+  const searchParams = useSearchParams()
+  const traceRequested = searchParams.get('trace') === 'open'
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [tracePanelOpen, setTracePanelOpen] = useState(false)
+  const [tracePanelOpen, setTracePanelOpen] = useState(traceRequested)
 
   const systemUpdateQuery = useSystemUpdateStatus({
     enabled: Boolean(member),
@@ -269,6 +272,12 @@ export function SystemUpdatePanel() {
       setTracePanelOpen(true)
     }
   }, [autoOpenTraceLog, currentJob?.jobId, currentJob?.status])
+
+  useEffect(() => {
+    if (traceRequested) {
+      setTracePanelOpen(true)
+    }
+  }, [traceRequested])
 
   const handleRefresh = async () => {
     await systemUpdateQuery.refetch()
