@@ -136,6 +136,11 @@ source "${TARGET_DIR}/_common.sh"
 WITH_OBS="${CLI_WITH_OBS}"
 ALLOW_GRAFANA_LAN="${CLI_ALLOW_GRAFANA_LAN}"
 ALLOW_WIKI_LAN="${CLI_ALLOW_WIKI_LAN}"
+enable_update_trace \
+  "install.sh" \
+  "reset" \
+  "Starting Sentinel appliance install${TARGET_VERSION:+ for ${TARGET_VERSION}}." \
+  "${TARGET_VERSION:-install}"
 
 log "Starting Sentinel appliance install"
 
@@ -192,6 +197,7 @@ PREVIOUS_VERSION=""
 set_compose_file_args
 
 ensure_compose_pull_with_login_fallback
+log "Starting Sentinel containers for install target ${TARGET_VERSION}"
 compose up -d
 
 run_bootstrap_schema_and_baseline

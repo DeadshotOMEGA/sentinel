@@ -20,7 +20,10 @@ from sentinel_update_common import (
     CURRENT_JOB_PATH,
     JOB_ID_PATTERN,
     JOBS_DIR,
+    TRACE_LOG_PATH,
     VERSION_PATTERN,
+    append_trace_line,
+    archive_and_reset_trace,
     ensure_runtime_directories,
     is_terminal_status,
     read_json_file,
@@ -37,6 +40,7 @@ POLKIT_ACTION_ID = os.environ.get(
 )
 UPDATER_UNIT = os.environ.get("SENTINEL_UPDATER_UNIT", "sentinel-updater.service")
 SOCKET_PATH = Path(os.environ.get("SENTINEL_UPDATE_BRIDGE_SOCKET_PATH", "/run/sentinel/update-bridge.sock"))
+BRIDGE_COMPONENT = "bridge"
 
 ALLOWED_KEYS = {
     "jobId",
@@ -52,6 +56,15 @@ class BridgeError(RuntimeError):
     def __init__(self, message: str, *, status: int = 400) -> None:
         super().__init__(message)
         self.status = status
+
+
+def trace(level: str, message: str) -> None:
+    append_trace_line(BRIDGE_COMPONENT, level, message)
+
+
+def trace_if_exists(level: str, message: str) -> None:
+    if TRACE_LOG_PATH.exists():
+        trace(level, message)
 
 
 def configure_logging() -> None:
@@ -174,6 +187,7 @@ def run_polkit_check() -> None:
 
 
 def start_updater_unit() -> None:
+    trace("info", f"Starting updater unit {UPDATER_UNIT}.")
     result = subprocess.run(
         ["systemctl", "start", "--no-block", UPDATER_UNIT],
         capture_output=True,
@@ -183,11 +197,14 @@ def start_updater_unit() -> None:
     )
     if result.returncode != 0:
         stderr = (result.stderr or result.stdout or "").strip() or "systemctl start failed"
+        trace("error", f"Updater unit failed to start: {stderr}")
         raise BridgeError(f"Failed to start updater service: {stderr}", status=500)
+    trace("info", f"Updater unit {UPDATER_UNIT} was handed off successfully.")
 
 
 def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
     if current_job_is_active():
+        trace_if_exists("warning", "Rejected a new update request because another update job is already active.")
         raise BridgeError("An update is already in progress.", status=409)
 
     job = {
@@ -212,6 +229,11 @@ def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
     }
     write_json_file(JOBS_DIR / f"{payload['jobId']}.json", job, mode=0o644)
     write_json_file(CURRENT_JOB_PATH, job, mode=0o644)
+    trace(
+        "info",
+        "Persisted new update job "
+        f"{payload['jobId']} targeting {payload['targetVersion']} for {payload['requestedByMemberName']}.",
+    )
     return job
 
 
@@ -225,6 +247,7 @@ def mark_job_failed(job: dict[str, Any], message: str) -> dict[str, Any]:
     }
     write_json_file(JOBS_DIR / f"{job['jobId']}.json", failed_job, mode=0o644)
     write_json_file(CURRENT_JOB_PATH, failed_job, mode=0o644)
+    trace("error", f"Marked update job {job['jobId']} as failed before updater handoff: {message}")
     return failed_job
 
 
@@ -242,15 +265,36 @@ def handle_connection(connection: socket.socket) -> None:
 
     payload = receive_payload(connection)
     if current_job_is_active():
+        trace_if_exists(
+            "warning",
+            f"Rejected duplicate update request for {payload['targetVersion']} because an active job exists.",
+        )
         raise BridgeError("An update is already in progress.", status=409)
 
     run_polkit_check()
+    archive_and_reset_trace(
+        BRIDGE_COMPONENT,
+        (
+            "Accepted a new Sentinel update request for "
+            f"{payload['targetVersion']} from {payload['requestedByMemberName']}."
+        ),
+        archive_suffix=payload["jobId"],
+    )
+    trace("info", "Reset the active update trace log for the newly accepted update run.")
+    trace("info", f"Received bridge connection from pid={pid} uid={uid} gid={gid}.")
+    trace(
+        "info",
+        "Validated request payload for job "
+        f"{payload['jobId']} targeting {payload['targetVersion']} from {payload['requestedByMemberName']}.",
+    )
+    trace("info", "Polkit authorization succeeded for the update request.")
     job = persist_initial_job(payload)
     try:
         start_updater_unit()
     except BridgeError as error:
         mark_job_failed(job, str(error))
         raise
+    trace("info", f"Bridge accepted update job {job['jobId']} and returned HTTP 202 to the backend.")
     write_response(
         connection,
         {
@@ -269,6 +313,7 @@ def serve_forever(listener: socket.socket) -> None:
             handle_connection(connection)
         except BridgeError as error:
             LOGGER.warning("%s", error)
+            trace_if_exists("warning", f"Bridge request failed with status {error.status}: {error}")
             try:
                 write_response(
                     connection,
@@ -277,8 +322,10 @@ def serve_forever(listener: socket.socket) -> None:
                 )
             except OSError:
                 LOGGER.warning("Unable to write bridge error response back to caller.")
+                trace_if_exists("warning", "Unable to write bridge error response back to the caller socket.")
         except Exception as error:  # noqa: BLE001
             LOGGER.exception("Unhandled bridge error")
+            trace_if_exists("error", f"Unhandled bridge error: {error}")
             try:
                 write_response(
                     connection,
@@ -287,6 +334,7 @@ def serve_forever(listener: socket.socket) -> None:
                 )
             except OSError:
                 LOGGER.warning("Unable to write bridge failure response back to caller.")
+                trace_if_exists("warning", "Unable to write bridge failure response back to the caller socket.")
         finally:
             connection.close()
 

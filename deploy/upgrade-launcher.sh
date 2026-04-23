@@ -22,6 +22,9 @@ RELEASE_HIGHLIGHTS=""
 DEPLOYMENT_NOTES=""
 LOG_DIR="${SCRIPT_DIR}/logs"
 LOG_FILE=""
+UPDATE_TRACE_ROOT="/var/lib/sentinel/updater"
+UPDATE_TRACE_FILE="${UPDATE_TRACE_ROOT}/update-trace.log"
+UPDATE_TRACE_ARCHIVE_DIR="${UPDATE_TRACE_ROOT}/traces"
 
 usage() {
   cat <<USAGE
@@ -42,17 +45,133 @@ Options:
 USAGE
 }
 
+run_root() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
+utc_timestamp() {
+  date -u +'%Y-%m-%dT%H:%M:%SZ'
+}
+
+normalize_update_trace_message() {
+  local message="${*:-}"
+  printf '%s' "${message}" \
+    | tr '\n' ' ' \
+    | sed -E 's/[[:space:]]+/ /g; s/^[[:space:]]+//; s/[[:space:]]+$//'
+}
+
+format_update_trace_line() {
+  local component="${1:-upgrade-launcher.sh}"
+  local level="${2:-INFO}"
+  shift 2 || true
+  local message
+  message="$(normalize_update_trace_message "$*")"
+  [[ -n "${message}" ]] || message="No message provided."
+  printf '%s [%s] [%s] %s\n' "$(utc_timestamp)" "${component}" "$(printf '%s' "${level}" | tr '[:lower:]' '[:upper:]')" "${message}"
+}
+
+ensure_update_trace_dirs() {
+  run_root install -d -m 775 "${UPDATE_TRACE_ROOT}" "${UPDATE_TRACE_ARCHIVE_DIR}"
+}
+
+append_update_trace_line() {
+  local component="${1:-upgrade-launcher.sh}"
+  local level="${2:-INFO}"
+  shift 2 || true
+  local line
+  line="$(format_update_trace_line "${component}" "${level}" "$*")"
+
+  ensure_update_trace_dirs
+
+  if [[ -w "${UPDATE_TRACE_FILE}" || ( ! -e "${UPDATE_TRACE_FILE}" && -w "${UPDATE_TRACE_ROOT}" ) ]]; then
+    printf '%s\n' "${line}" >>"${UPDATE_TRACE_FILE}"
+    chmod 664 "${UPDATE_TRACE_FILE}" 2>/dev/null || true
+  else
+    printf '%s\n' "${line}" | run_root tee -a "${UPDATE_TRACE_FILE}" >/dev/null
+    run_root chmod 664 "${UPDATE_TRACE_FILE}" >/dev/null 2>&1 || true
+  fi
+}
+
+trace_log() {
+  local level="${1:-INFO}"
+  shift || true
+  [[ "${SENTINEL_UPDATE_TRACE_ENABLED:-false}" == "true" ]] || return 0
+  append_update_trace_line "${SENTINEL_UPDATE_TRACE_COMPONENT:-upgrade-launcher.sh}" "${level}" "$*"
+}
+
+archive_and_reset_update_trace() {
+  local component="${1:-upgrade-launcher.sh}"
+  local start_message="${2:-Starting Sentinel upgrade launcher flow.}"
+  local archive_suffix="${3:-launcher}"
+  local safe_suffix timestamp archive_path
+
+  ensure_update_trace_dirs
+
+  if [[ -f "${UPDATE_TRACE_FILE}" && -s "${UPDATE_TRACE_FILE}" ]]; then
+    timestamp="$(date -u +'%Y%m%d-%H%M%S')"
+    safe_suffix="$(printf '%s' "${archive_suffix}" | sed -E 's/[^A-Za-z0-9._-]+/-/g')"
+    [[ -n "${safe_suffix}" ]] || safe_suffix="launcher"
+    archive_path="${UPDATE_TRACE_ARCHIVE_DIR}/update-trace-${timestamp}-${safe_suffix}.log"
+    if [[ -w "${UPDATE_TRACE_FILE}" && -w "${UPDATE_TRACE_ARCHIVE_DIR}" ]]; then
+      mv "${UPDATE_TRACE_FILE}" "${archive_path}"
+    else
+      run_root mv "${UPDATE_TRACE_FILE}" "${archive_path}"
+    fi
+  fi
+
+  if [[ -w "${UPDATE_TRACE_ROOT}" ]]; then
+    : >"${UPDATE_TRACE_FILE}"
+    chmod 664 "${UPDATE_TRACE_FILE}" 2>/dev/null || true
+  else
+    run_root bash -c ': >"$1"; chmod 664 "$1"' _ "${UPDATE_TRACE_FILE}"
+  fi
+
+  append_update_trace_line "${component}" "info" "${start_message}"
+}
+
+launcher_trace_err_trap() {
+  local exit_code="${1:-1}"
+  local line_no="${2:-0}"
+  local command="${3:-unknown}"
+
+  [[ "${SENTINEL_UPDATE_TRACE_ENABLED:-false}" == "true" ]] || return 0
+  append_update_trace_line \
+    "${SENTINEL_UPDATE_TRACE_COMPONENT:-upgrade-launcher.sh}" \
+    "error" \
+    "Command failed at line ${line_no} with exit ${exit_code}: ${command}"
+}
+
+enable_update_trace() {
+  local component="${1:-upgrade-launcher.sh}"
+  local start_message="${2:-Starting Sentinel upgrade launcher flow.}"
+  local archive_suffix="${3:-launcher}"
+
+  export SENTINEL_UPDATE_TRACE_ENABLED="true"
+  export SENTINEL_UPDATE_TRACE_ACTIVE="true"
+  export SENTINEL_UPDATE_TRACE_COMPONENT="${component}"
+
+  archive_and_reset_update_trace "${component}" "${start_message}" "${archive_suffix}"
+  trap 'launcher_trace_err_trap $? $LINENO "$BASH_COMMAND"' ERR
+}
+
 die() {
   echo "[upgrade] ERROR: $*" >&2
+  trace_log "error" "$*"
   exit 1
 }
 
 warn() {
   echo "[upgrade] WARN: $*" >&2
+  trace_log "warning" "$*"
 }
 
 log() {
   echo "[upgrade] $*"
+  trace_log "info" "$*"
 }
 
 setup_logging() {
@@ -643,6 +762,8 @@ done
 if [[ -n "${TARGET_TAG}" && "${USE_LATEST}" == "true" ]]; then
   die "Use either --latest or --version, not both"
 fi
+
+enable_update_trace "upgrade-launcher.sh" "Starting Sentinel upgrade launcher flow."
 
 if [[ -z "${GH_OWNER}" ]]; then
   GH_OWNER="$(read_env_value GHCR_OWNER)"

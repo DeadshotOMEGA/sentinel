@@ -144,11 +144,31 @@ describe('systemUpdateRouter', () => {
     })
   })
 
+  it('requires authentication for the update trace endpoint', async () => {
+    const app = createTestApp()
+    const response = await request(app).get('/api/admin/system/update/trace')
+
+    expect(response.status).toBe(401)
+    expect(response.body).toMatchObject({
+      error: 'UNAUTHORIZED',
+    })
+  })
+
   it('requires admin access to start a system update', async () => {
     const app = createTestApp(1)
     const response = await request(app)
       .post('/api/admin/system/update')
       .send({ targetVersion: 'v2.6.2' })
+
+    expect(response.status).toBe(403)
+    expect(response.body).toMatchObject({
+      error: 'FORBIDDEN',
+    })
+  })
+
+  it('requires admin access to read the update trace endpoint', async () => {
+    const app = createTestApp(1)
+    const response = await request(app).get('/api/admin/system/update/trace')
 
     expect(response.status).toBe(403)
     expect(response.body).toMatchObject({
@@ -390,6 +410,53 @@ describe('systemUpdateRouter', () => {
       expect(response.body).toMatchObject({
         error: 'INTERNAL_ERROR',
       })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('returns an empty trace payload when no active trace file exists yet', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update/trace')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        available: false,
+        path: join(stateRoot, 'update-trace.log'),
+        content: '',
+        lastModifiedAt: null,
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('returns the active update trace payload for admins', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const traceContent = [
+      '2026-04-23T12:34:56Z [bridge] [INFO] Accepted a new Sentinel update request.',
+      '2026-04-23T12:34:58Z [updater] [INFO] installing: Installing Sentinel package v2.6.5.',
+    ].join('\n')
+
+    await writeFile(join(stateRoot, 'update-trace.log'), `${traceContent}\n`, 'utf-8')
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update/trace')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        available: true,
+        path: join(stateRoot, 'update-trace.log'),
+        content: `${traceContent}\n`,
+      })
+      expect(response.body.lastModifiedAt).toEqual(expect.any(String))
     } finally {
       await rm(stateRoot, { recursive: true, force: true })
     }

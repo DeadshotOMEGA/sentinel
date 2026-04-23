@@ -68,6 +68,13 @@ export const SystemUpdateStatusResponseSchema = v.object({
   currentJob: v.nullable(SystemUpdateJobSchema),
 })
 
+export const SystemUpdateTraceResponseSchema = v.object({
+  available: v.boolean(),
+  path: v.string(),
+  content: v.string(),
+  lastModifiedAt: v.nullable(v.string()),
+})
+
 export const StartSystemUpdateSchema = v.object({
   targetVersion: SystemUpdateVersionSchema,
 })
@@ -87,6 +94,7 @@ export type SystemUpdateJobStatus = v.InferOutput<typeof SystemUpdateJobStatusSc
 export type SystemUpdateRequestedBy = v.InferOutput<typeof SystemUpdateRequestedBySchema>
 export type SystemUpdateJob = v.InferOutput<typeof SystemUpdateJobSchema>
 export type SystemUpdateStatusResponse = v.InferOutput<typeof SystemUpdateStatusResponseSchema>
+export type SystemUpdateTraceResponse = v.InferOutput<typeof SystemUpdateTraceResponseSchema>
 export type StartSystemUpdateInput = v.InferOutput<typeof StartSystemUpdateSchema>
 export type StartSystemUpdateResponse = v.InferOutput<typeof StartSystemUpdateResponseSchema>
 export type SystemUpdateJobParams = v.InferOutput<typeof SystemUpdateJobParamsSchema>
