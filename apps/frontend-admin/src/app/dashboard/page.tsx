@@ -22,11 +22,11 @@ export default function DashboardPage() {
         <section aria-label="Dashboard update verification tools">
           <AppAlert
             tone="info"
-            heading="Update verification shortcuts"
-            description="Jump straight into the new update flow or open the host-side trace log from the dashboard."
+            heading="Update readiness shortcuts"
+            description="Launch the update flow or inspect the host trace log without leaving the dashboard."
             meta={
               <AppBadge status="info" size="sm">
-                Update test
+                Release prep
               </AppBadge>
             }
             actions={
@@ -36,14 +36,14 @@ export default function DashboardPage() {
                   className="btn btn-sm btn-outline"
                   data-testid={TID.dashboard.updateBanner.updatesLink}
                 >
-                  Open updates
+                  Open update flow
                 </Link>
                 <Link
                   href="/settings?tab=updates&trace=open"
                   className="btn btn-sm btn-primary"
                   data-testid={TID.dashboard.updateBanner.traceLink}
                 >
-                  Open update log
+                  Open trace log
                 </Link>
               </div>
             }
@@ -51,8 +51,8 @@ export default function DashboardPage() {
             data-testid={TID.dashboard.updateBanner.panel}
           >
             <p className="text-sm text-base-content/80">
-              Use these shortcuts to validate both the update request flow and the update log viewer
-              without leaving the dashboard first.
+              Use these shortcuts during release checks to confirm the operator flow and the
+              host-side trace output stay aligned in one pass.
             </p>
           </AppAlert>
         </section>
