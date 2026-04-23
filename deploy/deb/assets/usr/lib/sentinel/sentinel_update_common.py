@@ -13,6 +13,8 @@ CURRENT_JOB_PATH = STATE_ROOT / "current-job.json"
 JOBS_DIR = STATE_ROOT / "jobs"
 DOWNLOADS_DIR = STATE_ROOT / "downloads"
 BACKUPS_DIR = STATE_ROOT / "backups"
+TRACE_LOG_PATH = STATE_ROOT / "update-trace.log"
+TRACE_ARCHIVE_DIR = STATE_ROOT / "traces"
 LOCK_PATH = STATE_ROOT / "update.lock"
 
 APPLIANCE_ENV_PATH = Path(os.environ.get("SENTINEL_APPLIANCE_ENV", "/etc/sentinel/appliance.env"))
@@ -56,10 +58,50 @@ def ensure_runtime_directories() -> None:
     ensure_directory(JOBS_DIR, 0o775)
     ensure_directory(DOWNLOADS_DIR, 0o775)
     ensure_directory(BACKUPS_DIR, 0o775)
+    ensure_directory(TRACE_ARCHIVE_DIR, 0o775)
     ensure_directory(LOG_ROOT, 0o750)
     ensure_directory(APPLIANCE_STATE_PATH.parent, 0o755)
     if not LOCK_PATH.exists():
         LOCK_PATH.touch(mode=0o664)
+
+
+def format_trace_line(component: str, level: str, message: str) -> str:
+    normalized_message = " ".join(message.split()) or "No message provided."
+    return f"{utc_now()} [{component}] [{level.upper()}] {normalized_message}"
+
+
+def append_trace_line(component: str, level: str, message: str) -> None:
+    ensure_runtime_directories()
+    with TRACE_LOG_PATH.open("a", encoding="utf-8") as handle:
+        handle.write(format_trace_line(component, level, message))
+        handle.write("\n")
+    try:
+        os.chmod(TRACE_LOG_PATH, 0o664)
+    except PermissionError:
+        pass
+
+
+def archive_and_reset_trace(
+    component: str,
+    message: str,
+    *,
+    archive_suffix: str | None = None,
+) -> Path:
+    ensure_runtime_directories()
+    if TRACE_LOG_PATH.exists() and TRACE_LOG_PATH.stat().st_size > 0:
+        timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d-%H%M%S")
+        safe_suffix = re.sub(r"[^A-Za-z0-9._-]+", "-", (archive_suffix or component).strip()) or component
+        archive_path = TRACE_ARCHIVE_DIR / f"update-trace-{timestamp}-{safe_suffix}.log"
+        os.replace(TRACE_LOG_PATH, archive_path)
+
+    TRACE_LOG_PATH.write_text("", encoding="utf-8")
+    try:
+        os.chmod(TRACE_LOG_PATH, 0o664)
+    except PermissionError:
+        pass
+
+    append_trace_line(component, "info", message)
+    return TRACE_LOG_PATH
 
 
 def read_json_file(path: Path) -> dict[str, Any] | None:

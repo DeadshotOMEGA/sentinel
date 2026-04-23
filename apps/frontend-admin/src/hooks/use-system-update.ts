@@ -6,10 +6,12 @@ import type {
   StartSystemUpdateResponse,
   SystemUpdateJob,
   SystemUpdateStatusResponse,
+  SystemUpdateTraceResponse,
 } from '@sentinel/contracts'
 import { apiClient } from '@/lib/api-client'
 
 const systemUpdateStatusQueryKey = ['system-update', 'status'] as const
+const systemUpdateTraceQueryKey = ['system-update', 'trace'] as const
 
 function getErrorMessage(body: unknown, fallback: string): string {
   if (body && typeof body === 'object' && 'message' in body) {
@@ -96,8 +98,31 @@ export function useStartSystemUpdate() {
         }
       )
       void queryClient.invalidateQueries({ queryKey: systemUpdateStatusQueryKey })
+      void queryClient.invalidateQueries({ queryKey: systemUpdateTraceQueryKey })
       void queryClient.invalidateQueries({ queryKey: ['system-status'] })
       void queryClient.invalidateQueries({ queryKey: ['system-update', 'job', data.job.jobId] })
     },
+  })
+}
+
+export function useSystemUpdateTrace(options?: {
+  enabled?: boolean
+  refetchIntervalMs?: number | false
+}) {
+  return useQuery({
+    queryKey: systemUpdateTraceQueryKey,
+    queryFn: async (): Promise<SystemUpdateTraceResponse> => {
+      const response = await apiClient.systemUpdate.getSystemUpdateTrace()
+
+      if (response.status !== 200) {
+        throw new Error(getErrorMessage(response.body, 'Failed to load update trace log'))
+      }
+
+      return response.body
+    },
+    enabled: options?.enabled,
+    refetchInterval: options?.refetchIntervalMs ?? false,
+    refetchOnWindowFocus: true,
+    retry: 1,
   })
 }

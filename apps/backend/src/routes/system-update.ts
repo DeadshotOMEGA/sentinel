@@ -10,6 +10,7 @@ import {
   SystemUpdateBridgeClientError,
 } from '../services/system-update-bridge-client.js'
 import { SystemUpdateStatusService } from '../services/system-update-status-service.js'
+import { SystemUpdateTraceService } from '../services/system-update-trace-service.js'
 
 const s = initServer()
 
@@ -59,9 +60,11 @@ function buildRequesterName(req: Request): string {
 export function createSystemUpdateRouter(options?: {
   statusService?: SystemUpdateStatusService
   bridgeClient?: SystemUpdateBridgeClient
+  traceService?: SystemUpdateTraceService
 }) {
   const statusService = options?.statusService ?? new SystemUpdateStatusService()
   const bridgeClient = options?.bridgeClient ?? new SystemUpdateBridgeClient()
+  const traceService = options?.traceService ?? new SystemUpdateTraceService()
 
   return s.router(systemUpdateContract, {
     getSystemUpdateStatus: async ({ req }) => {
@@ -169,6 +172,29 @@ export function createSystemUpdateRouter(options?: {
           body: {
             error: 'INTERNAL_ERROR',
             message: error instanceof Error ? error.message : 'Failed to start system update',
+          },
+        }
+      }
+    },
+
+    getSystemUpdateTrace: async ({ req }) => {
+      const auth = requireSystemUpdateAccess(req)
+      if (auth) {
+        return auth
+      }
+
+      try {
+        const trace = await traceService.getTrace()
+        return {
+          status: 200 as const,
+          body: trace,
+        }
+      } catch (error) {
+        return {
+          status: 500 as const,
+          body: {
+            error: 'INTERNAL_ERROR',
+            message: error instanceof Error ? error.message : 'Failed to load system update trace',
           },
         }
       }

@@ -200,6 +200,16 @@ if [[ "${SYNCED}" != "true" && "${SCRIPT_DIR}" != "${TARGET_DIR}" ]]; then
   exec "${TARGET_DIR}/update.sh" "${reexec_args[@]}"
 fi
 
+TRACE_MODE="reset"
+if [[ "${SENTINEL_UPDATE_TRACE_ACTIVE:-false}" == "true" ]]; then
+  TRACE_MODE="append"
+fi
+enable_update_trace \
+  "update.sh" \
+  "${TRACE_MODE}" \
+  "Starting Sentinel manual update flow${TARGET_VERSION:+ to ${TARGET_VERSION}}." \
+  "${TARGET_VERSION:-manual-update}"
+
 ensure_docker_and_compose_v2
 
 if ! check_ghcr_reachability; then
@@ -269,6 +279,7 @@ fi
 upsert_env "CORS_ORIGIN" "${CURRENT_CORS}"
 
 ensure_compose_pull_with_login_fallback
+log "Applying updated Sentinel stack for ${TARGET_VERSION}"
 compose up -d
 
 run_safe_migrations
@@ -291,6 +302,8 @@ fi
 
 if [[ "${NO_FIREWALL}" != "true" ]]; then
   configure_firewall "${LAN_CIDR}"
+else
+  warn "Skipping firewall configuration (--no-firewall)."
 fi
 
 ensure_mdns_hostname

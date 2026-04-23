@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SystemUpdateJob, SystemUpdateJobStatus } from '@sentinel/contracts'
 import { Download, ExternalLink, RefreshCw, RotateCcw, ServerCog, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
@@ -22,7 +22,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useStartSystemUpdate, useSystemUpdateStatus } from '@/hooks/use-system-update'
+import {
+  useStartSystemUpdate,
+  useSystemUpdateStatus,
+  useSystemUpdateTrace,
+} from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
 
@@ -225,10 +229,19 @@ function getNextActionGuidance(job: SystemUpdateJob | null, updateAvailable: boo
   return 'No action is needed until a newer stable release is published.'
 }
 
+function shouldAutoOpenTraceLog(job: SystemUpdateJob | null): boolean {
+  if (!job) {
+    return false
+  }
+
+  return !isTerminalStatus(job.status) || isFailureStatus(job.status)
+}
+
 export function SystemUpdatePanel() {
   const member = useAuthStore((state) => state.member)
   const canStartUpdates = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [tracePanelOpen, setTracePanelOpen] = useState(false)
 
   const systemUpdateQuery = useSystemUpdateStatus({
     enabled: Boolean(member),
@@ -239,12 +252,30 @@ export function SystemUpdatePanel() {
   const status = systemUpdateQuery.data ?? null
   const currentJob = status?.currentJob ?? null
   const hasActiveJob = currentJob ? !isTerminalStatus(currentJob.status) : false
+  const autoOpenTraceLog = shouldAutoOpenTraceLog(currentJob)
   const canStartNow =
     canStartUpdates &&
     status?.updateAvailable === true &&
     status.latestVersion !== null &&
     !hasActiveJob &&
     !startSystemUpdate.isPending
+  const traceQuery = useSystemUpdateTrace({
+    enabled: Boolean(member) && canStartUpdates && tracePanelOpen,
+    refetchIntervalMs: tracePanelOpen && hasActiveJob ? 5_000 : false,
+  })
+
+  useEffect(() => {
+    if (autoOpenTraceLog) {
+      setTracePanelOpen(true)
+    }
+  }, [autoOpenTraceLog, currentJob?.jobId, currentJob?.status])
+
+  const handleRefresh = async () => {
+    await systemUpdateQuery.refetch()
+    if (tracePanelOpen && canStartUpdates) {
+      await traceQuery.refetch()
+    }
+  }
 
   const handleStartUpdate = async () => {
     if (!status?.latestVersion) {
@@ -318,7 +349,7 @@ export function SystemUpdatePanel() {
               <button
                 type="button"
                 className="btn btn-sm btn-outline"
-                onClick={() => void systemUpdateQuery.refetch()}
+                onClick={() => void handleRefresh()}
                 disabled={systemUpdateQuery.isFetching}
                 data-testid={TID.settings.updates.refresh}
               >
@@ -631,6 +662,106 @@ export function SystemUpdatePanel() {
               )}
             </section>
           </div>
+
+          {canStartUpdates && (
+            <section className="rounded-box border border-base-300 bg-base-100">
+              <details
+                className="collapse collapse-arrow"
+                open={tracePanelOpen}
+                onToggle={(event) => {
+                  setTracePanelOpen(event.currentTarget.open)
+                }}
+                data-testid={TID.settings.updates.tracePanel}
+              >
+                <summary className="collapse-title pr-(--space-16)">
+                  <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
+                    <div>
+                      <h3 className="text-base font-semibold">Update trace log</h3>
+                      <p className="mt-1 text-sm text-base-content/70">
+                        Host-side diagnostics for the current or most recent update run.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-(--space-2)">
+                      {hasActiveJob ? (
+                        <AppBadge status="info" size="sm">
+                          Live
+                        </AppBadge>
+                      ) : (
+                        <AppBadge status="neutral" size="sm">
+                          Manual refresh
+                        </AppBadge>
+                      )}
+                    </div>
+                  </div>
+                </summary>
+
+                <div className="collapse-content space-y-4 border-t border-base-300 pt-(--space-4)">
+                  <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
+                    <div className="min-w-0 space-y-1">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                        Active trace path
+                      </div>
+                      <div className="font-mono text-sm break-all text-base-content/80">
+                        {traceQuery.data?.path ?? '/var/lib/sentinel/updater/update-trace.log'}
+                      </div>
+                      <div className="text-xs text-base-content/60">
+                        {hasActiveJob
+                          ? 'Auto-refresh runs while this panel stays open during an active update.'
+                          : 'Use refresh to load the latest host-side trace output.'}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      onClick={() => void traceQuery.refetch()}
+                      disabled={traceQuery.isFetching}
+                      data-testid={TID.settings.updates.traceRefresh}
+                    >
+                      {traceQuery.isFetching ? (
+                        <LoadingSpinner size="xs" className="mr-2" />
+                      ) : (
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                      )}
+                      Refresh trace
+                    </button>
+                  </div>
+
+                  {traceQuery.isLoading ? (
+                    <div className="flex items-center justify-center rounded-box border border-base-300 bg-base-200 px-(--space-4) py-(--space-6)">
+                      <LoadingSpinner size="sm" className="text-base-content/60" />
+                    </div>
+                  ) : traceQuery.isError ? (
+                    <AppAlert tone="warning" heading="Trace log unavailable">
+                      {traceQuery.error instanceof Error
+                        ? traceQuery.error.message
+                        : 'Unable to load the update trace log right now.'}
+                    </AppAlert>
+                  ) : traceQuery.data?.available ? (
+                    <div className="space-y-2">
+                      <div className="text-xs text-base-content/60">
+                        Last modified:{' '}
+                        {traceQuery.data.lastModifiedAt
+                          ? formatTimestamp(traceQuery.data.lastModifiedAt)
+                          : 'Unknown'}
+                      </div>
+                      <pre
+                        className="max-h-[28rem] overflow-auto rounded-box border border-base-300 bg-base-200 p-(--space-4) font-mono text-xs leading-relaxed text-base-content"
+                        data-testid={TID.settings.updates.traceContent}
+                      >
+                        {traceQuery.data.content}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="rounded-box border border-base-300 bg-base-200 p-(--space-4) text-sm text-base-content/70">
+                      No active trace log is available yet. Start an update from this page or run a
+                      host-side update command to generate a fresh trace.
+                    </div>
+                  )}
+                </div>
+              </details>
+            </section>
+          )}
         </AppCardContent>
       </AppCard>
 

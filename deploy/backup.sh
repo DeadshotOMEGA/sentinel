@@ -53,6 +53,11 @@ case "${SCOPE}" in
     ;;
 esac
 
+enable_update_trace \
+  "backup.sh" \
+  "append" \
+  "Backup helper invoked for scope ${SCOPE}."
+
 ensure_docker_and_compose_v2
 ensure_env_file
 load_state
@@ -70,6 +75,8 @@ if [[ -z "${OUTPUT_DIR}" ]]; then
   OUTPUT_DIR="${default_backup_dir}"
 fi
 mkdir -p "${OUTPUT_DIR}"
+
+log "Preparing backup output in ${OUTPUT_DIR} (scope: ${SCOPE})"
 
 POSTGRES_USER="$(env_value POSTGRES_USER sentinel)"
 POSTGRES_DB="$(env_value POSTGRES_DB sentinel)"

@@ -50,6 +50,12 @@ if [[ -n "${TARGET_VERSION}" ]]; then
   TARGET_VERSION="$(normalize_version_value "${TARGET_VERSION}")"
 fi
 
+enable_update_trace \
+  "rollback.sh" \
+  "reset" \
+  "Starting Sentinel rollback flow${TARGET_VERSION:+ to ${TARGET_VERSION}}." \
+  "${TARGET_VERSION:-rollback}"
+
 ensure_docker_and_compose_v2
 ensure_env_file
 load_state
@@ -75,6 +81,7 @@ PREVIOUS_VERSION="${PREV_FOR_SWAP}"
 upsert_env "SENTINEL_VERSION" "${TARGET_VERSION}"
 
 ensure_compose_pull_with_login_fallback
+log "Applying rollback target ${TARGET_VERSION}"
 compose up -d
 run_bootstrap_sentinel_account
 

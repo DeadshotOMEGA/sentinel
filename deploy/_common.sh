@@ -9,6 +9,8 @@ STATE_FILE="${DEPLOY_DIR}/.appliance-state"
 UPDATER_STATE_ROOT="/var/lib/sentinel/updater"
 CURRENT_JOB_FILE="${UPDATER_STATE_ROOT}/current-job.json"
 UPDATER_JOBS_DIR="${UPDATER_STATE_ROOT}/jobs"
+UPDATE_TRACE_FILE="${UPDATER_STATE_ROOT}/update-trace.log"
+UPDATE_TRACE_ARCHIVE_DIR="${UPDATER_STATE_ROOT}/traces"
 BASE_COMPOSE_FILE="${DEPLOY_DIR}/docker-compose.yml"
 GRAFANA_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.grafana-lan.yml"
 WIKI_OVERRIDE_FILE="${DEPLOY_DIR}/docker-compose.wiki-lan.yml"
@@ -21,16 +23,130 @@ ALLOW_GRAFANA_LAN="false"
 ALLOW_WIKI_LAN="false"
 UPDATE_HAS_PRE_UPDATE_BACKUP="${UPDATE_HAS_PRE_UPDATE_BACKUP:-false}"
 
+utc_timestamp() {
+  date -u +'%Y-%m-%dT%H:%M:%SZ'
+}
+
+normalize_update_trace_message() {
+  local message="${*:-}"
+  printf '%s' "${message}" \
+    | tr '\n' ' ' \
+    | sed -E 's/[[:space:]]+/ /g; s/^[[:space:]]+//; s/[[:space:]]+$//'
+}
+
+format_update_trace_line() {
+  local component="${1:-deploy}"
+  local level="${2:-INFO}"
+  shift 2 || true
+  local message
+  message="$(normalize_update_trace_message "$*")"
+  [[ -n "${message}" ]] || message="No message provided."
+  printf '%s [%s] [%s] %s\n' "$(utc_timestamp)" "${component}" "$(printf '%s' "${level}" | tr '[:lower:]' '[:upper:]')" "${message}"
+}
+
+ensure_update_trace_dirs() {
+  run_root install -d -m 775 "${UPDATER_STATE_ROOT}" "${UPDATE_TRACE_ARCHIVE_DIR}"
+}
+
+append_update_trace_line() {
+  local component="${1:-deploy}"
+  local level="${2:-INFO}"
+  shift 2 || true
+  local line
+  line="$(format_update_trace_line "${component}" "${level}" "$*")"
+
+  ensure_update_trace_dirs
+
+  if [[ -w "${UPDATE_TRACE_FILE}" || ( ! -e "${UPDATE_TRACE_FILE}" && -w "${UPDATER_STATE_ROOT}" ) ]]; then
+    printf '%s\n' "${line}" >>"${UPDATE_TRACE_FILE}"
+    chmod 664 "${UPDATE_TRACE_FILE}" 2>/dev/null || true
+  else
+    printf '%s\n' "${line}" | run_root tee -a "${UPDATE_TRACE_FILE}" >/dev/null
+    run_root chmod 664 "${UPDATE_TRACE_FILE}" >/dev/null 2>&1 || true
+  fi
+}
+
+trace_log() {
+  local level="${1:-INFO}"
+  shift || true
+  [[ "${SENTINEL_UPDATE_TRACE_ENABLED:-false}" == "true" ]] || return 0
+  append_update_trace_line "${SENTINEL_UPDATE_TRACE_COMPONENT:-deploy}" "${level}" "$*"
+}
+
+archive_and_reset_update_trace() {
+  local component="${1:-deploy}"
+  local start_message="${2:-Starting update trace session.}"
+  local archive_suffix="${3:-${component}}"
+  local safe_suffix timestamp archive_path
+
+  ensure_update_trace_dirs
+
+  if [[ -f "${UPDATE_TRACE_FILE}" && -s "${UPDATE_TRACE_FILE}" ]]; then
+    timestamp="$(date -u +'%Y%m%d-%H%M%S')"
+    safe_suffix="$(printf '%s' "${archive_suffix}" | sed -E 's/[^A-Za-z0-9._-]+/-/g')"
+    [[ -n "${safe_suffix}" ]] || safe_suffix="${component}"
+    archive_path="${UPDATE_TRACE_ARCHIVE_DIR}/update-trace-${timestamp}-${safe_suffix}.log"
+    if [[ -w "${UPDATE_TRACE_FILE}" && -w "${UPDATE_TRACE_ARCHIVE_DIR}" ]]; then
+      mv "${UPDATE_TRACE_FILE}" "${archive_path}"
+    else
+      run_root mv "${UPDATE_TRACE_FILE}" "${archive_path}"
+    fi
+  fi
+
+  if [[ -w "${UPDATER_STATE_ROOT}" ]]; then
+    : >"${UPDATE_TRACE_FILE}"
+    chmod 664 "${UPDATE_TRACE_FILE}" 2>/dev/null || true
+  else
+    run_root bash -c ': >"$1"; chmod 664 "$1"' _ "${UPDATE_TRACE_FILE}"
+  fi
+
+  append_update_trace_line "${component}" "info" "${start_message}"
+}
+
+update_trace_err_trap() {
+  local exit_code="${1:-1}"
+  local line_no="${2:-0}"
+  local command="${3:-unknown}"
+
+  [[ "${SENTINEL_UPDATE_TRACE_ENABLED:-false}" == "true" ]] || return 0
+  append_update_trace_line \
+    "${SENTINEL_UPDATE_TRACE_COMPONENT:-deploy}" \
+    "error" \
+    "Command failed at line ${line_no} with exit ${exit_code}: ${command}"
+}
+
+enable_update_trace() {
+  local component="${1:-deploy}"
+  local mode="${2:-append}"
+  local start_message="${3:-Update trace session started.}"
+  local archive_suffix="${4:-${component}}"
+
+  export SENTINEL_UPDATE_TRACE_ENABLED="true"
+  export SENTINEL_UPDATE_TRACE_ACTIVE="true"
+  export SENTINEL_UPDATE_TRACE_COMPONENT="${component}"
+
+  if [[ "${mode}" == "reset" ]]; then
+    archive_and_reset_update_trace "${component}" "${start_message}" "${archive_suffix}"
+  else
+    append_update_trace_line "${component}" "info" "${start_message}"
+  fi
+
+  trap 'update_trace_err_trap $? $LINENO "$BASH_COMMAND"' ERR
+}
+
 log() {
   printf '[sentinel] %s\n' "$*"
+  trace_log "info" "$*"
 }
 
 warn() {
   printf '[sentinel][warn] %s\n' "$*" >&2
+  trace_log "warning" "$*"
 }
 
 die() {
   printf '[sentinel][error] %s\n' "$*" >&2
+  trace_log "error" "$*"
   exit 1
 }
 
@@ -519,6 +635,7 @@ load_state() {
 }
 
 save_state() {
+  log "Persisting appliance state to legacy and canonical state files"
   cat >"${STATE_FILE}" <<STATE
 WITH_OBS=${WITH_OBS}
 ALLOW_GRAFANA_LAN=${ALLOW_GRAFANA_LAN}
@@ -645,6 +762,7 @@ wait_for_service_health() {
   local timeout="${2:-180}"
   local elapsed=0
 
+  log "Waiting for service ${service} to become healthy"
   while (( elapsed < timeout )); do
     local container_id
     container_id="$(compose ps -q "${service}" 2>/dev/null | head -n1 || true)"
@@ -654,6 +772,7 @@ wait_for_service_health() {
       status="$(docker_cmd inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "${container_id}" 2>/dev/null || true)"
       case "${status}" in
         healthy|running)
+          log "Service ${service} is ${status}"
           return 0
           ;;
         unhealthy|exited|dead)
@@ -876,6 +995,7 @@ run_bootstrap_sentinel_account() {
 wait_for_healthz() {
   local timeout="${1:-180}"
   local elapsed=0
+  log "Waiting for /healthz to report healthy"
   until curl -fsS --max-time 5 http://127.0.0.1/healthz >/dev/null 2>&1; do
     sleep 3
     elapsed=$((elapsed + 3))
@@ -884,6 +1004,7 @@ wait_for_healthz() {
       return 1
     fi
   done
+  log "Health endpoint is healthy"
   return 0
 }
 
