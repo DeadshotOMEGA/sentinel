@@ -168,9 +168,24 @@ ensure_user sentinel-updater-bridge 10002 sentinel-updater-bridge
 
 install -d -m 755 /etc/sentinel /var/lib/sentinel /var/lib/sentinel/appliance /run/sentinel
 install -d -m 775 /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups /var/lib/sentinel/updater/traces
+install -d -m 775 \
+  /opt/sentinel/deploy/runtime/hotspot-recovery \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/requests \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/processed \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/failed
 install -d -m 750 /var/log/sentinel
 chown root:sentinel-updater-bridge /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups /var/lib/sentinel/updater/traces
+chown root:sentinel-backend \
+  /opt/sentinel/deploy/runtime/hotspot-recovery \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/requests \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/processed \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/failed
 chmod 775 /var/lib/sentinel/updater /var/lib/sentinel/updater/jobs /var/lib/sentinel/updater/downloads /var/lib/sentinel/updater/backups /var/lib/sentinel/updater/traces
+chmod 775 \
+  /opt/sentinel/deploy/runtime/hotspot-recovery \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/requests \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/processed \
+  /opt/sentinel/deploy/runtime/hotspot-recovery/failed
 
 if [ -d /opt/sentinel/deploy ]; then
   chmod +x /opt/sentinel/deploy/*.sh 2>/dev/null || true
@@ -239,10 +254,8 @@ EOF
   chmod 644 /opt/sentinel/deploy/.appliance-state
 fi
 
-if [ -d /opt/sentinel/deploy/runtime/hotspot-recovery ]; then
-  chgrp -R sentinel-backend /opt/sentinel/deploy/runtime/hotspot-recovery || true
-  chmod -R g+rwX /opt/sentinel/deploy/runtime/hotspot-recovery || true
-fi
+chgrp -R sentinel-backend /opt/sentinel/deploy/runtime/hotspot-recovery || true
+chmod -R g+rwX /opt/sentinel/deploy/runtime/hotspot-recovery || true
 
 if command -v systemctl >/dev/null 2>&1; then
   systemctl disable --now sentinel-system-update-request.path sentinel-system-update-request.service >/dev/null 2>&1 || true
