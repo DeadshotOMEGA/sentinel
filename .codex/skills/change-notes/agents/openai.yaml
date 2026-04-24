@@ -1,0 +1,4 @@
+interface:
+  display_name: "Change Notes"
+  short_description: "Write clear commits, PRs, and release notes"
+  default_prompt: "Use $change-notes to draft clear release notes from these changes."
