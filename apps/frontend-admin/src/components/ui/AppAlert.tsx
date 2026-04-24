@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { CircleCheckBig, CircleX, Info, TriangleAlert } from 'lucide-react'
+import { CircleCheckBig, CircleX, Info, TriangleAlert, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { resolveAppAlertVariant, type AppAlertVariant } from './AppAlert.logic'
 
@@ -13,6 +13,8 @@ interface AppAlertProps extends Omit<React.ComponentProps<'div'>, 'children'> {
   description?: React.ReactNode
   meta?: React.ReactNode
   actions?: React.ReactNode
+  onDismiss?: () => void
+  dismissLabel?: string
   children?: React.ReactNode
 }
 
@@ -79,6 +81,8 @@ function AppAlert({
   description,
   meta,
   actions,
+  onDismiss,
+  dismissLabel = 'Dismiss alert',
   children,
   role,
   style,
@@ -92,6 +96,16 @@ function AppAlert({
     actions,
   })
   const renderedIcon = icon === false ? null : (icon ?? renderDefaultIcon(tone, resolvedVariant))
+  const dismissAction = onDismiss ? (
+    <button
+      type="button"
+      className="btn btn-ghost btn-xs btn-square"
+      onClick={onDismiss}
+      aria-label={dismissLabel}
+    >
+      <X aria-hidden="true" className="h-4 w-4" />
+    </button>
+  ) : null
 
   if (resolvedVariant === 'single-line') {
     return (
@@ -104,6 +118,7 @@ function AppAlert({
       >
         {renderedIcon}
         <span className="min-w-0">{children}</span>
+        {dismissAction}
       </div>
     )
   }
@@ -128,7 +143,12 @@ function AppAlert({
         {children}
       </div>
       {meta ? <div className="text-xs text-base-content/70 sm:self-center">{meta}</div> : null}
-      {actions ? <div className="shrink-0 sm:self-center">{actions}</div> : null}
+      {actions || dismissAction ? (
+        <div className="flex shrink-0 items-center gap-(--space-2) sm:self-center">
+          {actions}
+          {dismissAction}
+        </div>
+      ) : null}
     </div>
   )
 }

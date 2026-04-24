@@ -3,6 +3,91 @@ name: frontend-ux-ui-guardrails
 description: Enforces Sentinel frontend design quality for apps/frontend-admin with DaisyUI-first implementation and DaisyUI Blueprint MCP lookup.
 ---
 
+## Sentinel UX Design Canon (Learned Baseline)
+
+When designing or redesigning pages in `apps/frontend-admin`, default to the established Sentinel admin style demonstrated by the successful Updates page redesign.
+
+### Product Feel
+
+Interfaces should feel:
+
+- calm
+- operational
+- dependable
+- professional
+- efficient
+- military-internal-tool quality
+
+Avoid flashy SaaS trends, playful styling, excessive gradients, or decorative clutter.
+
+### Visual Hierarchy Rule
+
+A user should understand the page in 3 seconds:
+
+1. Current page / purpose
+2. Current status
+3. Primary action
+4. Key metrics
+5. Secondary tools
+
+### Surface Hierarchy
+
+Prefer three tonal layers:
+
+1. App/page canvas
+2. Standard content surfaces
+3. Emphasized semantic surfaces
+
+Avoid flat white-box repetition.
+
+### Semantic Color Rules
+
+Use restrained semantic tinting:
+
+- Success/Healthy/Current = green
+- Actions/Tools/Info = blue
+- Warning = amber
+- Failure = red
+- Passive/History = neutral
+
+Use color for meaning, not decoration.
+
+### KPI Rules
+
+Values should visually outrank labels.
+
+Examples:
+
+- versions
+- counts
+- timestamps
+- statuses
+
+Large value, smaller label, concise supporting text.
+
+### Layout Patterns
+
+When suitable, prefer:
+
+- Left: activity/history/content
+- Right: actions/tools/recovery/context
+
+### Border Discipline
+
+Too many borders create low-quality enterprise UI.
+
+Prefer spacing, surface contrast, shadows, and typography before adding borders.
+
+### Density Rules
+
+Sentinel admin UI is desktop-first and operational.
+
+Prefer efficient layouts with intentional spacing. Avoid oversized mobile-first whitespace unless explicitly requested.
+
+### Reuse Rule
+
+Before inventing a new page style, inspect the current Updates page and align new work to its tone, spacing rhythm, hierarchy, and surface treatment.
+
 # Frontend UX/UI Guardrails
 
 ## Use this skill when

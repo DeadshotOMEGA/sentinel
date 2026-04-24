@@ -32,6 +32,7 @@ import { remoteSystemContract } from './remote-system.contract.js'
 import { networkSettingContract } from './network-setting.contract.js'
 import { systemStatusContract } from './system-status.contract.js'
 import { systemUpdateContract } from './system-update.contract.js'
+import { adminNavigationContract } from './admin-navigation.contract.js'
 
 const c = initContract()
 
@@ -76,6 +77,7 @@ export const apiContract = c.router(
     networkSettings: networkSettingContract,
     systemStatus: systemStatusContract,
     systemUpdate: systemUpdateContract,
+    adminNavigation: adminNavigationContract,
   },
   {
     pathPrefix: '',

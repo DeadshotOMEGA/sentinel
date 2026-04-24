@@ -30,6 +30,8 @@ import {
   remoteSystemContract,
   networkSettingContract,
   systemStatusContract,
+  systemUpdateContract,
+  adminNavigationContract,
 } from '@sentinel/contracts'
 import { initContract } from '@ts-rest/core'
 
@@ -65,6 +67,8 @@ const apiContract = c.router({
   remoteSystems: remoteSystemContract,
   networkSettings: networkSettingContract,
   systemStatus: systemStatusContract,
+  systemUpdate: systemUpdateContract,
+  adminNavigation: adminNavigationContract,
 })
 
 // Generate OpenAPI specification
@@ -137,6 +141,8 @@ const openApiDocument = generateOpenApi(
         name: 'system-status',
         description: 'Aggregated backend, database, network, and remote-session status',
       },
+      { name: 'system-update', description: 'Sentinel appliance update operations' },
+      { name: 'admin-navigation-events', description: 'Aggregate admin navigation telemetry' },
     ],
     components: {
       securitySchemes: {

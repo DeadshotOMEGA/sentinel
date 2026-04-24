@@ -1589,8 +1589,10 @@ DESKTOP
 
   if getent group sentinel-backend >/dev/null 2>&1; then
     run_root chgrp -R sentinel-backend "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
-    run_root chmod -R g+rwX "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
+  else
+    run_root chgrp -R 10001 "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
   fi
+  run_root chmod -R g+rwX "${DEPLOY_DIR}/runtime/hotspot-recovery" >/dev/null 2>&1 || true
 
   run_root tee /etc/systemd/system/sentinel-host-hotspot-recovery.service >/dev/null <<UNIT
 [Unit]

@@ -55,6 +55,7 @@ function createStatusResponse(overrides?: Partial<Record<string, unknown>>) {
     currentVersion: 'v2.6.1',
     latestVersion: 'v2.6.2',
     latestReleaseUrl: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.2',
+    latestReleaseNotes: null,
     updateAvailable: true,
     currentJob: null,
     ...overrides,
@@ -559,6 +560,10 @@ describe('systemUpdateRouter', () => {
         available: false,
         path: join(stateRoot, 'update-trace.log'),
         content: '',
+        displayedLineCount: 0,
+        filteredLineCount: 0,
+        totalLineCount: 0,
+        truncatedToLatestRun: false,
         lastModifiedAt: null,
       })
     } finally {
@@ -585,8 +590,80 @@ describe('systemUpdateRouter', () => {
         available: true,
         path: join(stateRoot, 'update-trace.log'),
         content: `${traceContent}\n`,
+        displayedLineCount: 2,
+        filteredLineCount: 0,
+        totalLineCount: 2,
+        truncatedToLatestRun: false,
       })
       expect(response.body.lastModifiedAt).toEqual(expect.any(String))
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('returns only the latest trace run when an older run remains in the active trace file', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const traceContent = [
+      '2026-04-23T12:00:00Z [bridge] [INFO] Accepted a new Sentinel update request for v2.6.4.',
+      '2026-04-23T12:00:01Z [updater] [INFO] completed: Sentinel updated successfully.',
+      '2026-04-23T13:00:00Z [bridge] [INFO] Accepted a new Sentinel update request for v2.6.5.',
+      '2026-04-23T13:00:01Z [updater] [INFO] installing: Installing Sentinel package v2.6.5.',
+    ].join('\n')
+
+    await writeFile(join(stateRoot, 'update-trace.log'), `${traceContent}\n`, 'utf-8')
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update/trace')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        available: true,
+        content: [
+          '2026-04-23T13:00:00Z [bridge] [INFO] Accepted a new Sentinel update request for v2.6.5.',
+          '2026-04-23T13:00:01Z [updater] [INFO] installing: Installing Sentinel package v2.6.5.',
+          '',
+        ].join('\n'),
+        displayedLineCount: 2,
+        filteredLineCount: 0,
+        totalLineCount: 4,
+        truncatedToLatestRun: true,
+      })
+    } finally {
+      await rm(stateRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('filters noisy Docker extraction progress lines from the displayed trace', async () => {
+    const stateRoot = await mkdtemp(join(tmpdir(), 'sentinel-system-update-state-'))
+    const traceContent = [
+      '2026-04-23T21:12:17Z [bridge] [INFO] Accepted a new Sentinel update request for v2.6.5.',
+      '2026-04-23T21:12:18Z [updater] [INFO] stderr: 4a3fb8418c1c Extracting 9B',
+      '2026-04-23T21:12:19Z [updater] [INFO] stderr: 4a3fb8418c1c Extracting 32.77kB',
+      '2026-04-23T21:12:20Z [updater] [INFO] restarting: Recreating the Sentinel stack.',
+    ].join('\n')
+
+    await writeFile(join(stateRoot, 'update-trace.log'), `${traceContent}\n`, 'utf-8')
+    process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
+
+    try {
+      const app = createTestApp(5)
+      const response = await request(app).get('/api/admin/system/update/trace')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        available: true,
+        content: [
+          '2026-04-23T21:12:17Z [bridge] [INFO] Accepted a new Sentinel update request for v2.6.5.',
+          '2026-04-23T21:12:20Z [updater] [INFO] restarting: Recreating the Sentinel stack.',
+          '',
+        ].join('\n'),
+        displayedLineCount: 2,
+        filteredLineCount: 2,
+        totalLineCount: 4,
+        truncatedToLatestRun: false,
+      })
     } finally {
       await rm(stateRoot, { recursive: true, force: true })
     }

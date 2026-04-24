@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-02-27",
+  "updated": "2026-04-24",
   "slugs": [
     "admin/badges/badge-lifecycle",
     "admin/members/member-records",
@@ -23,6 +23,7 @@
     "operations/lockup/building-lockup-control",
     "operations/lockup/transfer-lockup",
     "operations/schedules/dds-duty-watch-scheduling",
+    "technical/admin/control-center",
     "technical/configuration/reference-data-settings",
     "technical/database/read-only-explorer",
     "technical/logs/live-operations-log-viewer"

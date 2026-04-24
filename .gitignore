@@ -25,6 +25,7 @@ coverage/
 *.lcov
 test-results/
 playwright-report/
+Text.txt
 
 # Playwright CLI
 .playwright/

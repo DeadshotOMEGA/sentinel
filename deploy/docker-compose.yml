@@ -69,8 +69,8 @@ services:
       SENTINEL_AUTO_SEED_ATTEMPTS: ${SENTINEL_AUTO_SEED_ATTEMPTS:-3}
       SENTINEL_AUTO_SEED_RETRY_DELAY_MS: ${SENTINEL_AUTO_SEED_RETRY_DELAY_MS:-3000}
       HOTSPOT_SSID: ${HOTSPOT_SSID:-Stone Frigate}
-      NETWORK_STATUS_FILE_PATH: /var/run/sentinel/network-status/network-status.json
-      HOST_HOTSPOT_RECOVERY_REQUEST_DIR: /var/run/sentinel/hotspot-recovery/requests
+      NETWORK_STATUS_FILE_PATH: /run/sentinel/network-status/network-status.json
+      HOST_HOTSPOT_RECOVERY_REQUEST_DIR: /run/sentinel/hotspot-recovery/requests
       SYSTEM_UPDATE_BRIDGE_SOCKET_PATH: /run/sentinel/update-bridge.sock
       SYSTEM_UPDATE_STATE_ROOT: /var/lib/sentinel/updater
       SYSTEM_UPDATE_RELEASE_REPOSITORY: ${GHCR_OWNER:-deadshotomega}/sentinel
@@ -78,9 +78,9 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./runtime/network-status:/var/run/sentinel/network-status:ro
-      - ./runtime/hotspot-recovery:/var/run/sentinel/hotspot-recovery
       - /run/sentinel:/run/sentinel
+      - ./runtime/network-status:/run/sentinel/network-status:ro
+      - ./runtime/hotspot-recovery:/run/sentinel/hotspot-recovery
       - /var/lib/sentinel/updater:/var/lib/sentinel/updater:ro
     healthcheck:
       test:

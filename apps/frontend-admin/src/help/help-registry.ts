@@ -91,8 +91,24 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     },
   },
   {
+    routeId: 'admin',
+    pathPrefixes: ['/admin'],
+    wikiSlug: 'technical/admin/control-center',
+    roleScopes: ['admin', 'developer'],
+    fallbackMode: 'wiki',
+    localFallback: {
+      title: 'Admin Control Center Quick Help',
+      summary: 'Start here for appliance status, issues, and system-control tasks.',
+      quickSteps: [
+        'Review Recent issues before routine configuration.',
+        'Use quick actions for updates, logs, badges, and network work.',
+        'Open System Definitions for shared lists and operational defaults.',
+      ],
+    },
+  },
+  {
     routeId: 'badges',
-    pathPrefixes: ['/badges'],
+    pathPrefixes: ['/admin/badges', '/badges'],
     wikiSlug: 'admin/badges/badge-lifecycle',
     roleScopes: ['manager', 'admin', 'developer'],
     fallbackMode: 'wiki',
@@ -172,7 +188,7 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
   },
   {
     routeId: 'settings',
-    pathPrefixes: ['/settings'],
+    pathPrefixes: ['/admin/config', '/settings'],
     wikiSlug: 'technical/configuration/reference-data-settings',
     roleScopes: ['admin', 'developer'],
     fallbackMode: 'wiki',
@@ -188,7 +204,7 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
   },
   {
     routeId: 'database',
-    pathPrefixes: ['/database'],
+    pathPrefixes: ['/admin/database', '/database'],
     wikiSlug: 'technical/database/read-only-explorer',
     roleScopes: ['admin', 'developer'],
     fallbackMode: 'wiki',
@@ -204,7 +220,7 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
   },
   {
     routeId: 'logs',
-    pathPrefixes: ['/logs'],
+    pathPrefixes: ['/admin/logs', '/logs'],
     wikiSlug: 'technical/logs/live-operations-log-viewer',
     roleScopes: ['admin', 'developer'],
     fallbackMode: 'wiki',

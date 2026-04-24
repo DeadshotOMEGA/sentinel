@@ -69,7 +69,7 @@ export function useBadge(id: string) {
   })
 }
 
-export function useBadgeStats() {
+export function useBadgeStats(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['badge-stats'],
     queryFn: async () => {
@@ -79,6 +79,7 @@ export function useBadgeStats() {
       }
       return response.body
     },
+    enabled: options?.enabled,
   })
 }
 

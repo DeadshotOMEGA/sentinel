@@ -1,6 +1,6 @@
 {
   "name": "@sentinel/types",
-  "version": "2.8.2",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "description": "Shared TypeScript types for Sentinel",
