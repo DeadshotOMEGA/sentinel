@@ -15,7 +15,7 @@ import { Menu, PanelLeftOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
-import { ADMIN_NAV_ROUTES, isAdminNavPath } from '@/lib/admin-routes'
+import { isAdminNavPath } from '@/lib/admin-routes'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
@@ -210,32 +210,13 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             </a>
           </li>
           <li>
-            <div className="dropdown dropdown-hover">
-              <button
-                type="button"
-                tabIndex={0}
-                className={cn('inline-flex items-center gap-1', isAdminRoute && 'active')}
-                data-testid={TID.nav.link('admin')}
-              >
-                Admin
-              </button>
-              <ul
-                tabIndex={-1}
-                className="dropdown-content z-20 w-56 rounded-box bg-base-100 p-2 text-base-content shadow-xl"
-              >
-                {ADMIN_NAV_ROUTES.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(pathname === link.href && 'active')}
-                      data-testid={TID.nav.link(link.href.slice(1))}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Link
+              href="/admin"
+              className={cn(isAdminRoute && 'active')}
+              data-testid={TID.nav.link('admin')}
+            >
+              Admin
+            </Link>
           </li>
         </ul>
       </div>
@@ -458,7 +439,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                         : 'Sentinel is on the latest known stable release.'}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-(--space-2)">
-                    <Link href="/settings?tab=updates" className="btn btn-xs btn-outline">
+                    <Link href="/admin/updates" className="btn btn-xs btn-outline">
                       Open updates
                     </Link>
                     {hasActiveSystemUpdate && currentSystemUpdateJob && (

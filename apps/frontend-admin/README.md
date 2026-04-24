@@ -28,7 +28,8 @@ Frontend Admin is the operational web interface for Sentinel, including dashboar
 - `/schedules` - Schedule and duty-watch planning
 - `/dds` - DDS checklist and handover-focused workflows
 - `/kiosk` - Touch-first kiosk mode
-- `/badges`, `/database`, `/settings`, `/logs` - Admin and support tooling
+- `/admin` - Admin Control Center for updates, network, badges, diagnostics, and system definitions
+- `/badges`, `/database`, `/settings`, `/logs` - Legacy redirects into `/admin/**`
 
 ## Kiosk (Current)
 

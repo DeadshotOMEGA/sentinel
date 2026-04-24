@@ -22,7 +22,8 @@ function getApiErrorMessage(body: unknown, fallback: string): string {
   return fallback
 }
 
-export function useSecurityAlerts() {
+export function useSecurityAlerts(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true
   const query = useQuery({
     queryKey: ['security-alerts'],
     queryFn: async () => {
@@ -32,12 +33,17 @@ export function useSecurityAlerts() {
       }
       return response.body
     },
+    enabled,
     refetchInterval: 60000, // Refetch every minute as fallback
   })
 
   const { refetch } = query
 
   useEffect(() => {
+    if (!enabled) {
+      return undefined
+    }
+
     // Connect WebSocket and subscribe to alerts updates
     websocketManager.connect()
     websocketManager.subscribe('alerts')
@@ -58,7 +64,7 @@ export function useSecurityAlerts() {
       websocketManager.off('alerts:acknowledged', handleAlertUpdate)
       websocketManager.unsubscribe('alerts')
     }
-  }, [refetch])
+  }, [enabled, refetch])
 
   return query
 }

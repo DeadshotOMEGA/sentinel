@@ -159,7 +159,9 @@ function LogsPageContent() {
     return (
       <div className="space-y-(--space-4)">
         <div>
-          <h1 className="text-3xl font-semibold">Activity log</h1>
+          <h1 id="admin-page-title" className="text-3xl font-semibold">
+            Activity log
+          </h1>
           <p className="mt-(--space-1) max-w-3xl text-sm text-base-content/70">
             Recent admin actions, attendance scans, and responsibility handoffs.
           </p>
@@ -182,7 +184,9 @@ function LogsPageContent() {
     <div className="space-y-(--space-4)">
       <div className="flex flex-wrap items-end justify-between gap-(--space-4)">
         <div>
-          <h1 className="text-3xl font-semibold">Activity log</h1>
+          <h1 id="admin-page-title" className="text-3xl font-semibold">
+            Activity log
+          </h1>
           <p className="mt-(--space-1) max-w-3xl text-sm text-base-content/70">
             Recent admin actions, attendance scans, and responsibility handoffs. This view now
             prioritizes what operators actually do instead of backend socket noise.
