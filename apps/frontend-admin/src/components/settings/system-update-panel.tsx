@@ -1,9 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ComponentProps, type ComponentType } from 'react'
 import { useSearchParams } from 'next/navigation'
-import type { SystemUpdateJob, SystemUpdateJobStatus } from '@sentinel/contracts'
-import { Download, ExternalLink, RefreshCw, RotateCcw, ServerCog, ShieldAlert } from 'lucide-react'
+import {
+  CircleCheckBig,
+  CircleX,
+  Clock3,
+  Database,
+  Download,
+  ExternalLink,
+  FileText,
+  RefreshCw,
+  RotateCcw,
+  ServerCog,
+  ShieldCheck,
+  Tag,
+  Terminal,
+  TriangleAlert,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AppCard,
@@ -29,22 +43,25 @@ import {
   useSystemUpdateStatus,
   useSystemUpdateTrace,
 } from '@/hooks/use-system-update'
+import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
+import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
 import {
   formatSystemUpdateStatusLabel,
+  getSystemHealthKpi,
   getPreferredUpdateTargetVersion,
-  getSystemUpdateActiveCheckpoint,
   getSystemUpdatePhaseProgress,
-  isSystemUpdateJobFailure,
+  getSystemUpdateTraceDisplay,
+  getUpdateHeroView,
+  getUpdateTimelineItems,
+  hasHotspotWarning,
   isSystemUpdateJobTerminal,
+  shouldAutoOpenSystemUpdateTraceLog,
+  type SystemUpdateIconKey,
+  type SystemUpdateStatusAlertTone,
+  type SystemUpdateTraceSeverity,
 } from './system-update-panel.logic'
-
-const FAILURE_FLOW: readonly SystemUpdateJobStatus[] = [
-  'failed',
-  'rollback_attempted',
-  'rolled_back',
-]
 
 function formatTimestamp(value: string | null): string {
   if (!value) {
@@ -59,158 +76,103 @@ function formatTimestamp(value: string | null): string {
   return timestamp.toLocaleString()
 }
 
-function getCardStatus(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (isSystemUpdateJobFailure(job)) {
-    return 'warning' as const
+function formatReleaseNotesTimestamp(value: string | null): string {
+  if (!value) {
+    return 'Unknown'
   }
 
-  if (job?.phase.kind === 'recovery') {
-    return 'warning' as const
-  }
-
-  if (job && !isSystemUpdateJobTerminal(job)) {
-    return 'info' as const
-  }
-
-  if (updateAvailable) {
-    return 'info' as const
-  }
-
-  return 'success' as const
+  return formatTimestamp(value)
 }
 
-function getSummaryTone(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (isSystemUpdateJobFailure(job)) {
-    return 'warning' as const
+function formatShortTimestamp(value: string | null): string {
+  if (!value) {
+    return 'Now'
   }
 
-  if (job?.phase.kind === 'recovery') {
-    return 'warning' as const
+  const timestamp = new Date(value)
+  if (Number.isNaN(timestamp.getTime())) {
+    return 'Unknown'
   }
 
-  if (job && !isSystemUpdateJobTerminal(job)) {
-    return 'info' as const
-  }
-
-  if (updateAvailable) {
-    return 'info' as const
-  }
-
-  return 'success' as const
+  return timestamp.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
-function getSummaryHeading(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job && !isSystemUpdateJobTerminal(job)) {
-    if (job.phase.kind === 'recovery') {
-      return 'Rollback in progress'
-    }
-
-    return `Updating to ${job.targetVersion}`
-  }
-
-  if (job?.status === 'rolled_back') {
-    return `Update ${job.targetVersion} rolled back`
-  }
-
-  if (job?.status === 'rollback_attempted') {
-    return `Rollback needs operator attention`
-  }
-
-  if (job?.status === 'failed') {
-    return `Update ${job.targetVersion} failed`
-  }
-
-  if (job?.status === 'completed') {
-    return `Sentinel updated to ${job.targetVersion}`
-  }
-
-  if (updateAvailable) {
-    return 'A newer Sentinel release is available'
-  }
-
-  return 'Sentinel is up to date'
+const toneSurfaceClasses: Record<SystemUpdateStatusAlertTone | 'neutral', string> = {
+  success: 'border-2 border-success/55 bg-base-100 text-base-content',
+  warning: 'bg-warning/15 text-base-content',
+  error: 'bg-error/12 text-base-content',
+  info: 'bg-info/12 text-base-content',
+  neutral: 'bg-neutral/10 text-base-content',
 }
 
-function getTerminalJobBadgeStatus(status: SystemUpdateJobStatus) {
-  switch (status) {
-    case 'completed':
-      return 'success'
-    case 'failed':
-      return 'error'
-    case 'rollback_attempted':
-    case 'rolled_back':
-      return 'warning'
-    default:
-      return 'info'
-  }
+const heroSurfaceClasses: Record<SystemUpdateStatusAlertTone, string> = {
+  success:
+    'border border-l-4 border-success/35 border-l-success bg-success/10 text-base-content shadow-[var(--shadow-3)]',
+  warning:
+    'border border-l-4 border-warning/45 border-l-warning bg-warning/15 text-base-content shadow-[var(--shadow-3)]',
+  error:
+    'border border-l-4 border-error/45 border-l-error bg-error/12 text-base-content shadow-[var(--shadow-3)]',
+  info: 'border border-l-4 border-info/40 border-l-info bg-info/12 text-base-content shadow-[var(--shadow-3)]',
 }
 
-function getUpdateStateBadge(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job) {
-    if (!isSystemUpdateJobTerminal(job)) {
-      if (job.phase.kind === 'recovery') {
-        return { status: 'warning' as const, label: job.phase.label }
-      }
-
-      return { status: 'info' as const, label: job.phase.label }
-    }
-
-    if (job.status === 'completed') {
-      return { status: 'success' as const, label: 'Completed' }
-    }
-
-    if (job.status === 'failed') {
-      return { status: 'error' as const, label: 'Failed' }
-    }
-
-    if (job.status === 'rollback_attempted' || job.status === 'rolled_back') {
-      return { status: 'warning' as const, label: formatSystemUpdateStatusLabel(job.status) }
-    }
-
-    return { status: 'info' as const, label: formatSystemUpdateStatusLabel(job.status) }
-  }
-
-  if (updateAvailable) {
-    return { status: 'info' as const, label: 'Update available' }
-  }
-
-  return { status: 'success' as const, label: 'Current' }
+const toneBadgeStatus: Record<
+  SystemUpdateStatusAlertTone | 'neutral',
+  ComponentProps<typeof AppBadge>['status']
+> = {
+  success: 'success',
+  warning: 'warning',
+  error: 'error',
+  info: 'info',
+  neutral: 'neutral',
 }
 
-function getNextActionGuidance(job: SystemUpdateJob | null, updateAvailable: boolean) {
-  if (job?.phase.kind === 'recovery' && !isSystemUpdateJobTerminal(job)) {
-    return 'Sentinel is actively attempting recovery. Keep this page open if you want live progress.'
-  }
-
-  if (job && !isSystemUpdateJobTerminal(job)) {
-    return 'The appliance updater is running on the host and will keep going if this page reconnects.'
-  }
-
-  if (job?.status === 'completed') {
-    return 'No action is needed until a newer stable release is published.'
-  }
-
-  if (job?.status === 'rolled_back' || job?.status === 'rollback_attempted') {
-    return 'Review the rollback result before starting another update.'
-  }
-
-  if (job?.status === 'failed') {
-    return 'Review the last failure summary before retrying the update.'
-  }
-
-  if (updateAvailable) {
-    return 'Review the latest stable release and start the update when you are ready.'
-  }
-
-  return 'No action is needed until a newer stable release is published.'
+const toneDotClasses: Record<SystemUpdateStatusAlertTone | 'neutral', string> = {
+  success: 'bg-success ring-success/25',
+  warning: 'bg-warning ring-warning/35',
+  error: 'bg-error ring-error/35',
+  info: 'bg-info ring-info/25',
+  neutral: 'bg-neutral ring-neutral/25',
 }
 
-function shouldAutoOpenTraceLog(job: SystemUpdateJob | null): boolean {
-  if (!job) {
-    return false
-  }
+const iconMap: Record<SystemUpdateIconKey, ComponentType<{ className?: string }>> = {
+  check: CircleCheckBig,
+  clock: Clock3,
+  database: Database,
+  download: Download,
+  rotate: RotateCcw,
+  shield: ShieldCheck,
+  tag: Tag,
+  terminal: Terminal,
+  warning: TriangleAlert,
+  x: CircleX,
+}
 
-  return !isSystemUpdateJobTerminal(job) || isSystemUpdateJobFailure(job)
+const traceSeverityBadgeStatus: Record<
+  SystemUpdateTraceSeverity,
+  ComponentProps<typeof AppBadge>['status']
+> = {
+  success: 'success',
+  warning: 'warning',
+  error: 'error',
+  info: 'neutral',
+}
+
+const traceSeverityRowClasses: Record<SystemUpdateTraceSeverity, string> = {
+  success: 'border-l-success bg-success/10',
+  warning: 'border-l-warning bg-warning/15',
+  error: 'border-l-error bg-error/12',
+  info: 'border-l-base-400 bg-base-100',
+}
+
+function renderIcon(icon: SystemUpdateIconKey, className: string) {
+  const Icon = iconMap[icon]
+
+  return <Icon aria-hidden="true" className={className} />
 }
 
 export function SystemUpdatePanel() {
@@ -220,35 +182,55 @@ export function SystemUpdatePanel() {
   const traceRequested = searchParams.get('trace') === 'open'
   const [isHydrated, setIsHydrated] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
   const [tracePanelOpen, setTracePanelOpen] = useState(traceRequested)
+  const [traceView, setTraceView] = useState<'summary' | 'raw'>('summary')
+  const [traceSeverityFilter, setTraceSeverityFilter] = useState<SystemUpdateTraceSeverity | 'all'>(
+    'all'
+  )
+  const [traceSearch, setTraceSearch] = useState('')
+  const traceContentRef = useRef<globalThis.HTMLPreElement | null>(null)
 
   useEffect(() => {
-    setIsHydrated(true)
+    const timeoutId = window.setTimeout(() => {
+      setIsHydrated(true)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [])
 
   const systemUpdateQuery = useSystemUpdateStatus({
     enabled: isHydrated && Boolean(member),
     refetchIntervalMs: 5_000,
   })
+  const systemStatusQuery = useSystemStatus({
+    enabled: isHydrated && Boolean(member),
+  })
   const startSystemUpdate = useStartSystemUpdate()
   const refreshSystemUpdate = useRefreshSystemUpdateStatus()
+  const hostHotspotRecovery = useHostHotspotRecovery()
 
   const status = systemUpdateQuery.data ?? null
   const currentJob = status?.currentJob ?? null
   const awaitingSessionContext = !isHydrated || (!member && !status && !systemUpdateQuery.isError)
   const hasActiveJob = currentJob ? !isSystemUpdateJobTerminal(currentJob) : false
-  const autoOpenTraceLog = shouldAutoOpenTraceLog(currentJob)
+  const autoOpenTraceLog = shouldAutoOpenSystemUpdateTraceLog(currentJob)
   const preferredTargetVersion = status ? getPreferredUpdateTargetVersion(status, currentJob) : null
   const phaseProgress = getSystemUpdatePhaseProgress(currentJob)
-  const activeCheckpoint = getSystemUpdateActiveCheckpoint(currentJob)
+  const cachedReleaseNotes = status?.latestReleaseNotes ?? null
   const retryingLastTarget =
     status !== null && status.latestVersion === null && preferredTargetVersion !== null
-  const startActionLabel =
-    preferredTargetVersion === null
-      ? 'Update to latest'
-      : retryingLastTarget
-        ? `Retry ${preferredTargetVersion}`
-        : `Update to ${preferredTargetVersion}`
+  const startActionLabel = hasActiveJob
+    ? 'Update in progress'
+    : !canStartUpdates
+      ? 'Admin required'
+      : preferredTargetVersion === null
+        ? status?.latestVersion === null
+          ? 'No update target'
+          : 'Up to date'
+        : retryingLastTarget
+          ? `Retry ${preferredTargetVersion}`
+          : `Update to ${preferredTargetVersion}`
   const confirmActionLabel =
     preferredTargetVersion === null
       ? 'Start update'
@@ -267,15 +249,40 @@ export function SystemUpdatePanel() {
 
   useEffect(() => {
     if (autoOpenTraceLog) {
-      setTracePanelOpen(true)
+      const timeoutId = window.setTimeout(() => {
+        setTracePanelOpen(true)
+      }, 0)
+
+      return () => window.clearTimeout(timeoutId)
     }
+
+    return undefined
   }, [autoOpenTraceLog, currentJob?.jobId, currentJob?.status])
 
   useEffect(() => {
     if (traceRequested) {
-      setTracePanelOpen(true)
+      const timeoutId = window.setTimeout(() => {
+        setTracePanelOpen(true)
+      }, 0)
+
+      return () => window.clearTimeout(timeoutId)
     }
+
+    return undefined
   }, [traceRequested])
+
+  useEffect(() => {
+    if (!tracePanelOpen || !traceQuery.data?.available) {
+      return
+    }
+
+    const element = traceContentRef.current
+    if (!element) {
+      return
+    }
+
+    element.scrollTop = element.scrollHeight
+  }, [tracePanelOpen, traceQuery.data?.available, traceQuery.data?.content])
 
   const handleRefresh = async () => {
     try {
@@ -305,17 +312,37 @@ export function SystemUpdatePanel() {
     }
   }
 
-  if (systemUpdateQuery.isLoading && !status) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <LoadingSpinner size="md" className="text-base-content/60" />
-      </div>
-    )
+  const handleHostHotspotRecovery = async () => {
+    try {
+      const result = await hostHotspotRecovery.mutateAsync()
+      toast.success(result.message)
+      await systemStatusQuery.refetch()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to queue host hotspot recovery')
+    }
+  }
+
+  const handleDownloadTrace = () => {
+    if (!traceQuery.data?.available) {
+      return
+    }
+
+    const blob = new globalThis.Blob([traceQuery.data.content], {
+      type: 'text/plain;charset=utf-8',
+    })
+    const url = globalThis.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'sentinel-update-trace.log'
+    document.body.append(link)
+    link.click()
+    link.remove()
+    globalThis.URL.revokeObjectURL(url)
   }
 
   if (awaitingSessionContext) {
     return (
-      <AppCard status="info">
+      <AppCard>
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-(--space-2)">
             <ServerCog className="h-5 w-5" />
@@ -335,9 +362,17 @@ export function SystemUpdatePanel() {
     )
   }
 
+  if (systemUpdateQuery.isLoading && !status) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <LoadingSpinner size="md" className="text-base-content/60" />
+      </div>
+    )
+  }
+
   if (systemUpdateQuery.isError || !status) {
     return (
-      <AppCard status="error">
+      <AppCard>
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-(--space-2)">
             <ServerCog className="h-5 w-5" />
@@ -358,66 +393,153 @@ export function SystemUpdatePanel() {
     )
   }
 
-  const summaryTone = getSummaryTone(currentJob, status.updateAvailable)
-  const summaryHeading = getSummaryHeading(currentJob, status.updateAvailable)
   const showLiveProgress = currentJob ? !isSystemUpdateJobTerminal(currentJob) : false
-  const updateStateBadge = getUpdateStateBadge(currentJob, status.updateAvailable)
-  const activeCheckpointPanelClass =
-    currentJob?.phase.kind === 'recovery'
-      ? 'border-warning/35 bg-warning-fadded text-warning-fadded-content'
-      : 'border-info/35 bg-info-fadded text-info-fadded-content'
+  const systemStatus = systemStatusQuery.data ?? null
+  const heroView = getUpdateHeroView({ status })
+  const systemHealthKpi = getSystemHealthKpi({
+    systemStatus,
+    isLoading: systemStatusQuery.isLoading,
+    isError: systemStatusQuery.isError,
+  })
+  const timelineItems = getUpdateTimelineItems({
+    currentJob,
+    phaseProgress,
+    systemStatus,
+  })
+  const traceDisplay = traceQuery.data?.available
+    ? getSystemUpdateTraceDisplay(traceQuery.data.content)
+    : null
+  const normalizedTraceSearch = traceSearch.trim().toLowerCase()
+  const filteredTraceRows =
+    traceDisplay?.rows.filter((row) => {
+      const matchesSeverity = traceSeverityFilter === 'all' || row.severity === traceSeverityFilter
+      const matchesSearch =
+        normalizedTraceSearch.length === 0 ||
+        row.message.toLowerCase().includes(normalizedTraceSearch) ||
+        row.detail?.toLowerCase().includes(normalizedTraceSearch) ||
+        row.source.toLowerCase().includes(normalizedTraceSearch)
+
+      return matchesSeverity && matchesSearch
+    }) ?? []
+  const filteredTraceSummaryItems =
+    traceDisplay?.summaryItems.filter((item) => {
+      const matchesSeverity = traceSeverityFilter === 'all' || item.severity === traceSeverityFilter
+      const matchesSearch =
+        normalizedTraceSearch.length === 0 ||
+        item.title.toLowerCase().includes(normalizedTraceSearch) ||
+        item.detail?.toLowerCase().includes(normalizedTraceSearch)
+
+      return matchesSeverity && matchesSearch
+    }) ?? []
+  const hotspotNeedsAttention = hasHotspotWarning(systemStatus)
+  const lastUpdateTime = currentJob
+    ? (currentJob.finishedAt ?? currentJob.startedAt ?? currentJob.requestedAt)
+    : null
 
   return (
-    <div className="space-y-4" data-testid={TID.settings.updates.panel}>
-      <AppCard variant="elevated" status={getCardStatus(currentJob, status.updateAvailable)}>
-        <AppCardHeader>
-          <div className="flex items-start justify-between gap-(--space-4)">
-            <div className="space-y-(--space-1)">
-              <AppCardTitle className="flex items-center gap-(--space-2)">
-                <Download className="h-5 w-5" />
-                Updates
-              </AppCardTitle>
-              <AppCardDescription>
-                Start a trusted Sentinel appliance update and monitor progress even if the UI
-                reconnects while services restart.
-              </AppCardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-(--space-2)">
-              <button
-                type="button"
-                className="btn btn-sm btn-outline"
-                onClick={() => void handleRefresh()}
-                disabled={systemUpdateQuery.isFetching || refreshSystemUpdate.isPending}
-                data-testid={TID.settings.updates.refresh}
-              >
-                {systemUpdateQuery.isFetching || refreshSystemUpdate.isPending ? (
-                  <LoadingSpinner size="xs" className="mr-2" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Refresh
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-primary"
-                onClick={() => setConfirmOpen(true)}
-                disabled={!canStartNow}
-                data-testid={TID.settings.updates.start}
-              >
-                {startActionLabel}
-              </button>
-            </div>
-          </div>
-        </AppCardHeader>
+    <div className="space-y-(--space-5)" data-testid={TID.settings.updates.panel}>
+      <AppCard variant="elevated" className="overflow-hidden border-0 bg-base-300/35">
+        <AppCardContent className="space-y-(--space-5) p-(--space-5)">
+          <section
+            aria-live="polite"
+            className={`hero rounded-box ${heroSurfaceClasses[heroView.tone]}`}
+          >
+            <div className="hero-content w-full flex-col items-stretch justify-between gap-(--space-5) px-(--space-6) py-(--space-5) text-left xl:flex-row xl:items-center">
+              <div className="flex min-w-0 items-start gap-(--space-4)">
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-box bg-base-100 shadow-[var(--shadow-2)] ring-1 ring-base-content/10">
+                  {renderIcon(heroView.icon, 'h-8 w-8')}
+                </div>
+                <div className="min-w-0 space-y-(--space-1)">
+                  <div className="flex flex-wrap items-center gap-(--space-2)">
+                    <h1 className="font-display text-4xl font-bold leading-tight text-base-content">
+                      {heroView.headline}
+                    </h1>
+                    <AppBadge status={toneBadgeStatus[heroView.tone]} size="lg">
+                      {heroView.badge}
+                    </AppBadge>
+                  </div>
+                  <p className="max-w-3xl text-sm font-medium leading-relaxed text-base-content/70">
+                    {heroView.message}
+                  </p>
+                </div>
+              </div>
 
-        <AppCardContent className="space-y-4">
-          <AppAlert tone={summaryTone} heading={summaryHeading}>
-            {currentJob
-              ? currentJob.message
-              : status.updateAvailable
-                ? `Sentinel ${status.latestVersion} is available for this appliance.`
-                : 'No update is running, and the appliance is already on the latest known stable release.'}
-          </AppAlert>
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-(--space-2) rounded-box bg-base-100/70 p-1.5 shadow-[var(--shadow-1)] xl:ml-auto">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary shadow-sm"
+                  onClick={() => setConfirmOpen(true)}
+                  disabled={!canStartNow}
+                  data-testid={TID.settings.updates.start}
+                >
+                  {startSystemUpdate.isPending ? (
+                    <>
+                      <LoadingSpinner size="xs" className="mr-2" />
+                      Starting...
+                    </>
+                  ) : (
+                    startActionLabel
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  onClick={() => void handleRefresh()}
+                  disabled={systemUpdateQuery.isFetching || refreshSystemUpdate.isPending}
+                  data-testid={TID.settings.updates.refresh}
+                >
+                  {systemUpdateQuery.isFetching || refreshSystemUpdate.isPending ? (
+                    <LoadingSpinner size="xs" className="mr-2" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                  )}
+                  Refresh
+                </button>
+                {cachedReleaseNotes ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => setReleaseNotesOpen(true)}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Release notes
+                  </button>
+                ) : status.latestReleaseUrl ? (
+                  <a
+                    href={status.latestReleaseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-sm btn-ghost"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Release notes
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </section>
+
+          {hotspotNeedsAttention && (
+            <AppAlert
+              tone="warning"
+              heading="Hotspot profile needs attention"
+              actions={
+                canStartUpdates ? (
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-warning"
+                    onClick={() => void handleHostHotspotRecovery()}
+                    disabled={hostHotspotRecovery.isPending}
+                  >
+                    {hostHotspotRecovery.isPending ? 'Queueing...' : 'Repair hotspot'}
+                  </button>
+                ) : null
+              }
+            >
+              {systemStatus?.network.message ??
+                'Review the host hotspot before relying on field access.'}
+            </AppAlert>
+          )}
 
           {!canStartUpdates && (
             <AppAlert tone="warning" heading="Admin or Developer access required">
@@ -433,36 +555,69 @@ export function SystemUpdatePanel() {
             </AppAlert>
           )}
 
-          {currentJob?.status === 'rollback_attempted' && (
-            <AppAlert
-              tone="warning"
-              heading={
-                currentJob.finishedAt === null
-                  ? 'Rollback is in progress'
-                  : 'Rollback needs operator follow-up'
-              }
-            >
-              {currentJob.finishedAt === null
-                ? 'Sentinel is actively rolling back to the last known good release.'
-                : 'Sentinel attempted a rollback but did not finish cleanly. Review the updater logs and appliance state before retrying another update.'}
-            </AppAlert>
-          )}
-
-          <div className="stats stats-vertical w-full border border-base-300 bg-base-200 lg:stats-horizontal">
-            <div className="stat">
-              <div className="stat-title">Installed version</div>
-              <div className="stat-value text-2xl font-mono text-base-content">
-                {status.currentVersion ?? 'Unknown'}
+          <section className="grid min-w-0 gap-(--space-3) xl:grid-cols-4">
+            <div className="rounded-box border-l-4 border-neutral/35 bg-base-200/85 p-(--space-5) shadow-[var(--shadow-2)] xl:col-span-2">
+              <div className="min-w-0">
+                <p className="flex items-center gap-(--space-2) text-[0.68rem] font-semibold uppercase tracking-wide text-base-content/55">
+                  <Tag className="h-4 w-4" />
+                  Installed version
+                </p>
+                <p className="mt-(--space-2) break-all font-mono text-5xl font-black leading-none text-base-content">
+                  {status.currentVersion ?? 'Unknown'}
+                </p>
+                <div className="mt-(--space-2) flex w-fit flex-wrap items-center gap-(--space-2)">
+                  <AppBadge status={status.updateAvailable ? 'info' : 'success'} size="sm">
+                    {status.updateAvailable ? 'Update ready' : 'Current'}
+                  </AppBadge>
+                  <span className="text-xs font-medium text-base-content/62">
+                    {status.updateAvailable
+                      ? 'A newer stable release is ready.'
+                      : 'Installed Sentinel package/runtime version.'}
+                  </span>
+                </div>
               </div>
-              <div className="stat-desc">Installed Sentinel package/runtime version</div>
             </div>
-            <div className="stat">
-              <div className="stat-title">Latest stable</div>
-              <div className="stat-value text-2xl font-mono text-base-content">
-                {status.latestVersion ?? 'Unknown'}
+
+            <div
+              className={`rounded-box p-(--space-5) shadow-[var(--shadow-2)] xl:col-span-2 ${toneSurfaceClasses[systemHealthKpi.tone]}`}
+            >
+              <div className="flex items-start gap-(--space-3)">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-box bg-base-100 shadow-[var(--shadow-1)]">
+                  {renderIcon(systemHealthKpi.icon, 'h-6 w-6')}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-base-content/50">
+                    {systemHealthKpi.label}
+                  </p>
+                  <p className="mt-(--space-1) text-3xl font-bold leading-tight text-base-content">
+                    {systemHealthKpi.value}
+                  </p>
+                  <p className="mt-(--space-1) text-xs font-medium text-base-content/58">
+                    {systemHealthKpi.detail}
+                  </p>
+                </div>
               </div>
-              <div className="stat-desc">
-                {status.latestReleaseUrl ? (
+            </div>
+
+            <div className="rounded-box bg-base-100 p-(--space-4) shadow-[var(--shadow-1)] xl:col-span-2">
+              <p className="flex items-center gap-(--space-2) text-[0.68rem] font-semibold uppercase tracking-wide text-base-content/50">
+                <Download className="h-4 w-4" />
+                Latest stable
+              </p>
+              <p className="mt-(--space-2) break-all font-mono text-2xl font-bold text-base-content">
+                {status.latestVersion ?? 'Unknown'}
+              </p>
+              <p className="mt-(--space-1) text-xs font-medium text-base-content/55">
+                {cachedReleaseNotes ? (
+                  <button
+                    type="button"
+                    className="link link-primary inline-flex items-center gap-1"
+                    onClick={() => setReleaseNotesOpen(true)}
+                  >
+                    Cached release notes
+                    <FileText className="h-3.5 w-3.5" />
+                  </button>
+                ) : status.latestReleaseUrl ? (
                   <a
                     href={status.latestReleaseUrl}
                     target="_blank"
@@ -473,296 +628,234 @@ export function SystemUpdatePanel() {
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 ) : (
-                  'Latest release lookup is best effort'
+                  'Latest release lookup is best effort.'
                 )}
-              </div>
+              </p>
             </div>
-            <div className="stat">
-              <div className="stat-title">Update state</div>
-              <div className="mt-2">
-                <AppBadge status={updateStateBadge.status}>{updateStateBadge.label}</AppBadge>
-              </div>
-              <div className="stat-desc mt-3">
-                {currentJob
-                  ? `Requested ${formatTimestamp(currentJob.requestedAt)}`
-                  : status.updateAvailable
-                    ? 'Ready to start from this page'
-                    : 'No update currently running'}
-              </div>
-            </div>
-          </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
-            <section className="rounded-box border border-base-300 bg-base-100 p-(--space-4)">
-              <div>
-                <h3 className="text-base font-semibold">Next action</h3>
-                <p className="mt-1 text-sm text-base-content/70">
-                  Start updates here and let the appliance finish them in the background, even if
-                  this page reconnects while services restart.
+            <div className="rounded-box bg-base-100 p-(--space-4) shadow-[var(--shadow-1)] xl:col-span-2">
+              <p className="flex items-center gap-(--space-2) text-[0.68rem] font-semibold uppercase tracking-wide text-base-content/50">
+                <Clock3 className="h-4 w-4" />
+                Last update time
+              </p>
+              <p className="mt-(--space-2) font-mono text-2xl font-bold text-base-content">
+                {lastUpdateTime ? formatShortTimestamp(lastUpdateTime) : 'No request'}
+              </p>
+              <p className="mt-(--space-1) text-xs font-medium text-base-content/55">
+                {currentJob?.requestedBy.memberName ?? 'Idle appliance state.'}
+              </p>
+            </div>
+          </section>
+
+          {showLiveProgress && currentJob && (
+            <section className="rounded-box bg-base-100 p-(--space-4) shadow-[var(--shadow-2)]">
+              <div className="flex flex-wrap items-start justify-between gap-(--space-3) border-b border-base-300/55 pb-(--space-3)">
+                <div>
+                  <h2 className="text-lg font-bold text-base-content">Upgrade process</h2>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-wide text-base-content/55">
+                    Live host-side progress for {currentJob.targetVersion}.
+                  </p>
+                </div>
+                <AppBadge status="info" size="sm">
+                  {currentJob.phase.label}
+                </AppBadge>
+              </div>
+
+              <div className="overflow-x-auto py-(--space-3)">
+                <ul className="steps steps-horizontal w-full">
+                  {phaseProgress.map((phase) => (
+                    <li
+                      key={phase.key}
+                      className={`step ${
+                        phase.state === 'complete'
+                          ? 'step-success'
+                          : phase.state === 'active'
+                            ? 'step-info'
+                            : ''
+                      }`}
+                    >
+                      <span className="max-w-36 text-center text-xs font-semibold leading-snug">
+                        {phase.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-box bg-info/10 px-(--space-3) py-(--space-2) text-sm text-base-content shadow-inner">
+                <div className="flex flex-wrap items-center gap-(--space-2)">
+                  <Terminal className="h-4 w-4 text-info" />
+                  <span className="font-semibold">{currentJob.checkpoint.label}</span>
+                  <span className="text-xs uppercase tracking-wide text-base-content/55">
+                    {currentJob.phase.order} of {currentJob.phase.total}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-base-content/65">
+                  {currentJob.checkpoint.detail}
                 </p>
               </div>
+            </section>
+          )}
 
-              <dl className="mt-4 grid gap-(--space-3) text-sm sm:grid-cols-2">
-                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                    Requested target
-                  </dt>
-                  <dd className="mt-1 font-mono text-base-content">
-                    {currentJob?.targetVersion ?? status.latestVersion ?? 'Unknown'}
-                  </dd>
+          <div className="grid min-w-0 gap-(--space-4) xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
+            <section className="min-w-0 rounded-box bg-base-100 p-(--space-2) shadow-[var(--shadow-2)]">
+              <div className="flex flex-wrap items-start justify-between gap-(--space-3) border-b border-base-300/55 px-(--space-1) pb-(--space-2)">
+                <div>
+                  <h2 className="text-lg font-bold text-base-content">Update activity</h2>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-wide text-base-content/55">
+                    Showing the most meaningful milestones. Full diagnostics stay in the trace log.
+                  </p>
                 </div>
-                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                    Guidance
-                  </dt>
-                  <dd className="mt-1 text-base-content">
-                    {getNextActionGuidance(currentJob, status.updateAvailable)}
-                  </dd>
-                </div>
-                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                    Requested by
-                  </dt>
-                  <dd className="mt-1 text-base-content">
-                    {currentJob?.requestedBy.memberName ?? 'No active request'}
-                  </dd>
-                </div>
-                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                    Last finished
-                  </dt>
-                  <dd className="mt-1 text-base-content">
-                    {formatTimestamp(currentJob?.finishedAt ?? null)}
-                  </dd>
-                </div>
-              </dl>
+                <AppBadge
+                  status={showLiveProgress ? 'info' : currentJob ? 'neutral' : 'success'}
+                  size="sm"
+                >
+                  {showLiveProgress ? 'In progress' : currentJob ? 'Last run' : 'Idle'}
+                </AppBadge>
+              </div>
 
-              {currentJob && (
-                <div className="mt-4 rounded-box border border-base-300 bg-base-200 p-(--space-4)">
-                  <div className="flex items-center gap-(--space-2)">
-                    {isSystemUpdateJobFailure(currentJob) ? (
-                      <ShieldAlert className="h-4 w-4 text-warning" />
-                    ) : (
-                      <ServerCog className="h-4 w-4 text-info" />
-                    )}
-                    <h4 className="text-sm font-semibold">
-                      {hasActiveJob ? 'Current job details' : 'Latest job details'}
-                    </h4>
-                  </div>
-                  <dl className="mt-3 grid gap-(--space-2) text-sm">
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Job ID</dt>
-                      <dd className="font-mono text-right">{currentJob.jobId}</dd>
+              <ul className="timeline timeline-vertical timeline-compact mt-1">
+                {timelineItems.map((item, index) => (
+                  <li key={item.key} className="min-h-0">
+                    {index > 0 && <hr className="bg-base-300/80" />}
+                    <div className="timeline-start min-w-20 pr-(--space-2) pt-0 text-right font-mono text-[0.68rem] font-semibold leading-tight text-base-content/65">
+                      {formatShortTimestamp(item.timestamp)}
                     </div>
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Requested</dt>
-                      <dd className="text-right">{formatTimestamp(currentJob.requestedAt)}</dd>
+                    <div className="timeline-middle">
+                      <div
+                        className={`grid h-4 w-4 place-items-center rounded-full ring-2 ${toneDotClasses[item.tone]}`}
+                      />
                     </div>
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Started</dt>
-                      <dd className="text-right">{formatTimestamp(currentJob.startedAt)}</dd>
-                    </div>
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Phase</dt>
-                      <dd className="text-right">{currentJob.phase.label}</dd>
-                    </div>
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Checkpoint</dt>
-                      <dd className="text-right">{currentJob.checkpoint.label}</dd>
-                    </div>
-                    <div className="flex items-start justify-between gap-(--space-3)">
-                      <dt className="text-base-content/60">Status</dt>
-                      <dd className="text-right">
-                        {formatSystemUpdateStatusLabel(currentJob.status)}
-                      </dd>
-                    </div>
-                  </dl>
-                  {currentJob.failureSummary && (
-                    <div className="mt-3 rounded-box border border-warning/35 bg-warning-fadded p-(--space-3) text-sm text-warning-fadded-content">
-                      <div className="flex items-center gap-(--space-2)">
-                        <ShieldAlert className="h-4 w-4" />
-                        <span className="font-semibold">Sanitized failure summary</span>
+                    <div className="timeline-end w-full min-w-0 pb-0 pl-(--space-2)">
+                      <div className="w-full rounded-box bg-base-200/65 px-(--space-2) py-0.5">
+                        <div className="flex min-w-0 items-start gap-(--space-2)">
+                          {renderIcon(
+                            item.icon,
+                            'mt-0.5 h-3.5 w-3.5 shrink-0 text-base-content/70'
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold leading-tight text-base-content">
+                              {item.title}
+                            </p>
+                            <p className="mt-0.5 text-xs font-medium leading-snug text-base-content/68">
+                              {item.detail}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <p className="mt-2">{currentJob.failureSummary}</p>
                     </div>
-                  )}
-                </div>
+                    {index < timelineItems.length - 1 && <hr className="bg-base-300/80" />}
+                  </li>
+                ))}
+              </ul>
+
+              {currentJob?.failureSummary && (
+                <AppAlert tone="error" heading="Failure summary" className="mt-(--space-4)">
+                  {currentJob.failureSummary}
+                </AppAlert>
               )}
             </section>
 
-            <section className="rounded-box border border-base-300 bg-base-100 p-(--space-4)">
-              <h3 className="text-base font-semibold">
-                {showLiveProgress ? 'Progress' : 'Last run'}
-              </h3>
-              <p className="mt-1 text-sm text-base-content/70">
-                {showLiveProgress
-                  ? 'The updater persists job state on disk, so this view can reconnect after backend or browser restarts.'
-                  : currentJob
-                    ? 'The most recent finished update request stays visible here after the live progress timeline clears.'
-                    : 'No update is running right now. Start a new request when a newer stable release is available.'}
-              </p>
+            <section className="min-w-0 self-start rounded-box bg-base-100 p-(--space-4) shadow-[var(--shadow-2)]">
+              <div className="flex flex-wrap items-start justify-between gap-(--space-3) border-b border-base-300/55 pb-(--space-3)">
+                <div>
+                  <h2 className="text-lg font-bold text-base-content">Recovery tools</h2>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-wide text-base-content/55">
+                    Only host-supported actions are runnable from this page.
+                  </p>
+                </div>
+                <AppBadge status="info" size="sm">
+                  Prepared
+                </AppBadge>
+              </div>
 
-              {showLiveProgress ? (
-                <>
-                  {currentJob?.phase.kind === 'primary' && (
-                    <ul className="steps steps-vertical mt-4 w-full">
-                      {phaseProgress.map((phase) => (
-                        <li
-                          key={phase.key}
-                          className={`step ${phase.state !== 'pending' ? 'step-primary' : ''}`}
-                        >
-                          <div className="text-left">
-                            <div className="font-medium">{phase.label}</div>
-                            <div className="text-xs text-base-content/60">{phase.caption}</div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+              <div className="mt-(--space-3) flex flex-wrap gap-(--space-2) rounded-box bg-base-200/75 p-(--space-2)">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary shadow-sm"
+                  onClick={() => void handleHostHotspotRecovery()}
+                  disabled={!canStartUpdates || hostHotspotRecovery.isPending}
+                >
+                  {hostHotspotRecovery.isPending ? (
+                    <LoadingSpinner size="xs" className="mr-2" />
+                  ) : (
+                    <ShieldCheck className="mr-2 h-4 w-4" />
                   )}
+                  Repair hotspot
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm border-base-300 bg-base-100 text-base-content/45"
+                  disabled
+                >
+                  <Database className="mr-2 h-4 w-4" />
+                  Backup now
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm border-base-300 bg-base-100 text-base-content/45"
+                  disabled
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Rollback
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm border-base-300 bg-base-100 text-base-content/45"
+                  disabled
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export DB
+                </button>
+              </div>
+              <div className="mt-(--space-2) grid gap-(--space-1) text-xs font-medium leading-relaxed text-base-content/72">
+                <p className="rounded-box bg-base-200/70 px-(--space-3) py-(--space-2)">
+                  Updater-created recovery assets run automatically before install.
+                </p>
+                <p className="px-(--space-3)">
+                  Manual backup, rollback, and database export are reserved for future appliance
+                  APIs.
+                </p>
+              </div>
 
-                  {activeCheckpoint && currentJob && (
-                    <div
-                      className={`mt-4 rounded-box border p-(--space-4) ${activeCheckpointPanelClass}`}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide opacity-70">
-                            Active checkpoint
-                          </p>
-                          <p className="mt-1 text-sm font-semibold">{activeCheckpoint.label}</p>
-                        </div>
-                        <AppBadge
-                          status={currentJob.phase.kind === 'recovery' ? 'warning' : 'info'}
-                          size="sm"
-                        >
-                          {currentJob.phase.label}
-                        </AppBadge>
+              {currentJob && (
+                <details className="collapse collapse-arrow mt-(--space-3) bg-base-200/70">
+                  <summary className="collapse-title text-sm font-semibold">Job details</summary>
+                  <div className="collapse-content space-y-(--space-4)">
+                    <dl className="grid gap-(--space-2) text-sm">
+                      <div>
+                        <dt className="text-base-content/60">Job ID</dt>
+                        <dd className="break-all font-mono">{currentJob.jobId}</dd>
                       </div>
-                      <p className="mt-3 text-sm">{activeCheckpoint.detail}</p>
-                    </div>
-                  )}
-
-                  {currentJob && currentJob.phase.kind === 'recovery' && (
-                    <div className="mt-4 border-t border-base-300 pt-(--space-4)">
-                      <h4 className="text-sm font-semibold">Recovery states</h4>
-                      <ul className="steps steps-vertical mt-3 w-full">
-                        {FAILURE_FLOW.map((step) => {
-                          const currentIndex = FAILURE_FLOW.indexOf(currentJob.status)
-                          const stepIndex = FAILURE_FLOW.indexOf(step)
-                          const isActive = currentJob.status === step
-                          const isCompleted =
-                            currentIndex >= 0 &&
-                            (stepIndex < currentIndex ||
-                              (stepIndex === currentIndex && currentJob.finishedAt !== null))
-
-                          return (
-                            <li
-                              key={step}
-                              className={`step ${isCompleted || isActive ? 'step-warning' : ''}`}
-                            >
-                              <div className="text-left">
-                                <div className="flex items-center gap-(--space-2)">
-                                  {step === 'rolled_back' && <RotateCcw className="h-3.5 w-3.5" />}
-                                  <span className="font-medium">
-                                    {formatSystemUpdateStatusLabel(step)}
-                                  </span>
-                                </div>
-                                <div className="text-xs text-base-content/60">
-                                  {isActive ? currentJob.message : 'Not reached'}
-                                </div>
-                              </div>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              ) : currentJob ? (
-                <div className="mt-4 space-y-4">
-                  <div className="rounded-box border border-base-300 bg-base-200 p-(--space-4)">
-                    <div className="flex flex-wrap items-start justify-between gap-(--space-3)">
-                      <div className="space-y-(--space-1)">
-                        <p className="text-sm font-semibold">Most recent update request</p>
-                        <p className="text-sm text-base-content/70">{currentJob.message}</p>
+                      <div>
+                        <dt className="text-base-content/60">Target version</dt>
+                        <dd className="font-mono">{currentJob.targetVersion}</dd>
                       </div>
-                      <AppBadge status={getTerminalJobBadgeStatus(currentJob.status)} size="sm">
-                        {formatSystemUpdateStatusLabel(currentJob.status)}
-                      </AppBadge>
-                    </div>
-
-                    <dl className="mt-4 grid gap-(--space-3) text-sm sm:grid-cols-2">
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Target version
-                        </dt>
-                        <dd className="mt-1 font-mono text-base-content">
-                          {currentJob.targetVersion}
-                        </dd>
+                      <div>
+                        <dt className="text-base-content/60">Requested</dt>
+                        <dd>{formatTimestamp(currentJob.requestedAt)}</dd>
                       </div>
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Finished
-                        </dt>
-                        <dd className="mt-1 text-base-content">
-                          {formatTimestamp(currentJob.finishedAt ?? currentJob.startedAt)}
-                        </dd>
+                      <div>
+                        <dt className="text-base-content/60">Started</dt>
+                        <dd>{formatTimestamp(currentJob.startedAt)}</dd>
                       </div>
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Requested by
-                        </dt>
-                        <dd className="mt-1 text-base-content">
-                          {currentJob.requestedBy.memberName}
-                        </dd>
+                      <div>
+                        <dt className="text-base-content/60">Finished</dt>
+                        <dd>{formatTimestamp(currentJob.finishedAt)}</dd>
                       </div>
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Final phase
-                        </dt>
-                        <dd className="mt-1 text-base-content">{currentJob.phase.label}</dd>
-                      </div>
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Final checkpoint
-                        </dt>
-                        <dd className="mt-1 text-base-content">{currentJob.checkpoint.label}</dd>
-                      </div>
-                      <div className="rounded-box border border-base-300 bg-base-100 p-(--space-3)">
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
-                          Next action
-                        </dt>
-                        <dd className="mt-1 text-base-content">
-                          {currentJob.status === 'completed'
-                            ? 'No action needed.'
-                            : currentJob.status === 'rolled_back'
-                              ? 'Review the appliance before retrying another update.'
-                              : 'Review the failure summary and updater logs before retrying.'}
-                        </dd>
+                      <div>
+                        <dt className="text-base-content/60">Status</dt>
+                        <dd>{formatSystemUpdateStatusLabel(currentJob.status)}</dd>
                       </div>
                     </dl>
                   </div>
-
-                  {currentJob.failureSummary && (
-                    <AppAlert
-                      tone={currentJob.status === 'failed' ? 'error' : 'warning'}
-                      heading="Last run summary"
-                    >
-                      {currentJob.failureSummary}
-                    </AppAlert>
-                  )}
-                </div>
-              ) : (
-                <div className="mt-4 rounded-box border border-base-300 bg-base-200 p-(--space-4) text-sm text-base-content/70">
-                  No update is currently running. When a newer stable release is available, start it
-                  here and this panel will switch to a live progress timeline.
-                </div>
+                </details>
               )}
             </section>
           </div>
 
           {canStartUpdates && (
-            <section className="rounded-box border border-base-300 bg-base-100">
+            <section className="rounded-box bg-base-100 shadow-[var(--shadow-2)]">
               <details
                 className="collapse collapse-arrow"
                 open={tracePanelOpen}
@@ -771,17 +864,22 @@ export function SystemUpdatePanel() {
                 }}
                 data-testid={TID.settings.updates.tracePanel}
               >
-                <summary className="collapse-title pr-(--space-16)">
+                <summary className="collapse-title rounded-box border-l-4 border-neutral/35 bg-base-200/75 pr-(--space-12) shadow-[var(--shadow-1)]">
                   <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
                     <div>
-                      <h3 className="text-base font-semibold">Update trace log</h3>
-                      <p className="mt-1 text-sm text-base-content/70">
+                      <h3 className="flex items-center gap-(--space-2) text-lg font-bold text-base-content">
+                        <span className="grid h-8 w-8 place-items-center rounded-box bg-base-100 shadow-[var(--shadow-1)]">
+                          <Terminal className="h-4 w-4 text-base-content/75" />
+                        </span>
+                        Update trace log
+                      </h3>
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-base-content/62">
                         Host-side diagnostics for the current or most recent update run.
                       </p>
                     </div>
-                    <div className="flex items-center gap-(--space-2)">
+                    <div className="mr-(--space-4) flex items-center gap-(--space-2)">
                       {hasActiveJob ? (
-                        <AppBadge status="info" size="sm">
+                        <AppBadge status="neutral" size="sm">
                           Live
                         </AppBadge>
                       ) : (
@@ -793,25 +891,25 @@ export function SystemUpdatePanel() {
                   </div>
                 </summary>
 
-                <div className="collapse-content space-y-4 border-t border-base-300 pt-(--space-4)">
-                  <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
+                <div className="collapse-content space-y-(--space-3) border-t border-base-300/55 bg-base-200/45 pt-(--space-3)">
+                  <div className="flex flex-wrap items-center justify-between gap-(--space-3) rounded-box bg-base-100 px-(--space-3) py-(--space-2) shadow-[var(--shadow-1)]">
                     <div className="min-w-0 space-y-1">
                       <div className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
                         Active trace path
                       </div>
-                      <div className="font-mono text-sm break-all text-base-content/80">
+                      <div className="font-mono text-xs break-all text-base-content/78">
                         {traceQuery.data?.path ?? '/var/lib/sentinel/updater/update-trace.log'}
                       </div>
                       <div className="text-xs text-base-content/60">
                         {hasActiveJob
-                          ? 'Auto-refresh runs while this panel stays open during an active update.'
-                          : 'Use refresh to load the latest host-side trace output.'}
+                          ? 'Auto-refresh shows the newest lines from the current update run.'
+                          : 'Use refresh to load the most recent host-side update run.'}
                       </div>
                     </div>
 
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline"
+                      className="btn btn-sm btn-ghost"
                       onClick={() => void traceQuery.refetch()}
                       disabled={traceQuery.isFetching}
                       data-testid={TID.settings.updates.traceRefresh}
@@ -826,7 +924,7 @@ export function SystemUpdatePanel() {
                   </div>
 
                   {traceQuery.isLoading ? (
-                    <div className="flex items-center justify-center rounded-box border border-base-300 bg-base-200 px-(--space-4) py-(--space-6)">
+                    <div className="flex items-center justify-center rounded-box bg-base-100 px-(--space-4) py-(--space-6) shadow-inner">
                       <LoadingSpinner size="sm" className="text-base-content/60" />
                     </div>
                   ) : traceQuery.isError ? (
@@ -836,22 +934,223 @@ export function SystemUpdatePanel() {
                         : 'Unable to load the update trace log right now.'}
                     </AppAlert>
                   ) : traceQuery.data?.available ? (
-                    <div className="space-y-2">
-                      <div className="text-xs text-base-content/60">
-                        Last modified:{' '}
-                        {traceQuery.data.lastModifiedAt
-                          ? formatTimestamp(traceQuery.data.lastModifiedAt)
-                          : 'Unknown'}
+                    <div className="space-y-(--space-3)">
+                      <div className="flex flex-wrap items-center justify-between gap-(--space-3) rounded-box bg-base-100 px-(--space-3) py-(--space-2) shadow-[var(--shadow-1)]">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-(--space-2)">
+                            <AppBadge
+                              status={
+                                (traceDisplay?.severityCounts.error ?? 0) > 0
+                                  ? 'error'
+                                  : (traceDisplay?.severityCounts.warning ?? 0) > 0
+                                    ? 'warning'
+                                    : 'success'
+                              }
+                              size="sm"
+                            >
+                              {(traceDisplay?.severityCounts.error ?? 0) > 0
+                                ? 'Errors'
+                                : (traceDisplay?.severityCounts.warning ?? 0) > 0
+                                  ? 'Warnings'
+                                  : 'Clean'}
+                            </AppBadge>
+                            <span className="text-xs font-medium text-base-content/65">
+                              Last modified:{' '}
+                              {traceQuery.data.lastModifiedAt
+                                ? formatTimestamp(traceQuery.data.lastModifiedAt)
+                                : 'Unknown'}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-base-content/60">
+                            {traceQuery.data.truncatedToLatestRun
+                              ? `Showing latest run only (${traceDisplay?.displayedLineCount ?? traceQuery.data.displayedLineCount} of ${traceQuery.data.totalLineCount} lines)`
+                              : `Showing ${traceDisplay?.displayedLineCount ?? traceQuery.data.displayedLineCount} lines`}
+                            {traceDisplay && traceDisplay.filteredProgressLineCount > 0
+                              ? ` · Filtered ${traceDisplay.filteredProgressLineCount} Docker progress lines`
+                              : ''}
+                            {traceQuery.data.filteredLineCount > 0
+                              ? ` · Filtered ${traceQuery.data.filteredLineCount} noisy extraction lines`
+                              : ''}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-(--space-2)">
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-ghost"
+                            onClick={handleDownloadTrace}
+                          >
+                            <Download className="mr-1 h-3.5 w-3.5" />
+                            Raw log
+                          </button>
+                          <AppBadge status="success" size="sm">
+                            {traceDisplay?.severityCounts.success ?? 0} ok
+                          </AppBadge>
+                          <AppBadge status="warning" size="sm">
+                            {traceDisplay?.severityCounts.warning ?? 0} warn
+                          </AppBadge>
+                          <AppBadge status="error" size="sm">
+                            {traceDisplay?.severityCounts.error ?? 0} error
+                          </AppBadge>
+                        </div>
                       </div>
-                      <pre
-                        className="max-h-[28rem] overflow-auto rounded-box border border-base-300 bg-base-200 p-(--space-4) font-mono text-xs leading-relaxed text-base-content"
-                        data-testid={TID.settings.updates.traceContent}
-                      >
-                        {traceQuery.data.content}
-                      </pre>
+
+                      <div role="tablist" className="tabs tabs-boxed w-fit bg-base-100 p-1">
+                        <button
+                          type="button"
+                          role="tab"
+                          className={`tab tab-sm ${traceView === 'summary' ? 'tab-active' : ''}`}
+                          onClick={() => setTraceView('summary')}
+                        >
+                          Summary
+                        </button>
+                        <button
+                          type="button"
+                          role="tab"
+                          className={`tab tab-sm ${traceView === 'raw' ? 'tab-active' : ''}`}
+                          onClick={() => setTraceView('raw')}
+                        >
+                          Raw log
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-(--space-2)">
+                        <input
+                          type="search"
+                          className="input input-sm input-bordered min-w-72 bg-base-100"
+                          placeholder="Search trace"
+                          value={traceSearch}
+                          onChange={(event) => setTraceSearch(event.target.value)}
+                        />
+                        <select
+                          className="select select-sm select-bordered bg-base-100"
+                          value={traceSeverityFilter}
+                          onChange={(event) =>
+                            setTraceSeverityFilter(
+                              event.target.value as SystemUpdateTraceSeverity | 'all'
+                            )
+                          }
+                        >
+                          <option value="all">All levels</option>
+                          <option value="error">Errors</option>
+                          <option value="warning">Warnings</option>
+                          <option value="success">Success</option>
+                          <option value="info">Info</option>
+                        </select>
+                      </div>
+
+                      {traceView === 'summary' ? (
+                        <div className="space-y-(--space-2)">
+                          {filteredTraceSummaryItems.length > 0 ? (
+                            filteredTraceSummaryItems.map((item) => (
+                              <div
+                                key={item.key}
+                                className={`rounded-box border-l-4 px-(--space-3) py-(--space-2) shadow-[var(--shadow-1)] ${traceSeverityRowClasses[item.severity]}`}
+                              >
+                                <div className="flex min-w-0 items-start gap-(--space-3)">
+                                  <span className="w-20 shrink-0 font-mono text-xs font-semibold text-base-content/65">
+                                    {item.time}
+                                  </span>
+                                  <AppBadge
+                                    status={traceSeverityBadgeStatus[item.severity]}
+                                    size="sm"
+                                  >
+                                    {item.severity}
+                                  </AppBadge>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-base-content">
+                                      {item.title}
+                                    </p>
+                                    {item.detail ? (
+                                      <p className="mt-0.5 text-xs text-base-content/60">
+                                        {item.detail}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-box bg-base-100 p-(--space-4) text-sm text-base-content/65 shadow-inner">
+                              No summary events match the current filters.
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-(--space-2)">
+                          {filteredTraceRows.length > 0 ? (
+                            filteredTraceRows.map((row) => {
+                              const hasStructuredDetail =
+                                row.detail !== null &&
+                                (row.detail.includes('{') || row.detail.includes('\n'))
+
+                              return (
+                                <div
+                                  key={row.key}
+                                  className={`rounded-box border-l-4 px-(--space-3) py-(--space-2) shadow-[var(--shadow-1)] ${traceSeverityRowClasses[row.severity]}`}
+                                >
+                                  <div className="grid min-w-0 gap-(--space-2) xl:grid-cols-[5rem_6rem_minmax(0,1fr)]">
+                                    <span className="font-mono text-xs font-semibold text-base-content/65">
+                                      {row.time}
+                                    </span>
+                                    <AppBadge
+                                      status={traceSeverityBadgeStatus[row.severity]}
+                                      size="sm"
+                                      className="w-fit"
+                                    >
+                                      {row.level}
+                                    </AppBadge>
+                                    <div className="min-w-0">
+                                      <p className="break-words text-sm font-medium text-base-content">
+                                        {row.message}
+                                      </p>
+                                      <p className="mt-0.5 text-xs text-base-content/55">
+                                        source: {row.source}
+                                        {row.stream ? ` · ${row.stream}` : ''}
+                                      </p>
+                                      {row.detail && !hasStructuredDetail ? (
+                                        <p className="mt-1 break-words text-xs text-base-content/65">
+                                          {row.detail}
+                                        </p>
+                                      ) : null}
+                                      {hasStructuredDetail ? (
+                                        <details className="collapse collapse-arrow mt-(--space-2) bg-base-100/70">
+                                          <summary className="collapse-title min-h-0 py-(--space-2) text-xs font-semibold">
+                                            Diagnostic output
+                                          </summary>
+                                          <pre className="collapse-content whitespace-pre-wrap font-mono text-xs leading-relaxed text-base-content/75">
+                                            {row.detail}
+                                          </pre>
+                                        </details>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })
+                          ) : (
+                            <div className="rounded-box bg-base-100 p-(--space-4) text-sm text-base-content/65 shadow-inner">
+                              No trace rows match the current filters.
+                            </div>
+                          )}
+
+                          <details className="collapse collapse-arrow bg-base-100">
+                            <summary className="collapse-title text-sm font-semibold">
+                              Filtered raw text
+                            </summary>
+                            <pre
+                              ref={traceContentRef}
+                              className="collapse-content max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-box bg-base-300/65 p-(--space-4) font-mono text-xs leading-relaxed text-base-content shadow-inner"
+                              data-testid={TID.settings.updates.traceContent}
+                            >
+                              {traceDisplay?.content ?? traceQuery.data.content}
+                            </pre>
+                          </details>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="rounded-box border border-base-300 bg-base-200 p-(--space-4) text-sm text-base-content/70">
+                    <div className="rounded-box bg-base-100 p-(--space-4) text-sm text-base-content/70 shadow-inner">
                       No active trace log is available yet. Start an update from this page or run a
                       host-side update command to generate a fresh trace.
                     </div>
@@ -922,6 +1221,78 @@ export function SystemUpdatePanel() {
               ) : (
                 confirmActionLabel
               )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={releaseNotesOpen} onOpenChange={setReleaseNotesOpen}>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>Release notes and changelog</DialogTitle>
+            <DialogDescription>
+              {cachedReleaseNotes
+                ? `${cachedReleaseNotes.version} cached ${formatReleaseNotesTimestamp(cachedReleaseNotes.cachedAt)} for offline viewing.`
+                : 'No cached release notes are available yet.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {cachedReleaseNotes ? (
+            <div className="space-y-3">
+              <dl className="grid gap-(--space-3) text-sm sm:grid-cols-3">
+                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                    Release
+                  </dt>
+                  <dd className="mt-1 font-mono">{cachedReleaseNotes.version}</dd>
+                </div>
+                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                    Published
+                  </dt>
+                  <dd className="mt-1">
+                    {formatReleaseNotesTimestamp(cachedReleaseNotes.publishedAt)}
+                  </dd>
+                </div>
+                <div className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                    Cached
+                  </dt>
+                  <dd className="mt-1">
+                    {formatReleaseNotesTimestamp(cachedReleaseNotes.cachedAt)}
+                  </dd>
+                </div>
+              </dl>
+              <pre className="max-h-[32rem] overflow-auto whitespace-pre-wrap rounded-box border border-base-300 bg-base-200 p-(--space-4) font-mono text-sm leading-relaxed text-base-content">
+                {cachedReleaseNotes.body.trim() ||
+                  'No release notes were published for this release.'}
+              </pre>
+            </div>
+          ) : (
+            <AppAlert tone="warning">
+              Connect the Server to the internet and refresh update status once to cache release
+              notes for offline use.
+            </AppAlert>
+          )}
+
+          <DialogFooter>
+            {cachedReleaseNotes?.url && (
+              <a
+                href={cachedReleaseNotes.url}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-outline"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open online
+              </a>
+            )}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setReleaseNotesOpen(false)}
+            >
+              Close
             </button>
           </DialogFooter>
         </DialogContent>

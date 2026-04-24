@@ -96,10 +96,20 @@ export const SystemUpdateJobSchema = v.object({
   requestedBy: SystemUpdateRequestedBySchema,
 })
 
+export const SystemUpdateReleaseNotesSchema = v.object({
+  version: SystemUpdateVersionSchema,
+  title: v.nullable(v.string()),
+  url: v.nullable(v.string()),
+  publishedAt: v.nullable(v.string()),
+  cachedAt: v.string(),
+  body: v.string(),
+})
+
 export const SystemUpdateStatusResponseSchema = v.object({
   currentVersion: NullableVersionSchema,
   latestVersion: NullableVersionSchema,
   latestReleaseUrl: v.nullable(v.string()),
+  latestReleaseNotes: v.nullable(SystemUpdateReleaseNotesSchema),
   updateAvailable: v.boolean(),
   currentJob: v.nullable(SystemUpdateJobSchema),
 })
@@ -118,6 +128,10 @@ export const SystemUpdateTraceResponseSchema = v.object({
   available: v.boolean(),
   path: v.string(),
   content: v.string(),
+  displayedLineCount: v.number(),
+  filteredLineCount: v.number(),
+  totalLineCount: v.number(),
+  truncatedToLatestRun: v.boolean(),
   lastModifiedAt: v.nullable(v.string()),
 })
 
@@ -141,6 +155,7 @@ export type SystemUpdatePhase = v.InferOutput<typeof SystemUpdatePhaseSchema>
 export type SystemUpdateCheckpoint = v.InferOutput<typeof SystemUpdateCheckpointSchema>
 export type SystemUpdateRequestedBy = v.InferOutput<typeof SystemUpdateRequestedBySchema>
 export type SystemUpdateJob = v.InferOutput<typeof SystemUpdateJobSchema>
+export type SystemUpdateReleaseNotes = v.InferOutput<typeof SystemUpdateReleaseNotesSchema>
 export type SystemUpdateStatusResponse = v.InferOutput<typeof SystemUpdateStatusResponseSchema>
 export type SystemUpdateStatusQuery = v.InferOutput<typeof SystemUpdateStatusQuerySchema>
 export type SystemUpdateTraceResponse = v.InferOutput<typeof SystemUpdateTraceResponseSchema>

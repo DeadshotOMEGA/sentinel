@@ -1,6 +1,10 @@
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { SystemUpdateJob, SystemUpdateStatusResponse } from '@sentinel/contracts'
+import type {
+  SystemUpdateJob,
+  SystemUpdateReleaseNotes,
+  SystemUpdateStatusResponse,
+} from '@sentinel/contracts'
 import { serviceLogger } from '../lib/logger.js'
 import {
   compareVersionTags,
@@ -15,10 +19,13 @@ const DEFAULT_RELEASE_API_BASE = 'https://api.github.com/repos'
 const DEFAULT_RELEASE_LOOKUP_CACHE_TTL_MS = 5 * 60 * 1000
 const DEFAULT_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 1000
 const MAX_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 60 * 1000
+const RELEASE_NOTES_CACHE_FILENAME = 'release-notes-cache.json'
+const MAX_RELEASE_NOTES_BODY_LENGTH = 100_000
 
 interface LatestReleaseSummary {
   latestVersion: string | null
   latestReleaseUrl: string | null
+  latestReleaseNotes: SystemUpdateReleaseNotes | null
 }
 
 interface LatestReleaseCacheEntry {
@@ -91,6 +98,7 @@ export class SystemUpdateStatusService {
       currentVersion,
       latestVersion,
       latestReleaseUrl: releaseSummary.latestReleaseUrl,
+      latestReleaseNotes: releaseSummary.latestReleaseNotes,
       updateAvailable:
         currentVersion !== null &&
         latestVersion !== null &&
@@ -177,6 +185,7 @@ export class SystemUpdateStatusService {
       return {
         latestVersion: null,
         latestReleaseUrl: null,
+        latestReleaseNotes: await this.readCachedReleaseNotes(),
       }
     }
 
@@ -231,6 +240,7 @@ export class SystemUpdateStatusService {
           summary: {
             latestVersion: null,
             latestReleaseUrl: null,
+            latestReleaseNotes: await this.readCachedReleaseNotes(),
           },
           cacheTtlMs: this.getReleaseLookupErrorCacheTtl(response),
         }
@@ -242,6 +252,7 @@ export class SystemUpdateStatusService {
           summary: {
             latestVersion: null,
             latestReleaseUrl: null,
+            latestReleaseNotes: await this.readCachedReleaseNotes(),
           },
           cacheTtlMs: this.latestReleaseCacheTtlMs,
         }
@@ -250,11 +261,25 @@ export class SystemUpdateStatusService {
       const tagName = typeof payload.tag_name === 'string' ? payload.tag_name.trim() : ''
       const latestVersion = isStableVersionTag(tagName) ? tagName : null
       const latestReleaseUrl = typeof payload.html_url === 'string' ? payload.html_url : null
+      const latestReleaseNotes =
+        latestVersion === null
+          ? await this.readCachedReleaseNotes()
+          : await this.buildAndPersistReleaseNotes({
+              version: latestVersion,
+              title: typeof payload.name === 'string' ? payload.name.trim() || null : null,
+              url: latestReleaseUrl,
+              publishedAt:
+                typeof payload.published_at === 'string'
+                  ? payload.published_at.trim() || null
+                  : null,
+              body: typeof payload.body === 'string' ? payload.body : '',
+            })
 
       return {
         summary: {
           latestVersion,
           latestReleaseUrl,
+          latestReleaseNotes,
         },
         cacheTtlMs: this.latestReleaseCacheTtlMs,
       }
@@ -268,6 +293,7 @@ export class SystemUpdateStatusService {
         summary: {
           latestVersion: null,
           latestReleaseUrl: null,
+          latestReleaseNotes: await this.readCachedReleaseNotes(),
         },
         cacheTtlMs: this.latestReleaseErrorCacheTtlMs,
       }
@@ -329,6 +355,98 @@ export class SystemUpdateStatusService {
       })
       return null
     }
+  }
+
+  private getReleaseNotesCachePath(): string {
+    return join(this.stateRoot, RELEASE_NOTES_CACHE_FILENAME)
+  }
+
+  private async buildAndPersistReleaseNotes(input: {
+    version: string
+    title: string | null
+    url: string | null
+    publishedAt: string | null
+    body: string
+  }): Promise<SystemUpdateReleaseNotes> {
+    const releaseNotes: SystemUpdateReleaseNotes = {
+      version: input.version,
+      title: input.title,
+      url: input.url,
+      publishedAt: input.publishedAt,
+      cachedAt: new Date().toISOString(),
+      body: input.body.slice(0, MAX_RELEASE_NOTES_BODY_LENGTH),
+    }
+
+    try {
+      await mkdir(this.stateRoot, { recursive: true })
+      await writeFile(
+        this.getReleaseNotesCachePath(),
+        JSON.stringify(releaseNotes, null, 2),
+        'utf-8'
+      )
+    } catch (error) {
+      serviceLogger.warn('Unable to persist Sentinel release notes cache', {
+        path: this.getReleaseNotesCachePath(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+
+    return releaseNotes
+  }
+
+  private async readCachedReleaseNotes(): Promise<SystemUpdateReleaseNotes | null> {
+    let rawText: string
+
+    try {
+      rawText = await readFile(this.getReleaseNotesCachePath(), 'utf-8')
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        return null
+      }
+
+      serviceLogger.warn('Unable to read Sentinel release notes cache', {
+        path: this.getReleaseNotesCachePath(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      return null
+    }
+
+    try {
+      const payload: unknown = JSON.parse(rawText)
+      return sanitizeReleaseNotes(payload)
+    } catch (error) {
+      serviceLogger.warn('Unable to parse Sentinel release notes cache', {
+        path: this.getReleaseNotesCachePath(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+      return null
+    }
+  }
+}
+
+function sanitizeReleaseNotes(payload: unknown): SystemUpdateReleaseNotes | null {
+  if (!isRecord(payload)) {
+    return null
+  }
+
+  const version = typeof payload.version === 'string' ? payload.version.trim() : ''
+  const cachedAt = typeof payload.cachedAt === 'string' ? payload.cachedAt.trim() : ''
+  const body = typeof payload.body === 'string' ? payload.body : ''
+
+  if (!isStableVersionTag(version) || cachedAt.length === 0) {
+    return null
+  }
+
+  return {
+    version,
+    title: typeof payload.title === 'string' && payload.title.trim() ? payload.title.trim() : null,
+    url: typeof payload.url === 'string' && payload.url.trim() ? payload.url.trim() : null,
+    publishedAt:
+      typeof payload.publishedAt === 'string' && payload.publishedAt.trim()
+        ? payload.publishedAt.trim()
+        : null,
+    cachedAt,
+    body: body.slice(0, MAX_RELEASE_NOTES_BODY_LENGTH),
   }
 }
 
