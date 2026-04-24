@@ -281,6 +281,25 @@ export const securityAlertsTotal = new Counter({
 })
 
 // ============================================================================
+// Business Metrics - Admin Navigation
+// ============================================================================
+
+export const adminNavigationEventsTotal = new Counter({
+  name: 'admin_navigation_events_total',
+  help: 'Total number of aggregate admin navigation events',
+  labelNames: ['event_type', 'route_id', 'target_route_id', 'action_id', 'source_type'],
+  registers: [register],
+})
+
+export const adminNavigationFirstActionDuration = new Histogram({
+  name: 'admin_navigation_first_action_seconds',
+  help: 'Time from admin page load to first admin navigation action',
+  labelNames: ['route_id'],
+  buckets: [1, 2.5, 5, 10, 20, 30, 60, 120, 300],
+  registers: [register],
+})
+
+// ============================================================================
 // Helper Functions
 // ============================================================================
 
@@ -360,4 +379,25 @@ export function recordSecurityAlert(
   type: string
 ) {
   securityAlertsTotal.inc({ severity, type })
+}
+
+export function recordAdminNavigationEvent(input: {
+  eventType: string
+  routeId: string
+  targetRouteId?: string
+  actionId?: string
+  sourceType?: string
+  elapsedMs?: number
+}) {
+  adminNavigationEventsTotal.inc({
+    event_type: input.eventType,
+    route_id: input.routeId,
+    target_route_id: input.targetRouteId ?? 'none',
+    action_id: input.actionId ?? 'none',
+    source_type: input.sourceType ?? 'unknown',
+  })
+
+  if (input.eventType === 'first_action' && typeof input.elapsedMs === 'number') {
+    adminNavigationFirstActionDuration.observe({ route_id: input.routeId }, input.elapsedMs / 1000)
+  }
 }
