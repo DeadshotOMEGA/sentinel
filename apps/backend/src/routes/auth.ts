@@ -14,8 +14,6 @@ import {
   NotFoundError,
   PinPolicyError,
   PinSetupRequiredError,
-  StartOfDayActionRequiredError,
-  InvalidStartOfDayActionError,
 } from '../services/auth-service.js'
 import { getPrismaClient } from '../lib/database.js'
 import { authLogger } from '../lib/logger.js'
@@ -77,7 +75,7 @@ router.post('/preflight-login', async (req: Request, res: Response) => {
 
     const authService = getAuthService()
     const result = await authService.preflightLogin(
-      parsed.output.serialNumber,
+      parsed.output.serialNumber.trim(),
       getRequestClientIp(req)
     )
 
@@ -113,8 +111,8 @@ router.post('/login', async (req: Request, res: Response) => {
       })
     }
 
-    const { serialNumber, pin, remoteSystemId, useKioskRemoteSystem, startOfDayAction } =
-      parsed.output
+    const { pin, remoteSystemId, useKioskRemoteSystem } = parsed.output
+    const loginIdentifier = parsed.output.serialNumber.trim()
     const remoteSystemRepository = new RemoteSystemRepository(getPrismaClient())
     const shouldUseKioskRemoteSystem = useKioskRemoteSystem === true
     const shouldForceDeploymentRemoteSystem =
@@ -162,13 +160,12 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const authService = getAuthService()
     const result = await authService.login(
-      serialNumber,
+      loginIdentifier,
       pin,
       {
         remoteSystemId: resolvedRemoteSystem.id,
         remoteSystemName: resolvedRemoteSystem.name,
       },
-      startOfDayAction,
       getRequestClientIp(req),
       req.headers['user-agent']
     )
@@ -196,19 +193,6 @@ router.post('/login', async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof PinSetupRequiredError) {
       return res.status(403).json({
-        error: error.code,
-        message: error.message,
-      })
-    }
-    if (error instanceof StartOfDayActionRequiredError) {
-      return res.status(409).json({
-        error: error.code,
-        message: error.message,
-        responsibilityState: error.requirement.responsibilityState,
-      })
-    }
-    if (error instanceof InvalidStartOfDayActionError) {
-      return res.status(400).json({
         error: error.code,
         message: error.message,
       })
@@ -244,7 +228,7 @@ router.post('/setup-pin', async (req: Request, res: Response) => {
 
     const authService = getAuthService()
     await authService.setupPin(
-      parsed.output.serialNumber,
+      parsed.output.serialNumber.trim(),
       parsed.output.newPin,
       getRequestClientIp(req)
     )

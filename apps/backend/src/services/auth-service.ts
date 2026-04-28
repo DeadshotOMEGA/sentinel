@@ -1,11 +1,7 @@
 import bcrypt from 'bcryptjs'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma } from '@sentinel/database'
-import {
-  DISALLOWED_MEMBER_PINS,
-  type KioskResponsibilityStateResponse,
-  type LoginStartOfDayAction,
-} from '@sentinel/contracts'
+import { DISALLOWED_MEMBER_PINS } from '@sentinel/contracts'
 import { formatAuditMemberName } from '../lib/audit-log.js'
 import { CheckinRepository } from '../repositories/checkin-repository.js'
 import { AuditRepository } from '../repositories/audit-repository.js'
@@ -18,8 +14,6 @@ import {
 } from '../lib/system-bootstrap.js'
 import { broadcastCheckin } from '../websocket/broadcast.js'
 import { PresenceService } from './presence-service.js'
-import { DdsService } from './dds-service.js'
-import { LockupService } from './lockup-service.js'
 
 const BCRYPT_COST = 12
 const DISALLOWED_MEMBER_PIN_SET = new Set<string>(DISALLOWED_MEMBER_PINS)
@@ -85,18 +79,12 @@ export interface RemoteSystemSelection {
   remoteSystemName: string
 }
 
-export interface StartOfDayRequirement {
-  responsibilityState: KioskResponsibilityStateResponse
-}
-
 export class AuthService {
   private prisma: PrismaClientInstance
   private sessionRepo: SessionRepository
   private checkinRepo: CheckinRepository
   private auditRepo: AuditRepository
   private presenceService: PresenceService
-  private ddsService: DdsService
-  private lockupService: LockupService
 
   constructor(prisma: PrismaClientInstance = defaultPrisma) {
     this.prisma = prisma
@@ -104,24 +92,21 @@ export class AuthService {
     this.checkinRepo = new CheckinRepository(prisma)
     this.auditRepo = new AuditRepository(prisma)
     this.presenceService = new PresenceService(prisma)
-    this.ddsService = new DdsService(prisma)
-    this.lockupService = new LockupService(prisma)
   }
 
   /**
-   * Authenticate with badge serial + PIN.
+   * Authenticate with badge serial/service number + PIN.
    * Returns session token and member data on success.
    * Throws generic error to avoid leaking which field failed.
    */
   async login(
-    serialNumber: string,
+    loginIdentifier: string,
     pin: string,
     remoteSystem: RemoteSystemSelection,
-    startOfDayAction?: LoginStartOfDayAction,
     ipAddress?: string | null,
     userAgent?: string | null
   ): Promise<LoginResult> {
-    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
     const { member } = context
 
     if (context.pinState === 'setup_required') {
@@ -142,21 +127,6 @@ export class AuthService {
       throw new AuthenticationError('Invalid badge or PIN')
     }
 
-    const startOfDayRequirement = await this.getStartOfDayRequirement(member.id)
-    if (startOfDayRequirement && !startOfDayAction) {
-      authLogger.info('Login paused pending start-of-day action selection', {
-        memberId: member.id,
-        ip: ipAddress,
-      })
-      throw new StartOfDayActionRequiredError(
-        'Choose how to open the unit before signing in',
-        startOfDayRequirement
-      )
-    }
-    if (startOfDayRequirement && startOfDayAction) {
-      this.assertValidStartOfDayAction(startOfDayRequirement, startOfDayAction)
-    }
-
     const session = await this.sessionRepo.create({
       memberId: member.id,
       remoteSystemId: remoteSystem.remoteSystemId,
@@ -169,17 +139,13 @@ export class AuthService {
 
     try {
       loginCheckin = await this.ensureMemberCheckedIn(member.id, remoteSystem.remoteSystemId)
-
-      if (startOfDayRequirement && startOfDayAction) {
-        await this.executeStartOfDayAction(member.id, startOfDayAction)
-      }
     } catch (error) {
       if (loginCheckin.created && loginCheckin.checkinId) {
         try {
           await this.checkinRepo.delete(loginCheckin.checkinId)
           await this.presenceService.broadcastStatsUpdate()
         } catch (rollbackError) {
-          authLogger.error('Login rollback failed after start-of-day action error', {
+          authLogger.error('Login rollback failed after auto check-in error', {
             memberId: member.id,
             sessionId: session.id,
             checkinId: loginCheckin.checkinId,
@@ -235,10 +201,10 @@ export class AuthService {
   }
 
   async preflightLogin(
-    serialNumber: string,
+    loginIdentifier: string,
     ipAddress?: string | null
   ): Promise<PreflightLoginResult> {
-    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
 
     return {
       member: this.toAuthMemberSummary(context.member),
@@ -247,10 +213,14 @@ export class AuthService {
     }
   }
 
-  async setupPin(serialNumber: string, newPin: string, ipAddress?: string | null): Promise<void> {
+  async setupPin(
+    loginIdentifier: string,
+    newPin: string,
+    ipAddress?: string | null
+  ): Promise<void> {
     this.assertAllowedNewPin(newPin)
 
-    const context = await this.resolveLoginContext(serialNumber, ipAddress)
+    const context = await this.resolveLoginContext(loginIdentifier, ipAddress)
 
     if (context.isBootstrapMember) {
       throw new ForbiddenError('Cannot set PIN for the protected Sentinel bootstrap account')
@@ -266,17 +236,17 @@ export class AuthService {
       data: { pinHash: hash, mustChangePin: false },
     })
 
-    authLogger.info('PIN setup completed after badge scan', {
+    authLogger.info('PIN setup completed after login preflight', {
       memberId: context.member.id,
       ip: ipAddress,
     })
   }
 
   private async resolveLoginContext(
-    serialNumber: string,
+    loginIdentifier: string,
     ipAddress?: string | null
   ): Promise<LoginContext> {
-    const member = await this.findLoginMemberByBadge(serialNumber, ipAddress)
+    const member = await this.findLoginMemberByIdentifier(loginIdentifier, ipAddress)
     const isBootstrapMember = isSentinelBootstrapServiceNumber(member.serviceNumber)
     const setupReason = await this.detectPinSetupReason(member, isBootstrapMember)
 
@@ -305,13 +275,15 @@ export class AuthService {
     }
   }
 
-  private async findLoginMemberByBadge(
-    serialNumber: string,
+  private async findLoginMemberByIdentifier(
+    loginIdentifier: string,
     ipAddress?: string | null
   ): Promise<LoginMemberRecord> {
+    const identifier = loginIdentifier.trim()
+
     // Find badge by serial number with assigned member
     const badge = await this.prisma.badge.findUnique({
-      where: { serialNumber },
+      where: { serialNumber: identifier },
       select: {
         id: true,
         assignedToId: true,
@@ -334,41 +306,52 @@ export class AuthService {
       },
     })
 
-    if (!badge || badge.status !== 'active') {
-      authLogger.warn('Login failed: badge not found or inactive', {
-        serialNumber,
-        ip: ipAddress,
-      })
-      throw new AuthenticationError('Invalid badge or PIN')
+    const assignedMember =
+      badge?.status === 'active' && badge.assignedToId
+        ? await this.prisma.member.findUnique({
+            where: { id: badge.assignedToId },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              rank: true,
+              serviceNumber: true,
+              accountLevel: true,
+              mustChangePin: true,
+              status: true,
+              pinHash: true,
+            },
+          })
+        : null
+
+    const badgeMember = badge?.status === 'active' ? (assignedMember ?? badge.members[0]) : null
+    if (badgeMember?.status === 'active') {
+      return badgeMember
     }
 
-    const assignedMember = badge.assignedToId
-      ? await this.prisma.member.findUnique({
-          where: { id: badge.assignedToId },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            rank: true,
-            serviceNumber: true,
-            accountLevel: true,
-            mustChangePin: true,
-            status: true,
-            pinHash: true,
-          },
-        })
-      : null
+    const serviceNumberMember = await this.prisma.member.findUnique({
+      where: { serviceNumber: identifier },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        rank: true,
+        serviceNumber: true,
+        accountLevel: true,
+        mustChangePin: true,
+        status: true,
+        pinHash: true,
+      },
+    })
 
-    const member = assignedMember ?? badge.members[0]
-    if (!member || member.status !== 'active') {
-      authLogger.warn('Login failed: no active member for badge', {
-        serialNumber,
-        ip: ipAddress,
-      })
-      throw new AuthenticationError('Invalid badge or PIN')
+    if (serviceNumberMember?.status === 'active') {
+      return serviceNumberMember
     }
 
-    return member
+    authLogger.warn('Login failed: identifier not found or inactive', {
+      ip: ipAddress,
+    })
+    throw new AuthenticationError('Invalid badge or PIN')
   }
 
   /**
@@ -616,54 +599,6 @@ export class AuthService {
       checkinId: checkin.id,
     }
   }
-
-  private async getStartOfDayRequirement(memberId: string): Promise<StartOfDayRequirement | null> {
-    const latestCheckin = await this.checkinRepo.findLatestByMember(memberId)
-    if (latestCheckin?.direction === 'in') {
-      return null
-    }
-
-    const responsibilityState = await this.ddsService.getLoginResponsibilityState(memberId)
-    if (
-      responsibilityState.isFirstMemberCheckin &&
-      responsibilityState.needsBuildingOpen &&
-      responsibilityState.canOpenBuilding
-    ) {
-      return { responsibilityState }
-    }
-
-    return null
-  }
-
-  private assertValidStartOfDayAction(
-    requirement: StartOfDayRequirement,
-    action: LoginStartOfDayAction
-  ): void {
-    if (action === 'open_only') {
-      if (!requirement.responsibilityState.canOpenBuilding) {
-        throw new InvalidStartOfDayActionError('This badge cannot open the unit right now')
-      }
-      return
-    }
-
-    if (!requirement.responsibilityState.canAcceptDds) {
-      throw new InvalidStartOfDayActionError(
-        'This badge cannot accept DDS right now. Choose open unit only instead.'
-      )
-    }
-  }
-
-  private async executeStartOfDayAction(
-    memberId: string,
-    action: LoginStartOfDayAction
-  ): Promise<void> {
-    if (action === 'open_and_accept_dds') {
-      await this.ddsService.acceptDds(memberId)
-      return
-    }
-
-    await this.lockupService.openBuilding(memberId, 'Opened during Sentinel sign-in')
-  }
 }
 
 export class AuthenticationError extends Error {
@@ -708,27 +643,5 @@ export class PinSetupRequiredError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'PinSetupRequiredError'
-  }
-}
-
-export class StartOfDayActionRequiredError extends Error {
-  public statusCode = 409
-  public code = 'START_OF_DAY_ACTION_REQUIRED'
-  public requirement: StartOfDayRequirement
-
-  constructor(message: string, requirement: StartOfDayRequirement) {
-    super(message)
-    this.name = 'StartOfDayActionRequiredError'
-    this.requirement = requirement
-  }
-}
-
-export class InvalidStartOfDayActionError extends Error {
-  public statusCode = 400
-  public code = 'INVALID_START_OF_DAY_ACTION'
-
-  constructor(message: string) {
-    super(message)
-    this.name = 'InvalidStartOfDayActionError'
   }
 }

@@ -3,7 +3,7 @@
   "paths": {
     "/api/members": {
       "get": {
-        "description": "Get paginated list of members with optional filtering by division, rank, and status",
+        "description": "Get paginated list of members with optional filtering by division, rank, tags, and status",
         "summary": "List all members",
         "tags": ["members"],
         "parameters": [],
@@ -323,6 +323,46 @@
           },
           "401": {
             "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/checkins/manual-checkout/{id}": {
+      "post": {
+        "description": "Create an audited manual checkout for a currently present member and record missed-checkout metadata.",
+        "summary": "Manually check out member",
+        "tags": ["checkins"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
           },
           "500": {
             "description": "500"
@@ -1577,6 +1617,9 @@
           "401": {
             "description": "401"
           },
+          "403": {
+            "description": "403"
+          },
           "404": {
             "description": "404"
           },
@@ -1676,7 +1719,7 @@
     },
     "/api/dds/kiosk-state/{id}": {
       "get": {
-        "description": "Get whether the scanned member should be prompted to open the building and/or take DDS for today",
+        "description": "Get kiosk responsibility context including expected DDS, open-building status, who is already inside, and same-day opening history",
         "summary": "Get kiosk DDS responsibility state",
         "tags": ["dds"],
         "parameters": [
@@ -4431,8 +4474,8 @@
     },
     "/api/auth/preflight-login": {
       "post": {
-        "description": "Validate a scanned badge and report whether the member can continue to PIN entry or must first create a replacement PIN.",
-        "summary": "Check badge login state before PIN entry",
+        "description": "Validate a badge serial number or Service Number and report whether the member can continue to PIN entry or must first create a replacement PIN.",
+        "summary": "Check login state before PIN entry",
         "tags": ["auth"],
         "parameters": [],
         "responses": {
@@ -4456,8 +4499,8 @@
     },
     "/api/auth/login": {
       "post": {
-        "description": "Authenticate a member using their NFC badge serial number and 4-digit PIN, then associate the session to a managed remote system (or kiosk auto-mode).",
-        "summary": "Login with badge serial + PIN",
+        "description": "Authenticate a member using their NFC badge serial number or Service Number and 4-digit PIN, then associate the session to a managed remote system (or kiosk auto-mode).",
+        "summary": "Login with badge serial or Service Number + PIN",
         "tags": ["auth"],
         "parameters": [],
         "responses": {
@@ -4595,7 +4638,7 @@
     "/api/auth/setup-pin": {
       "post": {
         "description": "Allow a member with a missing or temporary default PIN to create a secure 4-digit PIN before normal sign-in.",
-        "summary": "Create a first or replacement PIN after badge scan",
+        "summary": "Create a first or replacement PIN after login preflight",
         "tags": ["auth"],
         "parameters": [],
         "responses": {
@@ -4622,7 +4665,7 @@
     },
     "/api/remote-systems": {
       "get": {
-        "description": "Return the active remote systems available during login, ordered by display order and name.",
+        "description": "Return active remote systems for login, including occupied-state hints and host-device login context.",
         "summary": "List active remote systems",
         "tags": ["remote-systems"],
         "parameters": [],
@@ -4803,7 +4846,7 @@
         }
       },
       "put": {
-        "description": "Persist the approved Wi-Fi SSID allowlist for deployment-network validation.",
+        "description": "Persist the approved Wi-Fi SSID allowlist for Sentinel hotspot validation.",
         "summary": "Update network settings",
         "tags": ["network-settings"],
         "parameters": [],
@@ -4813,6 +4856,28 @@
           },
           "400": {
             "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/network-settings/host-hotspot-recovery": {
+      "post": {
+        "description": "Queue a host-side Sentinel hotspot recovery request for the deployment server laptop.",
+        "summary": "Request host hotspot recovery",
+        "tags": ["network-settings"],
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "202"
           },
           "401": {
             "description": "401"
@@ -4838,6 +4903,129 @@
           },
           "401": {
             "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin/system/update": {
+      "get": {
+        "description": "Return the current Sentinel appliance version, latest available release metadata, and the persisted updater job state.",
+        "summary": "Get system update status",
+        "tags": ["admin"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      },
+      "post": {
+        "description": "Validate and queue a host-side Sentinel appliance update request for a specific trusted version tag.",
+        "summary": "Start a Sentinel system update",
+        "tags": ["admin"],
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "202"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin/system/update/trace": {
+      "get": {
+        "description": "Return the active unified Sentinel update trace log that records the current or most recent host-side update flow.",
+        "summary": "Get the active system update trace log",
+        "tags": ["admin"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin/system/update/{jobId}": {
+      "get": {
+        "description": "Return the sanitized persisted state for a specific Sentinel appliance update job.",
+        "summary": "Get a specific Sentinel update job",
+        "tags": ["admin"],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/admin-navigation-events": {
+      "post": {
+        "description": "Record aggregate, anonymous admin navigation metrics using low-cardinality route and action identifiers.",
+        "summary": "Record admin navigation event",
+        "tags": ["admin-navigation-events"],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
           },
           "500": {
             "description": "500"
@@ -4977,6 +5165,14 @@
     {
       "name": "system-status",
       "description": "Aggregated backend, database, network, and remote-session status"
+    },
+    {
+      "name": "system-update",
+      "description": "Sentinel appliance update operations"
+    },
+    {
+      "name": "admin-navigation-events",
+      "description": "Aggregate admin navigation telemetry"
     }
   ],
   "components": {
