@@ -11,13 +11,12 @@ import {
   AuthMessageSchema,
   AuthErrorSchema,
   HeartbeatResponseSchema,
-  LoginStartOfDayRequiredSchema,
 } from '../schemas/auth.schema.js'
 
 const c = initContract()
 
 /**
- * Auth API contract — badge+PIN authentication
+ * Auth API contract — badge/service number + PIN authentication
  */
 export const authContract = c.router({
   preflightLogin: {
@@ -31,9 +30,9 @@ export const authContract = c.router({
       429: AuthErrorSchema,
       500: AuthErrorSchema,
     },
-    summary: 'Check badge login state before PIN entry',
+    summary: 'Check login state before PIN entry',
     description:
-      'Validate a scanned badge and report whether the member can continue to PIN entry or must first create a replacement PIN.',
+      'Validate a badge serial number or Service Number and report whether the member can continue to PIN entry or must first create a replacement PIN.',
   },
 
   login: {
@@ -45,13 +44,12 @@ export const authContract = c.router({
       400: AuthErrorSchema,
       401: AuthErrorSchema,
       403: AuthErrorSchema,
-      409: LoginStartOfDayRequiredSchema,
       429: AuthErrorSchema,
       500: AuthErrorSchema,
     },
-    summary: 'Login with badge serial + PIN',
+    summary: 'Login with badge serial or Service Number + PIN',
     description:
-      'Authenticate a member using their NFC badge serial number and 4-digit PIN, then associate the session to a managed remote system (or kiosk auto-mode).',
+      'Authenticate a member using their NFC badge serial number or Service Number and 4-digit PIN, then associate the session to a managed remote system (or kiosk auto-mode).',
   },
 
   logout: {
@@ -136,7 +134,7 @@ export const authContract = c.router({
       429: AuthErrorSchema,
       500: AuthErrorSchema,
     },
-    summary: 'Create a first or replacement PIN after badge scan',
+    summary: 'Create a first or replacement PIN after login preflight',
     description:
       'Allow a member with a missing or temporary default PIN to create a secure 4-digit PIN before normal sign-in.',
   },

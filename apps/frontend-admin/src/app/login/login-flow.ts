@@ -35,8 +35,8 @@ export function isPinSetupRequiredError(body: unknown): boolean {
 
 export function getSetupDescription(reason: LoginPinSetupReason): string {
   if (reason === 'default') {
-    return 'This badge is still linked to a temporary default PIN. Create a secure PIN before you can continue.'
+    return 'This login is still linked to a temporary default PIN. Create a secure PIN before you can continue.'
   }
 
-  return 'This badge does not have a PIN configured yet. Create a secure PIN before you can continue.'
+  return 'This login does not have a PIN configured yet. Create a secure PIN before you can continue.'
 }

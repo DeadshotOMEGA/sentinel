@@ -36,18 +36,18 @@ export function BadgeScanInput({ onScan, showLegend = true }: BadgeScanInputProp
       </div>
       {showLegend && (
         <legend className="fieldset-legend mx-auto text-center text-base">
-          Badge Authentication
+          Badge or Service Number
         </legend>
       )}
       <input
         ref={inputRef}
         type="text"
         className="input input-lg w-full text-center font-mono text-lg tracking-[0.18em]"
-        placeholder="BADGE NUMBER"
+        placeholder="BADGE OR SERVICE NUMBER"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        aria-label="Badge number"
+        aria-label="Badge or Service Number"
         autoComplete="off"
         data-testid={TID.auth.badgeInput}
       />

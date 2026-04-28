@@ -2,14 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { buildLoginUrl } from '@/lib/post-login-destination'
-import {
-  KIOSK_DEVICE_BOOTSTRAP_PATH,
-  KIOSK_DEVICE_COOKIE_NAME,
-  hasKioskDeviceCookie,
-  isKioskDeviceBootstrapRoute,
-  isKioskRoute,
-} from '@/lib/kiosk-device-auth'
-import { isKioskDeviceAuthConfigured } from '@/lib/kiosk-device-auth.server'
+import { isKioskDeviceBootstrapRoute, isKioskRoute } from '@/lib/kiosk-device-auth'
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -18,19 +11,9 @@ export function proxy(request: NextRequest) {
   }
 
   const sessionCookie = request.cookies.get('sentinel-session')
-  const kioskDeviceCookie = request.cookies.get(KIOSK_DEVICE_COOKIE_NAME)
 
   if (isKioskRoute(pathname)) {
-    if (sessionCookie?.value || hasKioskDeviceCookie(kioskDeviceCookie?.value)) {
-      return NextResponse.next()
-    }
-
-    if (isKioskDeviceAuthConfigured()) {
-      const bootstrapUrl = new URL(KIOSK_DEVICE_BOOTSTRAP_PATH, request.url)
-      const nextPath = `${pathname}${request.nextUrl.search}`
-      bootstrapUrl.searchParams.set('next', nextPath)
-      return NextResponse.redirect(bootstrapUrl)
-    }
+    return NextResponse.next()
   }
 
   if (!sessionCookie?.value) {

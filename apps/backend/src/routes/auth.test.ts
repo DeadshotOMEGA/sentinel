@@ -37,12 +37,15 @@ function createAuthPrismaHarness(initial: {
 
   const prisma = {
     badge: {
-      findUnique: async () => ({
-        id: 'badge-1',
-        assignedToId: memberRecord.id,
-        status: 'active',
-        members: [],
-      }),
+      findUnique: async ({ where }: { where: { serialNumber: string } }) =>
+        where.serialNumber === 'serial-1'
+          ? {
+              id: 'badge-1',
+              assignedToId: memberRecord.id,
+              status: 'active',
+              members: [],
+            }
+          : null,
     },
     member: {
       findUnique: async () => memberRecord,
@@ -87,9 +90,27 @@ function createAuthPrismaHarness(initial: {
 
         return null
       },
-      findFirst: async () => null,
+      findMany: async ({ where }: { where: { id?: string; isActive?: boolean } }) => {
+        if (where.id === 'remote-other' && where.isActive) {
+          return [
+            {
+              id: 'remote-other',
+              code: 'other',
+              name: 'Other',
+              description: 'Other station',
+              displayOrder: 3,
+              isActive: true,
+              createdAt: new Date('2026-04-01T00:00:00.000Z'),
+              updatedAt: new Date('2026-04-01T00:00:00.000Z'),
+            },
+          ]
+        }
+
+        return []
+      },
     },
     memberSession: {
+      updateMany: async () => ({ count: 0 }),
       create: async ({
         data,
       }: {
@@ -108,6 +129,33 @@ function createAuthPrismaHarness(initial: {
         remoteSystemId: data.remoteSystemId,
         remoteSystemNameSnapshot: data.remoteSystemNameSnapshot,
         lastSeenAt: data.lastSeenAt,
+      }),
+    },
+    checkin: {
+      findFirst: async () => ({
+        id: 'existing-checkin',
+        memberId: memberRecord.id,
+        badgeId: null,
+        direction: 'in',
+        timestamp: new Date('2026-04-01T12:00:00.000Z'),
+        kioskId: 'remote-kiosk',
+        synced: true,
+        createdAt: new Date('2026-04-01T12:00:00.000Z'),
+        method: 'login',
+        createdByAdmin: null,
+      }),
+    },
+    auditLog: {
+      create: async ({ data }: { data: Record<string, unknown> }) => ({
+        id: 'audit-1',
+        adminUserId: data.adminUserId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        details: data.details,
+        ipAddress: data.ipAddress,
+        createdAt: new Date('2026-04-01T12:00:00.000Z'),
+        adminUser: null,
       }),
     },
     setting: {
@@ -154,6 +202,30 @@ describe('authRouter', () => {
     })
   })
 
+  it('returns setup-required during preflight for a Service Number', async () => {
+    const { prisma } = createAuthPrismaHarness({
+      pinHash: null,
+      mustChangePin: false,
+    })
+    setPrismaClient(prisma)
+
+    const app = createTestApp()
+    const response = await request(app)
+      .post('/api/auth/preflight-login')
+      .send({ serialNumber: 'M12345678' })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toMatchObject({
+      pinState: 'setup_required',
+      setupReason: 'missing',
+      member: {
+        id: 'member-1',
+        serviceNumber: 'M12345678',
+        mustChangePin: true,
+      },
+    })
+  })
+
   it('allows public PIN setup for a member with a temporary default PIN', async () => {
     const { prisma, memberRecord } = createAuthPrismaHarness({
       pinHash: await bcrypt.hash('1111', TEST_BCRYPT_COST),
@@ -165,6 +237,24 @@ describe('authRouter', () => {
     const response = await request(app)
       .post('/api/auth/setup-pin')
       .send({ serialNumber: 'serial-1', newPin: '2468' })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({ message: 'PIN set' })
+    expect(memberRecord.mustChangePin).toBe(false)
+    await expect(bcrypt.compare('2468', memberRecord.pinHash as string)).resolves.toBe(true)
+  })
+
+  it('allows public PIN setup with a Service Number', async () => {
+    const { prisma, memberRecord } = createAuthPrismaHarness({
+      pinHash: await bcrypt.hash('1111', TEST_BCRYPT_COST),
+      mustChangePin: true,
+    })
+    setPrismaClient(prisma)
+
+    const app = createTestApp()
+    const response = await request(app)
+      .post('/api/auth/setup-pin')
+      .send({ serialNumber: 'M12345678', newPin: '2468' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({ message: 'PIN set' })
@@ -218,6 +308,31 @@ describe('authRouter', () => {
     expect(successfulLogin.headers['set-cookie']).toBeDefined()
   })
 
+  it('accepts Service Number with a configured PIN', async () => {
+    const { prisma } = createAuthPrismaHarness({
+      pinHash: await bcrypt.hash('2468', TEST_BCRYPT_COST),
+      mustChangePin: false,
+    })
+    setPrismaClient(prisma)
+
+    const app = createTestApp()
+    const response = await request(app).post('/api/auth/login').send({
+      serialNumber: 'M12345678',
+      pin: '2468',
+      useKioskRemoteSystem: true,
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toMatchObject({
+      remoteSystemId: 'remote-kiosk',
+      remoteSystemName: 'Kiosk',
+      member: {
+        id: 'member-1',
+        serviceNumber: 'M12345678',
+      },
+    })
+  })
+
   it('forces host-device logins onto the Server remote system in production', async () => {
     process.env.NODE_ENV = 'production'
 
@@ -234,7 +349,7 @@ describe('authRouter', () => {
       .send({
         serialNumber: 'serial-1',
         pin: '2468',
-        remoteSystemId: 'remote-other',
+        remoteSystemId: '11111111-1111-4111-8111-111111111111',
       })
 
     expect(response.status).toBe(200)
