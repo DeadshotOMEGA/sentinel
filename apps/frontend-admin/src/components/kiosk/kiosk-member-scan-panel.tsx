@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import {
   MOTION_TIMING,
   type AssignmentBadge,
+  type KioskSyncState,
   type PendingLockupCheckout,
   type ResultPill,
   type ResultTone,
@@ -42,6 +43,7 @@ interface KioskMemberScanPanelProps {
   visitorScanPromptVisible: boolean
   visitorFlowActive: boolean
   scanningDisabled: boolean
+  syncState: KioskSyncState
   serial: string
   shouldReduceMotion: boolean
   onSerialChange: (value: string) => void
@@ -69,6 +71,7 @@ export function KioskMemberScanPanel({
   visitorScanPromptVisible,
   visitorFlowActive,
   scanningDisabled,
+  syncState,
   serial,
   shouldReduceMotion,
   onSerialChange,
@@ -126,6 +129,20 @@ export function KioskMemberScanPanel({
               </div>
             </div>
           )}
+
+          <div className="rounded-box border border-base-300 bg-base-200/50 px-(--space-4) py-(--space-3)">
+            <p className="text-xs uppercase tracking-[0.18em] text-base-content/50">Sync state</p>
+            <p className="mt-(--space-1) text-sm font-semibold">
+              {syncState.phase === 'synced' && 'Synced'}
+              {syncState.phase === 'syncing' && 'Syncing queued scans'}
+              {syncState.phase === 'queued' && 'Queued for reconnect'}
+              {syncState.phase === 'error' && 'Sync error'}
+              {syncState.queuedCount > 0 ? ` (${syncState.queuedCount} queued)` : ''}
+            </p>
+            {syncState.lastError && (
+              <p className="mt-(--space-1) text-xs text-error">{syncState.lastError}</p>
+            )}
+          </div>
 
           <div
             className={cn(
