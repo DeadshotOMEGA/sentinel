@@ -257,8 +257,22 @@ apps/*/tests/**/*.js.map
 # Project Specific
 # ===================================
 
-# Codex local overrides (secrets)
+# ===================================
+# AI Tooling Folders
+# ===================================
+
+# Local AI context/state folders
+.ai/
+.agents/
+
+# Codex local overrides and workspace state
 .codex/config.local.toml
+.codex/
+
+# Claude local state
+.claude/
+!.claude/rules/
+!.claude/rules/**
 
 # Playwright CLI QA artifacts (session-generated)
 baseline-*.png
