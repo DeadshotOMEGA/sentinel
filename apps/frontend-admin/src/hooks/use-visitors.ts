@@ -3,7 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
-import type { CreateVisitorInput, UpdateVisitorInput } from '@sentinel/contracts'
+import type {
+  CreateVisitorInput,
+  CreateVisitorGroupInput,
+  UpdateVisitorInput,
+} from '@sentinel/contracts'
 
 export function useActiveVisitors() {
   return useQuery({
@@ -29,6 +33,30 @@ export function useCreateVisitor() {
       if (response.status !== 201) {
         const errorBody = response.body as { error?: string; message?: string }
         throw new Error(errorBody?.message || `Failed to sign in visitor (${response.status})`)
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
+    },
+  })
+}
+
+export function useCreateVisitorGroup() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: CreateVisitorGroupInput) => {
+      const response = await apiClient.visitors.createVisitorGroup({
+        body: data,
+      })
+      if (response.status !== 201) {
+        const errorBody = response.body as { error?: string; message?: string }
+        throw new Error(
+          errorBody?.message || `Failed to sign in visitor group (${response.status})`
+        )
       }
       return response.body
     },

@@ -87,6 +87,14 @@ const AdminNotesSchema = v.pipe(
   v.maxLength(1000, 'Admin notes must be at most 1000 characters')
 )
 
+const VisitorGroupVehicleInputSchema = v.object({
+  licensePlate: v.pipe(
+    v.string('License plate is required'),
+    v.minLength(1, 'License plate cannot be empty'),
+    v.maxLength(20, 'License plate must be at most 20 characters')
+  ),
+})
+
 const BaseCreateVisitorSchema = v.object({
   name: v.optional(VisitorNameFieldSchema),
   rankPrefix: v.optional(RankPrefixSchema),
@@ -151,6 +159,87 @@ export const CreateVisitorSchema = v.pipe(
   )
 )
 
+export const CreateVisitorGroupMemberSchema = v.pipe(
+  v.object({
+    name: v.optional(VisitorNameFieldSchema),
+    rankPrefix: v.optional(RankPrefixSchema),
+    firstName: v.optional(FirstNameSchema),
+    lastName: v.optional(LastNameSchema),
+    organization: v.optional(OrganizationSchema),
+    unit: v.optional(UnitSchema),
+    mobilePhone: v.optional(MobilePhoneSchema),
+    visitType: VisitTypeEnum,
+    visitTypeId: v.optional(v.pipe(v.string(), v.uuid('Invalid visit type ID'))),
+    recruitmentStep: v.optional(RecruitmentStepEnum),
+  }),
+  v.check((data) => {
+    const hasStructuredName = Boolean(data.firstName?.trim() && data.lastName?.trim())
+    const hasLegacyName = Boolean(data.name?.trim())
+    return hasStructuredName || hasLegacyName
+  }, 'Each group member must include first and last name, or a legacy name value'),
+  v.check(
+    (data) =>
+      data.visitType !== 'military' ||
+      (Boolean(data.rankPrefix?.trim()) && Boolean(data.unit?.trim())),
+    'Military group members must include rank and unit'
+  ),
+  v.check(
+    (data) => data.visitType !== 'contractor' || Boolean(data.organization?.trim()),
+    'Contractor group members must include a company name'
+  ),
+  v.check(
+    (data) => data.visitType !== 'recruitment' || Boolean(data.recruitmentStep),
+    'Recruitment group members must select a recruitment step'
+  )
+)
+
+export const CreateVisitorGroupSchema = v.pipe(
+  v.object({
+    kioskId: v.pipe(v.string('Kiosk ID is required'), v.minLength(1, 'Kiosk ID cannot be empty')),
+    visitReason: v.optional(VisitReasonSchema),
+    visitPurpose: v.optional(VisitPurposeEnum),
+    purposeDetails: v.optional(PurposeDetailsSchema),
+    eventId: v.optional(v.pipe(v.string(), v.uuid('Invalid event ID'))),
+    hostMemberId: v.optional(v.pipe(v.string(), v.uuid('Invalid host member ID'))),
+    checkInMethod: v.optional(VisitorCheckInMethodEnum),
+    adminNotes: v.optional(AdminNotesSchema),
+    createdByAdmin: v.optional(v.pipe(v.string(), v.uuid('Invalid admin ID'))),
+    members: v.pipe(
+      v.array(CreateVisitorGroupMemberSchema),
+      v.minLength(1, 'Visitor group must include at least 1 member'),
+      v.maxLength(10, 'Visitor group cannot include more than 10 members')
+    ),
+    vehicles: v.optional(
+      v.pipe(
+        v.array(VisitorGroupVehicleInputSchema),
+        v.maxLength(6, 'Visitor group cannot include more than 6 vehicles')
+      )
+    ),
+  }),
+  v.check(
+    (data) =>
+      !data.visitPurpose ||
+      data.visitPurpose === 'information' ||
+      Boolean(data.hostMemberId) ||
+      Boolean(data.purposeDetails?.trim()),
+    'Invited visitors and appointments must include a host member or fallback details'
+  ),
+  v.check(
+    (data) => data.visitPurpose !== 'other' || Boolean(data.purposeDetails?.trim()),
+    'Other visit purposes must include details'
+  ),
+  v.check((data) => {
+    const seen = new Set<string>()
+    for (const vehicle of data.vehicles ?? []) {
+      const normalized = vehicle.licensePlate.trim().toUpperCase()
+      if (!normalized) return false
+      if (seen.has(normalized)) return false
+      seen.add(normalized)
+    }
+    return true
+  }, 'Duplicate vehicle license plates are not allowed in the same group')
+)
+
 /**
  * Update visitor request schema
  */
@@ -209,7 +298,26 @@ export const VisitorResponseSchema = v.object({
   adminNotes: v.nullable(v.string()),
   checkInMethod: VisitorCheckInMethodEnum,
   createdByAdmin: v.nullable(v.string()),
+  visitorGroupId: v.nullable(v.string()),
   createdAt: v.string(),
+})
+
+export const VisitorGroupVehicleResponseSchema = v.object({
+  id: v.string(),
+  visitorGroupId: v.string(),
+  licensePlate: v.string(),
+  normalizedLicensePlate: v.string(),
+  createdAt: v.string(),
+})
+
+export const CreateVisitorGroupResponseSchema = v.object({
+  groupId: v.string(),
+  memberIds: v.array(v.string()),
+  vehicleIds: v.array(v.string()),
+  memberCount: v.number(),
+  vehicleCount: v.number(),
+  members: v.array(VisitorResponseSchema),
+  vehicles: v.array(VisitorGroupVehicleResponseSchema),
 })
 
 /**
@@ -256,8 +364,12 @@ export const CheckoutResponseSchema = v.object({
 
 // Type exports
 export type CreateVisitorInput = v.InferOutput<typeof CreateVisitorSchema>
+export type CreateVisitorGroupInput = v.InferOutput<typeof CreateVisitorGroupSchema>
+export type CreateVisitorGroupMemberInput = v.InferOutput<typeof CreateVisitorGroupMemberSchema>
 export type UpdateVisitorInput = v.InferOutput<typeof UpdateVisitorSchema>
 export type VisitorResponse = v.InferOutput<typeof VisitorResponseSchema>
+export type VisitorGroupVehicleResponse = v.InferOutput<typeof VisitorGroupVehicleResponseSchema>
+export type CreateVisitorGroupResponse = v.InferOutput<typeof CreateVisitorGroupResponseSchema>
 export type VisitorListQuery = v.InferOutput<typeof VisitorListQuerySchema>
 export type VisitorListResponse = v.InferOutput<typeof VisitorListResponseSchema>
 export type ActiveVisitorsResponse = v.InferOutput<typeof ActiveVisitorsResponseSchema>

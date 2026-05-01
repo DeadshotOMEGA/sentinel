@@ -89,6 +89,16 @@ export type SecurityAlert = $Result.DefaultSelection<Prisma.$SecurityAlertPayloa
  */
 export type Visitor = $Result.DefaultSelection<Prisma.$VisitorPayload>
 /**
+ * Model VisitorGroup
+ * 
+ */
+export type VisitorGroup = $Result.DefaultSelection<Prisma.$VisitorGroupPayload>
+/**
+ * Model VisitorGroupVehicle
+ * 
+ */
+export type VisitorGroupVehicle = $Result.DefaultSelection<Prisma.$VisitorGroupVehiclePayload>
+/**
  * Model BmqCourse
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
@@ -545,6 +555,26 @@ export class PrismaClient<
     * ```
     */
   get visitor(): Prisma.VisitorDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.visitorGroup`: Exposes CRUD operations for the **VisitorGroup** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VisitorGroups
+    * const visitorGroups = await prisma.visitorGroup.findMany()
+    * ```
+    */
+  get visitorGroup(): Prisma.VisitorGroupDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.visitorGroupVehicle`: Exposes CRUD operations for the **VisitorGroupVehicle** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VisitorGroupVehicles
+    * const visitorGroupVehicles = await prisma.visitorGroupVehicle.findMany()
+    * ```
+    */
+  get visitorGroupVehicle(): Prisma.VisitorGroupVehicleDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.bmqCourse`: Exposes CRUD operations for the **BmqCourse** model.
@@ -1364,6 +1394,8 @@ export namespace Prisma {
     MemberTag: 'MemberTag',
     SecurityAlert: 'SecurityAlert',
     Visitor: 'Visitor',
+    VisitorGroup: 'VisitorGroup',
+    VisitorGroupVehicle: 'VisitorGroupVehicle',
     BmqCourse: 'BmqCourse',
     BmqEnrollment: 'BmqEnrollment',
     migrations: 'migrations',
@@ -1416,7 +1448,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "memberSession" | "remoteSystem" | "tag" | "memberTag" | "securityAlert" | "visitor" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "liveDutyAssignment" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
+      modelProps: "adminUser" | "auditLog" | "badge" | "checkin" | "division" | "eventAttendee" | "eventCheckin" | "event" | "member" | "memberSession" | "remoteSystem" | "tag" | "memberTag" | "securityAlert" | "visitor" | "visitorGroup" | "visitorGroupVehicle" | "bmqCourse" | "bmqEnrollment" | "migrations" | "report_audit_log" | "reportSetting" | "trainingYear" | "ddsAssignment" | "responsibilityAuditLog" | "memberStatus" | "memberType" | "visitType" | "badgeStatus" | "listItem" | "rank" | "user" | "session" | "account" | "verification" | "setting" | "alertConfig" | "statHoliday" | "qualificationType" | "memberQualification" | "dutyRole" | "dutyPosition" | "liveDutyAssignment" | "weeklySchedule" | "scheduleAssignment" | "dutyWatchNightOverride" | "lockupStatus" | "lockupTransfer" | "lockupExecution" | "missedCheckout" | "unitEventType" | "unitEvent" | "unitEventDutyPosition" | "unitEventDutyAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2527,6 +2559,154 @@ export namespace Prisma {
           count: {
             args: Prisma.VisitorCountArgs<ExtArgs>
             result: $Utils.Optional<VisitorCountAggregateOutputType> | number
+          }
+        }
+      }
+      VisitorGroup: {
+        payload: Prisma.$VisitorGroupPayload<ExtArgs>
+        fields: Prisma.VisitorGroupFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VisitorGroupFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VisitorGroupFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          findFirst: {
+            args: Prisma.VisitorGroupFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VisitorGroupFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          findMany: {
+            args: Prisma.VisitorGroupFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>[]
+          }
+          create: {
+            args: Prisma.VisitorGroupCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          createMany: {
+            args: Prisma.VisitorGroupCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VisitorGroupCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>[]
+          }
+          delete: {
+            args: Prisma.VisitorGroupDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          update: {
+            args: Prisma.VisitorGroupUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          deleteMany: {
+            args: Prisma.VisitorGroupDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VisitorGroupUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.VisitorGroupUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>[]
+          }
+          upsert: {
+            args: Prisma.VisitorGroupUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupPayload>
+          }
+          aggregate: {
+            args: Prisma.VisitorGroupAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVisitorGroup>
+          }
+          groupBy: {
+            args: Prisma.VisitorGroupGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VisitorGroupGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VisitorGroupCountArgs<ExtArgs>
+            result: $Utils.Optional<VisitorGroupCountAggregateOutputType> | number
+          }
+        }
+      }
+      VisitorGroupVehicle: {
+        payload: Prisma.$VisitorGroupVehiclePayload<ExtArgs>
+        fields: Prisma.VisitorGroupVehicleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VisitorGroupVehicleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VisitorGroupVehicleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          findFirst: {
+            args: Prisma.VisitorGroupVehicleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VisitorGroupVehicleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          findMany: {
+            args: Prisma.VisitorGroupVehicleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>[]
+          }
+          create: {
+            args: Prisma.VisitorGroupVehicleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          createMany: {
+            args: Prisma.VisitorGroupVehicleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VisitorGroupVehicleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>[]
+          }
+          delete: {
+            args: Prisma.VisitorGroupVehicleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          update: {
+            args: Prisma.VisitorGroupVehicleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          deleteMany: {
+            args: Prisma.VisitorGroupVehicleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VisitorGroupVehicleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.VisitorGroupVehicleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>[]
+          }
+          upsert: {
+            args: Prisma.VisitorGroupVehicleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VisitorGroupVehiclePayload>
+          }
+          aggregate: {
+            args: Prisma.VisitorGroupVehicleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVisitorGroupVehicle>
+          }
+          groupBy: {
+            args: Prisma.VisitorGroupVehicleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VisitorGroupVehicleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VisitorGroupVehicleCountArgs<ExtArgs>
+            result: $Utils.Optional<VisitorGroupVehicleCountAggregateOutputType> | number
           }
         }
       }
@@ -5391,6 +5571,8 @@ export namespace Prisma {
     memberTag?: MemberTagOmit
     securityAlert?: SecurityAlertOmit
     visitor?: VisitorOmit
+    visitorGroup?: VisitorGroupOmit
+    visitorGroupVehicle?: VisitorGroupVehicleOmit
     bmqCourse?: BmqCourseOmit
     bmqEnrollment?: BmqEnrollmentOmit
     migrations?: migrationsOmit
@@ -5760,11 +5942,13 @@ export namespace Prisma {
   export type EventCountOutputType = {
     eventAttendees: number
     visitors: number
+    visitorGroups: number
   }
 
   export type EventCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventAttendees?: boolean | EventCountOutputTypeCountEventAttendeesArgs
     visitors?: boolean | EventCountOutputTypeCountVisitorsArgs
+    visitorGroups?: boolean | EventCountOutputTypeCountVisitorGroupsArgs
   }
 
   // Custom InputTypes
@@ -5792,6 +5976,13 @@ export namespace Prisma {
     where?: VisitorWhereInput
   }
 
+  /**
+   * EventCountOutputType without action
+   */
+  export type EventCountOutputTypeCountVisitorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorGroupWhereInput
+  }
+
 
   /**
    * Count Type MemberCountOutputType
@@ -5802,6 +5993,7 @@ export namespace Prisma {
     checkins: number
     visitorsHosted: number
     visitorsCreated: number
+    visitorGroupsHosted: number
     memberTags: number
     ddsAssignments: number
     ddsTransfers: number
@@ -5826,6 +6018,7 @@ export namespace Prisma {
     checkins?: boolean | MemberCountOutputTypeCountCheckinsArgs
     visitorsHosted?: boolean | MemberCountOutputTypeCountVisitorsHostedArgs
     visitorsCreated?: boolean | MemberCountOutputTypeCountVisitorsCreatedArgs
+    visitorGroupsHosted?: boolean | MemberCountOutputTypeCountVisitorGroupsHostedArgs
     memberTags?: boolean | MemberCountOutputTypeCountMemberTagsArgs
     ddsAssignments?: boolean | MemberCountOutputTypeCountDdsAssignmentsArgs
     ddsTransfers?: boolean | MemberCountOutputTypeCountDdsTransfersArgs
@@ -5882,6 +6075,13 @@ export namespace Prisma {
    */
   export type MemberCountOutputTypeCountVisitorsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: VisitorWhereInput
+  }
+
+  /**
+   * MemberCountOutputType without action
+   */
+  export type MemberCountOutputTypeCountVisitorGroupsHostedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorGroupWhereInput
   }
 
   /**
@@ -6072,6 +6272,46 @@ export namespace Prisma {
    */
   export type TagCountOutputTypeCountQualificationTypesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: QualificationTypeWhereInput
+  }
+
+
+  /**
+   * Count Type VisitorGroupCountOutputType
+   */
+
+  export type VisitorGroupCountOutputType = {
+    members: number
+    vehicles: number
+  }
+
+  export type VisitorGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    members?: boolean | VisitorGroupCountOutputTypeCountMembersArgs
+    vehicles?: boolean | VisitorGroupCountOutputTypeCountVehiclesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * VisitorGroupCountOutputType without action
+   */
+  export type VisitorGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupCountOutputType
+     */
+    select?: VisitorGroupCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * VisitorGroupCountOutputType without action
+   */
+  export type VisitorGroupCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorWhereInput
+  }
+
+  /**
+   * VisitorGroupCountOutputType without action
+   */
+  export type VisitorGroupCountOutputTypeCountVehiclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorGroupVehicleWhereInput
   }
 
 
@@ -15479,6 +15719,7 @@ export namespace Prisma {
     updatedAt?: boolean
     eventAttendees?: boolean | Event$eventAttendeesArgs<ExtArgs>
     visitors?: boolean | Event$visitorsArgs<ExtArgs>
+    visitorGroups?: boolean | Event$visitorGroupsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
@@ -15531,6 +15772,7 @@ export namespace Prisma {
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     eventAttendees?: boolean | Event$eventAttendeesArgs<ExtArgs>
     visitors?: boolean | Event$visitorsArgs<ExtArgs>
+    visitorGroups?: boolean | Event$visitorGroupsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -15541,6 +15783,7 @@ export namespace Prisma {
     objects: {
       eventAttendees: Prisma.$EventAttendeePayload<ExtArgs>[]
       visitors: Prisma.$VisitorPayload<ExtArgs>[]
+      visitorGroups: Prisma.$VisitorGroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15951,6 +16194,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     eventAttendees<T extends Event$eventAttendeesArgs<ExtArgs> = {}>(args?: Subset<T, Event$eventAttendeesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventAttendeePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     visitors<T extends Event$visitorsArgs<ExtArgs> = {}>(args?: Subset<T, Event$visitorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    visitorGroups<T extends Event$visitorGroupsArgs<ExtArgs> = {}>(args?: Subset<T, Event$visitorGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16442,6 +16686,30 @@ export namespace Prisma {
   }
 
   /**
+   * Event.visitorGroups
+   */
+  export type Event$visitorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    where?: VisitorGroupWhereInput
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    cursor?: VisitorGroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisitorGroupScalarFieldEnum | VisitorGroupScalarFieldEnum[]
+  }
+
+  /**
    * Event without action
    */
   export type EventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16885,6 +17153,7 @@ export namespace Prisma {
     division?: boolean | Member$divisionArgs<ExtArgs>
     visitorsHosted?: boolean | Member$visitorsHostedArgs<ExtArgs>
     visitorsCreated?: boolean | Member$visitorsCreatedArgs<ExtArgs>
+    visitorGroupsHosted?: boolean | Member$visitorGroupsHostedArgs<ExtArgs>
     memberTags?: boolean | Member$memberTagsArgs<ExtArgs>
     ddsAssignments?: boolean | Member$ddsAssignmentsArgs<ExtArgs>
     ddsTransfers?: boolean | Member$ddsTransfersArgs<ExtArgs>
@@ -17031,6 +17300,7 @@ export namespace Prisma {
     division?: boolean | Member$divisionArgs<ExtArgs>
     visitorsHosted?: boolean | Member$visitorsHostedArgs<ExtArgs>
     visitorsCreated?: boolean | Member$visitorsCreatedArgs<ExtArgs>
+    visitorGroupsHosted?: boolean | Member$visitorGroupsHostedArgs<ExtArgs>
     memberTags?: boolean | Member$memberTagsArgs<ExtArgs>
     ddsAssignments?: boolean | Member$ddsAssignmentsArgs<ExtArgs>
     ddsTransfers?: boolean | Member$ddsTransfersArgs<ExtArgs>
@@ -17077,6 +17347,7 @@ export namespace Prisma {
       division: Prisma.$DivisionPayload<ExtArgs> | null
       visitorsHosted: Prisma.$VisitorPayload<ExtArgs>[]
       visitorsCreated: Prisma.$VisitorPayload<ExtArgs>[]
+      visitorGroupsHosted: Prisma.$VisitorGroupPayload<ExtArgs>[]
       memberTags: Prisma.$MemberTagPayload<ExtArgs>[]
       ddsAssignments: Prisma.$DdsAssignmentPayload<ExtArgs>[]
       ddsTransfers: Prisma.$DdsAssignmentPayload<ExtArgs>[]
@@ -17531,6 +17802,7 @@ export namespace Prisma {
     division<T extends Member$divisionArgs<ExtArgs> = {}>(args?: Subset<T, Member$divisionArgs<ExtArgs>>): Prisma__DivisionClient<$Result.GetResult<Prisma.$DivisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     visitorsHosted<T extends Member$visitorsHostedArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsHostedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     visitorsCreated<T extends Member$visitorsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    visitorGroupsHosted<T extends Member$visitorGroupsHostedArgs<ExtArgs> = {}>(args?: Subset<T, Member$visitorGroupsHostedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     memberTags<T extends Member$memberTagsArgs<ExtArgs> = {}>(args?: Subset<T, Member$memberTagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsAssignments<T extends Member$ddsAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Member$ddsAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ddsTransfers<T extends Member$ddsTransfersArgs<ExtArgs> = {}>(args?: Subset<T, Member$ddsTransfersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DdsAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -18171,6 +18443,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: VisitorScalarFieldEnum | VisitorScalarFieldEnum[]
+  }
+
+  /**
+   * Member.visitorGroupsHosted
+   */
+  export type Member$visitorGroupsHostedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    where?: VisitorGroupWhereInput
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    cursor?: VisitorGroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisitorGroupScalarFieldEnum | VisitorGroupScalarFieldEnum[]
   }
 
   /**
@@ -24491,6 +24787,7 @@ export namespace Prisma {
     adminNotes: string | null
     checkInMethod: string | null
     createdByAdmin: string | null
+    visitorGroupId: string | null
   }
 
   export type VisitorMaxAggregateOutputType = {
@@ -24520,6 +24817,7 @@ export namespace Prisma {
     adminNotes: string | null
     checkInMethod: string | null
     createdByAdmin: string | null
+    visitorGroupId: string | null
   }
 
   export type VisitorCountAggregateOutputType = {
@@ -24549,6 +24847,7 @@ export namespace Prisma {
     adminNotes: number
     checkInMethod: number
     createdByAdmin: number
+    visitorGroupId: number
     _all: number
   }
 
@@ -24580,6 +24879,7 @@ export namespace Prisma {
     adminNotes?: true
     checkInMethod?: true
     createdByAdmin?: true
+    visitorGroupId?: true
   }
 
   export type VisitorMaxAggregateInputType = {
@@ -24609,6 +24909,7 @@ export namespace Prisma {
     adminNotes?: true
     checkInMethod?: true
     createdByAdmin?: true
+    visitorGroupId?: true
   }
 
   export type VisitorCountAggregateInputType = {
@@ -24638,6 +24939,7 @@ export namespace Prisma {
     adminNotes?: true
     checkInMethod?: true
     createdByAdmin?: true
+    visitorGroupId?: true
     _all?: true
   }
 
@@ -24740,6 +25042,7 @@ export namespace Prisma {
     adminNotes: string | null
     checkInMethod: string | null
     createdByAdmin: string | null
+    visitorGroupId: string | null
     _count: VisitorCountAggregateOutputType | null
     _min: VisitorMinAggregateOutputType | null
     _max: VisitorMaxAggregateOutputType | null
@@ -24786,11 +25089,13 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
+    visitorGroupId?: boolean
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }, ExtArgs["result"]["visitor"]>
 
   export type VisitorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24820,11 +25125,13 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
+    visitorGroupId?: boolean
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }, ExtArgs["result"]["visitor"]>
 
   export type VisitorSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24854,11 +25161,13 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
+    visitorGroupId?: boolean
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }, ExtArgs["result"]["visitor"]>
 
   export type VisitorSelectScalar = {
@@ -24888,15 +25197,17 @@ export namespace Prisma {
     adminNotes?: boolean
     checkInMethod?: boolean
     createdByAdmin?: boolean
+    visitorGroupId?: boolean
   }
 
-  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "rankPrefix" | "firstName" | "lastName" | "displayName" | "organization" | "unit" | "mobilePhone" | "licensePlate" | "visitType" | "visitTypeId" | "visitReason" | "visitPurpose" | "purposeDetails" | "recruitmentStep" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin", ExtArgs["result"]["visitor"]>
+  export type VisitorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "rankPrefix" | "firstName" | "lastName" | "displayName" | "organization" | "unit" | "mobilePhone" | "licensePlate" | "visitType" | "visitTypeId" | "visitReason" | "visitPurpose" | "purposeDetails" | "recruitmentStep" | "eventId" | "hostMemberId" | "checkInTime" | "checkOutTime" | "temporaryBadgeId" | "kioskId" | "createdAt" | "adminNotes" | "checkInMethod" | "createdByAdmin" | "visitorGroupId", ExtArgs["result"]["visitor"]>
   export type VisitorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
     event?: boolean | Visitor$eventArgs<ExtArgs>
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }
   export type VisitorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
@@ -24904,6 +25215,7 @@ export namespace Prisma {
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }
   export type VisitorIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdByMember?: boolean | Visitor$createdByMemberArgs<ExtArgs>
@@ -24911,6 +25223,7 @@ export namespace Prisma {
     hostMember?: boolean | Visitor$hostMemberArgs<ExtArgs>
     badge?: boolean | Visitor$badgeArgs<ExtArgs>
     visitTypeRef?: boolean | Visitor$visitTypeRefArgs<ExtArgs>
+    visitorGroup?: boolean | Visitor$visitorGroupArgs<ExtArgs>
   }
 
   export type $VisitorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -24921,6 +25234,7 @@ export namespace Prisma {
       hostMember: Prisma.$MemberPayload<ExtArgs> | null
       badge: Prisma.$BadgePayload<ExtArgs> | null
       visitTypeRef: Prisma.$VisitTypePayload<ExtArgs> | null
+      visitorGroup: Prisma.$VisitorGroupPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -24949,6 +25263,7 @@ export namespace Prisma {
       adminNotes: string | null
       checkInMethod: string | null
       createdByAdmin: string | null
+      visitorGroupId: string | null
     }, ExtArgs["result"]["visitor"]>
     composites: {}
   }
@@ -25348,6 +25663,7 @@ export namespace Prisma {
     hostMember<T extends Visitor$hostMemberArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$hostMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     badge<T extends Visitor$badgeArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$badgeArgs<ExtArgs>>): Prisma__BadgeClient<$Result.GetResult<Prisma.$BadgePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     visitTypeRef<T extends Visitor$visitTypeRefArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$visitTypeRefArgs<ExtArgs>>): Prisma__VisitTypeClient<$Result.GetResult<Prisma.$VisitTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    visitorGroup<T extends Visitor$visitorGroupArgs<ExtArgs> = {}>(args?: Subset<T, Visitor$visitorGroupArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -25403,6 +25719,7 @@ export namespace Prisma {
     readonly adminNotes: FieldRef<"Visitor", 'String'>
     readonly checkInMethod: FieldRef<"Visitor", 'String'>
     readonly createdByAdmin: FieldRef<"Visitor", 'String'>
+    readonly visitorGroupId: FieldRef<"Visitor", 'String'>
   }
     
 
@@ -25908,6 +26225,25 @@ export namespace Prisma {
   }
 
   /**
+   * Visitor.visitorGroup
+   */
+  export type Visitor$visitorGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    where?: VisitorGroupWhereInput
+  }
+
+  /**
    * Visitor without action
    */
   export type VisitorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -25923,6 +26259,2306 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: VisitorInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model VisitorGroup
+   */
+
+  export type AggregateVisitorGroup = {
+    _count: VisitorGroupCountAggregateOutputType | null
+    _min: VisitorGroupMinAggregateOutputType | null
+    _max: VisitorGroupMaxAggregateOutputType | null
+  }
+
+  export type VisitorGroupMinAggregateOutputType = {
+    id: string | null
+    kioskId: string | null
+    visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    eventId: string | null
+    hostMemberId: string | null
+    checkInMethod: string | null
+    createdAt: Date | null
+  }
+
+  export type VisitorGroupMaxAggregateOutputType = {
+    id: string | null
+    kioskId: string | null
+    visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    eventId: string | null
+    hostMemberId: string | null
+    checkInMethod: string | null
+    createdAt: Date | null
+  }
+
+  export type VisitorGroupCountAggregateOutputType = {
+    id: number
+    kioskId: number
+    visitReason: number
+    visitPurpose: number
+    purposeDetails: number
+    eventId: number
+    hostMemberId: number
+    checkInMethod: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type VisitorGroupMinAggregateInputType = {
+    id?: true
+    kioskId?: true
+    visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    eventId?: true
+    hostMemberId?: true
+    checkInMethod?: true
+    createdAt?: true
+  }
+
+  export type VisitorGroupMaxAggregateInputType = {
+    id?: true
+    kioskId?: true
+    visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    eventId?: true
+    hostMemberId?: true
+    checkInMethod?: true
+    createdAt?: true
+  }
+
+  export type VisitorGroupCountAggregateInputType = {
+    id?: true
+    kioskId?: true
+    visitReason?: true
+    visitPurpose?: true
+    purposeDetails?: true
+    eventId?: true
+    hostMemberId?: true
+    checkInMethod?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type VisitorGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VisitorGroup to aggregate.
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroups to fetch.
+     */
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VisitorGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VisitorGroups
+    **/
+    _count?: true | VisitorGroupCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VisitorGroupMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VisitorGroupMaxAggregateInputType
+  }
+
+  export type GetVisitorGroupAggregateType<T extends VisitorGroupAggregateArgs> = {
+        [P in keyof T & keyof AggregateVisitorGroup]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVisitorGroup[P]>
+      : GetScalarType<T[P], AggregateVisitorGroup[P]>
+  }
+
+
+
+
+  export type VisitorGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorGroupWhereInput
+    orderBy?: VisitorGroupOrderByWithAggregationInput | VisitorGroupOrderByWithAggregationInput[]
+    by: VisitorGroupScalarFieldEnum[] | VisitorGroupScalarFieldEnum
+    having?: VisitorGroupScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VisitorGroupCountAggregateInputType | true
+    _min?: VisitorGroupMinAggregateInputType
+    _max?: VisitorGroupMaxAggregateInputType
+  }
+
+  export type VisitorGroupGroupByOutputType = {
+    id: string
+    kioskId: string
+    visitReason: string | null
+    visitPurpose: string | null
+    purposeDetails: string | null
+    eventId: string | null
+    hostMemberId: string | null
+    checkInMethod: string | null
+    createdAt: Date
+    _count: VisitorGroupCountAggregateOutputType | null
+    _min: VisitorGroupMinAggregateOutputType | null
+    _max: VisitorGroupMaxAggregateOutputType | null
+  }
+
+  type GetVisitorGroupGroupByPayload<T extends VisitorGroupGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VisitorGroupGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VisitorGroupGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VisitorGroupGroupByOutputType[P]>
+            : GetScalarType<T[P], VisitorGroupGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VisitorGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    eventId?: boolean
+    hostMemberId?: boolean
+    checkInMethod?: boolean
+    createdAt?: boolean
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+    members?: boolean | VisitorGroup$membersArgs<ExtArgs>
+    vehicles?: boolean | VisitorGroup$vehiclesArgs<ExtArgs>
+    _count?: boolean | VisitorGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroup"]>
+
+  export type VisitorGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    eventId?: boolean
+    hostMemberId?: boolean
+    checkInMethod?: boolean
+    createdAt?: boolean
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroup"]>
+
+  export type VisitorGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kioskId?: boolean
+    visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    eventId?: boolean
+    hostMemberId?: boolean
+    checkInMethod?: boolean
+    createdAt?: boolean
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroup"]>
+
+  export type VisitorGroupSelectScalar = {
+    id?: boolean
+    kioskId?: boolean
+    visitReason?: boolean
+    visitPurpose?: boolean
+    purposeDetails?: boolean
+    eventId?: boolean
+    hostMemberId?: boolean
+    checkInMethod?: boolean
+    createdAt?: boolean
+  }
+
+  export type VisitorGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kioskId" | "visitReason" | "visitPurpose" | "purposeDetails" | "eventId" | "hostMemberId" | "checkInMethod" | "createdAt", ExtArgs["result"]["visitorGroup"]>
+  export type VisitorGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+    members?: boolean | VisitorGroup$membersArgs<ExtArgs>
+    vehicles?: boolean | VisitorGroup$vehiclesArgs<ExtArgs>
+    _count?: boolean | VisitorGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type VisitorGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+  }
+  export type VisitorGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | VisitorGroup$eventArgs<ExtArgs>
+    hostMember?: boolean | VisitorGroup$hostMemberArgs<ExtArgs>
+  }
+
+  export type $VisitorGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VisitorGroup"
+    objects: {
+      event: Prisma.$EventPayload<ExtArgs> | null
+      hostMember: Prisma.$MemberPayload<ExtArgs> | null
+      members: Prisma.$VisitorPayload<ExtArgs>[]
+      vehicles: Prisma.$VisitorGroupVehiclePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      kioskId: string
+      visitReason: string | null
+      visitPurpose: string | null
+      purposeDetails: string | null
+      eventId: string | null
+      hostMemberId: string | null
+      checkInMethod: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["visitorGroup"]>
+    composites: {}
+  }
+
+  type VisitorGroupGetPayload<S extends boolean | null | undefined | VisitorGroupDefaultArgs> = $Result.GetResult<Prisma.$VisitorGroupPayload, S>
+
+  type VisitorGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VisitorGroupFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: VisitorGroupCountAggregateInputType | true
+    }
+
+  export interface VisitorGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VisitorGroup'], meta: { name: 'VisitorGroup' } }
+    /**
+     * Find zero or one VisitorGroup that matches the filter.
+     * @param {VisitorGroupFindUniqueArgs} args - Arguments to find a VisitorGroup
+     * @example
+     * // Get one VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VisitorGroupFindUniqueArgs>(args: SelectSubset<T, VisitorGroupFindUniqueArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VisitorGroup that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VisitorGroupFindUniqueOrThrowArgs} args - Arguments to find a VisitorGroup
+     * @example
+     * // Get one VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VisitorGroupFindUniqueOrThrowArgs>(args: SelectSubset<T, VisitorGroupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VisitorGroup that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupFindFirstArgs} args - Arguments to find a VisitorGroup
+     * @example
+     * // Get one VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VisitorGroupFindFirstArgs>(args?: SelectSubset<T, VisitorGroupFindFirstArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VisitorGroup that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupFindFirstOrThrowArgs} args - Arguments to find a VisitorGroup
+     * @example
+     * // Get one VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VisitorGroupFindFirstOrThrowArgs>(args?: SelectSubset<T, VisitorGroupFindFirstOrThrowArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VisitorGroups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VisitorGroups
+     * const visitorGroups = await prisma.visitorGroup.findMany()
+     * 
+     * // Get first 10 VisitorGroups
+     * const visitorGroups = await prisma.visitorGroup.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const visitorGroupWithIdOnly = await prisma.visitorGroup.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VisitorGroupFindManyArgs>(args?: SelectSubset<T, VisitorGroupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VisitorGroup.
+     * @param {VisitorGroupCreateArgs} args - Arguments to create a VisitorGroup.
+     * @example
+     * // Create one VisitorGroup
+     * const VisitorGroup = await prisma.visitorGroup.create({
+     *   data: {
+     *     // ... data to create a VisitorGroup
+     *   }
+     * })
+     * 
+     */
+    create<T extends VisitorGroupCreateArgs>(args: SelectSubset<T, VisitorGroupCreateArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VisitorGroups.
+     * @param {VisitorGroupCreateManyArgs} args - Arguments to create many VisitorGroups.
+     * @example
+     * // Create many VisitorGroups
+     * const visitorGroup = await prisma.visitorGroup.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VisitorGroupCreateManyArgs>(args?: SelectSubset<T, VisitorGroupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VisitorGroups and returns the data saved in the database.
+     * @param {VisitorGroupCreateManyAndReturnArgs} args - Arguments to create many VisitorGroups.
+     * @example
+     * // Create many VisitorGroups
+     * const visitorGroup = await prisma.visitorGroup.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VisitorGroups and only return the `id`
+     * const visitorGroupWithIdOnly = await prisma.visitorGroup.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VisitorGroupCreateManyAndReturnArgs>(args?: SelectSubset<T, VisitorGroupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a VisitorGroup.
+     * @param {VisitorGroupDeleteArgs} args - Arguments to delete one VisitorGroup.
+     * @example
+     * // Delete one VisitorGroup
+     * const VisitorGroup = await prisma.visitorGroup.delete({
+     *   where: {
+     *     // ... filter to delete one VisitorGroup
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VisitorGroupDeleteArgs>(args: SelectSubset<T, VisitorGroupDeleteArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VisitorGroup.
+     * @param {VisitorGroupUpdateArgs} args - Arguments to update one VisitorGroup.
+     * @example
+     * // Update one VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VisitorGroupUpdateArgs>(args: SelectSubset<T, VisitorGroupUpdateArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VisitorGroups.
+     * @param {VisitorGroupDeleteManyArgs} args - Arguments to filter VisitorGroups to delete.
+     * @example
+     * // Delete a few VisitorGroups
+     * const { count } = await prisma.visitorGroup.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VisitorGroupDeleteManyArgs>(args?: SelectSubset<T, VisitorGroupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VisitorGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VisitorGroups
+     * const visitorGroup = await prisma.visitorGroup.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VisitorGroupUpdateManyArgs>(args: SelectSubset<T, VisitorGroupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VisitorGroups and returns the data updated in the database.
+     * @param {VisitorGroupUpdateManyAndReturnArgs} args - Arguments to update many VisitorGroups.
+     * @example
+     * // Update many VisitorGroups
+     * const visitorGroup = await prisma.visitorGroup.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more VisitorGroups and only return the `id`
+     * const visitorGroupWithIdOnly = await prisma.visitorGroup.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends VisitorGroupUpdateManyAndReturnArgs>(args: SelectSubset<T, VisitorGroupUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one VisitorGroup.
+     * @param {VisitorGroupUpsertArgs} args - Arguments to update or create a VisitorGroup.
+     * @example
+     * // Update or create a VisitorGroup
+     * const visitorGroup = await prisma.visitorGroup.upsert({
+     *   create: {
+     *     // ... data to create a VisitorGroup
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VisitorGroup we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VisitorGroupUpsertArgs>(args: SelectSubset<T, VisitorGroupUpsertArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of VisitorGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupCountArgs} args - Arguments to filter VisitorGroups to count.
+     * @example
+     * // Count the number of VisitorGroups
+     * const count = await prisma.visitorGroup.count({
+     *   where: {
+     *     // ... the filter for the VisitorGroups we want to count
+     *   }
+     * })
+    **/
+    count<T extends VisitorGroupCountArgs>(
+      args?: Subset<T, VisitorGroupCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VisitorGroupCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VisitorGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VisitorGroupAggregateArgs>(args: Subset<T, VisitorGroupAggregateArgs>): Prisma.PrismaPromise<GetVisitorGroupAggregateType<T>>
+
+    /**
+     * Group by VisitorGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VisitorGroupGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VisitorGroupGroupByArgs['orderBy'] }
+        : { orderBy?: VisitorGroupGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VisitorGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVisitorGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VisitorGroup model
+   */
+  readonly fields: VisitorGroupFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VisitorGroup.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VisitorGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends VisitorGroup$eventArgs<ExtArgs> = {}>(args?: Subset<T, VisitorGroup$eventArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    hostMember<T extends VisitorGroup$hostMemberArgs<ExtArgs> = {}>(args?: Subset<T, VisitorGroup$hostMemberArgs<ExtArgs>>): Prisma__MemberClient<$Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    members<T extends VisitorGroup$membersArgs<ExtArgs> = {}>(args?: Subset<T, VisitorGroup$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    vehicles<T extends VisitorGroup$vehiclesArgs<ExtArgs> = {}>(args?: Subset<T, VisitorGroup$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VisitorGroup model
+   */
+  interface VisitorGroupFieldRefs {
+    readonly id: FieldRef<"VisitorGroup", 'String'>
+    readonly kioskId: FieldRef<"VisitorGroup", 'String'>
+    readonly visitReason: FieldRef<"VisitorGroup", 'String'>
+    readonly visitPurpose: FieldRef<"VisitorGroup", 'String'>
+    readonly purposeDetails: FieldRef<"VisitorGroup", 'String'>
+    readonly eventId: FieldRef<"VisitorGroup", 'String'>
+    readonly hostMemberId: FieldRef<"VisitorGroup", 'String'>
+    readonly checkInMethod: FieldRef<"VisitorGroup", 'String'>
+    readonly createdAt: FieldRef<"VisitorGroup", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VisitorGroup findUnique
+   */
+  export type VisitorGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroup to fetch.
+     */
+    where: VisitorGroupWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup findUniqueOrThrow
+   */
+  export type VisitorGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroup to fetch.
+     */
+    where: VisitorGroupWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup findFirst
+   */
+  export type VisitorGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroup to fetch.
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroups to fetch.
+     */
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VisitorGroups.
+     */
+    cursor?: VisitorGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroups.
+     */
+    distinct?: VisitorGroupScalarFieldEnum | VisitorGroupScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup findFirstOrThrow
+   */
+  export type VisitorGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroup to fetch.
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroups to fetch.
+     */
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VisitorGroups.
+     */
+    cursor?: VisitorGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroups.
+     */
+    distinct?: VisitorGroupScalarFieldEnum | VisitorGroupScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup findMany
+   */
+  export type VisitorGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroups to fetch.
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroups to fetch.
+     */
+    orderBy?: VisitorGroupOrderByWithRelationInput | VisitorGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VisitorGroups.
+     */
+    cursor?: VisitorGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroups.
+     */
+    distinct?: VisitorGroupScalarFieldEnum | VisitorGroupScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup create
+   */
+  export type VisitorGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VisitorGroup.
+     */
+    data: XOR<VisitorGroupCreateInput, VisitorGroupUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup createMany
+   */
+  export type VisitorGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VisitorGroups.
+     */
+    data: VisitorGroupCreateManyInput | VisitorGroupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VisitorGroup createManyAndReturn
+   */
+  export type VisitorGroupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * The data used to create many VisitorGroups.
+     */
+    data: VisitorGroupCreateManyInput | VisitorGroupCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VisitorGroup update
+   */
+  export type VisitorGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VisitorGroup.
+     */
+    data: XOR<VisitorGroupUpdateInput, VisitorGroupUncheckedUpdateInput>
+    /**
+     * Choose, which VisitorGroup to update.
+     */
+    where: VisitorGroupWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup updateMany
+   */
+  export type VisitorGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VisitorGroups.
+     */
+    data: XOR<VisitorGroupUpdateManyMutationInput, VisitorGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which VisitorGroups to update
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * Limit how many VisitorGroups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VisitorGroup updateManyAndReturn
+   */
+  export type VisitorGroupUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * The data used to update VisitorGroups.
+     */
+    data: XOR<VisitorGroupUpdateManyMutationInput, VisitorGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which VisitorGroups to update
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * Limit how many VisitorGroups to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VisitorGroup upsert
+   */
+  export type VisitorGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VisitorGroup to update in case it exists.
+     */
+    where: VisitorGroupWhereUniqueInput
+    /**
+     * In case the VisitorGroup found by the `where` argument doesn't exist, create a new VisitorGroup with this data.
+     */
+    create: XOR<VisitorGroupCreateInput, VisitorGroupUncheckedCreateInput>
+    /**
+     * In case the VisitorGroup was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VisitorGroupUpdateInput, VisitorGroupUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup delete
+   */
+  export type VisitorGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+    /**
+     * Filter which VisitorGroup to delete.
+     */
+    where: VisitorGroupWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroup deleteMany
+   */
+  export type VisitorGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VisitorGroups to delete
+     */
+    where?: VisitorGroupWhereInput
+    /**
+     * Limit how many VisitorGroups to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VisitorGroup.event
+   */
+  export type VisitorGroup$eventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Event
+     */
+    select?: EventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Event
+     */
+    omit?: EventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventInclude<ExtArgs> | null
+    where?: EventWhereInput
+  }
+
+  /**
+   * VisitorGroup.hostMember
+   */
+  export type VisitorGroup$hostMemberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Member
+     */
+    select?: MemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Member
+     */
+    omit?: MemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MemberInclude<ExtArgs> | null
+    where?: MemberWhereInput
+  }
+
+  /**
+   * VisitorGroup.members
+   */
+  export type VisitorGroup$membersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Visitor
+     */
+    select?: VisitorSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Visitor
+     */
+    omit?: VisitorOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorInclude<ExtArgs> | null
+    where?: VisitorWhereInput
+    orderBy?: VisitorOrderByWithRelationInput | VisitorOrderByWithRelationInput[]
+    cursor?: VisitorWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisitorScalarFieldEnum | VisitorScalarFieldEnum[]
+  }
+
+  /**
+   * VisitorGroup.vehicles
+   */
+  export type VisitorGroup$vehiclesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    where?: VisitorGroupVehicleWhereInput
+    orderBy?: VisitorGroupVehicleOrderByWithRelationInput | VisitorGroupVehicleOrderByWithRelationInput[]
+    cursor?: VisitorGroupVehicleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VisitorGroupVehicleScalarFieldEnum | VisitorGroupVehicleScalarFieldEnum[]
+  }
+
+  /**
+   * VisitorGroup without action
+   */
+  export type VisitorGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroup
+     */
+    select?: VisitorGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroup
+     */
+    omit?: VisitorGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model VisitorGroupVehicle
+   */
+
+  export type AggregateVisitorGroupVehicle = {
+    _count: VisitorGroupVehicleCountAggregateOutputType | null
+    _min: VisitorGroupVehicleMinAggregateOutputType | null
+    _max: VisitorGroupVehicleMaxAggregateOutputType | null
+  }
+
+  export type VisitorGroupVehicleMinAggregateOutputType = {
+    id: string | null
+    visitorGroupId: string | null
+    licensePlate: string | null
+    normalizedLicensePlate: string | null
+    createdAt: Date | null
+  }
+
+  export type VisitorGroupVehicleMaxAggregateOutputType = {
+    id: string | null
+    visitorGroupId: string | null
+    licensePlate: string | null
+    normalizedLicensePlate: string | null
+    createdAt: Date | null
+  }
+
+  export type VisitorGroupVehicleCountAggregateOutputType = {
+    id: number
+    visitorGroupId: number
+    licensePlate: number
+    normalizedLicensePlate: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type VisitorGroupVehicleMinAggregateInputType = {
+    id?: true
+    visitorGroupId?: true
+    licensePlate?: true
+    normalizedLicensePlate?: true
+    createdAt?: true
+  }
+
+  export type VisitorGroupVehicleMaxAggregateInputType = {
+    id?: true
+    visitorGroupId?: true
+    licensePlate?: true
+    normalizedLicensePlate?: true
+    createdAt?: true
+  }
+
+  export type VisitorGroupVehicleCountAggregateInputType = {
+    id?: true
+    visitorGroupId?: true
+    licensePlate?: true
+    normalizedLicensePlate?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type VisitorGroupVehicleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VisitorGroupVehicle to aggregate.
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroupVehicles to fetch.
+     */
+    orderBy?: VisitorGroupVehicleOrderByWithRelationInput | VisitorGroupVehicleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VisitorGroupVehicleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroupVehicles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroupVehicles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VisitorGroupVehicles
+    **/
+    _count?: true | VisitorGroupVehicleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VisitorGroupVehicleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VisitorGroupVehicleMaxAggregateInputType
+  }
+
+  export type GetVisitorGroupVehicleAggregateType<T extends VisitorGroupVehicleAggregateArgs> = {
+        [P in keyof T & keyof AggregateVisitorGroupVehicle]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVisitorGroupVehicle[P]>
+      : GetScalarType<T[P], AggregateVisitorGroupVehicle[P]>
+  }
+
+
+
+
+  export type VisitorGroupVehicleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VisitorGroupVehicleWhereInput
+    orderBy?: VisitorGroupVehicleOrderByWithAggregationInput | VisitorGroupVehicleOrderByWithAggregationInput[]
+    by: VisitorGroupVehicleScalarFieldEnum[] | VisitorGroupVehicleScalarFieldEnum
+    having?: VisitorGroupVehicleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VisitorGroupVehicleCountAggregateInputType | true
+    _min?: VisitorGroupVehicleMinAggregateInputType
+    _max?: VisitorGroupVehicleMaxAggregateInputType
+  }
+
+  export type VisitorGroupVehicleGroupByOutputType = {
+    id: string
+    visitorGroupId: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt: Date
+    _count: VisitorGroupVehicleCountAggregateOutputType | null
+    _min: VisitorGroupVehicleMinAggregateOutputType | null
+    _max: VisitorGroupVehicleMaxAggregateOutputType | null
+  }
+
+  type GetVisitorGroupVehicleGroupByPayload<T extends VisitorGroupVehicleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VisitorGroupVehicleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VisitorGroupVehicleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VisitorGroupVehicleGroupByOutputType[P]>
+            : GetScalarType<T[P], VisitorGroupVehicleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VisitorGroupVehicleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    visitorGroupId?: boolean
+    licensePlate?: boolean
+    normalizedLicensePlate?: boolean
+    createdAt?: boolean
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroupVehicle"]>
+
+  export type VisitorGroupVehicleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    visitorGroupId?: boolean
+    licensePlate?: boolean
+    normalizedLicensePlate?: boolean
+    createdAt?: boolean
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroupVehicle"]>
+
+  export type VisitorGroupVehicleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    visitorGroupId?: boolean
+    licensePlate?: boolean
+    normalizedLicensePlate?: boolean
+    createdAt?: boolean
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["visitorGroupVehicle"]>
+
+  export type VisitorGroupVehicleSelectScalar = {
+    id?: boolean
+    visitorGroupId?: boolean
+    licensePlate?: boolean
+    normalizedLicensePlate?: boolean
+    createdAt?: boolean
+  }
+
+  export type VisitorGroupVehicleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "visitorGroupId" | "licensePlate" | "normalizedLicensePlate" | "createdAt", ExtArgs["result"]["visitorGroupVehicle"]>
+  export type VisitorGroupVehicleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }
+  export type VisitorGroupVehicleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }
+  export type VisitorGroupVehicleIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visitorGroup?: boolean | VisitorGroupDefaultArgs<ExtArgs>
+  }
+
+  export type $VisitorGroupVehiclePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VisitorGroupVehicle"
+    objects: {
+      visitorGroup: Prisma.$VisitorGroupPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      visitorGroupId: string
+      licensePlate: string
+      normalizedLicensePlate: string
+      createdAt: Date
+    }, ExtArgs["result"]["visitorGroupVehicle"]>
+    composites: {}
+  }
+
+  type VisitorGroupVehicleGetPayload<S extends boolean | null | undefined | VisitorGroupVehicleDefaultArgs> = $Result.GetResult<Prisma.$VisitorGroupVehiclePayload, S>
+
+  type VisitorGroupVehicleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VisitorGroupVehicleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit' | 'relationLoadStrategy'> & {
+      select?: VisitorGroupVehicleCountAggregateInputType | true
+    }
+
+  export interface VisitorGroupVehicleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VisitorGroupVehicle'], meta: { name: 'VisitorGroupVehicle' } }
+    /**
+     * Find zero or one VisitorGroupVehicle that matches the filter.
+     * @param {VisitorGroupVehicleFindUniqueArgs} args - Arguments to find a VisitorGroupVehicle
+     * @example
+     * // Get one VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VisitorGroupVehicleFindUniqueArgs>(args: SelectSubset<T, VisitorGroupVehicleFindUniqueArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VisitorGroupVehicle that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VisitorGroupVehicleFindUniqueOrThrowArgs} args - Arguments to find a VisitorGroupVehicle
+     * @example
+     * // Get one VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VisitorGroupVehicleFindUniqueOrThrowArgs>(args: SelectSubset<T, VisitorGroupVehicleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VisitorGroupVehicle that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleFindFirstArgs} args - Arguments to find a VisitorGroupVehicle
+     * @example
+     * // Get one VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VisitorGroupVehicleFindFirstArgs>(args?: SelectSubset<T, VisitorGroupVehicleFindFirstArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VisitorGroupVehicle that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleFindFirstOrThrowArgs} args - Arguments to find a VisitorGroupVehicle
+     * @example
+     * // Get one VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VisitorGroupVehicleFindFirstOrThrowArgs>(args?: SelectSubset<T, VisitorGroupVehicleFindFirstOrThrowArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VisitorGroupVehicles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VisitorGroupVehicles
+     * const visitorGroupVehicles = await prisma.visitorGroupVehicle.findMany()
+     * 
+     * // Get first 10 VisitorGroupVehicles
+     * const visitorGroupVehicles = await prisma.visitorGroupVehicle.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const visitorGroupVehicleWithIdOnly = await prisma.visitorGroupVehicle.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VisitorGroupVehicleFindManyArgs>(args?: SelectSubset<T, VisitorGroupVehicleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VisitorGroupVehicle.
+     * @param {VisitorGroupVehicleCreateArgs} args - Arguments to create a VisitorGroupVehicle.
+     * @example
+     * // Create one VisitorGroupVehicle
+     * const VisitorGroupVehicle = await prisma.visitorGroupVehicle.create({
+     *   data: {
+     *     // ... data to create a VisitorGroupVehicle
+     *   }
+     * })
+     * 
+     */
+    create<T extends VisitorGroupVehicleCreateArgs>(args: SelectSubset<T, VisitorGroupVehicleCreateArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VisitorGroupVehicles.
+     * @param {VisitorGroupVehicleCreateManyArgs} args - Arguments to create many VisitorGroupVehicles.
+     * @example
+     * // Create many VisitorGroupVehicles
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VisitorGroupVehicleCreateManyArgs>(args?: SelectSubset<T, VisitorGroupVehicleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VisitorGroupVehicles and returns the data saved in the database.
+     * @param {VisitorGroupVehicleCreateManyAndReturnArgs} args - Arguments to create many VisitorGroupVehicles.
+     * @example
+     * // Create many VisitorGroupVehicles
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VisitorGroupVehicles and only return the `id`
+     * const visitorGroupVehicleWithIdOnly = await prisma.visitorGroupVehicle.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VisitorGroupVehicleCreateManyAndReturnArgs>(args?: SelectSubset<T, VisitorGroupVehicleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a VisitorGroupVehicle.
+     * @param {VisitorGroupVehicleDeleteArgs} args - Arguments to delete one VisitorGroupVehicle.
+     * @example
+     * // Delete one VisitorGroupVehicle
+     * const VisitorGroupVehicle = await prisma.visitorGroupVehicle.delete({
+     *   where: {
+     *     // ... filter to delete one VisitorGroupVehicle
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VisitorGroupVehicleDeleteArgs>(args: SelectSubset<T, VisitorGroupVehicleDeleteArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VisitorGroupVehicle.
+     * @param {VisitorGroupVehicleUpdateArgs} args - Arguments to update one VisitorGroupVehicle.
+     * @example
+     * // Update one VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VisitorGroupVehicleUpdateArgs>(args: SelectSubset<T, VisitorGroupVehicleUpdateArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VisitorGroupVehicles.
+     * @param {VisitorGroupVehicleDeleteManyArgs} args - Arguments to filter VisitorGroupVehicles to delete.
+     * @example
+     * // Delete a few VisitorGroupVehicles
+     * const { count } = await prisma.visitorGroupVehicle.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VisitorGroupVehicleDeleteManyArgs>(args?: SelectSubset<T, VisitorGroupVehicleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VisitorGroupVehicles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VisitorGroupVehicles
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VisitorGroupVehicleUpdateManyArgs>(args: SelectSubset<T, VisitorGroupVehicleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VisitorGroupVehicles and returns the data updated in the database.
+     * @param {VisitorGroupVehicleUpdateManyAndReturnArgs} args - Arguments to update many VisitorGroupVehicles.
+     * @example
+     * // Update many VisitorGroupVehicles
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more VisitorGroupVehicles and only return the `id`
+     * const visitorGroupVehicleWithIdOnly = await prisma.visitorGroupVehicle.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends VisitorGroupVehicleUpdateManyAndReturnArgs>(args: SelectSubset<T, VisitorGroupVehicleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one VisitorGroupVehicle.
+     * @param {VisitorGroupVehicleUpsertArgs} args - Arguments to update or create a VisitorGroupVehicle.
+     * @example
+     * // Update or create a VisitorGroupVehicle
+     * const visitorGroupVehicle = await prisma.visitorGroupVehicle.upsert({
+     *   create: {
+     *     // ... data to create a VisitorGroupVehicle
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VisitorGroupVehicle we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VisitorGroupVehicleUpsertArgs>(args: SelectSubset<T, VisitorGroupVehicleUpsertArgs<ExtArgs>>): Prisma__VisitorGroupVehicleClient<$Result.GetResult<Prisma.$VisitorGroupVehiclePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of VisitorGroupVehicles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleCountArgs} args - Arguments to filter VisitorGroupVehicles to count.
+     * @example
+     * // Count the number of VisitorGroupVehicles
+     * const count = await prisma.visitorGroupVehicle.count({
+     *   where: {
+     *     // ... the filter for the VisitorGroupVehicles we want to count
+     *   }
+     * })
+    **/
+    count<T extends VisitorGroupVehicleCountArgs>(
+      args?: Subset<T, VisitorGroupVehicleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VisitorGroupVehicleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VisitorGroupVehicle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VisitorGroupVehicleAggregateArgs>(args: Subset<T, VisitorGroupVehicleAggregateArgs>): Prisma.PrismaPromise<GetVisitorGroupVehicleAggregateType<T>>
+
+    /**
+     * Group by VisitorGroupVehicle.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisitorGroupVehicleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VisitorGroupVehicleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VisitorGroupVehicleGroupByArgs['orderBy'] }
+        : { orderBy?: VisitorGroupVehicleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VisitorGroupVehicleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVisitorGroupVehicleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VisitorGroupVehicle model
+   */
+  readonly fields: VisitorGroupVehicleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VisitorGroupVehicle.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VisitorGroupVehicleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    visitorGroup<T extends VisitorGroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VisitorGroupDefaultArgs<ExtArgs>>): Prisma__VisitorGroupClient<$Result.GetResult<Prisma.$VisitorGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VisitorGroupVehicle model
+   */
+  interface VisitorGroupVehicleFieldRefs {
+    readonly id: FieldRef<"VisitorGroupVehicle", 'String'>
+    readonly visitorGroupId: FieldRef<"VisitorGroupVehicle", 'String'>
+    readonly licensePlate: FieldRef<"VisitorGroupVehicle", 'String'>
+    readonly normalizedLicensePlate: FieldRef<"VisitorGroupVehicle", 'String'>
+    readonly createdAt: FieldRef<"VisitorGroupVehicle", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VisitorGroupVehicle findUnique
+   */
+  export type VisitorGroupVehicleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroupVehicle to fetch.
+     */
+    where: VisitorGroupVehicleWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle findUniqueOrThrow
+   */
+  export type VisitorGroupVehicleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroupVehicle to fetch.
+     */
+    where: VisitorGroupVehicleWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle findFirst
+   */
+  export type VisitorGroupVehicleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroupVehicle to fetch.
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroupVehicles to fetch.
+     */
+    orderBy?: VisitorGroupVehicleOrderByWithRelationInput | VisitorGroupVehicleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VisitorGroupVehicles.
+     */
+    cursor?: VisitorGroupVehicleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroupVehicles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroupVehicles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroupVehicles.
+     */
+    distinct?: VisitorGroupVehicleScalarFieldEnum | VisitorGroupVehicleScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle findFirstOrThrow
+   */
+  export type VisitorGroupVehicleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroupVehicle to fetch.
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroupVehicles to fetch.
+     */
+    orderBy?: VisitorGroupVehicleOrderByWithRelationInput | VisitorGroupVehicleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VisitorGroupVehicles.
+     */
+    cursor?: VisitorGroupVehicleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroupVehicles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroupVehicles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroupVehicles.
+     */
+    distinct?: VisitorGroupVehicleScalarFieldEnum | VisitorGroupVehicleScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle findMany
+   */
+  export type VisitorGroupVehicleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter, which VisitorGroupVehicles to fetch.
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VisitorGroupVehicles to fetch.
+     */
+    orderBy?: VisitorGroupVehicleOrderByWithRelationInput | VisitorGroupVehicleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VisitorGroupVehicles.
+     */
+    cursor?: VisitorGroupVehicleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VisitorGroupVehicles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VisitorGroupVehicles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VisitorGroupVehicles.
+     */
+    distinct?: VisitorGroupVehicleScalarFieldEnum | VisitorGroupVehicleScalarFieldEnum[]
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle create
+   */
+  export type VisitorGroupVehicleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a VisitorGroupVehicle.
+     */
+    data: XOR<VisitorGroupVehicleCreateInput, VisitorGroupVehicleUncheckedCreateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle createMany
+   */
+  export type VisitorGroupVehicleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VisitorGroupVehicles.
+     */
+    data: VisitorGroupVehicleCreateManyInput | VisitorGroupVehicleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VisitorGroupVehicle createManyAndReturn
+   */
+  export type VisitorGroupVehicleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * The data used to create many VisitorGroupVehicles.
+     */
+    data: VisitorGroupVehicleCreateManyInput | VisitorGroupVehicleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VisitorGroupVehicle update
+   */
+  export type VisitorGroupVehicleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a VisitorGroupVehicle.
+     */
+    data: XOR<VisitorGroupVehicleUpdateInput, VisitorGroupVehicleUncheckedUpdateInput>
+    /**
+     * Choose, which VisitorGroupVehicle to update.
+     */
+    where: VisitorGroupVehicleWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle updateMany
+   */
+  export type VisitorGroupVehicleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VisitorGroupVehicles.
+     */
+    data: XOR<VisitorGroupVehicleUpdateManyMutationInput, VisitorGroupVehicleUncheckedUpdateManyInput>
+    /**
+     * Filter which VisitorGroupVehicles to update
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * Limit how many VisitorGroupVehicles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VisitorGroupVehicle updateManyAndReturn
+   */
+  export type VisitorGroupVehicleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * The data used to update VisitorGroupVehicles.
+     */
+    data: XOR<VisitorGroupVehicleUpdateManyMutationInput, VisitorGroupVehicleUncheckedUpdateManyInput>
+    /**
+     * Filter which VisitorGroupVehicles to update
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * Limit how many VisitorGroupVehicles to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * VisitorGroupVehicle upsert
+   */
+  export type VisitorGroupVehicleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the VisitorGroupVehicle to update in case it exists.
+     */
+    where: VisitorGroupVehicleWhereUniqueInput
+    /**
+     * In case the VisitorGroupVehicle found by the `where` argument doesn't exist, create a new VisitorGroupVehicle with this data.
+     */
+    create: XOR<VisitorGroupVehicleCreateInput, VisitorGroupVehicleUncheckedCreateInput>
+    /**
+     * In case the VisitorGroupVehicle was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VisitorGroupVehicleUpdateInput, VisitorGroupVehicleUncheckedUpdateInput>
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle delete
+   */
+  export type VisitorGroupVehicleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
+    /**
+     * Filter which VisitorGroupVehicle to delete.
+     */
+    where: VisitorGroupVehicleWhereUniqueInput
+    relationLoadStrategy?: RelationLoadStrategy
+  }
+
+  /**
+   * VisitorGroupVehicle deleteMany
+   */
+  export type VisitorGroupVehicleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VisitorGroupVehicles to delete
+     */
+    where?: VisitorGroupVehicleWhereInput
+    /**
+     * Limit how many VisitorGroupVehicles to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VisitorGroupVehicle without action
+   */
+  export type VisitorGroupVehicleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VisitorGroupVehicle
+     */
+    select?: VisitorGroupVehicleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VisitorGroupVehicle
+     */
+    omit?: VisitorGroupVehicleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VisitorGroupVehicleInclude<ExtArgs> | null
   }
 
 
@@ -68504,10 +71140,37 @@ export namespace Prisma {
     createdAt: 'createdAt',
     adminNotes: 'adminNotes',
     checkInMethod: 'checkInMethod',
-    createdByAdmin: 'createdByAdmin'
+    createdByAdmin: 'createdByAdmin',
+    visitorGroupId: 'visitorGroupId'
   };
 
   export type VisitorScalarFieldEnum = (typeof VisitorScalarFieldEnum)[keyof typeof VisitorScalarFieldEnum]
+
+
+  export const VisitorGroupScalarFieldEnum: {
+    id: 'id',
+    kioskId: 'kioskId',
+    visitReason: 'visitReason',
+    visitPurpose: 'visitPurpose',
+    purposeDetails: 'purposeDetails',
+    eventId: 'eventId',
+    hostMemberId: 'hostMemberId',
+    checkInMethod: 'checkInMethod',
+    createdAt: 'createdAt'
+  };
+
+  export type VisitorGroupScalarFieldEnum = (typeof VisitorGroupScalarFieldEnum)[keyof typeof VisitorGroupScalarFieldEnum]
+
+
+  export const VisitorGroupVehicleScalarFieldEnum: {
+    id: 'id',
+    visitorGroupId: 'visitorGroupId',
+    licensePlate: 'licensePlate',
+    normalizedLicensePlate: 'normalizedLicensePlate',
+    createdAt: 'createdAt'
+  };
+
+  export type VisitorGroupVehicleScalarFieldEnum = (typeof VisitorGroupVehicleScalarFieldEnum)[keyof typeof VisitorGroupVehicleScalarFieldEnum]
 
 
   export const BmqCourseScalarFieldEnum: {
@@ -69842,6 +72505,7 @@ export namespace Prisma {
     updatedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     eventAttendees?: EventAttendeeListRelationFilter
     visitors?: VisitorListRelationFilter
+    visitorGroups?: VisitorGroupListRelationFilter
   }
 
   export type EventOrderByWithRelationInput = {
@@ -69859,6 +72523,7 @@ export namespace Prisma {
     updatedAt?: SortOrderInput | SortOrder
     eventAttendees?: EventAttendeeOrderByRelationAggregateInput
     visitors?: VisitorOrderByRelationAggregateInput
+    visitorGroups?: VisitorGroupOrderByRelationAggregateInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -69879,6 +72544,7 @@ export namespace Prisma {
     updatedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     eventAttendees?: EventAttendeeListRelationFilter
     visitors?: VisitorListRelationFilter
+    visitorGroups?: VisitorGroupListRelationFilter
   }, "id" | "code">
 
   export type EventOrderByWithAggregationInput = {
@@ -69960,6 +72626,7 @@ export namespace Prisma {
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
     visitorsHosted?: VisitorListRelationFilter
     visitorsCreated?: VisitorListRelationFilter
+    visitorGroupsHosted?: VisitorGroupListRelationFilter
     memberTags?: MemberTagListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     ddsTransfers?: DdsAssignmentListRelationFilter
@@ -70021,6 +72688,7 @@ export namespace Prisma {
     division?: DivisionOrderByWithRelationInput
     visitorsHosted?: VisitorOrderByRelationAggregateInput
     visitorsCreated?: VisitorOrderByRelationAggregateInput
+    visitorGroupsHosted?: VisitorGroupOrderByRelationAggregateInput
     memberTags?: MemberTagOrderByRelationAggregateInput
     ddsAssignments?: DdsAssignmentOrderByRelationAggregateInput
     ddsTransfers?: DdsAssignmentOrderByRelationAggregateInput
@@ -70085,6 +72753,7 @@ export namespace Prisma {
     division?: XOR<DivisionNullableScalarRelationFilter, DivisionWhereInput> | null
     visitorsHosted?: VisitorListRelationFilter
     visitorsCreated?: VisitorListRelationFilter
+    visitorGroupsHosted?: VisitorGroupListRelationFilter
     memberTags?: MemberTagListRelationFilter
     ddsAssignments?: DdsAssignmentListRelationFilter
     ddsTransfers?: DdsAssignmentListRelationFilter
@@ -70613,11 +73282,13 @@ export namespace Prisma {
     adminNotes?: StringNullableFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
+    visitorGroupId?: UuidNullableFilter<"Visitor"> | string | null
     createdByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
     hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
     visitTypeRef?: XOR<VisitTypeNullableScalarRelationFilter, VisitTypeWhereInput> | null
+    visitorGroup?: XOR<VisitorGroupNullableScalarRelationFilter, VisitorGroupWhereInput> | null
   }
 
   export type VisitorOrderByWithRelationInput = {
@@ -70647,11 +73318,13 @@ export namespace Prisma {
     adminNotes?: SortOrderInput | SortOrder
     checkInMethod?: SortOrderInput | SortOrder
     createdByAdmin?: SortOrderInput | SortOrder
+    visitorGroupId?: SortOrderInput | SortOrder
     createdByMember?: MemberOrderByWithRelationInput
     event?: EventOrderByWithRelationInput
     hostMember?: MemberOrderByWithRelationInput
     badge?: BadgeOrderByWithRelationInput
     visitTypeRef?: VisitTypeOrderByWithRelationInput
+    visitorGroup?: VisitorGroupOrderByWithRelationInput
   }
 
   export type VisitorWhereUniqueInput = Prisma.AtLeast<{
@@ -70684,11 +73357,13 @@ export namespace Prisma {
     adminNotes?: StringNullableFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
+    visitorGroupId?: UuidNullableFilter<"Visitor"> | string | null
     createdByMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
     hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
     badge?: XOR<BadgeNullableScalarRelationFilter, BadgeWhereInput> | null
     visitTypeRef?: XOR<VisitTypeNullableScalarRelationFilter, VisitTypeWhereInput> | null
+    visitorGroup?: XOR<VisitorGroupNullableScalarRelationFilter, VisitorGroupWhereInput> | null
   }, "id">
 
   export type VisitorOrderByWithAggregationInput = {
@@ -70718,6 +73393,7 @@ export namespace Prisma {
     adminNotes?: SortOrderInput | SortOrder
     checkInMethod?: SortOrderInput | SortOrder
     createdByAdmin?: SortOrderInput | SortOrder
+    visitorGroupId?: SortOrderInput | SortOrder
     _count?: VisitorCountOrderByAggregateInput
     _max?: VisitorMaxOrderByAggregateInput
     _min?: VisitorMinOrderByAggregateInput
@@ -70753,6 +73429,147 @@ export namespace Prisma {
     adminNotes?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableWithAggregatesFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
+    visitorGroupId?: UuidNullableWithAggregatesFilter<"Visitor"> | string | null
+  }
+
+  export type VisitorGroupWhereInput = {
+    AND?: VisitorGroupWhereInput | VisitorGroupWhereInput[]
+    OR?: VisitorGroupWhereInput[]
+    NOT?: VisitorGroupWhereInput | VisitorGroupWhereInput[]
+    id?: UuidFilter<"VisitorGroup"> | string
+    kioskId?: StringFilter<"VisitorGroup"> | string
+    visitReason?: StringNullableFilter<"VisitorGroup"> | string | null
+    visitPurpose?: StringNullableFilter<"VisitorGroup"> | string | null
+    purposeDetails?: StringNullableFilter<"VisitorGroup"> | string | null
+    eventId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    hostMemberId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    checkInMethod?: StringNullableFilter<"VisitorGroup"> | string | null
+    createdAt?: DateTimeFilter<"VisitorGroup"> | Date | string
+    event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
+    hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+    members?: VisitorListRelationFilter
+    vehicles?: VisitorGroupVehicleListRelationFilter
+  }
+
+  export type VisitorGroupOrderByWithRelationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    visitReason?: SortOrderInput | SortOrder
+    visitPurpose?: SortOrderInput | SortOrder
+    purposeDetails?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    hostMemberId?: SortOrderInput | SortOrder
+    checkInMethod?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    event?: EventOrderByWithRelationInput
+    hostMember?: MemberOrderByWithRelationInput
+    members?: VisitorOrderByRelationAggregateInput
+    vehicles?: VisitorGroupVehicleOrderByRelationAggregateInput
+  }
+
+  export type VisitorGroupWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: VisitorGroupWhereInput | VisitorGroupWhereInput[]
+    OR?: VisitorGroupWhereInput[]
+    NOT?: VisitorGroupWhereInput | VisitorGroupWhereInput[]
+    kioskId?: StringFilter<"VisitorGroup"> | string
+    visitReason?: StringNullableFilter<"VisitorGroup"> | string | null
+    visitPurpose?: StringNullableFilter<"VisitorGroup"> | string | null
+    purposeDetails?: StringNullableFilter<"VisitorGroup"> | string | null
+    eventId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    hostMemberId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    checkInMethod?: StringNullableFilter<"VisitorGroup"> | string | null
+    createdAt?: DateTimeFilter<"VisitorGroup"> | Date | string
+    event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
+    hostMember?: XOR<MemberNullableScalarRelationFilter, MemberWhereInput> | null
+    members?: VisitorListRelationFilter
+    vehicles?: VisitorGroupVehicleListRelationFilter
+  }, "id">
+
+  export type VisitorGroupOrderByWithAggregationInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    visitReason?: SortOrderInput | SortOrder
+    visitPurpose?: SortOrderInput | SortOrder
+    purposeDetails?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    hostMemberId?: SortOrderInput | SortOrder
+    checkInMethod?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: VisitorGroupCountOrderByAggregateInput
+    _max?: VisitorGroupMaxOrderByAggregateInput
+    _min?: VisitorGroupMinOrderByAggregateInput
+  }
+
+  export type VisitorGroupScalarWhereWithAggregatesInput = {
+    AND?: VisitorGroupScalarWhereWithAggregatesInput | VisitorGroupScalarWhereWithAggregatesInput[]
+    OR?: VisitorGroupScalarWhereWithAggregatesInput[]
+    NOT?: VisitorGroupScalarWhereWithAggregatesInput | VisitorGroupScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"VisitorGroup"> | string
+    kioskId?: StringWithAggregatesFilter<"VisitorGroup"> | string
+    visitReason?: StringNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    visitPurpose?: StringNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    purposeDetails?: StringNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    eventId?: UuidNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    hostMemberId?: UuidNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    checkInMethod?: StringNullableWithAggregatesFilter<"VisitorGroup"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VisitorGroup"> | Date | string
+  }
+
+  export type VisitorGroupVehicleWhereInput = {
+    AND?: VisitorGroupVehicleWhereInput | VisitorGroupVehicleWhereInput[]
+    OR?: VisitorGroupVehicleWhereInput[]
+    NOT?: VisitorGroupVehicleWhereInput | VisitorGroupVehicleWhereInput[]
+    id?: UuidFilter<"VisitorGroupVehicle"> | string
+    visitorGroupId?: UuidFilter<"VisitorGroupVehicle"> | string
+    licensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    normalizedLicensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    createdAt?: DateTimeFilter<"VisitorGroupVehicle"> | Date | string
+    visitorGroup?: XOR<VisitorGroupScalarRelationFilter, VisitorGroupWhereInput>
+  }
+
+  export type VisitorGroupVehicleOrderByWithRelationInput = {
+    id?: SortOrder
+    visitorGroupId?: SortOrder
+    licensePlate?: SortOrder
+    normalizedLicensePlate?: SortOrder
+    createdAt?: SortOrder
+    visitorGroup?: VisitorGroupOrderByWithRelationInput
+  }
+
+  export type VisitorGroupVehicleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    visitorGroupId_normalizedLicensePlate?: VisitorGroupVehicleVisitorGroupIdNormalizedLicensePlateCompoundUniqueInput
+    AND?: VisitorGroupVehicleWhereInput | VisitorGroupVehicleWhereInput[]
+    OR?: VisitorGroupVehicleWhereInput[]
+    NOT?: VisitorGroupVehicleWhereInput | VisitorGroupVehicleWhereInput[]
+    visitorGroupId?: UuidFilter<"VisitorGroupVehicle"> | string
+    licensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    normalizedLicensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    createdAt?: DateTimeFilter<"VisitorGroupVehicle"> | Date | string
+    visitorGroup?: XOR<VisitorGroupScalarRelationFilter, VisitorGroupWhereInput>
+  }, "id" | "visitorGroupId_normalizedLicensePlate">
+
+  export type VisitorGroupVehicleOrderByWithAggregationInput = {
+    id?: SortOrder
+    visitorGroupId?: SortOrder
+    licensePlate?: SortOrder
+    normalizedLicensePlate?: SortOrder
+    createdAt?: SortOrder
+    _count?: VisitorGroupVehicleCountOrderByAggregateInput
+    _max?: VisitorGroupVehicleMaxOrderByAggregateInput
+    _min?: VisitorGroupVehicleMinOrderByAggregateInput
+  }
+
+  export type VisitorGroupVehicleScalarWhereWithAggregatesInput = {
+    AND?: VisitorGroupVehicleScalarWhereWithAggregatesInput | VisitorGroupVehicleScalarWhereWithAggregatesInput[]
+    OR?: VisitorGroupVehicleScalarWhereWithAggregatesInput[]
+    NOT?: VisitorGroupVehicleScalarWhereWithAggregatesInput | VisitorGroupVehicleScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"VisitorGroupVehicle"> | string
+    visitorGroupId?: UuidWithAggregatesFilter<"VisitorGroupVehicle"> | string
+    licensePlate?: StringWithAggregatesFilter<"VisitorGroupVehicle"> | string
+    normalizedLicensePlate?: StringWithAggregatesFilter<"VisitorGroupVehicle"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"VisitorGroupVehicle"> | Date | string
   }
 
   export type BmqCourseWhereInput = {
@@ -74336,6 +77153,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     eventAttendees?: EventAttendeeCreateNestedManyWithoutEventInput
     visitors?: VisitorCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateInput = {
@@ -74353,6 +77171,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     eventAttendees?: EventAttendeeUncheckedCreateNestedManyWithoutEventInput
     visitors?: VisitorUncheckedCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventUpdateInput = {
@@ -74370,6 +77189,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     eventAttendees?: EventAttendeeUpdateManyWithoutEventNestedInput
     visitors?: VisitorUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateInput = {
@@ -74387,6 +77207,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     eventAttendees?: EventAttendeeUncheckedUpdateManyWithoutEventNestedInput
     visitors?: VisitorUncheckedUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateManyInput = {
@@ -74469,6 +77290,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -74527,6 +77349,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -74581,6 +77404,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -74639,6 +77463,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -75226,6 +78051,7 @@ export namespace Prisma {
     hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateInput = {
@@ -75255,6 +78081,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorUpdateInput = {
@@ -75284,6 +78111,7 @@ export namespace Prisma {
     hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateInput = {
@@ -75313,6 +78141,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorCreateManyInput = {
@@ -75342,6 +78171,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorUpdateManyMutationInput = {
@@ -75395,6 +78225,152 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorGroupCreateInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    event?: EventCreateNestedOneWithoutVisitorGroupsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorGroupsHostedInput
+    members?: VisitorCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUncheckedCreateInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    members?: VisitorUncheckedCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleUncheckedCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneWithoutVisitorGroupsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorGroupsHostedNestedInput
+    members?: VisitorUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: VisitorUncheckedUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupCreateManyInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+  }
+
+  export type VisitorGroupUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupVehicleCreateInput = {
+    id?: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+    visitorGroup: VisitorGroupCreateNestedOneWithoutVehiclesInput
+  }
+
+  export type VisitorGroupVehicleUncheckedCreateInput = {
+    id?: string
+    visitorGroupId: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+  }
+
+  export type VisitorGroupVehicleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visitorGroup?: VisitorGroupUpdateOneRequiredWithoutVehiclesNestedInput
+  }
+
+  export type VisitorGroupVehicleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visitorGroupId?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupVehicleCreateManyInput = {
+    id?: string
+    visitorGroupId: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+  }
+
+  export type VisitorGroupVehicleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupVehicleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visitorGroupId?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BmqCourseCreateInput = {
@@ -79197,6 +82173,16 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type VisitorGroupListRelationFilter = {
+    every?: VisitorGroupWhereInput
+    some?: VisitorGroupWhereInput
+    none?: VisitorGroupWhereInput
+  }
+
+  export type VisitorGroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type EventCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -79752,6 +82738,11 @@ export namespace Prisma {
     isNot?: VisitTypeWhereInput | null
   }
 
+  export type VisitorGroupNullableScalarRelationFilter = {
+    is?: VisitorGroupWhereInput | null
+    isNot?: VisitorGroupWhereInput | null
+  }
+
   export type VisitorCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -79779,6 +82770,7 @@ export namespace Prisma {
     adminNotes?: SortOrder
     checkInMethod?: SortOrder
     createdByAdmin?: SortOrder
+    visitorGroupId?: SortOrder
   }
 
   export type VisitorMaxOrderByAggregateInput = {
@@ -79808,6 +82800,7 @@ export namespace Prisma {
     adminNotes?: SortOrder
     checkInMethod?: SortOrder
     createdByAdmin?: SortOrder
+    visitorGroupId?: SortOrder
   }
 
   export type VisitorMinOrderByAggregateInput = {
@@ -79837,6 +82830,87 @@ export namespace Prisma {
     adminNotes?: SortOrder
     checkInMethod?: SortOrder
     createdByAdmin?: SortOrder
+    visitorGroupId?: SortOrder
+  }
+
+  export type VisitorGroupVehicleListRelationFilter = {
+    every?: VisitorGroupVehicleWhereInput
+    some?: VisitorGroupVehicleWhereInput
+    none?: VisitorGroupVehicleWhereInput
+  }
+
+  export type VisitorGroupVehicleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VisitorGroupCountOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    eventId?: SortOrder
+    hostMemberId?: SortOrder
+    checkInMethod?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisitorGroupMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    eventId?: SortOrder
+    hostMemberId?: SortOrder
+    checkInMethod?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisitorGroupMinOrderByAggregateInput = {
+    id?: SortOrder
+    kioskId?: SortOrder
+    visitReason?: SortOrder
+    visitPurpose?: SortOrder
+    purposeDetails?: SortOrder
+    eventId?: SortOrder
+    hostMemberId?: SortOrder
+    checkInMethod?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisitorGroupScalarRelationFilter = {
+    is?: VisitorGroupWhereInput
+    isNot?: VisitorGroupWhereInput
+  }
+
+  export type VisitorGroupVehicleVisitorGroupIdNormalizedLicensePlateCompoundUniqueInput = {
+    visitorGroupId: string
+    normalizedLicensePlate: string
+  }
+
+  export type VisitorGroupVehicleCountOrderByAggregateInput = {
+    id?: SortOrder
+    visitorGroupId?: SortOrder
+    licensePlate?: SortOrder
+    normalizedLicensePlate?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisitorGroupVehicleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    visitorGroupId?: SortOrder
+    licensePlate?: SortOrder
+    normalizedLicensePlate?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VisitorGroupVehicleMinOrderByAggregateInput = {
+    id?: SortOrder
+    visitorGroupId?: SortOrder
+    licensePlate?: SortOrder
+    normalizedLicensePlate?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -82466,6 +85540,13 @@ export namespace Prisma {
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
   }
 
+  export type VisitorGroupCreateNestedManyWithoutEventInput = {
+    create?: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput> | VisitorGroupCreateWithoutEventInput[] | VisitorGroupUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutEventInput | VisitorGroupCreateOrConnectWithoutEventInput[]
+    createMany?: VisitorGroupCreateManyEventInputEnvelope
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+  }
+
   export type EventAttendeeUncheckedCreateNestedManyWithoutEventInput = {
     create?: XOR<EventAttendeeCreateWithoutEventInput, EventAttendeeUncheckedCreateWithoutEventInput> | EventAttendeeCreateWithoutEventInput[] | EventAttendeeUncheckedCreateWithoutEventInput[]
     connectOrCreate?: EventAttendeeCreateOrConnectWithoutEventInput | EventAttendeeCreateOrConnectWithoutEventInput[]
@@ -82478,6 +85559,13 @@ export namespace Prisma {
     connectOrCreate?: VisitorCreateOrConnectWithoutEventInput | VisitorCreateOrConnectWithoutEventInput[]
     createMany?: VisitorCreateManyEventInputEnvelope
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorGroupUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput> | VisitorGroupCreateWithoutEventInput[] | VisitorGroupUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutEventInput | VisitorGroupCreateOrConnectWithoutEventInput[]
+    createMany?: VisitorGroupCreateManyEventInputEnvelope
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
   }
 
   export type EventAttendeeUpdateManyWithoutEventNestedInput = {
@@ -82508,6 +85596,20 @@ export namespace Prisma {
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
   }
 
+  export type VisitorGroupUpdateManyWithoutEventNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput> | VisitorGroupCreateWithoutEventInput[] | VisitorGroupUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutEventInput | VisitorGroupCreateOrConnectWithoutEventInput[]
+    upsert?: VisitorGroupUpsertWithWhereUniqueWithoutEventInput | VisitorGroupUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: VisitorGroupCreateManyEventInputEnvelope
+    set?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    disconnect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    delete?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    update?: VisitorGroupUpdateWithWhereUniqueWithoutEventInput | VisitorGroupUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: VisitorGroupUpdateManyWithWhereWithoutEventInput | VisitorGroupUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
+  }
+
   export type EventAttendeeUncheckedUpdateManyWithoutEventNestedInput = {
     create?: XOR<EventAttendeeCreateWithoutEventInput, EventAttendeeUncheckedCreateWithoutEventInput> | EventAttendeeCreateWithoutEventInput[] | EventAttendeeUncheckedCreateWithoutEventInput[]
     connectOrCreate?: EventAttendeeCreateOrConnectWithoutEventInput | EventAttendeeCreateOrConnectWithoutEventInput[]
@@ -82534,6 +85636,20 @@ export namespace Prisma {
     update?: VisitorUpdateWithWhereUniqueWithoutEventInput | VisitorUpdateWithWhereUniqueWithoutEventInput[]
     updateMany?: VisitorUpdateManyWithWhereWithoutEventInput | VisitorUpdateManyWithWhereWithoutEventInput[]
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorGroupUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput> | VisitorGroupCreateWithoutEventInput[] | VisitorGroupUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutEventInput | VisitorGroupCreateOrConnectWithoutEventInput[]
+    upsert?: VisitorGroupUpsertWithWhereUniqueWithoutEventInput | VisitorGroupUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: VisitorGroupCreateManyEventInputEnvelope
+    set?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    disconnect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    delete?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    update?: VisitorGroupUpdateWithWhereUniqueWithoutEventInput | VisitorGroupUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: VisitorGroupUpdateManyWithWhereWithoutEventInput | VisitorGroupUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
   }
 
   export type RankCreateNestedOneWithoutMembersInput = {
@@ -82580,6 +85696,13 @@ export namespace Prisma {
     connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
     createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorGroupCreateNestedManyWithoutHostMemberInput = {
+    create?: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput> | VisitorGroupCreateWithoutHostMemberInput[] | VisitorGroupUncheckedCreateWithoutHostMemberInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutHostMemberInput | VisitorGroupCreateOrConnectWithoutHostMemberInput[]
+    createMany?: VisitorGroupCreateManyHostMemberInputEnvelope
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
   }
 
   export type MemberTagCreateNestedManyWithoutMemberInput = {
@@ -82739,6 +85862,13 @@ export namespace Prisma {
     connectOrCreate?: VisitorCreateOrConnectWithoutCreatedByMemberInput | VisitorCreateOrConnectWithoutCreatedByMemberInput[]
     createMany?: VisitorCreateManyCreatedByMemberInputEnvelope
     connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput = {
+    create?: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput> | VisitorGroupCreateWithoutHostMemberInput[] | VisitorGroupUncheckedCreateWithoutHostMemberInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutHostMemberInput | VisitorGroupCreateOrConnectWithoutHostMemberInput[]
+    createMany?: VisitorGroupCreateManyHostMemberInputEnvelope
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
   }
 
   export type MemberTagUncheckedCreateNestedManyWithoutMemberInput = {
@@ -82952,6 +86082,20 @@ export namespace Prisma {
     update?: VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput[]
     updateMany?: VisitorUpdateManyWithWhereWithoutCreatedByMemberInput | VisitorUpdateManyWithWhereWithoutCreatedByMemberInput[]
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorGroupUpdateManyWithoutHostMemberNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput> | VisitorGroupCreateWithoutHostMemberInput[] | VisitorGroupUncheckedCreateWithoutHostMemberInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutHostMemberInput | VisitorGroupCreateOrConnectWithoutHostMemberInput[]
+    upsert?: VisitorGroupUpsertWithWhereUniqueWithoutHostMemberInput | VisitorGroupUpsertWithWhereUniqueWithoutHostMemberInput[]
+    createMany?: VisitorGroupCreateManyHostMemberInputEnvelope
+    set?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    disconnect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    delete?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    update?: VisitorGroupUpdateWithWhereUniqueWithoutHostMemberInput | VisitorGroupUpdateWithWhereUniqueWithoutHostMemberInput[]
+    updateMany?: VisitorGroupUpdateManyWithWhereWithoutHostMemberInput | VisitorGroupUpdateManyWithWhereWithoutHostMemberInput[]
+    deleteMany?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
   }
 
   export type MemberTagUpdateManyWithoutMemberNestedInput = {
@@ -83266,6 +86410,20 @@ export namespace Prisma {
     update?: VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput | VisitorUpdateWithWhereUniqueWithoutCreatedByMemberInput[]
     updateMany?: VisitorUpdateManyWithWhereWithoutCreatedByMemberInput | VisitorUpdateManyWithWhereWithoutCreatedByMemberInput[]
     deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput> | VisitorGroupCreateWithoutHostMemberInput[] | VisitorGroupUncheckedCreateWithoutHostMemberInput[]
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutHostMemberInput | VisitorGroupCreateOrConnectWithoutHostMemberInput[]
+    upsert?: VisitorGroupUpsertWithWhereUniqueWithoutHostMemberInput | VisitorGroupUpsertWithWhereUniqueWithoutHostMemberInput[]
+    createMany?: VisitorGroupCreateManyHostMemberInputEnvelope
+    set?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    disconnect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    delete?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    connect?: VisitorGroupWhereUniqueInput | VisitorGroupWhereUniqueInput[]
+    update?: VisitorGroupUpdateWithWhereUniqueWithoutHostMemberInput | VisitorGroupUpdateWithWhereUniqueWithoutHostMemberInput[]
+    updateMany?: VisitorGroupUpdateManyWithWhereWithoutHostMemberInput | VisitorGroupUpdateManyWithWhereWithoutHostMemberInput[]
+    deleteMany?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
   }
 
   export type MemberTagUncheckedUpdateManyWithoutMemberNestedInput = {
@@ -83736,6 +86894,12 @@ export namespace Prisma {
     connect?: VisitTypeWhereUniqueInput
   }
 
+  export type VisitorGroupCreateNestedOneWithoutMembersInput = {
+    create?: XOR<VisitorGroupCreateWithoutMembersInput, VisitorGroupUncheckedCreateWithoutMembersInput>
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutMembersInput
+    connect?: VisitorGroupWhereUniqueInput
+  }
+
   export type MemberUpdateOneWithoutVisitorsCreatedNestedInput = {
     create?: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
     connectOrCreate?: MemberCreateOrConnectWithoutVisitorsCreatedInput
@@ -83784,6 +86948,146 @@ export namespace Prisma {
     delete?: VisitTypeWhereInput | boolean
     connect?: VisitTypeWhereUniqueInput
     update?: XOR<XOR<VisitTypeUpdateToOneWithWhereWithoutVisitorsInput, VisitTypeUpdateWithoutVisitorsInput>, VisitTypeUncheckedUpdateWithoutVisitorsInput>
+  }
+
+  export type VisitorGroupUpdateOneWithoutMembersNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutMembersInput, VisitorGroupUncheckedCreateWithoutMembersInput>
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutMembersInput
+    upsert?: VisitorGroupUpsertWithoutMembersInput
+    disconnect?: VisitorGroupWhereInput | boolean
+    delete?: VisitorGroupWhereInput | boolean
+    connect?: VisitorGroupWhereUniqueInput
+    update?: XOR<XOR<VisitorGroupUpdateToOneWithWhereWithoutMembersInput, VisitorGroupUpdateWithoutMembersInput>, VisitorGroupUncheckedUpdateWithoutMembersInput>
+  }
+
+  export type EventCreateNestedOneWithoutVisitorGroupsInput = {
+    create?: XOR<EventCreateWithoutVisitorGroupsInput, EventUncheckedCreateWithoutVisitorGroupsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutVisitorGroupsInput
+    connect?: EventWhereUniqueInput
+  }
+
+  export type MemberCreateNestedOneWithoutVisitorGroupsHostedInput = {
+    create?: XOR<MemberCreateWithoutVisitorGroupsHostedInput, MemberUncheckedCreateWithoutVisitorGroupsHostedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorGroupsHostedInput
+    connect?: MemberWhereUniqueInput
+  }
+
+  export type VisitorCreateNestedManyWithoutVisitorGroupInput = {
+    create?: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput> | VisitorCreateWithoutVisitorGroupInput[] | VisitorUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutVisitorGroupInput | VisitorCreateOrConnectWithoutVisitorGroupInput[]
+    createMany?: VisitorCreateManyVisitorGroupInputEnvelope
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorGroupVehicleCreateNestedManyWithoutVisitorGroupInput = {
+    create?: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput> | VisitorGroupVehicleCreateWithoutVisitorGroupInput[] | VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput | VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput[]
+    createMany?: VisitorGroupVehicleCreateManyVisitorGroupInputEnvelope
+    connect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+  }
+
+  export type VisitorUncheckedCreateNestedManyWithoutVisitorGroupInput = {
+    create?: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput> | VisitorCreateWithoutVisitorGroupInput[] | VisitorUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutVisitorGroupInput | VisitorCreateOrConnectWithoutVisitorGroupInput[]
+    createMany?: VisitorCreateManyVisitorGroupInputEnvelope
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+  }
+
+  export type VisitorGroupVehicleUncheckedCreateNestedManyWithoutVisitorGroupInput = {
+    create?: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput> | VisitorGroupVehicleCreateWithoutVisitorGroupInput[] | VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput | VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput[]
+    createMany?: VisitorGroupVehicleCreateManyVisitorGroupInputEnvelope
+    connect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+  }
+
+  export type EventUpdateOneWithoutVisitorGroupsNestedInput = {
+    create?: XOR<EventCreateWithoutVisitorGroupsInput, EventUncheckedCreateWithoutVisitorGroupsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutVisitorGroupsInput
+    upsert?: EventUpsertWithoutVisitorGroupsInput
+    disconnect?: EventWhereInput | boolean
+    delete?: EventWhereInput | boolean
+    connect?: EventWhereUniqueInput
+    update?: XOR<XOR<EventUpdateToOneWithWhereWithoutVisitorGroupsInput, EventUpdateWithoutVisitorGroupsInput>, EventUncheckedUpdateWithoutVisitorGroupsInput>
+  }
+
+  export type MemberUpdateOneWithoutVisitorGroupsHostedNestedInput = {
+    create?: XOR<MemberCreateWithoutVisitorGroupsHostedInput, MemberUncheckedCreateWithoutVisitorGroupsHostedInput>
+    connectOrCreate?: MemberCreateOrConnectWithoutVisitorGroupsHostedInput
+    upsert?: MemberUpsertWithoutVisitorGroupsHostedInput
+    disconnect?: MemberWhereInput | boolean
+    delete?: MemberWhereInput | boolean
+    connect?: MemberWhereUniqueInput
+    update?: XOR<XOR<MemberUpdateToOneWithWhereWithoutVisitorGroupsHostedInput, MemberUpdateWithoutVisitorGroupsHostedInput>, MemberUncheckedUpdateWithoutVisitorGroupsHostedInput>
+  }
+
+  export type VisitorUpdateManyWithoutVisitorGroupNestedInput = {
+    create?: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput> | VisitorCreateWithoutVisitorGroupInput[] | VisitorUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutVisitorGroupInput | VisitorCreateOrConnectWithoutVisitorGroupInput[]
+    upsert?: VisitorUpsertWithWhereUniqueWithoutVisitorGroupInput | VisitorUpsertWithWhereUniqueWithoutVisitorGroupInput[]
+    createMany?: VisitorCreateManyVisitorGroupInputEnvelope
+    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    update?: VisitorUpdateWithWhereUniqueWithoutVisitorGroupInput | VisitorUpdateWithWhereUniqueWithoutVisitorGroupInput[]
+    updateMany?: VisitorUpdateManyWithWhereWithoutVisitorGroupInput | VisitorUpdateManyWithWhereWithoutVisitorGroupInput[]
+    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorGroupVehicleUpdateManyWithoutVisitorGroupNestedInput = {
+    create?: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput> | VisitorGroupVehicleCreateWithoutVisitorGroupInput[] | VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput | VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput[]
+    upsert?: VisitorGroupVehicleUpsertWithWhereUniqueWithoutVisitorGroupInput | VisitorGroupVehicleUpsertWithWhereUniqueWithoutVisitorGroupInput[]
+    createMany?: VisitorGroupVehicleCreateManyVisitorGroupInputEnvelope
+    set?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    disconnect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    delete?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    connect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    update?: VisitorGroupVehicleUpdateWithWhereUniqueWithoutVisitorGroupInput | VisitorGroupVehicleUpdateWithWhereUniqueWithoutVisitorGroupInput[]
+    updateMany?: VisitorGroupVehicleUpdateManyWithWhereWithoutVisitorGroupInput | VisitorGroupVehicleUpdateManyWithWhereWithoutVisitorGroupInput[]
+    deleteMany?: VisitorGroupVehicleScalarWhereInput | VisitorGroupVehicleScalarWhereInput[]
+  }
+
+  export type VisitorUncheckedUpdateManyWithoutVisitorGroupNestedInput = {
+    create?: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput> | VisitorCreateWithoutVisitorGroupInput[] | VisitorUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorCreateOrConnectWithoutVisitorGroupInput | VisitorCreateOrConnectWithoutVisitorGroupInput[]
+    upsert?: VisitorUpsertWithWhereUniqueWithoutVisitorGroupInput | VisitorUpsertWithWhereUniqueWithoutVisitorGroupInput[]
+    createMany?: VisitorCreateManyVisitorGroupInputEnvelope
+    set?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    disconnect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    delete?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    connect?: VisitorWhereUniqueInput | VisitorWhereUniqueInput[]
+    update?: VisitorUpdateWithWhereUniqueWithoutVisitorGroupInput | VisitorUpdateWithWhereUniqueWithoutVisitorGroupInput[]
+    updateMany?: VisitorUpdateManyWithWhereWithoutVisitorGroupInput | VisitorUpdateManyWithWhereWithoutVisitorGroupInput[]
+    deleteMany?: VisitorScalarWhereInput | VisitorScalarWhereInput[]
+  }
+
+  export type VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupNestedInput = {
+    create?: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput> | VisitorGroupVehicleCreateWithoutVisitorGroupInput[] | VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput[]
+    connectOrCreate?: VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput | VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput[]
+    upsert?: VisitorGroupVehicleUpsertWithWhereUniqueWithoutVisitorGroupInput | VisitorGroupVehicleUpsertWithWhereUniqueWithoutVisitorGroupInput[]
+    createMany?: VisitorGroupVehicleCreateManyVisitorGroupInputEnvelope
+    set?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    disconnect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    delete?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    connect?: VisitorGroupVehicleWhereUniqueInput | VisitorGroupVehicleWhereUniqueInput[]
+    update?: VisitorGroupVehicleUpdateWithWhereUniqueWithoutVisitorGroupInput | VisitorGroupVehicleUpdateWithWhereUniqueWithoutVisitorGroupInput[]
+    updateMany?: VisitorGroupVehicleUpdateManyWithWhereWithoutVisitorGroupInput | VisitorGroupVehicleUpdateManyWithWhereWithoutVisitorGroupInput[]
+    deleteMany?: VisitorGroupVehicleScalarWhereInput | VisitorGroupVehicleScalarWhereInput[]
+  }
+
+  export type VisitorGroupCreateNestedOneWithoutVehiclesInput = {
+    create?: XOR<VisitorGroupCreateWithoutVehiclesInput, VisitorGroupUncheckedCreateWithoutVehiclesInput>
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutVehiclesInput
+    connect?: VisitorGroupWhereUniqueInput
+  }
+
+  export type VisitorGroupUpdateOneRequiredWithoutVehiclesNestedInput = {
+    create?: XOR<VisitorGroupCreateWithoutVehiclesInput, VisitorGroupUncheckedCreateWithoutVehiclesInput>
+    connectOrCreate?: VisitorGroupCreateOrConnectWithoutVehiclesInput
+    upsert?: VisitorGroupUpsertWithoutVehiclesInput
+    connect?: VisitorGroupWhereUniqueInput
+    update?: XOR<XOR<VisitorGroupUpdateToOneWithWhereWithoutVehiclesInput, VisitorGroupUpdateWithoutVehiclesInput>, VisitorGroupUncheckedUpdateWithoutVehiclesInput>
   }
 
   export type BmqCourseCreatetrainingDaysInput = {
@@ -86999,6 +90303,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -87056,6 +90361,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -87111,6 +90417,7 @@ export namespace Prisma {
     event?: EventCreateNestedOneWithoutVisitorsInput
     hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateWithoutBadgeInput = {
@@ -87139,6 +90446,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateOrConnectWithoutBadgeInput = {
@@ -87358,6 +90666,7 @@ export namespace Prisma {
     adminNotes?: StringNullableFilter<"Visitor"> | string | null
     checkInMethod?: StringNullableFilter<"Visitor"> | string | null
     createdByAdmin?: UuidNullableFilter<"Visitor"> | string | null
+    visitorGroupId?: UuidNullableFilter<"Visitor"> | string | null
   }
 
   export type BadgeStatusUpsertWithoutBadgesInput = {
@@ -87527,6 +90836,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -87584,6 +90894,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -87765,6 +91076,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -87822,6 +91134,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -87875,6 +91188,7 @@ export namespace Prisma {
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -87932,6 +91246,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -88028,6 +91343,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     visitors?: VisitorCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutEventAttendeesInput = {
@@ -88044,6 +91360,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     visitors?: VisitorUncheckedCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutEventAttendeesInput = {
@@ -88147,6 +91464,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     visitors?: VisitorUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutEventAttendeesInput = {
@@ -88163,6 +91481,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     visitors?: VisitorUncheckedUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCheckinUpsertWithWhereUniqueWithoutEventAttendeeInput = {
@@ -88409,6 +91728,7 @@ export namespace Prisma {
     hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateWithoutEventInput = {
@@ -88437,6 +91757,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateOrConnectWithoutEventInput = {
@@ -88446,6 +91767,42 @@ export namespace Prisma {
 
   export type VisitorCreateManyEventInputEnvelope = {
     data: VisitorCreateManyEventInput | VisitorCreateManyEventInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VisitorGroupCreateWithoutEventInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    hostMember?: MemberCreateNestedOneWithoutVisitorGroupsHostedInput
+    members?: VisitorCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUncheckedCreateWithoutEventInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    members?: VisitorUncheckedCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleUncheckedCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupCreateOrConnectWithoutEventInput = {
+    where: VisitorGroupWhereUniqueInput
+    create: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput>
+  }
+
+  export type VisitorGroupCreateManyEventInputEnvelope = {
+    data: VisitorGroupCreateManyEventInput | VisitorGroupCreateManyEventInput[]
     skipDuplicates?: boolean
   }
 
@@ -88479,6 +91836,37 @@ export namespace Prisma {
   export type VisitorUpdateManyWithWhereWithoutEventInput = {
     where: VisitorScalarWhereInput
     data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type VisitorGroupUpsertWithWhereUniqueWithoutEventInput = {
+    where: VisitorGroupWhereUniqueInput
+    update: XOR<VisitorGroupUpdateWithoutEventInput, VisitorGroupUncheckedUpdateWithoutEventInput>
+    create: XOR<VisitorGroupCreateWithoutEventInput, VisitorGroupUncheckedCreateWithoutEventInput>
+  }
+
+  export type VisitorGroupUpdateWithWhereUniqueWithoutEventInput = {
+    where: VisitorGroupWhereUniqueInput
+    data: XOR<VisitorGroupUpdateWithoutEventInput, VisitorGroupUncheckedUpdateWithoutEventInput>
+  }
+
+  export type VisitorGroupUpdateManyWithWhereWithoutEventInput = {
+    where: VisitorGroupScalarWhereInput
+    data: XOR<VisitorGroupUpdateManyMutationInput, VisitorGroupUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type VisitorGroupScalarWhereInput = {
+    AND?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
+    OR?: VisitorGroupScalarWhereInput[]
+    NOT?: VisitorGroupScalarWhereInput | VisitorGroupScalarWhereInput[]
+    id?: UuidFilter<"VisitorGroup"> | string
+    kioskId?: StringFilter<"VisitorGroup"> | string
+    visitReason?: StringNullableFilter<"VisitorGroup"> | string | null
+    visitPurpose?: StringNullableFilter<"VisitorGroup"> | string | null
+    purposeDetails?: StringNullableFilter<"VisitorGroup"> | string | null
+    eventId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    hostMemberId?: UuidNullableFilter<"VisitorGroup"> | string | null
+    checkInMethod?: StringNullableFilter<"VisitorGroup"> | string | null
+    createdAt?: DateTimeFilter<"VisitorGroup"> | Date | string
   }
 
   export type RankCreateWithoutMembersInput = {
@@ -88664,6 +92052,7 @@ export namespace Prisma {
     event?: EventCreateNestedOneWithoutVisitorsInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateWithoutHostMemberInput = {
@@ -88692,6 +92081,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateOrConnectWithoutHostMemberInput = {
@@ -88730,6 +92120,7 @@ export namespace Prisma {
     hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
     visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateWithoutCreatedByMemberInput = {
@@ -88758,6 +92149,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateOrConnectWithoutCreatedByMemberInput = {
@@ -88767,6 +92159,42 @@ export namespace Prisma {
 
   export type VisitorCreateManyCreatedByMemberInputEnvelope = {
     data: VisitorCreateManyCreatedByMemberInput | VisitorCreateManyCreatedByMemberInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VisitorGroupCreateWithoutHostMemberInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    event?: EventCreateNestedOneWithoutVisitorGroupsInput
+    members?: VisitorCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUncheckedCreateWithoutHostMemberInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    members?: VisitorUncheckedCreateNestedManyWithoutVisitorGroupInput
+    vehicles?: VisitorGroupVehicleUncheckedCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupCreateOrConnectWithoutHostMemberInput = {
+    where: VisitorGroupWhereUniqueInput
+    create: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput>
+  }
+
+  export type VisitorGroupCreateManyHostMemberInputEnvelope = {
+    data: VisitorGroupCreateManyHostMemberInput | VisitorGroupCreateManyHostMemberInput[]
     skipDuplicates?: boolean
   }
 
@@ -89599,6 +93027,22 @@ export namespace Prisma {
     data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutCreatedByMemberInput>
   }
 
+  export type VisitorGroupUpsertWithWhereUniqueWithoutHostMemberInput = {
+    where: VisitorGroupWhereUniqueInput
+    update: XOR<VisitorGroupUpdateWithoutHostMemberInput, VisitorGroupUncheckedUpdateWithoutHostMemberInput>
+    create: XOR<VisitorGroupCreateWithoutHostMemberInput, VisitorGroupUncheckedCreateWithoutHostMemberInput>
+  }
+
+  export type VisitorGroupUpdateWithWhereUniqueWithoutHostMemberInput = {
+    where: VisitorGroupWhereUniqueInput
+    data: XOR<VisitorGroupUpdateWithoutHostMemberInput, VisitorGroupUncheckedUpdateWithoutHostMemberInput>
+  }
+
+  export type VisitorGroupUpdateManyWithWhereWithoutHostMemberInput = {
+    where: VisitorGroupScalarWhereInput
+    data: XOR<VisitorGroupUpdateManyMutationInput, VisitorGroupUncheckedUpdateManyWithoutHostMemberInput>
+  }
+
   export type MemberTagUpsertWithWhereUniqueWithoutMemberInput = {
     where: MemberTagWhereUniqueInput
     update: XOR<MemberTagUpdateWithoutMemberInput, MemberTagUncheckedUpdateWithoutMemberInput>
@@ -90131,6 +93575,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -90188,6 +93633,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -90284,6 +93730,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -90341,6 +93788,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -90589,6 +94037,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -90646,6 +94095,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -90746,6 +94196,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -90803,6 +94254,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -90893,6 +94345,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -90950,6 +94403,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91019,6 +94473,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91076,6 +94531,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91128,6 +94584,7 @@ export namespace Prisma {
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91185,6 +94642,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91223,6 +94681,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     eventAttendees?: EventAttendeeCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutVisitorsInput = {
@@ -91239,6 +94698,7 @@ export namespace Prisma {
     createdAt?: Date | string | null
     updatedAt?: Date | string | null
     eventAttendees?: EventAttendeeUncheckedCreateNestedManyWithoutEventInput
+    visitorGroups?: VisitorGroupUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutVisitorsInput = {
@@ -91280,6 +94740,7 @@ export namespace Prisma {
     checkins?: CheckinCreateNestedManyWithoutMemberInput
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91337,6 +94798,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -91425,6 +94887,37 @@ export namespace Prisma {
     create: XOR<VisitTypeCreateWithoutVisitorsInput, VisitTypeUncheckedCreateWithoutVisitorsInput>
   }
 
+  export type VisitorGroupCreateWithoutMembersInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    event?: EventCreateNestedOneWithoutVisitorGroupsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorGroupsHostedInput
+    vehicles?: VisitorGroupVehicleCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUncheckedCreateWithoutMembersInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    vehicles?: VisitorGroupVehicleUncheckedCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupCreateOrConnectWithoutMembersInput = {
+    where: VisitorGroupWhereUniqueInput
+    create: XOR<VisitorGroupCreateWithoutMembersInput, VisitorGroupUncheckedCreateWithoutMembersInput>
+  }
+
   export type MemberUpsertWithoutVisitorsCreatedInput = {
     update: XOR<MemberUpdateWithoutVisitorsCreatedInput, MemberUncheckedUpdateWithoutVisitorsCreatedInput>
     create: XOR<MemberCreateWithoutVisitorsCreatedInput, MemberUncheckedCreateWithoutVisitorsCreatedInput>
@@ -91470,6 +94963,7 @@ export namespace Prisma {
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91527,6 +95021,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91571,6 +95066,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     eventAttendees?: EventAttendeeUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutVisitorsInput = {
@@ -91587,6 +95083,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     eventAttendees?: EventAttendeeUncheckedUpdateManyWithoutEventNestedInput
+    visitorGroups?: VisitorGroupUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type MemberUpsertWithoutVisitorsHostedInput = {
@@ -91634,6 +95131,7 @@ export namespace Prisma {
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -91691,6 +95189,7 @@ export namespace Prisma {
     bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -91784,6 +95283,570 @@ export namespace Prisma {
     chipColor?: StringFieldUpdateOperationsInput | string
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type VisitorGroupUpsertWithoutMembersInput = {
+    update: XOR<VisitorGroupUpdateWithoutMembersInput, VisitorGroupUncheckedUpdateWithoutMembersInput>
+    create: XOR<VisitorGroupCreateWithoutMembersInput, VisitorGroupUncheckedCreateWithoutMembersInput>
+    where?: VisitorGroupWhereInput
+  }
+
+  export type VisitorGroupUpdateToOneWithWhereWithoutMembersInput = {
+    where?: VisitorGroupWhereInput
+    data: XOR<VisitorGroupUpdateWithoutMembersInput, VisitorGroupUncheckedUpdateWithoutMembersInput>
+  }
+
+  export type VisitorGroupUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneWithoutVisitorGroupsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorGroupsHostedNestedInput
+    vehicles?: VisitorGroupVehicleUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    vehicles?: VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type EventCreateWithoutVisitorGroupsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    startDate: Date | string
+    endDate: Date | string
+    status?: string
+    autoExpireBadges?: boolean | null
+    customRoles?: NullableJsonNullValueInput | InputJsonValue
+    createdBy?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    eventAttendees?: EventAttendeeCreateNestedManyWithoutEventInput
+    visitors?: VisitorCreateNestedManyWithoutEventInput
+  }
+
+  export type EventUncheckedCreateWithoutVisitorGroupsInput = {
+    id?: string
+    name: string
+    code: string
+    description?: string | null
+    startDate: Date | string
+    endDate: Date | string
+    status?: string
+    autoExpireBadges?: boolean | null
+    customRoles?: NullableJsonNullValueInput | InputJsonValue
+    createdBy?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    eventAttendees?: EventAttendeeUncheckedCreateNestedManyWithoutEventInput
+    visitors?: VisitorUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type EventCreateOrConnectWithoutVisitorGroupsInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutVisitorGroupsInput, EventUncheckedCreateWithoutVisitorGroupsInput>
+  }
+
+  export type MemberCreateWithoutVisitorGroupsHostedInput = {
+    id?: string
+    serviceNumber: string
+    rank: string
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    email?: string | null
+    mobilePhone?: string | null
+    memberType: string
+    memberSource?: string
+    status?: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    mustChangePin?: boolean
+    accountLevel?: number
+    rankRef?: RankCreateNestedOneWithoutMembersInput
+    badge?: BadgeCreateNestedOneWithoutMembersInput
+    bmqEnrollments?: BmqEnrollmentCreateNestedManyWithoutMemberInput
+    checkins?: CheckinCreateNestedManyWithoutMemberInput
+    division?: DivisionCreateNestedOneWithoutMembersInput
+    visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    memberTags?: MemberTagCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
+    memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
+    memberStatusRef?: MemberStatusCreateNestedOneWithoutMembersInput
+    qualifications?: MemberQualificationCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentCreateNestedManyWithoutMemberInput
+    liveDutyAssignments?: LiveDutyAssignmentCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertCreateNestedManyWithoutAcknowledgedByMemberInput
+  }
+
+  export type MemberUncheckedCreateWithoutVisitorGroupsHostedInput = {
+    id?: string
+    serviceNumber: string
+    rankId: string
+    rank: string
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    email?: string | null
+    mobilePhone?: string | null
+    divisionId?: string | null
+    badgeId?: string | null
+    memberType: string
+    memberSource?: string
+    status?: string
+    memberTypeId?: string | null
+    memberStatusId?: string | null
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    employeeNumber?: string | null
+    initials?: string | null
+    mess?: string | null
+    moc?: string | null
+    classDetails?: string | null
+    homePhone?: string | null
+    notes?: string | null
+    contract_start?: Date | string | null
+    contract_end?: Date | string | null
+    missedCheckoutCount?: number
+    lastMissedCheckout?: Date | string | null
+    pinHash?: string | null
+    mustChangePin?: boolean
+    accountLevel?: number
+    bmqEnrollments?: BmqEnrollmentUncheckedCreateNestedManyWithoutMemberInput
+    checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
+    visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
+    visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
+    ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
+    qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    liveDutyAssignments?: LiveDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutMemberInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedCreateNestedManyWithoutBaseMemberInput
+    lockupHolding?: LockupStatusUncheckedCreateNestedManyWithoutCurrentHolderInput
+    lockupSecured?: LockupStatusUncheckedCreateNestedManyWithoutSecuredByMemberInput
+    lockupTransfersFrom?: LockupTransferUncheckedCreateNestedManyWithoutFromMemberInput
+    lockupTransfersTo?: LockupTransferUncheckedCreateNestedManyWithoutToMemberInput
+    lockupExecutions?: LockupExecutionUncheckedCreateNestedManyWithoutExecutedByMemberInput
+    missedCheckouts?: MissedCheckoutUncheckedCreateNestedManyWithoutMemberInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedCreateNestedManyWithoutMemberInput
+    memberSessions?: MemberSessionUncheckedCreateNestedManyWithoutMemberInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedCreateNestedManyWithoutAcknowledgedByMemberInput
+  }
+
+  export type MemberCreateOrConnectWithoutVisitorGroupsHostedInput = {
+    where: MemberWhereUniqueInput
+    create: XOR<MemberCreateWithoutVisitorGroupsHostedInput, MemberUncheckedCreateWithoutVisitorGroupsHostedInput>
+  }
+
+  export type VisitorCreateWithoutVisitorGroupInput = {
+    id?: string
+    name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
+    organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
+    licensePlate?: string | null
+    visitType: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
+    createdByMember?: MemberCreateNestedOneWithoutVisitorsCreatedInput
+    event?: EventCreateNestedOneWithoutVisitorsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
+    badge?: BadgeCreateNestedOneWithoutVisitorsInput
+    visitTypeRef?: VisitTypeCreateNestedOneWithoutVisitorsInput
+  }
+
+  export type VisitorUncheckedCreateWithoutVisitorGroupInput = {
+    id?: string
+    name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
+    organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
+    licensePlate?: string | null
+    visitType: string
+    visitTypeId?: string | null
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    temporaryBadgeId?: string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
+    createdByAdmin?: string | null
+  }
+
+  export type VisitorCreateOrConnectWithoutVisitorGroupInput = {
+    where: VisitorWhereUniqueInput
+    create: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorCreateManyVisitorGroupInputEnvelope = {
+    data: VisitorCreateManyVisitorGroupInput | VisitorCreateManyVisitorGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VisitorGroupVehicleCreateWithoutVisitorGroupInput = {
+    id?: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+  }
+
+  export type VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput = {
+    id?: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+  }
+
+  export type VisitorGroupVehicleCreateOrConnectWithoutVisitorGroupInput = {
+    where: VisitorGroupVehicleWhereUniqueInput
+    create: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorGroupVehicleCreateManyVisitorGroupInputEnvelope = {
+    data: VisitorGroupVehicleCreateManyVisitorGroupInput | VisitorGroupVehicleCreateManyVisitorGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EventUpsertWithoutVisitorGroupsInput = {
+    update: XOR<EventUpdateWithoutVisitorGroupsInput, EventUncheckedUpdateWithoutVisitorGroupsInput>
+    create: XOR<EventCreateWithoutVisitorGroupsInput, EventUncheckedCreateWithoutVisitorGroupsInput>
+    where?: EventWhereInput
+  }
+
+  export type EventUpdateToOneWithWhereWithoutVisitorGroupsInput = {
+    where?: EventWhereInput
+    data: XOR<EventUpdateWithoutVisitorGroupsInput, EventUncheckedUpdateWithoutVisitorGroupsInput>
+  }
+
+  export type EventUpdateWithoutVisitorGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    autoExpireBadges?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    customRoles?: NullableJsonNullValueInput | InputJsonValue
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventAttendees?: EventAttendeeUpdateManyWithoutEventNestedInput
+    visitors?: VisitorUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutVisitorGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: StringFieldUpdateOperationsInput | string
+    autoExpireBadges?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    customRoles?: NullableJsonNullValueInput | InputJsonValue
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventAttendees?: EventAttendeeUncheckedUpdateManyWithoutEventNestedInput
+    visitors?: VisitorUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type MemberUpsertWithoutVisitorGroupsHostedInput = {
+    update: XOR<MemberUpdateWithoutVisitorGroupsHostedInput, MemberUncheckedUpdateWithoutVisitorGroupsHostedInput>
+    create: XOR<MemberCreateWithoutVisitorGroupsHostedInput, MemberUncheckedCreateWithoutVisitorGroupsHostedInput>
+    where?: MemberWhereInput
+  }
+
+  export type MemberUpdateToOneWithWhereWithoutVisitorGroupsHostedInput = {
+    where?: MemberWhereInput
+    data: XOR<MemberUpdateWithoutVisitorGroupsHostedInput, MemberUncheckedUpdateWithoutVisitorGroupsHostedInput>
+  }
+
+  export type MemberUpdateWithoutVisitorGroupsHostedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    memberSource?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    rankRef?: RankUpdateOneWithoutMembersNestedInput
+    badge?: BadgeUpdateOneWithoutMembersNestedInput
+    bmqEnrollments?: BmqEnrollmentUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUpdateManyWithoutMemberNestedInput
+    division?: DivisionUpdateOneWithoutMembersNestedInput
+    visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
+    memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
+    memberStatusRef?: MemberStatusUpdateOneWithoutMembersNestedInput
+    qualifications?: MemberQualificationUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUpdateManyWithoutMemberNestedInput
+    liveDutyAssignments?: LiveDutyAssignmentUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUpdateManyWithoutAcknowledgedByMemberNestedInput
+  }
+
+  export type MemberUncheckedUpdateWithoutVisitorGroupsHostedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    serviceNumber?: StringFieldUpdateOperationsInput | string
+    rankId?: StringFieldUpdateOperationsInput | string
+    rank?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    divisionId?: NullableStringFieldUpdateOperationsInput | string | null
+    badgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberType?: StringFieldUpdateOperationsInput | string
+    memberSource?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    memberTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    memberStatusId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    employeeNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    initials?: NullableStringFieldUpdateOperationsInput | string | null
+    mess?: NullableStringFieldUpdateOperationsInput | string | null
+    moc?: NullableStringFieldUpdateOperationsInput | string | null
+    classDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    homePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contract_start?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    contract_end?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    missedCheckoutCount?: IntFieldUpdateOperationsInput | number
+    lastMissedCheckout?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    mustChangePin?: BoolFieldUpdateOperationsInput | boolean
+    accountLevel?: IntFieldUpdateOperationsInput | number
+    bmqEnrollments?: BmqEnrollmentUncheckedUpdateManyWithoutMemberNestedInput
+    checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
+    visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
+    visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
+    ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
+    qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
+    scheduleAssignments?: ScheduleAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    liveDutyAssignments?: LiveDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsMember?: DutyWatchNightOverrideUncheckedUpdateManyWithoutMemberNestedInput
+    dwOverridesAsBase?: DutyWatchNightOverrideUncheckedUpdateManyWithoutBaseMemberNestedInput
+    lockupHolding?: LockupStatusUncheckedUpdateManyWithoutCurrentHolderNestedInput
+    lockupSecured?: LockupStatusUncheckedUpdateManyWithoutSecuredByMemberNestedInput
+    lockupTransfersFrom?: LockupTransferUncheckedUpdateManyWithoutFromMemberNestedInput
+    lockupTransfersTo?: LockupTransferUncheckedUpdateManyWithoutToMemberNestedInput
+    lockupExecutions?: LockupExecutionUncheckedUpdateManyWithoutExecutedByMemberNestedInput
+    missedCheckouts?: MissedCheckoutUncheckedUpdateManyWithoutMemberNestedInput
+    unitEventDutyAssignments?: UnitEventDutyAssignmentUncheckedUpdateManyWithoutMemberNestedInput
+    memberSessions?: MemberSessionUncheckedUpdateManyWithoutMemberNestedInput
+    acknowledgedSecurityAlerts?: SecurityAlertUncheckedUpdateManyWithoutAcknowledgedByMemberNestedInput
+  }
+
+  export type VisitorUpsertWithWhereUniqueWithoutVisitorGroupInput = {
+    where: VisitorWhereUniqueInput
+    update: XOR<VisitorUpdateWithoutVisitorGroupInput, VisitorUncheckedUpdateWithoutVisitorGroupInput>
+    create: XOR<VisitorCreateWithoutVisitorGroupInput, VisitorUncheckedCreateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorUpdateWithWhereUniqueWithoutVisitorGroupInput = {
+    where: VisitorWhereUniqueInput
+    data: XOR<VisitorUpdateWithoutVisitorGroupInput, VisitorUncheckedUpdateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorUpdateManyWithWhereWithoutVisitorGroupInput = {
+    where: VisitorScalarWhereInput
+    data: XOR<VisitorUpdateManyMutationInput, VisitorUncheckedUpdateManyWithoutVisitorGroupInput>
+  }
+
+  export type VisitorGroupVehicleUpsertWithWhereUniqueWithoutVisitorGroupInput = {
+    where: VisitorGroupVehicleWhereUniqueInput
+    update: XOR<VisitorGroupVehicleUpdateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedUpdateWithoutVisitorGroupInput>
+    create: XOR<VisitorGroupVehicleCreateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedCreateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorGroupVehicleUpdateWithWhereUniqueWithoutVisitorGroupInput = {
+    where: VisitorGroupVehicleWhereUniqueInput
+    data: XOR<VisitorGroupVehicleUpdateWithoutVisitorGroupInput, VisitorGroupVehicleUncheckedUpdateWithoutVisitorGroupInput>
+  }
+
+  export type VisitorGroupVehicleUpdateManyWithWhereWithoutVisitorGroupInput = {
+    where: VisitorGroupVehicleScalarWhereInput
+    data: XOR<VisitorGroupVehicleUpdateManyMutationInput, VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupInput>
+  }
+
+  export type VisitorGroupVehicleScalarWhereInput = {
+    AND?: VisitorGroupVehicleScalarWhereInput | VisitorGroupVehicleScalarWhereInput[]
+    OR?: VisitorGroupVehicleScalarWhereInput[]
+    NOT?: VisitorGroupVehicleScalarWhereInput | VisitorGroupVehicleScalarWhereInput[]
+    id?: UuidFilter<"VisitorGroupVehicle"> | string
+    visitorGroupId?: UuidFilter<"VisitorGroupVehicle"> | string
+    licensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    normalizedLicensePlate?: StringFilter<"VisitorGroupVehicle"> | string
+    createdAt?: DateTimeFilter<"VisitorGroupVehicle"> | Date | string
+  }
+
+  export type VisitorGroupCreateWithoutVehiclesInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    event?: EventCreateNestedOneWithoutVisitorGroupsInput
+    hostMember?: MemberCreateNestedOneWithoutVisitorGroupsHostedInput
+    members?: VisitorCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupUncheckedCreateWithoutVehiclesInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
+    members?: VisitorUncheckedCreateNestedManyWithoutVisitorGroupInput
+  }
+
+  export type VisitorGroupCreateOrConnectWithoutVehiclesInput = {
+    where: VisitorGroupWhereUniqueInput
+    create: XOR<VisitorGroupCreateWithoutVehiclesInput, VisitorGroupUncheckedCreateWithoutVehiclesInput>
+  }
+
+  export type VisitorGroupUpsertWithoutVehiclesInput = {
+    update: XOR<VisitorGroupUpdateWithoutVehiclesInput, VisitorGroupUncheckedUpdateWithoutVehiclesInput>
+    create: XOR<VisitorGroupCreateWithoutVehiclesInput, VisitorGroupUncheckedCreateWithoutVehiclesInput>
+    where?: VisitorGroupWhereInput
+  }
+
+  export type VisitorGroupUpdateToOneWithWhereWithoutVehiclesInput = {
+    where?: VisitorGroupWhereInput
+    data: XOR<VisitorGroupUpdateWithoutVehiclesInput, VisitorGroupUncheckedUpdateWithoutVehiclesInput>
+  }
+
+  export type VisitorGroupUpdateWithoutVehiclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneWithoutVisitorGroupsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorGroupsHostedNestedInput
+    members?: VisitorUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateWithoutVehiclesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: VisitorUncheckedUpdateManyWithoutVisitorGroupNestedInput
   }
 
   export type BmqEnrollmentCreateWithoutBmqCourseInput = {
@@ -91893,6 +95956,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -91950,6 +96014,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -92056,6 +96121,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -92113,6 +96179,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -92299,6 +96366,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -92356,6 +96424,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -92414,6 +96483,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     memberTypeRef?: MemberTypeCreateNestedOneWithoutMembersInput
@@ -92471,6 +96541,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     qualifications?: MemberQualificationUncheckedCreateNestedManyWithoutMemberInput
@@ -92603,6 +96674,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -92660,6 +96732,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -92724,6 +96797,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     memberTypeRef?: MemberTypeUpdateOneWithoutMembersNestedInput
@@ -92781,6 +96855,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     qualifications?: MemberQualificationUncheckedUpdateManyWithoutMemberNestedInput
@@ -92903,6 +96978,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -92959,6 +97035,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -93039,6 +97116,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -93095,6 +97173,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -93166,6 +97245,7 @@ export namespace Prisma {
     event?: EventCreateNestedOneWithoutVisitorsInput
     hostMember?: MemberCreateNestedOneWithoutVisitorsHostedInput
     badge?: BadgeCreateNestedOneWithoutVisitorsInput
+    visitorGroup?: VisitorGroupCreateNestedOneWithoutMembersInput
   }
 
   export type VisitorUncheckedCreateWithoutVisitTypeRefInput = {
@@ -93194,6 +97274,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateOrConnectWithoutVisitTypeRefInput = {
@@ -93329,6 +97410,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -93386,6 +97468,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -93997,6 +98080,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -94054,6 +98138,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -94280,6 +98365,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -94337,6 +98423,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -94908,6 +98995,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -94965,6 +99053,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -95067,6 +99156,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -95124,6 +99214,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -95718,6 +99809,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -95775,6 +99867,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -95922,6 +100015,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -95979,6 +100073,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -96098,6 +100193,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -96155,6 +100251,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -96213,6 +100310,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -96270,6 +100368,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -96417,6 +100516,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -96474,6 +100574,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -96538,6 +100639,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -96595,6 +100697,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -96648,6 +100751,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -96705,6 +100809,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -96763,6 +100868,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -96820,6 +100926,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -96946,6 +101053,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -97003,6 +101111,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -97067,6 +101176,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -97124,6 +101234,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -97259,6 +101370,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -97316,6 +101428,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -97374,6 +101487,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -97431,6 +101545,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -97539,6 +101654,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -97596,6 +101712,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -97660,6 +101777,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -97717,6 +101835,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -97803,6 +101922,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -97860,6 +101980,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -97968,6 +102089,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -98025,6 +102147,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -98078,6 +102201,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -98135,6 +102259,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -98267,6 +102392,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -98324,6 +102450,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -98942,6 +103069,7 @@ export namespace Prisma {
     division?: DivisionCreateNestedOneWithoutMembersInput
     visitorsHosted?: VisitorCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentCreateNestedManyWithoutTransferredToMemberInput
@@ -98999,6 +103127,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedCreateNestedManyWithoutMemberInput
     visitorsHosted?: VisitorUncheckedCreateNestedManyWithoutHostMemberInput
     visitorsCreated?: VisitorUncheckedCreateNestedManyWithoutCreatedByMemberInput
+    visitorGroupsHosted?: VisitorGroupUncheckedCreateNestedManyWithoutHostMemberInput
     memberTags?: MemberTagUncheckedCreateNestedManyWithoutMemberInput
     ddsAssignments?: DdsAssignmentUncheckedCreateNestedManyWithoutMemberInput
     ddsTransfers?: DdsAssignmentUncheckedCreateNestedManyWithoutTransferredToMemberInput
@@ -99156,6 +103285,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -99213,6 +103343,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -99981,6 +104112,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type CheckinUpdateWithoutBadgeInput = {
@@ -100133,6 +104265,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -100190,6 +104323,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -100269,6 +104403,7 @@ export namespace Prisma {
     event?: EventUpdateOneWithoutVisitorsNestedInput
     hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateWithoutBadgeInput = {
@@ -100297,6 +104432,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUncheckedUpdateManyWithoutBadgeInput = {
@@ -100325,6 +104461,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MemberCreateManyDivisionInput = {
@@ -100395,6 +104532,7 @@ export namespace Prisma {
     checkins?: CheckinUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -100452,6 +104590,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -100582,6 +104721,18 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
+  }
+
+  export type VisitorGroupCreateManyEventInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    hostMemberId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
   }
 
   export type EventAttendeeUpdateWithoutEventInput = {
@@ -100657,6 +104808,7 @@ export namespace Prisma {
     hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateWithoutEventInput = {
@@ -100685,6 +104837,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUncheckedUpdateManyWithoutEventInput = {
@@ -100713,6 +104866,44 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorGroupUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hostMember?: MemberUpdateOneWithoutVisitorGroupsHostedNestedInput
+    members?: VisitorUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: VisitorUncheckedUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type BmqEnrollmentCreateManyMemberInput = {
@@ -100763,6 +104954,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorCreateManyCreatedByMemberInput = {
@@ -100791,6 +104983,18 @@ export namespace Prisma {
     createdAt?: Date | string | null
     adminNotes?: string | null
     checkInMethod?: string | null
+    visitorGroupId?: string | null
+  }
+
+  export type VisitorGroupCreateManyHostMemberInput = {
+    id?: string
+    kioskId: string
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    eventId?: string | null
+    checkInMethod?: string | null
+    createdAt?: Date | string
   }
 
   export type MemberTagCreateManyMemberInput = {
@@ -101089,6 +105293,7 @@ export namespace Prisma {
     event?: EventUpdateOneWithoutVisitorsNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateWithoutHostMemberInput = {
@@ -101117,6 +105322,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUncheckedUpdateManyWithoutHostMemberInput = {
@@ -101145,6 +105351,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUpdateWithoutCreatedByMemberInput = {
@@ -101173,6 +105380,7 @@ export namespace Prisma {
     hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
     visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateWithoutCreatedByMemberInput = {
@@ -101201,6 +105409,7 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUncheckedUpdateManyWithoutCreatedByMemberInput = {
@@ -101229,6 +105438,44 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorGroupUpdateWithoutHostMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneWithoutVisitorGroupsNestedInput
+    members?: VisitorUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateWithoutHostMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: VisitorUncheckedUpdateManyWithoutVisitorGroupNestedInput
+    vehicles?: VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupNestedInput
+  }
+
+  export type VisitorGroupUncheckedUpdateManyWithoutHostMemberInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kioskId?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MemberTagUpdateWithoutMemberInput = {
@@ -101985,6 +106232,150 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VisitorCreateManyVisitorGroupInput = {
+    id?: string
+    name: string
+    rankPrefix?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    displayName?: string | null
+    organization?: string | null
+    unit?: string | null
+    mobilePhone?: string | null
+    licensePlate?: string | null
+    visitType: string
+    visitTypeId?: string | null
+    visitReason?: string | null
+    visitPurpose?: string | null
+    purposeDetails?: string | null
+    recruitmentStep?: string | null
+    eventId?: string | null
+    hostMemberId?: string | null
+    checkInTime?: Date | string
+    checkOutTime?: Date | string | null
+    temporaryBadgeId?: string | null
+    kioskId: string
+    createdAt?: Date | string | null
+    adminNotes?: string | null
+    checkInMethod?: string | null
+    createdByAdmin?: string | null
+  }
+
+  export type VisitorGroupVehicleCreateManyVisitorGroupInput = {
+    id?: string
+    licensePlate: string
+    normalizedLicensePlate: string
+    createdAt?: Date | string
+  }
+
+  export type VisitorUpdateWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    licensePlate?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdByMember?: MemberUpdateOneWithoutVisitorsCreatedNestedInput
+    event?: EventUpdateOneWithoutVisitorsNestedInput
+    hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
+    badge?: BadgeUpdateOneWithoutVisitorsNestedInput
+    visitTypeRef?: VisitTypeUpdateOneWithoutVisitorsNestedInput
+  }
+
+  export type VisitorUncheckedUpdateWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    licensePlate?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorUncheckedUpdateManyWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    rankPrefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    organization?: NullableStringFieldUpdateOperationsInput | string | null
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    mobilePhone?: NullableStringFieldUpdateOperationsInput | string | null
+    licensePlate?: NullableStringFieldUpdateOperationsInput | string | null
+    visitType?: StringFieldUpdateOperationsInput | string
+    visitTypeId?: NullableStringFieldUpdateOperationsInput | string | null
+    visitReason?: NullableStringFieldUpdateOperationsInput | string | null
+    visitPurpose?: NullableStringFieldUpdateOperationsInput | string | null
+    purposeDetails?: NullableStringFieldUpdateOperationsInput | string | null
+    recruitmentStep?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    hostMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkOutTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    temporaryBadgeId?: NullableStringFieldUpdateOperationsInput | string | null
+    kioskId?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
+    createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type VisitorGroupVehicleUpdateWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupVehicleUncheckedUpdateWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitorGroupVehicleUncheckedUpdateManyWithoutVisitorGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    licensePlate?: StringFieldUpdateOperationsInput | string
+    normalizedLicensePlate?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type BmqEnrollmentCreateManyBmqCourseInput = {
     id?: string
     memberId: string
@@ -102086,6 +106477,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -102142,6 +106534,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -102264,6 +106657,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -102320,6 +106714,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput
@@ -102399,6 +106794,7 @@ export namespace Prisma {
     adminNotes?: string | null
     checkInMethod?: string | null
     createdByAdmin?: string | null
+    visitorGroupId?: string | null
   }
 
   export type VisitorUpdateWithoutVisitTypeRefInput = {
@@ -102427,6 +106823,7 @@ export namespace Prisma {
     event?: EventUpdateOneWithoutVisitorsNestedInput
     hostMember?: MemberUpdateOneWithoutVisitorsHostedNestedInput
     badge?: BadgeUpdateOneWithoutVisitorsNestedInput
+    visitorGroup?: VisitorGroupUpdateOneWithoutMembersNestedInput
   }
 
   export type VisitorUncheckedUpdateWithoutVisitTypeRefInput = {
@@ -102455,6 +106852,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type VisitorUncheckedUpdateManyWithoutVisitTypeRefInput = {
@@ -102483,6 +106881,7 @@ export namespace Prisma {
     adminNotes?: NullableStringFieldUpdateOperationsInput | string | null
     checkInMethod?: NullableStringFieldUpdateOperationsInput | string | null
     createdByAdmin?: NullableStringFieldUpdateOperationsInput | string | null
+    visitorGroupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type BadgeCreateManyBadgeStatusRefInput = {
@@ -102619,6 +107018,7 @@ export namespace Prisma {
     division?: DivisionUpdateOneWithoutMembersNestedInput
     visitorsHosted?: VisitorUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUpdateManyWithoutTransferredToMemberNestedInput
@@ -102676,6 +107076,7 @@ export namespace Prisma {
     checkins?: CheckinUncheckedUpdateManyWithoutMemberNestedInput
     visitorsHosted?: VisitorUncheckedUpdateManyWithoutHostMemberNestedInput
     visitorsCreated?: VisitorUncheckedUpdateManyWithoutCreatedByMemberNestedInput
+    visitorGroupsHosted?: VisitorGroupUncheckedUpdateManyWithoutHostMemberNestedInput
     memberTags?: MemberTagUncheckedUpdateManyWithoutMemberNestedInput
     ddsAssignments?: DdsAssignmentUncheckedUpdateManyWithoutMemberNestedInput
     ddsTransfers?: DdsAssignmentUncheckedUpdateManyWithoutTransferredToMemberNestedInput

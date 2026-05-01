@@ -46,6 +46,7 @@ export interface Visitor {
   adminNotes?: string
   checkInMethod?: VisitorCheckInMethod
   createdByAdmin?: string
+  visitorGroupId?: string
 }
 
 export interface CreateVisitorInput {
@@ -72,6 +73,7 @@ export interface CreateVisitorInput {
   adminNotes?: string
   checkInMethod?: VisitorCheckInMethod
   createdByAdmin?: string
+  visitorGroupId?: string
 }
 
 export interface UpdateVisitorInput {
@@ -98,4 +100,46 @@ export interface UpdateVisitorInput {
   adminNotes?: string
   checkInMethod?: VisitorCheckInMethod
   createdByAdmin?: string
+  visitorGroupId?: string
+}
+
+export interface CreateVisitorGroupMemberInput {
+  name?: string
+  rankPrefix?: string
+  firstName?: string
+  lastName?: string
+  organization?: string
+  unit?: string
+  mobilePhone?: string
+  visitType: VisitorVisitType
+  visitTypeId?: string
+  recruitmentStep?: VisitorRecruitmentStep
+}
+
+export interface CreateVisitorGroupInput {
+  kioskId: string
+  visitReason?: string
+  visitPurpose?: VisitorVisitPurpose
+  purposeDetails?: string
+  eventId?: string
+  hostMemberId?: string
+  checkInMethod?: VisitorCheckInMethod
+  adminNotes?: string
+  createdByAdmin?: string
+  members: CreateVisitorGroupMemberInput[]
+  vehicles?: Array<{ licensePlate: string }>
+}
+
+export interface VisitorGroupVehicle {
+  id: string
+  visitorGroupId: string
+  licensePlate: string
+  normalizedLicensePlate: string
+  createdAt: Date
+}
+
+export interface CreateVisitorGroupResult {
+  groupId: string
+  members: Visitor[]
+  vehicles: VisitorGroupVehicle[]
 }

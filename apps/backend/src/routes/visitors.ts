@@ -3,6 +3,7 @@ import { visitorContract } from '@sentinel/contracts'
 import type {
   VisitorListQuery,
   CreateVisitorInput,
+  CreateVisitorGroupInput,
   UpdateVisitorInput,
   IdParam,
   VisitType,
@@ -47,6 +48,7 @@ function toVisitorResponse(v: Visitor) {
     adminNotes: v.adminNotes ?? null,
     checkInMethod: (v.checkInMethod || 'kiosk') as VisitorCheckInMethod,
     createdByAdmin: v.createdByAdmin ?? null,
+    visitorGroupId: v.visitorGroupId ?? null,
     createdAt: v.createdAt.toISOString(),
   }
 }
@@ -192,6 +194,92 @@ export const visitorsRouter = s.router(visitorContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to create visitor',
+        },
+      }
+    }
+  },
+
+  createVisitorGroup: async ({ body }: { body: CreateVisitorGroupInput }) => {
+    try {
+      if (!body.members || body.members.length === 0) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: 'Visitor group must include at least one member',
+          },
+        }
+      }
+
+      const group = await visitorRepo.createGroup({
+        kioskId: body.kioskId,
+        visitReason: resolveVisitReason({
+          visitReason: body.visitReason,
+          visitType: undefined,
+          organization: undefined,
+          unit: undefined,
+          recruitmentStep: undefined,
+          visitPurpose: body.visitPurpose,
+          purposeDetails: body.purposeDetails,
+        }),
+        visitPurpose: body.visitPurpose,
+        purposeDetails: body.purposeDetails,
+        eventId: body.eventId,
+        hostMemberId: body.hostMemberId,
+        checkInMethod: body.checkInMethod,
+        adminNotes: body.adminNotes,
+        createdByAdmin: body.createdByAdmin,
+        members: body.members.map((member) => ({
+          ...member,
+        })),
+        vehicles: body.vehicles,
+      })
+
+      for (const visitor of group.members) {
+        broadcastVisitorSignin({
+          id: visitor.id,
+          name: visitor.displayName ?? visitor.name,
+          organization: visitor.organization ?? 'N/A',
+          visitType: visitor.visitType,
+          checkInTime: visitor.checkInTime.toISOString(),
+          hostName: undefined,
+        })
+      }
+
+      return {
+        status: 201 as const,
+        body: {
+          groupId: group.groupId,
+          memberIds: group.members.map((member) => member.id),
+          vehicleIds: group.vehicles.map((vehicle) => vehicle.id),
+          memberCount: group.members.length,
+          vehicleCount: group.vehicles.length,
+          members: group.members.map(toVisitorResponse),
+          vehicles: group.vehicles.map((vehicle) => ({
+            id: vehicle.id,
+            visitorGroupId: vehicle.visitorGroupId,
+            licensePlate: vehicle.licensePlate,
+            normalizedLicensePlate: vehicle.normalizedLicensePlate,
+            createdAt: vehicle.createdAt.toISOString(),
+          })),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('duplicate')) {
+        return {
+          status: 409 as const,
+          body: {
+            error: 'CONFLICT',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create visitor group',
         },
       }
     }

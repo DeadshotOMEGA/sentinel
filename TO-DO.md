@@ -110,7 +110,7 @@
 
 ### TODO-VISITOR-001: Visitor group sign-in
 
-- Status: `todo`
+- Status: `implemented`
 - User verified: [ ]
 - Branch: `feature/visitor-group-signin`
 - Depends on: none
