@@ -11,6 +11,11 @@ import {
   hostNetworkStatusAgeSeconds,
   networkStatusDegradationsTotal,
 } from '../lib/metrics.js'
+import {
+  kioskDevicePresenceStore,
+  type KioskDevicePresenceStore,
+  type KioskPresenceSession,
+} from '../lib/kiosk-device-presence.js'
 import { logger } from '../lib/logger.js'
 import { isDevelopmentBuild, isRunningInsideContainer } from '../lib/runtime-context.js'
 import { resolveServiceVersionDisplay } from '../lib/service-version.js'
@@ -225,12 +230,14 @@ export class SystemStatusService {
   private sessionRepository: SessionRepository
   private networkSettingsService: NetworkSettingsService
   private hostNetworkStatusService: HostNetworkStatusService
+  private kioskPresenceStore: KioskDevicePresenceStore
 
   constructor(
     prismaClient: PrismaClientInstance = defaultPrisma,
     options?: {
       hostNetworkStatusService?: HostNetworkStatusService
       networkSettingsService?: NetworkSettingsService
+      kioskPresenceStore?: KioskDevicePresenceStore
     }
   ) {
     this.prisma = prismaClient
@@ -239,6 +246,7 @@ export class SystemStatusService {
       options?.networkSettingsService ?? new NetworkSettingsService(prismaClient)
     this.hostNetworkStatusService =
       options?.hostNetworkStatusService ?? new HostNetworkStatusService()
+    this.kioskPresenceStore = options?.kioskPresenceStore ?? kioskDevicePresenceStore
   }
 
   async getSystemStatus(): Promise<SystemStatusResponse> {
@@ -246,7 +254,7 @@ export class SystemStatusService {
     const developmentBuild = isDevelopmentBuild()
     const runningInsideContainer = isRunningInsideContainer()
 
-    const [networkSettingsState, telemetryResult, remoteSessions, activeSessionCount] =
+    const [networkSettingsState, telemetryResult, memberRemoteSessions, activeSessionCount] =
       await Promise.all([
         this.networkSettingsService.getNetworkSettings(),
         this.hostNetworkStatusService.readTelemetry(),
@@ -304,9 +312,19 @@ export class SystemStatusService {
       networkStatusDegradationsTotal.inc({ status: networkStatus })
     }
 
+    const kioskPresence = this.kioskPresenceStore.listActive({
+      limit: REMOTE_SESSION_LIMIT,
+      activeWithinSeconds: ACTIVE_REMOTE_SESSION_THRESHOLD_SECONDS,
+    })
+    const mergedRemoteSessions = mergeRemoteSessions({
+      memberRemoteSessions,
+      kioskPresence: kioskPresence.sessions,
+      limit: REMOTE_SESSION_LIMIT,
+    })
+
     hostNetworkStatusAgeSeconds.set(telemetryAgeSeconds ?? -1)
     activeSessions.set(activeSessionCount)
-    activeRemoteSessions.set(remoteSessions.activeCount)
+    activeRemoteSessions.set(mergedRemoteSessions.activeCount)
 
     return {
       overall: resolveOverallStatus({
@@ -360,11 +378,11 @@ export class SystemStatusService {
         generatedAt: telemetry?.generatedAt.toISOString() ?? null,
       },
       remoteSystems: {
-        status: remoteSessions.activeCount > 0 ? 'healthy' : 'unknown',
-        activeCount: remoteSessions.activeCount,
+        status: mergedRemoteSessions.activeCount > 0 ? 'healthy' : 'unknown',
+        activeCount: mergedRemoteSessions.activeCount,
         staleThresholdSeconds: ACTIVE_REMOTE_SESSION_THRESHOLD_SECONDS,
-        overflowCount: remoteSessions.overflowCount,
-        sessions: remoteSessions.sessions.map((session) => ({
+        overflowCount: mergedRemoteSessions.overflowCount,
+        sessions: mergedRemoteSessions.sessions.map((session) => ({
           sessionId: session.sessionId,
           memberId: session.memberId,
           memberName: session.memberName,
@@ -381,5 +399,29 @@ export class SystemStatusService {
       },
       lastCheckedAt: lastCheckedAt.toISOString(),
     }
+  }
+}
+
+function mergeRemoteSessions(input: {
+  memberRemoteSessions: Awaited<ReturnType<SessionRepository['findActiveRemoteSessions']>>
+  kioskPresence: KioskPresenceSession[]
+  limit: number
+}): {
+  activeCount: number
+  overflowCount: number
+  sessions: Array<
+    | Awaited<ReturnType<SessionRepository['findActiveRemoteSessions']>>['sessions'][number]
+    | KioskPresenceSession
+  >
+} {
+  const combined = [...input.memberRemoteSessions.sessions, ...input.kioskPresence].sort(
+    (left, right) => right.lastSeenAt.getTime() - left.lastSeenAt.getTime()
+  )
+  const activeCount = input.memberRemoteSessions.activeCount + input.kioskPresence.length
+
+  return {
+    activeCount,
+    overflowCount: Math.max(activeCount - input.limit, 0),
+    sessions: combined.slice(0, input.limit),
   }
 }
