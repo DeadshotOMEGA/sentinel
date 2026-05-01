@@ -329,7 +329,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 className="border-t border-base-300 pt-2"
                 data-testid={TID.nav.backendStatusRemoteSystems}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide">Remote Systems</p>
+                <p className="text-xs font-semibold uppercase tracking-wide">Connected Systems</p>
                 {isDevelopmentEnvironment && (
                   <p className="mt-1 text-[11px] text-base-content/60">
                     Development mode: remote-system names are not enforced.
@@ -365,8 +365,8 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 ) : (
                   <p className="mt-2 text-xs text-base-content/60">
                     {isStatusLoading
-                      ? 'Checking active remote systems...'
-                      : 'No remote systems currently active.'}
+                      ? 'Checking active connected systems...'
+                      : 'No connected systems currently active.'}
                   </p>
                 )}
               </div>
