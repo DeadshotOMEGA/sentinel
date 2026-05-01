@@ -115,6 +115,7 @@ Port defaults in `.env`:
 - `HOTSPOT_SSID=Stone Frigate` (canonical hosted SSID Sentinel will create/repair)
 - `HOTSPOT_PSK=...` (fixed hotspot password supplied by the release package or operator-managed `.env`)
 - `HOTSPOT_APPROVED_DONGLES_FILE=hardware/approved-hotspot-dongles.json` (approved external AP dongle allowlist)
+- `SENTINEL_KIOSK_DEVICE_API_KEY=sk_...` (shared kiosk device auth key used by frontend and backend for kiosk no-user-login mode)
 - `NETWORK_REACHABILITY_CHECK_URL=https://connectivitycheck.gstatic.com/generate_204` (host-level internet probe)
 - `NETWORK_REMOTE_REACHABILITY_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
 - `NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS=30` (how often the Ubuntu host writes Wi-Fi/internet telemetry for Sentinel)
