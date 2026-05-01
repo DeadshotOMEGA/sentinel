@@ -1,5 +1,6 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { KioskDevicePresenceStore } from '../lib/kiosk-device-presence.js'
 import type { SessionRepository } from '../repositories/session-repository.js'
 import type { HostNetworkStatusService } from './host-network-status-service.js'
 import type { NetworkSettingsService } from './network-settings-service.js'
@@ -37,6 +38,7 @@ function createService(options?: {
   approvedSsids?: string[]
   telemetryResult?: Awaited<ReturnType<HostNetworkStatusService['readTelemetry']>>
   databaseHealthy?: boolean
+  kioskPresence?: ReturnType<KioskDevicePresenceStore['listActive']>
 }) {
   const prisma = {
     $queryRaw:
@@ -67,10 +69,20 @@ function createService(options?: {
   } as unknown as HostNetworkStatusService
 
   const sessionRepository = createSessionRepositoryMock()
+  const kioskPresenceStore = {
+    listActive: vi.fn().mockReturnValue(
+      options?.kioskPresence ?? {
+        activeCount: 0,
+        overflowCount: 0,
+        sessions: [],
+      }
+    ),
+  } as unknown as KioskDevicePresenceStore
 
   const service = new SystemStatusService(prisma, {
     hostNetworkStatusService,
     networkSettingsService,
+    kioskPresenceStore,
   })
 
   ;(service as unknown as { sessionRepository: SessionRepository }).sessionRepository =
@@ -130,6 +142,36 @@ describe('SystemStatusService', () => {
     expect(result.network.message).toContain('unapproved Wi-Fi SSID')
     expect(result.remoteSystems.sessions[0]?.ipAddress).toBe('192.168.0.20')
     expect(result.overall.status).toBe('warning')
+  })
+
+  it('includes active kiosk API key presence in remote systems summary', async () => {
+    const { service } = createService({
+      kioskPresence: {
+        activeCount: 1,
+        overflowCount: 0,
+        sessions: [
+          {
+            sessionId: 'kiosk-device:kiosk-device',
+            memberId: 'kiosk-device',
+            memberName: 'Front entrance kiosk',
+            memberRank: 'DEVICE',
+            remoteSystemId: null,
+            remoteSystemCode: 'kiosk',
+            remoteSystemName: 'Front entrance kiosk',
+            lastSeenAt: new Date('2026-04-01T11:59:40.000Z'),
+            ipAddress: '192.168.0.55',
+          },
+        ],
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.remoteSystems.activeCount).toBe(2)
+    expect(result.remoteSystems.status).toBe('healthy')
+    expect(
+      result.remoteSystems.sessions.some((session) => session.remoteSystemCode === 'kiosk')
+    ).toBe(true)
   })
 
   it('keeps network status healthy when internet reachability is unavailable but Wi-Fi is approved', async () => {

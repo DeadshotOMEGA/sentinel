@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { authLogger } from '../lib/logger.js'
 import { requestContext } from '../lib/logger.js'
 import { recordAuthAttempt } from '../lib/metrics.js'
+import { kioskDevicePresenceStore } from '../lib/kiosk-device-presence.js'
 import {
   authenticateKioskDeviceApiKey,
   extractKioskDeviceApiKeyFromCookies,
@@ -84,6 +85,22 @@ function extractApiKey(req: Request): string | null {
   return extractKioskDeviceApiKeyFromCookies(req.cookies)
 }
 
+function resolveRequestIpAddress(req: Request): string | null {
+  const forwardedFor = req.headers['x-forwarded-for']
+  if (typeof forwardedFor === 'string' && forwardedFor.trim().length > 0) {
+    return forwardedFor.split(',')[0]?.trim() ?? null
+  }
+
+  if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+    const first = forwardedFor[0]?.trim()
+    if (first) {
+      return first
+    }
+  }
+
+  return req.ip ?? null
+}
+
 function isPinChangeExemptPath(req: Request): boolean {
   const method = req.method.toUpperCase()
   const path = req.path
@@ -161,6 +178,11 @@ export function requireAuth(required: boolean = true) {
         if (authenticatedApiKey) {
           recordAuthAttempt('success', 'apikey')
           req.apiKey = authenticatedApiKey
+          kioskDevicePresenceStore.touch({
+            apiKeyId: authenticatedApiKey.id,
+            apiKeyName: authenticatedApiKey.name,
+            ipAddress: resolveRequestIpAddress(req),
+          })
 
           const store = requestContext.getStore()
           if (store) {
