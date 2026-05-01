@@ -65,6 +65,18 @@ export interface SuccessfulScan {
   timestamp: string
 }
 
+export interface QueuedScan {
+  id: string
+  payload: CreateCheckinInput
+  queuedAt: string
+}
+
+export interface KioskSyncState {
+  phase: 'synced' | 'queued' | 'syncing' | 'error'
+  queuedCount: number
+  lastError: string | null
+}
+
 export interface VisitorScan {
   type: 'visitor'
   serial: string
@@ -78,6 +90,15 @@ export interface LockupScan {
   memberName: string
   badgeId: string
   message: string
+}
+
+export interface QueuedMemberScan {
+  type: 'queued'
+  serial: string
+  memberId: string
+  memberName: string
+  direction: ScanDirection
+  timestamp: string
 }
 
 export interface VisitorCompletionState extends VisitorSelfSigninCompletion {
@@ -114,7 +135,7 @@ export interface KioskConnectivityBadge {
   detail: string
 }
 
-export type ScanMutationResult = SuccessfulScan | VisitorScan | LockupScan
+export type ScanMutationResult = SuccessfulScan | VisitorScan | LockupScan | QueuedMemberScan
 export type DutyWatchData = ReturnType<typeof useTonightDutyWatch>['data']
 export type ScheduledDdsData = ReturnType<typeof useCurrentDds>['data']
 export type LockupStatusData = ReturnType<typeof useLockupStatus>['data']
@@ -133,6 +154,7 @@ export const MOTION_TIMING = {
 } as const
 
 export const ASSIGNMENT_SUMMARY_CACHE_MS = 5 * 60 * 1000
+export const KIOSK_OFFLINE_QUEUE_STORAGE_KEY = 'sentinel:kiosk:offline-checkins:v1'
 
 export const INITIAL_RESULT: ResultSnapshot = {
   tone: 'neutral',
@@ -441,4 +463,99 @@ export async function createMemberCheckin(
   }
 
   throw new Error(extractErrorMessage(createResponse.body, 'Failed to create check-in record.'))
+}
+
+export function isLikelyConnectivityError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const message = error.message.toLowerCase()
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network request failed') ||
+    message.includes('load failed')
+  )
+}
+
+export function loadQueuedScans(): QueuedScan[] {
+  if (typeof window === 'undefined') return []
+  const raw = window.localStorage.getItem(KIOSK_OFFLINE_QUEUE_STORAGE_KEY)
+  if (!raw) return []
+
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((item): item is QueuedScan =>
+      Boolean(
+        item &&
+        typeof item === 'object' &&
+        'id' in item &&
+        'payload' in item &&
+        'queuedAt' in item &&
+        typeof (item as { id: unknown }).id === 'string' &&
+        typeof (item as { queuedAt: unknown }).queuedAt === 'string'
+      )
+    )
+  } catch {
+    return []
+  }
+}
+
+export function saveQueuedScans(queue: QueuedScan[]): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(KIOSK_OFFLINE_QUEUE_STORAGE_KEY, JSON.stringify(queue))
+}
+
+export function enqueueOfflineCheckin(payload: CreateCheckinInput): number {
+  const queue = loadQueuedScans()
+  const id = `${payload.memberId}:${payload.direction}:${payload.timestamp ?? new Date().toISOString()}`
+  const exists = queue.some((item) => item.id === id)
+  if (!exists) {
+    queue.push({
+      id,
+      payload,
+      queuedAt: new Date().toISOString(),
+    })
+    saveQueuedScans(queue)
+  }
+  return queue.length
+}
+
+export async function replayOfflineCheckins(): Promise<{
+  synced: number
+  failed: number
+  remaining: number
+  lastError: string | null
+}> {
+  const queue = loadQueuedScans()
+  if (queue.length === 0) {
+    return { synced: 0, failed: 0, remaining: 0, lastError: null }
+  }
+
+  const remaining: QueuedScan[] = []
+  let synced = 0
+  let failed = 0
+  let lastError: string | null = null
+
+  for (const item of queue) {
+    try {
+      const result = await createMemberCheckin(item.payload)
+      if (result.kind === 'created') {
+        synced += 1
+      } else {
+        failed += 1
+        lastError = result.message
+        remaining.push(item)
+      }
+    } catch (error) {
+      failed += 1
+      lastError = error instanceof Error ? error.message : 'Queued scan could not be synced.'
+      remaining.push(item)
+      if (isLikelyConnectivityError(error)) {
+        break
+      }
+    }
+  }
+
+  saveQueuedScans(remaining)
+  return { synced, failed, remaining: remaining.length, lastError }
 }

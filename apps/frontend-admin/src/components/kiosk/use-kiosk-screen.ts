@@ -22,6 +22,10 @@ import {
   formatOperationalMemberName,
   formatTimestamp,
   getAssignmentBadges,
+  isLikelyConnectivityError,
+  loadQueuedScans,
+  enqueueOfflineCheckin,
+  replayOfflineCheckins,
   getDutyWatchLead,
   getKioskConnectivityBadge,
   getScheduledDdsLead,
@@ -34,6 +38,7 @@ import {
   type AssignmentBadge,
   type AssignmentSummary,
   type KioskHealthIndicator,
+  type KioskSyncState,
   type PendingLockupCheckout,
   type ReadinessWarning,
   type ResultPill,
@@ -63,6 +68,12 @@ export function useKioskScreen() {
   const [visitorCompletion, setVisitorCompletion] = useState<VisitorCompletionState | null>(null)
   const [assignmentSummary, setAssignmentSummary] = useState<AssignmentSummary | null>(null)
   const [assignmentSummaryMemberId, setAssignmentSummaryMemberId] = useState<string | null>(null)
+  const [syncState, setSyncState] = useState<KioskSyncState>({
+    phase: 'synced',
+    queuedCount: 0,
+    lastError: null,
+  })
+  const replayInFlightRef = useRef(false)
 
   const { data: checkoutOptions, isLoading: loadingCheckoutOptions } = useCheckoutOptions(
     pendingLockup?.memberId ?? ''
@@ -192,6 +203,37 @@ export function useKioskScreen() {
   }, [])
 
   useEffect(() => {
+    const currentQueue = loadQueuedScans()
+    setSyncState((previous) => ({
+      phase: currentQueue.length > 0 ? 'queued' : 'synced',
+      queuedCount: currentQueue.length,
+      lastError: previous.lastError,
+    }))
+
+    const replay = async () => {
+      if (replayInFlightRef.current) return
+      replayInFlightRef.current = true
+      setSyncState((previous) => ({ ...previous, phase: 'syncing', lastError: null }))
+      const result = await replayOfflineCheckins()
+      setSyncState({
+        phase: result.remaining > 0 ? (result.lastError ? 'error' : 'queued') : 'synced',
+        queuedCount: result.remaining,
+        lastError: result.lastError,
+      })
+      replayInFlightRef.current = false
+    }
+
+    void replay()
+
+    const handleOnline = () => {
+      void replay()
+    }
+
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [])
+
+  useEffect(() => {
     if (!responsibilityContext) return
     if (!responsibilityStateQuery.data) return
 
@@ -276,13 +318,43 @@ export function useKioskScreen() {
       const lastDirection = latestResponse.body.checkins[0]?.direction
       const direction: ScanDirection = lastDirection === 'in' ? 'out' : 'in'
 
-      const createResult = await createMemberCheckin({
-        memberId,
-        badgeId: badge.id,
-        direction,
-        kioskId: KIOSK_ID,
-        method: 'badge',
-      })
+      const timestamp = new Date().toISOString()
+      let createResult: Awaited<ReturnType<typeof createMemberCheckin>>
+      try {
+        createResult = await createMemberCheckin({
+          memberId,
+          badgeId: badge.id,
+          direction,
+          kioskId: KIOSK_ID,
+          method: 'badge',
+          timestamp,
+        })
+      } catch (error) {
+        if (isLikelyConnectivityError(error)) {
+          const queueSize = enqueueOfflineCheckin({
+            memberId,
+            badgeId: badge.id,
+            direction,
+            kioskId: KIOSK_ID,
+            method: 'badge',
+            timestamp,
+          })
+          setSyncState({
+            phase: 'queued',
+            queuedCount: queueSize,
+            lastError: null,
+          })
+          return {
+            type: 'queued',
+            serial: scannedSerial,
+            memberId,
+            memberName,
+            direction,
+            timestamp,
+          }
+        }
+        throw error
+      }
 
       if (createResult.kind === 'lockup') {
         return {
@@ -344,6 +416,24 @@ export function useKioskScreen() {
           direction: 'out',
           serial: scanResult.serial,
           timestamp: new Date().toISOString(),
+        })
+        refocusBadgeInput()
+        return
+      }
+
+      if (scanResult.type === 'queued') {
+        setPendingLockup(null)
+        setShowLockupOptions(false)
+        setResult({
+          tone: 'warning',
+          eyebrow: 'Offline mode',
+          title: scanResult.memberName,
+          message: `Queued ${scanResult.direction === 'in' ? 'check-in' : 'check-out'} locally. It will sync automatically on reconnect.`,
+          memberId: scanResult.memberId,
+          memberName: scanResult.memberName,
+          direction: scanResult.direction,
+          serial: scanResult.serial,
+          timestamp: scanResult.timestamp,
         })
         refocusBadgeInput()
         return
@@ -459,7 +549,7 @@ export function useKioskScreen() {
 
   const resultTone = visitorCompletion ? 'success' : visitorFlowActive ? 'neutral' : result.tone
   const stageSurfaceClass = resultToneToSurfaceClass(resultTone)
-  const scanningDisabled = scanMutation.isPending || visitorFlowActive || fatalOperationalOutage
+  const scanningDisabled = scanMutation.isPending || visitorFlowActive
   const visitorScanPromptVisible =
     !visitorFlowActive && !visitorCompletion && result.eyebrow === 'Visitor Badge'
   const resultTitle = visitorCompletion
@@ -734,6 +824,7 @@ export function useKioskScreen() {
       visitorScanPromptVisible,
       visitorFlowActive,
       scanningDisabled,
+      syncState,
       serial,
       onSerialChange: setSerial,
       onSubmitScan: submitCurrentSerial,
