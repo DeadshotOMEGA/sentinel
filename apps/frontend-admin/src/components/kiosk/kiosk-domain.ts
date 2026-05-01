@@ -344,11 +344,22 @@ export function getKioskConnectivityBadge({
     }
   }
 
-  if (isError || !systemStatus || systemStatus.backend.status !== 'healthy') {
+  // Keep showing the last known backend status when background refetches fail.
+  // React Query can report `isError` while still retaining valid cached data.
+  if (!systemStatus || systemStatus.backend.status !== 'healthy') {
     return {
       status: 'error',
       label: 'DISCONNECTED',
       detail: 'Kiosk cannot reach a healthy backend API.',
+    }
+  }
+
+  if (isError) {
+    return {
+      status: 'warning',
+      label: 'CONNECTED (STATUS STALE)',
+      detail:
+        'Backend is reachable from the last successful check, but a live status refresh failed.',
     }
   }
 
