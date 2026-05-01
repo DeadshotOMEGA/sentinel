@@ -181,6 +181,7 @@ model Event {
   updatedAt        DateTime?       @default(now()) @map("updated_at") @db.Timestamp(6)
   eventAttendees   EventAttendee[]
   visitors         Visitor[]
+  visitorGroups    VisitorGroup[]
 
   @@index([startDate, endDate], map: "idx_events_dates")
   @@index([status], map: "idx_events_status")
@@ -224,6 +225,7 @@ model Member {
   division                   Division?                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   visitorsHosted             Visitor[]                 @relation("VisitorHost")
   visitorsCreated            Visitor[]                 @relation("VisitorCreatedBy")
+  visitorGroupsHosted        VisitorGroup[]            @relation("VisitorGroupHost")
   memberTags                 MemberTag[]
   ddsAssignments             DdsAssignment[]           @relation("DdsMember")
   ddsTransfers               DdsAssignment[]           @relation("DdsTransferredTo")
@@ -360,37 +362,39 @@ model SecurityAlert {
 }
 
 model Visitor {
-  id               String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String     @db.VarChar(200)
-  rankPrefix       String?    @map("rank_prefix") @db.VarChar(50)
-  firstName        String?    @map("first_name") @db.VarChar(100)
-  lastName         String?    @map("last_name") @db.VarChar(100)
-  displayName      String?    @map("display_name") @db.VarChar(200)
-  organization     String?    @db.VarChar(200)
-  unit             String?    @db.VarChar(200)
-  mobilePhone      String?    @map("mobile_phone") @db.VarChar(25)
-  licensePlate     String?    @map("license_plate") @db.VarChar(20)
-  visitType        String     @map("visit_type") @db.VarChar(50)
-  visitTypeId      String?    @map("visit_type_id") @db.Uuid
-  visitReason      String?    @map("visit_reason")
-  visitPurpose     String?    @map("visit_purpose") @db.VarChar(50)
-  purposeDetails   String?    @map("purpose_details")
-  recruitmentStep  String?    @map("recruitment_step") @db.VarChar(50)
-  eventId          String?    @map("event_id") @db.Uuid
-  hostMemberId     String?    @map("host_member_id") @db.Uuid
-  checkInTime      DateTime   @default(now()) @map("check_in_time") @db.Timestamp(6)
-  checkOutTime     DateTime?  @map("check_out_time") @db.Timestamp(6)
-  temporaryBadgeId String?    @map("temporary_badge_id") @db.Uuid
-  kioskId          String     @map("kiosk_id") @db.VarChar(50)
-  createdAt        DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  adminNotes       String?    @map("admin_notes")
-  checkInMethod    String?    @default("kiosk") @map("check_in_method") @db.VarChar(20)
-  createdByAdmin   String?    @map("created_by_admin") @db.Uuid
-  createdByMember  Member?    @relation("VisitorCreatedBy", fields: [createdByAdmin], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  event            Event?     @relation(fields: [eventId], references: [id], onUpdate: NoAction)
-  hostMember       Member?    @relation("VisitorHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
-  badge            Badge?     @relation(fields: [temporaryBadgeId], references: [id], onUpdate: NoAction)
-  visitTypeRef     VisitType? @relation(fields: [visitTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String        @db.VarChar(200)
+  rankPrefix       String?       @map("rank_prefix") @db.VarChar(50)
+  firstName        String?       @map("first_name") @db.VarChar(100)
+  lastName         String?       @map("last_name") @db.VarChar(100)
+  displayName      String?       @map("display_name") @db.VarChar(200)
+  organization     String?       @db.VarChar(200)
+  unit             String?       @db.VarChar(200)
+  mobilePhone      String?       @map("mobile_phone") @db.VarChar(25)
+  licensePlate     String?       @map("license_plate") @db.VarChar(20)
+  visitType        String        @map("visit_type") @db.VarChar(50)
+  visitTypeId      String?       @map("visit_type_id") @db.Uuid
+  visitReason      String?       @map("visit_reason")
+  visitPurpose     String?       @map("visit_purpose") @db.VarChar(50)
+  purposeDetails   String?       @map("purpose_details")
+  recruitmentStep  String?       @map("recruitment_step") @db.VarChar(50)
+  eventId          String?       @map("event_id") @db.Uuid
+  hostMemberId     String?       @map("host_member_id") @db.Uuid
+  checkInTime      DateTime      @default(now()) @map("check_in_time") @db.Timestamp(6)
+  checkOutTime     DateTime?     @map("check_out_time") @db.Timestamp(6)
+  temporaryBadgeId String?       @map("temporary_badge_id") @db.Uuid
+  kioskId          String        @map("kiosk_id") @db.VarChar(50)
+  createdAt        DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  adminNotes       String?       @map("admin_notes")
+  checkInMethod    String?       @default("kiosk") @map("check_in_method") @db.VarChar(20)
+  createdByAdmin   String?       @map("created_by_admin") @db.Uuid
+  visitorGroupId   String?       @map("visitor_group_id") @db.Uuid
+  createdByMember  Member?       @relation("VisitorCreatedBy", fields: [createdByAdmin], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  event            Event?        @relation(fields: [eventId], references: [id], onUpdate: NoAction)
+  hostMember       Member?       @relation("VisitorHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
+  badge            Badge?        @relation(fields: [temporaryBadgeId], references: [id], onUpdate: NoAction)
+  visitTypeRef     VisitType?    @relation(fields: [visitTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  visitorGroup     VisitorGroup? @relation(fields: [visitorGroupId], references: [id], onUpdate: NoAction)
 
   @@index([checkInTime(sort: Desc)], map: "idx_visitors_check_in_time")
   @@index([checkOutTime], map: "idx_visitors_check_out_time")
@@ -399,7 +403,44 @@ model Visitor {
   @@index([checkInMethod], map: "idx_visitors_check_in_method")
   @@index([temporaryBadgeId], map: "idx_visitors_temporary_badge")
   @@index([visitTypeId], map: "idx_visitors_visit_type_id")
+  @@index([visitorGroupId], map: "idx_visitors_visitor_group_id")
   @@map("visitors")
+}
+
+model VisitorGroup {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kioskId        String                @map("kiosk_id") @db.VarChar(50)
+  visitReason    String?               @map("visit_reason")
+  visitPurpose   String?               @map("visit_purpose") @db.VarChar(50)
+  purposeDetails String?               @map("purpose_details")
+  eventId        String?               @map("event_id") @db.Uuid
+  hostMemberId   String?               @map("host_member_id") @db.Uuid
+  checkInMethod  String?               @default("kiosk_self_service") @map("check_in_method") @db.VarChar(20)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamp(6)
+  event          Event?                @relation(fields: [eventId], references: [id], onUpdate: NoAction)
+  hostMember     Member?               @relation("VisitorGroupHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
+  members        Visitor[]
+  vehicles       VisitorGroupVehicle[]
+
+  @@index([eventId], map: "idx_visitor_groups_event_id")
+  @@index([hostMemberId], map: "idx_visitor_groups_host_member_id")
+  @@index([checkInMethod], map: "idx_visitor_groups_check_in_method")
+  @@index([createdAt(sort: Desc)], map: "idx_visitor_groups_created_at")
+  @@map("visitor_groups")
+}
+
+model VisitorGroupVehicle {
+  id                     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  visitorGroupId         String       @map("visitor_group_id") @db.Uuid
+  licensePlate           String       @map("license_plate") @db.VarChar(20)
+  normalizedLicensePlate String       @map("normalized_license_plate") @db.VarChar(20)
+  createdAt              DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  visitorGroup           VisitorGroup @relation(fields: [visitorGroupId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([visitorGroupId, normalizedLicensePlate], map: "visitor_group_vehicles_group_plate_unique")
+  @@index([visitorGroupId], map: "idx_visitor_group_vehicles_visitor_group_id")
+  @@index([normalizedLicensePlate], map: "idx_visitor_group_vehicles_normalized_license_plate")
+  @@map("visitor_group_vehicles")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

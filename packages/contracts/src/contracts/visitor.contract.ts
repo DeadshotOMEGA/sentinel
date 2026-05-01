@@ -1,6 +1,8 @@
 import { initContract } from '@ts-rest/core'
 import {
   CreateVisitorSchema,
+  CreateVisitorGroupSchema,
+  CreateVisitorGroupResponseSchema,
   UpdateVisitorSchema,
   VisitorResponseSchema,
   VisitorListQuerySchema,
@@ -66,6 +68,25 @@ export const visitorContract = c.router({
     },
     summary: 'Create new visitor',
     description: 'Sign in a new visitor',
+  },
+
+  /**
+   * Create visitor group (atomic sign in for multiple people + vehicles)
+   */
+  createVisitorGroup: {
+    method: 'POST',
+    path: '/api/visitors/groups',
+    body: CreateVisitorGroupSchema,
+    responses: {
+      201: CreateVisitorGroupResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      409: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Create visitor group',
+    description:
+      'Atomically create a visitor group with one or more members and optional group-level vehicles',
   },
 
   /**

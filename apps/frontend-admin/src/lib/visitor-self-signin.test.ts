@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildReasonFirstVisitSummary, buildReasonFirstVisitorPayload } from './visitor-self-signin'
+import {
+  buildReasonFirstVisitSummary,
+  buildReasonFirstVisitorGroupPayload,
+  buildReasonFirstVisitorPayload,
+} from './visitor-self-signin'
 
 describe('buildReasonFirstVisitorPayload', () => {
   it('maps recruitment reason to recruitment visit with default step', () => {
@@ -94,5 +98,38 @@ describe('buildReasonFirstVisitSummary', () => {
     expect(summary).toContain('Rank: Lt(N)')
     expect(summary).toContain('Unit: HMCS Example')
     expect(summary).toContain('Meeting with: Lt(N) Patel')
+  })
+})
+
+describe('buildReasonFirstVisitorGroupPayload', () => {
+  it('builds an atomic group payload with shared context and two members', () => {
+    const payload = buildReasonFirstVisitorGroupPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'meeting',
+      branch: 'civilian',
+      hostMemberId: '11111111-1111-1111-1111-111111111111',
+      hostDisplayName: 'Lt(N) Patel',
+      members: [
+        { firstName: 'Alex', lastName: 'Taylor' },
+        { firstName: 'Morgan', lastName: 'Lee' },
+      ],
+      vehicles: ['ABC 123', 'ZXY 987'],
+    })
+
+    expect(payload.members).toHaveLength(2)
+    expect(payload.vehicles).toHaveLength(2)
+    expect(payload.members[0]?.visitType).toBe('guest')
+    expect(payload.visitPurpose).toBe('appointment')
+  })
+
+  it('requires at least one member', () => {
+    expect(() =>
+      buildReasonFirstVisitorGroupPayload({
+        kioskId: 'DASHBOARD_KIOSK',
+        reason: 'museum',
+        branch: 'civilian',
+        members: [],
+      })
+    ).toThrow('At least one visitor is required')
   })
 })

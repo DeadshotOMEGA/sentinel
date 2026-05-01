@@ -6,8 +6,9 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import {
-  buildReasonFirstVisitorPayload,
+  buildReasonFirstVisitorGroupPayload,
   getVisitorFinalInstructions,
+  type ReasonFirstGroupMemberInput,
   reasonRequiresBranch,
   reasonRequiresEventSelection,
   reasonRequiresMemberSelection,
@@ -18,7 +19,7 @@ import {
   type SelfServiceVisitType,
   type SelfServiceVisitorBranch,
 } from '@/lib/visitor-self-signin'
-import { useCreateVisitor } from '@/hooks/use-visitors'
+import { useCreateVisitorGroup } from '@/hooks/use-visitors'
 import {
   TouchScreenKeyboard,
   type TouchKeyboardMode,
@@ -128,9 +129,11 @@ export function VisitorSelfSigninFlow({
 }: VisitorSelfSigninFlowProps) {
   const fieldRefs = useRef<Partial<Record<KeyboardFieldName, KeyboardFieldElement | null>>>({})
   const previousStepRef = useRef<FlowStep>(1)
-  const createVisitor = useCreateVisitor()
+  const createVisitorGroup = useCreateVisitorGroup()
   const [step, setStep] = useState<FlowStep>(1)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [groupMembers, setGroupMembers] = useState<ReasonFirstGroupMemberInput[]>([])
+  const [groupVehicles, setGroupVehicles] = useState<string[]>([])
   const [memberSearch, setMemberSearch] = useState('')
   const [eventSearch, setEventSearch] = useState('')
   const [selectedHost, setSelectedHost] = useState<HostOption | null>(null)
@@ -283,6 +286,8 @@ export function VisitorSelfSigninFlow({
       setEventSearch('')
       setValue('hostMemberId', '')
       setValue('eventId', '')
+      setGroupMembers([])
+      setGroupVehicles([])
       return
     }
 
@@ -674,6 +679,15 @@ export function VisitorSelfSigninFlow({
     }
 
     if (step === personalInfoStep) {
+      const hasPendingMemberInput = followsMilitaryPath
+        ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
+        : Boolean(firstName.trim() || lastName.trim())
+
+      if (!hasPendingMemberInput && groupMembers.length > 0) {
+        setStep((contractInfoStep ?? reviewStep) as FlowStep)
+        return
+      }
+
       const fields: Array<keyof VisitorSelfSigninFormValues> = []
 
       if (followsMilitaryPath) {
@@ -697,24 +711,126 @@ export function VisitorSelfSigninFlow({
     }
   }
 
+  const buildCurrentMemberFromValues = (values: {
+    rankPrefix: string
+    initials: string
+    firstName: string
+    lastName: string
+    unit: string
+  }): ReasonFirstGroupMemberInput => {
+    if (followsMilitaryPath) {
+      return {
+        rankPrefix: values.rankPrefix,
+        initials: values.initials,
+        lastName: values.lastName,
+        unit: values.unit,
+      }
+    }
+
+    return {
+      firstName: values.firstName,
+      lastName: values.lastName,
+    }
+  }
+
+  const handleAddCurrentMember = async () => {
+    if (groupMembers.length >= 10) {
+      setSubmitError('Visitor group cannot include more than 10 members')
+      return
+    }
+
+    const fields: Array<keyof VisitorSelfSigninFormValues> = followsMilitaryPath
+      ? ['rankPrefix', 'lastName', 'initials', 'unit']
+      : ['firstName', 'lastName']
+    const isValid = await trigger(fields)
+    if (!isValid) return
+
+    const currentValues = {
+      rankPrefix,
+      initials,
+      firstName,
+      lastName,
+      unit,
+    }
+
+    setGroupMembers((current) => [...current, buildCurrentMemberFromValues(currentValues)])
+    setValue('rankPrefix', '')
+    setValue('initials', '')
+    setValue('firstName', '')
+    setValue('lastName', '')
+    setValue('unit', '')
+    clearErrors(['rankPrefix', 'initials', 'firstName', 'lastName', 'unit'])
+    setSubmitError(null)
+  }
+
+  const handleRemoveMember = (index: number) => {
+    setGroupMembers((current) => current.filter((_, currentIndex) => currentIndex !== index))
+  }
+
+  const handleAddVehicle = () => {
+    const vehicle = licensePlate.trim()
+    if (!vehicle) return
+    const normalizedVehicle = vehicle.toUpperCase()
+    if (groupVehicles.map((entry) => entry.toUpperCase()).includes(normalizedVehicle)) {
+      setSubmitError('Duplicate vehicle license plates are not allowed')
+      return
+    }
+    if (groupVehicles.length >= 6) {
+      setSubmitError('Visitor group cannot include more than 6 vehicles')
+      return
+    }
+
+    setGroupVehicles((current) => [...current, vehicle])
+    setValue('licensePlate', '')
+    clearErrors('licensePlate')
+    setSubmitError(null)
+  }
+
+  const handleRemoveVehicle = (index: number) => {
+    setGroupVehicles((current) => current.filter((_, currentIndex) => currentIndex !== index))
+  }
+
   const onSubmit = handleSubmit(async (values) => {
     if (!values.reason) return
 
     setSubmitError(null)
 
     try {
-      const payload = buildReasonFirstVisitorPayload({
+      const currentMember = buildCurrentMemberFromValues(values)
+      const hasCurrentMemberData = Boolean(
+        currentMember.lastName?.trim() &&
+        ((currentMember.firstName && currentMember.firstName.trim()) ||
+          (currentMember.initials && currentMember.initials.trim()))
+      )
+      const membersForSubmission = hasCurrentMemberData
+        ? [...groupMembers, currentMember]
+        : [...groupMembers]
+
+      if (membersForSubmission.length === 0) {
+        throw new Error('Add at least one visitor to continue')
+      }
+      if (membersForSubmission.length > 10) {
+        throw new Error('Visitor group cannot include more than 10 members')
+      }
+
+      const vehiclesForSubmission = licensePlate.trim()
+        ? [...groupVehicles, licensePlate.trim()]
+        : [...groupVehicles]
+      const normalizedVehicles = vehiclesForSubmission.map((vehicle) =>
+        vehicle.trim().toUpperCase()
+      )
+      if (new Set(normalizedVehicles).size !== normalizedVehicles.length) {
+        throw new Error('Duplicate vehicle license plates are not allowed')
+      }
+
+      const payload = buildReasonFirstVisitorGroupPayload({
         kioskId,
         reason: values.reason,
         branch: values.branch || undefined,
-        rankPrefix: values.rankPrefix,
-        initials: values.initials,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        unit: values.unit,
+        members: membersForSubmission,
+        vehicles: vehiclesForSubmission,
         organization: values.organization,
         workDescription: values.workDescription,
-        licensePlate: values.licensePlate,
         hostMemberId: values.hostMemberId,
         hostDisplayName: selectedHost?.displayName,
         eventId: values.eventId,
@@ -722,10 +838,10 @@ export function VisitorSelfSigninFlow({
         eventDateLabel: selectedEvent?.eventDateLabel,
       })
 
-      await createVisitor.mutateAsync(payload)
+      await createVisitorGroup.mutateAsync(payload)
 
       const completion = getVisitorFinalInstructions({
-        visitType: payload.visitType as SelfServiceVisitType,
+        visitType: (payload.members[0]?.visitType ?? 'guest') as SelfServiceVisitType,
         visitPurpose: payload.visitPurpose,
         hostDisplayName: selectedHost?.displayName,
       })
@@ -739,6 +855,8 @@ export function VisitorSelfSigninFlow({
         setSelectedHost(null)
         setSelectedEvent(null)
         setActiveKeyboardField(null)
+        setGroupMembers([])
+        setGroupVehicles([])
         onComplete?.(completion)
         return
       }
@@ -792,6 +910,10 @@ export function VisitorSelfSigninFlow({
   const reviewHostName = selectedHost?.displayName
   const reviewEventTitle = selectedEvent?.title
   const reviewEventDate = selectedEvent?.eventDateLabel
+  const hasCurrentMemberForReview = followsMilitaryPath
+    ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
+    : Boolean(firstName.trim() || lastName.trim())
+  const reviewMemberCount = groupMembers.length + (hasCurrentMemberForReview ? 1 : 0)
 
   const reviewIdentity = followsMilitaryPath
     ? [reviewRank, reviewLastName, reviewInitials]
@@ -1335,174 +1457,221 @@ export function VisitorSelfSigninFlow({
             )}
 
             {step === personalInfoStep && (
-              <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-                {followsMilitaryPath && (
-                  <>
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.rankPrefix) && 'input-error',
-                          activeKeyboardField?.name === 'rankPrefix' && 'border-primary'
+              <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
+                <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+                  {followsMilitaryPath && (
+                    <>
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.rankPrefix) && 'input-error',
+                            activeKeyboardField?.name === 'rankPrefix' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">Rank</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={rankPrefix}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="Rank"
+                            {...rankPrefixRegistration}
+                            ref={attachFieldRef('rankPrefix', rankPrefixRegistration.ref)}
+                            onFocus={() => activateKeyboardField('rankPrefix')}
+                            onClick={() => activateKeyboardField('rankPrefix')}
+                          />
+                        </label>
+                        {errors.rankPrefix && (
+                          <p className="label text-error">{errors.rankPrefix.message}</p>
                         )}
-                      >
-                        <span className="label">Rank</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={rankPrefix}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="Rank"
-                          {...rankPrefixRegistration}
-                          ref={attachFieldRef('rankPrefix', rankPrefixRegistration.ref)}
-                          onFocus={() => activateKeyboardField('rankPrefix')}
-                          onClick={() => activateKeyboardField('rankPrefix')}
-                        />
-                      </label>
-                      {errors.rankPrefix && (
-                        <p className="label text-error">{errors.rankPrefix.message}</p>
-                      )}
-                    </fieldset>
+                      </fieldset>
 
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.lastName) && 'input-error',
-                          activeKeyboardField?.name === 'lastName' && 'border-primary'
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.lastName) && 'input-error',
+                            activeKeyboardField?.name === 'lastName' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">Last Name</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={lastName}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="Last name"
+                            {...lastNameRegistration}
+                            ref={attachFieldRef('lastName', lastNameRegistration.ref)}
+                            onFocus={() => activateKeyboardField('lastName')}
+                            onClick={() => activateKeyboardField('lastName')}
+                          />
+                        </label>
+                        {errors.lastName && (
+                          <p className="label text-error">{errors.lastName.message}</p>
                         )}
-                      >
-                        <span className="label">Last Name</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={lastName}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="Last name"
-                          {...lastNameRegistration}
-                          ref={attachFieldRef('lastName', lastNameRegistration.ref)}
-                          onFocus={() => activateKeyboardField('lastName')}
-                          onClick={() => activateKeyboardField('lastName')}
-                        />
-                      </label>
-                      {errors.lastName && (
-                        <p className="label text-error">{errors.lastName.message}</p>
-                      )}
-                    </fieldset>
+                      </fieldset>
 
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.initials) && 'input-error',
-                          activeKeyboardField?.name === 'initials' && 'border-primary'
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.initials) && 'input-error',
+                            activeKeyboardField?.name === 'initials' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">Initials</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={initials}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="Initials"
+                            {...initialsRegistration}
+                            ref={attachFieldRef('initials', initialsRegistration.ref)}
+                            onFocus={() => activateKeyboardField('initials')}
+                            onClick={() => activateKeyboardField('initials')}
+                          />
+                        </label>
+                        {errors.initials && (
+                          <p className="label text-error">{errors.initials.message}</p>
                         )}
-                      >
-                        <span className="label">Initials</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={initials}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="Initials"
-                          {...initialsRegistration}
-                          ref={attachFieldRef('initials', initialsRegistration.ref)}
-                          onFocus={() => activateKeyboardField('initials')}
-                          onClick={() => activateKeyboardField('initials')}
-                        />
-                      </label>
-                      {errors.initials && (
-                        <p className="label text-error">{errors.initials.message}</p>
-                      )}
-                    </fieldset>
+                      </fieldset>
 
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.unit) && 'input-error',
-                          activeKeyboardField?.name === 'unit' && 'border-primary'
-                        )}
-                      >
-                        <span className="label">Unit</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={unit}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="Home unit"
-                          {...unitRegistration}
-                          ref={attachFieldRef('unit', unitRegistration.ref)}
-                          onFocus={() => activateKeyboardField('unit')}
-                          onClick={() => activateKeyboardField('unit')}
-                        />
-                      </label>
-                      {errors.unit && <p className="label text-error">{errors.unit.message}</p>}
-                    </fieldset>
-                  </>
-                )}
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.unit) && 'input-error',
+                            activeKeyboardField?.name === 'unit' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">Unit</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={unit}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="Home unit"
+                            {...unitRegistration}
+                            ref={attachFieldRef('unit', unitRegistration.ref)}
+                            onFocus={() => activateKeyboardField('unit')}
+                            onClick={() => activateKeyboardField('unit')}
+                          />
+                        </label>
+                        {errors.unit && <p className="label text-error">{errors.unit.message}</p>}
+                      </fieldset>
+                    </>
+                  )}
 
-                {followsCivilianPath && (
-                  <>
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.firstName) && 'input-error',
-                          activeKeyboardField?.name === 'firstName' && 'border-primary'
+                  {followsCivilianPath && (
+                    <>
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.firstName) && 'input-error',
+                            activeKeyboardField?.name === 'firstName' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">First Name</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={firstName}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="First name"
+                            {...firstNameRegistration}
+                            ref={attachFieldRef('firstName', firstNameRegistration.ref)}
+                            onFocus={() => activateKeyboardField('firstName')}
+                            onClick={() => activateKeyboardField('firstName')}
+                          />
+                        </label>
+                        {errors.firstName && (
+                          <p className="label text-error">{errors.firstName.message}</p>
                         )}
-                      >
-                        <span className="label">First Name</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={firstName}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="First name"
-                          {...firstNameRegistration}
-                          ref={attachFieldRef('firstName', firstNameRegistration.ref)}
-                          onFocus={() => activateKeyboardField('firstName')}
-                          onClick={() => activateKeyboardField('firstName')}
-                        />
-                      </label>
-                      {errors.firstName && (
-                        <p className="label text-error">{errors.firstName.message}</p>
-                      )}
-                    </fieldset>
+                      </fieldset>
 
-                    <fieldset className="fieldset">
-                      <label
-                        className={cn(
-                          'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                          Boolean(errors.lastName) && 'input-error',
-                          activeKeyboardField?.name === 'lastName' && 'border-primary'
+                      <fieldset className="fieldset">
+                        <label
+                          className={cn(
+                            'input input-md w-full border-base-300 bg-base-100 text-base-content',
+                            Boolean(errors.lastName) && 'input-error',
+                            activeKeyboardField?.name === 'lastName' && 'border-primary'
+                          )}
+                        >
+                          <span className="label">Last Name</span>
+                          <input
+                            type="text"
+                            inputMode="none"
+                            autoComplete="off"
+                            value={lastName}
+                            className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+                            placeholder="Last name"
+                            {...lastNameRegistration}
+                            ref={attachFieldRef('lastName', lastNameRegistration.ref)}
+                            onFocus={() => activateKeyboardField('lastName')}
+                            onClick={() => activateKeyboardField('lastName')}
+                          />
+                        </label>
+                        {errors.lastName && (
+                          <p className="label text-error">{errors.lastName.message}</p>
                         )}
-                      >
-                        <span className="label">Last Name</span>
-                        <input
-                          type="text"
-                          inputMode="none"
-                          autoComplete="off"
-                          value={lastName}
-                          className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                          placeholder="Last name"
-                          {...lastNameRegistration}
-                          ref={attachFieldRef('lastName', lastNameRegistration.ref)}
-                          onFocus={() => activateKeyboardField('lastName')}
-                          onClick={() => activateKeyboardField('lastName')}
-                        />
-                      </label>
-                      {errors.lastName && (
-                        <p className="label text-error">{errors.lastName.message}</p>
-                      )}
-                    </fieldset>
-                  </>
-                )}
+                      </fieldset>
+                    </>
+                  )}
+                </div>
+
+                <div
+                  className="rounded-box border border-base-300 bg-base-200 p-3"
+                  style={{ padding: 'var(--space-3)' }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold">Group members added: {groupMembers.length}</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => void handleAddCurrentMember()}
+                    >
+                      Add member
+                    </button>
+                  </div>
+
+                  {groupMembers.length > 0 ? (
+                    <div className="mt-3 flex flex-col gap-2">
+                      {groupMembers.map((member, index) => (
+                        <div
+                          key={`${member.lastName ?? 'member'}-${index}`}
+                          className="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-3 py-2"
+                        >
+                          <span className="text-sm">
+                            {member.rankPrefix ? `${member.rankPrefix} ` : ''}
+                            {member.firstName ?? member.initials ?? 'Visitor'} {member.lastName}
+                            {member.unit ? ` (${member.unit})` : ''}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => handleRemoveMember(index)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-base-content/70">
+                      Add each visitor in the group. The current form fields are for the next
+                      member.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1576,8 +1745,10 @@ export function VisitorSelfSigninFlow({
                   <div className="rounded-box border border-base-300 bg-base-100 p-3">
                     <p className="text-lg leading-relaxed">{reviewNarrative}</p>
                     <p className="mt-3 text-base leading-relaxed">
-                      If you are parked out front or in the back lot please enter your License Plate
-                      below and enjoy your visit to HMCS Chippawa.
+                      Add any vehicles for this visitor group, then complete sign-in.
+                    </p>
+                    <p className="mt-2 text-sm text-base-content/70">
+                      Members in submission: {reviewMemberCount}
                     </p>
                   </div>
 
@@ -1605,6 +1776,38 @@ export function VisitorSelfSigninFlow({
                     </label>
                     {errors.licensePlate && (
                       <p className="label text-error">{errors.licensePlate.message}</p>
+                    )}
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-sm text-base-content/70">
+                        Vehicles added: {groupVehicles.length}
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={handleAddVehicle}
+                      >
+                        Add vehicle
+                      </button>
+                    </div>
+
+                    {groupVehicles.length > 0 && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        {groupVehicles.map((vehicle, index) => (
+                          <div
+                            key={`${vehicle}-${index}`}
+                            className="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-3 py-2"
+                          >
+                            <span className="font-mono text-sm">{vehicle}</span>
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-xs"
+                              onClick={() => handleRemoveVehicle(index)}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </fieldset>
                 </div>
@@ -1658,10 +1861,10 @@ export function VisitorSelfSigninFlow({
                 <button
                   type="button"
                   className="btn btn-primary btn-md min-w-44 lg:btn-lg lg:min-w-56"
-                  disabled={createVisitor.isPending}
+                  disabled={createVisitorGroup.isPending}
                   onClick={() => void onSubmit()}
                 >
-                  {createVisitor.isPending ? 'Finishing...' : 'Finish Sign-In'}
+                  {createVisitorGroup.isPending ? 'Finishing...' : 'Finish Sign-In'}
                 </button>
               )}
             </div>

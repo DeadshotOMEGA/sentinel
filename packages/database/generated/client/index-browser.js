@@ -355,7 +355,28 @@ exports.Prisma.VisitorScalarFieldEnum = {
   createdAt: 'createdAt',
   adminNotes: 'adminNotes',
   checkInMethod: 'checkInMethod',
-  createdByAdmin: 'createdByAdmin'
+  createdByAdmin: 'createdByAdmin',
+  visitorGroupId: 'visitorGroupId'
+};
+
+exports.Prisma.VisitorGroupScalarFieldEnum = {
+  id: 'id',
+  kioskId: 'kioskId',
+  visitReason: 'visitReason',
+  visitPurpose: 'visitPurpose',
+  purposeDetails: 'purposeDetails',
+  eventId: 'eventId',
+  hostMemberId: 'hostMemberId',
+  checkInMethod: 'checkInMethod',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.VisitorGroupVehicleScalarFieldEnum = {
+  id: 'id',
+  visitorGroupId: 'visitorGroupId',
+  licensePlate: 'licensePlate',
+  normalizedLicensePlate: 'normalizedLicensePlate',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.BmqCourseScalarFieldEnum = {
@@ -844,6 +865,8 @@ exports.Prisma.ModelName = {
   MemberTag: 'MemberTag',
   SecurityAlert: 'SecurityAlert',
   Visitor: 'Visitor',
+  VisitorGroup: 'VisitorGroup',
+  VisitorGroupVehicle: 'VisitorGroupVehicle',
   BmqCourse: 'BmqCourse',
   BmqEnrollment: 'BmqEnrollment',
   migrations: 'migrations',

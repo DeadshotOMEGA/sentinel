@@ -1,4 +1,4 @@
-import { CreateVisitorSchema } from '@sentinel/contracts'
+import { CreateVisitorGroupSchema, CreateVisitorSchema } from '@sentinel/contracts'
 import { describe, expect, it } from 'vitest'
 import * as v from 'valibot'
 
@@ -60,5 +60,48 @@ describe('CreateVisitorSchema self-service validation', () => {
     })
 
     expect(parsed.success).toBe(true)
+  })
+})
+
+describe('CreateVisitorGroupSchema validation', () => {
+  it('accepts a valid visitor group with multiple members and vehicles', () => {
+    const parsed = v.safeParse(CreateVisitorGroupSchema, {
+      kioskId: 'DASHBOARD_KIOSK',
+      visitReason: 'Reason: Meeting | Meeting with: Lt(N) Patel',
+      visitPurpose: 'appointment',
+      hostMemberId: '11111111-1111-1111-1111-111111111111',
+      checkInMethod: 'kiosk_self_service',
+      members: [
+        {
+          firstName: 'Alex',
+          lastName: 'Taylor',
+          visitType: 'guest',
+        },
+        {
+          firstName: 'Morgan',
+          lastName: 'Lee',
+          visitType: 'guest',
+        },
+      ],
+      vehicles: [{ licensePlate: 'ABC 123' }, { licensePlate: 'ZXY 987' }],
+    })
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('rejects duplicate vehicle plates within the same group', () => {
+    const parsed = v.safeParse(CreateVisitorGroupSchema, {
+      kioskId: 'DASHBOARD_KIOSK',
+      members: [
+        {
+          firstName: 'Alex',
+          lastName: 'Taylor',
+          visitType: 'guest',
+        },
+      ],
+      vehicles: [{ licensePlate: 'abc 123' }, { licensePlate: 'ABC 123' }],
+    })
+
+    expect(parsed.success).toBe(false)
   })
 })

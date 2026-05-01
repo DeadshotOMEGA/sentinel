@@ -1,4 +1,9 @@
-import type { CreateVisitorInput, RecruitmentStep, VisitPurpose } from '@sentinel/contracts'
+import type {
+  CreateVisitorInput,
+  CreateVisitorGroupInput,
+  RecruitmentStep,
+  VisitPurpose,
+} from '@sentinel/contracts'
 
 export type SelfServiceVisitType = 'guest' | 'military' | 'recruitment' | 'contractor'
 
@@ -235,6 +240,29 @@ export interface BuildReasonFirstVisitorPayloadInput {
   eventDateLabel?: string
 }
 
+export interface ReasonFirstGroupMemberInput {
+  firstName?: string
+  lastName?: string
+  initials?: string
+  rankPrefix?: string
+  unit?: string
+}
+
+export interface BuildReasonFirstVisitorGroupPayloadInput {
+  kioskId: string
+  reason: SelfServiceVisitReason
+  branch?: SelfServiceVisitorBranch
+  members: ReasonFirstGroupMemberInput[]
+  vehicles?: string[]
+  organization?: string
+  workDescription?: string
+  hostMemberId?: string
+  hostDisplayName?: string
+  eventId?: string
+  eventTitle?: string
+  eventDateLabel?: string
+}
+
 export function buildReasonFirstVisitorPayload(
   input: BuildReasonFirstVisitorPayloadInput
 ): CreateVisitorInput {
@@ -347,6 +375,105 @@ export function buildReasonFirstVisitorPayload(
   }
 
   return payload
+}
+
+export function buildReasonFirstVisitorGroupPayload(
+  input: BuildReasonFirstVisitorGroupPayloadInput
+): CreateVisitorGroupInput {
+  if (!Array.isArray(input.members) || input.members.length === 0) {
+    throw new Error('At least one visitor is required')
+  }
+
+  const visitType = resolveVisitType(input.reason, input.branch)
+  const visitPurpose = resolveVisitPurpose(input.reason)
+
+  if (reasonRequiresBranch(input.reason) && !input.branch) {
+    throw new Error('Select Military or Civilian to continue')
+  }
+
+  const isMilitaryIdentity = input.reason !== 'recruitment' && input.branch === 'military'
+  const organization = trimValue(input.organization)
+  const workDescription = trimValue(input.workDescription)
+  const purposeDetailsForEvent =
+    reasonRequiresEventSelection(input.reason) && trimValue(input.eventTitle)
+      ? trimValue(input.eventDateLabel)
+        ? `Event selected: ${trimValue(input.eventTitle)} (${trimValue(input.eventDateLabel)})`
+        : `Event selected: ${trimValue(input.eventTitle)}`
+      : undefined
+
+  const sharedVisitReason = buildReasonFirstVisitSummary({
+    reason: input.reason,
+    branch: input.branch,
+    organization: input.organization,
+    workDescription: input.workDescription,
+    eventTitle: input.eventTitle,
+    eventDateLabel: input.eventDateLabel,
+    hostDisplayName: input.hostDisplayName,
+  })
+
+  const members = input.members.map((member) => {
+    const rankPrefix = trimValue(member.rankPrefix)
+    const unit = trimValue(member.unit)
+    const firstName = isMilitaryIdentity
+      ? requireValue(member.initials, 'Initials are required for military visitors')
+      : requireValue(member.firstName, 'First name is required')
+    const lastName = requireValue(member.lastName, 'Last name is required')
+
+    if (isMilitaryIdentity) {
+      if (!rankPrefix) {
+        throw new Error('Rank is required for military visitors')
+      }
+      if (!unit) {
+        throw new Error('Unit is required for military visitors')
+      }
+    }
+
+    const payloadMember: CreateVisitorGroupInput['members'][number] = {
+      firstName,
+      lastName,
+      name: [rankPrefix, firstName, lastName].filter(Boolean).join(' '),
+      rankPrefix,
+      unit,
+      visitType,
+    }
+
+    if (input.reason === 'recruitment') {
+      payloadMember.recruitmentStep = RECRUITMENT_DEFAULT_STEP
+    }
+
+    if (input.reason === 'contract_work') {
+      payloadMember.organization = requireValue(
+        organization,
+        'Company/Organization name is required for contract work visits'
+      )
+    }
+
+    return payloadMember
+  })
+
+  const vehicles = (input.vehicles ?? [])
+    .map((vehicle) => trimValue(vehicle))
+    .filter((vehicle): vehicle is string => Boolean(vehicle))
+    .map((licensePlate) => ({ licensePlate }))
+
+  return {
+    kioskId: input.kioskId,
+    visitReason: sharedVisitReason,
+    visitPurpose,
+    purposeDetails:
+      input.reason === 'contract_work'
+        ? requireValue(workDescription, 'Work description is required for contract work visits')
+        : purposeDetailsForEvent,
+    eventId: reasonRequiresEventSelection(input.reason)
+      ? requireValue(input.eventId, 'Select an event before continuing')
+      : trimValue(input.eventId),
+    hostMemberId: reasonRequiresMemberSelection(input.reason)
+      ? requireValue(input.hostMemberId, 'Select a member for meeting visits before continuing')
+      : trimValue(input.hostMemberId),
+    checkInMethod: 'kiosk_self_service',
+    members,
+    vehicles,
+  }
 }
 
 export interface VisitorInstructionInput {
