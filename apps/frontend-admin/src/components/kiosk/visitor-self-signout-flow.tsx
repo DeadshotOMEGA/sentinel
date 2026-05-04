@@ -18,6 +18,9 @@ import {
 
 interface VisitorSelfSignoutFlowProps {
   layout?: 'modal' | 'inline'
+  presentation?: 'full' | 'embedded'
+  interactionDisabled?: boolean
+  showCloseAction?: boolean
   onCancel: () => void
   onComplete?: (completion: VisitorSelfSigninCompletion) => void
 }
@@ -50,6 +53,9 @@ function displayName(visitor: VisitorResponse): string {
 
 export function VisitorSelfSignoutFlow({
   layout = 'inline',
+  presentation = 'full',
+  interactionDisabled = false,
+  showCloseAction = true,
   onCancel,
   onComplete,
 }: VisitorSelfSignoutFlowProps) {
@@ -65,8 +71,10 @@ export function VisitorSelfSignoutFlow({
   const activeVisitors = data?.visitors ?? []
   const grouped = useMemo(() => buildVisitorSignoutGrouping(activeVisitors), [activeVisitors])
   const filtered = useMemo(() => filterVisitorSignoutGroups(grouped, search), [grouped, search])
-  const canInteract = !checkoutVisitor.isPending && !checkoutVisitorGroup.isPending
+  const canInteract =
+    !interactionDisabled && !checkoutVisitor.isPending && !checkoutVisitorGroup.isPending
   const isInline = layout === 'inline'
+  const isEmbedded = presentation === 'embedded'
 
   const activeGroupCount = filtered.groups.length
   const activeUngroupedCount = filtered.ungroupedVisitors.length
@@ -140,7 +148,7 @@ export function VisitorSelfSignoutFlow({
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center rounded-box border border-base-300 bg-base-200/50 p-(--space-5)">
+      <div className="flex items-center justify-center rounded-box border border-base-300 bg-base-200/50 p-(--space-5)">
         <span className="loading loading-spinner loading-md" />
         <span className="ml-(--space-3) text-sm">Loading grouped visitor sign-out list…</span>
       </div>
@@ -157,16 +165,26 @@ export function VisitorSelfSignoutFlow({
           <button type="button" className="btn btn-outline" onClick={() => void refetch()}>
             Retry
           </button>
-          <button type="button" className="btn btn-ghost" onClick={onCancel}>
-            Cancel
-          </button>
+          {showCloseAction ? (
+            <button type="button" className="btn btn-ghost" onClick={onCancel}>
+              Cancel
+            </button>
+          ) : null}
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`flex min-h-0 flex-col gap-(--space-4) ${isInline ? 'h-full' : ''}`}>
+    <div
+      className={`flex min-h-0 flex-col gap-(--space-4) ${isInline && !isEmbedded ? 'h-full' : ''}`}
+    >
+      {interactionDisabled ? (
+        <div className="alert alert-warning">
+          <span>Visitor sign-out is temporarily unavailable while services are offline.</span>
+        </div>
+      ) : null}
+
       <div className="rounded-box border border-base-300 bg-base-200/50 p-(--space-4)">
         <div className="flex flex-wrap items-center justify-between gap-(--space-3)">
           <div>
@@ -212,7 +230,11 @@ export function VisitorSelfSignoutFlow({
           </p>
         </div>
       ) : (
-        <div className="min-h-0 flex-1 space-y-(--space-4) overflow-y-auto pr-(--space-1)">
+        <div
+          className={`min-h-0 space-y-(--space-4) overflow-y-auto pr-(--space-1) ${
+            isEmbedded ? 'max-h-[26rem]' : 'flex-1'
+          }`}
+        >
           {activeGroupCount > 0 && (
             <section className="space-y-(--space-2)">
               <p className="text-xs uppercase tracking-[0.18em] text-base-content/55">
@@ -366,12 +388,19 @@ export function VisitorSelfSignoutFlow({
         </div>
       )}
 
-      <div className="mt-auto flex flex-wrap justify-end gap-(--space-2) border-t border-base-300 pt-(--space-3)">
-        {busyKey ? <span className="loading loading-spinner loading-sm mr-auto" /> : null}
-        <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={!canInteract}>
-          Close
-        </button>
-      </div>
+      {showCloseAction ? (
+        <div className="mt-auto flex flex-wrap justify-end gap-(--space-2) border-t border-base-300 pt-(--space-3)">
+          {busyKey ? <span className="loading loading-spinner loading-sm mr-auto" /> : null}
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onCancel}
+            disabled={!canInteract}
+          >
+            Close
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

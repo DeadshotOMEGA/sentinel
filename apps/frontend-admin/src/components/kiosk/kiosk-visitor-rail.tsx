@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, UserRoundMinus, UserRoundPlus } from 'lucide-react'
+import { ChevronRight, UserRoundPlus } from 'lucide-react'
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { Chip } from '@/components/ui/chip'
 import {
@@ -148,7 +148,7 @@ export function KioskVisitorRail({
               </AppCardHeader>
 
               <AppCardContent
-                className="mt-auto grid gap-(--space-3)"
+                className="mt-auto flex min-h-0 flex-1 flex-col gap-(--space-3)"
                 style={{ padding: '0 var(--space-5) var(--space-5)' }}
               >
                 <button
@@ -161,15 +161,17 @@ export function KioskVisitorRail({
                   <span className="text-base font-medium opacity-85">Sign in</span>
                   <ChevronRight className="h-6 w-6" />
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-outline btn-lg gap-(--space-3) px-(--space-5) py-(--space-4) text-lg"
-                  onClick={() => onStart('signout')}
-                  disabled={fatalOperationalOutage}
-                >
-                  <UserRoundMinus className="h-5 w-5" />
-                  Sign out visitors
-                </button>
+
+                <div className="mt-(--space-2) border-t border-base-300 pt-(--space-3)">
+                  <VisitorSelfSignoutFlow
+                    layout="inline"
+                    presentation="embedded"
+                    interactionDisabled={fatalOperationalOutage}
+                    showCloseAction={false}
+                    onCancel={onCancel}
+                    onComplete={onComplete}
+                  />
+                </div>
               </AppCardContent>
             </AppCard>
           </motion.div>
