@@ -143,3 +143,16 @@ export interface CreateVisitorGroupResult {
   members: Visitor[]
   vehicles: VisitorGroupVehicle[]
 }
+
+export interface CheckoutVisitorGroupInput {
+  groupId: string
+  memberIds?: string[]
+}
+
+export interface CheckoutVisitorGroupResult {
+  groupId: string
+  visitors: Visitor[]
+  checkedOutCount: number
+  activeGroupMemberCount: number
+  alreadyCheckedOutCount: number
+}

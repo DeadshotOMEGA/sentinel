@@ -42,6 +42,7 @@ interface KioskMemberScanPanelProps {
   resultPill: ResultPill | null
   visitorScanPromptVisible: boolean
   visitorFlowActive: boolean
+  visitorFlowMode: 'signin' | 'signout'
   scanningDisabled: boolean
   syncState: KioskSyncState
   serial: string
@@ -70,6 +71,7 @@ export function KioskMemberScanPanel({
   resultPill,
   visitorScanPromptVisible,
   visitorFlowActive,
+  visitorFlowMode,
   scanningDisabled,
   syncState,
   serial,
@@ -238,7 +240,7 @@ export function KioskMemberScanPanel({
                         Current mode
                       </p>
                       <p className="mt-(--space-2) text-xl font-semibold leading-tight">
-                        Visitor sign-in in progress
+                        Visitor {visitorFlowMode === 'signin' ? 'sign-in' : 'sign-out'} in progress
                       </p>
                       <p className="mt-(--space-2) text-sm leading-relaxed text-base-content/70">
                         Keep the visitor on the right-hand panel until the flow completes.
@@ -289,7 +291,8 @@ export function KioskMemberScanPanel({
                 Member scanning
               </p>
               <p className="mt-(--space-2) text-lg font-semibold leading-tight">
-                Paused while visitor check-in is active
+                Paused while visitor {visitorFlowMode === 'signin' ? 'sign-in' : 'sign-out'} is
+                active
               </p>
               <p className="mt-(--space-1) text-sm leading-relaxed text-base-content/70">
                 The scanner lane and manual fallback will return as soon as the visitor flow closes.

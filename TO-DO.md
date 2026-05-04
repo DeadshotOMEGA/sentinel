@@ -128,7 +128,7 @@
   - Validation and user messaging cover common mistakes.
   - Tests cover core happy path and key validation failures.
 - Out of scope:
-  - Group sign-out behavior (handled in TODO-VISITOR-002).
+  - Group sign-out behavior.
   - Major non-visitor kiosk flow changes.
 - Commit slices:
   - `feat: extend visitor model for group members and vehicles`
@@ -136,34 +136,6 @@
   - `test: cover group sign-in happy/error paths`
 - Codex prompt:
   - `Please implement TODO-VISITOR-001 from TO-DO.md on branch feature/visitor-group-signin, with schema/contract updates and kiosk flow tests.`
-
-### TODO-VISITOR-002: Visitor group sign-out
-
-- Status: `todo`
-- User verified: [ ]
-- Branch: `feature/visitor-group-signout`
-- Depends on: `TODO-VISITOR-001`
-- PR goal: allow full-group and partial-member sign-out from kiosk.
-- Target paths:
-  - `apps/frontend-admin/src/components/kiosk/**visitor*`
-  - `apps/backend/src/routes/**visitor*`
-  - `apps/backend/src/services/**visitor*`
-  - `packages/contracts/**`
-- Done when:
-  - Kiosk shows active visitors/groups eligible for sign-out.
-  - Operators/visitors can sign out an entire group in one action.
-  - Operators/visitors can sign out selected members from a group.
-  - Presence/check-out records stay accurate after partial sign-outs.
-  - Tests cover full-group and partial-member sign-out paths.
-- Out of scope:
-  - Sign-in data model redesign beyond what sign-out requires.
-  - Non-kiosk admin tooling expansion for visitor management.
-- Commit slices:
-  - `feat: add active visitor/group list on kiosk`
-  - `feat: support partial group sign-out actions`
-  - `test: cover full and partial sign-out flows`
-- Codex prompt:
-  - `Please implement TODO-VISITOR-002 from TO-DO.md on branch feature/visitor-group-signout, including full-group and partial-member sign-out behavior and tests.`
 
 ## Suggested PR Sequence
 

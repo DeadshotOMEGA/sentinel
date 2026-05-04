@@ -6,6 +6,8 @@ import type {
   UpdateVisitorInput,
   CreateVisitorGroupInput,
   CreateVisitorGroupResult,
+  CheckoutVisitorGroupInput,
+  CheckoutVisitorGroupResult,
 } from '@sentinel/types'
 import {
   buildLegacyVisitorName,
@@ -385,6 +387,90 @@ export class VisitorRepository {
     })
 
     return result
+  }
+
+  async checkoutGroup(data: CheckoutVisitorGroupInput): Promise<CheckoutVisitorGroupResult> {
+    return this.prisma.$transaction(async (tx) => {
+      const group = await tx.visitorGroup.findUnique({
+        where: { id: data.groupId },
+        select: { id: true },
+      })
+
+      if (!group) {
+        throw new Error('Visitor group not found')
+      }
+
+      const groupMembers = await tx.visitor.findMany({
+        where: { visitorGroupId: data.groupId },
+        select: {
+          id: true,
+          checkOutTime: true,
+        },
+      })
+
+      if (groupMembers.length === 0) {
+        throw new Error('Visitor group not found')
+      }
+
+      const groupMemberIds = new Set(groupMembers.map((member) => member.id))
+      const selectedMemberIds = data.memberIds?.length ? data.memberIds : undefined
+
+      if (selectedMemberIds) {
+        const invalidMemberIds = selectedMemberIds.filter(
+          (memberId) => !groupMemberIds.has(memberId)
+        )
+        if (invalidMemberIds.length > 0) {
+          throw new Error('Selected visitors are not members of this group')
+        }
+      }
+
+      const activeMemberIds = groupMembers
+        .filter((member) => member.checkOutTime === null)
+        .map((member) => member.id)
+      const activeMemberSet = new Set(activeMemberIds)
+      const membersToCheckout = selectedMemberIds
+        ? selectedMemberIds.filter((memberId) => activeMemberSet.has(memberId))
+        : activeMemberIds
+
+      if (selectedMemberIds && membersToCheckout.length === 0) {
+        throw new Error('No selected active group members found')
+      }
+
+      const checkedOutAt = new Date()
+      if (membersToCheckout.length > 0) {
+        await tx.visitor.updateMany({
+          where: {
+            id: { in: membersToCheckout },
+            checkOutTime: null,
+          },
+          data: {
+            checkOutTime: checkedOutAt,
+          },
+        })
+      }
+
+      const checkedOutVisitors =
+        membersToCheckout.length > 0
+          ? await tx.visitor.findMany({
+              where: {
+                id: { in: membersToCheckout },
+              },
+              include: {
+                event: true,
+                hostMember: true,
+                badge: true,
+              },
+            })
+          : []
+
+      return {
+        groupId: data.groupId,
+        visitors: checkedOutVisitors.map((visitor) => this.toVisitorType(visitor)),
+        checkedOutCount: membersToCheckout.length,
+        activeGroupMemberCount: activeMemberIds.length,
+        alreadyCheckedOutCount: groupMembers.length - activeMemberIds.length,
+      }
+    })
   }
 
   /**

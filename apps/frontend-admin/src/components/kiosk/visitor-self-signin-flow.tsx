@@ -174,6 +174,12 @@ export function VisitorSelfSigninFlow({
   const usesContractInputs = reason ? reasonUsesContractInputs(reason) : false
   const followsMilitaryPath = reason !== '' && reason !== 'recruitment' && branch === 'military'
   const followsCivilianPath = reason === 'recruitment' || branch === 'civilian'
+  const hasPendingMemberInput = followsMilitaryPath
+    ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
+    : followsCivilianPath
+      ? Boolean(firstName.trim() || lastName.trim())
+      : false
+  const requiresCurrentMemberFields = groupMembers.length === 0 || hasPendingMemberInput
   const hasSelectionStep = requiresMemberSelection || requiresEventSelection
   const selectionStep: FlowStep | null = hasSelectionStep ? 2 : null
   const routingStep: FlowStep | null = requiresBranch ? (hasSelectionStep ? 3 : 2) : null
@@ -679,10 +685,6 @@ export function VisitorSelfSigninFlow({
     }
 
     if (step === personalInfoStep) {
-      const hasPendingMemberInput = followsMilitaryPath
-        ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
-        : Boolean(firstName.trim() || lastName.trim())
-
       if (!hasPendingMemberInput && groupMembers.length > 0) {
         setStep((contractInfoStep ?? reviewStep) as FlowStep)
         return
@@ -1071,23 +1073,38 @@ export function VisitorSelfSigninFlow({
 
   const rankPrefixRegistration = register('rankPrefix', {
     validate: (value) =>
-      !followsMilitaryPath || Boolean(value.trim()) || 'Rank is required for military visitors',
+      !followsMilitaryPath ||
+      !requiresCurrentMemberFields ||
+      Boolean(value.trim()) ||
+      'Rank is required for military visitors',
   })
   const initialsRegistration = register('initials', {
     validate: (value) =>
       !followsMilitaryPath ||
+      !requiresCurrentMemberFields ||
       Boolean(value.trim()) ||
       'Initials are required for military visitors',
   })
   const firstNameRegistration = register('firstName', {
-    validate: (value) => !followsCivilianPath || Boolean(value.trim()) || 'First name is required',
+    validate: (value) =>
+      !followsCivilianPath ||
+      !requiresCurrentMemberFields ||
+      Boolean(value.trim()) ||
+      'First name is required',
   })
   const lastNameRegistration = register('lastName', {
-    validate: (value) => Boolean(value.trim()) || 'Last name is required',
+    validate: (value) =>
+      !requiresCurrentMemberFields ||
+      !(followsMilitaryPath || followsCivilianPath) ||
+      Boolean(value.trim()) ||
+      'Last name is required',
   })
   const unitRegistration = register('unit', {
     validate: (value) =>
-      !followsMilitaryPath || Boolean(value.trim()) || 'Unit is required for military visitors',
+      !followsMilitaryPath ||
+      !requiresCurrentMemberFields ||
+      Boolean(value.trim()) ||
+      'Unit is required for military visitors',
   })
 
   const organizationRegistration = register('organization', {
