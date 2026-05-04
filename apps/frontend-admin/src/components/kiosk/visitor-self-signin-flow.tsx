@@ -741,6 +741,15 @@ export function VisitorSelfSigninFlow({
       return
     }
 
+    if (!hasPendingMemberInput) {
+      setSubmitError(
+        followsMilitaryPath
+          ? 'Enter rank, initials, last name, and unit before adding another member'
+          : 'Enter first and last name before adding another member'
+      )
+      return
+    }
+
     const fields: Array<keyof VisitorSelfSigninFormValues> = followsMilitaryPath
       ? ['rankPrefix', 'lastName', 'initials', 'unit']
       : ['firstName', 'lastName']
@@ -1654,6 +1663,7 @@ export function VisitorSelfSigninFlow({
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
+                      disabled={!hasPendingMemberInput}
                       onClick={() => void handleAddCurrentMember()}
                     >
                       Add member
