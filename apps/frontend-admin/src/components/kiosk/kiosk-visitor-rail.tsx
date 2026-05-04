@@ -1,29 +1,36 @@
 'use client'
 
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, UserRoundPlus } from 'lucide-react'
+import { ChevronRight, UserRoundMinus, UserRoundPlus } from 'lucide-react'
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { Chip } from '@/components/ui/chip'
 import {
   VisitorSelfSigninFlow,
   type VisitorSelfSigninCompletion,
 } from '@/components/kiosk/visitor-self-signin-flow'
+import { VisitorSelfSignoutFlow } from '@/components/kiosk/visitor-self-signout-flow'
 import { KIOSK_ID, MOTION_TIMING } from './kiosk-domain'
+
+export type VisitorRailMode = 'signin' | 'signout'
 
 interface KioskVisitorRailProps {
   active: boolean
+  mode: VisitorRailMode
   fatalOperationalOutage: boolean
   shouldReduceMotion: boolean
-  onStart: () => void
+  onStart: (mode: VisitorRailMode) => void
+  onModeChange: (mode: VisitorRailMode) => void
   onCancel: () => void
   onComplete: (completion: VisitorSelfSigninCompletion) => void
 }
 
 export function KioskVisitorRail({
   active,
+  mode,
   fatalOperationalOutage,
   shouldReduceMotion,
   onStart,
+  onModeChange,
   onCancel,
   onComplete,
 }: KioskVisitorRailProps) {
@@ -58,8 +65,27 @@ export function KioskVisitorRail({
                     size="sm"
                     className="uppercase tracking-[0.16em]"
                   >
-                    Visitor Sign-In
+                    Visitor {mode === 'signin' ? 'Sign-In' : 'Sign-Out'}
                   </Chip>
+                </div>
+
+                <div className="join join-horizontal">
+                  <button
+                    type="button"
+                    className={`btn btn-sm join-item ${mode === 'signin' ? 'btn-secondary' : 'btn-outline'}`}
+                    onClick={() => onModeChange('signin')}
+                    disabled={fatalOperationalOutage}
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm join-item ${mode === 'signout' ? 'btn-secondary' : 'btn-outline'}`}
+                    onClick={() => onModeChange('signout')}
+                    disabled={fatalOperationalOutage}
+                  >
+                    Sign out
+                  </button>
                 </div>
               </AppCardHeader>
 
@@ -67,12 +93,20 @@ export function KioskVisitorRail({
                 className="min-h-0 flex-1 overflow-y-auto"
                 style={{ padding: 'var(--space-5)' }}
               >
-                <VisitorSelfSigninFlow
-                  kioskId={KIOSK_ID}
-                  layout="inline"
-                  onCancel={onCancel}
-                  onComplete={onComplete}
-                />
+                {mode === 'signin' ? (
+                  <VisitorSelfSigninFlow
+                    kioskId={KIOSK_ID}
+                    layout="inline"
+                    onCancel={onCancel}
+                    onComplete={onComplete}
+                  />
+                ) : (
+                  <VisitorSelfSignoutFlow
+                    layout="inline"
+                    onCancel={onCancel}
+                    onComplete={onComplete}
+                  />
+                )}
               </AppCardContent>
             </AppCard>
           </motion.div>
@@ -97,7 +131,7 @@ export function KioskVisitorRail({
                     size="sm"
                     className="uppercase tracking-[0.16em]"
                   >
-                    Visitor Sign-In
+                    Visitor Services
                   </Chip>
                 </div>
 
@@ -107,24 +141,34 @@ export function KioskVisitorRail({
                   </div>
                   <div>
                     <AppCardTitle className="font-display text-3xl leading-tight text-base-content">
-                      Visitor Sign-In
+                      Visitor Services
                     </AppCardTitle>
                   </div>
                 </div>
               </AppCardHeader>
 
               <AppCardContent
-                className="mt-auto flex"
+                className="mt-auto grid gap-(--space-3)"
                 style={{ padding: '0 var(--space-5) var(--space-5)' }}
               >
                 <button
                   type="button"
                   className="btn btn-secondary btn-lg gap-(--space-4) px-(--space-5) py-(--space-4) text-xl"
-                  onClick={onStart}
+                  onClick={() => onStart('signin')}
                   disabled={fatalOperationalOutage}
                 >
                   <span className="text-left text-xl font-semibold">Start</span>
+                  <span className="text-base font-medium opacity-85">Sign in</span>
                   <ChevronRight className="h-6 w-6" />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-lg gap-(--space-3) px-(--space-5) py-(--space-4) text-lg"
+                  onClick={() => onStart('signout')}
+                  disabled={fatalOperationalOutage}
+                >
+                  <UserRoundMinus className="h-5 w-5" />
+                  Sign out visitors
                 </button>
               </AppCardContent>
             </AppCard>

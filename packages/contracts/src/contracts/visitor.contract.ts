@@ -3,6 +3,9 @@ import {
   CreateVisitorSchema,
   CreateVisitorGroupSchema,
   CreateVisitorGroupResponseSchema,
+  CheckoutVisitorGroupSchema,
+  CheckoutVisitorGroupResponseSchema,
+  VisitorGroupIdParamSchema,
   UpdateVisitorSchema,
   VisitorResponseSchema,
   VisitorListQuerySchema,
@@ -87,6 +90,26 @@ export const visitorContract = c.router({
     summary: 'Create visitor group',
     description:
       'Atomically create a visitor group with one or more members and optional group-level vehicles',
+  },
+
+  /**
+   * Checkout one or more members of a visitor group
+   */
+  checkoutVisitorGroup: {
+    method: 'POST',
+    path: '/api/visitors/groups/:groupId/checkout',
+    pathParams: VisitorGroupIdParamSchema,
+    body: CheckoutVisitorGroupSchema,
+    responses: {
+      200: CheckoutVisitorGroupResponseSchema,
+      400: ErrorResponseSchema,
+      401: ErrorResponseSchema,
+      404: ErrorResponseSchema,
+      500: ErrorResponseSchema,
+    },
+    summary: 'Checkout visitor group members',
+    description:
+      'Sign out an entire visitor group or selected active members from that visitor group',
   },
 
   /**

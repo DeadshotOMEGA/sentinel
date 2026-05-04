@@ -320,6 +320,20 @@ export const CreateVisitorGroupResponseSchema = v.object({
   vehicles: v.array(VisitorGroupVehicleResponseSchema),
 })
 
+export const VisitorGroupIdParamSchema = v.object({
+  groupId: v.pipe(v.string(), v.uuid('Invalid visitor group ID')),
+})
+
+export const CheckoutVisitorGroupSchema = v.pipe(
+  v.object({
+    memberIds: v.optional(v.array(v.pipe(v.string(), v.uuid('Invalid visitor ID')))),
+  }),
+  v.check((data) => {
+    if (!data.memberIds || data.memberIds.length === 0) return true
+    return new Set(data.memberIds).size === data.memberIds.length
+  }, 'Duplicate visitor IDs are not allowed in memberIds')
+)
+
 /**
  * Visitor list query schema
  */
@@ -362,10 +376,21 @@ export const CheckoutResponseSchema = v.object({
   visitor: VisitorResponseSchema,
 })
 
+export const CheckoutVisitorGroupResponseSchema = v.object({
+  success: v.boolean(),
+  message: v.string(),
+  groupId: v.string(),
+  checkedOutCount: v.number(),
+  activeGroupMemberCount: v.number(),
+  alreadyCheckedOutCount: v.number(),
+  visitors: v.array(VisitorResponseSchema),
+})
+
 // Type exports
 export type CreateVisitorInput = v.InferOutput<typeof CreateVisitorSchema>
 export type CreateVisitorGroupInput = v.InferOutput<typeof CreateVisitorGroupSchema>
 export type CreateVisitorGroupMemberInput = v.InferOutput<typeof CreateVisitorGroupMemberSchema>
+export type CheckoutVisitorGroupInput = v.InferOutput<typeof CheckoutVisitorGroupSchema>
 export type UpdateVisitorInput = v.InferOutput<typeof UpdateVisitorSchema>
 export type VisitorResponse = v.InferOutput<typeof VisitorResponseSchema>
 export type VisitorGroupVehicleResponse = v.InferOutput<typeof VisitorGroupVehicleResponseSchema>
@@ -374,3 +399,5 @@ export type VisitorListQuery = v.InferOutput<typeof VisitorListQuerySchema>
 export type VisitorListResponse = v.InferOutput<typeof VisitorListResponseSchema>
 export type ActiveVisitorsResponse = v.InferOutput<typeof ActiveVisitorsResponseSchema>
 export type CheckoutResponse = v.InferOutput<typeof CheckoutResponseSchema>
+export type CheckoutVisitorGroupResponse = v.InferOutput<typeof CheckoutVisitorGroupResponseSchema>
+export type VisitorGroupIdParam = v.InferOutput<typeof VisitorGroupIdParamSchema>

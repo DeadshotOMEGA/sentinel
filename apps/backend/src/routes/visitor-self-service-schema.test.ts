@@ -1,4 +1,8 @@
-import { CreateVisitorGroupSchema, CreateVisitorSchema } from '@sentinel/contracts'
+import {
+  CheckoutVisitorGroupSchema,
+  CreateVisitorGroupSchema,
+  CreateVisitorSchema,
+} from '@sentinel/contracts'
 import { describe, expect, it } from 'vitest'
 import * as v from 'valibot'
 
@@ -103,5 +107,19 @@ describe('CreateVisitorGroupSchema validation', () => {
     })
 
     expect(parsed.success).toBe(false)
+  })
+})
+
+describe('CheckoutVisitorGroupSchema validation', () => {
+  it('accepts an empty payload for full-group sign-out', () => {
+    const parsed = v.safeParse(CheckoutVisitorGroupSchema, {})
+    expect(parsed.success).toBe(true)
+  })
+
+  it('accepts a selected member list for partial-group sign-out', () => {
+    const parsed = v.safeParse(CheckoutVisitorGroupSchema, {
+      memberIds: ['11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'],
+    })
+    expect(parsed.success).toBe(true)
   })
 })

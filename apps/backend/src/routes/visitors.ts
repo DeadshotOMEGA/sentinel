@@ -4,8 +4,10 @@ import type {
   VisitorListQuery,
   CreateVisitorInput,
   CreateVisitorGroupInput,
+  CheckoutVisitorGroupInput,
   UpdateVisitorInput,
   IdParam,
+  VisitorGroupIdParam,
   VisitType,
   VisitorCheckInMethod,
 } from '@sentinel/contracts'
@@ -280,6 +282,83 @@ export const visitorsRouter = s.router(visitorContract, {
         body: {
           error: 'INTERNAL_ERROR',
           message: error instanceof Error ? error.message : 'Failed to create visitor group',
+        },
+      }
+    }
+  },
+
+  checkoutVisitorGroup: async ({
+    params,
+    body,
+  }: {
+    params: VisitorGroupIdParam
+    body: CheckoutVisitorGroupInput
+  }) => {
+    try {
+      const checkoutResult = await visitorRepo.checkoutGroup({
+        groupId: params.groupId,
+        memberIds: body.memberIds,
+      })
+
+      for (const visitor of checkoutResult.visitors) {
+        if (!visitor.checkOutTime) continue
+        broadcastVisitorSignout({
+          id: visitor.id,
+          name: visitor.displayName ?? visitor.name,
+          checkOutTime: visitor.checkOutTime.toISOString(),
+        })
+      }
+
+      const checkedOutCount = checkoutResult.checkedOutCount
+      const memberScopedRequest = Boolean(body.memberIds && body.memberIds.length > 0)
+      const message =
+        checkedOutCount === 0
+          ? 'No active visitors were signed out'
+          : memberScopedRequest
+            ? `Signed out ${checkedOutCount} selected visitor${checkedOutCount === 1 ? '' : 's'}`
+            : `Signed out ${checkedOutCount} visitor${checkedOutCount === 1 ? '' : 's'} from group`
+
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          message,
+          groupId: checkoutResult.groupId,
+          checkedOutCount: checkoutResult.checkedOutCount,
+          activeGroupMemberCount: checkoutResult.activeGroupMemberCount,
+          alreadyCheckedOutCount: checkoutResult.alreadyCheckedOutCount,
+          visitors: checkoutResult.visitors.map(toVisitorResponse),
+        },
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return {
+          status: 404 as const,
+          body: {
+            error: 'NOT_FOUND',
+            message: `Visitor group with ID '${params.groupId}' not found`,
+          },
+        }
+      }
+
+      if (
+        error instanceof Error &&
+        (error.message.includes('selected') || error.message.includes('members'))
+      ) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to checkout visitor group',
         },
       }
     }

@@ -65,6 +65,7 @@ export function useKioskScreen() {
   const [responsibilityDismissed, setResponsibilityDismissed] = useState(false)
   const [responsibilityError, setResponsibilityError] = useState<string | null>(null)
   const [visitorFlowActive, setVisitorFlowActive] = useState(false)
+  const [visitorFlowMode, setVisitorFlowMode] = useState<'signin' | 'signout'>('signin')
   const [visitorCompletion, setVisitorCompletion] = useState<VisitorCompletionState | null>(null)
   const [assignmentSummary, setAssignmentSummary] = useState<AssignmentSummary | null>(null)
   const [assignmentSummaryMemberId, setAssignmentSummaryMemberId] = useState<string | null>(null)
@@ -562,14 +563,18 @@ export function useKioskScreen() {
   const resultMessage = visitorCompletion
     ? visitorCompletion.message
     : visitorFlowActive
-      ? 'Visitor check-in is active on the right. Member scanning resumes when that flow is closed or finished.'
+      ? visitorFlowMode === 'signin'
+        ? 'Visitor sign-in is active on the right. Member scanning resumes when that flow is closed or finished.'
+        : 'Visitor sign-out is active on the right. Member scanning resumes when that flow is closed or finished.'
       : fatalOperationalOutage
         ? 'Live kiosk services are offline. Refresh the kiosk or use the hidden maintenance controls.'
         : result.message
   const resultEyebrow = visitorCompletion
     ? 'Visitor Complete'
     : visitorFlowActive
-      ? 'Visitor Sign-In'
+      ? visitorFlowMode === 'signin'
+        ? 'Visitor Sign-In'
+        : 'Visitor Sign-Out'
       : fatalOperationalOutage
         ? 'Service Outage'
         : result.eyebrow
@@ -773,7 +778,8 @@ export function useKioskScreen() {
     }
   }
 
-  const handleVisitorFlowStart = () => {
+  const handleVisitorFlowStart = (mode: 'signin' | 'signout' = 'signin') => {
+    setVisitorFlowMode(mode)
     setVisitorCompletion(null)
     setVisitorFlowActive(true)
   }
@@ -795,6 +801,7 @@ export function useKioskScreen() {
     prefersReducedMotion,
     fatalOperationalOutage,
     visitorFlowActive,
+    visitorFlowMode,
     header: {
       fatalOperationalOutage,
       connectivityBadge,
@@ -823,12 +830,13 @@ export function useKioskScreen() {
       resultPill,
       visitorScanPromptVisible,
       visitorFlowActive,
+      visitorFlowMode,
       scanningDisabled,
       syncState,
       serial,
       onSerialChange: setSerial,
       onSubmitScan: submitCurrentSerial,
-      onStartVisitorFlow: handleVisitorFlowStart,
+      onStartVisitorFlow: () => handleVisitorFlowStart('signin'),
       onRefreshOperationalData: () => void refreshOperationalData(),
       onRefocusBadgeInput: refocusBadgeInput,
       registerBadgeInputRef: (node: HTMLInputElement | null) => {
@@ -837,8 +845,10 @@ export function useKioskScreen() {
     },
     visitorRail: {
       active: visitorFlowActive,
+      mode: visitorFlowMode,
       fatalOperationalOutage,
       onStart: handleVisitorFlowStart,
+      onModeChange: setVisitorFlowMode,
       onCancel: handleVisitorFlowCancel,
       onComplete: handleVisitorFlowComplete,
     },

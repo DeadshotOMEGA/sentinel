@@ -89,6 +89,29 @@ export function useCheckoutVisitor() {
   })
 }
 
+export function useCheckoutVisitorGroup() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ groupId, memberIds }: { groupId: string; memberIds?: string[] }) => {
+      const response = await apiClient.visitors.checkoutVisitorGroup({
+        params: { groupId },
+        body: memberIds && memberIds.length > 0 ? { memberIds } : {},
+      })
+      if (response.status !== 200) {
+        const body = response.body as { message?: string }
+        throw new Error(body?.message ?? 'Failed to sign out visitor group')
+      }
+      return response.body
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
+      queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      void invalidateDashboardQueries(queryClient)
+    },
+  })
+}
+
 export function useVisitorById(id: string | null) {
   return useQuery({
     queryKey: ['visitor', id],
