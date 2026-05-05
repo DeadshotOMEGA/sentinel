@@ -28,6 +28,13 @@ interface PresentMember {
   divisionCode: string
   divisionId: string
   memberType: string
+  memberTypeInfo?: {
+    id: string
+    code: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+  }
   mess: string | null
   activeCheckinId: string
   checkedInAt: string
@@ -56,6 +63,13 @@ interface MemberPresenceItem {
     mess?: string
     moc?: string
     memberType: string
+    memberTypeInfo?: {
+      id: string
+      code: string
+      name: string
+      chipVariant?: string
+      chipColor?: string
+    }
     classDetails?: string
     status: string
     email?: string
@@ -122,7 +136,22 @@ interface PresentPerson {
   divisionCode?: string
   divisionId?: string
   memberType?: string
-  tags?: Array<{ id: string; name: string; chipVariant?: string; chipColor?: string }>
+  memberTypeInfo?: {
+    id: string
+    code: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+  }
+  tags?: Array<{
+    id: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+    isPositional?: boolean
+    displayOrder?: number
+    source?: 'direct' | 'qualification'
+  }>
   organization?: string
   visitType?: { id: string; name: string; chipVariant?: string; chipColor?: string }
   visitReason?: string
@@ -226,6 +255,7 @@ export class PresenceService {
         divisionCode: m.divisionCode,
         divisionId: m.divisionId,
         memberType: m.memberType,
+        memberTypeInfo: m.memberTypeInfo,
         tags: m.tags,
         activeCheckinId: m.activeCheckinId,
         checkInTime: new Date(m.checkedInAt),

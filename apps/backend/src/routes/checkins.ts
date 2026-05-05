@@ -426,6 +426,7 @@ export const checkinsRouter = s.router(checkinContract, {
             divisionCode: p.divisionCode,
             divisionId: p.divisionId,
             memberType: p.memberType,
+            memberTypeInfo: p.memberTypeInfo,
             tags: p.tags,
             organization: p.organization,
             visitType: p.visitType,

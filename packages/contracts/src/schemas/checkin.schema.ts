@@ -178,6 +178,15 @@ export const PresentPersonSchema = v.object({
   divisionCode: v.optional(v.string()),
   divisionId: v.optional(v.string()),
   memberType: v.optional(v.string()),
+  memberTypeInfo: v.optional(
+    v.object({
+      id: v.string(),
+      code: v.string(),
+      name: v.string(),
+      chipVariant: v.optional(v.string()),
+      chipColor: v.optional(v.string()),
+    })
+  ),
   tags: v.optional(
     v.array(
       v.object({

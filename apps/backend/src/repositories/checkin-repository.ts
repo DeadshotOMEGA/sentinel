@@ -48,10 +48,26 @@ export interface PresentMember {
   divisionCode: string
   divisionId: string | null
   memberType: MemberType
+  memberTypeInfo?: {
+    id: string
+    code: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+  }
   mess: string | null
   activeCheckinId: string
   checkedInAt: string
   kioskId?: string
+  tags: Array<{
+    id: string
+    name: string
+    chipVariant?: string
+    chipColor?: string
+    isPositional?: boolean
+    displayOrder?: number
+    source?: 'direct' | 'qualification'
+  }>
 }
 
 export class CheckinRepository {
@@ -747,6 +763,11 @@ export class CheckinRepository {
         division_name: string
         division_code: string
         member_type: string
+        member_type_id: string | null
+        member_type_code: string | null
+        member_type_name: string | null
+        member_type_chip_variant: string | null
+        member_type_chip_color: string | null
         active_checkin_id: string
         checked_in_at: Date
         kiosk_id: string | null
@@ -806,6 +827,11 @@ export class CheckinRepository {
         d.name as division_name,
         d.code as division_code,
         m.member_type,
+        mt.id as member_type_id,
+        mt.code as member_type_code,
+        mt.name as member_type_name,
+        mt.chip_variant as member_type_chip_variant,
+        mt.chip_color as member_type_chip_color,
         lc.id as active_checkin_id,
         lc.timestamp as checked_in_at,
         lc.kiosk_id,
@@ -815,6 +841,7 @@ export class CheckinRepository {
       INNER JOIN latest_checkins lc ON m.id = lc.member_id
       LEFT JOIN ranks r ON m.rank_id = r.id
       LEFT JOIN member_tags_agg mta ON m.id = mta.member_id
+      LEFT JOIN member_types mt ON mt.id = m.member_type_id OR (m.member_type_id IS NULL AND mt.code = m.member_type)
       WHERE m.status = 'active' AND lc.direction = 'in'
       ORDER BY lc.timestamp DESC
     `
@@ -831,6 +858,16 @@ export class CheckinRepository {
       divisionCode: row.division_code,
       divisionId: row.division_id,
       memberType: row.member_type as MemberType,
+      memberTypeInfo:
+        row.member_type_id && row.member_type_code && row.member_type_name
+          ? {
+              id: row.member_type_id,
+              code: row.member_type_code,
+              name: row.member_type_name,
+              chipVariant: row.member_type_chip_variant ?? undefined,
+              chipColor: row.member_type_chip_color ?? undefined,
+            }
+          : undefined,
       mess: row.mess,
       activeCheckinId: row.active_checkin_id,
       checkedInAt: row.checked_in_at.toISOString(),
