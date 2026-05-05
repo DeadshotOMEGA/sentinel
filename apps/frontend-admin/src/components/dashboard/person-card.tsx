@@ -36,6 +36,7 @@ const CHIP_COLOR_AVATAR_CLASSES: Record<string, string> = fadedColorClasses
 // Tag names that represent active responsibilities — hidden from avatar fallback and chips
 // These are qualification tags (DDS, Duty Watch positions) that only display when scheduled
 const RESPONSIBILITY_TAG_NAMES = ['DDS', 'SWK', 'DSWK', 'QM', 'BM', 'APS']
+const DUTY_WATCH_TAG_NAMES = ['SWK', 'DSWK', 'QM', 'BM', 'APS']
 const FTS_TAG_NAME = 'FTS'
 const HOVER_3D_LAYER_KEYS = Array.from({ length: 8 }, (_, index) => index)
 
@@ -62,6 +63,12 @@ function getAvatarColorClass(chipColor?: string): string {
 
   const normalized = normalizeChipColor(chipColor as ChipColor)
   return CHIP_COLOR_AVATAR_CLASSES[normalized] || CHIP_COLOR_AVATAR_CLASSES.default
+}
+
+function hasNonDutyWatchTag(person: PresentPerson): boolean {
+  return Boolean(
+    person.tags?.some((tag) => !DUTY_WATCH_TAG_NAMES.includes(tag.name.trim().toUpperCase()))
+  )
 }
 
 function getVisitorTypeName(person: PresentPerson): string | undefined {
@@ -248,6 +255,8 @@ export const PersonCard = memo(function PersonCard({
   const visitorTitle = getVisitorTitle(person, displayName)
   const visitorSubtitle = getVisitorSubtitle(person)
   const visitorSummary = getVisitorSummary(person)
+  const memberTypeInfo = isMember ? person.memberTypeInfo : undefined
+  const shouldShowMemberTypeBadge = Boolean(memberTypeInfo && !hasNonDutyWatchTag(person))
 
   // Determine which tag the avatar is displaying (if any) to suppress from chip row
   const avatarTagId = (() => {
@@ -356,6 +365,16 @@ export const PersonCard = memo(function PersonCard({
                     {tag.name}
                   </Chip>
                 ))}
+              {shouldShowMemberTypeBadge && memberTypeInfo && (
+                <Chip
+                  size="sm"
+                  variant={(memberTypeInfo.chipVariant as ChipVariant) || 'solid'}
+                  color={(memberTypeInfo.chipColor as ChipColor) || 'default'}
+                  className="chip-enhanced"
+                >
+                  {memberTypeInfo.name}
+                </Chip>
+              )}
             </div>
           ) : (
             <div className="flex min-w-0 flex-col gap-1 text-xs text-base-content/70">
