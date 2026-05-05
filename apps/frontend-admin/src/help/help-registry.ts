@@ -97,12 +97,12 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     roleScopes: ['admin', 'developer'],
     fallbackMode: 'wiki',
     localFallback: {
-      title: 'Admin Control Center Quick Help',
+      title: 'Admin Control Centre Quick Help',
       summary: 'Start here for appliance status, issues, and system-control tasks.',
       quickSteps: [
         'Review Recent issues before routine configuration.',
         'Use quick actions for updates, logs, badges, and network work.',
-        'Open System Definitions for shared lists and operational defaults.',
+        'Open Lists & Types for shared record lists, or use Settings pages for timings and access.',
       ],
     },
   },

@@ -32,7 +32,7 @@ export function LegacyAdminRedirect() {
     <div className="flex min-h-80 items-center justify-center">
       <div className="flex items-center gap-(--space-3) text-sm text-base-content/70">
         <LoadingSpinner size="sm" className="text-base-content/60" />
-        <span>Opening Admin Control Center...</span>
+        <span>Opening Admin Control Centre...</span>
       </div>
     </div>
   )
@@ -44,6 +44,9 @@ function getTargetRouteId(target: string): AdminNavigationRouteId {
   if (target.startsWith('/admin/logs')) return 'logs'
   if (target.startsWith('/admin/database')) return 'database'
   if (target.startsWith('/admin/badges')) return 'badges'
+  if (target.startsWith('/admin/timings')) return 'timings'
+  if (target.startsWith('/admin/account-levels')) return 'account-levels'
+  if (target.startsWith('/admin/dashboard-sorting')) return 'dashboard-sorting'
   if (target.startsWith('/admin/config')) return 'config'
 
   return 'admin-home'

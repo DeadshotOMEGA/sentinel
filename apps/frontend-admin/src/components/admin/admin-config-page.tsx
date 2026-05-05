@@ -1,28 +1,22 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  ArrowUpDown,
   Award,
   BadgeCheck,
   Building,
   Calendar,
   CalendarClock,
-  Clock3,
-  Shield,
   Tag,
   UserCheck,
   Users,
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AccountLevelSettingsPanel } from '@/components/settings/account-level-settings-panel'
-import { DashboardPersonCardSortSettingsPanel } from '@/components/settings/dashboard-person-card-sort-settings-panel'
 import { EnumTable } from '@/components/settings/enum-table'
 import { EventTypeTable } from '@/components/settings/event-type-table'
 import { QualificationTypeTable } from '@/components/settings/qualification-type-table'
 import { StatHolidayTable } from '@/components/settings/stat-holiday-table'
-import { TimingsSettingsPanel } from '@/components/settings/timings-settings-panel'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { TID } from '@/lib/test-ids'
 
@@ -35,10 +29,13 @@ const CONFIG_TAB_VALUES = [
   'qualifications',
   'tags',
   'stat-holidays',
-  'timings',
-  'account-levels',
-  'dashboard-sorting',
 ] as const
+
+const PROMOTED_CONFIG_TAB_PATHS = {
+  timings: '/admin/timings',
+  'account-levels': '/admin/account-levels',
+  'dashboard-sorting': '/admin/dashboard-sorting',
+} as const
 
 type ConfigTabValue = (typeof CONFIG_TAB_VALUES)[number]
 
@@ -51,6 +48,31 @@ function AdminConfigPageContent() {
   const searchParams = useSearchParams()
   const requestedTab = searchParams.get('tab')
   const currentTab: ConfigTabValue = isConfigTabValue(requestedTab) ? requestedTab : 'member-types'
+
+  useEffect(() => {
+    if (!isPromotedConfigTabValue(requestedTab)) {
+      return
+    }
+
+    const params = new globalThis.URLSearchParams(searchParams.toString())
+    params.delete('tab')
+
+    const queryString = params.toString()
+    router.replace(
+      queryString
+        ? `${PROMOTED_CONFIG_TAB_PATHS[requestedTab]}?${queryString}`
+        : PROMOTED_CONFIG_TAB_PATHS[requestedTab],
+      { scroll: false }
+    )
+  }, [requestedTab, router, searchParams])
+
+  if (isPromotedConfigTabValue(requestedTab)) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <LoadingSpinner size="lg" className="text-base-content/60" />
+      </div>
+    )
+  }
 
   const handleTabChange = (nextTab: string) => {
     if (!isConfigTabValue(nextTab)) {
@@ -75,11 +97,10 @@ function AdminConfigPageContent() {
     <div className="space-y-(--space-4)">
       <div>
         <h1 id="admin-page-title" className="font-display text-3xl font-bold">
-          System Definitions
+          Lists & Types
         </h1>
         <p className="mt-(--space-1) max-w-3xl text-sm text-base-content/65">
-          Manage the shared lists, categories, defaults, and account-level definitions that shape
-          Sentinel operations.
+          Manage the shared lists, categories, and types that shape Sentinel records and workflows.
         </p>
       </div>
 
@@ -120,22 +141,6 @@ function AdminConfigPageContent() {
           <TabsTrigger value="stat-holidays" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Stat Holidays</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="timings"
-            className="flex items-center gap-2"
-            data-testid={TID.settings.timings.tab}
-          >
-            <Clock3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Timings</span>
-          </TabsTrigger>
-          <TabsTrigger value="account-levels" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Account Levels</span>
-          </TabsTrigger>
-          <TabsTrigger value="dashboard-sorting" className="flex items-center gap-2">
-            <ArrowUpDown className="h-4 w-4" />
-            <span className="hidden sm:inline">Dashboard Sorting</span>
           </TabsTrigger>
         </TabsList>
 
@@ -199,21 +204,15 @@ function AdminConfigPageContent() {
             description="Holidays that affect DDS handover timing and operational days"
           />
         </TabsContent>
-
-        <TabsContent value="timings">
-          <TimingsSettingsPanel />
-        </TabsContent>
-
-        <TabsContent value="account-levels">
-          <AccountLevelSettingsPanel />
-        </TabsContent>
-
-        <TabsContent value="dashboard-sorting">
-          <DashboardPersonCardSortSettingsPanel />
-        </TabsContent>
       </Tabs>
     </div>
   )
+}
+
+function isPromotedConfigTabValue(
+  value: string | null
+): value is keyof typeof PROMOTED_CONFIG_TAB_PATHS {
+  return value !== null && value in PROMOTED_CONFIG_TAB_PATHS
 }
 
 export function AdminConfigPage() {

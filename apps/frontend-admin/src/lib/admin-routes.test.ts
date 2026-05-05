@@ -8,6 +8,7 @@ import {
   ADMIN_SIDEBAR_GROUP_LIMIT,
   ADMIN_SIDEBAR_LINK_LIMIT_PER_GROUP,
   getAdminCapabilities,
+  getAdminRouteById,
   getAdminRouteGroups,
   getAdminSidebarRoutes,
   isAdminNavPath,
@@ -39,6 +40,12 @@ describe('ADMIN_NAV_ROUTES', () => {
     const groups = getAdminRouteGroups(sidebarRoutes)
 
     expect(groups.length).toBeLessThanOrEqual(ADMIN_SIDEBAR_GROUP_LIMIT)
+    expect(groups.slice(0, 4)).toEqual([
+      'Overview',
+      'Settings',
+      'Access Control',
+      'System Operations',
+    ])
 
     for (const group of groups) {
       const routesInGroup = sidebarRoutes.filter((route) => route.group === group)
@@ -67,6 +74,14 @@ describe('ADMIN_NAV_ROUTES', () => {
     expect(getAdminCapabilities(6)).toContain('database:view')
   })
 
+  it('keeps logs visible to every admin account without an extra capability gate', () => {
+    expect(getAdminRouteById('logs').requiredCapabilities).toEqual(['admin:view'])
+    expect(getAdminSidebarRoutes(5).map((route) => route.id)).toContain('logs')
+    expect(
+      ADMIN_QUICK_ACTIONS.find((action) => action.id === 'view-logs')?.requiredCapabilities
+    ).toEqual(['admin:view'])
+  })
+
   it('preserves legacy route intent', () => {
     expect(resolveLegacyAdminPath('/badges', new URLSearchParams('page=2'))).toBe(
       '/admin/badges?page=2'
@@ -80,6 +95,15 @@ describe('ADMIN_NAV_ROUTES', () => {
     )
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=network'))).toBe(
       '/admin/network'
+    )
+    expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=timings'))).toBe(
+      '/admin/timings'
+    )
+    expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=account-levels'))).toBe(
+      '/admin/account-levels'
+    )
+    expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=dashboard-sorting'))).toBe(
+      '/admin/dashboard-sorting'
     )
     expect(resolveLegacyAdminPath('/settings', new URLSearchParams('tab=tags'))).toBe(
       '/admin/config?tab=tags'

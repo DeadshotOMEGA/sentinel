@@ -7,7 +7,6 @@ export type AdminCapability =
   | 'admin:view'
   | 'updates:manage'
   | 'network:manage'
-  | 'logs:view'
   | 'database:view'
   | 'badges:manage'
   | 'config:manage'
@@ -20,6 +19,9 @@ export type AdminRouteId =
   | 'database'
   | 'badges'
   | 'config'
+  | 'timings'
+  | 'account-levels'
+  | 'dashboard-sorting'
 
 export type AdminRouteGroup =
   | 'Overview'
@@ -27,7 +29,7 @@ export type AdminRouteGroup =
   | 'Infrastructure'
   | 'Diagnostics'
   | 'Access Control'
-  | 'System Definitions'
+  | 'Settings'
 
 export type AdminRouteTier = 1 | 2
 export type AdminNavVisibility = 'sidebar' | 'hidden'
@@ -35,8 +37,10 @@ export type AdminFeatureStatus = 'available' | 'future'
 
 export type AdminIconKey =
   | 'activity'
+  | 'arrow-up-down'
   | 'badge'
   | 'book-open'
+  | 'clock'
   | 'database'
   | 'download'
   | 'list'
@@ -120,7 +124,7 @@ export const ADMIN_NAV_ROUTES = [
     id: 'network',
     label: 'Network',
     href: '/admin/network',
-    group: 'Infrastructure',
+    group: 'System Operations',
     tier: 1,
     icon: 'network',
     description: 'Manage approved Wi-Fi, remote systems, hotspot recovery, and host network state.',
@@ -144,7 +148,7 @@ export const ADMIN_NAV_ROUTES = [
     keywords: ['logs', 'audit', 'activity', 'diagnostics', 'history'],
     searchWeight: 85,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
-    requiredCapabilities: ['admin:view', 'logs:view'],
+    requiredCapabilities: ['admin:view'],
     navVisibility: 'sidebar',
     featureStatus: 'available',
   },
@@ -182,16 +186,64 @@ export const ADMIN_NAV_ROUTES = [
   },
   {
     id: 'config',
-    label: 'System Definitions',
+    label: 'Lists & Types',
     href: '/admin/config',
-    group: 'System Definitions',
+    group: 'Settings',
     tier: 1,
     icon: 'list',
     description:
-      'Manage member types, statuses, visit types, event types, qualifications, and tags.',
-    aliases: ['settings', 'definitions', 'lists', 'types', 'configuration'],
-    keywords: ['definitions', 'settings', 'types', 'statuses', 'tags', 'qualifications'],
+      'Manage member types, statuses, visit types, event types, qualifications, tags, and holidays.',
+    aliases: ['settings', 'definitions', 'lists', 'types', 'configuration', 'system definitions'],
+    keywords: ['lists', 'types', 'settings', 'statuses', 'tags', 'qualifications', 'holidays'],
     searchWeight: 80,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'timings',
+    label: 'Timings',
+    href: '/admin/timings',
+    group: 'Settings',
+    tier: 1,
+    icon: 'clock',
+    description: 'Manage scheduler cutoffs, duty timing, working hours, and alert limits.',
+    aliases: ['operational timings', 'working hours', 'cutoffs', 'alert limits'],
+    keywords: ['timings', 'schedule', 'cutoffs', 'working hours', 'alerts'],
+    searchWeight: 79,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'account-levels',
+    label: 'Account Levels',
+    href: '/admin/account-levels',
+    group: 'Access Control',
+    tier: 1,
+    icon: 'shield',
+    description: 'Review access levels and reassign member account levels.',
+    aliases: ['access levels', 'permissions', 'roles', 'admin levels'],
+    keywords: ['account levels', 'access', 'permissions', 'roles', 'admin'],
+    searchWeight: 78,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view', 'config:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'dashboard-sorting',
+    label: 'Dashboard Sorting',
+    href: '/admin/dashboard-sorting',
+    group: 'Settings',
+    tier: 1,
+    icon: 'arrow-up-down',
+    description: 'Control how member cards are sorted on the dashboard.',
+    aliases: ['dashboard sort', 'card sorting', 'member card order'],
+    keywords: ['dashboard', 'sorting', 'cards', 'order', 'criteria'],
+    searchWeight: 77,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
     requiredCapabilities: ['admin:view', 'config:manage'],
     navVisibility: 'sidebar',
@@ -216,7 +268,7 @@ export const ADMIN_QUICK_ACTIONS = [
     href: '/admin/logs',
     icon: 'logs',
     description: 'Inspect recent administrative and operational activity.',
-    requiredCapabilities: ['admin:view', 'logs:view'],
+    requiredCapabilities: ['admin:view'],
     defaultPinned: true,
     featureStatus: 'available',
   },
@@ -252,10 +304,10 @@ export const ADMIN_QUICK_ACTIONS = [
   },
   {
     id: 'open-config',
-    label: 'System definitions',
+    label: 'Lists & Types',
     href: '/admin/config',
     icon: 'list',
-    description: 'Manage operational dictionaries and default definitions.',
+    description: 'Manage shared lists, categories, and types.',
     requiredCapabilities: ['admin:view', 'config:manage'],
     defaultPinned: false,
     featureStatus: 'available',
@@ -285,12 +337,20 @@ export const ADMIN_QUICK_ACTIONS = [
 export const ADMIN_SIDEBAR_GROUP_LIMIT = 6
 export const ADMIN_SIDEBAR_LINK_LIMIT_PER_GROUP = 7
 
+const ADMIN_ROUTE_GROUP_ORDER = [
+  'Overview',
+  'Settings',
+  'Access Control',
+  'System Operations',
+  'Infrastructure',
+  'Diagnostics',
+] as const satisfies readonly AdminRouteGroup[]
+
 const capabilityByMinimumRole: Record<number, readonly AdminCapability[]> = {
   [ADMIN_ROLE_LEVEL.ADMIN]: [
     'admin:view',
     'updates:manage',
     'network:manage',
-    'logs:view',
     'database:view',
     'badges:manage',
     'config:manage',
@@ -299,7 +359,6 @@ const capabilityByMinimumRole: Record<number, readonly AdminCapability[]> = {
     'admin:view',
     'updates:manage',
     'network:manage',
-    'logs:view',
     'database:view',
     'badges:manage',
     'config:manage',
@@ -389,7 +448,9 @@ export function getAdminSidebarRoutes(
 }
 
 export function getAdminRouteGroups(routes: readonly AdminNavRoute[]): readonly AdminRouteGroup[] {
-  return Array.from(new Set(routes.map((route) => route.group)))
+  const routeGroups = new Set(routes.map((route) => route.group))
+
+  return ADMIN_ROUTE_GROUP_ORDER.filter((group) => routeGroups.has(group))
 }
 
 export function isAdminNavPath(pathname: string): boolean {
@@ -428,6 +489,21 @@ export function resolveLegacyAdminPath(
   if (requestedTab === 'network') {
     query.delete('tab')
     return withQuery('/admin/network', query)
+  }
+
+  if (requestedTab === 'timings') {
+    query.delete('tab')
+    return withQuery('/admin/timings', query)
+  }
+
+  if (requestedTab === 'account-levels') {
+    query.delete('tab')
+    return withQuery('/admin/account-levels', query)
+  }
+
+  if (requestedTab === 'dashboard-sorting') {
+    query.delete('tab')
+    return withQuery('/admin/dashboard-sorting', query)
   }
 
   return withQuery('/admin/config', query)

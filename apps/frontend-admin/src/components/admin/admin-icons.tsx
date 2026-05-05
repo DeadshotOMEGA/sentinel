@@ -1,8 +1,10 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import {
   Activity,
+  ArrowUpDown,
   BadgePlus,
   BookOpen,
+  Clock3,
   Database,
   Download,
   ListChecks,
@@ -21,10 +23,14 @@ export function AdminIcon({ icon, ...props }: AdminIconProps) {
   switch (icon) {
     case 'activity':
       return <Activity {...props} />
+    case 'arrow-up-down':
+      return <ArrowUpDown {...props} />
     case 'badge':
       return <BadgePlus {...props} />
     case 'book-open':
       return <BookOpen {...props} />
+    case 'clock':
+      return <Clock3 {...props} />
     case 'database':
       return <Database {...props} />
     case 'download':
