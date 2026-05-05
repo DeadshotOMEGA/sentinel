@@ -205,7 +205,7 @@ export const DEFAULT_DDS_PAGE_CONTENT: DdsPageContent = {
     },
     {
       id: 'wing-ops',
-      label: '17 Wing Ops Center',
+      label: '17 Wing Ops Centre',
       phone: '<update required>',
       notes: 'Confirm correct line with chain of command.',
     },

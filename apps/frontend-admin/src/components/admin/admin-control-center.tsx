@@ -936,7 +936,7 @@ export function AdminControlCenter() {
 
       {!canAccessAdmin && (
         <AppAlert tone="warning" heading="Admin access required">
-          Sign in with an Admin or Developer account to use the Admin Control Center.
+          Sign in with an Admin or Developer account to use the Admin Control Centre.
         </AppAlert>
       )}
 
@@ -1425,6 +1425,9 @@ function getRouteIdForAction(action: AdminQuickAction): AdminRouteId {
   if (action.href.startsWith('/admin/logs')) return 'logs'
   if (action.href.startsWith('/admin/database')) return 'database'
   if (action.href.startsWith('/admin/badges')) return 'badges'
+  if (action.href.startsWith('/admin/timings')) return 'timings'
+  if (action.href.startsWith('/admin/account-levels')) return 'account-levels'
+  if (action.href.startsWith('/admin/dashboard-sorting')) return 'dashboard-sorting'
   if (action.href.startsWith('/admin/config')) return 'config'
 
   return 'admin-home'
