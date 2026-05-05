@@ -36,6 +36,14 @@ const AREA_OPTIONS: Array<{
   { value: 'admin', label: 'Admin', color: 'neutral' },
 ]
 
+type InspectionRowTone = 'default' | 'mono' | 'muted'
+
+interface InspectionRow {
+  label: string
+  value: string
+  tone?: InspectionRowTone
+}
+
 function formatTimestamp(timestamp: string): string {
   const date = new Date(timestamp)
 
@@ -75,6 +83,78 @@ function getAreaLabel(area: ActivityArea): string {
 
 function getAreaColor(area: ActivityArea): ChipColor {
   return AREA_OPTIONS.find((option) => option.value === area)?.color ?? 'default'
+}
+
+function formatEntityType(value: string): string {
+  if (!value) {
+    return 'Not recorded'
+  }
+
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_.-]+/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function getDetailValue(details: Record<string, unknown> | null, keys: string[]): string | null {
+  if (!details) {
+    return null
+  }
+
+  for (const key of keys) {
+    const value = details[key]
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim()
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return String(value)
+    }
+  }
+
+  return null
+}
+
+function looksTechnicalValue(value: string): boolean {
+  return (
+    /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(value) ||
+    /^[a-z0-9_.:-]{14,}$/i.test(value) ||
+    value.includes('_')
+  )
+}
+
+function buildInspectionRows(entry: ActivityEntry): InspectionRow[] {
+  const details = entry.raw.details ?? null
+  const remoteSystem =
+    getDetailValue(details, ['remoteSystemName', 'remoteSystemCode', 'kioskId']) ?? null
+  const serviceNumber =
+    getDetailValue(details, ['actorServiceNumber', 'serviceNumber', 'memberServiceNumber']) ?? null
+  const reason = getDetailValue(details, ['reason', 'editReason', 'purposeDetails']) ?? null
+  const rows: InspectionRow[] = [
+    { label: 'Actor', value: entry.actorName },
+    { label: 'Action', value: entry.actionLabel },
+    {
+      label: 'Subject / entity',
+      value: entry.subjectLabel || entry.raw.entityType || 'Not recorded',
+      tone: looksTechnicalValue(entry.subjectLabel) ? 'mono' : 'default',
+    },
+    { label: 'Logged at', value: formatDateTime(entry.timestamp) },
+    { label: 'Area', value: getAreaLabel(entry.area) },
+    { label: 'Entity type', value: formatEntityType(entry.raw.entityType) },
+  ]
+
+  if (remoteSystem) {
+    rows.push({ label: 'Remote system / location', value: remoteSystem })
+  }
+
+  if (serviceNumber) {
+    rows.push({ label: 'Service number', value: serviceNumber, tone: 'mono' })
+  }
+
+  rows.push({ label: reason ? 'Reason' : 'Summary', value: reason ?? entry.summary })
+
+  return rows
 }
 
 function renderDetails(details: Record<string, unknown> | null): string {
@@ -134,6 +214,7 @@ function LogsPageContent() {
   const responsibilityCount = filteredEntries.filter(
     (entry) => entry.area === 'responsibility'
   ).length
+  const selectedInspectionRows = selectedEntry ? buildInspectionRows(selectedEntry) : []
 
   useEffect(() => {
     if (!canAccessLogs) {
@@ -192,9 +273,13 @@ function LogsPageContent() {
             prioritizes what operators actually do instead of backend socket noise.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-(--space-2)">
-          <AppBadge status="info">Latest {entries.length}</AppBadge>
-          <AppBadge status="info">15s refresh</AppBadge>
+        <div className="flex flex-wrap items-center gap-(--space-2) rounded-box border border-base-300 bg-base-100 px-(--space-2) py-(--space-2) shadow-[var(--shadow-1)]">
+          <span className="rounded-box bg-base-200 px-(--space-2) py-1 text-xs font-medium text-base-content/70">
+            Latest {entries.length}
+          </span>
+          <span className="rounded-box bg-base-200 px-(--space-2) py-1 text-xs font-medium text-base-content/70">
+            Auto-refresh 15s
+          </span>
           <AppBadge status={isFetching ? 'warning' : 'success'} pulse={isFetching}>
             {isFetching ? 'Refreshing' : 'Current'}
           </AppBadge>
@@ -212,55 +297,55 @@ function LogsPageContent() {
       </div>
 
       <section className="grid gap-(--space-4) md:grid-cols-2 xl:grid-cols-4">
-        <AppCard status="info" variant="elevated">
+        <AppCard>
           <AppCardHeader>
-            <AppCardTitle className="flex items-center gap-(--space-2)">
-              <Activity className="h-4 w-4" />
+            <AppCardTitle className="flex items-center gap-(--space-2) text-base">
+              <Activity className="h-4 w-4 text-base-content/55" />
               Visible events
             </AppCardTitle>
             <AppCardDescription>Rows matching the current filters.</AppCardDescription>
           </AppCardHeader>
           <AppCardContent className="pt-0">
-            <p className="text-2xl font-semibold">{filteredEntries.length}</p>
+            <p className="text-2xl font-semibold text-base-content">{filteredEntries.length}</p>
             <p className="mt-(--space-1) text-xs text-base-content/70">
               {data?.total ?? 0} total audited rows available
             </p>
           </AppCardContent>
         </AppCard>
 
-        <AppCard status="info">
+        <AppCard>
           <AppCardHeader>
-            <AppCardTitle>Attendance</AppCardTitle>
+            <AppCardTitle className="text-base">Attendance</AppCardTitle>
             <AppCardDescription>Scans, manual attendance, and checkout edits.</AppCardDescription>
           </AppCardHeader>
           <AppCardContent className="pt-0">
-            <p className="text-2xl font-semibold">{attendanceCount}</p>
+            <p className="text-2xl font-semibold text-base-content">{attendanceCount}</p>
           </AppCardContent>
         </AppCard>
 
-        <AppCard status="neutral">
+        <AppCard>
           <AppCardHeader>
-            <AppCardTitle>Profiles & settings</AppCardTitle>
+            <AppCardTitle className="text-base">Profiles & settings</AppCardTitle>
             <AppCardDescription>Members, badges, and configuration changes.</AppCardDescription>
           </AppCardHeader>
           <AppCardContent className="pt-0">
-            <p className="text-2xl font-semibold">{profileCount}</p>
+            <p className="text-2xl font-semibold text-base-content">{profileCount}</p>
           </AppCardContent>
         </AppCard>
 
         <AppCard status="warning">
           <AppCardHeader>
-            <AppCardTitle>DDS & lockup</AppCardTitle>
+            <AppCardTitle className="text-base">DDS & lockup</AppCardTitle>
             <AppCardDescription>Responsibility changes that affect operations.</AppCardDescription>
           </AppCardHeader>
           <AppCardContent className="pt-0">
-            <p className="text-2xl font-semibold">{responsibilityCount}</p>
+            <p className="text-2xl font-semibold text-base-content">{responsibilityCount}</p>
           </AppCardContent>
         </AppCard>
       </section>
 
       <div className="grid gap-(--space-4) xl:grid-cols-[minmax(0,2.1fr)_minmax(24rem,1fr)]">
-        <AppCard status="info">
+        <AppCard>
           <AppCardHeader>
             <AppCardTitle>Recent activity</AppCardTitle>
             <AppCardDescription>
@@ -284,22 +369,30 @@ function LogsPageContent() {
                 />
               </label>
               <div className="flex flex-wrap gap-(--space-2)">
-                {AREA_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => {
-                      setAreaFilter(option.value)
-                    }}
-                  >
-                    <Chip
-                      color={option.color}
-                      variant={areaFilter === option.value ? 'solid' : 'soft'}
+                {AREA_OPTIONS.map((option) => {
+                  const isActive = areaFilter === option.value
+                  const isResponsibility = option.value === 'responsibility'
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      onClick={() => {
+                        setAreaFilter(option.value)
+                      }}
+                      aria-pressed={isActive}
                     >
-                      {option.label}
-                    </Chip>
-                  </button>
-                ))}
+                      <Chip
+                        color={isActive ? option.color : isResponsibility ? 'yellow' : 'neutral'}
+                        variant={isActive ? 'solid' : 'soft'}
+                        className={!isActive && !isResponsibility ? 'text-base-content/65' : ''}
+                      >
+                        {option.label}
+                      </Chip>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
@@ -333,31 +426,57 @@ function LogsPageContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredEntries.map((entry) => (
-                      <tr
-                        key={entry.id}
-                        className={cn(
-                          'cursor-pointer border-base-300/60 transition-colors',
-                          selectedEntry?.id === entry.id
-                            ? 'bg-info-fadded text-info-fadded-content'
-                            : 'hover:bg-base-200'
-                        )}
-                        onClick={() => {
-                          setSelectedEntryId(entry.id)
-                        }}
-                      >
-                        <td className="font-mono text-xs">{formatTimestamp(entry.timestamp)}</td>
-                        <td>
-                          <Chip color={getAreaColor(entry.area)} variant="soft" size="sm">
-                            {getAreaLabel(entry.area)}
-                          </Chip>
-                        </td>
-                        <td className="font-medium">{entry.actionLabel}</td>
-                        <td>{entry.actorName}</td>
-                        <td>{entry.subjectLabel}</td>
-                        <td className="max-w-[28rem] truncate">{entry.summary}</td>
-                      </tr>
-                    ))}
+                    {filteredEntries.map((entry) => {
+                      const isSelected = selectedEntry?.id === entry.id
+                      const subjectIsTechnical = looksTechnicalValue(entry.subjectLabel)
+
+                      return (
+                        <tr
+                          key={entry.id}
+                          tabIndex={0}
+                          aria-selected={isSelected}
+                          className={cn(
+                            'cursor-pointer border-base-300/60 text-base-content transition-colors duration-(--duration-fast) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+                            isSelected
+                              ? 'border-l-2 border-l-primary bg-primary/10'
+                              : 'border-l-2 border-l-transparent hover:bg-base-200/70'
+                          )}
+                          onClick={() => {
+                            setSelectedEntryId(entry.id)
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault()
+                              setSelectedEntryId(entry.id)
+                            }
+                          }}
+                        >
+                          <td className="font-mono text-xs text-base-content/60">
+                            {formatTimestamp(entry.timestamp)}
+                          </td>
+                          <td>
+                            <Chip color={getAreaColor(entry.area)} variant="soft" size="sm">
+                              {getAreaLabel(entry.area)}
+                            </Chip>
+                          </td>
+                          <td className="font-medium text-base-content">{entry.actionLabel}</td>
+                          <td className="max-w-[10rem] truncate text-base-content/70">
+                            {entry.actorName}
+                          </td>
+                          <td
+                            className={cn(
+                              'max-w-[14rem] truncate text-base-content/65',
+                              subjectIsTechnical && 'font-mono text-xs'
+                            )}
+                          >
+                            {entry.subjectLabel}
+                          </td>
+                          <td className="max-w-[30rem] truncate text-sm font-medium text-base-content">
+                            {entry.summary}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -365,7 +484,7 @@ function LogsPageContent() {
           </AppCardContent>
         </AppCard>
 
-        <AppCard status={selectedEntry ? 'info' : 'neutral'}>
+        <AppCard>
           <AppCardHeader>
             <AppCardTitle>Selected activity</AppCardTitle>
             <AppCardDescription>
@@ -386,53 +505,63 @@ function LogsPageContent() {
                     <Chip color={getAreaColor(selectedEntry.area)} variant="soft">
                       {getAreaLabel(selectedEntry.area)}
                     </Chip>
-                    <AppBadge status="info">{selectedEntry.actionLabel}</AppBadge>
+                    <span className="rounded-box bg-base-200 px-(--space-2) py-1 text-xs font-semibold text-base-content/75">
+                      {selectedEntry.actionLabel}
+                    </span>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold">{selectedEntry.subjectLabel}</p>
-                    <p className="text-sm text-base-content/70">{selectedEntry.summary}</p>
-                  </div>
-                </div>
-
-                <div className="grid gap-(--space-3) text-sm sm:grid-cols-2">
-                  <div className="rounded-none bg-base-200 p-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.08em] text-base-content/60">
-                      Actor
+                    <p className="text-sm font-semibold text-base-content">
+                      {selectedEntry.actorName}
                     </p>
-                    <p className="mt-(--space-1) font-medium">{selectedEntry.actorName}</p>
-                  </div>
-                  <div className="rounded-none bg-base-200 p-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.08em] text-base-content/60">
-                      Logged at
+                    <p className="mt-0.5 text-lg font-semibold leading-tight text-base-content">
+                      {selectedEntry.subjectLabel}
                     </p>
-                    <p className="mt-(--space-1) font-medium">
-                      {formatDateTime(selectedEntry.timestamp)}
-                    </p>
-                  </div>
-                  <div className="rounded-none bg-base-200 p-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.08em] text-base-content/60">
-                      Action code
-                    </p>
-                    <p className="mt-(--space-1) font-mono text-xs">{selectedEntry.raw.action}</p>
-                  </div>
-                  <div className="rounded-none bg-base-200 p-(--space-3)">
-                    <p className="text-xs uppercase tracking-[0.08em] text-base-content/60">
-                      Entity type
-                    </p>
-                    <p className="mt-(--space-1) font-mono text-xs">
-                      {selectedEntry.raw.entityType}
+                    <p className="mt-(--space-1) text-sm leading-5 text-base-content/70">
+                      {selectedEntry.summary}
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-(--space-2)">
-                  <p className="text-xs uppercase tracking-[0.08em] text-base-content/60">
-                    Structured details
-                  </p>
-                  <pre className="max-h-[32rem] overflow-auto rounded-none bg-base-200 p-(--space-3) text-xs leading-6 text-base-content/80">
-                    {renderDetails(selectedEntry.raw.details)}
-                  </pre>
-                </div>
+                <section className="space-y-(--space-2)" aria-labelledby="activity-key-details">
+                  <h2
+                    id="activity-key-details"
+                    className="text-xs font-semibold uppercase tracking-[0.08em] text-base-content/55"
+                  >
+                    Key details
+                  </h2>
+                  <dl className="grid gap-(--space-2) text-sm sm:grid-cols-2">
+                    {selectedInspectionRows.map((row) => (
+                      <div
+                        key={row.label}
+                        className="min-w-0 border border-base-300 bg-base-200/55 p-(--space-3)"
+                      >
+                        <dt className="text-xs uppercase tracking-[0.08em] text-base-content/55">
+                          {row.label}
+                        </dt>
+                        <dd
+                          className={cn(
+                            'mt-(--space-1) truncate font-medium text-base-content',
+                            row.tone === 'mono' && 'font-mono text-xs text-base-content/70',
+                            row.tone === 'muted' && 'text-base-content/65'
+                          )}
+                        >
+                          {row.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+
+                <details className="collapse collapse-arrow border border-base-300 bg-base-100">
+                  <summary className="collapse-title min-h-0 py-(--space-3) text-sm font-semibold text-base-content">
+                    Technical details
+                  </summary>
+                  <div className="collapse-content">
+                    <pre className="max-h-[32rem] overflow-auto bg-base-200 p-(--space-3) text-xs leading-6 text-base-content/75">
+                      {renderDetails(selectedEntry.raw.details)}
+                    </pre>
+                  </div>
+                </details>
               </>
             )}
           </AppCardContent>
