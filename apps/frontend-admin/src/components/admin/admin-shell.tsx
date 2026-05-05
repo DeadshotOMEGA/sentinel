@@ -85,19 +85,16 @@ function AdminSidebarLink({
   currentRouteId: AdminNavRoute['id']
   active: boolean
 }) {
-  const descriptionId = `admin-sidebar-${route.id}-description`
-
   return (
     <li>
       <Link
         href={route.href}
         className={cn(
-          'tooltip tooltip-right grid min-h-12 grid-cols-[1.1rem_minmax(0,1fr)] items-center gap-(--space-3) rounded-box border-l-4 border-l-transparent px-(--space-3) py-(--space-2) text-left text-base-content/90 transition-colors duration-(--duration-fast) hover:z-(--z-tooltip) hover:bg-base-200 hover:text-base-content focus-visible:z-(--z-tooltip)',
+          'grid min-h-12 grid-cols-[1.1rem_minmax(0,1fr)] items-center gap-(--space-3) rounded-box border-l-4 border-l-transparent px-(--space-3) py-(--space-2) text-left text-base-content/90 transition-colors duration-(--duration-fast) hover:z-(--z-tooltip) hover:bg-base-200 hover:text-base-content focus-visible:z-(--z-tooltip)',
           active && 'border-l-primary bg-base-200 text-base-content shadow-[var(--shadow-1)]'
         )}
         aria-current={active ? 'page' : undefined}
-        aria-describedby={descriptionId}
-        data-tip={route.description}
+        aria-label={`${route.label}: ${route.description}`}
         onClick={() => {
           recordAdminNavigationTelemetry({
             eventType: 'nav_click',
@@ -114,9 +111,6 @@ function AdminSidebarLink({
         <span className="min-w-0">
           <span className={cn('block truncate text-sm font-semibold', active && 'font-bold')}>
             {route.label}
-          </span>
-          <span id={descriptionId} className="sr-only">
-            {route.description}
           </span>
         </span>
       </Link>

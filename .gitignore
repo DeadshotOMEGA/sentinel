@@ -43,6 +43,8 @@ apps/backend/*.png
 
 # Logs
 logs/
+!apps/frontend-admin/src/app/admin/logs/
+!apps/frontend-admin/src/app/admin/logs/**
 !apps/frontend-admin/src/app/logs/
 !apps/frontend-admin/src/app/logs/**
 !apps/frontend-admin/src/components/logs/
