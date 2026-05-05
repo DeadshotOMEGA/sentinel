@@ -11,6 +11,7 @@ import {
 } from '@/lib/post-login-destination'
 import { isKioskRoute } from '@/lib/kiosk-device-auth'
 import { useAuthStore } from '@/store/auth-store'
+import { shouldIgnoreStaleUnauthorizedSessionCheck } from './auth-hydrator.logic'
 
 /**
  * Validates the session cookie on mount and syncs the Zustand auth store.
@@ -25,6 +26,8 @@ export function AuthHydrator() {
   const kioskRoute = isKioskRoute(pathname)
 
   const validateSession = useEffectEvent(async () => {
+    const wasAuthenticatedAtRequestStart = useAuthStore.getState().isAuthenticated
+
     try {
       const response = await apiClient.auth.getSession()
 
@@ -54,6 +57,15 @@ export function AuthHydrator() {
       }
 
       if (response.status === 401) {
+        if (
+          shouldIgnoreStaleUnauthorizedSessionCheck({
+            wasAuthenticatedAtRequestStart,
+            isAuthenticatedNow: useAuthStore.getState().isAuthenticated,
+          })
+        ) {
+          return
+        }
+
         logout()
         if (pathname !== '/login' && !kioskRoute) {
           router.replace(buildForcedReauthLoginUrl())
@@ -61,7 +73,7 @@ export function AuthHydrator() {
         return
       }
 
-      if (isAuthenticated) {
+      if (useAuthStore.getState().isAuthenticated) {
         logout()
         if (pathname !== '/login' && !kioskRoute) {
           router.replace(buildLoginUrl(pathname, window.location.search))
