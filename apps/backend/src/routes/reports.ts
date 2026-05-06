@@ -1,4 +1,5 @@
 import { initServer } from '@ts-rest/express'
+import type { Request } from 'express'
 import { reportContract } from '@sentinel/contracts'
 import type {
   DailyCheckinConfig,
@@ -8,9 +9,48 @@ import type {
   VisitorSummaryConfig,
 } from '@sentinel/contracts'
 import { getPrismaClient } from '../lib/database.js'
+import { AccountLevel } from '../middleware/roles.js'
+import {
+  OperationalReportService,
+  type OperationalReportActor,
+} from '../services/operational-report-service.js'
 
 const s = initServer()
 const prisma = getPrismaClient()
+const operationalReportService = new OperationalReportService(getPrismaClient())
+
+function requireAdminOrDeveloper(req: Request) {
+  if (!req.member) {
+    return {
+      status: 401 as const,
+      body: {
+        error: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      },
+    }
+  }
+
+  if ((req.member.accountLevel ?? 0) < AccountLevel.ADMIN) {
+    return {
+      status: 403 as const,
+      body: {
+        error: 'FORBIDDEN',
+        message: 'Admin or Developer access required',
+      },
+    }
+  }
+
+  return null
+}
+
+function getReportActor(req: Request): OperationalReportActor {
+  return {
+    id: req.member?.id ?? 'unknown',
+    rank: req.member?.rank,
+    firstName: req.member?.firstName,
+    lastName: req.member?.lastName,
+  }
+}
 
 /**
  * Report generation routes
@@ -18,6 +58,126 @@ const prisma = getPrismaClient()
  * Generates various attendance and personnel reports with complex aggregations
  */
 export const reportsRouter = s.router(reportContract, {
+  generateDailyPresence: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateDailyPresence(body, getReportActor(req)),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to generate daily presence report',
+        },
+      }
+    }
+  },
+
+  generateWeeklyPresence: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateWeeklyPresence(body, getReportActor(req)),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to generate weekly presence report',
+        },
+      }
+    }
+  },
+
+  generateMonthlyPresence: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateMonthlyPresence(body, getReportActor(req)),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to generate monthly presence report',
+        },
+      }
+    }
+  },
+
+  generateTrainingNightMonthly: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateTrainingNightMonthly(
+          body,
+          getReportActor(req)
+        ),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate training night monthly report',
+        },
+      }
+    }
+  },
+
+  generateVisitorActivity: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateVisitorActivity(body, getReportActor(req)),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to generate visitor activity report',
+        },
+      }
+    }
+  },
+
   /**
    * POST /api/reports/daily-checkin - Generate daily check-in summary
    */
