@@ -206,6 +206,18 @@ def start_updater_unit() -> None:
     trace("info", f"Updater unit {UPDATER_UNIT} was handed off successfully.")
 
 
+def load_bridge_appliance_state() -> dict[str, Any]:
+    try:
+        return load_appliance_state()
+    except (OSError, json.JSONDecodeError) as error:
+        trace(
+            "warning",
+            "Could not read appliance state before updater handoff; "
+            f"the root updater will refresh version metadata after it starts. Reason: {error}",
+        )
+        return {}
+
+
 def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
     lock_handle = LOCK_PATH.open("a+", encoding="utf-8")
     try:
@@ -219,8 +231,8 @@ def persist_initial_job(payload: dict[str, Any]) -> dict[str, Any]:
             trace_if_exists("warning", "Rejected a new update request because another update job is already active.")
             raise BridgeError("An update is already in progress.", status=409)
 
-        state = load_appliance_state()
         # The bridge runs as an unprivileged service account; appliance.env stays root-only.
+        state = load_bridge_appliance_state()
         current_version = state.get("currentVersion")
         job = {
             "schemaVersion": 2,
