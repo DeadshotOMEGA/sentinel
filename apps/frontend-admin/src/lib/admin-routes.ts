@@ -13,6 +13,7 @@ export type AdminCapability =
 
 export type AdminRouteId =
   | 'admin-home'
+  | 'reports'
   | 'updates'
   | 'network'
   | 'logs'
@@ -43,6 +44,7 @@ export type AdminIconKey =
   | 'clock'
   | 'database'
   | 'download'
+  | 'file-text'
   | 'list'
   | 'logs'
   | 'network'
@@ -117,6 +119,22 @@ export const ADMIN_NAV_ROUTES = [
     searchWeight: 95,
     requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
     requiredCapabilities: ['admin:view', 'updates:manage'],
+    navVisibility: 'sidebar',
+    featureStatus: 'available',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    href: '/admin/reports',
+    group: 'Diagnostics',
+    tier: 1,
+    icon: 'file-text',
+    description: 'Generate printable attendance, presence, and visitor reports.',
+    aliases: ['attendance reports', 'presence reports', 'visitor reports', 'training reports'],
+    keywords: ['reports', 'attendance', 'presence', 'training', 'visitors', 'print', 'pdf'],
+    searchWeight: 86,
+    requiredRole: ADMIN_ROLE_LEVEL.ADMIN,
+    requiredCapabilities: ['admin:view'],
     navVisibility: 'sidebar',
     featureStatus: 'available',
   },

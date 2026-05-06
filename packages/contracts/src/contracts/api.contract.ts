@@ -36,13 +36,50 @@ import { adminNavigationContract } from './admin-navigation.contract.js'
 
 const c = initContract()
 
+export type ApiContract = {
+  members: typeof memberContract
+  checkins: typeof checkinContract
+  divisions: typeof divisionContract
+  badges: typeof badgeContract
+  auditLogs: typeof auditContract
+  enums: typeof enumContract
+  adminUsers: typeof adminUserContract
+  lists: typeof listContract
+  trainingYears: typeof trainingYearContract
+  bmqCourses: typeof bmqCourseContract
+  reportSettings: typeof reportSettingContract
+  alertConfigs: typeof alertConfigContract
+  reports: typeof reportContract
+  devTools: typeof devToolsContract
+  dev: typeof devContract
+  securityAlerts: typeof securityAlertContract
+  dds: typeof ddsContract
+  databaseExplorer: typeof databaseExplorerContract
+  ranks: typeof rankContract
+  qualifications: typeof qualificationContract
+  schedules: typeof scheduleContract
+  unitEvents: typeof unitEventContract
+  lockup: typeof lockupContract
+  visitors: typeof visitorContract
+  statHolidays: typeof statHolidayContract
+  tags: typeof tagContract
+  settings: typeof settingContract
+  operationalTimings: typeof operationalTimingContract
+  auth: typeof authContract
+  remoteSystems: typeof remoteSystemContract
+  networkSettings: typeof networkSettingContract
+  systemStatus: typeof systemStatusContract
+  systemUpdate: typeof systemUpdateContract
+  adminNavigation: typeof adminNavigationContract
+}
+
 /**
  * Main API contract
  *
  * Combines all route contracts into a single API contract
  * for use with ts-rest client and server
  */
-export const apiContract = c.router(
+export const apiContract: ApiContract = c.router(
   {
     members: memberContract,
     checkins: checkinContract,

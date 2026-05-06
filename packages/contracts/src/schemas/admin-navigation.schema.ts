@@ -10,6 +10,7 @@ export const AdminNavigationEventTypeValues = [
 
 export const AdminNavigationRouteIdValues = [
   'admin-home',
+  'reports',
   'updates',
   'network',
   'logs',

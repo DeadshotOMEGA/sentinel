@@ -27,6 +27,40 @@ export const ThresholdFlagEnum = v.picklist(['none', 'warning', 'critical'])
 
 export const TrendDirectionEnum = v.picklist(['up', 'down', 'stable', 'none'])
 
+export const OperationalReportTypeEnum = v.picklist([
+  'daily_presence',
+  'weekly_presence',
+  'monthly_presence',
+  'training_night_monthly',
+  'visitor_activity',
+])
+
+export const OperationalReportScopeEnum = v.picklist([
+  'everyone',
+  'department',
+  'tag',
+  'fts',
+  'geo',
+])
+
+export const PresenceSessionStatusEnum = v.picklist(['complete', 'open', 'degraded'])
+
+export const KeyNightCategoryEnum = v.picklist(['training', 'administrative'])
+
+export const KeyNightSourceEnum = v.picklist(['unit_event', 'report_settings'])
+
+const LocalDateSchema = v.pipe(
+  v.string('Date is required'),
+  v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+)
+
+const LocalMonthSchema = v.pipe(
+  v.string('Month is required'),
+  v.regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format')
+)
+
+const UuidSchema = v.pipe(v.string(), v.uuid('Invalid ID format'))
+
 // ============================================================================
 // Request Schemas
 // ============================================================================
@@ -46,9 +80,7 @@ export type DailyCheckinConfig = v.InferOutput<typeof DailyCheckinConfigSchema>
  */
 export const TrainingNightReportConfigSchema = v.pipe(
   v.object({
-    period: v.optional(
-      v.picklist(['current_year', 'last_quarter', 'last_month', 'custom'])
-    ),
+    period: v.optional(v.picklist(['current_year', 'last_quarter', 'last_month', 'custom'])),
     periodStart: v.optional(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
     periodEnd: v.optional(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
     organizationOption: OrganizationOptionEnum,
@@ -66,9 +98,7 @@ export const TrainingNightReportConfigSchema = v.pipe(
   }, 'Custom period requires both periodStart and periodEnd')
 )
 
-export type TrainingNightReportConfig = v.InferOutput<
-  typeof TrainingNightReportConfigSchema
->
+export type TrainingNightReportConfig = v.InferOutput<typeof TrainingNightReportConfigSchema>
 
 /**
  * BMQ attendance report configuration
@@ -108,6 +138,71 @@ export const VisitorSummaryConfigSchema = v.pipe(
 )
 
 export type VisitorSummaryConfig = v.InferOutput<typeof VisitorSummaryConfigSchema>
+
+/**
+ * Shared operational presence report request.
+ */
+export const PresenceReportConfigSchema = v.object({
+  scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  divisionId: v.optional(UuidSchema),
+  tagId: v.optional(UuidSchema),
+})
+
+export type PresenceReportConfig = v.InferOutput<typeof PresenceReportConfigSchema>
+
+export const DailyPresenceReportConfigSchema = v.object({
+  date: LocalDateSchema,
+  scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  divisionId: v.optional(UuidSchema),
+  tagId: v.optional(UuidSchema),
+})
+
+export type DailyPresenceReportConfig = v.InferOutput<typeof DailyPresenceReportConfigSchema>
+
+export const WeeklyPresenceReportConfigSchema = v.object({
+  weekStartDate: LocalDateSchema,
+  scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  divisionId: v.optional(UuidSchema),
+  tagId: v.optional(UuidSchema),
+})
+
+export type WeeklyPresenceReportConfig = v.InferOutput<typeof WeeklyPresenceReportConfigSchema>
+
+export const MonthlyPresenceReportConfigSchema = v.object({
+  month: LocalMonthSchema,
+  scopeType: v.optional(OperationalReportScopeEnum, 'everyone'),
+  divisionId: v.optional(UuidSchema),
+  tagId: v.optional(UuidSchema),
+})
+
+export type MonthlyPresenceReportConfig = v.InferOutput<typeof MonthlyPresenceReportConfigSchema>
+
+export const TrainingNightMonthlyReportConfigSchema = v.object({
+  month: LocalMonthSchema,
+  divisionId: UuidSchema,
+})
+
+export type TrainingNightMonthlyReportConfig = v.InferOutput<
+  typeof TrainingNightMonthlyReportConfigSchema
+>
+
+export const VisitorActivityReportConfigSchema = v.pipe(
+  v.object({
+    startDate: LocalDateSchema,
+    endDate: LocalDateSchema,
+    visitType: v.optional(v.string()),
+    visitorPurpose: v.optional(v.string()),
+    eventLinked: v.optional(v.boolean()),
+    hostMemberId: v.optional(UuidSchema),
+    organization: v.optional(v.string()),
+  }),
+  v.check(
+    (data) => new Date(data.startDate) <= new Date(data.endDate),
+    'Start date must be before or equal to end date'
+  )
+)
+
+export type VisitorActivityReportConfig = v.InferOutput<typeof VisitorActivityReportConfigSchema>
 
 // ============================================================================
 // Response Component Schemas
@@ -154,6 +249,333 @@ export const TrendIndicatorSchema = v.object({
 })
 
 export type TrendIndicator = v.InferOutput<typeof TrendIndicatorSchema>
+
+export const ReportGeneratedBySchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+})
+
+export type ReportGeneratedBy = v.InferOutput<typeof ReportGeneratedBySchema>
+
+export const ReportDateRangeSchema = v.object({
+  startDate: v.string(),
+  endDate: v.string(),
+  label: v.string(),
+})
+
+export type ReportDateRange = v.InferOutput<typeof ReportDateRangeSchema>
+
+export const ReportFilterSummarySchema = v.object({
+  scopeLabel: v.string(),
+  divisionId: v.optional(v.string()),
+  tagId: v.optional(v.string()),
+  visitorType: v.optional(v.string()),
+  visitorPurpose: v.optional(v.string()),
+  eventCategory: v.optional(v.string()),
+})
+
+export type ReportFilterSummary = v.InferOutput<typeof ReportFilterSummarySchema>
+
+const ReportEnvelopeBaseEntries = {
+  reportType: OperationalReportTypeEnum,
+  title: v.string(),
+  generatedAt: v.string(),
+  generatedBy: ReportGeneratedBySchema,
+  unitName: v.string(),
+  dateRange: ReportDateRangeSchema,
+  filters: ReportFilterSummarySchema,
+  warnings: v.array(v.string()),
+}
+
+export const ReportDivisionSummarySchema = v.object({
+  id: v.nullable(v.string()),
+  code: v.nullable(v.string()),
+  name: v.string(),
+})
+
+export type ReportDivisionSummary = v.InferOutput<typeof ReportDivisionSummarySchema>
+
+export const ReportTagSummarySchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  chipVariant: v.nullable(v.string()),
+  chipColor: v.nullable(v.string()),
+  isPositional: v.boolean(),
+  source: v.picklist(['direct', 'qualification']),
+})
+
+export type ReportTagSummary = v.InferOutput<typeof ReportTagSummarySchema>
+
+export const ReportMemberSummarySchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+  rank: v.string(),
+  status: v.string(),
+  division: v.nullable(ReportDivisionSummarySchema),
+  memberType: v.nullable(v.string()),
+  tags: v.array(ReportTagSummarySchema),
+})
+
+export type ReportMemberSummary = v.InferOutput<typeof ReportMemberSummarySchema>
+
+export const PresenceSessionSchema = v.object({
+  inAt: v.string(),
+  outAt: v.nullable(v.string()),
+  durationMinutes: v.nullable(v.number()),
+  status: PresenceSessionStatusEnum,
+})
+
+export type PresenceSession = v.InferOutput<typeof PresenceSessionSchema>
+
+export const PresenceMarkerSchema = v.object({
+  date: v.string(),
+  label: v.string(),
+  present: v.boolean(),
+  firstIn: v.nullable(v.string()),
+  lastOut: v.nullable(v.string()),
+  sessionCount: v.number(),
+  note: v.nullable(v.string()),
+})
+
+export type PresenceMarker = v.InferOutput<typeof PresenceMarkerSchema>
+
+export const KeyNightSchema = v.object({
+  id: v.string(),
+  category: KeyNightCategoryEnum,
+  source: KeyNightSourceEnum,
+  date: v.string(),
+  label: v.string(),
+  title: v.string(),
+  startAt: v.nullable(v.string()),
+  endAt: v.nullable(v.string()),
+})
+
+export type KeyNight = v.InferOutput<typeof KeyNightSchema>
+
+export const KeyNightPresenceMarkerSchema = v.object({
+  keyNightId: v.string(),
+  present: v.boolean(),
+  firstIn: v.nullable(v.string()),
+  lastOut: v.nullable(v.string()),
+})
+
+export type KeyNightPresenceMarker = v.InferOutput<typeof KeyNightPresenceMarkerSchema>
+
+export const DailyPresenceRowSchema = v.object({
+  member: ReportMemberSummarySchema,
+  firstIn: v.nullable(v.string()),
+  lastOut: v.nullable(v.string()),
+  sessionCount: v.number(),
+  leftAndReturned: v.boolean(),
+  sessions: v.array(PresenceSessionSchema),
+})
+
+export type DailyPresenceRow = v.InferOutput<typeof DailyPresenceRowSchema>
+
+export const DailyPresenceReportDataSchema = v.object({
+  summary: v.object({
+    totalScopedMembers: v.number(),
+    presentMembers: v.number(),
+    totalSessions: v.number(),
+    leftAndReturnedCount: v.number(),
+    openSessionCount: v.number(),
+  }),
+  rows: v.array(DailyPresenceRowSchema),
+})
+
+export type DailyPresenceReportData = v.InferOutput<typeof DailyPresenceReportDataSchema>
+
+export const DailyPresenceReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('daily_presence'),
+  data: DailyPresenceReportDataSchema,
+})
+
+export type DailyPresenceReportResponse = v.InferOutput<typeof DailyPresenceReportResponseSchema>
+
+export const WeeklyPresenceRowSchema = v.object({
+  member: ReportMemberSummarySchema,
+  days: v.array(PresenceMarkerSchema),
+  trainingNightPresent: v.nullable(v.boolean()),
+  adminNightPresent: v.nullable(v.boolean()),
+  keyNights: v.array(KeyNightPresenceMarkerSchema),
+  totalDaysPresent: v.number(),
+  totalSessions: v.number(),
+})
+
+export type WeeklyPresenceRow = v.InferOutput<typeof WeeklyPresenceRowSchema>
+
+export const WeeklyPresenceReportDataSchema = v.object({
+  summary: v.object({
+    totalMembers: v.number(),
+    membersWithPresence: v.number(),
+    trainingNightCount: v.number(),
+    adminNightCount: v.number(),
+  }),
+  days: v.array(
+    v.object({
+      date: v.string(),
+      label: v.string(),
+      isTrainingNight: v.boolean(),
+      isAdminNight: v.boolean(),
+    })
+  ),
+  keyNights: v.array(KeyNightSchema),
+  rows: v.array(WeeklyPresenceRowSchema),
+})
+
+export type WeeklyPresenceReportData = v.InferOutput<typeof WeeklyPresenceReportDataSchema>
+
+export const WeeklyPresenceReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('weekly_presence'),
+  data: WeeklyPresenceReportDataSchema,
+})
+
+export type WeeklyPresenceReportResponse = v.InferOutput<typeof WeeklyPresenceReportResponseSchema>
+
+export const MonthlyPresenceRowSchema = v.object({
+  member: ReportMemberSummarySchema,
+  days: v.array(PresenceMarkerSchema),
+  keyNights: v.array(KeyNightPresenceMarkerSchema),
+  totalDaysPresent: v.number(),
+  totalSessions: v.number(),
+  trainingNightsPresent: v.number(),
+  adminNightsPresent: v.number(),
+})
+
+export type MonthlyPresenceRow = v.InferOutput<typeof MonthlyPresenceRowSchema>
+
+export const MonthlyPresenceReportDataSchema = v.object({
+  summary: v.object({
+    totalMembers: v.number(),
+    membersWithPresence: v.number(),
+    totalMemberDaysPresent: v.number(),
+    trainingNightCount: v.number(),
+    adminNightCount: v.number(),
+  }),
+  days: v.array(
+    v.object({
+      date: v.string(),
+      label: v.string(),
+      isTrainingNight: v.boolean(),
+      isAdminNight: v.boolean(),
+    })
+  ),
+  keyNights: v.array(KeyNightSchema),
+  rows: v.array(MonthlyPresenceRowSchema),
+})
+
+export type MonthlyPresenceReportData = v.InferOutput<typeof MonthlyPresenceReportDataSchema>
+
+export const MonthlyPresenceReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('monthly_presence'),
+  data: MonthlyPresenceReportDataSchema,
+})
+
+export type MonthlyPresenceReportResponse = v.InferOutput<
+  typeof MonthlyPresenceReportResponseSchema
+>
+
+export const TrainingNightMonthlyRowSchema = v.object({
+  member: ReportMemberSummarySchema,
+  nights: v.array(KeyNightPresenceMarkerSchema),
+  attended: v.number(),
+  possible: v.number(),
+  percentage: v.number(),
+})
+
+export type TrainingNightMonthlyRow = v.InferOutput<typeof TrainingNightMonthlyRowSchema>
+
+export const TrainingNightMonthlyReportDataSchema = v.object({
+  department: v.nullable(ReportDivisionSummarySchema),
+  trainingNights: v.array(KeyNightSchema),
+  rows: v.array(TrainingNightMonthlyRowSchema),
+  summary: v.object({
+    totalMembers: v.number(),
+    trainingNightCount: v.number(),
+    averageAttendancePercentage: v.number(),
+  }),
+})
+
+export type TrainingNightMonthlyReportData = v.InferOutput<
+  typeof TrainingNightMonthlyReportDataSchema
+>
+
+export const TrainingNightMonthlyReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('training_night_monthly'),
+  data: TrainingNightMonthlyReportDataSchema,
+})
+
+export type TrainingNightMonthlyReportResponse = v.InferOutput<
+  typeof TrainingNightMonthlyReportResponseSchema
+>
+
+export const VisitorActivityRowSchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+  organization: v.nullable(v.string()),
+  visitType: v.string(),
+  visitPurpose: v.nullable(v.string()),
+  visitReason: v.nullable(v.string()),
+  checkInTime: v.string(),
+  checkOutTime: v.nullable(v.string()),
+  durationMinutes: v.nullable(v.number()),
+  event: v.nullable(
+    v.object({
+      id: v.string(),
+      name: v.string(),
+    })
+  ),
+  host: v.nullable(
+    v.object({
+      id: v.string(),
+      displayName: v.string(),
+    })
+  ),
+})
+
+export type VisitorActivityRow = v.InferOutput<typeof VisitorActivityRowSchema>
+
+export const VisitorActivityReportDataSchema = v.object({
+  summary: v.object({
+    totalVisitors: v.number(),
+    activeAtEnd: v.number(),
+    byVisitType: v.array(
+      v.object({
+        label: v.string(),
+        count: v.number(),
+      })
+    ),
+    byPurpose: v.array(
+      v.object({
+        label: v.string(),
+        count: v.number(),
+      })
+    ),
+    byEvent: v.array(
+      v.object({
+        label: v.string(),
+        count: v.number(),
+      })
+    ),
+  }),
+  rows: v.array(VisitorActivityRowSchema),
+})
+
+export type VisitorActivityReportData = v.InferOutput<typeof VisitorActivityReportDataSchema>
+
+export const VisitorActivityReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('visitor_activity'),
+  data: VisitorActivityReportDataSchema,
+})
+
+export type VisitorActivityReportResponse = v.InferOutput<
+  typeof VisitorActivityReportResponseSchema
+>
 
 // ============================================================================
 // Response Schemas

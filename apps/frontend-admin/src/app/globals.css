@@ -258,6 +258,85 @@
   color: oklch(21% 0.006 285.885);
 }
 
+/* ========================================
+   ADMIN REPORT PRINT OUTPUT
+   Keep printed reports document-like and hide app chrome.
+   ======================================== */
+
+.reports-print-inline {
+  display: none;
+}
+
+@page {
+  margin: 0.45in;
+}
+
+@page reports-landscape {
+  size: landscape;
+  margin: 0.35in;
+}
+
+@media print {
+  html,
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .reports-print-document,
+  .reports-print-document * {
+    visibility: visible !important;
+  }
+
+  .reports-screen-only {
+    display: none !important;
+  }
+
+  .reports-print-inline {
+    display: inline !important;
+  }
+
+  .reports-print-document {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: black !important;
+    background: white !important;
+  }
+
+  .reports-print-landscape {
+    page: reports-landscape;
+  }
+
+  .reports-summary-grid,
+  .reports-print-document section,
+  .reports-print-document tr {
+    break-inside: avoid;
+  }
+
+  .reports-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 10pt !important;
+  }
+
+  .reports-table thead {
+    display: table-header-group;
+  }
+
+  .reports-table th,
+  .reports-table td {
+    border-bottom: 1px solid oklch(86% 0.005 56.366) !important;
+    padding: 0.18rem 0.25rem !important;
+  }
+}
+
 .kiosk-simple-keyboard.hg-theme-default .hg-button[data-skbtn='{continue}'] {
   background: oklch(60.5% 0.216 257.16);
   color: oklch(97% 0.014 254.604);

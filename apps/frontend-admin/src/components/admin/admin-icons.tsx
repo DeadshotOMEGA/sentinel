@@ -7,6 +7,7 @@ import {
   Clock3,
   Database,
   Download,
+  FileText,
   ListChecks,
   Network,
   ScrollText,
@@ -35,6 +36,8 @@ export function AdminIcon({ icon, ...props }: AdminIconProps) {
       return <Database {...props} />
     case 'download':
       return <Download {...props} />
+    case 'file-text':
+      return <FileText {...props} />
     case 'list':
       return <ListChecks {...props} />
     case 'logs':

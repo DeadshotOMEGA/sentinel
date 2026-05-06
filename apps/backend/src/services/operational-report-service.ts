@@ -1,0 +1,1151 @@
+import * as v from 'valibot'
+import { DateTime } from 'luxon'
+import type {
+  DailyPresenceReportConfig,
+  DailyPresenceReportResponse,
+  KeyNight,
+  MonthlyPresenceReportConfig,
+  MonthlyPresenceReportResponse,
+  PresenceMarker,
+  PresenceSession,
+  ReportMemberSummary,
+  ReportTagSummary,
+  TrainingNightMonthlyReportConfig,
+  TrainingNightMonthlyReportResponse,
+  VisitorActivityReportConfig,
+  VisitorActivityReportResponse,
+  WeeklyPresenceReportConfig,
+  WeeklyPresenceReportResponse,
+} from '@sentinel/contracts'
+import { ScheduleSettingsValueSchema } from '@sentinel/contracts'
+import type { PrismaClientInstance } from '@sentinel/database'
+import { DEFAULT_TIMEZONE } from '../utils/operational-date.js'
+import {
+  OperationalReportRepository,
+  type OperationalReportCheckinRecord,
+  type OperationalReportMemberRecord,
+  type OperationalReportUnitEventRecord,
+  type OperationalReportVisitorRecord,
+} from '../repositories/operational-report-repository.js'
+
+const UNIT_NAME = 'HMCS Chippawa'
+const REPORT_LOOKBACK_DAYS = 1
+
+type ReportScopeType = 'everyone' | 'department' | 'tag' | 'fts' | 'geo'
+type KeyNightCategory = 'training' | 'administrative'
+
+export interface OperationalReportActor {
+  id: string
+  rank?: string
+  firstName?: string
+  lastName?: string
+}
+
+interface DateRange {
+  start: Date
+  end: Date
+  startDate: string
+  endDate: string
+  label: string
+}
+
+interface EffectiveScope {
+  divisionId?: string
+  tagId?: string
+  scopeLabel: string
+  warnings: string[]
+  noResults: boolean
+}
+
+export interface PresenceSessionInternal {
+  memberId: string
+  inAt: Date
+  outAt: Date | null
+  status: 'complete' | 'open' | 'degraded'
+}
+
+interface KeyNightWindow extends KeyNight {
+  start: Date | null
+  end: Date | null
+}
+
+interface PresenceStats {
+  present: boolean
+  firstIn: string | null
+  lastOut: string | null
+  sessionCount: number
+  note: string | null
+}
+
+export function pairOperationalPresenceSessions(
+  checkins: OperationalReportCheckinRecord[],
+  warnings: Set<string>
+): Map<string, PresenceSessionInternal[]> {
+  const grouped = new Map<string, OperationalReportCheckinRecord[]>()
+  for (const checkin of checkins) {
+    if (!checkin.memberId) {
+      continue
+    }
+    const items = grouped.get(checkin.memberId) ?? []
+    items.push(checkin)
+    grouped.set(checkin.memberId, items)
+  }
+
+  const sessionsByMember = new Map<string, PresenceSessionInternal[]>()
+
+  for (const [memberId, records] of grouped) {
+    const sorted = [...records].sort(
+      (left, right) => left.timestamp.getTime() - right.timestamp.getTime()
+    )
+    const sessions: PresenceSessionInternal[] = []
+    let openIn: OperationalReportCheckinRecord | null = null
+
+    for (const record of sorted) {
+      const direction = record.direction.toLowerCase()
+
+      if (direction === 'in') {
+        if (openIn) {
+          warnings.add(
+            'Some members have multiple check-ins without an intervening checkout; affected sessions are marked as degraded.'
+          )
+          sessions.push({
+            memberId,
+            inAt: openIn.timestamp,
+            outAt: null,
+            status: 'degraded',
+          })
+        }
+        openIn = record
+        continue
+      }
+
+      if (direction === 'out') {
+        if (!openIn) {
+          warnings.add(
+            'Some checkout records could not be paired with a prior check-in and were ignored.'
+          )
+          continue
+        }
+
+        if (record.timestamp < openIn.timestamp) {
+          warnings.add(
+            'Some checkout records were earlier than their paired check-in and were ignored.'
+          )
+          openIn = null
+          continue
+        }
+
+        sessions.push({
+          memberId,
+          inAt: openIn.timestamp,
+          outAt: record.timestamp,
+          status: 'complete',
+        })
+        openIn = null
+        continue
+      }
+
+      warnings.add('Some check-in records used an unknown direction and were ignored.')
+    }
+
+    if (openIn) {
+      sessions.push({
+        memberId,
+        inAt: openIn.timestamp,
+        outAt: null,
+        status: 'open',
+      })
+    }
+
+    sessionsByMember.set(memberId, sessions)
+  }
+
+  return sessionsByMember
+}
+
+export class OperationalReportService {
+  private repository: OperationalReportRepository
+
+  constructor(prismaClient?: PrismaClientInstance, repository?: OperationalReportRepository) {
+    this.repository = repository ?? new OperationalReportRepository(prismaClient)
+  }
+
+  async generateDailyPresence(
+    config: DailyPresenceReportConfig,
+    actor: OperationalReportActor
+  ): Promise<DailyPresenceReportResponse> {
+    const range = this.getDayRange(config.date)
+    const warnings = new Set<string>()
+    const scope = await this.resolveScope(config, warnings)
+    const members = scope.noResults
+      ? []
+      : await this.repository.findActiveMembers({
+          divisionId: scope.divisionId,
+          tagId: scope.tagId,
+        })
+    const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+
+    const rows = members
+      .map((member) => {
+        const memberSessions = sessionsByMember.get(member.id) ?? []
+        const overlappingSessions = memberSessions.filter((session) =>
+          this.sessionOverlaps(session, range.start, range.end)
+        )
+
+        if (overlappingSessions.length === 0) {
+          return null
+        }
+
+        const stats = this.getPresenceStats(overlappingSessions, range.start, range.end)
+
+        return {
+          member: this.toMemberSummary(member),
+          firstIn: stats.firstIn,
+          lastOut: stats.lastOut,
+          sessionCount: stats.sessionCount,
+          leftAndReturned: stats.sessionCount > 1,
+          sessions: overlappingSessions.map((session) =>
+            this.toPresenceSession(session, range.start, range.end)
+          ),
+        }
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null)
+
+    return {
+      ...this.getEnvelopeBase('daily_presence', 'Daily Presence Report', actor, range, {
+        scopeLabel: scope.scopeLabel,
+        divisionId: scope.divisionId,
+        tagId: scope.tagId,
+      }),
+      warnings: Array.from(warnings),
+      data: {
+        summary: {
+          totalScopedMembers: members.length,
+          presentMembers: rows.length,
+          totalSessions: rows.reduce((total, row) => total + row.sessionCount, 0),
+          leftAndReturnedCount: rows.filter((row) => row.leftAndReturned).length,
+          openSessionCount: rows.reduce(
+            (total, row) =>
+              total + row.sessions.filter((session) => session.status !== 'complete').length,
+            0
+          ),
+        },
+        rows,
+      },
+    }
+  }
+
+  async generateWeeklyPresence(
+    config: WeeklyPresenceReportConfig,
+    actor: OperationalReportActor
+  ): Promise<WeeklyPresenceReportResponse> {
+    const range = this.getWeekRange(config.weekStartDate)
+    const warnings = new Set<string>()
+    const scope = await this.resolveScope(config, warnings)
+    const members = scope.noResults
+      ? []
+      : await this.repository.findActiveMembers({
+          divisionId: scope.divisionId,
+          tagId: scope.tagId,
+        })
+    const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
+    const days = this.getDatesInRange(range).map((date) => ({
+      date,
+      label: this.formatShortDate(date),
+      isTrainingNight: keyNights.some(
+        (night) => night.category === 'training' && night.date === date
+      ),
+      isAdminNight: keyNights.some(
+        (night) => night.category === 'administrative' && night.date === date
+      ),
+    }))
+
+    const rows = members.map((member) => {
+      const memberSessions = sessionsByMember.get(member.id) ?? []
+      const dayMarkers = days.map((day) =>
+        this.getPresenceMarker(day.date, memberSessions, this.formatShortDate(day.date))
+      )
+      const keyNightMarkers = keyNights.map((night) =>
+        this.getKeyNightPresenceMarker(night, memberSessions)
+      )
+
+      return {
+        member: this.toMemberSummary(member),
+        days: dayMarkers,
+        trainingNightPresent: this.getCategoryPresence('training', keyNights, keyNightMarkers),
+        adminNightPresent: this.getCategoryPresence('administrative', keyNights, keyNightMarkers),
+        keyNights: keyNightMarkers,
+        totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
+        totalSessions: memberSessions.filter((session) =>
+          this.sessionOverlaps(session, range.start, range.end)
+        ).length,
+      }
+    })
+
+    return {
+      ...this.getEnvelopeBase('weekly_presence', 'Weekly Presence Report', actor, range, {
+        scopeLabel: scope.scopeLabel,
+        divisionId: scope.divisionId,
+        tagId: scope.tagId,
+      }),
+      warnings: Array.from(warnings),
+      data: {
+        summary: {
+          totalMembers: members.length,
+          membersWithPresence: rows.filter((row) => row.totalDaysPresent > 0).length,
+          trainingNightCount: keyNights.filter((night) => night.category === 'training').length,
+          adminNightCount: keyNights.filter((night) => night.category === 'administrative').length,
+        },
+        days,
+        keyNights: keyNights.map(this.toApiKeyNight),
+        rows,
+      },
+    }
+  }
+
+  async generateMonthlyPresence(
+    config: MonthlyPresenceReportConfig,
+    actor: OperationalReportActor
+  ): Promise<MonthlyPresenceReportResponse> {
+    const range = this.getMonthRange(config.month)
+    const warnings = new Set<string>()
+    const scope = await this.resolveScope(config, warnings)
+    const members = scope.noResults
+      ? []
+      : await this.repository.findActiveMembers({
+          divisionId: scope.divisionId,
+          tagId: scope.tagId,
+        })
+    const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
+    const days = this.getDatesInRange(range).map((date) => ({
+      date,
+      label: DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).toFormat('d'),
+      isTrainingNight: keyNights.some(
+        (night) => night.category === 'training' && night.date === date
+      ),
+      isAdminNight: keyNights.some(
+        (night) => night.category === 'administrative' && night.date === date
+      ),
+    }))
+
+    const rows = members.map((member) => {
+      const memberSessions = sessionsByMember.get(member.id) ?? []
+      const dayMarkers = days.map((day) =>
+        this.getPresenceMarker(day.date, memberSessions, day.label)
+      )
+      const keyNightMarkers = keyNights.map((night) =>
+        this.getKeyNightPresenceMarker(night, memberSessions)
+      )
+
+      return {
+        member: this.toMemberSummary(member),
+        days: dayMarkers,
+        keyNights: keyNightMarkers,
+        totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
+        totalSessions: memberSessions.filter((session) =>
+          this.sessionOverlaps(session, range.start, range.end)
+        ).length,
+        trainingNightsPresent: this.countCategoryPresence('training', keyNights, keyNightMarkers),
+        adminNightsPresent: this.countCategoryPresence(
+          'administrative',
+          keyNights,
+          keyNightMarkers
+        ),
+      }
+    })
+
+    return {
+      ...this.getEnvelopeBase('monthly_presence', 'Monthly Presence Report', actor, range, {
+        scopeLabel: scope.scopeLabel,
+        divisionId: scope.divisionId,
+        tagId: scope.tagId,
+      }),
+      warnings: Array.from(warnings),
+      data: {
+        summary: {
+          totalMembers: members.length,
+          membersWithPresence: rows.filter((row) => row.totalDaysPresent > 0).length,
+          totalMemberDaysPresent: rows.reduce((total, row) => total + row.totalDaysPresent, 0),
+          trainingNightCount: keyNights.filter((night) => night.category === 'training').length,
+          adminNightCount: keyNights.filter((night) => night.category === 'administrative').length,
+        },
+        days,
+        keyNights: keyNights.map(this.toApiKeyNight),
+        rows,
+      },
+    }
+  }
+
+  async generateTrainingNightMonthly(
+    config: TrainingNightMonthlyReportConfig,
+    actor: OperationalReportActor
+  ): Promise<TrainingNightMonthlyReportResponse> {
+    const range = this.getMonthRange(config.month)
+    const warnings = new Set<string>()
+    const division = await this.repository.findDivisionById(config.divisionId)
+    if (!division) {
+      warnings.add('Selected department was not found. The report has no department members.')
+    }
+    const members = division
+      ? await this.repository.findActiveMembers({ divisionId: config.divisionId })
+      : []
+    const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const keyNights = await this.getKeyNights(range, ['training'], warnings)
+    const trainingNights = keyNights.filter((night) => night.category === 'training')
+
+    if (trainingNights.length === 0) {
+      warnings.add('No Training Nights were found for the selected month.')
+    }
+
+    const rows = members.map((member) => {
+      const memberSessions = sessionsByMember.get(member.id) ?? []
+      const nightMarkers = trainingNights.map((night) =>
+        this.getKeyNightPresenceMarker(night, memberSessions)
+      )
+      const attended = nightMarkers.filter((marker) => marker.present).length
+      const possible = trainingNights.length
+
+      return {
+        member: this.toMemberSummary(member),
+        nights: nightMarkers,
+        attended,
+        possible,
+        percentage: possible > 0 ? Math.round((attended / possible) * 100) : 0,
+      }
+    })
+
+    return {
+      ...this.getEnvelopeBase(
+        'training_night_monthly',
+        'Training Night Monthly Report',
+        actor,
+        range,
+        {
+          scopeLabel: division ? division.name : 'Selected department',
+          divisionId: config.divisionId,
+        }
+      ),
+      warnings: Array.from(warnings),
+      data: {
+        department: division
+          ? {
+              id: division.id,
+              code: division.code,
+              name: division.name,
+            }
+          : null,
+        trainingNights: trainingNights.map(this.toApiKeyNight),
+        rows,
+        summary: {
+          totalMembers: members.length,
+          trainingNightCount: trainingNights.length,
+          averageAttendancePercentage:
+            rows.length > 0
+              ? Math.round(rows.reduce((total, row) => total + row.percentage, 0) / rows.length)
+              : 0,
+        },
+      },
+    }
+  }
+
+  async generateVisitorActivity(
+    config: VisitorActivityReportConfig,
+    actor: OperationalReportActor
+  ): Promise<VisitorActivityReportResponse> {
+    const range = this.getCustomRange(config.startDate, config.endDate)
+    const visitors = await this.repository.findVisitors({
+      start: range.start,
+      end: range.end,
+      visitType: this.blankToUndefined(config.visitType),
+      visitorPurpose: this.blankToUndefined(config.visitorPurpose),
+      eventLinked: config.eventLinked,
+      hostMemberId: config.hostMemberId,
+      organization: this.blankToUndefined(config.organization),
+    })
+
+    const rows = visitors.map((visitor) => this.toVisitorActivityRow(visitor))
+
+    return {
+      ...this.getEnvelopeBase('visitor_activity', 'Visitor Activity Report', actor, range, {
+        scopeLabel: 'Visitor activity',
+        visitorType: this.blankToUndefined(config.visitType),
+        visitorPurpose: this.blankToUndefined(config.visitorPurpose),
+        eventCategory:
+          config.eventLinked === undefined
+            ? undefined
+            : config.eventLinked
+              ? 'Event-linked visitors'
+              : 'Visitors without event link',
+      }),
+      warnings: [],
+      data: {
+        summary: {
+          totalVisitors: rows.length,
+          activeAtEnd: visitors.filter(
+            (visitor) => !visitor.checkOutTime || visitor.checkOutTime >= range.end
+          ).length,
+          byVisitType: this.countByLabel(rows.map((row) => row.visitType)),
+          byPurpose: this.countByLabel(rows.map((row) => row.visitPurpose ?? 'Unspecified')),
+          byEvent: this.countByLabel(rows.map((row) => row.event?.name ?? 'No event link')),
+        },
+        rows,
+      },
+    }
+  }
+
+  private getEnvelopeBase<
+    TReportType extends
+      | 'daily_presence'
+      | 'weekly_presence'
+      | 'monthly_presence'
+      | 'training_night_monthly'
+      | 'visitor_activity',
+  >(
+    reportType: TReportType,
+    title: string,
+    actor: OperationalReportActor,
+    range: DateRange,
+    filters: {
+      scopeLabel: string
+      divisionId?: string
+      tagId?: string
+      visitorType?: string
+      visitorPurpose?: string
+      eventCategory?: string
+    }
+  ) {
+    return {
+      reportType,
+      title,
+      generatedAt: new Date().toISOString(),
+      generatedBy: {
+        id: actor.id,
+        displayName: this.formatActorName(actor),
+      },
+      unitName: UNIT_NAME,
+      dateRange: {
+        startDate: range.startDate,
+        endDate: range.endDate,
+        label: range.label,
+      },
+      filters,
+    }
+  }
+
+  private async resolveScope(
+    config: {
+      scopeType?: ReportScopeType
+      divisionId?: string
+      tagId?: string
+    },
+    warnings: Set<string>
+  ): Promise<EffectiveScope> {
+    const scopeType = config.scopeType ?? 'everyone'
+
+    if (scopeType === 'department') {
+      if (!config.divisionId) {
+        warnings.add('Department scope was selected, but no department was provided.')
+        return {
+          scopeLabel: 'Department',
+          warnings: Array.from(warnings),
+          noResults: true,
+        }
+      }
+
+      const division = await this.repository.findDivisionById(config.divisionId)
+      if (!division) {
+        warnings.add('Selected department was not found.')
+        return {
+          divisionId: config.divisionId,
+          scopeLabel: 'Selected department',
+          warnings: Array.from(warnings),
+          noResults: true,
+        }
+      }
+
+      return {
+        divisionId: division.id,
+        scopeLabel: division.name,
+        warnings: Array.from(warnings),
+        noResults: false,
+      }
+    }
+
+    if (scopeType === 'tag') {
+      if (!config.tagId) {
+        warnings.add('Tag scope was selected, but no tag was provided.')
+        return {
+          scopeLabel: 'Specific tag',
+          warnings: Array.from(warnings),
+          noResults: true,
+        }
+      }
+
+      const tag = await this.repository.findTagById(config.tagId)
+      if (!tag) {
+        warnings.add('Selected tag was not found.')
+        return {
+          tagId: config.tagId,
+          scopeLabel: 'Specific tag',
+          warnings: Array.from(warnings),
+          noResults: true,
+        }
+      }
+
+      return {
+        tagId: tag.id,
+        scopeLabel: tag.name,
+        warnings: Array.from(warnings),
+        noResults: false,
+      }
+    }
+
+    if (scopeType === 'fts' || scopeType === 'geo') {
+      const tag = await this.repository.findTagShortcut(scopeType)
+      if (!tag) {
+        warnings.add(`${scopeType.toUpperCase()} tag was not found. No tag IDs were hardcoded.`)
+        return {
+          scopeLabel: `${scopeType.toUpperCase()} tag shortcut`,
+          warnings: Array.from(warnings),
+          noResults: true,
+        }
+      }
+
+      return {
+        tagId: tag.id,
+        scopeLabel: tag.name,
+        warnings: Array.from(warnings),
+        noResults: false,
+      }
+    }
+
+    return {
+      scopeLabel: 'Everyone',
+      warnings: Array.from(warnings),
+      noResults: false,
+    }
+  }
+
+  private async getSessionsByMember(
+    members: OperationalReportMemberRecord[],
+    range: DateRange,
+    warnings: Set<string>
+  ): Promise<Map<string, PresenceSessionInternal[]>> {
+    const memberIds = members.map((member) => member.id)
+    const queryStart = DateTime.fromJSDate(range.start, { zone: DEFAULT_TIMEZONE })
+      .minus({ days: REPORT_LOOKBACK_DAYS })
+      .toJSDate()
+    const checkins = await this.repository.findCheckinsForMembers(memberIds, queryStart, range.end)
+    return this.pairSessions(checkins, warnings)
+  }
+
+  private pairSessions(
+    checkins: OperationalReportCheckinRecord[],
+    warnings: Set<string>
+  ): Map<string, PresenceSessionInternal[]> {
+    return pairOperationalPresenceSessions(checkins, warnings)
+  }
+
+  private getPresenceMarker(
+    date: string,
+    sessions: PresenceSessionInternal[],
+    label: string
+  ): PresenceMarker {
+    const range = this.getDayRange(date)
+    const overlapping = sessions.filter((session) =>
+      this.sessionOverlaps(session, range.start, range.end)
+    )
+    const stats = this.getPresenceStats(overlapping, range.start, range.end)
+
+    return {
+      date,
+      label,
+      present: stats.present,
+      firstIn: stats.firstIn,
+      lastOut: stats.lastOut,
+      sessionCount: stats.sessionCount,
+      note: stats.note,
+    }
+  }
+
+  private getPresenceStats(
+    sessions: PresenceSessionInternal[],
+    start: Date,
+    end: Date
+  ): PresenceStats {
+    const overlapping = sessions.filter((session) => this.sessionOverlaps(session, start, end))
+    const firstIn = this.minDate(
+      overlapping.map((session) => session.inAt).filter((date) => date >= start && date < end)
+    )
+    const lastOut = this.maxDate(
+      overlapping
+        .map((session) => session.outAt)
+        .filter((date): date is Date => date !== null && date >= start && date < end)
+    )
+    const hasOpen = overlapping.some((session) => session.outAt === null)
+
+    return {
+      present: overlapping.length > 0,
+      firstIn: firstIn?.toISOString() ?? null,
+      lastOut: lastOut?.toISOString() ?? null,
+      sessionCount: overlapping.length,
+      note: hasOpen ? 'Still present / no checkout recorded' : null,
+    }
+  }
+
+  private getKeyNightPresenceMarker(night: KeyNightWindow, sessions: PresenceSessionInternal[]) {
+    const range =
+      night.start && night.end
+        ? { start: night.start, end: night.end }
+        : this.getDayRange(night.date)
+    const stats = this.getPresenceStats(sessions, range.start, range.end)
+
+    return {
+      keyNightId: night.id,
+      present: stats.present,
+      firstIn: stats.firstIn,
+      lastOut: stats.lastOut,
+    }
+  }
+
+  private async getKeyNights(
+    range: DateRange,
+    categories: KeyNightCategory[],
+    warnings: Set<string>
+  ): Promise<KeyNightWindow[]> {
+    const events = await this.repository.findUnitEvents(range.start, range.end, categories)
+    const eventNights = events.map((event) => this.toKeyNightFromEvent(event))
+    const scheduleNights = await this.getScheduleKeyNights(range, categories, warnings)
+    const deduped = new Map<string, KeyNightWindow>()
+
+    for (const night of scheduleNights) {
+      deduped.set(`${night.category}:${night.date}`, night)
+    }
+
+    for (const night of eventNights) {
+      deduped.set(`${night.category}:${night.date}`, night)
+    }
+
+    const result = Array.from(deduped.values()).sort((left, right) =>
+      `${left.date}:${left.category}`.localeCompare(`${right.date}:${right.category}`)
+    )
+
+    for (const category of categories) {
+      if (!result.some((night) => night.category === category)) {
+        warnings.add(
+          `No ${category === 'training' ? 'Training' : 'Admin'} Nights were found from Unit Events or report schedule settings.`
+        )
+      }
+    }
+
+    return result
+  }
+
+  private async getScheduleKeyNights(
+    range: DateRange,
+    categories: KeyNightCategory[],
+    warnings: Set<string>
+  ): Promise<KeyNightWindow[]> {
+    const value = await this.repository.findReportSettingValue('schedule')
+    if (!value) {
+      return []
+    }
+
+    const parsed = v.safeParse(ScheduleSettingsValueSchema, value)
+    if (!parsed.success) {
+      warnings.add(
+        'Report schedule settings are present but invalid; schedule nights were omitted.'
+      )
+      return []
+    }
+
+    const schedule = parsed.output
+    const nights: KeyNightWindow[] = []
+    const dates = this.getDatesInRange(range)
+
+    for (const date of dates) {
+      const weekday = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).weekday
+
+      if (
+        categories.includes('training') &&
+        weekday === this.dayNameToIsoWeekday(schedule.trainingNightDay)
+      ) {
+        nights.push(
+          this.toScheduleKeyNight(
+            'training',
+            date,
+            'Training Night',
+            schedule.trainingNightStart,
+            schedule.trainingNightEnd
+          )
+        )
+      }
+
+      if (
+        categories.includes('administrative') &&
+        weekday === this.dayNameToIsoWeekday(schedule.adminNightDay)
+      ) {
+        nights.push(
+          this.toScheduleKeyNight(
+            'administrative',
+            date,
+            'Admin Night',
+            schedule.adminNightStart,
+            schedule.adminNightEnd
+          )
+        )
+      }
+    }
+
+    return nights
+  }
+
+  private toKeyNightFromEvent(event: OperationalReportUnitEventRecord): KeyNightWindow {
+    const date = event.eventDate.toISOString().substring(0, 10)
+    const category = event.eventType?.category === 'administrative' ? 'administrative' : 'training'
+    const startTime = event.startTime ? event.startTime.toISOString().substring(11, 16) : null
+    const endTime = event.endTime ? event.endTime.toISOString().substring(11, 16) : null
+    const start = startTime ? this.dateTimeFromLocalDateAndTime(date, startTime) : null
+    const end = start
+      ? endTime
+        ? this.ensureEndAfterStart(start, this.dateTimeFromLocalDateAndTime(date, endTime))
+        : DateTime.fromJSDate(start, { zone: DEFAULT_TIMEZONE })
+            .plus({ minutes: event.eventType?.defaultDurationMinutes ?? 120 })
+            .toJSDate()
+      : null
+
+    return {
+      id: `unit-event:${event.id}`,
+      category,
+      source: 'unit_event',
+      date,
+      label: this.formatShortDate(date),
+      title: event.title,
+      startAt: start?.toISOString() ?? null,
+      endAt: end?.toISOString() ?? null,
+      start,
+      end,
+    }
+  }
+
+  private toScheduleKeyNight(
+    category: KeyNightCategory,
+    date: string,
+    title: string,
+    startTime: string,
+    endTime: string
+  ): KeyNightWindow {
+    const start = this.dateTimeFromLocalDateAndTime(date, startTime)
+    const end = this.ensureEndAfterStart(start, this.dateTimeFromLocalDateAndTime(date, endTime))
+
+    return {
+      id: `report-settings:${category}:${date}`,
+      category,
+      source: 'report_settings',
+      date,
+      label: this.formatShortDate(date),
+      title,
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
+      start,
+      end,
+    }
+  }
+
+  private toApiKeyNight(night: KeyNightWindow): KeyNight {
+    return {
+      id: night.id,
+      category: night.category,
+      source: night.source,
+      date: night.date,
+      label: night.label,
+      title: night.title,
+      startAt: night.startAt,
+      endAt: night.endAt,
+    }
+  }
+
+  private toMemberSummary(member: OperationalReportMemberRecord): ReportMemberSummary {
+    const directTags = member.memberTags.map<ReportTagSummary>((memberTag) => ({
+      id: memberTag.tag.id,
+      name: memberTag.tag.name,
+      chipVariant: memberTag.tag.chipVariant,
+      chipColor: memberTag.tag.chipColor,
+      isPositional: memberTag.tag.isPositional,
+      source: 'direct',
+    }))
+    const qualificationTags = member.qualifications
+      .map((qualification) => qualification.qualificationType.tag)
+      .filter((tag): tag is NonNullable<typeof tag> => tag !== null)
+      .map<ReportTagSummary>((tag) => ({
+        id: tag.id,
+        name: tag.name,
+        chipVariant: tag.chipVariant,
+        chipColor: tag.chipColor,
+        isPositional: tag.isPositional,
+        source: 'qualification',
+      }))
+    const tags = this.dedupeTags([...directTags, ...qualificationTags])
+
+    return {
+      id: member.id,
+      displayName:
+        member.displayName ??
+        [member.rank, member.firstName, member.lastName].filter(Boolean).join(' '),
+      rank: member.rank,
+      status: member.memberStatusRef?.name ?? member.status,
+      division: member.division
+        ? {
+            id: member.division.id,
+            code: member.division.code,
+            name: member.division.name,
+          }
+        : null,
+      memberType: member.memberTypeRef?.name ?? member.memberType,
+      tags,
+    }
+  }
+
+  private toPresenceSession(
+    session: PresenceSessionInternal,
+    start: Date,
+    end: Date
+  ): PresenceSession {
+    const clippedIn = session.inAt < start ? start : session.inAt
+    const rawOut = session.outAt && session.outAt > end ? end : session.outAt
+    const clippedOut = rawOut && rawOut < start ? start : rawOut
+
+    return {
+      inAt: clippedIn.toISOString(),
+      outAt: clippedOut?.toISOString() ?? null,
+      durationMinutes: clippedOut
+        ? Math.max(0, Math.round((clippedOut.getTime() - clippedIn.getTime()) / 60_000))
+        : null,
+      status: session.status,
+    }
+  }
+
+  private toVisitorActivityRow(visitor: OperationalReportVisitorRecord) {
+    const displayName = visitor.displayName ?? visitor.name
+    const hostName = visitor.hostMember
+      ? (visitor.hostMember.displayName ??
+        [visitor.hostMember.rank, visitor.hostMember.firstName, visitor.hostMember.lastName]
+          .filter(Boolean)
+          .join(' '))
+      : null
+
+    return {
+      id: visitor.id,
+      displayName,
+      organization: visitor.organization,
+      visitType: visitor.visitType,
+      visitPurpose: visitor.visitPurpose,
+      visitReason: visitor.visitReason,
+      checkInTime: visitor.checkInTime.toISOString(),
+      checkOutTime: visitor.checkOutTime?.toISOString() ?? null,
+      durationMinutes: visitor.checkOutTime
+        ? Math.max(
+            0,
+            Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60_000)
+          )
+        : null,
+      event: visitor.event
+        ? {
+            id: visitor.event.id,
+            name: visitor.event.name,
+          }
+        : null,
+      host:
+        visitor.hostMember && hostName
+          ? {
+              id: visitor.hostMember.id,
+              displayName: hostName,
+            }
+          : null,
+    }
+  }
+
+  private sessionOverlaps(session: PresenceSessionInternal, start: Date, end: Date): boolean {
+    const effectiveOut = session.outAt ?? end
+    return session.inAt < end && effectiveOut > start
+  }
+
+  private getCategoryPresence(
+    category: KeyNightCategory,
+    keyNights: KeyNightWindow[],
+    markers: Array<{ keyNightId: string; present: boolean }>
+  ): boolean | null {
+    const categoryNights = keyNights.filter((night) => night.category === category)
+    if (categoryNights.length === 0) {
+      return null
+    }
+
+    return categoryNights.some((night) =>
+      markers.some((marker) => marker.keyNightId === night.id && marker.present)
+    )
+  }
+
+  private countCategoryPresence(
+    category: KeyNightCategory,
+    keyNights: KeyNightWindow[],
+    markers: Array<{ keyNightId: string; present: boolean }>
+  ): number {
+    const categoryNightIds = new Set(
+      keyNights.filter((night) => night.category === category).map((night) => night.id)
+    )
+    return markers.filter((marker) => categoryNightIds.has(marker.keyNightId) && marker.present)
+      .length
+  }
+
+  private dedupeTags(tags: ReportTagSummary[]): ReportTagSummary[] {
+    const seen = new Set<string>()
+    const result: ReportTagSummary[] = []
+
+    for (const tag of tags) {
+      if (seen.has(tag.id)) {
+        continue
+      }
+      seen.add(tag.id)
+      result.push(tag)
+    }
+
+    return result.sort((left, right) => left.name.localeCompare(right.name))
+  }
+
+  private countByLabel(labels: string[]) {
+    const counts = new Map<string, number>()
+    for (const label of labels) {
+      counts.set(label, (counts.get(label) ?? 0) + 1)
+    }
+    return Array.from(counts.entries())
+      .map(([label, count]) => ({ label, count }))
+      .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label))
+  }
+
+  private minDate(dates: Date[]): Date | null {
+    if (dates.length === 0) {
+      return null
+    }
+    return new Date(Math.min(...dates.map((date) => date.getTime())))
+  }
+
+  private maxDate(dates: Date[]): Date | null {
+    if (dates.length === 0) {
+      return null
+    }
+    return new Date(Math.max(...dates.map((date) => date.getTime())))
+  }
+
+  private getDayRange(date: string): DateRange {
+    const start = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).startOf('day')
+    const end = start.plus({ days: 1 })
+    return {
+      start: start.toJSDate(),
+      end: end.toJSDate(),
+      startDate: start.toISODate() ?? date,
+      endDate: start.toISODate() ?? date,
+      label: start.toFormat('cccc, LLL d, yyyy'),
+    }
+  }
+
+  private getWeekRange(weekStartDate: string): DateRange {
+    const start = DateTime.fromISO(weekStartDate, { zone: DEFAULT_TIMEZONE })
+      .startOf('week')
+      .startOf('day')
+    const end = start.plus({ days: 7 })
+    const endInclusive = end.minus({ days: 1 })
+    return {
+      start: start.toJSDate(),
+      end: end.toJSDate(),
+      startDate: start.toISODate() ?? weekStartDate,
+      endDate: endInclusive.toISODate() ?? weekStartDate,
+      label: `${start.toFormat('LLL d')} - ${endInclusive.toFormat('LLL d, yyyy')}`,
+    }
+  }
+
+  private getMonthRange(month: string): DateRange {
+    const start = DateTime.fromISO(`${month}-01`, { zone: DEFAULT_TIMEZONE }).startOf('month')
+    const end = start.plus({ months: 1 })
+    const endInclusive = end.minus({ days: 1 })
+    return {
+      start: start.toJSDate(),
+      end: end.toJSDate(),
+      startDate: start.toISODate() ?? `${month}-01`,
+      endDate: endInclusive.toISODate() ?? `${month}-01`,
+      label: start.toFormat('LLLL yyyy'),
+    }
+  }
+
+  private getCustomRange(startDate: string, endDate: string): DateRange {
+    const start = DateTime.fromISO(startDate, { zone: DEFAULT_TIMEZONE }).startOf('day')
+    const endInclusive = DateTime.fromISO(endDate, { zone: DEFAULT_TIMEZONE }).startOf('day')
+    const end = endInclusive.plus({ days: 1 })
+    return {
+      start: start.toJSDate(),
+      end: end.toJSDate(),
+      startDate: start.toISODate() ?? startDate,
+      endDate: endInclusive.toISODate() ?? endDate,
+      label:
+        start.toISODate() === endInclusive.toISODate()
+          ? start.toFormat('cccc, LLL d, yyyy')
+          : `${start.toFormat('LLL d, yyyy')} - ${endInclusive.toFormat('LLL d, yyyy')}`,
+    }
+  }
+
+  private getDatesInRange(range: DateRange): string[] {
+    const dates: string[] = []
+    let cursor = DateTime.fromJSDate(range.start, { zone: DEFAULT_TIMEZONE }).startOf('day')
+    const end = DateTime.fromJSDate(range.end, { zone: DEFAULT_TIMEZONE }).startOf('day')
+
+    while (cursor < end) {
+      const date = cursor.toISODate()
+      if (date) {
+        dates.push(date)
+      }
+      cursor = cursor.plus({ days: 1 })
+    }
+
+    return dates
+  }
+
+  private dateTimeFromLocalDateAndTime(date: string, time: string): Date {
+    return DateTime.fromISO(`${date}T${time}:00`, { zone: DEFAULT_TIMEZONE }).toJSDate()
+  }
+
+  private ensureEndAfterStart(start: Date, end: Date): Date {
+    if (end > start) {
+      return end
+    }
+
+    return DateTime.fromJSDate(end, { zone: DEFAULT_TIMEZONE }).plus({ days: 1 }).toJSDate()
+  }
+
+  private formatShortDate(date: string): string {
+    return DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).toFormat('ccc LLL d')
+  }
+
+  private dayNameToIsoWeekday(dayName: string): number {
+    const map: Record<string, number> = {
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+      sunday: 7,
+    }
+
+    return map[dayName] ?? 1
+  }
+
+  private formatActorName(actor: OperationalReportActor): string {
+    return [actor.rank, actor.firstName, actor.lastName].filter(Boolean).join(' ') || actor.id
+  }
+
+  private blankToUndefined(value: string | undefined): string | undefined {
+    const trimmed = value?.trim()
+    return trimmed ? trimmed : undefined
+  }
+}
