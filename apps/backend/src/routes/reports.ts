@@ -192,6 +192,34 @@ export const reportsRouter = s.router(reportContract, {
     }
   },
 
+  generateOperationalExceptions: async ({ body, req }) => {
+    const auth = requireAdminOrDeveloper(req)
+    if (auth) {
+      return auth
+    }
+
+    try {
+      return {
+        status: 200 as const,
+        body: await operationalReportService.generateOperationalExceptions(
+          body,
+          getReportActor(req)
+        ),
+      }
+    } catch (error) {
+      return {
+        status: 500 as const,
+        body: {
+          error: 'INTERNAL_ERROR',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate operational exceptions report',
+        },
+      }
+    }
+  },
+
   /**
    * POST /api/reports/daily-checkin - Generate daily check-in summary
    */

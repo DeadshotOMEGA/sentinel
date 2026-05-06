@@ -33,6 +33,7 @@ export const OperationalReportTypeEnum = v.picklist([
   'monthly_presence',
   'training_night_monthly',
   'visitor_activity',
+  'operational_exceptions',
 ])
 
 export const OperationalReportScopeEnum = v.picklist([
@@ -209,6 +210,21 @@ export const VisitorActivityReportConfigSchema = v.pipe(
 )
 
 export type VisitorActivityReportConfig = v.InferOutput<typeof VisitorActivityReportConfigSchema>
+
+export const OperationalExceptionsReportConfigSchema = v.pipe(
+  v.object({
+    startDate: LocalDateSchema,
+    endDate: LocalDateSchema,
+  }),
+  v.check(
+    (data) => new Date(data.startDate) <= new Date(data.endDate),
+    'Start date must be before or equal to end date'
+  )
+)
+
+export type OperationalExceptionsReportConfig = v.InferOutput<
+  typeof OperationalExceptionsReportConfigSchema
+>
 
 // ============================================================================
 // Response Component Schemas
@@ -585,6 +601,67 @@ export const VisitorActivityReportResponseSchema = v.object({
 
 export type VisitorActivityReportResponse = v.InferOutput<
   typeof VisitorActivityReportResponseSchema
+>
+
+const ReportDutyPersonSchema = v.object({
+  id: v.string(),
+  displayName: v.string(),
+  rank: v.string(),
+})
+
+export type ReportDutyPerson = v.InferOutput<typeof ReportDutyPersonSchema>
+
+export const ForcedCheckoutRowSchema = v.object({
+  id: v.string(),
+  operationalDate: v.string(),
+  member: ReportDutyPersonSchema,
+  originalCheckinAt: v.string(),
+  forcedCheckoutAt: v.string(),
+  resolvedBy: v.string(),
+  resolverLabel: v.string(),
+  notes: v.nullable(v.string()),
+})
+
+export type ForcedCheckoutRow = v.InferOutput<typeof ForcedCheckoutRowSchema>
+
+export const LockupExceptionRowSchema = v.object({
+  id: v.string(),
+  operationalDate: v.string(),
+  buildingStatus: v.string(),
+  securedAt: v.nullable(v.string()),
+  expectedDds: v.nullable(ReportDutyPersonSchema),
+  expectedSwk: v.nullable(ReportDutyPersonSchema),
+  expectedLockupHolder: v.nullable(ReportDutyPersonSchema),
+  systemForcedCheckoutCount: v.number(),
+  lockupExecutionId: v.nullable(v.string()),
+  notes: v.array(v.string()),
+})
+
+export type LockupExceptionRow = v.InferOutput<typeof LockupExceptionRowSchema>
+
+export const OperationalExceptionsReportDataSchema = v.object({
+  summary: v.object({
+    forcedCheckoutCount: v.number(),
+    systemForcedCheckoutCount: v.number(),
+    adminForcedCheckoutCount: v.number(),
+    lockupExceptionCount: v.number(),
+  }),
+  forcedCheckouts: v.array(ForcedCheckoutRowSchema),
+  lockupExceptions: v.array(LockupExceptionRowSchema),
+})
+
+export type OperationalExceptionsReportData = v.InferOutput<
+  typeof OperationalExceptionsReportDataSchema
+>
+
+export const OperationalExceptionsReportResponseSchema = v.object({
+  ...ReportEnvelopeBaseEntries,
+  reportType: v.literal('operational_exceptions'),
+  data: OperationalExceptionsReportDataSchema,
+})
+
+export type OperationalExceptionsReportResponse = v.InferOutput<
+  typeof OperationalExceptionsReportResponseSchema
 >
 
 // ============================================================================

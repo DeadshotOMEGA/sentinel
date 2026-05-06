@@ -208,8 +208,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         <HelpButton />
         <div className="dropdown dropdown-end dropdown-hover">
           <div tabIndex={0} role="button" data-testid={TID.nav.backendStatus}>
-            <AppBadge status={badgeStatus} size="md" className="badge-outline backend-status-badge">
-              <span className={cn('status', dot)} />
+            <AppBadge
+              status={badgeStatus}
+              size="lg"
+              className="badge-outline backend-status-badge min-h-9 gap-(--space-2) px-(--space-3) text-sm font-semibold"
+            >
+              <span className={cn('status status-md', dot)} />
               <span className="hidden sm:inline">{label}</span>
             </AppBadge>
           </div>

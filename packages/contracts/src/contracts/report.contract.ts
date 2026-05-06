@@ -15,11 +15,13 @@ import {
   MonthlyPresenceReportConfigSchema,
   TrainingNightMonthlyReportConfigSchema,
   VisitorActivityReportConfigSchema,
+  OperationalExceptionsReportConfigSchema,
   ReportErrorResponseSchema,
 } from '../schemas/report.schema.js'
 import type {
   DailyPresenceReportResponse,
   MonthlyPresenceReportResponse,
+  OperationalExceptionsReportResponse,
   TrainingNightMonthlyReportResponse,
   VisitorActivityReportResponse,
   WeeklyPresenceReportResponse,
@@ -127,6 +129,24 @@ export const reportContract = c.router(
       summary: 'Generate visitor activity report',
       description:
         'Generate an operational visitor report using existing visitor visit type, purpose/reason, event association, host, organization, and date range data.',
+    },
+
+    generateOperationalExceptions: {
+      method: 'POST',
+      path: '/api/reports/operations/exceptions',
+      body: OperationalExceptionsReportConfigSchema,
+      responses: {
+        200: c.type<OperationalExceptionsReportResponse>(),
+        400: ReportErrorResponseSchema,
+        401: ReportErrorResponseSchema,
+        403: ReportErrorResponseSchema,
+        404: ReportErrorResponseSchema,
+        409: ReportErrorResponseSchema,
+        500: ReportErrorResponseSchema,
+      },
+      summary: 'Generate operational exceptions report',
+      description:
+        'Generate a report of forced member checkouts and lockup days where the building was not properly secured before daily reset.',
     },
 
     /**

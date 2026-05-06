@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import type { ReportTagSummary } from '@sentinel/contracts'
 import {
+  filterReportMemberTagsForScheduledDuty,
   pairOperationalPresenceSessions,
   presenceSessionOverlapsRange,
   type PresenceSessionInternal,
@@ -126,5 +128,63 @@ describe('presenceSessionOverlapsRange', () => {
         asOf
       )
     ).toBe(false)
+  })
+})
+
+describe('filterReportMemberTagsForScheduledDuty', () => {
+  const baseTag = {
+    id: 'tag-other',
+    name: 'FTS',
+    chipVariant: 'solid',
+    chipColor: 'blue',
+    isPositional: false,
+    source: 'direct',
+  } satisfies ReportTagSummary
+  const ddsTag = {
+    id: 'tag-dds',
+    name: 'DDS',
+    chipVariant: 'solid',
+    chipColor: 'green',
+    isPositional: true,
+    source: 'direct',
+  } satisfies ReportTagSummary
+  const dutyWatchTag = {
+    id: 'tag-duty-watch',
+    name: 'Duty Watch',
+    chipVariant: 'solid',
+    chipColor: 'purple',
+    isPositional: true,
+    source: 'direct',
+  } satisfies ReportTagSummary
+
+  it('hides DDS and Duty Watch positional tags when the member is not scheduled', () => {
+    const filtered = filterReportMemberTagsForScheduledDuty(
+      [baseTag, ddsTag, dutyWatchTag],
+      new Set()
+    )
+
+    expect(filtered).toEqual([baseTag])
+  })
+
+  it('keeps each positional tag when the member is scheduled for that duty role', () => {
+    const filtered = filterReportMemberTagsForScheduledDuty(
+      [baseTag, ddsTag, dutyWatchTag],
+      new Set(['DDS', 'DUTY_WATCH'])
+    )
+
+    expect(filtered).toEqual([baseTag, ddsTag, dutyWatchTag])
+  })
+
+  it('does not hide non-positional tags with similar names', () => {
+    const qualificationTag = {
+      ...ddsTag,
+      id: 'tag-dds-qualified',
+      name: 'DDS Qualified',
+      isPositional: false,
+    } satisfies ReportTagSummary
+
+    expect(filterReportMemberTagsForScheduledDuty([qualificationTag], new Set())).toEqual([
+      qualificationTag,
+    ])
   })
 })

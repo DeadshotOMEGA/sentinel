@@ -3,6 +3,7 @@
 import type {
   DailyPresenceReportResponse,
   MonthlyPresenceReportResponse,
+  OperationalExceptionsReportResponse,
   ReportMemberSummary,
   ReportTagSummary,
   TrainingNightMonthlyReportResponse,
@@ -111,6 +112,9 @@ export function ReportPreview({ report, isLoading, errorMessage }: ReportPreview
         <TrainingNightMonthlyReport report={report} />
       )}
       {report.reportType === 'visitor_activity' && <VisitorActivityReport report={report} />}
+      {report.reportType === 'operational_exceptions' && (
+        <OperationalExceptionsReport report={report} />
+      )}
     </ReportDocumentFrame>
   )
 }
@@ -127,7 +131,8 @@ function ReportDocumentFrame({
   const isMatrixReport =
     report.reportType === 'weekly_presence' ||
     report.reportType === 'monthly_presence' ||
-    report.reportType === 'training_night_monthly'
+    report.reportType === 'training_night_monthly' ||
+    report.reportType === 'operational_exceptions'
 
   return (
     <section
@@ -516,6 +521,106 @@ function VisitorActivityReport({ report }: { report: VisitorActivityReportRespon
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+    </>
+  )
+}
+
+function OperationalExceptionsReport({ report }: { report: OperationalExceptionsReportResponse }) {
+  const { summary, forcedCheckouts, lockupExceptions } = report.data
+
+  return (
+    <>
+      <SummaryGrid
+        items={[
+          { label: 'Forced out', value: summary.forcedCheckoutCount },
+          { label: 'System', value: summary.systemForcedCheckoutCount },
+          { label: 'Admin', value: summary.adminForcedCheckoutCount },
+          { label: 'Lockup issues', value: summary.lockupExceptionCount },
+        ]}
+      />
+
+      {forcedCheckouts.length === 0 && lockupExceptions.length === 0 ? (
+        <ReportEmptyMessage
+          title="No operational exceptions"
+          detail="No forced checkouts or lockup exceptions matched the selected range."
+        />
+      ) : (
+        <div className="space-y-(--space-5)">
+          <section>
+            <h3 className="mb-(--space-2) text-sm font-semibold uppercase tracking-wide text-base-content/60">
+              Forced checkouts
+            </h3>
+            {forcedCheckouts.length === 0 ? (
+              <p className="text-sm text-base-content/55">No forced checkouts.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table table-sm reports-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Member</th>
+                      <th>Original in</th>
+                      <th>Forced out</th>
+                      <th>Resolved by</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {forcedCheckouts.map((row) => (
+                      <tr key={row.id}>
+                        <td className="font-mono">{row.operationalDate}</td>
+                        <td className="font-semibold">{row.member.displayName}</td>
+                        <td className="font-mono">{formatReportDateTime(row.originalCheckinAt)}</td>
+                        <td className="font-mono">{formatReportDateTime(row.forcedCheckoutAt)}</td>
+                        <td>{row.resolverLabel}</td>
+                        <td>{row.notes ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h3 className="mb-(--space-2) text-sm font-semibold uppercase tracking-wide text-base-content/60">
+              Lockup exceptions
+            </h3>
+            {lockupExceptions.length === 0 ? (
+              <p className="text-sm text-base-content/55">No lockup exceptions.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table table-sm reports-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Expected DDS</th>
+                      <th>Expected SWK</th>
+                      <th>Lockup holder</th>
+                      <th>System outs</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lockupExceptions.map((row) => (
+                      <tr key={row.id}>
+                        <td className="font-mono">{row.operationalDate}</td>
+                        <td>{row.buildingStatus}</td>
+                        <td>{row.expectedDds?.displayName ?? '—'}</td>
+                        <td>{row.expectedSwk?.displayName ?? '—'}</td>
+                        <td>{row.expectedLockupHolder?.displayName ?? '—'}</td>
+                        <td className="font-mono">{row.systemForcedCheckoutCount}</td>
+                        <td>{row.notes.join('; ')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         </div>
       )}
     </>
