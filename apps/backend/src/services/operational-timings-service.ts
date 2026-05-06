@@ -1,15 +1,20 @@
 import * as v from 'valibot'
 import {
   AlertRuleConfigSchema,
+  ScheduleSettingsValueSchema,
   WorkingHoursSettingsValueSchema,
   LegacyOperationalTimingsSettingsSchema,
   OperationalTimingsSettingsSchema,
+  OperationalTimingsSettingsV2Schema,
   type OperationalTimingsResponse,
   type OperationalTimingsSettings,
+  type OperationalNightRule,
+  type OperationalNightType,
   type DayOfWeek,
   type DutyWatchRule,
   type IsoWeekday,
   type LegacyOperationalTimingsSettings,
+  type OperationalTimingsSettingsV2,
   type LocalDate,
 } from '@sentinel/contracts'
 import type { PrismaClientInstance } from '@sentinel/database'
@@ -39,6 +44,7 @@ function mapLegacyDayList(days: DayOfWeek[]): IsoWeekday[] {
 }
 
 const LEGACY_DUTY_WATCH_ANCHOR_MONDAY = '2026-01-05'
+const LEGACY_NIGHT_ANCHOR_MONDAY = '2020-01-06'
 
 function addDaysToLocalDate(date: string, days: number): LocalDate {
   const [yearText, monthText, dayText] = date.split('-')
@@ -62,6 +68,33 @@ function convertLegacyDutyWatchRule(day: IsoWeekday, time: string): DutyWatchRul
   }
 }
 
+function convertScheduleNightRule(options: {
+  id: string
+  name: string
+  nightType: OperationalNightType
+  weekday: IsoWeekday
+  startTime: string
+  endTime: string
+}): OperationalNightRule {
+  return {
+    id: options.id,
+    name: options.name,
+    nightType: options.nightType,
+    enabled: true,
+    effectiveStartDate: addDaysToLocalDate(LEGACY_NIGHT_ANCHOR_MONDAY, options.weekday - 1),
+    effectiveEndDate: null,
+    startTime: options.startTime,
+    endTime: options.endTime,
+    recurrence: {
+      type: 'weekly',
+      weekdays: [options.weekday],
+      intervalWeeks: 1,
+    },
+    requiredAudience: [{ targetType: 'everyone', targetId: null }],
+    optionalAudience: [],
+  }
+}
+
 function migrateLegacyOperationalTimingsSettings(
   legacySettings: LegacyOperationalTimingsSettings
 ): OperationalTimingsSettings {
@@ -73,9 +106,26 @@ function migrateLegacyOperationalTimingsSettings(
       dutyWatchRules: legacySettings.operational.dutyWatchDays.map((day) =>
         convertLegacyDutyWatchRule(day, legacySettings.operational.dutyWatchAlertTime)
       ),
+      nightRules: [],
+      nightCancellations: [],
     },
     workingHours: legacySettings.workingHours,
     alertRateLimits: legacySettings.alertRateLimits,
+  }
+}
+
+function migrateV2OperationalTimingsSettings(
+  v2Settings: OperationalTimingsSettingsV2,
+  nightRules: OperationalNightRule[]
+): OperationalTimingsSettings {
+  return {
+    operational: {
+      ...v2Settings.operational,
+      nightRules,
+      nightCancellations: [],
+    },
+    workingHours: v2Settings.workingHours,
+    alertRateLimits: v2Settings.alertRateLimits,
   }
 }
 
@@ -195,7 +245,40 @@ export class OperationalTimingsService {
       }
     }
 
+    settings.operational.nightRules = await this.buildNightRulesFromLegacySchedule()
+
     return settings
+  }
+
+  private async buildNightRulesFromLegacySchedule(): Promise<OperationalNightRule[]> {
+    const scheduleSetting = await this.repository.findScheduleSetting()
+    if (!scheduleSetting) {
+      return []
+    }
+
+    const parsedSchedule = v.safeParse(ScheduleSettingsValueSchema, scheduleSetting.value)
+    if (!parsedSchedule.success) {
+      return []
+    }
+
+    return [
+      convertScheduleNightRule({
+        id: 'legacy-training-night',
+        name: 'Training Night',
+        nightType: 'training',
+        weekday: dayNameToIsoWeekday[parsedSchedule.output.trainingNightDay],
+        startTime: parsedSchedule.output.trainingNightStart,
+        endTime: parsedSchedule.output.trainingNightEnd,
+      }),
+      convertScheduleNightRule({
+        id: 'legacy-admin-night',
+        name: 'Admin Night',
+        nightType: 'administrative',
+        weekday: dayNameToIsoWeekday[parsedSchedule.output.adminNightDay],
+        startTime: parsedSchedule.output.adminNightStart,
+        endTime: parsedSchedule.output.adminNightEnd,
+      }),
+    ]
   }
 
   private async applyRuntimeSettings(
@@ -263,11 +346,30 @@ export class OperationalTimingsService {
       })
     }
 
+    const v2Stored = await this.repository.findV2StoredSetting()
+    if (v2Stored) {
+      const parsedV2 = v.safeParse(OperationalTimingsSettingsV2Schema, v2Stored.value)
+      if (parsedV2.success) {
+        const migratedSettings = migrateV2OperationalTimingsSettings(
+          parsedV2.output,
+          await this.buildNightRulesFromLegacySchedule()
+        )
+        const persisted = await this.repository.upsertStoredSetting(migratedSettings)
+        await this.applyRuntimeSettings(migratedSettings, 'stored', persisted.updatedAt)
+        return this.toResponse(migratedSettings, 'stored', persisted.updatedAt)
+      }
+
+      logger.warn('V2 operational timings invalid, rebuilding from backfill/default sources', {
+        issueCount: parsedV2.issues.length,
+      })
+    }
+
     const legacyStored = await this.repository.findLegacyStoredSetting()
     if (legacyStored) {
       const parsedLegacy = v.safeParse(LegacyOperationalTimingsSettingsSchema, legacyStored.value)
       if (parsedLegacy.success) {
         const migratedSettings = migrateLegacyOperationalTimingsSettings(parsedLegacy.output)
+        migratedSettings.operational.nightRules = await this.buildNightRulesFromLegacySchedule()
         const persisted = await this.repository.upsertStoredSetting(migratedSettings)
         await this.applyRuntimeSettings(migratedSettings, 'stored', persisted.updatedAt)
         return this.toResponse(migratedSettings, 'stored', persisted.updatedAt)

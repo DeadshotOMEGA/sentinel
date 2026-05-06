@@ -268,6 +268,15 @@ export class OperationalReportRepository {
     return setting?.value ?? null
   }
 
+  async findAppSettingValue(key: string): Promise<unknown | null> {
+    const setting = await this.prisma.setting.findUnique({
+      where: { key },
+      select: { value: true },
+    })
+
+    return setting?.value ?? null
+  }
+
   async findVisitors(
     filters: OperationalReportVisitorFilters
   ): Promise<OperationalReportVisitorRecord[]> {

@@ -47,7 +47,13 @@ export const PresenceSessionStatusEnum = v.picklist(['complete', 'open', 'degrad
 
 export const KeyNightCategoryEnum = v.picklist(['training', 'administrative'])
 
-export const KeyNightSourceEnum = v.picklist(['unit_event', 'report_settings'])
+export const KeyNightSourceEnum = v.picklist([
+  'unit_event',
+  'operational_timings',
+  'report_settings',
+])
+
+export const KeyNightRequirementEnum = v.picklist(['required', 'optional', 'not_expected'])
 
 const LocalDateSchema = v.pipe(
   v.string('Date is required'),
@@ -343,11 +349,14 @@ export const KeyNightSchema = v.object({
   id: v.string(),
   category: KeyNightCategoryEnum,
   source: KeyNightSourceEnum,
+  ruleId: v.nullable(v.string()),
   date: v.string(),
   label: v.string(),
   title: v.string(),
   startAt: v.nullable(v.string()),
   endAt: v.nullable(v.string()),
+  requiredAudienceLabel: v.nullable(v.string()),
+  optionalAudienceLabel: v.nullable(v.string()),
 })
 
 export type KeyNight = v.InferOutput<typeof KeyNightSchema>
@@ -357,6 +366,7 @@ export const KeyNightPresenceMarkerSchema = v.object({
   present: v.boolean(),
   firstIn: v.nullable(v.string()),
   lastOut: v.nullable(v.string()),
+  requirement: KeyNightRequirementEnum,
 })
 
 export type KeyNightPresenceMarker = v.InferOutput<typeof KeyNightPresenceMarkerSchema>

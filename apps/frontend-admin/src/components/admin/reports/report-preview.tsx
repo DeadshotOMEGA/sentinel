@@ -434,7 +434,10 @@ function TrainingNightMonthlyReport({ report }: { report: TrainingNightMonthlyRe
                     const marker = row.nights.find((item) => item.keyNightId === night.id)
                     return (
                       <td key={night.id} className="text-center">
-                        <PresenceSymbol present={marker?.present ?? false} />
+                        <PresenceSymbol
+                          present={marker?.present ?? false}
+                          requirement={marker?.requirement ?? 'required'}
+                        />
                       </td>
                     )
                   })}
@@ -584,19 +587,58 @@ function PresenceMatrixTable({
   )
 }
 
-function PresenceSymbol({ present, note }: { present: boolean; note?: string | null }) {
+function PresenceSymbol({
+  present,
+  note,
+  requirement = 'required',
+}: {
+  present: boolean
+  note?: string | null
+  requirement?: 'required' | 'optional' | 'not_expected'
+}) {
+  const label =
+    requirement === 'optional'
+      ? present
+        ? 'Optional and present'
+        : 'Optional and absent'
+      : requirement === 'not_expected'
+        ? present
+          ? 'Not expected but present'
+          : 'Not expected'
+        : present
+          ? `Present${note ? `, ${note}` : ''}`
+          : 'Absent'
+  const display =
+    requirement === 'optional'
+      ? present
+        ? 'O'
+        : 'opt'
+      : requirement === 'not_expected'
+        ? present
+          ? 'P'
+          : 'n/a'
+        : present
+          ? 'P'
+          : '—'
+  const presenceClasses =
+    requirement === 'optional'
+      ? 'border-info/40 bg-info/10 text-info'
+      : requirement === 'not_expected'
+        ? 'border-base-300 bg-base-100 text-base-content/45'
+        : present
+          ? 'border-success/40 bg-success-fadded text-success-fadded-content'
+          : 'border-base-300 bg-base-200 text-base-content/55'
+
   return (
     <span
       className={cn(
         'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border px-(--space-1) text-xs font-bold',
-        present
-          ? 'border-success/40 bg-success-fadded text-success-fadded-content'
-          : 'border-base-300 bg-base-200 text-base-content/55'
+        presenceClasses
       )}
-      aria-label={present ? `Present${note ? `, ${note}` : ''}` : 'Absent'}
-      title={present ? (note ?? 'Present') : 'Absent'}
+      aria-label={label}
+      title={label}
     >
-      {present ? 'P' : '—'}
+      {display}
     </span>
   )
 }

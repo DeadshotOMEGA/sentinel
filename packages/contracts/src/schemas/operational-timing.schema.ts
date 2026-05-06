@@ -137,6 +137,134 @@ const DutyWatchRulesSchema = v.pipe(
   )
 )
 
+export const OperationalNightTypeSchema = v.picklist(['training', 'administrative'])
+export type OperationalNightType = v.InferOutput<typeof OperationalNightTypeSchema>
+
+export const OperationalNightAudienceTargetTypeSchema = v.picklist([
+  'everyone',
+  'division',
+  'tag',
+  'member_type',
+])
+export type OperationalNightAudienceTargetType = v.InferOutput<
+  typeof OperationalNightAudienceTargetTypeSchema
+>
+
+export const OperationalNightAudienceTargetSchema = v.pipe(
+  v.object({
+    targetType: OperationalNightAudienceTargetTypeSchema,
+    targetId: v.nullable(v.string()),
+  }),
+  v.check((target) => {
+    if (target.targetType === 'everyone') {
+      return target.targetId === null
+    }
+    return typeof target.targetId === 'string' && target.targetId.length > 0
+  }, 'Audience target must include an ID unless it is Everyone')
+)
+export type OperationalNightAudienceTarget = v.InferOutput<
+  typeof OperationalNightAudienceTargetSchema
+>
+
+export const OperationalNightWeeklyRecurrenceSchema = v.object({
+  type: v.literal('weekly'),
+  weekdays: UniqueWeekdaysSchema,
+  intervalWeeks: v.pipe(
+    v.number('Week interval is required'),
+    v.integer('Week interval must be an integer'),
+    v.minValue(1, 'Week interval must be at least 1'),
+    v.maxValue(52, 'Week interval must be at most 52')
+  ),
+})
+export type OperationalNightWeeklyRecurrence = v.InferOutput<
+  typeof OperationalNightWeeklyRecurrenceSchema
+>
+
+export const OperationalNightMonthlyNthWeekdayRecurrenceSchema = v.object({
+  type: v.literal('monthly_nth_weekday'),
+  weekdays: UniqueWeekdaysSchema,
+  ordinal: DutyWatchMonthlyOrdinalSchema,
+})
+export type OperationalNightMonthlyNthWeekdayRecurrence = v.InferOutput<
+  typeof OperationalNightMonthlyNthWeekdayRecurrenceSchema
+>
+
+export const OperationalNightRecurrenceSchema = v.variant('type', [
+  OperationalNightWeeklyRecurrenceSchema,
+  OperationalNightMonthlyNthWeekdayRecurrenceSchema,
+])
+export type OperationalNightRecurrence = v.InferOutput<typeof OperationalNightRecurrenceSchema>
+
+function getAudienceTargetKey(target: OperationalNightAudienceTarget): string {
+  return `${target.targetType}:${target.targetId ?? 'all'}`
+}
+
+function hasUniqueAudienceTargets(targets: OperationalNightAudienceTarget[]): boolean {
+  return new Set(targets.map(getAudienceTargetKey)).size === targets.length
+}
+
+export const OperationalNightRuleSchema = v.pipe(
+  v.object({
+    id: v.pipe(v.string('Rule id is required'), v.minLength(1, 'Rule id is required')),
+    name: v.pipe(v.string('Rule name is required'), v.minLength(1, 'Rule name is required')),
+    nightType: OperationalNightTypeSchema,
+    enabled: v.boolean(),
+    effectiveStartDate: LocalDateSchema,
+    effectiveEndDate: v.nullable(LocalDateSchema),
+    startTime: TimeOfDaySchema,
+    endTime: TimeOfDaySchema,
+    recurrence: OperationalNightRecurrenceSchema,
+    requiredAudience: v.array(OperationalNightAudienceTargetSchema),
+    optionalAudience: v.array(OperationalNightAudienceTargetSchema),
+  }),
+  v.check(
+    (rule) =>
+      rule.effectiveEndDate === null ||
+      rule.effectiveStartDate.localeCompare(rule.effectiveEndDate) <= 0,
+    'Effective end date must be on or after effective start date'
+  ),
+  v.check(
+    (rule) => !rule.enabled || rule.requiredAudience.length > 0,
+    'Enabled Training/Admin Night rules require at least one required audience target'
+  ),
+  v.check(
+    (rule) =>
+      hasUniqueAudienceTargets(rule.requiredAudience) &&
+      hasUniqueAudienceTargets(rule.optionalAudience),
+    'Audience targets must be unique'
+  ),
+  v.check((rule) => {
+    const requiredKeys = new Set(rule.requiredAudience.map(getAudienceTargetKey))
+    return !rule.optionalAudience.some((target) => requiredKeys.has(getAudienceTargetKey(target)))
+  }, 'The same audience target cannot be both required and optional')
+)
+export type OperationalNightRule = v.InferOutput<typeof OperationalNightRuleSchema>
+
+const OperationalNightRulesSchema = v.pipe(
+  v.array(OperationalNightRuleSchema),
+  v.check(
+    (rules) => new Set(rules.map((rule) => rule.id)).size === rules.length,
+    'Training/Admin Night rule ids must be unique'
+  )
+)
+
+export const OperationalNightCancellationSchema = v.object({
+  ruleId: v.pipe(v.string('Rule id is required'), v.minLength(1, 'Rule id is required')),
+  date: LocalDateSchema,
+  reason: v.nullable(v.string()),
+})
+export type OperationalNightCancellation = v.InferOutput<typeof OperationalNightCancellationSchema>
+
+const OperationalNightCancellationsSchema = v.pipe(
+  v.array(OperationalNightCancellationSchema),
+  v.check(
+    (cancellations) =>
+      new Set(cancellations.map((item) => `${item.ruleId}:${item.date}`)).size ===
+      cancellations.length,
+    'Training/Admin Night cancellations must be unique by rule and date'
+  )
+)
+
 function compareMonthDay(left: string, right: string): number {
   const [leftMonthText, leftDayText] = left.split('-')
   const [rightMonthText, rightDayText] = right.split('-')
@@ -209,9 +337,21 @@ export const OperationalTimingsOperationalSettingsSchema = v.object({
   lockupWarningTime: TimeOfDaySchema,
   lockupCriticalTime: TimeOfDaySchema,
   dutyWatchRules: DutyWatchRulesSchema,
+  nightRules: OperationalNightRulesSchema,
+  nightCancellations: OperationalNightCancellationsSchema,
 })
 export type OperationalTimingsOperationalSettings = v.InferOutput<
   typeof OperationalTimingsOperationalSettingsSchema
+>
+
+export const OperationalTimingsOperationalSettingsV2Schema = v.object({
+  dayRolloverTime: TimeOfDaySchema,
+  lockupWarningTime: TimeOfDaySchema,
+  lockupCriticalTime: TimeOfDaySchema,
+  dutyWatchRules: DutyWatchRulesSchema,
+})
+export type OperationalTimingsOperationalSettingsV2 = v.InferOutput<
+  typeof OperationalTimingsOperationalSettingsV2Schema
 >
 
 export const LegacyOperationalTimingsOperationalSettingsSchema = v.object({
@@ -258,6 +398,13 @@ export const OperationalTimingsSettingsSchema = v.object({
   alertRateLimits: OperationalTimingsAlertRateLimitsSchema,
 })
 export type OperationalTimingsSettings = v.InferOutput<typeof OperationalTimingsSettingsSchema>
+
+export const OperationalTimingsSettingsV2Schema = v.object({
+  operational: OperationalTimingsOperationalSettingsV2Schema,
+  workingHours: OperationalTimingsWorkingHoursSchema,
+  alertRateLimits: OperationalTimingsAlertRateLimitsSchema,
+})
+export type OperationalTimingsSettingsV2 = v.InferOutput<typeof OperationalTimingsSettingsV2Schema>
 
 export const LegacyOperationalTimingsSettingsSchema = v.object({
   operational: LegacyOperationalTimingsOperationalSettingsSchema,
