@@ -6,6 +6,9 @@ import type {
   KeyNight,
   MonthlyPresenceReportConfig,
   MonthlyPresenceReportResponse,
+  OperationalNightAudienceTarget,
+  OperationalNightOccurrence,
+  OperationalNightType,
   PresenceMarker,
   PresenceSession,
   ReportMemberSummary,
@@ -17,7 +20,11 @@ import type {
   WeeklyPresenceReportConfig,
   WeeklyPresenceReportResponse,
 } from '@sentinel/contracts'
-import { ScheduleSettingsValueSchema } from '@sentinel/contracts'
+import {
+  listOperationalNightOccurrencesInRange,
+  OperationalTimingsSettingsSchema,
+  ScheduleSettingsValueSchema,
+} from '@sentinel/contracts'
 import type { PrismaClientInstance } from '@sentinel/database'
 import { DEFAULT_TIMEZONE } from '../utils/operational-date.js'
 import {
@@ -30,9 +37,11 @@ import {
 
 const UNIT_NAME = 'HMCS Chippawa'
 const REPORT_LOOKBACK_DAYS = 1
+const OPERATIONAL_TIMINGS_SETTING_KEY_V3 = 'operational.timings.v3'
 
 type ReportScopeType = 'everyone' | 'department' | 'tag' | 'fts' | 'geo'
 type KeyNightCategory = 'training' | 'administrative'
+type KeyNightRequirement = 'required' | 'optional' | 'not_expected'
 
 export interface OperationalReportActor {
   id: string
@@ -67,6 +76,8 @@ export interface PresenceSessionInternal {
 interface KeyNightWindow extends KeyNight {
   start: Date | null
   end: Date | null
+  requiredAudience: OperationalNightAudienceTarget[]
+  optionalAudience: OperationalNightAudienceTarget[]
 }
 
 interface PresenceStats {
@@ -267,7 +278,7 @@ export class OperationalReportService {
         this.getPresenceMarker(day.date, memberSessions, this.formatShortDate(day.date))
       )
       const keyNightMarkers = keyNights.map((night) =>
-        this.getKeyNightPresenceMarker(night, memberSessions)
+        this.getKeyNightPresenceMarker(night, member, memberSessions)
       )
 
       return {
@@ -336,7 +347,7 @@ export class OperationalReportService {
         this.getPresenceMarker(day.date, memberSessions, day.label)
       )
       const keyNightMarkers = keyNights.map((night) =>
-        this.getKeyNightPresenceMarker(night, memberSessions)
+        this.getKeyNightPresenceMarker(night, member, memberSessions)
       )
 
       return {
@@ -402,10 +413,12 @@ export class OperationalReportService {
     const rows = members.map((member) => {
       const memberSessions = sessionsByMember.get(member.id) ?? []
       const nightMarkers = trainingNights.map((night) =>
-        this.getKeyNightPresenceMarker(night, memberSessions)
+        this.getKeyNightPresenceMarker(night, member, memberSessions)
       )
-      const attended = nightMarkers.filter((marker) => marker.present).length
-      const possible = trainingNights.length
+      const attended = nightMarkers.filter(
+        (marker) => marker.present && marker.requirement === 'required'
+      ).length
+      const possible = nightMarkers.filter((marker) => marker.requirement === 'required').length
 
       return {
         member: this.toMemberSummary(member),
@@ -695,7 +708,11 @@ export class OperationalReportService {
     }
   }
 
-  private getKeyNightPresenceMarker(night: KeyNightWindow, sessions: PresenceSessionInternal[]) {
+  private getKeyNightPresenceMarker(
+    night: KeyNightWindow,
+    member: OperationalReportMemberRecord,
+    sessions: PresenceSessionInternal[]
+  ) {
     const range =
       night.start && night.end
         ? { start: night.start, end: night.end }
@@ -707,6 +724,7 @@ export class OperationalReportService {
       present: stats.present,
       firstIn: stats.firstIn,
       lastOut: stats.lastOut,
+      requirement: this.getKeyNightRequirement(night, member),
     }
   }
 
@@ -717,10 +735,21 @@ export class OperationalReportService {
   ): Promise<KeyNightWindow[]> {
     const events = await this.repository.findUnitEvents(range.start, range.end, categories)
     const eventNights = events.map((event) => this.toKeyNightFromEvent(event))
-    const scheduleNights = await this.getScheduleKeyNights(range, categories, warnings)
+    const operationalTimingResult = await this.getOperationalTimingKeyNights(
+      range,
+      categories,
+      warnings
+    )
+    const fallbackNights = operationalTimingResult.hasConfiguredRules
+      ? []
+      : await this.getScheduleKeyNights(range, categories, warnings)
     const deduped = new Map<string, KeyNightWindow>()
 
-    for (const night of scheduleNights) {
+    for (const night of fallbackNights) {
+      deduped.set(`${night.category}:${night.date}`, night)
+    }
+
+    for (const night of operationalTimingResult.nights) {
       deduped.set(`${night.category}:${night.date}`, night)
     }
 
@@ -735,12 +764,58 @@ export class OperationalReportService {
     for (const category of categories) {
       if (!result.some((night) => night.category === category)) {
         warnings.add(
-          `No ${category === 'training' ? 'Training' : 'Admin'} Nights were found from Unit Events or report schedule settings.`
+          `No ${category === 'training' ? 'Training' : 'Admin'} Nights were found from Unit Events, Operational Timings rules, or report schedule settings.`
         )
       }
     }
 
     return result
+  }
+
+  private async getOperationalTimingKeyNights(
+    range: DateRange,
+    categories: KeyNightCategory[],
+    warnings: Set<string>
+  ): Promise<{ nights: KeyNightWindow[]; hasConfiguredRules: boolean }> {
+    const value = await this.repository.findAppSettingValue(OPERATIONAL_TIMINGS_SETTING_KEY_V3)
+    if (!value) {
+      return { nights: [], hasConfiguredRules: false }
+    }
+
+    const parsed = v.safeParse(OperationalTimingsSettingsSchema, value)
+    if (!parsed.success) {
+      warnings.add(
+        'Operational Timings settings are present but invalid; generated Training/Admin Nights were omitted.'
+      )
+      return { nights: [], hasConfiguredRules: false }
+    }
+
+    const rules = parsed.output.operational.nightRules
+    const hasConfiguredRules = rules.length > 0
+    if (!hasConfiguredRules) {
+      return { nights: [], hasConfiguredRules }
+    }
+
+    const dates = this.getDatesInRange(range)
+    const startDate = dates[0]
+    const endDate = dates.at(-1)
+    if (!startDate || !endDate) {
+      return { nights: [], hasConfiguredRules }
+    }
+
+    const nightTypes = categories.map((category) => this.toOperationalNightType(category))
+    const occurrences = listOperationalNightOccurrencesInRange(
+      rules,
+      parsed.output.operational.nightCancellations,
+      startDate,
+      endDate,
+      { nightTypes }
+    )
+
+    return {
+      nights: occurrences.map((occurrence) => this.toOperationalTimingKeyNight(occurrence)),
+      hasConfiguredRules,
+    }
   }
 
   private async getScheduleKeyNights(
@@ -820,13 +895,45 @@ export class OperationalReportService {
       id: `unit-event:${event.id}`,
       category,
       source: 'unit_event',
+      ruleId: null,
       date,
       label: this.formatShortDate(date),
       title: event.title,
       startAt: start?.toISOString() ?? null,
       endAt: end?.toISOString() ?? null,
+      requiredAudienceLabel: null,
+      optionalAudienceLabel: null,
       start,
       end,
+      requiredAudience: [],
+      optionalAudience: [],
+    }
+  }
+
+  private toOperationalTimingKeyNight(occurrence: OperationalNightOccurrence): KeyNightWindow {
+    const category = this.toKeyNightCategory(occurrence.nightType)
+    const start = this.dateTimeFromLocalDateAndTime(occurrence.date, occurrence.startTime)
+    const end = this.ensureEndAfterStart(
+      start,
+      this.dateTimeFromLocalDateAndTime(occurrence.date, occurrence.endTime)
+    )
+
+    return {
+      id: `operational-timings:${occurrence.ruleId}:${occurrence.date}`,
+      category,
+      source: 'operational_timings',
+      ruleId: occurrence.ruleId,
+      date: occurrence.date,
+      label: this.formatShortDate(occurrence.date),
+      title: occurrence.ruleName,
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
+      requiredAudienceLabel: this.formatAudienceSummary(occurrence.requiredAudience),
+      optionalAudienceLabel: this.formatAudienceSummary(occurrence.optionalAudience),
+      start,
+      end,
+      requiredAudience: occurrence.requiredAudience,
+      optionalAudience: occurrence.optionalAudience,
     }
   }
 
@@ -844,13 +951,18 @@ export class OperationalReportService {
       id: `report-settings:${category}:${date}`,
       category,
       source: 'report_settings',
+      ruleId: null,
       date,
       label: this.formatShortDate(date),
       title,
       startAt: start.toISOString(),
       endAt: end.toISOString(),
+      requiredAudienceLabel: 'Everyone',
+      optionalAudienceLabel: null,
       start,
       end,
+      requiredAudience: [{ targetType: 'everyone', targetId: null }],
+      optionalAudience: [],
     }
   }
 
@@ -859,12 +971,104 @@ export class OperationalReportService {
       id: night.id,
       category: night.category,
       source: night.source,
+      ruleId: night.ruleId,
       date: night.date,
       label: night.label,
       title: night.title,
       startAt: night.startAt,
       endAt: night.endAt,
+      requiredAudienceLabel: night.requiredAudienceLabel,
+      optionalAudienceLabel: night.optionalAudienceLabel,
     }
+  }
+
+  private toOperationalNightType(category: KeyNightCategory): OperationalNightType {
+    return category === 'administrative' ? 'administrative' : 'training'
+  }
+
+  private toKeyNightCategory(nightType: OperationalNightType): KeyNightCategory {
+    return nightType === 'administrative' ? 'administrative' : 'training'
+  }
+
+  private formatAudienceSummary(targets: OperationalNightAudienceTarget[]): string | null {
+    if (targets.length === 0) {
+      return null
+    }
+
+    if (targets.some((target) => target.targetType === 'everyone')) {
+      return 'Everyone'
+    }
+
+    const labels = targets.map((target) => {
+      if (target.targetType === 'division') {
+        return 'Department'
+      }
+      if (target.targetType === 'tag') {
+        return 'Tag'
+      }
+      return 'Member type'
+    })
+    const counts = this.countByLabel(labels)
+
+    return counts
+      .map((item) => `${item.count} ${item.label}${item.count === 1 ? '' : 's'}`)
+      .join(', ')
+  }
+
+  private getKeyNightRequirement(
+    night: KeyNightWindow,
+    member: OperationalReportMemberRecord
+  ): KeyNightRequirement {
+    if (night.requiredAudience.length === 0 && night.optionalAudience.length === 0) {
+      return 'required'
+    }
+
+    if (this.memberMatchesAudience(member, night.requiredAudience)) {
+      return 'required'
+    }
+
+    if (this.memberMatchesAudience(member, night.optionalAudience)) {
+      return 'optional'
+    }
+
+    return 'not_expected'
+  }
+
+  private memberMatchesAudience(
+    member: OperationalReportMemberRecord,
+    targets: OperationalNightAudienceTarget[]
+  ): boolean {
+    return targets.some((target) => this.memberMatchesAudienceTarget(member, target))
+  }
+
+  private memberMatchesAudienceTarget(
+    member: OperationalReportMemberRecord,
+    target: OperationalNightAudienceTarget
+  ): boolean {
+    if (target.targetType === 'everyone') {
+      return true
+    }
+
+    if (target.targetType === 'division') {
+      return member.divisionId === target.targetId
+    }
+
+    if (target.targetType === 'member_type') {
+      return member.memberTypeId === target.targetId
+    }
+
+    return this.memberHasTag(member, target.targetId)
+  }
+
+  private memberHasTag(member: OperationalReportMemberRecord, tagId: string | null): boolean {
+    if (!tagId) {
+      return false
+    }
+
+    return (
+      member.memberTags.some((memberTag) => memberTag.tagId === tagId) ||
+      member.qualifications.some((qualification) => qualification.qualificationType.tagId === tagId)
+    )
   }
 
   private toMemberSummary(member: OperationalReportMemberRecord): ReportMemberSummary {

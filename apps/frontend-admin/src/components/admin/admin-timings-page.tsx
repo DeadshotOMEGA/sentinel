@@ -10,7 +10,8 @@ export function AdminTimingsPage() {
           Timings
         </h1>
         <p className="mt-(--space-1) max-w-3xl text-sm text-base-content/65">
-          Manage scheduler cutoffs, Duty Watch timing, working hours, and duplicate-alert limits.
+          Manage scheduler cutoffs, Duty Watch timing, reportable Training/Admin Nights, working
+          hours, and duplicate-alert limits.
         </p>
       </div>
 

@@ -19,7 +19,9 @@ import { isJobSchedulerRunning, reconfigureJobScheduler, updateJobConfig } from 
 
 interface RepositoryMock {
   findStoredSetting: ReturnType<typeof vi.fn>
+  findV2StoredSetting: ReturnType<typeof vi.fn>
   findLegacyStoredSetting: ReturnType<typeof vi.fn>
+  findScheduleSetting: ReturnType<typeof vi.fn>
   upsertStoredSetting: ReturnType<typeof vi.fn>
   findDdsTemplateSetting: ReturnType<typeof vi.fn>
   upsertDdsTemplateSetting: ReturnType<typeof vi.fn>
@@ -28,7 +30,9 @@ interface RepositoryMock {
 function createRepositoryMock(): RepositoryMock {
   return {
     findStoredSetting: vi.fn(),
+    findV2StoredSetting: vi.fn(),
     findLegacyStoredSetting: vi.fn(),
+    findScheduleSetting: vi.fn(),
     upsertStoredSetting: vi.fn(),
     findDdsTemplateSetting: vi.fn(),
     upsertDdsTemplateSetting: vi.fn(),
@@ -40,6 +44,10 @@ describe('OperationalTimingsService runtime apply behavior', () => {
 
   beforeEach(() => {
     repositoryMock = createRepositoryMock()
+    repositoryMock.findStoredSetting.mockResolvedValue(null)
+    repositoryMock.findV2StoredSetting.mockResolvedValue(null)
+    repositoryMock.findLegacyStoredSetting.mockResolvedValue(null)
+    repositoryMock.findScheduleSetting.mockResolvedValue(null)
     vi.mocked(isJobSchedulerRunning).mockReset()
     vi.mocked(reconfigureJobScheduler).mockReset()
     vi.mocked(updateJobConfig).mockReset()
@@ -140,7 +148,7 @@ describe('OperationalTimingsService runtime apply behavior', () => {
     })
   })
 
-  it('migrates legacy v1 settings into v2 duty watch rules', async () => {
+  it('migrates legacy v1 settings into v3 duty watch and night rules', async () => {
     const legacySettings = {
       operational: {
         dayRolloverTime: '03:00',
@@ -154,10 +162,19 @@ describe('OperationalTimingsService runtime apply behavior', () => {
     }
 
     expect(LegacyOperationalTimingsSettingsSchema).toBeDefined()
-    repositoryMock.findStoredSetting.mockResolvedValue(null)
     repositoryMock.findLegacyStoredSetting.mockResolvedValue({
       value: legacySettings,
       updatedAt: new Date('2026-03-07T15:00:00.000Z'),
+    })
+    repositoryMock.findScheduleSetting.mockResolvedValue({
+      value: {
+        trainingNightDay: 'tuesday',
+        trainingNightStart: '19:00',
+        trainingNightEnd: '22:00',
+        adminNightDay: 'thursday',
+        adminNightStart: '18:30',
+        adminNightEnd: '20:30',
+      },
     })
     repositoryMock.upsertStoredSetting.mockResolvedValue({
       updatedAt: new Date('2026-03-07T15:05:00.000Z'),
@@ -184,6 +201,87 @@ describe('OperationalTimingsService runtime apply behavior', () => {
         recurrence: { type: 'weekly', weekday: 4, intervalWeeks: 1 },
       },
     ])
+    expect(response.settings.operational.nightRules).toEqual([
+      {
+        id: 'legacy-training-night',
+        name: 'Training Night',
+        nightType: 'training',
+        enabled: true,
+        effectiveStartDate: '2020-01-07',
+        effectiveEndDate: null,
+        startTime: '19:00',
+        endTime: '22:00',
+        recurrence: { type: 'weekly', weekdays: [2], intervalWeeks: 1 },
+        requiredAudience: [{ targetType: 'everyone', targetId: null }],
+        optionalAudience: [],
+      },
+      {
+        id: 'legacy-admin-night',
+        name: 'Admin Night',
+        nightType: 'administrative',
+        enabled: true,
+        effectiveStartDate: '2020-01-09',
+        effectiveEndDate: null,
+        startTime: '18:30',
+        endTime: '20:30',
+        recurrence: { type: 'weekly', weekdays: [4], intervalWeeks: 1 },
+        requiredAudience: [{ targetType: 'everyone', targetId: null }],
+        optionalAudience: [],
+      },
+    ])
     expect(repositoryMock.upsertStoredSetting).toHaveBeenCalledWith(response.settings)
+  })
+
+  it('migrates v2 operational timings to v3 without losing Duty Watch settings', async () => {
+    const defaults = getDefaultOperationalTimingsSettings()
+    const v2Settings = {
+      operational: {
+        dayRolloverTime: defaults.operational.dayRolloverTime,
+        lockupWarningTime: defaults.operational.lockupWarningTime,
+        lockupCriticalTime: defaults.operational.lockupCriticalTime,
+        dutyWatchRules: [
+          {
+            id: 'v2-duty-watch',
+            name: 'Tuesday Duty Watch',
+            effectiveStartDate: '2026-03-03',
+            startTime: '18:30',
+            endTime: '18:30',
+            recurrence: { type: 'weekly' as const, weekday: 2, intervalWeeks: 1 },
+          },
+        ],
+      },
+      workingHours: defaults.workingHours,
+      alertRateLimits: defaults.alertRateLimits,
+    }
+
+    repositoryMock.findV2StoredSetting.mockResolvedValue({
+      value: v2Settings,
+      updatedAt: new Date('2026-04-01T15:00:00.000Z'),
+    })
+    repositoryMock.findScheduleSetting.mockResolvedValue({
+      value: {
+        trainingNightDay: 'tuesday',
+        trainingNightStart: '19:00',
+        trainingNightEnd: '22:00',
+        adminNightDay: 'thursday',
+        adminNightStart: '18:30',
+        adminNightEnd: '20:30',
+      },
+    })
+    repositoryMock.upsertStoredSetting.mockResolvedValue({
+      updatedAt: new Date('2026-04-01T15:05:00.000Z'),
+    })
+
+    const service = createServiceWithRepositoryMock()
+    const response = await service.getOperationalTimings()
+
+    expect(response.settings.operational.dutyWatchRules).toEqual(
+      v2Settings.operational.dutyWatchRules
+    )
+    expect(response.settings.operational.nightCancellations).toEqual([])
+    expect(response.settings.operational.nightRules.map((rule) => rule.id)).toEqual([
+      'legacy-training-night',
+      'legacy-admin-night',
+    ])
   })
 })

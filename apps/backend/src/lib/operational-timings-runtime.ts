@@ -2,6 +2,8 @@ import type {
   DutyWatchRule,
   IsoWeekday,
   LocalDate,
+  OperationalNightCancellation,
+  OperationalNightRule,
   OperationalTimingsSettings,
   OperationalTimingsSource,
   OperationalAlertRateLimitKey,
@@ -119,6 +121,8 @@ export function getDefaultOperationalTimingsSettings(): OperationalTimingsSettin
         createDefaultDutyWatchRule('duty-watch-tuesday', 'Duty Watch', 2),
         createDefaultDutyWatchRule('duty-watch-thursday', 'Duty Watch', 4),
       ],
+      nightRules: [],
+      nightCancellations: [],
     },
     workingHours: {
       regularWeekdayStart: '08:00',
@@ -170,6 +174,21 @@ export function getRuntimeDutyWatchRules(): DutyWatchRule[] {
   return runtimeSettings.operational.dutyWatchRules.map((rule) => ({
     ...rule,
     recurrence: { ...rule.recurrence },
+  }))
+}
+
+export function getRuntimeOperationalNightRules(): OperationalNightRule[] {
+  return runtimeSettings.operational.nightRules.map((rule) => ({
+    ...rule,
+    recurrence: { ...rule.recurrence },
+    requiredAudience: rule.requiredAudience.map((target) => ({ ...target })),
+    optionalAudience: rule.optionalAudience.map((target) => ({ ...target })),
+  }))
+}
+
+export function getRuntimeOperationalNightCancellations(): OperationalNightCancellation[] {
+  return runtimeSettings.operational.nightCancellations.map((cancellation) => ({
+    ...cancellation,
   }))
 }
 

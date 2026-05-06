@@ -17,10 +17,14 @@ import {
 } from '@/components/ui/AppCard'
 import { AppAlert } from '@/components/ui/AppAlert'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useDivisions } from '@/hooks/use-divisions'
+import { useEnums } from '@/hooks/use-enums'
+import { useTags } from '@/hooks/use-member-tags'
 import { useOperationalTimings, useUpdateOperationalTimings } from '@/hooks/use-operational-timings'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
 import { DutyWatchRulesSection } from './duty-watch-rules-section'
+import { TrainingAdminNightRulesSection } from './training-admin-night-rules-section'
 
 const OPERATIONAL_ALERT_FIELDS: Array<{
   key: OperationalAlertRateLimitKey
@@ -91,6 +95,9 @@ function formatUpdatedAt(updatedAt: string | null): string {
 
 export function TimingsSettingsPanel() {
   const { data, isLoading, isError, error, refetch } = useOperationalTimings()
+  const { data: divisionsData } = useDivisions()
+  const { data: tags = [] } = useTags()
+  const { data: enums } = useEnums()
   const updateOperationalTimings = useUpdateOperationalTimings()
   const member = useAuthStore((state) => state.member)
   const canEdit = (member?.accountLevel ?? 0) >= AccountLevel.ADMIN
@@ -186,6 +193,27 @@ export function TimingsSettingsPanel() {
       return
     }
 
+    const invalidNightRule = draft.operational.nightRules.find(
+      (rule) => rule.enabled && rule.requiredAudience.length === 0
+    )
+    if (invalidNightRule) {
+      setValidationMessage(
+        `Add at least one required audience to ${invalidNightRule.name} or disable the rule.`
+      )
+      return
+    }
+
+    const invalidEffectiveDateRule = draft.operational.nightRules.find(
+      (rule) =>
+        rule.effectiveEndDate && rule.effectiveStartDate.localeCompare(rule.effectiveEndDate) > 0
+    )
+    if (invalidEffectiveDateRule) {
+      setValidationMessage(
+        `Effective end date must be on or after the start date for ${invalidEffectiveDateRule.name}.`
+      )
+      return
+    }
+
     if (compareMonthDay(draft.workingHours.summerStartDate, draft.workingHours.summerEndDate) > 0) {
       setValidationMessage('Summer end date must be on or after summer start date.')
       return
@@ -245,7 +273,8 @@ export function TimingsSettingsPanel() {
             Operational Timings
           </AppCardTitle>
           <AppCardDescription>
-            Scheduler cutoffs, Duty Watch timing, working hours, and duplicate-alert limits.
+            Scheduler cutoffs, Duty Watch timing, reportable Training/Admin Nights, working hours,
+            and duplicate-alert limits.
           </AppCardDescription>
         </AppCardHeader>
         <AppCardContent className="space-y-3">
@@ -366,6 +395,33 @@ export function TimingsSettingsPanel() {
             operational: {
               ...current.operational,
               dutyWatchRules: rules,
+            },
+          }))
+        }
+      />
+
+      <TrainingAdminNightRulesSection
+        rules={draft.operational.nightRules}
+        cancellations={draft.operational.nightCancellations}
+        divisions={divisionsData?.divisions ?? []}
+        tags={tags}
+        memberTypes={enums?.memberTypes ?? []}
+        disabled={isDisabled}
+        onRulesChange={(rules) =>
+          updateDraft((current) => ({
+            ...current,
+            operational: {
+              ...current.operational,
+              nightRules: rules,
+            },
+          }))
+        }
+        onCancellationsChange={(nightCancellations) =>
+          updateDraft((current) => ({
+            ...current,
+            operational: {
+              ...current.operational,
+              nightCancellations,
             },
           }))
         }
