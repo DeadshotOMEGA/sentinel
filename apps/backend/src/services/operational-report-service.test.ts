@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   pairOperationalPresenceSessions,
+  presenceSessionOverlapsRange,
   type PresenceSessionInternal,
 } from './operational-report-service.js'
 import type { OperationalReportCheckinRecord } from '../repositories/operational-report-repository.js'
@@ -77,5 +78,53 @@ describe('pairOperationalPresenceSessions', () => {
     expect(Array.from(warnings)).toContain(
       'Some checkout records could not be paired with a prior check-in and were ignored.'
     )
+  })
+})
+
+describe('presenceSessionOverlapsRange', () => {
+  const openSession: PresenceSessionInternal = {
+    memberId: 'member-1',
+    inAt: new Date('2026-05-05T23:00:00.000Z'),
+    outAt: null,
+    status: 'open',
+  }
+  const asOf = new Date('2026-05-06T14:23:00.000Z')
+
+  it('keeps open sessions present through the report generation time', () => {
+    expect(
+      presenceSessionOverlapsRange(
+        openSession,
+        new Date('2026-05-06T05:00:00.000Z'),
+        new Date('2026-05-07T05:00:00.000Z'),
+        asOf
+      )
+    ).toBe(true)
+  })
+
+  it('does not extend open sessions into future report days', () => {
+    expect(
+      presenceSessionOverlapsRange(
+        openSession,
+        new Date('2026-05-07T05:00:00.000Z'),
+        new Date('2026-05-08T05:00:00.000Z'),
+        asOf
+      )
+    ).toBe(false)
+  })
+
+  it('ignores sessions that start after the report generation time', () => {
+    expect(
+      presenceSessionOverlapsRange(
+        {
+          memberId: 'member-1',
+          inAt: new Date('2026-05-06T18:00:00.000Z'),
+          outAt: null,
+          status: 'open',
+        },
+        new Date('2026-05-06T05:00:00.000Z'),
+        new Date('2026-05-07T05:00:00.000Z'),
+        asOf
+      )
+    ).toBe(false)
   })
 })
