@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/AppCard'
 import { AppAlert } from '@/components/ui/AppAlert'
 import { AppBadge } from '@/components/ui/AppBadge'
+import { HostHotspotRepairDialog } from '@/components/network/host-hotspot-repair-dialog'
 import {
   Dialog,
   DialogContent,
@@ -43,7 +44,6 @@ import {
   useSystemUpdateStatus,
   useSystemUpdateTrace,
 } from '@/hooks/use-system-update'
-import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
@@ -183,6 +183,7 @@ export function SystemUpdatePanel() {
   const [isHydrated, setIsHydrated] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
+  const [hotspotRepairOpen, setHotspotRepairOpen] = useState(false)
   const [tracePanelOpen, setTracePanelOpen] = useState(traceRequested)
   const [traceView, setTraceView] = useState<'summary' | 'raw'>('summary')
   const [traceSeverityFilter, setTraceSeverityFilter] = useState<SystemUpdateTraceSeverity | 'all'>(
@@ -208,7 +209,6 @@ export function SystemUpdatePanel() {
   })
   const startSystemUpdate = useStartSystemUpdate()
   const refreshSystemUpdate = useRefreshSystemUpdateStatus()
-  const hostHotspotRecovery = useHostHotspotRecovery()
 
   const status = systemUpdateQuery.data ?? null
   const currentJob = status?.currentJob ?? null
@@ -309,16 +309,6 @@ export function SystemUpdatePanel() {
       await systemUpdateQuery.refetch()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to start system update')
-    }
-  }
-
-  const handleHostHotspotRecovery = async () => {
-    try {
-      const result = await hostHotspotRecovery.mutateAsync()
-      toast.success(result.message)
-      await systemStatusQuery.refetch()
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to queue host hotspot recovery')
     }
   }
 
@@ -528,10 +518,9 @@ export function SystemUpdatePanel() {
                   <button
                     type="button"
                     className="btn btn-xs btn-warning"
-                    onClick={() => void handleHostHotspotRecovery()}
-                    disabled={hostHotspotRecovery.isPending}
+                    onClick={() => setHotspotRepairOpen(true)}
                   >
-                    {hostHotspotRecovery.isPending ? 'Queueing...' : 'Repair hotspot'}
+                    Repair hotspot
                   </button>
                 ) : null
               }
@@ -773,14 +762,10 @@ export function SystemUpdatePanel() {
                 <button
                   type="button"
                   className="btn btn-sm btn-primary shadow-sm"
-                  onClick={() => void handleHostHotspotRecovery()}
-                  disabled={!canStartUpdates || hostHotspotRecovery.isPending}
+                  onClick={() => setHotspotRepairOpen(true)}
+                  disabled={!canStartUpdates}
                 >
-                  {hostHotspotRecovery.isPending ? (
-                    <LoadingSpinner size="xs" className="mr-2" />
-                  ) : (
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                  )}
+                  <ShieldCheck className="mr-2 h-4 w-4" />
                   Repair hotspot
                 </button>
                 <button
@@ -1161,6 +1146,14 @@ export function SystemUpdatePanel() {
           )}
         </AppCardContent>
       </AppCard>
+
+      <HostHotspotRepairDialog
+        open={hotspotRepairOpen}
+        onOpenChange={setHotspotRepairOpen}
+        onRepairQueued={async () => {
+          await systemStatusQuery.refetch()
+        }}
+      />
 
       <Dialog
         open={confirmOpen}
