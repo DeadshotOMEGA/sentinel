@@ -6,6 +6,8 @@ import type {
   DailyPresenceReportResponse,
   MonthlyPresenceReportConfig,
   MonthlyPresenceReportResponse,
+  OperationalExceptionsReportConfig,
+  OperationalExceptionsReportResponse,
   TrainingNightMonthlyReportConfig,
   TrainingNightMonthlyReportResponse,
   VisitorActivityReportConfig,
@@ -21,6 +23,7 @@ export type AdminReportResponse =
   | MonthlyPresenceReportResponse
   | TrainingNightMonthlyReportResponse
   | VisitorActivityReportResponse
+  | OperationalExceptionsReportResponse
 
 export type RunAdminReportInput =
   | {
@@ -42,6 +45,10 @@ export type RunAdminReportInput =
   | {
       reportType: 'visitor_activity'
       body: VisitorActivityReportConfig
+    }
+  | {
+      reportType: 'operational_exceptions'
+      body: OperationalExceptionsReportConfig
     }
 
 function getApiErrorMessage(body: unknown, fallback: string): string {
@@ -97,6 +104,17 @@ export function useAdminReportRunner() {
           const response = await apiClient.reports.generateVisitorActivity({ body: input.body })
           if (response.status !== 200) {
             throw new Error(getApiErrorMessage(response.body, 'Failed to run visitor report'))
+          }
+          return response.body
+        }
+        case 'operational_exceptions': {
+          const response = await apiClient.reports.generateOperationalExceptions({
+            body: input.body,
+          })
+          if (response.status !== 200) {
+            throw new Error(
+              getApiErrorMessage(response.body, 'Failed to run operational exceptions report')
+            )
           }
           return response.body
         }

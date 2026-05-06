@@ -6,6 +6,7 @@ export type AdminReportType =
   | 'monthly_presence'
   | 'training_night_monthly'
   | 'visitor_activity'
+  | 'operational_exceptions'
 
 export type ReportScopeType = 'everyone' | 'department' | 'tag' | 'fts' | 'geo'
 
@@ -54,12 +55,14 @@ export interface ReportDefinition {
     | 'generateMonthlyPresence'
     | 'generateTrainingNightMonthly'
     | 'generateVisitorActivity'
+    | 'generateOperationalExceptions'
   previewComponent:
     | 'DailyPresenceReport'
     | 'WeeklyPresenceReport'
     | 'MonthlyPresenceReport'
     | 'TrainingNightMonthlyReport'
     | 'VisitorActivityReport'
+    | 'OperationalExceptionsReport'
 }
 
 function today(): Date {
@@ -160,6 +163,16 @@ export const REPORT_DEFINITIONS = [
     ],
     runMutation: 'generateVisitorActivity',
     previewComponent: 'VisitorActivityReport',
+  },
+  {
+    reportType: 'operational_exceptions',
+    label: 'Operational Exceptions',
+    description: 'Forced checkouts and lockup exceptions that need DDS or Duty Watch review.',
+    defaultFilters: () => getBaseReportFilters('operational_exceptions'),
+    requiredFilters: ['startDate', 'endDate'],
+    visibleFilters: ['startDate', 'endDate'],
+    runMutation: 'generateOperationalExceptions',
+    previewComponent: 'OperationalExceptionsReport',
   },
 ] as const satisfies readonly ReportDefinition[]
 

@@ -73,6 +73,73 @@ const visitorInclude = {
   },
 } satisfies Prisma.VisitorInclude
 
+const reportDutyMemberSelect = {
+  id: true,
+  rank: true,
+  firstName: true,
+  lastName: true,
+  displayName: true,
+} satisfies Prisma.MemberSelect
+
+const missedCheckoutInclude = {
+  member: {
+    select: reportDutyMemberSelect,
+  },
+  resolvedByAdmin: {
+    select: {
+      id: true,
+      displayName: true,
+      username: true,
+    },
+  },
+} satisfies Prisma.MissedCheckoutInclude
+
+const lockupExceptionStatusInclude = {
+  currentHolder: {
+    select: reportDutyMemberSelect,
+  },
+  securedByMember: {
+    select: reportDutyMemberSelect,
+  },
+  execution: {
+    select: {
+      id: true,
+      executedAt: true,
+      executedBy: true,
+      membersCheckedOut: true,
+      executedByMember: {
+        select: reportDutyMemberSelect,
+      },
+    },
+  },
+} satisfies Prisma.LockupStatusInclude
+
+const scheduledDutyInclude = {
+  dutyRole: {
+    select: {
+      code: true,
+    },
+  },
+  assignments: {
+    where: {
+      status: {
+        not: 'released',
+      },
+    },
+    select: {
+      memberId: true,
+      member: {
+        select: reportDutyMemberSelect,
+      },
+      dutyPosition: {
+        select: {
+          code: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.WeeklyScheduleInclude
+
 export type OperationalReportMemberRecord = Prisma.MemberGetPayload<{
   include: typeof reportMemberInclude
 }>
@@ -91,6 +158,25 @@ export type OperationalReportUnitEventRecord = Prisma.UnitEventGetPayload<{
 export type OperationalReportVisitorRecord = Prisma.VisitorGetPayload<{
   include: typeof visitorInclude
 }>
+
+export type OperationalReportMissedCheckoutRecord = Prisma.MissedCheckoutGetPayload<{
+  include: typeof missedCheckoutInclude
+}>
+
+export type OperationalReportLockupStatusRecord = Prisma.LockupStatusGetPayload<{
+  include: typeof lockupExceptionStatusInclude
+}>
+
+export type OperationalReportScheduledDutyRecord = Prisma.WeeklyScheduleGetPayload<{
+  include: typeof scheduledDutyInclude
+}>
+
+export type OperationalReportScheduledDutyRoleCode = 'DDS' | 'DUTY_WATCH'
+
+export interface OperationalReportScheduledDutyAssignmentRecord {
+  memberId: string
+  dutyRoleCode: OperationalReportScheduledDutyRoleCode
+}
 
 export interface OperationalReportMemberFilters {
   divisionId?: string
@@ -234,6 +320,108 @@ export class OperationalReportRepository {
         timestamp: true,
       },
       orderBy: [{ memberId: 'asc' }, { timestamp: 'asc' }],
+    })
+  }
+
+  async findScheduledDutyAssignmentsForMembers(
+    memberIds: string[],
+    weekStartDate: Date,
+    weekEndDate: Date
+  ): Promise<OperationalReportScheduledDutyAssignmentRecord[]> {
+    if (memberIds.length === 0) {
+      return []
+    }
+
+    const assignments = await this.prisma.scheduleAssignment.findMany({
+      where: {
+        memberId: {
+          in: memberIds,
+        },
+        status: {
+          not: 'released',
+        },
+        schedule: {
+          weekStartDate: {
+            gte: weekStartDate,
+            lte: weekEndDate,
+          },
+          dutyRole: {
+            code: {
+              in: ['DDS', 'DUTY_WATCH'],
+            },
+          },
+        },
+      },
+      select: {
+        memberId: true,
+        schedule: {
+          select: {
+            dutyRole: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return assignments.map((assignment) => ({
+      memberId: assignment.memberId,
+      dutyRoleCode: assignment.schedule.dutyRole.code as OperationalReportScheduledDutyRoleCode,
+    }))
+  }
+
+  async findMissedCheckouts(
+    startDate: Date,
+    endDate: Date
+  ): Promise<OperationalReportMissedCheckoutRecord[]> {
+    return this.prisma.missedCheckout.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: missedCheckoutInclude,
+      orderBy: [{ date: 'desc' }, { forcedCheckoutAt: 'desc' }],
+    })
+  }
+
+  async findLockupStatuses(
+    startDate: Date,
+    endDate: Date
+  ): Promise<OperationalReportLockupStatusRecord[]> {
+    return this.prisma.lockupStatus.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      include: lockupExceptionStatusInclude,
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    })
+  }
+
+  async findScheduledDutySchedules(
+    weekStartDate: Date,
+    weekEndDate: Date
+  ): Promise<OperationalReportScheduledDutyRecord[]> {
+    return this.prisma.weeklySchedule.findMany({
+      where: {
+        weekStartDate: {
+          gte: weekStartDate,
+          lte: weekEndDate,
+        },
+        dutyRole: {
+          code: {
+            in: ['DDS', 'DUTY_WATCH'],
+          },
+        },
+      },
+      include: scheduledDutyInclude,
+      orderBy: [{ weekStartDate: 'asc' }],
     })
   }
 

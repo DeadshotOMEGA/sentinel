@@ -9,8 +9,11 @@ import type {
   OperationalNightAudienceTarget,
   OperationalNightOccurrence,
   OperationalNightType,
+  OperationalExceptionsReportConfig,
+  OperationalExceptionsReportResponse,
   PresenceMarker,
   PresenceSession,
+  ReportDutyPerson,
   ReportMemberSummary,
   ReportTagSummary,
   TrainingNightMonthlyReportConfig,
@@ -26,11 +29,15 @@ import {
   ScheduleSettingsValueSchema,
 } from '@sentinel/contracts'
 import type { PrismaClientInstance } from '@sentinel/database'
-import { DEFAULT_TIMEZONE } from '../utils/operational-date.js'
+import { DEFAULT_TIMEZONE, getOperationalDayStartTime } from '../utils/operational-date.js'
 import {
   OperationalReportRepository,
   type OperationalReportCheckinRecord,
+  type OperationalReportLockupStatusRecord,
   type OperationalReportMemberRecord,
+  type OperationalReportMissedCheckoutRecord,
+  type OperationalReportScheduledDutyRoleCode,
+  type OperationalReportScheduledDutyRecord,
   type OperationalReportUnitEventRecord,
   type OperationalReportVisitorRecord,
 } from '../repositories/operational-report-repository.js'
@@ -87,6 +94,43 @@ interface PresenceStats {
   lastOut: string | null
   sessionCount: number
   note: string | null
+}
+
+type ScheduledDutyRolesByMember = Map<string, Set<OperationalReportScheduledDutyRoleCode>>
+
+interface LockupCheckedOutMember {
+  id: string
+  name: string
+}
+
+export function getScheduledDutyTagRole(
+  tag: ReportTagSummary
+): OperationalReportScheduledDutyRoleCode | null {
+  if (!tag.isPositional) {
+    return null
+  }
+
+  const normalizedName = tag.name.trim().toLowerCase().replace(/[_-]+/g, ' ')
+
+  if (normalizedName === 'dds') {
+    return 'DDS'
+  }
+
+  if (normalizedName === 'duty watch') {
+    return 'DUTY_WATCH'
+  }
+
+  return null
+}
+
+export function filterReportMemberTagsForScheduledDuty(
+  tags: ReportTagSummary[],
+  scheduledRoleCodes: ReadonlySet<OperationalReportScheduledDutyRoleCode>
+): ReportTagSummary[] {
+  return tags.filter((tag) => {
+    const requiredRoleCode = getScheduledDutyTagRole(tag)
+    return requiredRoleCode === null || scheduledRoleCodes.has(requiredRoleCode)
+  })
 }
 
 export function presenceSessionOverlapsRange(
@@ -212,6 +256,7 @@ export class OperationalReportService {
           tagId: scope.tagId,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
 
     const rows = members
       .map((member) => {
@@ -227,7 +272,7 @@ export class OperationalReportService {
         const stats = this.getPresenceStats(overlappingSessions, range.start, range.end)
 
         return {
-          member: this.toMemberSummary(member),
+          member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
           firstIn: stats.firstIn,
           lastOut: stats.lastOut,
           sessionCount: stats.sessionCount,
@@ -277,6 +322,7 @@ export class OperationalReportService {
           tagId: scope.tagId,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
     const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
     const days = this.getDatesInRange(range).map((date) => ({
       date,
@@ -299,7 +345,7 @@ export class OperationalReportService {
       )
 
       return {
-        member: this.toMemberSummary(member),
+        member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
         days: dayMarkers,
         trainingNightPresent: this.getCategoryPresence('training', keyNights, keyNightMarkers),
         adminNightPresent: this.getCategoryPresence('administrative', keyNights, keyNightMarkers),
@@ -346,6 +392,7 @@ export class OperationalReportService {
           tagId: scope.tagId,
         })
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
     const keyNights = await this.getKeyNights(range, ['training', 'administrative'], warnings)
     const days = this.getDatesInRange(range).map((date) => ({
       date,
@@ -368,7 +415,7 @@ export class OperationalReportService {
       )
 
       return {
-        member: this.toMemberSummary(member),
+        member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
         days: dayMarkers,
         keyNights: keyNightMarkers,
         totalDaysPresent: dayMarkers.filter((marker) => marker.present).length,
@@ -420,6 +467,7 @@ export class OperationalReportService {
       ? await this.repository.findActiveMembers({ divisionId: config.divisionId })
       : []
     const sessionsByMember = await this.getSessionsByMember(members, range, warnings)
+    const scheduledDutyRolesByMember = await this.getScheduledDutyRolesByMember(members, range)
     const keyNights = await this.getKeyNights(range, ['training'], warnings)
     const trainingNights = keyNights.filter((night) => night.category === 'training')
 
@@ -438,7 +486,7 @@ export class OperationalReportService {
       const possible = nightMarkers.filter((marker) => marker.requirement === 'required').length
 
       return {
-        member: this.toMemberSummary(member),
+        member: this.toMemberSummary(member, scheduledDutyRolesByMember.get(member.id)),
         nights: nightMarkers,
         attended,
         possible,
@@ -525,13 +573,134 @@ export class OperationalReportService {
     }
   }
 
+  async generateOperationalExceptions(
+    config: OperationalExceptionsReportConfig,
+    actor: OperationalReportActor
+  ): Promise<OperationalExceptionsReportResponse> {
+    const range = this.getCustomRange(config.startDate, config.endDate)
+    const warnings = new Set<string>()
+    const scheduleWeekRange = this.getScheduleWeekRange(range)
+    const [missedCheckouts, lockupStatuses, scheduledDuties] = await Promise.all([
+      this.repository.findMissedCheckouts(range.start, range.end),
+      this.repository.findLockupStatuses(range.start, range.end),
+      this.repository.findScheduledDutySchedules(
+        scheduleWeekRange.firstWeekStart,
+        scheduleWeekRange.lastWeekStart
+      ),
+    ])
+    const scheduledDutiesByWeek = this.indexScheduledDutiesByWeek(scheduledDuties)
+    const systemForcedCheckoutCountByDate = new Map<string, number>()
+
+    for (const missedCheckout of missedCheckouts) {
+      if (missedCheckout.resolvedBy !== 'daily_reset') {
+        continue
+      }
+
+      const date = this.toLocalDate(missedCheckout.date)
+      systemForcedCheckoutCountByDate.set(
+        date,
+        (systemForcedCheckoutCountByDate.get(date) ?? 0) + 1
+      )
+    }
+
+    const forcedCheckouts = [
+      ...missedCheckouts.map((missedCheckout) => this.toForcedCheckoutRow(missedCheckout)),
+      ...lockupStatuses.flatMap((status) => this.toLockupExecutionForcedCheckoutRows(status)),
+    ].sort(
+      (left, right) =>
+        right.forcedCheckoutAt.localeCompare(left.forcedCheckoutAt) ||
+        right.operationalDate.localeCompare(left.operationalDate)
+    )
+
+    const lockupExceptions = lockupStatuses
+      .map((status) => {
+        const operationalDate = this.toLocalDate(status.date)
+        const systemForcedCheckoutCount = systemForcedCheckoutCountByDate.get(operationalDate) ?? 0
+        const notes: string[] = []
+
+        if (status.buildingStatus !== 'secured') {
+          notes.push(`Building status remained ${status.buildingStatus}`)
+        }
+
+        if (!status.execution) {
+          notes.push('No Execute Lockup record')
+        }
+
+        if (systemForcedCheckoutCount > 0) {
+          notes.push(
+            `System forced ${systemForcedCheckoutCount} member${
+              systemForcedCheckoutCount === 1 ? '' : 's'
+            } out during daily reset`
+          )
+        }
+
+        if (notes.length === 0) {
+          return null
+        }
+
+        const scheduledDuty = scheduledDutiesByWeek.get(this.getWeekKeyForDate(operationalDate))
+        const expectedDds = scheduledDuty?.dds ?? null
+        const expectedSwk = scheduledDuty?.swk ?? null
+        const expectedLockupHolder = status.currentHolder
+          ? this.toDutyPerson(status.currentHolder)
+          : status.securedByMember
+            ? this.toDutyPerson(status.securedByMember)
+            : (expectedSwk ?? expectedDds)
+
+        return {
+          id: status.id,
+          operationalDate,
+          buildingStatus: status.buildingStatus,
+          securedAt: status.securedAt?.toISOString() ?? null,
+          expectedDds,
+          expectedSwk,
+          expectedLockupHolder,
+          systemForcedCheckoutCount,
+          lockupExecutionId: status.execution?.id ?? null,
+          notes,
+        }
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null)
+
+    if (forcedCheckouts.length === 0 && lockupExceptions.length === 0) {
+      warnings.add('No forced checkouts or lockup exceptions were found for the selected range.')
+    }
+
+    return {
+      ...this.getEnvelopeBase(
+        'operational_exceptions',
+        'Operational Exceptions Report',
+        actor,
+        range,
+        {
+          scopeLabel: 'Forced checkouts and lockup exceptions',
+        }
+      ),
+      warnings: Array.from(warnings),
+      data: {
+        summary: {
+          forcedCheckoutCount: forcedCheckouts.length,
+          systemForcedCheckoutCount: forcedCheckouts.filter(
+            (row) => row.resolvedBy === 'daily_reset'
+          ).length,
+          adminForcedCheckoutCount: forcedCheckouts.filter((row) => row.resolvedBy === 'admin')
+            .length,
+          lockupExceptionCount: lockupExceptions.length,
+        },
+        forcedCheckouts,
+        lockupExceptions,
+      },
+    }
+  }
+
   private getEnvelopeBase<
     TReportType extends
       | 'daily_presence'
       | 'weekly_presence'
       | 'monthly_presence'
       | 'training_night_monthly'
-      | 'visitor_activity',
+      | 'visitor_activity'
+      | 'operational_exceptions',
   >(
     reportType: TReportType,
     title: string,
@@ -1088,7 +1257,10 @@ export class OperationalReportService {
     )
   }
 
-  private toMemberSummary(member: OperationalReportMemberRecord): ReportMemberSummary {
+  private toMemberSummary(
+    member: OperationalReportMemberRecord,
+    scheduledRoleCodes: ReadonlySet<OperationalReportScheduledDutyRoleCode> = new Set()
+  ): ReportMemberSummary {
     const directTags = member.memberTags.map<ReportTagSummary>((memberTag) => ({
       id: memberTag.tag.id,
       name: memberTag.tag.name,
@@ -1108,7 +1280,10 @@ export class OperationalReportService {
         isPositional: tag.isPositional,
         source: 'qualification',
       }))
-    const tags = this.dedupeTags([...directTags, ...qualificationTags])
+    const tags = filterReportMemberTagsForScheduledDuty(
+      this.dedupeTags([...directTags, ...qualificationTags]),
+      scheduledRoleCodes
+    )
 
     return {
       id: member.id,
@@ -1190,6 +1365,136 @@ export class OperationalReportService {
     }
   }
 
+  private toForcedCheckoutRow(missedCheckout: OperationalReportMissedCheckoutRecord) {
+    return {
+      id: missedCheckout.id,
+      operationalDate: this.toLocalDate(missedCheckout.date),
+      member: this.toDutyPerson(missedCheckout.member),
+      originalCheckinAt: missedCheckout.originalCheckinAt.toISOString(),
+      forcedCheckoutAt: missedCheckout.forcedCheckoutAt.toISOString(),
+      resolvedBy: missedCheckout.resolvedBy,
+      resolverLabel: this.getForcedCheckoutResolverLabel(missedCheckout),
+      notes: missedCheckout.notes,
+    }
+  }
+
+  private toLockupExecutionForcedCheckoutRows(status: OperationalReportLockupStatusRecord) {
+    if (!status.execution) {
+      return []
+    }
+
+    const members = this.getLockupCheckedOutMembers(status.execution.membersCheckedOut)
+    const executorName = this.formatDutyPerson(status.execution.executedByMember)
+
+    return members
+      .filter((member) => member.id !== status.execution?.executedBy)
+      .map((member) => ({
+        id: `${status.execution?.id ?? status.id}-${member.id}`,
+        operationalDate: this.toLocalDate(status.date),
+        member: {
+          id: member.id,
+          displayName: member.name,
+          rank: '',
+        },
+        originalCheckinAt:
+          status.execution?.executedAt.toISOString() ?? status.createdAt.toISOString(),
+        forcedCheckoutAt:
+          status.execution?.executedAt.toISOString() ?? status.createdAt.toISOString(),
+        resolvedBy: 'lockup_execution',
+        resolverLabel: `Execute Lockup by ${executorName}`,
+        notes: 'Checked out during Execute Lockup',
+      }))
+  }
+
+  private getForcedCheckoutResolverLabel(
+    missedCheckout: OperationalReportMissedCheckoutRecord
+  ): string {
+    if (missedCheckout.resolvedBy === 'daily_reset') {
+      return 'System daily reset'
+    }
+
+    if (missedCheckout.resolvedBy === 'admin') {
+      return missedCheckout.resolvedByAdmin?.displayName ?? 'Admin manual checkout'
+    }
+
+    if (missedCheckout.resolvedBy === 'lockup_sequence') {
+      return 'Execute Lockup'
+    }
+
+    return missedCheckout.resolvedBy
+  }
+
+  private getLockupCheckedOutMembers(value: unknown): LockupCheckedOutMember[] {
+    if (!Array.isArray(value)) {
+      return []
+    }
+
+    return value.filter((item): item is LockupCheckedOutMember => {
+      if (typeof item !== 'object' || item === null) {
+        return false
+      }
+
+      const candidate = item as { id?: unknown; name?: unknown }
+      return typeof candidate.id === 'string' && typeof candidate.name === 'string'
+    })
+  }
+
+  private indexScheduledDutiesByWeek(schedules: OperationalReportScheduledDutyRecord[]) {
+    const result = new Map<string, { dds: ReportDutyPerson | null; swk: ReportDutyPerson | null }>()
+
+    for (const schedule of schedules) {
+      const weekKey = this.toLocalDate(schedule.weekStartDate)
+      const current = result.get(weekKey) ?? { dds: null, swk: null }
+
+      if (schedule.dutyRole.code === 'DDS') {
+        const assignment = schedule.assignments[0]
+        current.dds = assignment ? this.toDutyPerson(assignment.member) : current.dds
+      }
+
+      if (schedule.dutyRole.code === 'DUTY_WATCH') {
+        const swkAssignment = schedule.assignments.find(
+          (assignment) => assignment.dutyPosition?.code === 'SWK'
+        )
+        current.swk = swkAssignment ? this.toDutyPerson(swkAssignment.member) : current.swk
+      }
+
+      result.set(weekKey, current)
+    }
+
+    return result
+  }
+
+  private getWeekKeyForDate(date: string): string {
+    return DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).startOf('week').toISODate() ?? date
+  }
+
+  private toLocalDate(date: Date): string {
+    return DateTime.fromJSDate(date, { zone: DEFAULT_TIMEZONE }).toISODate() ?? date.toISOString()
+  }
+
+  private toDutyPerson(member: {
+    id: string
+    rank: string
+    firstName: string
+    lastName: string
+    displayName: string | null
+  }): ReportDutyPerson {
+    return {
+      id: member.id,
+      rank: member.rank,
+      displayName: this.formatDutyPerson(member),
+    }
+  }
+
+  private formatDutyPerson(member: {
+    rank: string
+    firstName: string
+    lastName: string
+    displayName: string | null
+  }): string {
+    return member.displayName ?? [member.rank, member.firstName, member.lastName].join(' ')
+  }
+
   private sessionOverlaps(session: PresenceSessionInternal, start: Date, end: Date): boolean {
     return presenceSessionOverlapsRange(session, start, end)
   }
@@ -1236,6 +1541,31 @@ export class OperationalReportService {
     return result.sort((left, right) => left.name.localeCompare(right.name))
   }
 
+  private async getScheduledDutyRolesByMember(
+    members: OperationalReportMemberRecord[],
+    range: DateRange
+  ): Promise<ScheduledDutyRolesByMember> {
+    if (members.length === 0) {
+      return new Map()
+    }
+
+    const { firstWeekStart, lastWeekStart } = this.getScheduleWeekRange(range)
+    const assignments = await this.repository.findScheduledDutyAssignmentsForMembers(
+      members.map((member) => member.id),
+      firstWeekStart,
+      lastWeekStart
+    )
+    const scheduledRolesByMember: ScheduledDutyRolesByMember = new Map()
+
+    for (const assignment of assignments) {
+      const roleCodes = scheduledRolesByMember.get(assignment.memberId) ?? new Set()
+      roleCodes.add(assignment.dutyRoleCode)
+      scheduledRolesByMember.set(assignment.memberId, roleCodes)
+    }
+
+    return scheduledRolesByMember
+  }
+
   private countByLabel(labels: string[]) {
     const counts = new Map<string, number>()
     for (const label of labels) {
@@ -1261,7 +1591,13 @@ export class OperationalReportService {
   }
 
   private getDayRange(date: string): DateRange {
-    const start = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).startOf('day')
+    const dayStart = getOperationalDayStartTime()
+    const start = DateTime.fromISO(date, { zone: DEFAULT_TIMEZONE }).set({
+      hour: dayStart.hour,
+      minute: dayStart.minute,
+      second: 0,
+      millisecond: 0,
+    })
     const end = start.plus({ days: 1 })
     return {
       start: start.toJSDate(),
@@ -1297,6 +1633,24 @@ export class OperationalReportService {
       startDate: start.toISODate() ?? `${month}-01`,
       endDate: endInclusive.toISODate() ?? `${month}-01`,
       label: start.toFormat('LLLL yyyy'),
+    }
+  }
+
+  private getScheduleWeekRange(range: DateRange): {
+    firstWeekStart: Date
+    lastWeekStart: Date
+  } {
+    const firstWeekStart = DateTime.fromJSDate(range.start, { zone: DEFAULT_TIMEZONE })
+      .startOf('week')
+      .startOf('day')
+    const lastReportDay = DateTime.fromJSDate(range.end, { zone: DEFAULT_TIMEZONE })
+      .minus({ days: 1 })
+      .startOf('day')
+    const lastWeekStart = lastReportDay.startOf('week').startOf('day')
+
+    return {
+      firstWeekStart: firstWeekStart.toJSDate(),
+      lastWeekStart: lastWeekStart.toJSDate(),
     }
   }
 

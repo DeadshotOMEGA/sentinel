@@ -104,6 +104,14 @@ function buildRunInput(filters: ReportFilters): RunAdminReportInput {
           organization: optionalString(filters.organization),
         },
       }
+    case 'operational_exceptions':
+      return {
+        reportType: 'operational_exceptions',
+        body: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      }
   }
 }
 
