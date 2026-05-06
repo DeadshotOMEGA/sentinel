@@ -24,6 +24,7 @@ import { broadcastCheckin } from '../websocket/broadcast.js'
 import { serviceLogger } from '../lib/logger.js'
 import { formatAuditMemberName, logRequestAudit } from '../lib/audit-log.js'
 import { canMemberEditHistory } from '../lib/history-permissions.js'
+import { SENTINEL_BOOTSTRAP_SERVICE_NUMBER } from '../lib/system-bootstrap.js'
 import type { PrismaClientInstance } from '@sentinel/database'
 
 function getClientIp(req: unknown): string {
@@ -336,6 +337,7 @@ export const checkinsRouter = s.router(checkinContract, {
           COUNT(*) FILTER (WHERE m.status = 'active') as total
         FROM divisions d
         LEFT JOIN members m ON m.division_id = d.id
+          AND m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
         LEFT JOIN latest_checkins lc ON m.id = lc.member_id
         GROUP BY d.id, d.name
         ORDER BY d.name

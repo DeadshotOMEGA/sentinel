@@ -13,6 +13,7 @@ import type {
 import type { PrismaClientInstance } from '@sentinel/database'
 import { prisma as defaultPrisma, Prisma } from '@sentinel/database'
 import { DEFAULT_TIMEZONE, getOperationalDayStartTime } from '../utils/operational-date.js'
+import { SENTINEL_BOOTSTRAP_SERVICE_NUMBER } from '../lib/system-bootstrap.js'
 
 // TODO: Implement Redis caching when infrastructure is ready
 // import { redis } from '../redis';
@@ -694,13 +695,16 @@ export class CheckinRepository {
           COUNT(*) FILTER (WHERE m.status = 'active' AND (lc.direction = 'out' OR lc.direction IS NULL)) as absent
         FROM members m
         LEFT JOIN latest_checkins lc ON m.id = lc.member_id
+        WHERE m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
       ),
       late_arrivals AS (
-        SELECT COUNT(DISTINCT member_id) as count
-        FROM checkins
-        WHERE direction = 'in'
-          AND timestamp::date = CURRENT_DATE
-          AND EXTRACT(HOUR FROM timestamp) >= 8
+        SELECT COUNT(DISTINCT c.member_id) as count
+        FROM checkins c
+        INNER JOIN members m ON c.member_id = m.id
+        WHERE c.direction = 'in'
+          AND c.timestamp::date = CURRENT_DATE
+          AND EXTRACT(HOUR FROM c.timestamp) >= 8
+          AND m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
       ),
       active_visitors AS (
         SELECT COUNT(*) as count
@@ -842,7 +846,9 @@ export class CheckinRepository {
       LEFT JOIN ranks r ON m.rank_id = r.id
       LEFT JOIN member_tags_agg mta ON m.id = mta.member_id
       LEFT JOIN member_types mt ON mt.id = m.member_type_id OR (m.member_type_id IS NULL AND mt.code = m.member_type)
-      WHERE m.status = 'active' AND lc.direction = 'in'
+      WHERE m.status = 'active'
+        AND m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
+        AND lc.direction = 'in'
       ORDER BY lc.timestamp DESC
     `
 
@@ -941,6 +947,7 @@ export class CheckinRepository {
         LIMIT 1
       ) c ON true
       WHERE m.status = 'active'
+        AND m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
       ORDER BY m.last_name, m.first_name
     `
 
@@ -1085,6 +1092,7 @@ export class CheckinRepository {
         JOIN members m ON c.member_id = m.id
         LEFT JOIN divisions d ON m.division_id = d.id
         WHERE c.timestamp >= ${cutoffDate}
+          AND m.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER}
         ORDER BY c.timestamp DESC
         LIMIT ${limit}
       )
@@ -1102,7 +1110,7 @@ export class CheckinRepository {
           v.organization,
           v.visit_type,
           v.visit_reason,
-          CASE WHEN hm.id IS NOT NULL THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
+          CASE WHEN hm.id IS NOT NULL AND hm.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER} THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
           v.event_id,
           e.name as event_name
         FROM visitors v
@@ -1126,7 +1134,7 @@ export class CheckinRepository {
           v.organization,
           v.visit_type,
           v.visit_reason,
-          CASE WHEN hm.id IS NOT NULL THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
+          CASE WHEN hm.id IS NOT NULL AND hm.service_number <> ${SENTINEL_BOOTSTRAP_SERVICE_NUMBER} THEN COALESCE(NULLIF(hm.display_name, ''), hm.first_name || ' ' || hm.last_name) ELSE NULL END as host_name,
           v.event_id,
           e.name as event_name
         FROM visitors v

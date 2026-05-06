@@ -30,6 +30,8 @@ import {
 } from './report-definitions'
 import { ReportPreview } from './report-preview'
 
+const SENTINEL_BOOTSTRAP_SERVICE_NUMBER = 'SENTINEL-SYSTEM'
+
 function optionalString(value: string): string | undefined {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
@@ -114,6 +116,9 @@ export function AdminReportsPage() {
   const tagsQuery = useTags()
   const visitTypesQuery = useVisitTypesForReports()
   const membersQuery = useMembers({ limit: 500, scope: 'all', status: 'active' })
+  const reportHostMembers = (membersQuery.data?.members ?? []).filter(
+    (member) => member.serviceNumber !== SENTINEL_BOOTSTRAP_SERVICE_NUMBER
+  )
   const reportRunner = useAdminReportRunner()
   const definition = getReportDefinition(filters.reportType)
   const tags = tagsQuery.data ?? []
@@ -216,7 +221,7 @@ export function AdminReportsPage() {
               divisions={divisionsQuery.data?.divisions ?? []}
               tags={tags}
               visitTypes={visitTypesQuery.data ?? []}
-              hostMembers={membersQuery.data?.members ?? []}
+              hostMembers={reportHostMembers}
               shortcutWarning={shortcutWarning}
             />
           </div>
