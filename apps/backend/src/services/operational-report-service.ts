@@ -89,6 +89,22 @@ interface PresenceStats {
   note: string | null
 }
 
+export function presenceSessionOverlapsRange(
+  session: PresenceSessionInternal,
+  start: Date,
+  end: Date,
+  asOf: Date = new Date()
+): boolean {
+  if (session.inAt > asOf) {
+    return false
+  }
+
+  const rawOut = session.outAt ?? asOf
+  const effectiveOut = rawOut > asOf ? asOf : rawOut
+
+  return session.inAt < end && effectiveOut > start
+}
+
 export function pairOperationalPresenceSessions(
   checkins: OperationalReportCheckinRecord[],
   warnings: Set<string>
@@ -1175,8 +1191,7 @@ export class OperationalReportService {
   }
 
   private sessionOverlaps(session: PresenceSessionInternal, start: Date, end: Date): boolean {
-    const effectiveOut = session.outAt ?? end
-    return session.inAt < end && effectiveOut > start
+    return presenceSessionOverlapsRange(session, start, end)
   }
 
   private getCategoryPresence(

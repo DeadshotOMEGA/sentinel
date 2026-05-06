@@ -3,8 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSyncExternalStore } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useState, useSyncExternalStore } from 'react'
 import type {
   SystemHealthStatus,
   SystemUpdateJob,
@@ -12,14 +11,13 @@ import type {
   SystemUpdateJobStatus,
 } from '@sentinel/contracts'
 import { Menu, PanelLeftOpen } from 'lucide-react'
-import { toast } from 'sonner'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
 import { isAdminNavPath } from '@/lib/admin-routes'
 import { cn } from '@/lib/utils'
 import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
-import { useHostHotspotRecovery } from '@/hooks/use-network-settings'
+import { HostHotspotRepairDialog } from '@/components/network/host-hotspot-repair-dialog'
 import { useSystemStatus } from '@/hooks/use-system-status'
 import { useSystemUpdateStatus } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
@@ -48,8 +46,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const member = useAuthStore((state) => state.member)
   const authSession = useAuthStore((state) => state.session)
-  const queryClient = useQueryClient()
-  const hostHotspotRecovery = useHostHotspotRecovery()
+  const [hostHotspotRepairOpen, setHostHotspotRepairOpen] = useState(false)
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
   const systemUpdateQuery = useSystemUpdateStatus({
     enabled: isAuthenticated,
@@ -139,20 +136,6 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const currentSystemUpdateJob = systemUpdateStatus?.currentJob ?? null
   const hasActiveSystemUpdate =
     currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob)
-
-  const handleHostHotspotRecovery = async () => {
-    try {
-      const result = await hostHotspotRecovery.mutateAsync()
-      toast.success(result.message)
-      ;[2_000, 5_000, 10_000, 20_000].forEach((delayMs) => {
-        window.setTimeout(() => {
-          void queryClient.invalidateQueries({ queryKey: ['system-status'] })
-        }, delayMs)
-      })
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to queue host hotspot recovery')
-    }
-  }
 
   return (
     <div className="navbar w-full shadow-lg bg-primary text-primary-content">
@@ -409,11 +392,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       <button
                         type="button"
                         className="btn btn-xs btn-outline"
-                        onClick={() => void handleHostHotspotRecovery()}
-                        disabled={hostHotspotRecovery.isPending}
+                        onClick={() => setHostHotspotRepairOpen(true)}
                         data-testid={TID.nav.backendStatusHostRecovery}
                       >
-                        {hostHotspotRecovery.isPending ? 'Queueing...' : 'Repair host hotspot'}
+                        Repair host hotspot
                       </button>
                     )}
                   </div>
@@ -473,6 +455,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         </div>
         <UserMenu />
       </div>
+      <HostHotspotRepairDialog
+        open={hostHotspotRepairOpen}
+        onOpenChange={setHostHotspotRepairOpen}
+      />
     </div>
   )
 }

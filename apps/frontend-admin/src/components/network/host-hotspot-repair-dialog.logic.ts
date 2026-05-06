@@ -1,0 +1,67 @@
+export const HOST_HOTSPOT_ANTENNA_WAIT_SECONDS = 3
+
+export const HOST_HOTSPOT_REPAIR_STEPS = [
+  {
+    id: 'run-repair',
+    label: 'Run repair',
+  },
+  {
+    id: 'reset-antenna',
+    label: 'Reset antenna',
+  },
+  {
+    id: 'retry-repair',
+    label: 'Run repair again',
+  },
+] as const
+
+export type HostHotspotRepairStepId = (typeof HOST_HOTSPOT_REPAIR_STEPS)[number]['id']
+export type HostHotspotRepairStage = HostHotspotRepairStepId | 'complete'
+export type HostHotspotRepairStepState = 'complete' | 'active' | 'pending'
+
+export interface HostHotspotAntennaWaitState {
+  started: boolean
+  secondsRemaining: number
+}
+
+export function getHostHotspotRepairStepState(
+  stage: HostHotspotRepairStage,
+  stepId: HostHotspotRepairStepId
+): HostHotspotRepairStepState {
+  if (stage === 'complete') {
+    return 'complete'
+  }
+
+  const activeIndex = HOST_HOTSPOT_REPAIR_STEPS.findIndex((step) => step.id === stage)
+  const stepIndex = HOST_HOTSPOT_REPAIR_STEPS.findIndex((step) => step.id === stepId)
+
+  if (stepIndex < activeIndex) {
+    return 'complete'
+  }
+
+  if (stepIndex === activeIndex) {
+    return 'active'
+  }
+
+  return 'pending'
+}
+
+export function getHostHotspotAntennaWaitLabel(state: HostHotspotAntennaWaitState): string {
+  if (!state.started) {
+    return 'Start 3-second wait'
+  }
+
+  const secondsRemaining = Math.max(0, Math.ceil(state.secondsRemaining))
+
+  if (secondsRemaining === 0) {
+    return 'Antenna is plugged in'
+  }
+
+  return `Wait ${secondsRemaining}s`
+}
+
+export function isHostHotspotAntennaWaitActionDisabled(
+  state: HostHotspotAntennaWaitState
+): boolean {
+  return state.started && state.secondsRemaining > 0
+}

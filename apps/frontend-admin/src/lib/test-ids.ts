@@ -27,6 +27,12 @@ export const TID = {
     changePin: 'nav-change-pin',
     logout: 'nav-logout',
   },
+  hostHotspotRepair: {
+    dialog: 'host-hotspot-repair-dialog',
+    primary: 'host-hotspot-repair-primary',
+    close: 'host-hotspot-repair-close',
+    step: (step: string) => `host-hotspot-repair-step-${step}`,
+  },
   sidebar: {
     editBtn: (id: string) => `sidebar-edit-${id}`,
     saveBtn: 'sidebar-save-btn',
