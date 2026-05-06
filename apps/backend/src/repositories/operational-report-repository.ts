@@ -1,5 +1,6 @@
 import type { PrismaClientInstance } from '@sentinel/database'
 import { Prisma, prisma as defaultPrisma } from '@sentinel/database'
+import { SENTINEL_BOOTSTRAP_SERVICE_NUMBER } from '../lib/system-bootstrap.js'
 
 const reportMemberInclude = {
   division: {
@@ -63,6 +64,7 @@ const visitorInclude = {
   hostMember: {
     select: {
       id: true,
+      serviceNumber: true,
       rank: true,
       firstName: true,
       lastName: true,
@@ -163,6 +165,9 @@ export class OperationalReportRepository {
   ): Promise<OperationalReportMemberRecord[]> {
     const where: Prisma.MemberWhereInput = {
       status: 'active',
+      serviceNumber: {
+        not: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
+      },
     }
 
     if (filters.divisionId) {

@@ -1,6 +1,7 @@
 import { initServer } from '@ts-rest/express'
 import type { Request } from 'express'
 import { reportContract } from '@sentinel/contracts'
+import type { Prisma } from '@sentinel/database'
 import type {
   DailyCheckinConfig,
   TrainingNightReportConfig,
@@ -14,6 +15,10 @@ import {
   OperationalReportService,
   type OperationalReportActor,
 } from '../services/operational-report-service.js'
+import {
+  SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
+  isSentinelBootstrapMember,
+} from '../lib/system-bootstrap.js'
 
 const s = initServer()
 const prisma = getPrismaClient()
@@ -49,6 +54,15 @@ function getReportActor(req: Request): OperationalReportActor {
     rank: req.member?.rank,
     firstName: req.member?.firstName,
     lastName: req.member?.lastName,
+  }
+}
+
+function createVisibleActiveMemberWhere(): Prisma.MemberWhereInput {
+  return {
+    status: 'active',
+    serviceNumber: {
+      not: SENTINEL_BOOTSTRAP_SERVICE_NUMBER,
+    },
   }
 }
 
@@ -188,9 +202,7 @@ export const reportsRouter = s.router(reportContract, {
       today.setHours(0, 0, 0, 0)
 
       // Build where clause for member filtering
-      const memberWhere: Record<string, unknown> = {
-        status: 'active',
-      }
+      const memberWhere = createVisibleActiveMemberWhere()
 
       if (config.divisionId) {
         memberWhere.divisionId = config.divisionId
@@ -473,9 +485,7 @@ export const reportsRouter = s.router(reportContract, {
       }
 
       // Build member query
-      const memberWhere: Record<string, unknown> = {
-        status: 'active',
-      }
+      const memberWhere = createVisibleActiveMemberWhere()
 
       if (config.organizationOption === 'specific_division' && config.divisionId) {
         memberWhere.divisionId = config.divisionId
@@ -491,7 +501,7 @@ export const reportsRouter = s.router(reportContract, {
 
       // Get members with attendance data
       const members = await prisma.member.findMany({
-        where: memberWhere as Record<string, unknown>,
+        where: memberWhere,
         include: {
           division: {
             select: {
@@ -641,10 +651,14 @@ export const reportsRouter = s.router(reportContract, {
       })
 
       // Filter by division if specified
+      const visibleEnrollments = enrollments.filter(
+        (enrollment) => !isSentinelBootstrapMember(enrollment.member)
+      )
+
       const filteredEnrollments =
         config.organizationOption === 'specific_division' && config.divisionId
-          ? enrollments.filter((e) => e.member.divisionId === config.divisionId)
-          : enrollments
+          ? visibleEnrollments.filter((e) => e.member.divisionId === config.divisionId)
+          : visibleEnrollments
 
       // Calculate attendance for each enrollment
       const records = filteredEnrollments.map((enrollment) => {
@@ -706,9 +720,7 @@ export const reportsRouter = s.router(reportContract, {
       const config: PersonnelRosterConfig = body
 
       // Build member query
-      const memberWhere: Record<string, unknown> = {
-        status: 'active',
-      }
+      const memberWhere = createVisibleActiveMemberWhere()
 
       if (config.divisionId) {
         memberWhere.divisionId = config.divisionId
@@ -826,31 +838,38 @@ export const reportsRouter = s.router(reportContract, {
         },
       })
 
-      const records = visitors.map((visitor) => ({
-        id: visitor.id,
-        fullName: visitor.name || visitor.id,
-        organization: visitor.organization || null,
-        purpose: visitor.visitReason || null,
-        visitType: visitor.visitType,
-        checkInTime: visitor.checkInTime.toISOString(),
-        checkOutTime: visitor.checkOutTime?.toISOString() || null,
-        duration: visitor.checkOutTime
-          ? Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000)
-          : null,
-        hostMember: visitor.hostMember
-          ? {
-              id: visitor.hostMember.id,
-              serviceNumber: visitor.hostMember.serviceNumber,
-              firstName: visitor.hostMember.firstName,
-              lastName: visitor.hostMember.lastName,
-              rank: visitor.hostMember.rank,
-              division: {
-                id: visitor.hostMember.division?.id ?? 'Unknown',
-                name: visitor.hostMember.division?.name ?? 'Unknown',
-              },
-            }
-          : null,
-      }))
+      const records = visitors.map((visitor) => {
+        const hostMember =
+          visitor.hostMember && !isSentinelBootstrapMember(visitor.hostMember)
+            ? visitor.hostMember
+            : null
+
+        return {
+          id: visitor.id,
+          fullName: visitor.name || visitor.id,
+          organization: visitor.organization || null,
+          purpose: visitor.visitReason || null,
+          visitType: visitor.visitType,
+          checkInTime: visitor.checkInTime.toISOString(),
+          checkOutTime: visitor.checkOutTime?.toISOString() || null,
+          duration: visitor.checkOutTime
+            ? Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60000)
+            : null,
+          hostMember: hostMember
+            ? {
+                id: hostMember.id,
+                serviceNumber: hostMember.serviceNumber,
+                firstName: hostMember.firstName,
+                lastName: hostMember.lastName,
+                rank: hostMember.rank,
+                division: {
+                  id: hostMember.division?.id ?? 'Unknown',
+                  name: hostMember.division?.name ?? 'Unknown',
+                },
+              }
+            : null,
+        }
+      })
 
       // Calculate summary statistics
       const byVisitType: Record<string, number> = {}

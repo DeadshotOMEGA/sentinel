@@ -34,6 +34,7 @@ import {
   type OperationalReportUnitEventRecord,
   type OperationalReportVisitorRecord,
 } from '../repositories/operational-report-repository.js'
+import { isSentinelBootstrapMember } from '../lib/system-bootstrap.js'
 
 const UNIT_NAME = 'HMCS Chippawa'
 const REPORT_LOOKBACK_DAYS = 1
@@ -1133,11 +1134,13 @@ export class OperationalReportService {
 
   private toVisitorActivityRow(visitor: OperationalReportVisitorRecord) {
     const displayName = visitor.displayName ?? visitor.name
-    const hostName = visitor.hostMember
-      ? (visitor.hostMember.displayName ??
-        [visitor.hostMember.rank, visitor.hostMember.firstName, visitor.hostMember.lastName]
-          .filter(Boolean)
-          .join(' '))
+    const hostMember =
+      visitor.hostMember && !isSentinelBootstrapMember(visitor.hostMember)
+        ? visitor.hostMember
+        : null
+    const hostName = hostMember
+      ? (hostMember.displayName ??
+        [hostMember.rank, hostMember.firstName, hostMember.lastName].filter(Boolean).join(' '))
       : null
 
     return {
@@ -1162,9 +1165,9 @@ export class OperationalReportService {
           }
         : null,
       host:
-        visitor.hostMember && hostName
+        hostMember && hostName
           ? {
-              id: visitor.hostMember.id,
+              id: hostMember.id,
               displayName: hostName,
             }
           : null,

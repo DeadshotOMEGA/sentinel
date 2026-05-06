@@ -17,6 +17,7 @@ import {
   normalizeNamePart,
   splitLegacyVisitorName,
 } from '../utils/display-name.js'
+import { isSentinelBootstrapMember } from '../lib/system-bootstrap.js'
 
 interface VisitorFilters {
   dateRange?: {
@@ -759,7 +760,12 @@ export class VisitorRepository {
    */
   toVisitorWithRelations(
     visitor: PrismaVisitor & {
-      hostMember?: { firstName: string; lastName: string; displayName?: string | null } | null
+      hostMember?: {
+        serviceNumber: string
+        firstName: string
+        lastName: string
+        displayName?: string | null
+      } | null
       event?: { name: string } | null
       visitTypeRef?: {
         id: string
@@ -774,11 +780,14 @@ export class VisitorRepository {
     visitTypeInfo?: { id: string; name: string; chipVariant?: string; chipColor?: string }
   } {
     const base = this.toVisitorType(visitor)
+    const hostMember =
+      visitor.hostMember && !isSentinelBootstrapMember(visitor.hostMember)
+        ? visitor.hostMember
+        : null
     return {
       ...base,
-      hostName: visitor.hostMember
-        ? (visitor.hostMember.displayName ??
-          `${visitor.hostMember.firstName} ${visitor.hostMember.lastName}`)
+      hostName: hostMember
+        ? (hostMember.displayName ?? `${hostMember.firstName} ${hostMember.lastName}`)
         : undefined,
       eventName: visitor.event?.name ?? undefined,
       visitTypeInfo: visitor.visitTypeRef

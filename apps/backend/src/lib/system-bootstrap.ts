@@ -55,3 +55,7 @@ export function isSentinelBootstrapServiceNumber(
 ): boolean {
   return serviceNumber === SENTINEL_BOOTSTRAP_SERVICE_NUMBER
 }
+
+export function isSentinelBootstrapMember(member: { serviceNumber?: string | null }): boolean {
+  return isSentinelBootstrapServiceNumber(member.serviceNumber)
+}
