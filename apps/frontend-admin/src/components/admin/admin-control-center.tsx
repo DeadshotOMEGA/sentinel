@@ -376,6 +376,17 @@ function getUpdateTelemetry(updateStatus: SystemUpdateStatusResponse | null): Ad
     }
   }
 
+  if (updateStatus.latestReleaseStatus === 'preparing') {
+    return {
+      value: updateStatus.pendingReleaseVersion
+        ? `Preparing ${updateStatus.pendingReleaseVersion}`
+        : 'Release preparing',
+      detail: 'GitHub is still building the appliance package.',
+      badge: 'Wait',
+      badgeStatus: 'warning',
+    }
+  }
+
   return {
     value: updateStatus.currentVersion ?? 'Current',
     detail: 'No pending update action.',
@@ -459,6 +470,19 @@ function getUpdateActionableSignal(
       href: '/admin/updates',
       routeId: 'updates',
       badge: 'Ready',
+      badgeStatus: 'warning',
+    }
+  }
+
+  if (updateStatus.latestReleaseStatus === 'preparing') {
+    return {
+      id: 'pending-update',
+      label: 'Pending update',
+      value: updateStatus.pendingReleaseVersion ?? 'Preparing',
+      detail: 'Release assets are still being created.',
+      href: '/admin/updates',
+      routeId: 'updates',
+      badge: 'Wait',
       badgeStatus: 'warning',
     }
   }

@@ -58,6 +58,9 @@ function createUpdateStatus(
   return {
     currentVersion: 'v2.8.2',
     latestVersion: 'v2.8.2',
+    pendingReleaseVersion: null,
+    latestReleaseStatus: 'ready',
+    latestReleaseStatusMessage: 'Latest stable release is ready to install.',
     latestReleaseUrl: null,
     latestReleaseNotes: null,
     updateAvailable: false,

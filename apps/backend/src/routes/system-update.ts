@@ -103,7 +103,7 @@ export function createSystemUpdateRouter(options?: {
       }
 
       try {
-        const status = await statusService.getStatus()
+        const status = await statusService.getStatus({ forceRefresh: true })
 
         if (status.currentJob && !isSystemUpdateJobFinished(status.currentJob)) {
           return {
@@ -131,6 +131,19 @@ export function createSystemUpdateRouter(options?: {
             body: {
               error: 'CONFLICT',
               message: `Target version ${body.targetVersion} is not newer than the current version ${status.currentVersion}`,
+            },
+          }
+        }
+
+        if (status.latestReleaseStatus !== 'ready' || status.latestVersion !== body.targetVersion) {
+          return {
+            status: 409 as const,
+            body: {
+              error: 'CONFLICT',
+              message:
+                status.latestReleaseStatus === 'preparing' && status.pendingReleaseVersion
+                  ? `Release ${status.pendingReleaseVersion} is still being prepared. Wait for the release workflow to finish, then refresh updates.`
+                  : `Target version ${body.targetVersion} is not available as an installable Sentinel release yet.`,
             },
           }
         }

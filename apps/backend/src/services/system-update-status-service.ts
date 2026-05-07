@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import type {
   SystemUpdateJob,
   SystemUpdateReleaseNotes,
+  SystemUpdateReleaseStatus,
   SystemUpdateStatusResponse,
 } from '@sentinel/contracts'
 import { serviceLogger } from '../lib/logger.js'
@@ -21,9 +22,13 @@ const DEFAULT_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 1000
 const MAX_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS = 60 * 60 * 1000
 const RELEASE_NOTES_CACHE_FILENAME = 'release-notes-cache.json'
 const MAX_RELEASE_NOTES_BODY_LENGTH = 100_000
+const REQUIRED_RELEASE_ASSET_NAMES = ['build-info.env', 'SHA256SUMS.txt'] as const
 
 interface LatestReleaseSummary {
   latestVersion: string | null
+  pendingReleaseVersion: string | null
+  latestReleaseStatus: SystemUpdateReleaseStatus
+  latestReleaseStatusMessage: string | null
   latestReleaseUrl: string | null
   latestReleaseNotes: SystemUpdateReleaseNotes | null
 }
@@ -92,11 +97,19 @@ export class SystemUpdateStatusService {
       resolveServiceVersionTag() ??
       currentJob?.currentVersion ??
       null
-    const latestVersion = releaseSummary.latestVersion ?? currentJob?.latestVersion ?? null
+    const latestVersion =
+      releaseSummary.latestReleaseStatus === 'ready'
+        ? releaseSummary.latestVersion
+        : releaseSummary.latestReleaseStatus === 'unavailable'
+          ? (currentJob?.latestVersion ?? null)
+          : null
 
     return {
       currentVersion,
       latestVersion,
+      pendingReleaseVersion: releaseSummary.pendingReleaseVersion,
+      latestReleaseStatus: releaseSummary.latestReleaseStatus,
+      latestReleaseStatusMessage: releaseSummary.latestReleaseStatusMessage,
       latestReleaseUrl: releaseSummary.latestReleaseUrl,
       latestReleaseNotes: releaseSummary.latestReleaseNotes,
       updateAvailable:
@@ -148,6 +161,17 @@ export class SystemUpdateStatusService {
     return this.readJobFromPath(join(this.stateRoot, 'jobs', `${jobId}.json`))
   }
 
+  private async buildUnavailableReleaseSummary(message: string): Promise<LatestReleaseSummary> {
+    return {
+      latestVersion: null,
+      pendingReleaseVersion: null,
+      latestReleaseStatus: 'unavailable',
+      latestReleaseStatusMessage: message,
+      latestReleaseUrl: null,
+      latestReleaseNotes: await this.readCachedReleaseNotes(),
+    }
+  }
+
   private async readCurrentJob(): Promise<SystemUpdateJob | null> {
     return this.readJobFromPath(join(this.stateRoot, 'current-job.json'))
   }
@@ -182,11 +206,7 @@ export class SystemUpdateStatusService {
   }): Promise<LatestReleaseSummary> {
     const repository = this.releaseRepository.trim()
     if (repository.length === 0) {
-      return {
-        latestVersion: null,
-        latestReleaseUrl: null,
-        latestReleaseNotes: await this.readCachedReleaseNotes(),
-      }
+      return this.buildUnavailableReleaseSummary('Release lookup is disabled on this appliance.')
     }
 
     const forceRefresh = options?.forceRefresh === true
@@ -237,11 +257,7 @@ export class SystemUpdateStatusService {
         })
 
         return {
-          summary: {
-            latestVersion: null,
-            latestReleaseUrl: null,
-            latestReleaseNotes: await this.readCachedReleaseNotes(),
-          },
+          summary: await this.buildUnavailableReleaseSummary('Latest release lookup failed.'),
           cacheTtlMs: this.getReleaseLookupErrorCacheTtl(response),
         }
       }
@@ -249,35 +265,72 @@ export class SystemUpdateStatusService {
       const payload: unknown = await response.json()
       if (!isRecord(payload)) {
         return {
-          summary: {
-            latestVersion: null,
-            latestReleaseUrl: null,
-            latestReleaseNotes: await this.readCachedReleaseNotes(),
-          },
+          summary: await this.buildUnavailableReleaseSummary(
+            'Latest release response was not valid.'
+          ),
           cacheTtlMs: this.latestReleaseCacheTtlMs,
         }
       }
 
       const tagName = typeof payload.tag_name === 'string' ? payload.tag_name.trim() : ''
-      const latestVersion = isStableVersionTag(tagName) ? tagName : null
       const latestReleaseUrl = typeof payload.html_url === 'string' ? payload.html_url : null
-      const latestReleaseNotes =
-        latestVersion === null
-          ? await this.readCachedReleaseNotes()
-          : await this.buildAndPersistReleaseNotes({
-              version: latestVersion,
-              title: typeof payload.name === 'string' ? payload.name.trim() || null : null,
-              url: latestReleaseUrl,
-              publishedAt:
-                typeof payload.published_at === 'string'
-                  ? payload.published_at.trim() || null
-                  : null,
-              body: typeof payload.body === 'string' ? payload.body : '',
-            })
+      const isStableRelease = isStableVersionTag(tagName)
+      const latestReleaseNotes = !isStableRelease
+        ? await this.readCachedReleaseNotes()
+        : await this.buildAndPersistReleaseNotes({
+            version: tagName,
+            title: typeof payload.name === 'string' ? payload.name.trim() || null : null,
+            url: latestReleaseUrl,
+            publishedAt:
+              typeof payload.published_at === 'string' ? payload.published_at.trim() || null : null,
+            body: typeof payload.body === 'string' ? payload.body : '',
+          })
+
+      if (!isStableRelease) {
+        return {
+          summary: {
+            latestVersion: null,
+            pendingReleaseVersion: null,
+            latestReleaseStatus: 'unavailable',
+            latestReleaseStatusMessage: 'Latest GitHub release is not a stable Sentinel version.',
+            latestReleaseUrl,
+            latestReleaseNotes,
+          },
+          cacheTtlMs: this.latestReleaseCacheTtlMs,
+        }
+      }
+
+      const releaseAssetNames = this.getReleaseAssetNames(payload)
+      if (!this.hasInstallableReleaseAssets(releaseAssetNames)) {
+        serviceLogger.info(
+          'Latest Sentinel release is published but install assets are not ready',
+          {
+            repository,
+            tagName,
+            releaseAssetNames,
+          }
+        )
+
+        return {
+          summary: {
+            latestVersion: null,
+            pendingReleaseVersion: tagName,
+            latestReleaseStatus: 'preparing',
+            latestReleaseStatusMessage:
+              'GitHub has published the release record, but the appliance package assets are still being created.',
+            latestReleaseUrl,
+            latestReleaseNotes,
+          },
+          cacheTtlMs: this.latestReleaseErrorCacheTtlMs,
+        }
+      }
 
       return {
         summary: {
-          latestVersion,
+          latestVersion: tagName,
+          pendingReleaseVersion: null,
+          latestReleaseStatus: 'ready',
+          latestReleaseStatusMessage: 'Latest stable release is ready to install.',
           latestReleaseUrl,
           latestReleaseNotes,
         },
@@ -290,11 +343,9 @@ export class SystemUpdateStatusService {
       })
 
       return {
-        summary: {
-          latestVersion: null,
-          latestReleaseUrl: null,
-          latestReleaseNotes: await this.readCachedReleaseNotes(),
-        },
+        summary: await this.buildUnavailableReleaseSummary(
+          'Latest release lookup raised an error.'
+        ),
         cacheTtlMs: this.latestReleaseErrorCacheTtlMs,
       }
     }
@@ -320,6 +371,31 @@ export class SystemUpdateStatusService {
       this.latestReleaseErrorCacheTtlMs,
       Math.min(resetDelayMs, MAX_RELEASE_LOOKUP_ERROR_CACHE_TTL_MS)
     )
+  }
+
+  private getReleaseAssetNames(payload: Record<string, unknown>): string[] {
+    if (!Array.isArray(payload.assets)) {
+      return []
+    }
+
+    return payload.assets
+      .map((asset) => {
+        if (!isRecord(asset)) {
+          return null
+        }
+
+        const name = typeof asset.name === 'string' ? asset.name.trim() : ''
+        return name.length > 0 ? name : null
+      })
+      .filter((name): name is string => name !== null)
+  }
+
+  private hasInstallableReleaseAssets(assetNames: readonly string[]): boolean {
+    const assetNameSet = new Set(assetNames)
+    const hasRequiredAssets = REQUIRED_RELEASE_ASSET_NAMES.every((name) => assetNameSet.has(name))
+    const hasDebPackage = assetNames.some((name) => name.endsWith('.deb'))
+
+    return hasRequiredAssets && hasDebPackage
   }
 
   private async readApplianceCurrentVersion(): Promise<string | null> {
