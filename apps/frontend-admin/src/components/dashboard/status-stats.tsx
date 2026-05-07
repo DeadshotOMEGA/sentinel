@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Users,
@@ -18,6 +18,7 @@ import {
 import type { DutyWatchTeamResponse } from '@sentinel/contracts'
 import { useDdsStatus } from '@/hooks/use-dds'
 import { useCheckoutOptions, useLockupStatus } from '@/hooks/use-lockup'
+import { useQualificationTypes } from '@/hooks/use-qualifications'
 import { useTonightDutyWatch } from '@/hooks/use-schedules'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 import { SetTodayDdsModal } from '@/components/dashboard/set-today-dds-modal'
@@ -26,9 +27,38 @@ import { ExecuteLockupModal } from '@/components/lockup/execute-lockup-modal'
 import { OpenBuildingModal } from '@/components/lockup/open-building-modal'
 import { AppBadge } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
+import type { ChipColor, ChipVariant } from '@/components/ui/chip'
 import { MotionButton } from '@/components/ui/motion-button'
 import { TID } from '@/lib/test-ids'
 import { getDutyWatchCoverageSummary } from '@/lib/dashboard-member-actions'
+
+const DUTY_WATCH_POSITION_ORDER = ['SWK', 'DSWK', 'QM', 'BM', 'APS'] as const
+const DUTY_WATCH_POSITION_ORDER_INDEX = new Map<string, number>(
+  DUTY_WATCH_POSITION_ORDER.map((code, index) => [code, index])
+)
+
+function getDutyWatchPositionSortIndex(assignment: DutyWatchTeamResponse['team'][number]): number {
+  const code = assignment.position?.code
+  if (!code) return Number.MAX_SAFE_INTEGER
+  return DUTY_WATCH_POSITION_ORDER_INDEX.get(code.toUpperCase()) ?? Number.MAX_SAFE_INTEGER
+}
+
+function compareDutyWatchAssignments(
+  left: DutyWatchTeamResponse['team'][number],
+  right: DutyWatchTeamResponse['team'][number]
+): number {
+  const orderDifference = getDutyWatchPositionSortIndex(left) - getDutyWatchPositionSortIndex(right)
+  if (orderDifference !== 0) return orderDifference
+
+  const leftCode = left.position?.code ?? ''
+  const rightCode = right.position?.code ?? ''
+  if (leftCode !== rightCode) return leftCode.localeCompare(rightCode)
+
+  const lastNameDifference = left.member.lastName.localeCompare(right.member.lastName)
+  if (lastNameDifference !== 0) return lastNameDifference
+
+  return left.member.firstName.localeCompare(right.member.firstName)
+}
 
 function formatTime(dateStr: string | null): string {
   if (!dateStr) return 'N/A'
@@ -357,6 +387,25 @@ function LockupHolderStat({
 
 function DutyWatchStat() {
   const { data: dutyWatch, isLoading, isError } = useTonightDutyWatch()
+  const { data: qualificationTypes } = useQualificationTypes()
+  const qualChipStyleByCode = useMemo(() => {
+    const map = new Map<string, { variant: ChipVariant; color: ChipColor }>()
+    if (qualificationTypes) {
+      for (const qt of qualificationTypes) {
+        if (qt.tag) {
+          map.set(qt.code, {
+            variant: (qt.tag.chipVariant as ChipVariant) || 'solid',
+            color: (qt.tag.chipColor as ChipColor) || 'default',
+          })
+        }
+      }
+    }
+    return map
+  }, [qualificationTypes])
+  const team = useMemo(
+    () => [...(dutyWatch?.team || [])].sort(compareDutyWatchAssignments),
+    [dutyWatch?.team]
+  )
 
   // Don't render if not a Duty Watch night
   if (!isLoading && !isError && !dutyWatch?.isDutyWatchNight) {
@@ -389,7 +438,6 @@ function DutyWatchStat() {
     return null
   }
 
-  const team = dutyWatch.team || []
   const coverageSummary = getDutyWatchCoverageSummary(dutyWatch)
   const checkedInCount = coverageSummary.coveredCount
   const plannedCount = coverageSummary.plannedCount
@@ -450,6 +498,9 @@ function DutyWatchStat() {
             <ul className="list rounded-box bg-base-100">
               {team.map((assignment) => {
                 const positionLabel = getDutyWatchPositionLabel(assignment.position)
+                const chipStyle = assignment.position?.code
+                  ? qualChipStyleByCode.get(assignment.position.code)
+                  : undefined
                 const isCovered = assignment.isCheckedIn || Boolean(assignment.liveCoverage)
 
                 return (
@@ -460,8 +511,8 @@ function DutyWatchStat() {
                     <div className="min-w-20 shrink-0">
                       <Chip
                         size="sm"
-                        variant="faded"
-                        color="secondary"
+                        variant={chipStyle?.variant ?? 'flat'}
+                        color={chipStyle?.color ?? 'default'}
                         className="font-mono uppercase tracking-wide"
                         title={positionLabel.fullLabel}
                       >
