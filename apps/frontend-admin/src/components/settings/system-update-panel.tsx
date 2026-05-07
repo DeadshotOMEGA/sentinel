@@ -218,19 +218,25 @@ export function SystemUpdatePanel() {
   const preferredTargetVersion = status ? getPreferredUpdateTargetVersion(status, currentJob) : null
   const phaseProgress = getSystemUpdatePhaseProgress(currentJob)
   const cachedReleaseNotes = status?.latestReleaseNotes ?? null
+  const releasePreparing = status?.latestReleaseStatus === 'preparing'
   const retryingLastTarget =
-    status !== null && status.latestVersion === null && preferredTargetVersion !== null
+    status !== null &&
+    status.latestVersion === null &&
+    preferredTargetVersion !== null &&
+    !releasePreparing
   const startActionLabel = hasActiveJob
     ? 'Update in progress'
     : !canStartUpdates
       ? 'Admin required'
-      : preferredTargetVersion === null
-        ? status?.latestVersion === null
-          ? 'No update target'
-          : 'Up to date'
-        : retryingLastTarget
-          ? `Retry ${preferredTargetVersion}`
-          : `Update to ${preferredTargetVersion}`
+      : releasePreparing
+        ? 'Release preparing'
+        : preferredTargetVersion === null
+          ? status?.latestVersion === null
+            ? 'No update target'
+            : 'Up to date'
+          : retryingLastTarget
+            ? `Retry ${preferredTargetVersion}`
+            : `Update to ${preferredTargetVersion}`
   const confirmActionLabel =
     preferredTargetVersion === null
       ? 'Start update'
@@ -240,6 +246,7 @@ export function SystemUpdatePanel() {
   const canStartNow =
     canStartUpdates &&
     preferredTargetVersion !== null &&
+    !releasePreparing &&
     !hasActiveJob &&
     !startSystemUpdate.isPending
   const traceQuery = useSystemUpdateTrace({
@@ -425,6 +432,18 @@ export function SystemUpdatePanel() {
   const lastUpdateTime = currentJob
     ? (currentJob.finishedAt ?? currentJob.startedAt ?? currentJob.requestedAt)
     : null
+  const releaseCardValue =
+    status.updateAvailable && status.latestVersion
+      ? status.latestVersion
+      : releasePreparing && status.pendingReleaseVersion
+        ? status.pendingReleaseVersion
+        : 'No newer release'
+  const releaseCardDetail = status.updateAvailable
+    ? 'Ready to install on this appliance.'
+    : releasePreparing
+      ? (status.latestReleaseStatusMessage ??
+        'Release workflow is still creating appliance assets.')
+      : 'Stable channel matches the installed version.'
 
   return (
     <div className="space-y-(--space-5)" data-testid={TID.settings.updates.panel}>
@@ -544,6 +563,13 @@ export function SystemUpdatePanel() {
             </AppAlert>
           )}
 
+          {releasePreparing && (
+            <AppAlert tone="warning" heading="Release package is still being built">
+              {status.latestReleaseStatusMessage ??
+                'Refresh this page after the GitHub release workflow finishes. The update button will stay disabled until the appliance package is attached.'}
+            </AppAlert>
+          )}
+
           <section className="grid min-w-0 gap-(--space-3) xl:grid-cols-4">
             <div className="rounded-box border-l-4 border-neutral/35 bg-base-200/85 p-(--space-5) shadow-[var(--shadow-2)] xl:col-span-2">
               <div className="min-w-0">
@@ -555,12 +581,21 @@ export function SystemUpdatePanel() {
                   {status.currentVersion ?? 'Unknown'}
                 </p>
                 <div className="mt-(--space-2) flex w-fit flex-wrap items-center gap-(--space-2)">
-                  <AppBadge status={status.updateAvailable ? 'info' : 'success'} size="sm">
-                    {status.updateAvailable ? 'Update ready' : 'Current'}
+                  <AppBadge
+                    status={
+                      releasePreparing ? 'warning' : status.updateAvailable ? 'info' : 'success'
+                    }
+                    size="sm"
+                  >
+                    {releasePreparing
+                      ? 'Release preparing'
+                      : status.updateAvailable
+                        ? 'Update ready'
+                        : 'Current'}
                   </AppBadge>
                   <span className="text-xs font-medium text-base-content/62">
                     {status.updateAvailable
-                      ? 'A newer stable release is ready.'
+                      ? `Installed version; ${status.latestVersion} is ready.`
                       : 'Installed Sentinel package/runtime version.'}
                   </span>
                 </div>
@@ -591,10 +626,13 @@ export function SystemUpdatePanel() {
             <div className="rounded-box bg-base-100 p-(--space-4) shadow-[var(--shadow-1)] xl:col-span-2">
               <p className="flex items-center gap-(--space-2) text-[0.68rem] font-semibold uppercase tracking-wide text-base-content/50">
                 <Download className="h-4 w-4" />
-                Latest stable
+                Release channel
               </p>
               <p className="mt-(--space-2) break-all font-mono text-2xl font-bold text-base-content">
-                {status.latestVersion ?? 'Unknown'}
+                {releaseCardValue}
+              </p>
+              <p className="mt-(--space-1) text-xs font-medium leading-relaxed text-base-content/55">
+                {releaseCardDetail}
               </p>
               <p className="mt-(--space-1) text-xs font-medium text-base-content/55">
                 {cachedReleaseNotes ? (

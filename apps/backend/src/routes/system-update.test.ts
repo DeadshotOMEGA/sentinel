@@ -54,11 +54,29 @@ function createStatusResponse(overrides?: Partial<Record<string, unknown>>) {
   return {
     currentVersion: 'v2.6.1',
     latestVersion: 'v2.6.2',
+    pendingReleaseVersion: null,
+    latestReleaseStatus: 'ready',
+    latestReleaseStatusMessage: 'Latest stable release is ready to install.',
     latestReleaseUrl: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.2',
     latestReleaseNotes: null,
     updateAvailable: true,
     currentJob: null,
     ...overrides,
+  }
+}
+
+function createInstallableReleasePayload(version = 'v2.6.2') {
+  return {
+    tag_name: version,
+    name: `Sentinel ${version}`,
+    html_url: `https://github.com/DeadshotOMEGA/sentinel/releases/tag/${version}`,
+    published_at: '2026-04-22T12:00:00.000Z',
+    body: 'Release notes.',
+    assets: [
+      { name: 'build-info.env' },
+      { name: 'sentinel-appliance_2.6.2_all.deb' },
+      { name: 'SHA256SUMS.txt' },
+    ],
   }
 }
 
@@ -134,6 +152,8 @@ describe('systemUpdateRouter', () => {
   const originalReleaseRepository = process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY
 
   afterEach(async () => {
+    vi.unstubAllGlobals()
+
     if (originalAppVersion === undefined) {
       delete process.env.APP_VERSION
     } else {
@@ -242,7 +262,14 @@ describe('systemUpdateRouter', () => {
     process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
     process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
     process.env.SYSTEM_UPDATE_BRIDGE_SOCKET_PATH = socketPath
-    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new globalThis.Response(JSON.stringify(createInstallableReleasePayload()))
+        )
+    )
 
     const server = await createBridgeServer(socketPath, (payload) => {
       expect(payload).toMatchObject({
@@ -309,6 +336,35 @@ describe('systemUpdateRouter', () => {
     } finally {
       await rm(stateRoot, { recursive: true, force: true })
     }
+  })
+
+  it('rejects starting an update while GitHub release assets are still being prepared', async () => {
+    const getStatus = vi.fn().mockResolvedValue(
+      createStatusResponse({
+        latestVersion: null,
+        pendingReleaseVersion: 'v2.6.2',
+        latestReleaseStatus: 'preparing',
+        latestReleaseStatusMessage: 'GitHub is still creating release assets.',
+        updateAvailable: false,
+      })
+    )
+    const statusService = {
+      getStatus,
+      getJob: vi.fn(),
+    } as unknown as SystemUpdateStatusService
+
+    const app = createTestApp(5, { statusService })
+    const response = await request(app)
+      .post('/api/admin/system/update')
+      .send({ targetVersion: 'v2.6.2' })
+
+    expect(response.status).toBe(409)
+    expect(response.body).toMatchObject({
+      error: 'CONFLICT',
+      message:
+        'Release v2.6.2 is still being prepared. Wait for the release workflow to finish, then refresh updates.',
+    })
+    expect(getStatus).toHaveBeenCalledWith({ forceRefresh: true })
   })
 
   it('treats an unfinished rollback as an active update job', async () => {
@@ -529,7 +585,14 @@ describe('systemUpdateRouter', () => {
     process.env.SYSTEM_UPDATE_STATE_ROOT = stateRoot
     process.env.SENTINEL_APPLIANCE_STATE = join(stateRoot, 'missing-appliance-state.json')
     process.env.SYSTEM_UPDATE_BRIDGE_SOCKET_PATH = join(stateRoot, 'missing.sock')
-    process.env.SYSTEM_UPDATE_RELEASE_REPOSITORY = ''
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new globalThis.Response(JSON.stringify(createInstallableReleasePayload()))
+        )
+    )
 
     try {
       const app = createTestApp(5)

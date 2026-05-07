@@ -324,7 +324,8 @@ export function getUpdateHeroView(input: {
   status: Pick<
     SystemUpdateStatusResponse,
     'currentVersion' | 'latestVersion' | 'updateAvailable' | 'currentJob'
-  >
+  > &
+    Partial<Pick<SystemUpdateStatusResponse, 'pendingReleaseVersion' | 'latestReleaseStatus'>>
 }): SystemUpdateHeroView {
   const { status } = input
   const job = status.currentJob
@@ -353,9 +354,9 @@ export function getUpdateHeroView(input: {
     return {
       tone: 'success',
       icon: 'check',
-      headline: `Sentinel updated to ${job.targetVersion}`,
+      headline: 'Sentinel is up to date',
       message:
-        'Version installed successfully. No action is needed until a newer release is published.',
+        'Last update installed successfully. No action is needed until a newer release is ready.',
       badge: 'Updated',
     }
   }
@@ -395,13 +396,23 @@ export function getUpdateHeroView(input: {
     }
   }
 
+  if (status.latestReleaseStatus === 'preparing') {
+    return {
+      tone: 'warning',
+      icon: 'clock',
+      headline: 'A release is being prepared',
+      message: status.pendingReleaseVersion
+        ? `Sentinel ${status.pendingReleaseVersion} is still building its appliance package. Refresh after the release workflow finishes.`
+        : 'GitHub is still building the appliance package for the newest Sentinel release.',
+      badge: 'Preparing',
+    }
+  }
+
   return {
     tone: 'success',
     icon: 'check',
     headline: 'Sentinel is up to date',
-    message: status.currentVersion
-      ? `Version ${status.currentVersion} is installed successfully.`
-      : 'The installed Sentinel version is current.',
+    message: 'Installed version matches the latest ready release.',
     badge: 'Current',
   }
 }

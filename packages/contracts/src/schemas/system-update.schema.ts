@@ -105,9 +105,17 @@ export const SystemUpdateReleaseNotesSchema = v.object({
   body: v.string(),
 })
 
+export const SystemUpdateReleaseStatusSchema = v.picklist(
+  ['ready', 'preparing', 'unavailable'],
+  'Choose a valid system update release status'
+)
+
 export const SystemUpdateStatusResponseSchema = v.object({
   currentVersion: NullableVersionSchema,
   latestVersion: NullableVersionSchema,
+  pendingReleaseVersion: NullableVersionSchema,
+  latestReleaseStatus: SystemUpdateReleaseStatusSchema,
+  latestReleaseStatusMessage: v.nullable(v.string()),
   latestReleaseUrl: v.nullable(v.string()),
   latestReleaseNotes: v.nullable(SystemUpdateReleaseNotesSchema),
   updateAvailable: v.boolean(),
@@ -156,6 +164,7 @@ export type SystemUpdateCheckpoint = v.InferOutput<typeof SystemUpdateCheckpoint
 export type SystemUpdateRequestedBy = v.InferOutput<typeof SystemUpdateRequestedBySchema>
 export type SystemUpdateJob = v.InferOutput<typeof SystemUpdateJobSchema>
 export type SystemUpdateReleaseNotes = v.InferOutput<typeof SystemUpdateReleaseNotesSchema>
+export type SystemUpdateReleaseStatus = v.InferOutput<typeof SystemUpdateReleaseStatusSchema>
 export type SystemUpdateStatusResponse = v.InferOutput<typeof SystemUpdateStatusResponseSchema>
 export type SystemUpdateStatusQuery = v.InferOutput<typeof SystemUpdateStatusQuerySchema>
 export type SystemUpdateTraceResponse = v.InferOutput<typeof SystemUpdateTraceResponseSchema>

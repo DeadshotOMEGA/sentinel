@@ -32,6 +32,14 @@ describe('SystemUpdateStatusService', () => {
     })
   }
 
+  function createReleaseAssets(version = '2.6.7') {
+    return [
+      { name: 'build-info.env' },
+      { name: `sentinel-appliance_${version}_all.deb` },
+      { name: 'SHA256SUMS.txt' },
+    ]
+  }
+
   it('caches successful latest release lookups between status polls', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new globalThis.Response(
@@ -41,6 +49,7 @@ describe('SystemUpdateStatusService', () => {
           html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.7',
           published_at: '2026-04-23T14:00:00.000Z',
           body: '## Changelog\n\n- Added offline release notes.',
+          assets: createReleaseAssets(),
         }),
         {
           status: 200,
@@ -58,6 +67,7 @@ describe('SystemUpdateStatusService', () => {
     const secondStatus = await service.getStatus()
 
     expect(firstStatus.latestVersion).toBe('v2.6.7')
+    expect(firstStatus.latestReleaseStatus).toBe('ready')
     expect(firstStatus.latestReleaseNotes).toMatchObject({
       version: 'v2.6.7',
       title: 'Sentinel v2.6.7',
@@ -84,6 +94,7 @@ describe('SystemUpdateStatusService', () => {
             html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.7',
             published_at: '2026-04-23T14:00:00.000Z',
             body: '## Release notes\n\nCached for appliance operators.',
+            assets: createReleaseAssets(),
           }),
           {
             status: 200,
@@ -130,6 +141,7 @@ describe('SystemUpdateStatusService', () => {
           html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.9',
           published_at: '2026-04-23T14:00:00.000Z',
           body: 'Stored release notes.',
+          assets: createReleaseAssets('2.6.9'),
         }),
         { status: 200 }
       )
@@ -150,6 +162,7 @@ describe('SystemUpdateStatusService', () => {
           JSON.stringify({
             tag_name: 'v2.6.7',
             html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.7',
+            assets: createReleaseAssets(),
           }),
           {
             status: 200,
@@ -164,6 +177,7 @@ describe('SystemUpdateStatusService', () => {
           JSON.stringify({
             tag_name: 'v2.6.8',
             html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.8',
+            assets: createReleaseAssets('2.6.8'),
           }),
           {
             status: 200,
@@ -214,5 +228,31 @@ describe('SystemUpdateStatusService', () => {
     await vi.advanceTimersByTimeAsync(61 * 1000)
     await service.getStatus()
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not offer a GitHub release until appliance install assets are present', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new globalThis.Response(
+        JSON.stringify({
+          tag_name: 'v2.6.10',
+          name: 'Sentinel v2.6.10',
+          html_url: 'https://github.com/DeadshotOMEGA/sentinel/releases/tag/v2.6.10',
+          published_at: '2026-04-23T14:00:00.000Z',
+          body: 'Release workflow is still uploading assets.',
+          assets: [{ name: 'build-info.env' }],
+        }),
+        { status: 200 }
+      )
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const service = await createService()
+    const status = await service.getStatus()
+
+    expect(status.latestVersion).toBeNull()
+    expect(status.pendingReleaseVersion).toBe('v2.6.10')
+    expect(status.latestReleaseStatus).toBe('preparing')
+    expect(status.updateAvailable).toBe(false)
+    expect(status.latestReleaseStatusMessage).toContain('still being created')
   })
 })

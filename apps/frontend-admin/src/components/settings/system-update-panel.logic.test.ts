@@ -352,6 +352,8 @@ describe('system-update-panel logic', () => {
         status: {
           currentVersion: 'v2.6.6',
           latestVersion: 'v2.6.8',
+          pendingReleaseVersion: null,
+          latestReleaseStatus: 'ready',
           updateAvailable: true,
           currentJob: null,
         },
@@ -360,6 +362,23 @@ describe('system-update-panel logic', () => {
       tone: 'info',
       headline: 'A newer Sentinel release is available',
       badge: 'Update available',
+    })
+
+    expect(
+      getUpdateHeroView({
+        status: {
+          currentVersion: 'v2.6.8',
+          latestVersion: null,
+          pendingReleaseVersion: 'v2.6.9',
+          latestReleaseStatus: 'preparing',
+          updateAvailable: false,
+          currentJob: null,
+        },
+      })
+    ).toMatchObject({
+      tone: 'warning',
+      headline: 'A release is being prepared',
+      badge: 'Preparing',
     })
 
     expect(
