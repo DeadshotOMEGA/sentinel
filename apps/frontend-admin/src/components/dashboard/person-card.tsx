@@ -415,6 +415,7 @@ export const PersonCard = memo(function PersonCard({
               className="btn btn-ghost btn-xs text-error gap-1"
               onClick={() => onCheckoutVisitor(person.id)}
               data-testid={TID.dashboard.visitorCheckout(person.id)}
+              data-help-id="dashboard.presence.visitor-checkout"
             >
               <LogOut size={10} />
               Sign Out
@@ -431,6 +432,7 @@ export const PersonCard = memo(function PersonCard({
         isInteractive ? 'cursor-pointer focus-visible:outline-none' : ''
       }`}
       data-testid={TID.dashboard.personCard(person.id)}
+      data-help-id="dashboard.presence.person-card"
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       aria-expanded={isInteractive ? isSelected : undefined}

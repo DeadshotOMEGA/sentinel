@@ -653,6 +653,7 @@ function StatusActionsStat({
               disabled={!isAdmin}
               onClick={onSetTodayDds}
               data-testid={TID.dashboard.quickAction.setTodayDds}
+              data-help-id="dashboard.quick-actions.transfer-dds"
             >
               <ShieldCheck className="size-[1.1em] shrink-0" />
               {ddsActionLabel}

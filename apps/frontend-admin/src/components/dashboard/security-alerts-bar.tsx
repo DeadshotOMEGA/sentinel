@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ShieldCheck } from 'lucide-react'
 import { useSecurityAlerts, useAcknowledgeAlert } from '@/hooks/use-security-alerts'
 import { useAuthStore } from '@/store/auth-store'
 import { AccountLevel } from '@/store/auth-store'
@@ -136,10 +136,68 @@ function SecurityAlertItem({ alert }: { alert: SecurityAlertResponse }) {
 }
 
 export function SecurityAlertsBar() {
-  const { data, isLoading } = useSecurityAlerts()
+  const { data, isLoading, isError } = useSecurityAlerts()
 
-  if (isLoading || !data?.alerts || data.alerts.length === 0) {
-    return null
+  if (isLoading) {
+    return (
+      <div
+        className="mb-4 rounded-box border border-base-300 bg-base-100 px-(--space-4) py-(--space-3) shadow-sm"
+        data-help-id="dashboard.security-alerts"
+        role="status"
+        aria-label="Checking security alerts"
+      >
+        <div className="flex items-center gap-(--space-2) text-sm text-base-content/60">
+          <span className="loading loading-spinner loading-xs" />
+          Checking security alerts...
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div
+        className="mb-4 rounded-box border border-warning/35 bg-warning-fadded px-(--space-4) py-(--space-3) text-warning-fadded-content shadow-sm"
+        data-help-id="dashboard.security-alerts"
+        role="status"
+      >
+        <div className="flex items-center justify-between gap-(--space-3)">
+          <div className="min-w-0">
+            <p className="font-display text-sm font-semibold">Security alerts unavailable</p>
+            <p className="mt-1 text-xs leading-5">
+              Refresh once, then check System Status if alerts still do not load.
+            </p>
+          </div>
+          <AppBadge status="warning" size="sm">
+            Check
+          </AppBadge>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data?.alerts || data.alerts.length === 0) {
+    return (
+      <div
+        className="mb-4 rounded-box border border-success/25 bg-success-fadded px-(--space-4) py-(--space-3) text-success-fadded-content shadow-sm"
+        data-help-id="dashboard.security-alerts"
+      >
+        <div className="flex items-center justify-between gap-(--space-3)">
+          <div className="flex min-w-0 items-center gap-(--space-3)">
+            <ShieldCheck className="size-5 shrink-0" />
+            <div className="min-w-0">
+              <p className="font-display text-sm font-semibold">No active security alerts</p>
+              <p className="mt-0.5 text-xs leading-5">
+                Start here each day. If alerts appear, handle them before changing building state.
+              </p>
+            </div>
+          </div>
+          <AppBadge status="success" size="sm">
+            Clear
+          </AppBadge>
+        </div>
+      </div>
+    )
   }
 
   const alerts = data.alerts

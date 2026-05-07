@@ -138,7 +138,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob)
 
   return (
-    <div className="navbar w-full shadow-lg bg-primary text-primary-content">
+    <div
+      className="navbar w-full shadow-lg bg-primary text-primary-content"
+      data-help-id="nav.root"
+    >
       <div className="navbar-start">
         {/* Sidebar Toggle - only visible when drawer is closed */}
         {!isDrawerOpen && (
@@ -149,7 +152,11 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
         )}
 
         {/* Logo with backend status indicator */}
-        <div className="max-w-48 truncate sm:max-w-none" data-testid={TID.nav.logo}>
+        <div
+          className="max-w-48 truncate sm:max-w-none"
+          data-testid={TID.nav.logo}
+          data-help-id="nav.brand"
+        >
           <div className="flex items-center gap-(--space-2) px-2 sm:px-4">
             <span className="text-lg font-bold sm:text-2xl">HMCS Chippawa</span>
             {authSession?.remoteSystemName && (
@@ -169,7 +176,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       {/* Navigation Links - hidden on mobile, visible on desktop */}
-      <div className="navbar-center hidden lg:flex">
+      <div className="navbar-center hidden lg:flex" data-help-id="nav.links">
         <ul className="menu text-lg menu-horizontal px-1">
           {navLinks.map((link) => (
             <li key={link.href}>
@@ -205,8 +212,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
       </div>
 
       <div className="navbar-end gap-1.5 sm:gap-2">
-        <HelpButton />
-        <div className="dropdown dropdown-end dropdown-hover">
+        <div data-help-id="nav.help">
+          <HelpButton />
+        </div>
+        <div className="dropdown dropdown-end dropdown-hover" data-help-id="nav.system-status">
           <div tabIndex={0} role="button" data-testid={TID.nav.backendStatus}>
             <AppBadge
               status={badgeStatus}
@@ -223,7 +232,12 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             data-testid={TID.nav.backendStatusDetails}
           >
             <div className="card-body gap-2 p-(--space-3)">
-              <p className="text-xs font-semibold uppercase tracking-wide">System Status</p>
+              <p
+                className="text-xs font-semibold uppercase tracking-wide"
+                data-help-id="nav.system-status.services"
+              >
+                System Status
+              </p>
               <StatusRow
                 label="Database"
                 subtitle={databaseLocation}
@@ -315,6 +329,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
               <div
                 className="border-t border-base-300 pt-2"
                 data-testid={TID.nav.backendStatusRemoteSystems}
+                data-help-id="nav.system-status.connected-systems"
               >
                 <p className="text-xs font-semibold uppercase tracking-wide">Connected Systems</p>
                 {isDevelopmentEnvironment && (
@@ -415,6 +430,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 <div
                   className="mt-2 rounded-box border border-base-300 bg-base-200 p-(--space-2)"
                   data-testid={TID.nav.backendStatusSystemUpdate}
+                  data-help-id="nav.system-status.updates"
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide">Updates</p>
                   <p className="mt-1 text-xs leading-relaxed">
@@ -457,7 +473,9 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
             </div>
           </div>
         </div>
-        <UserMenu />
+        <div data-help-id="nav.user-menu">
+          <UserMenu />
+        </div>
       </div>
       <HostHotspotRepairDialog
         open={hostHotspotRepairOpen}

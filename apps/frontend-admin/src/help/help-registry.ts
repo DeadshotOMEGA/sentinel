@@ -46,15 +46,15 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     pathPrefixes: ['/dashboard'],
     wikiSlug: 'operations/dashboard/overview',
     roleScopes: ['basic', 'member', 'officer', 'manager', 'admin', 'developer'],
-    tourId: 'dashboard.admin.orientation.v1',
+    tourId: 'dashboard.admin.orientation.v2',
     fallbackMode: 'tour',
     localFallback: {
       title: 'Dashboard Quick Help',
       summary: 'Use alerts first, then verify readiness before quick actions.',
       quickSteps: [
-        'Acknowledge critical alerts before starting lockup or check-in actions.',
+        'Start with System Status and Security Alerts before changing building state.',
         'Validate DDS, Duty Watch, Building, and Lockup Holder status blocks.',
-        'Use Quick Actions only after confirming role handoff responsibilities.',
+        'Use Quick Actions only after confirming the real-world handoff or lockup condition.',
       ],
     },
   },
