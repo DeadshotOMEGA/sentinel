@@ -92,6 +92,7 @@ export async function runDailyReset(): Promise<void> {
               memberId: member.id,
               date: new Date(operationalDate),
               originalCheckinAt: lastCheckin?.timestamp || new Date(),
+              forcedCheckoutAt: resetTimestamp,
               resolvedBy: 'daily_reset',
               notes: 'Automatically force-checked out during daily reset',
             },
@@ -111,30 +112,28 @@ export async function runDailyReset(): Promise<void> {
             where: { assignedToId: member.id },
           })
 
-          if (badge) {
-            const checkout = await prisma.checkin.create({
-              data: {
-                memberId: member.id,
-                badgeId: badge.id,
-                direction: 'out',
-                kioskId: 'SYSTEM',
-                method: 'system',
-                timestamp: resetTimestamp,
-              },
-            })
-
-            // Broadcast checkout
-            broadcastCheckin({
-              id: checkout.id,
+          const checkout = await prisma.checkin.create({
+            data: {
               memberId: member.id,
-              memberName: `${member.rank} ${member.firstName} ${member.lastName}`,
+              badgeId: badge?.id ?? lastCheckin?.badgeId ?? null,
               direction: 'out',
-              timestamp: resetTimestamp.toISOString(),
               kioskId: 'SYSTEM',
-            })
+              method: 'system',
+              timestamp: resetTimestamp,
+            },
+          })
 
-            forceCheckedOutMemberIds.push(member.id)
-          }
+          // Broadcast checkout
+          broadcastCheckin({
+            id: checkout.id,
+            memberId: member.id,
+            memberName: `${member.rank} ${member.firstName} ${member.lastName}`,
+            direction: 'out',
+            timestamp: resetTimestamp.toISOString(),
+            kioskId: 'SYSTEM',
+          })
+
+          forceCheckedOutMemberIds.push(member.id)
 
           missedMembers.push({
             id: member.id,

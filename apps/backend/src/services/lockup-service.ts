@@ -38,6 +38,7 @@ interface LockupPresentData {
     mess: string | null
     checkedInAt: string
     kioskId?: string
+    activeCheckinId?: string
   }>
   visitors: Array<{
     id: string
@@ -730,6 +731,10 @@ export class LockupService {
     const { members, visitors } = await this.getPresentMembersForLockup()
 
     const checkedOutMembers: Array<{ id: string; name: string }> = []
+    const forcedMissedCheckouts: Array<{
+      memberId: string
+      originalCheckinAt: Date
+    }> = []
     const checkedOutVisitors: Array<{ id: string; name: string }> = []
     const now = new Date()
 
@@ -779,16 +784,17 @@ export class LockupService {
           select: { badgeId: true, firstName: true, lastName: true, rank: true },
         })
 
-        if (!memberData?.badgeId) {
+        if (!memberData) {
           continue
         }
 
         await this.checkinRepo.create({
           memberId: member.id,
-          badgeId: memberData.badgeId,
+          badgeId: memberData.badgeId ?? undefined,
           direction: 'out',
           timestamp: now,
           kioskId: 'lockup-force-checkout',
+          method: 'manual',
           synced: true,
         })
 
@@ -797,6 +803,10 @@ export class LockupService {
         checkedOutMembers.push({
           id: member.id,
           name: `${memberData.rank} ${memberData.firstName} ${memberData.lastName}`,
+        })
+        forcedMissedCheckouts.push({
+          memberId: member.id,
+          originalCheckinAt: new Date(member.checkedInAt),
         })
       } catch (error) {
         serviceLogger.error('Failed to checkout member during lockup', {
@@ -840,6 +850,36 @@ export class LockupService {
       totalCheckedOut: checkedOutMembers.length + checkedOutVisitors.length,
       notes: note,
     })
+
+    if (forcedMissedCheckouts.length > 0) {
+      const operationalDate = status.date
+      await this.prisma.$transaction([
+        ...forcedMissedCheckouts.map((missedCheckout) =>
+          this.prisma.missedCheckout.create({
+            data: {
+              memberId: missedCheckout.memberId,
+              date: operationalDate,
+              originalCheckinAt: missedCheckout.originalCheckinAt,
+              forcedCheckoutAt: now,
+              resolvedBy: 'lockup_sequence',
+              lockupExecutionId: execution.id,
+              notes:
+                note ??
+                'Member was force-checked out during Execute Lockup because no checkout was recorded.',
+            },
+          })
+        ),
+        ...forcedMissedCheckouts.map((missedCheckout) =>
+          this.prisma.member.update({
+            where: { id: missedCheckout.memberId },
+            data: {
+              missedCheckoutCount: { increment: 1 },
+              lastMissedCheckout: now,
+            },
+          })
+        ),
+      ])
+    }
 
     // Mark building as secured
     await this.lockupRepo.markSecured(status.id, performedById)

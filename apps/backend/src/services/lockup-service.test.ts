@@ -21,6 +21,10 @@ function createService() {
     member: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
+    },
+    missedCheckout: {
+      create: vi.fn(),
     },
     ddsAssignment: {
       findFirst: vi.fn(),
@@ -28,6 +32,7 @@ function createService() {
     responsibilityAuditLog: {
       create: vi.fn(),
     },
+    $transaction: vi.fn(async (operations: Array<Promise<unknown>>) => Promise.all(operations)),
   }
 
   const service = new LockupService(prisma as unknown as PrismaClient)
@@ -232,6 +237,8 @@ describe('LockupService.executeLockup', () => {
     lockupRepo.createExecution.mockResolvedValue({ id: 'execution-1' })
     lockupRepo.markSecured.mockResolvedValue({})
     prisma.responsibilityAuditLog.create.mockResolvedValue({})
+    prisma.member.update.mockResolvedValue({})
+    prisma.missedCheckout.create.mockResolvedValue({})
     presenceService.setMemberDirection.mockResolvedValue(undefined)
     liveDutyAssignmentService.clearAssignmentsForMembers.mockResolvedValue(2)
 
@@ -264,6 +271,110 @@ describe('LockupService.executeLockup', () => {
       ['member-1', 'member-2'],
       'lockup_execution',
       expect.any(Date)
+    )
+    expect(prisma.missedCheckout.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        memberId: 'member-2',
+        resolvedBy: 'lockup_sequence',
+        lockupExecutionId: 'execution-1',
+        originalCheckinAt: new Date('2026-03-26T17:10:00.000Z'),
+      }),
+    })
+    expect(prisma.member.update).toHaveBeenCalledWith({
+      where: { id: 'member-2' },
+      data: {
+        missedCheckoutCount: { increment: 1 },
+        lastMissedCheckout: expect.any(Date),
+      },
+    })
+  })
+
+  it('force-checks out present members even when no badge is currently assigned', async () => {
+    const {
+      service,
+      prisma,
+      checkinRepo,
+      visitorRepo,
+      lockupRepo,
+      presenceService,
+      liveDutyAssignmentService,
+    } = createService()
+
+    vi.spyOn(service, 'getCurrentStatus').mockResolvedValue({
+      id: 'status-1',
+      date: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolderId: 'member-1',
+      acquiredAt: new Date('2026-03-26T08:00:00.000Z'),
+      buildingStatus: 'open',
+      securedAt: null,
+      securedBy: null,
+      isActive: true,
+      createdAt: new Date('2026-03-26T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-26T00:00:00.000Z'),
+      currentHolder: null,
+      securedByMember: null,
+    })
+
+    checkinRepo.getPresentMembers.mockResolvedValue([
+      {
+        id: 'member-2',
+        firstName: 'Alex',
+        lastName: 'Other',
+        rank: 'Lt',
+        division: 'Ops',
+        divisionId: 'div-2',
+        memberType: 'reg_force',
+        mess: null,
+        checkedInAt: '2026-03-26T17:10:00.000Z',
+        kioskId: 'front',
+      },
+    ])
+    visitorRepo.findActive.mockResolvedValue([])
+    prisma.member.findUnique.mockImplementation(async ({ where }: { where: { id: string } }) => {
+      if (where.id === 'member-2') {
+        return {
+          badgeId: null,
+          firstName: 'Alex',
+          lastName: 'Other',
+          rank: 'Lt',
+        }
+      }
+
+      return {
+        badgeId: 'badge-1',
+        firstName: 'Pat',
+        lastName: 'Holder',
+        rank: 'Capt',
+      }
+    })
+    checkinRepo.create.mockResolvedValue({
+      id: 'checkout-1',
+      memberId: 'member-2',
+      badgeId: undefined,
+      direction: 'out',
+      timestamp: new Date('2026-03-26T23:00:00.000Z'),
+      kioskId: 'lockup-force-checkout',
+      synced: true,
+      createdAt: new Date('2026-03-26T23:00:00.000Z'),
+    })
+    lockupRepo.markLockingUp.mockResolvedValue({})
+    lockupRepo.createExecution.mockResolvedValue({ id: 'execution-1' })
+    lockupRepo.markSecured.mockResolvedValue({})
+    prisma.responsibilityAuditLog.create.mockResolvedValue({})
+    prisma.member.update.mockResolvedValue({})
+    prisma.missedCheckout.create.mockResolvedValue({})
+    presenceService.setMemberDirection.mockResolvedValue(undefined)
+    liveDutyAssignmentService.clearAssignmentsForMembers.mockResolvedValue(1)
+
+    await service.executeLockup('member-1', 'End of day')
+
+    expect(checkinRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        memberId: 'member-2',
+        badgeId: undefined,
+        direction: 'out',
+        kioskId: 'lockup-force-checkout',
+      })
     )
   })
 })
