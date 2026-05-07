@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ReportTagSummary } from '@sentinel/contracts'
 import {
+  isStaleForcedCheckoutSession,
   filterReportMemberTagsForScheduledDuty,
   pairOperationalPresenceSessions,
   presenceSessionOverlapsRange,
@@ -12,13 +13,15 @@ function checkin(
   id: string,
   memberId: string,
   direction: 'in' | 'out',
-  timestamp: string
+  timestamp: string,
+  kioskId = 'front'
 ): OperationalReportCheckinRecord {
   return {
     id,
     memberId,
     direction,
     timestamp: new Date(timestamp),
+    kioskId,
   }
 }
 
@@ -48,6 +51,21 @@ describe('pairOperationalPresenceSessions', () => {
     expect(sessions[0]?.inAt.toISOString()).toBe('2026-05-05T08:00:00.000Z')
     expect(sessions[0]?.outAt?.toISOString()).toBe('2026-05-05T12:00:00.000Z')
     expect(warnings.size).toBe(0)
+  })
+
+  it('carries checkout kiosk IDs on completed sessions', () => {
+    const warnings = new Set<string>()
+    const sessionsByMember = pairOperationalPresenceSessions(
+      [
+        checkin('1', 'member-1', 'in', '2026-05-05T23:00:00.000Z'),
+        checkin('2', 'member-1', 'out', '2026-05-06T13:24:00.000Z', 'lockup-force-checkout'),
+      ],
+      warnings
+    )
+
+    expect(getSessions(sessionsByMember, 'member-1')[0]?.checkoutKioskId).toBe(
+      'lockup-force-checkout'
+    )
   })
 
   it('marks repeated check-ins without checkout as degraded and keeps the latest session open', () => {
@@ -80,6 +98,38 @@ describe('pairOperationalPresenceSessions', () => {
     expect(Array.from(warnings)).toContain(
       'Some checkout records could not be paired with a prior check-in and were ignored.'
     )
+  })
+})
+
+describe('isStaleForcedCheckoutSession', () => {
+  it('identifies prior-day sessions closed by lockup after the report day started', () => {
+    expect(
+      isStaleForcedCheckoutSession(
+        {
+          memberId: 'member-1',
+          inAt: new Date('2026-05-05T23:00:00.000Z'),
+          outAt: new Date('2026-05-06T13:24:00.000Z'),
+          status: 'complete',
+          checkoutKioskId: 'lockup-force-checkout',
+        },
+        new Date('2026-05-06T08:00:00.000Z')
+      )
+    ).toBe(true)
+  })
+
+  it('keeps normal sessions that began before the report day and checked out normally', () => {
+    expect(
+      isStaleForcedCheckoutSession(
+        {
+          memberId: 'member-1',
+          inAt: new Date('2026-05-05T23:00:00.000Z'),
+          outAt: new Date('2026-05-06T13:24:00.000Z'),
+          status: 'complete',
+          checkoutKioskId: 'front',
+        },
+        new Date('2026-05-06T08:00:00.000Z')
+      )
+    ).toBe(false)
   })
 })
 
@@ -156,10 +206,18 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
     isPositional: true,
     source: 'direct',
   } satisfies ReportTagSummary
+  const qmTag = {
+    id: 'tag-qm',
+    name: 'QM',
+    chipVariant: 'solid',
+    chipColor: 'purple',
+    isPositional: false,
+    source: 'qualification',
+  } satisfies ReportTagSummary
 
   it('hides DDS and Duty Watch positional tags when the member is not scheduled', () => {
     const filtered = filterReportMemberTagsForScheduledDuty(
-      [baseTag, ddsTag, dutyWatchTag],
+      [baseTag, ddsTag, dutyWatchTag, qmTag],
       new Set()
     )
 
@@ -173,6 +231,21 @@ describe('filterReportMemberTagsForScheduledDuty', () => {
     )
 
     expect(filtered).toEqual([baseTag, ddsTag, dutyWatchTag])
+  })
+
+  it('keeps a Duty Watch position tag only when scheduled or acted in that position', () => {
+    expect(filterReportMemberTagsForScheduledDuty([qmTag], new Set(['QM']))).toEqual([qmTag])
+    expect(filterReportMemberTagsForScheduledDuty([qmTag], new Set(['SWK']))).toEqual([])
+  })
+
+  it('hides all DDS and Duty Watch family tags when monthly reports request it', () => {
+    const filtered = filterReportMemberTagsForScheduledDuty(
+      [baseTag, ddsTag, dutyWatchTag, qmTag],
+      new Set(['DDS', 'DUTY_WATCH', 'QM']),
+      { hideDutyTags: true }
+    )
+
+    expect(filtered).toEqual([baseTag])
   })
 
   it('does not hide non-positional tags with similar names', () => {

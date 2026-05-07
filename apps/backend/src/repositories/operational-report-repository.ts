@@ -149,6 +149,7 @@ export interface OperationalReportCheckinRecord {
   memberId: string | null
   direction: string
   timestamp: Date
+  kioskId: string
 }
 
 export type OperationalReportUnitEventRecord = Prisma.UnitEventGetPayload<{
@@ -171,7 +172,14 @@ export type OperationalReportScheduledDutyRecord = Prisma.WeeklyScheduleGetPaylo
   include: typeof scheduledDutyInclude
 }>
 
-export type OperationalReportScheduledDutyRoleCode = 'DDS' | 'DUTY_WATCH'
+export type OperationalReportScheduledDutyRoleCode =
+  | 'DDS'
+  | 'DUTY_WATCH'
+  | 'SWK'
+  | 'DSWK'
+  | 'QM'
+  | 'BM'
+  | 'APS'
 
 export interface OperationalReportScheduledDutyAssignmentRecord {
   memberId: string
@@ -318,6 +326,7 @@ export class OperationalReportRepository {
         memberId: true,
         direction: true,
         timestamp: true,
+        kioskId: true,
       },
       orderBy: [{ memberId: 'asc' }, { timestamp: 'asc' }],
     })
@@ -354,6 +363,11 @@ export class OperationalReportRepository {
       },
       select: {
         memberId: true,
+        dutyPosition: {
+          select: {
+            code: true,
+          },
+        },
         schedule: {
           select: {
             dutyRole: {
@@ -368,8 +382,97 @@ export class OperationalReportRepository {
 
     return assignments.map((assignment) => ({
       memberId: assignment.memberId,
-      dutyRoleCode: assignment.schedule.dutyRole.code as OperationalReportScheduledDutyRoleCode,
+      dutyRoleCode: this.toScheduledDutyRoleCode(
+        assignment.schedule.dutyRole.code,
+        assignment.dutyPosition?.code ?? null
+      ),
     }))
+  }
+
+  async findDdsAssignmentsForMembers(
+    memberIds: string[],
+    startDate: Date,
+    endDate: Date
+  ): Promise<OperationalReportScheduledDutyAssignmentRecord[]> {
+    if (memberIds.length === 0) {
+      return []
+    }
+
+    const assignments = await this.prisma.ddsAssignment.findMany({
+      where: {
+        memberId: {
+          in: memberIds,
+        },
+        assignedDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      select: {
+        memberId: true,
+      },
+    })
+
+    return assignments.map((assignment) => ({
+      memberId: assignment.memberId,
+      dutyRoleCode: 'DDS',
+    }))
+  }
+
+  async findLiveDutyAssignmentsForMembers(
+    memberIds: string[],
+    start: Date,
+    end: Date
+  ): Promise<OperationalReportScheduledDutyAssignmentRecord[]> {
+    if (memberIds.length === 0) {
+      return []
+    }
+
+    const assignments = await this.prisma.liveDutyAssignment.findMany({
+      where: {
+        memberId: {
+          in: memberIds,
+        },
+        startedAt: {
+          lt: end,
+        },
+        OR: [{ endedAt: null }, { endedAt: { gte: start } }],
+      },
+      select: {
+        memberId: true,
+        dutyPosition: {
+          select: {
+            code: true,
+          },
+        },
+      },
+    })
+
+    return assignments.map((assignment) => ({
+      memberId: assignment.memberId,
+      dutyRoleCode: this.toScheduledDutyRoleCode('DUTY_WATCH', assignment.dutyPosition.code),
+    }))
+  }
+
+  private toScheduledDutyRoleCode(
+    dutyRoleCode: string,
+    dutyPositionCode: string | null
+  ): OperationalReportScheduledDutyRoleCode {
+    if (dutyRoleCode === 'DDS') {
+      return 'DDS'
+    }
+
+    if (
+      dutyPositionCode === 'SWK' ||
+      dutyPositionCode === 'DSWK' ||
+      dutyPositionCode === 'QM' ||
+      dutyPositionCode === 'BM' ||
+      dutyPositionCode === 'APS'
+    ) {
+      return dutyPositionCode
+    }
+
+    return 'DUTY_WATCH'
   }
 
   async findMissedCheckouts(
