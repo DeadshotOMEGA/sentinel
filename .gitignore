@@ -219,6 +219,7 @@ $RECYCLE.BIN/
 
 # PostgreSQL
 *.sql.gz
+backups/*.dump
 
 # ===================================
 # Docker
