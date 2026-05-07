@@ -26,12 +26,59 @@ The Dashboard is Sentinel’s operational control surface for real-time attendan
 - Target Wiki.js asset path: `wiki-dashboard/operations/dashboard-overview-main.png`
 - Replacement: Replace this placeholder with uploaded Wiki.js asset URL after capture.
 
-Use this page to orient yourself, then continue to section pages for detailed procedures.
+Use this page to orient yourself, then continue to section pages for detailed procedures. The
+in-app Help button starts grouped guided procedures for orientation, daily start, daily end, status
+interpretation, Presence review, and control actions.
 
+- Navbar brand: `operations/dashboard/navbar-brand`
+- Navbar navigation: `operations/dashboard/navbar-navigation`
+- Help button: `operations/dashboard/help-button`
+- System status: `operations/dashboard/system-status`
+- User menu: `operations/dashboard/user-menu`
 - Security alerts: `operations/dashboard/security-alerts`
 - Quick actions: `operations/dashboard/quick-actions`
 - Status panel: `operations/dashboard/status-panel`
 - Presence grid: `operations/dashboard/presence-grid`
+
+## Daily Start Routine
+
+1. Confirm **System Status** is healthy.
+2. Review **Security Alerts** before any building or lockup changes.
+3. Confirm **DDS** is assigned and on site.
+4. Confirm **Duty Watch** coverage and uncovered positions.
+5. Confirm **Building Status** and **Lockup Holder** match the real building.
+6. Review **Presence** for unexpected people or missing duty staff.
+7. Escalate unresolved gaps before operations begin.
+
+Detailed daily-start pages:
+
+- `operations/dashboard/daily-start/system-status`
+- `operations/dashboard/daily-start/security-alerts`
+- `operations/dashboard/daily-start/dds`
+- `operations/dashboard/daily-start/duty-watch`
+- `operations/dashboard/daily-start/building-state`
+- `operations/dashboard/daily-start/presence-review`
+- `operations/dashboard/daily-start/escalation`
+
+## End-of-Day Routine
+
+1. Review active alerts and acknowledge only after action is taken.
+2. Search Presence for remaining visitors and unexpected checked-in members.
+3. Confirm DDS and Duty Watch handoff expectations.
+4. Confirm lockup holder identity before transfer or lockup.
+5. Execute lockup only when building state, holder, and real conditions agree.
+6. Recheck Building Status after lockup.
+7. Leave notes or escalate if anything does not match reality.
+
+Detailed end-of-day pages:
+
+- `operations/dashboard/daily-end/security-alerts`
+- `operations/dashboard/daily-end/presence-review`
+- `operations/dashboard/daily-end/duty-handoff`
+- `operations/dashboard/daily-end/lockup-holder`
+- `operations/dashboard/daily-end/execute-lockup`
+- `operations/dashboard/daily-end/building-recheck`
+- `operations/dashboard/daily-end/escalation-notes`
 
 ## Operating Sequence (Recommended)
 
@@ -73,6 +120,14 @@ Validate these before any control action:
 
 See full detail: `operations/dashboard/status-panel`
 
+Detailed status pages:
+
+- `operations/dashboard/status/dds`
+- `operations/dashboard/status/duty-watch`
+- `operations/dashboard/status/building-state`
+- `operations/dashboard/status/lockup-holder`
+- `operations/dashboard/status/quick-action-state`
+
 ## Presence Grid (Summary)
 
 ![TODO: Presence Grid Focus](https://placehold.co/1600x900?text=TODO+dashboard-presence-grid-focus)
@@ -82,6 +137,16 @@ See full detail: `operations/dashboard/status-panel`
 - Recheck after high-impact actions (check-in/out, visitor sign-in, lockup transfer).
 
 See full detail: `operations/dashboard/presence-grid`
+
+Detailed Presence pages:
+
+- `operations/dashboard/presence/filters`
+- `operations/dashboard/presence/search`
+- `operations/dashboard/presence/manual-in-out`
+- `operations/dashboard/presence/person-cards`
+- `operations/dashboard/presence/member-actions`
+- `operations/dashboard/presence/visitor-checkout`
+- `operations/dashboard/presence/empty-states`
 
 ## State Variants (Reference Visuals)
 
@@ -116,6 +181,11 @@ Use these images to recognize degraded/critical conditions quickly during operat
 - `operations/dashboard/status/duty-watch`
 - `operations/dashboard/status/building-state`
 - `operations/dashboard/status/lockup-holder`
+- `operations/dashboard/status/quick-action-state`
+- `operations/dashboard/daily-start/system-status`
+- `operations/dashboard/daily-end/execute-lockup`
+- `operations/dashboard/presence/person-cards`
+- `operations/dashboard/actions/open-or-lockup`
 - `operations/day-duty/kiosk-check-in`
 - `operations/day-duty/visitor-sign-in`
 - `operations/lockup/building-lockup-control`

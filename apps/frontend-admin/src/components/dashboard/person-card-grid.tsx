@@ -209,7 +209,7 @@ export function PersonCardGrid() {
 
         {/* Filters + Search */}
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" data-help-id="dashboard.presence.filter-buttons">
             <MotionButton
               className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
               aria-pressed={filter === 'all'}
@@ -247,6 +247,7 @@ export function PersonCardGrid() {
               className="btn btn-xs btn-outline border-base-300 bg-base-100 text-base-content/80 hover:border-primary/40 hover:bg-primary-fadded hover:text-primary-fadded-content"
               onClick={() => setIsManualCheckinModalOpen(true)}
               data-testid={TID.dashboard.quickAction.manualCheckin}
+              data-help-id="dashboard.presence.manual-in-out"
             >
               <UsersRound className="size-[1em] shrink-0" />
               Manual in/out
@@ -299,6 +300,7 @@ export function PersonCardGrid() {
             {filteredPeople.length > 0 ? (
               <div
                 className={`grid gap-3 presence-card-grid transition-opacity duration-200 ${isPending ? 'opacity-60 blur-[1px]' : ''}`}
+                data-help-id="dashboard.presence.cards"
               >
                 {filteredPeople.map((person: PresentPerson, index: number) => (
                   <div
@@ -372,7 +374,10 @@ export function PersonCardGrid() {
         </div>
 
         {selectedMember && (
-          <div className="drawer-side presence-member-drawer-side min-w-0">
+          <div
+            className="drawer-side presence-member-drawer-side min-w-0"
+            data-help-id="dashboard.presence.member-action-drawer"
+          >
             <MemberActionPanel
               open
               className="presence-member-drawer-panel"

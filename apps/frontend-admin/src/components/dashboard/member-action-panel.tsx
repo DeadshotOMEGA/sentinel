@@ -963,6 +963,7 @@ export function MemberActionPanel({
           className
         )}
         data-testid={TID.dashboard.memberActions.panel(person.id)}
+        data-help-id="dashboard.presence.member-action-panel"
       >
         <div className="card-body min-h-0 gap-0 overflow-y-auto p-0">{actionContent}</div>
       </aside>

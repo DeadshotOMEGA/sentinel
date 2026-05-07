@@ -107,6 +107,11 @@ export class DriverJsProcedureDriver implements ProcedureDriver {
       onCloseClick: () => {
         void handlers.onClose()
       },
+      onDestroyed: () => {
+        emitActiveHelpStep(null)
+        this.instance = null
+        this.activeProcedureId = null
+      },
     })
 
     this.activeProcedureId = definition.id

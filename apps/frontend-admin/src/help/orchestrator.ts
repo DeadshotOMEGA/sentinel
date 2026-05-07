@@ -252,6 +252,25 @@ export async function openHelpTarget(
   const runtimeConfig = getHelpRuntimeConfig()
   const { routeId, wikiSlug, fallbackMode, tourId, isDefaultContext } =
     resolveRouteAndContext(options)
+
+  if (options.source === 'help_button' && fallbackMode === 'tour' && tourId) {
+    emitHelpTourRequest(routeId, tourId)
+    emitActiveHelpStep(null)
+    emitOpenEvent({
+      routeId,
+      source: options.source,
+      wikiSlug,
+      target: 'tour',
+      outcome: 'opened',
+    })
+
+    return {
+      routeId,
+      wikiSlug,
+      target: 'tour',
+    }
+  }
+
   const pendingWindow =
     runtimeConfig.fallbackMode !== 'local' && typeof window !== 'undefined'
       ? window.open('about:blank', '_blank')
