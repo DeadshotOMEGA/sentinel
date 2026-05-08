@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { SystemStatusResponse } from '@sentinel/contracts'
-import { getWirelessRecoveryState } from './app-navbar.logic'
+import {
+  WIKI_APPLIANCE_URL,
+  getWirelessRecoveryState,
+  resolveWikiBaseUrl,
+} from './app-navbar.logic'
 
 function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemStatusResponse {
   return {
@@ -56,6 +60,21 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
 }
 
 describe('app-navbar logic', () => {
+  it('uses the docs host when no Wiki URL is configured', () => {
+    expect(resolveWikiBaseUrl('')).toBe(WIKI_APPLIANCE_URL)
+  })
+
+  it('does not use local or legacy Wiki ports for the navbar link', () => {
+    expect(resolveWikiBaseUrl('http://localhost:3002')).toBe(WIKI_APPLIANCE_URL)
+    expect(resolveWikiBaseUrl('http://127.0.0.1:3002')).toBe(WIKI_APPLIANCE_URL)
+    expect(resolveWikiBaseUrl('http://sentinel.local:3020')).toBe(WIKI_APPLIANCE_URL)
+  })
+
+  it('keeps a configured docs host pointed at the docs root', () => {
+    expect(resolveWikiBaseUrl('http://docs.sentinel.local/')).toBe(WIKI_APPLIANCE_URL)
+    expect(resolveWikiBaseUrl('http://docs.sentinel.local')).toBe(WIKI_APPLIANCE_URL)
+  })
+
   it('does not show the laptop reconnect action for non-network issues', () => {
     const result = getWirelessRecoveryState({
       systemStatus: createSystemStatus({

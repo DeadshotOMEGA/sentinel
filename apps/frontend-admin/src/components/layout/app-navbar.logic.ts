@@ -1,5 +1,11 @@
 import type { SystemStatusResponse } from '@sentinel/contracts'
 
+export const WIKI_APPLIANCE_URL = 'http://docs.sentinel.local/'
+
+const WIKI_APPLIANCE_HOST = 'docs.sentinel.local'
+const LOCAL_WIKI_HOSTS = new Set(['localhost', '127.0.0.1', '::1'])
+const LOCAL_OR_LEGACY_WIKI_PORTS = new Set(['3002', '3020'])
+
 export interface WirelessRecoveryState {
   showSection: boolean
   showConnectLaptop: boolean
@@ -45,5 +51,45 @@ export function getWirelessRecoveryState(input: {
     showRepairHostHotspot,
     primaryApprovedSsid,
     issueCode,
+  }
+}
+
+export function resolveWikiBaseUrl(configuredWikiBase: string): string {
+  const normalizedWikiBase = configuredWikiBase.trim().replace(/\/+$/, '')
+  if (!normalizedWikiBase) {
+    return WIKI_APPLIANCE_URL
+  }
+
+  const parsedWikiBase = safeParseUrl(normalizedWikiBase)
+  if (!parsedWikiBase) {
+    return WIKI_APPLIANCE_URL
+  }
+
+  if (isLocalWikiUrl(parsedWikiBase)) {
+    return WIKI_APPLIANCE_URL
+  }
+
+  if (isApplianceDocsRoot(parsedWikiBase)) {
+    return WIKI_APPLIANCE_URL
+  }
+
+  return normalizedWikiBase
+}
+
+function isApplianceDocsRoot(url: globalThis.URL): boolean {
+  return url.hostname.toLowerCase() === WIKI_APPLIANCE_HOST && url.pathname === '/' && !url.search
+}
+
+function isLocalWikiUrl(url: globalThis.URL): boolean {
+  return (
+    LOCAL_WIKI_HOSTS.has(url.hostname.toLowerCase()) || LOCAL_OR_LEGACY_WIKI_PORTS.has(url.port)
+  )
+}
+
+function safeParseUrl(value: string): globalThis.URL | null {
+  try {
+    return new globalThis.URL(value)
+  } catch {
+    return null
   }
 }
