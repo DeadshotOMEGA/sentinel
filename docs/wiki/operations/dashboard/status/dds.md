@@ -1,13 +1,53 @@
 # Status: DDS
 
-DDS identifies the Duty Day Staff member responsible for the day.
+![DDS status block](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
 
-## Read the Block
+DDS identifies the Duty Day Staff member responsible for the day in Sentinel.
 
-- Name: current DDS or scheduled DDS.
-- On-site state: whether DDS is checked in.
-- Handover state: whether transfer or completion is pending.
+## What This Is
 
-## Admin Action
+DDS identifies the Duty Day Staff member responsible for the day in Sentinel.
 
-Resolve missing DDS or pending handover before using high-impact control actions.
+## When To Use It
+
+Use it before daily operations, handover, DDS transfer, or any action that depends on duty responsibility.
+
+## What To Check
+
+- DDS name or missing state.
+- Whether DDS is on site.
+- Whether handover is pending.
+- Whether the displayed person matches the real duty expectation.
+
+## Step-by-Step Admin Procedure
+
+1. Read the DDS block.
+2. Confirm the displayed person with the duty expectation.
+3. Check on-site state.
+4. Resolve missing DDS or pending handover before high-impact actions.
+
+## Good / Caution / Stop Conditions
+
+Good: DDS is correct and on site when required.
+
+Caution: DDS is correct but not yet checked in.
+
+Stop: DDS is wrong, missing, or disputed.
+
+## What To Confirm After Action
+
+After transfer/handover, confirm the DDS block updates.
+
+## When To Escalate
+
+Escalate unclear DDS responsibility immediately.
+
+## Related Dashboard Help Pages
+
+- [Overview](/operations/dashboard/overview)
+- [Status Panel](/operations/dashboard/status-panel)
+- [DDS](/operations/dashboard/status/dds)
+- [Duty Watch](/operations/dashboard/status/duty-watch)
+- [Building State](/operations/dashboard/status/building-state)
+- [Lockup Holder](/operations/dashboard/status/lockup-holder)
+- [Quick Action State](/operations/dashboard/status/quick-action-state)
