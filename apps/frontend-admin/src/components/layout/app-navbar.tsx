@@ -22,7 +22,7 @@ import { useSystemStatus } from '@/hooks/use-system-status'
 import { useSystemUpdateStatus } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
-import { getWirelessRecoveryState } from './app-navbar.logic'
+import { getWirelessRecoveryState, resolveWikiBaseUrl } from './app-navbar.logic'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -37,8 +37,6 @@ interface AppNavbarProps {
   isDrawerOpen: boolean
 }
 
-const WIKI_APPLIANCE_FALLBACK_URL = 'http://docs.sentinel.local'
-const WIKI_LOCAL_DEV_PORT = '3002'
 const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
 
 export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
@@ -108,10 +106,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const networkSubtitle =
     systemStatus?.network.currentSsid ??
     (isDevelopmentEnvironment ? 'Local development host' : 'Host telemetry')
-  const wikiBaseUrl = resolveWikiBaseUrl(
-    process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '',
-    browserOrigin
-  )
+  const wikiBaseUrl = resolveWikiBaseUrl(process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '')
   const wikiLocation = stripUrlProtocol(wikiBaseUrl)
   const wikiStatus = getWikiStatus(wikiBaseUrl)
   const wikiValue = getWikiValue(wikiBaseUrl)
@@ -1084,38 +1079,6 @@ function formatBooleanLabel(value: boolean | null): string {
 
 function stripUrlProtocol(value: string): string {
   return value.replace(/^https?:\/\//, '')
-}
-
-function resolveWikiBaseUrl(configuredWikiBase: string, browserOrigin: string): string {
-  if (configuredWikiBase.length > 0) {
-    return configuredWikiBase.replace(/\/+$/, '')
-  }
-
-  const parsedOrigin = safeParseUrl(browserOrigin)
-  if (!parsedOrigin) {
-    return ''
-  }
-
-  const protocol = parsedOrigin?.protocol === 'https:' ? 'https:' : 'http:'
-  const hostname = parsedOrigin?.hostname?.toLowerCase() ?? ''
-  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1'
-  const wikiUrl = new globalThis.URL(parsedOrigin.origin)
-
-  if (isLocalHost) {
-    wikiUrl.protocol = protocol
-    wikiUrl.port = WIKI_LOCAL_DEV_PORT
-    return wikiUrl.origin
-  }
-
-  return WIKI_APPLIANCE_FALLBACK_URL
-}
-
-function safeParseUrl(value: string) {
-  try {
-    return new globalThis.URL(value)
-  } catch {
-    return null
-  }
 }
 
 function isSystemUpdateJobTerminal(
