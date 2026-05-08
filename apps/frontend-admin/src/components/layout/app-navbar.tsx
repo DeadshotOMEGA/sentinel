@@ -37,7 +37,7 @@ interface AppNavbarProps {
   isDrawerOpen: boolean
 }
 
-const WIKI_LAN_FALLBACK_PORT = '3020'
+const WIKI_APPLIANCE_FALLBACK_URL = 'http://docs.sentinel.local'
 const WIKI_LOCAL_DEV_PORT = '3002'
 const DEPLOYMENT_REMOTE_SYSTEM_CODE = 'deployment_laptop'
 
@@ -1107,9 +1107,7 @@ function resolveWikiBaseUrl(configuredWikiBase: string, browserOrigin: string): 
     return wikiUrl.origin
   }
 
-  wikiUrl.protocol = protocol
-  wikiUrl.port = WIKI_LAN_FALLBACK_PORT
-  return wikiUrl.origin
+  return WIKI_APPLIANCE_FALLBACK_URL
 }
 
 function safeParseUrl(value: string) {
