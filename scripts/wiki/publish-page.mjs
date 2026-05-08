@@ -153,9 +153,20 @@ async function loadEnvFile(envPath) {
 
 async function resolveEnv() {
   const fromEnvFile = await loadEnvFile(path.join(ROOT, '.env'))
+  const fromDeployEnvFile = await loadEnvFile(path.join(ROOT, 'deploy/.env'))
   return {
-    wikiBaseUrl: (process.env.WIKI_BASE_URL || fromEnvFile.WIKI_BASE_URL || '').trim(),
-    wikiApiKey: (process.env.WIKI_API_KEY || fromEnvFile.WIKI_API_KEY || '').trim(),
+    wikiBaseUrl: (
+      process.env.WIKI_BASE_URL ||
+      fromEnvFile.WIKI_BASE_URL ||
+      fromDeployEnvFile.WIKI_BASE_URL ||
+      ''
+    ).trim(),
+    wikiApiKey: (
+      process.env.WIKI_API_KEY ||
+      fromEnvFile.WIKI_API_KEY ||
+      fromDeployEnvFile.WIKI_API_KEY ||
+      ''
+    ).trim(),
   }
 }
 
@@ -190,8 +201,8 @@ function requireArgs(args) {
 }
 
 function requireEnv(env) {
-  if (!env.wikiBaseUrl) throw new Error('Missing WIKI_BASE_URL (env or .env)')
-  if (!env.wikiApiKey) throw new Error('Missing WIKI_API_KEY (env or .env)')
+  if (!env.wikiBaseUrl) throw new Error('Missing WIKI_BASE_URL (env, .env, or deploy/.env)')
+  if (!env.wikiApiKey) throw new Error('Missing WIKI_API_KEY (env, .env, or deploy/.env)')
 }
 
 async function main() {
@@ -250,7 +261,9 @@ async function main() {
 
     const result = updated.pages.update.responseResult
     if (!result.succeeded) throw new Error(`Update failed: ${result.message || 'unknown error'}`)
-    console.log(`Updated page id=${updated.pages.update.page.id} path=${updated.pages.update.page.path}`)
+    console.log(
+      `Updated page id=${updated.pages.update.page.id} path=${updated.pages.update.page.path}`
+    )
     return
   }
 
@@ -275,7 +288,9 @@ async function main() {
 
   const result = created.pages.create.responseResult
   if (!result.succeeded) throw new Error(`Create failed: ${result.message || 'unknown error'}`)
-  console.log(`Created page id=${created.pages.create.page.id} path=${created.pages.create.page.path}`)
+  console.log(
+    `Created page id=${created.pages.create.page.id} path=${created.pages.create.page.path}`
+  )
 }
 
 main().catch((error) => {
