@@ -24,7 +24,17 @@ import {
   TouchScreenKeyboard,
   type TouchKeyboardMode,
 } from '@/components/kiosk/touch-screen-keyboard'
-import { CalendarDays, CheckCircle2, ChevronRight, Search, UserRound, X } from 'lucide-react'
+import {
+  CalendarDays,
+  CarFront,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  Search,
+  UserRound,
+  UsersRound,
+  X,
+} from 'lucide-react'
 
 const FINAL_RESET_SECONDS = 15
 
@@ -319,7 +329,6 @@ export function VisitorSelfSigninFlow({
     if (!usesContractInputs) {
       setValue('organization', '')
       setValue('workDescription', '')
-      setValue('licensePlate', '')
       clearErrors('organization')
       clearErrors('workDescription')
     }
@@ -369,14 +378,15 @@ export function VisitorSelfSigninFlow({
         visibleFields.add('firstName')
         visibleFields.add('lastName')
       }
+
+      if (!usesContractInputs) {
+        visibleFields.add('licensePlate')
+      }
     }
 
     if (contractInfoStep !== null && step === contractInfoStep) {
       visibleFields.add('organization')
       visibleFields.add('workDescription')
-    }
-
-    if (step === reviewStep) {
       visibleFields.add('licensePlate')
     }
 
@@ -391,12 +401,12 @@ export function VisitorSelfSigninFlow({
     contractInfoStep,
     personalInfoStep,
     requiresEventSelection,
-    reviewStep,
     selectionStep,
     selectedEvent,
     selectedHost,
     showsMemberSelection,
     step,
+    usesContractInputs,
   ])
 
   useEffect(() => {
@@ -452,9 +462,7 @@ export function VisitorSelfSigninFlow({
       return
     }
 
-    if (step === reviewStep) {
-      activateStepField('licensePlate')
-    }
+    return
   }, [
     activeKeyboardField,
     completionState,
@@ -463,7 +471,6 @@ export function VisitorSelfSigninFlow({
     followsMilitaryPath,
     personalInfoStep,
     requiresEventSelection,
-    reviewStep,
     selectionStep,
     selectedEvent,
     selectedHost,
@@ -563,17 +570,17 @@ export function VisitorSelfSigninFlow({
         fields.push('firstName', 'lastName')
       }
 
+      if (!usesContractInputs) {
+        fields.push('licensePlate')
+      }
+
       return fields
     }
 
     if (contractInfoStep !== null && step === contractInfoStep) {
       const fields: KeyboardFieldName[] = []
-      fields.push('organization', 'workDescription')
+      fields.push('organization', 'workDescription', 'licensePlate')
       return fields
-    }
-
-    if (step === reviewStep) {
-      return ['licensePlate']
     }
 
     return []
@@ -910,12 +917,6 @@ export function VisitorSelfSigninFlow({
   ]
 
   const reviewReason = reason || 'other'
-  const highlightedValueClass = 'text-primary font-semibold'
-  const reviewRank = trimValue(rankPrefix)
-  const reviewLastName = trimValue(lastName)
-  const reviewInitials = trimValue(initials)
-  const reviewFirstName = trimValue(firstName)
-  const reviewUnit = trimValue(unit)
   const reviewOrganization = trimValue(organization)
   const reviewWorkDescription = trimValue(workDescription)
   const reviewHostName = selectedHost?.displayName
@@ -925,114 +926,6 @@ export function VisitorSelfSigninFlow({
     ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
     : Boolean(firstName.trim() || lastName.trim())
   const reviewMemberCount = groupMembers.length + (hasCurrentMemberForReview ? 1 : 0)
-
-  const reviewIdentity = followsMilitaryPath
-    ? [reviewRank, reviewLastName, reviewInitials]
-        .filter((value): value is string => Boolean(value))
-        .join(' ')
-    : [reviewFirstName, reviewLastName].filter((value): value is string => Boolean(value)).join(' ')
-
-  const renderDynamicValue = (value: string | undefined, fallback: string): ReactNode => {
-    if (!value) return fallback
-    return <span className={highlightedValueClass}>{value}</span>
-  }
-
-  const reviewIdentityContent = renderDynamicValue(reviewIdentity, 'visitor')
-  const reviewUnitClause =
-    followsMilitaryPath && reviewUnit ? (
-      <>
-        {' '}
-        from <span className={highlightedValueClass}>{reviewUnit}</span>
-      </>
-    ) : null
-  const reviewMemberClause = reviewHostName ? (
-    <>
-      {' '}
-      with <span className={highlightedValueClass}>{reviewHostName}</span>
-    </>
-  ) : null
-  const reviewEventContent = reviewEventTitle ? (
-    <>
-      {' '}
-      the <span className={highlightedValueClass}>{reviewEventTitle}</span>
-      {reviewEventDate ? (
-        <>
-          {' '}
-          (<span className={highlightedValueClass}>{reviewEventDate}</span>)
-        </>
-      ) : null}{' '}
-      event
-    </>
-  ) : (
-    ' an event'
-  )
-  const reviewOrganizationClause = reviewOrganization ? (
-    <>
-      {' '}
-      with <span className={highlightedValueClass}>{reviewOrganization}</span>
-    </>
-  ) : null
-  const reviewWorkDescriptionClause = reviewWorkDescription ? (
-    <>
-      {' '}
-      to complete <span className={highlightedValueClass}>{reviewWorkDescription}</span>
-    </>
-  ) : null
-
-  const reviewNarrative: ReactNode = (() => {
-    if (reviewReason === 'meeting') {
-      return (
-        <>
-          Welcome {reviewIdentityContent}
-          {reviewUnitClause}, you have stated you are here for a meeting
-          {reviewMemberClause}.
-        </>
-      )
-    }
-
-    if (reviewReason === 'event') {
-      return (
-        <>
-          Welcome {reviewIdentityContent}
-          {reviewUnitClause}, you have stated you are here for
-          {reviewEventContent}.
-        </>
-      )
-    }
-
-    if (reviewReason === 'museum') {
-      return (
-        <>
-          Welcome {reviewIdentityContent}
-          {reviewUnitClause}, you have stated you are here for a museum visit.
-        </>
-      )
-    }
-
-    if (reviewReason === 'recruitment') {
-      return (
-        <>Welcome {reviewIdentityContent}, you have stated you are here for recruitment support.</>
-      )
-    }
-
-    if (reviewReason === 'contract_work') {
-      return (
-        <>
-          Welcome {reviewIdentityContent}
-          {reviewUnitClause}, you have stated you are here for contract work
-          {reviewOrganizationClause}
-          {reviewWorkDescriptionClause}.
-        </>
-      )
-    }
-
-    return (
-      <>
-        Welcome {reviewIdentityContent}
-        {reviewUnitClause}, you have stated you are here for another stated reason.
-      </>
-    )
-  })()
 
   const activeKeyboardValue = activeKeyboardField
     ? {
@@ -1052,12 +945,11 @@ export function VisitorSelfSigninFlow({
   const keyboardVisible =
     ((selectionStep !== null && step === selectionStep) ||
       step === personalInfoStep ||
-      (contractInfoStep !== null && step === contractInfoStep) ||
-      step === reviewStep) &&
+      (contractInfoStep !== null && step === contractInfoStep)) &&
     activeKeyboardField !== null
   const keyboardPreviousLabel = 'Previous'
   const keyboardNextLabel = 'Next'
-  const keyboardContinueLabel = step === reviewStep ? 'Close Keyboard' : 'Continue'
+  const keyboardContinueLabel = 'Continue'
 
   const attachFieldRef =
     (name: KeyboardFieldName, ref: (instance: KeyboardFieldElement | null) => void) =>
@@ -1131,6 +1023,133 @@ export function VisitorSelfSigninFlow({
   })
 
   const licensePlateRegistration = register('licensePlate')
+  const pendingVehicle = trimValue(licensePlate)
+  const reviewVehicles = pendingVehicle ? [...groupVehicles, pendingVehicle] : groupVehicles
+  const reviewReasonLabel =
+    SELF_SERVICE_REASON_OPTIONS.find((option) => option.value === reviewReason)?.label ?? 'Other'
+  const reviewBranchLabel = branch
+    ? SELF_SERVICE_BRANCH_OPTIONS.find((option) => option.value === branch)?.label
+    : undefined
+  const currentMemberForReview = hasCurrentMemberForReview
+    ? buildCurrentMemberFromValues({
+        rankPrefix,
+        initials,
+        firstName,
+        lastName,
+        unit,
+      })
+    : null
+  const reviewMembers = currentMemberForReview
+    ? [...groupMembers, currentMemberForReview]
+    : groupMembers
+
+  const formatReviewMember = (member: ReasonFirstGroupMemberInput): string => {
+    if (member.rankPrefix || member.initials || member.unit) {
+      return [
+        member.rankPrefix,
+        member.lastName,
+        member.initials ? `(${member.initials})` : undefined,
+        member.unit ? `- ${member.unit}` : undefined,
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(' ')
+    }
+
+    return [member.firstName, member.lastName]
+      .filter((value): value is string => Boolean(value))
+      .join(' ')
+  }
+
+  const renderReviewValue = (label: string, value: ReactNode, fallback = 'Not provided') => (
+    <div
+      className="rounded-box border border-base-300 bg-base-100"
+      style={{ padding: 'var(--space-3)' }}
+    >
+      <p className="text-xs font-semibold tracking-wide text-base-content/60 uppercase">{label}</p>
+      <div className="mt-1 text-base font-semibold text-base-content">{value || fallback}</div>
+    </div>
+  )
+
+  const renderVehicleSection = () => (
+    <div
+      className="rounded-box border border-base-300 bg-base-200"
+      style={{ padding: 'var(--space-4)' }}
+    >
+      <div className="flex flex-col" style={{ gap: 'var(--space-3)' }}>
+        <div className="flex items-start" style={{ gap: 'var(--space-3)' }}>
+          <div className="rounded-box bg-info-fadded p-2 text-info-fadded-content">
+            <CarFront className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="font-semibold text-base-content">Vehicle information</p>
+            <p className="text-sm text-base-content/70">
+              Optional. Add every vehicle connected to this visitor group.
+            </p>
+          </div>
+        </div>
+
+        <fieldset className="fieldset">
+          <label
+            className={cn(
+              'input input-md w-full border-base-300 bg-base-100 text-base-content',
+              Boolean(errors.licensePlate) && 'input-error',
+              activeKeyboardField?.name === 'licensePlate' && 'border-primary'
+            )}
+          >
+            <span className="label">License plate</span>
+            <input
+              type="text"
+              inputMode="none"
+              autoComplete="off"
+              value={licensePlate}
+              className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
+              placeholder="Optional"
+              {...licensePlateRegistration}
+              ref={attachFieldRef('licensePlate', licensePlateRegistration.ref)}
+              onFocus={() => activateKeyboardField('licensePlate')}
+              onClick={() => activateKeyboardField('licensePlate')}
+            />
+          </label>
+          {errors.licensePlate && <p className="label text-error">{errors.licensePlate.message}</p>}
+          <div className="mt-2 flex items-center justify-between" style={{ gap: 'var(--space-3)' }}>
+            <p className="text-sm text-base-content/70">
+              {groupVehicles.length > 0
+                ? `Vehicles added: ${groupVehicles.length}`
+                : 'No vehicles added yet.'}
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={!licensePlate.trim()}
+              onClick={handleAddVehicle}
+            >
+              Add vehicle
+            </button>
+          </div>
+
+          {groupVehicles.length > 0 && (
+            <div className="mt-2 flex flex-col" style={{ gap: 'var(--space-2)' }}>
+              {groupVehicles.map((vehicle, index) => (
+                <div
+                  key={`${vehicle}-${index}`}
+                  className="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-3 py-2"
+                >
+                  <span className="font-mono text-sm">{vehicle}</span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    onClick={() => handleRemoveVehicle(index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </fieldset>
+      </div>
+    </div>
+  )
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -1654,6 +1673,8 @@ export function VisitorSelfSigninFlow({
                   )}
                 </div>
 
+                {!usesContractInputs && renderVehicleSection()}
+
                 <div
                   className="rounded-box border border-base-300 bg-base-200 p-3"
                   style={{ padding: 'var(--space-3)' }}
@@ -1763,80 +1784,139 @@ export function VisitorSelfSigninFlow({
                     )}
                   </fieldset>
                 </div>
+
+                {renderVehicleSection()}
               </div>
             )}
 
             {step === reviewStep && (
-              <div className="rounded-box border border-base-300 bg-base-200 p-3 sm:p-4">
-                <div className="flex flex-col gap-3">
-                  <div className="rounded-box border border-base-300 bg-base-100 p-3">
-                    <p className="text-lg leading-relaxed">{reviewNarrative}</p>
-                    <p className="mt-3 text-base leading-relaxed">
-                      Add any vehicles for this visitor group, then complete sign-in.
-                    </p>
-                    <p className="mt-2 text-sm text-base-content/70">
-                      Members in submission: {reviewMemberCount}
-                    </p>
-                  </div>
-
-                  <fieldset className="fieldset">
-                    <label
-                      className={cn(
-                        'input input-md w-full border-base-300 bg-base-100 text-base-content',
-                        Boolean(errors.licensePlate) && 'input-error',
-                        activeKeyboardField?.name === 'licensePlate' && 'border-primary'
-                      )}
-                    >
-                      <span className="label">License Plate</span>
-                      <input
-                        type="text"
-                        inputMode="none"
-                        autoComplete="off"
-                        value={licensePlate}
-                        className="grow bg-transparent text-base-content placeholder:text-base-content/50 focus:outline-none"
-                        placeholder="Optional"
-                        {...licensePlateRegistration}
-                        ref={attachFieldRef('licensePlate', licensePlateRegistration.ref)}
-                        onFocus={() => activateKeyboardField('licensePlate')}
-                        onClick={() => activateKeyboardField('licensePlate')}
-                      />
-                    </label>
-                    {errors.licensePlate && (
-                      <p className="label text-error">{errors.licensePlate.message}</p>
-                    )}
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-sm text-base-content/70">
-                        Vehicles added: {groupVehicles.length}
+              <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
+                <div
+                  className="rounded-box border border-primary/20 bg-primary-fadded text-primary-fadded-content"
+                  style={{ padding: 'var(--space-4)' }}
+                >
+                  <div className="flex items-start" style={{ gap: 'var(--space-3)' }}>
+                    <ClipboardCheck className="mt-1 h-6 w-6 shrink-0" />
+                    <div>
+                      <p className="text-lg font-semibold">Review your sign-in</p>
+                      <p className="text-sm">
+                        Check that the visitor names, visit details, and any vehicles are correct
+                        before you finish.
                       </p>
-                      <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
-                        onClick={handleAddVehicle}
-                      >
-                        Add vehicle
-                      </button>
                     </div>
+                  </div>
+                </div>
 
-                    {groupVehicles.length > 0 && (
-                      <div className="mt-2 flex flex-col gap-2">
-                        {groupVehicles.map((vehicle, index) => (
-                          <div
+                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                  <section
+                    className="rounded-box border border-base-300 bg-base-200"
+                    style={{ padding: 'var(--space-4)' }}
+                  >
+                    <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                      <ClipboardCheck className="h-5 w-5 text-primary" />
+                      <h3 className="font-display text-xl font-semibold text-base-content">
+                        Visit details
+                      </h3>
+                    </div>
+                    <div className="mt-3 grid grid-cols-1 gap-2">
+                      {renderReviewValue('Reason', reviewReasonLabel)}
+                      {reviewBranchLabel && renderReviewValue('Type', reviewBranchLabel)}
+                      {reviewHostName && renderReviewValue('Member', reviewHostName)}
+                      {reviewEventTitle &&
+                        renderReviewValue(
+                          'Event',
+                          reviewEventDate
+                            ? `${reviewEventTitle} (${reviewEventDate})`
+                            : reviewEventTitle
+                        )}
+                    </div>
+                  </section>
+
+                  <section
+                    className="rounded-box border border-base-300 bg-base-200"
+                    style={{ padding: 'var(--space-4)' }}
+                  >
+                    <div
+                      className="flex items-center justify-between"
+                      style={{ gap: 'var(--space-3)' }}
+                    >
+                      <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                        <UsersRound className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-xl font-semibold text-base-content">
+                          Visitors
+                        </h3>
+                      </div>
+                      <span className="badge badge-primary">{reviewMemberCount}</span>
+                    </div>
+                    <div className="mt-3 flex flex-col" style={{ gap: 'var(--space-2)' }}>
+                      {reviewMembers.map((member, index) => (
+                        <div
+                          key={`${formatReviewMember(member) || 'visitor'}-${index}`}
+                          className="rounded-box border border-base-300 bg-base-100"
+                          style={{ padding: 'var(--space-3)' }}
+                        >
+                          <p className="font-semibold text-base-content">
+                            {formatReviewMember(member) || `Visitor ${index + 1}`}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section
+                    className="rounded-box border border-base-300 bg-base-200"
+                    style={{ padding: 'var(--space-4)' }}
+                  >
+                    <div
+                      className="flex items-center justify-between"
+                      style={{ gap: 'var(--space-3)' }}
+                    >
+                      <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                        <CarFront className="h-5 w-5 text-info-fadded-content" />
+                        <h3 className="font-display text-xl font-semibold text-base-content">
+                          Vehicles
+                        </h3>
+                      </div>
+                      <span className="badge badge-info">{reviewVehicles.length}</span>
+                    </div>
+                    {reviewVehicles.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap" style={{ gap: 'var(--space-2)' }}>
+                        {reviewVehicles.map((vehicle, index) => (
+                          <span
                             key={`${vehicle}-${index}`}
-                            className="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-3 py-2"
+                            className="badge badge-outline font-mono text-sm"
                           >
-                            <span className="font-mono text-sm">{vehicle}</span>
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-xs"
-                              onClick={() => handleRemoveVehicle(index)}
-                            >
-                              Remove
-                            </button>
-                          </div>
+                            {vehicle}
+                          </span>
                         ))}
                       </div>
+                    ) : (
+                      <p
+                        className="mt-3 rounded-box border border-base-300 bg-base-100 text-sm text-base-content/70"
+                        style={{ padding: 'var(--space-3)' }}
+                      >
+                        No vehicles listed for this visitor group.
+                      </p>
                     )}
-                  </fieldset>
+                  </section>
+
+                  {usesContractInputs && (
+                    <section
+                      className="rounded-box border border-base-300 bg-base-200"
+                      style={{ padding: 'var(--space-4)' }}
+                    >
+                      <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                        <UserRound className="h-5 w-5 text-primary" />
+                        <h3 className="font-display text-xl font-semibold text-base-content">
+                          Contract work
+                        </h3>
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 gap-2">
+                        {renderReviewValue('Organization', reviewOrganization)}
+                        {renderReviewValue('Work description', reviewWorkDescription)}
+                      </div>
+                    </section>
+                  )}
                 </div>
               </div>
             )}
@@ -1899,8 +1979,7 @@ export function VisitorSelfSigninFlow({
 
           {((selectionStep !== null && step === selectionStep) ||
             step === personalInfoStep ||
-            (contractInfoStep !== null && step === contractInfoStep) ||
-            step === reviewStep) && (
+            (contractInfoStep !== null && step === contractInfoStep)) && (
             <div className="mt-4 shrink-0">
               {activeKeyboardField ? (
                 <div className="rounded-box bg-base-200">
