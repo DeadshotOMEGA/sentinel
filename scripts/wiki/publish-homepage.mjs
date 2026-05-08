@@ -6,6 +6,11 @@ import path from 'node:path'
 const ROOT = process.cwd()
 const HOME_SOURCE = path.join(ROOT, 'docs/wiki/docs/home.md')
 const WIKI_DOCS_ROOT = path.join(ROOT, 'docs/wiki')
+const SITE_LOGO_SOURCE = path.join(
+  ROOT,
+  'docs/wiki/assets/wiki-dashboard/branding/sentinel-logo.png'
+)
+const SITE_LOGO_URL = '/uploads/wiki-dashboard/branding/sentinel-logo.png'
 
 const LIST_PAGES_QUERY = `
 query($locale: String!, $limit: Int!) {
@@ -145,6 +150,56 @@ mutation SetThemeConfig(
 }
 `
 
+const LIST_ASSET_FOLDERS_QUERY = `
+query($parentFolderId: Int!) {
+  assets {
+    folders(parentFolderId: $parentFolderId) {
+      id
+      slug
+      name
+    }
+  }
+}
+`
+
+const CREATE_ASSET_FOLDER_MUTATION = `
+mutation CreateAssetFolder($parentFolderId: Int!, $slug: String!, $name: String) {
+  assets {
+    createFolder(parentFolderId: $parentFolderId, slug: $slug, name: $name) {
+      responseResult {
+        succeeded
+        message
+      }
+    }
+  }
+}
+`
+
+const SITE_UPDATE_CONFIG_MUTATION = `
+mutation UpdateSiteConfig(
+  $title: String
+  $description: String
+  $company: String
+  $footerOverride: String
+  $logoUrl: String
+) {
+  site {
+    updateConfig(
+      title: $title
+      description: $description
+      company: $company
+      footerOverride: $footerOverride
+      logoUrl: $logoUrl
+    ) {
+      responseResult {
+        succeeded
+        message
+      }
+    }
+  }
+}
+`
+
 const SENTINEL_INJECT_CSS = `/* Sentinel Wiki.js Theme Injection */
 :root {
   --sentinel-base-100: #ffffff;
@@ -160,12 +215,66 @@ const SENTINEL_INJECT_CSS = `/* Sentinel Wiki.js Theme Injection */
   --sentinel-warning: #efbe3a;
   --sentinel-error: #df4f4f;
   --sentinel-border: #d7dbe4;
+  --sentinel-shadow: 0 16px 38px rgba(31, 37, 56, 0.12);
+}
+
+.nav-header.black {
+  background: #07172c !important;
+}
+
+.nav-header .v-toolbar__title,
+.nav-header a {
+  letter-spacing: 0;
+}
+
+.v-navigation-drawer.primary {
+  background: linear-gradient(180deg, #0b3a66 0%, #0a2a4d 100%) !important;
+}
+
+.v-navigation-drawer.primary .v-list-item--active,
+.v-navigation-drawer.primary .v-btn--active {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.theme--default main,
+.contents {
+  background: linear-gradient(180deg, #fbfbfa 0%, #f3f5f8 100%);
+}
+
+.contents {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-bottom: 4rem;
 }
 
 .contents h1,
 .contents h2,
 .contents h3 {
-  color: var(--sentinel-base-content);
+  color: var(--sentinel-base-content) !important;
+  letter-spacing: 0;
+}
+
+.contents h1 {
+  border-bottom: 2px solid #8aadff;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.25rem;
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  line-height: 1.08;
+}
+
+.contents .toc-anchor {
+  color: #6f8dd7 !important;
+}
+
+.contents h2 {
+  margin-top: 2rem;
+  padding-top: 0.35rem;
+  font-size: 1.45rem;
+}
+
+.contents h3 {
+  margin-top: 1.5rem;
+  font-size: 1.12rem;
 }
 
 .contents p,
@@ -173,29 +282,111 @@ const SENTINEL_INJECT_CSS = `/* Sentinel Wiki.js Theme Injection */
 .contents td,
 .contents th {
   color: #2d3348;
+  line-height: 1.62;
+}
+
+.contents a {
+  color: #174bc7;
+  font-weight: 600;
+  text-underline-offset: 0.18em;
+}
+
+.contents ul,
+.contents ol {
+  padding-left: 1.35rem;
+}
+
+.contents li + li {
+  margin-top: 0.35rem;
+}
+
+.contents table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid var(--sentinel-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(31, 37, 56, 0.06);
+}
+
+.contents th {
+  background: #edf2ff;
+  color: #1f3ea8;
+  font-weight: 700;
+}
+
+.contents td,
+.contents th {
+  border-bottom: 1px solid var(--sentinel-border);
+  padding: 0.72rem 0.85rem;
+  vertical-align: top;
+}
+
+.contents tr:last-child td {
+  border-bottom: 0;
 }
 
 .contents blockquote {
   border-left: 4px solid var(--sentinel-warning);
   background: #fffbe8;
   padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.contents img {
+  display: block;
+  width: 100%;
+  max-width: 1060px;
+  height: auto;
+  margin: 1.1rem 0 1.55rem;
+  border: 1px solid var(--sentinel-border);
+  border-radius: 8px;
+  background: var(--sentinel-base-100);
+  box-shadow: var(--sentinel-shadow);
+}
+
+.contents code {
+  border: 1px solid #dfe4ec;
+  border-radius: 5px;
+  background: #eef2f7;
+  color: #1f2538;
+  padding: 0.08rem 0.3rem;
+}
+
+.contents pre {
+  border: 1px solid #dfe4ec;
+  border-radius: 8px;
+  background: #172033;
+  box-shadow: 0 12px 30px rgba(23, 32, 51, 0.16);
+}
+
+.contents pre code {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
 }
 
 /* Home page CTAs */
 .contents a[href*='/docs/start-here'],
-.contents a[href*='sentinel.local/dashboard'] {
+.contents a[href*='sentinel.local/dashboard'],
+.contents a[href*='/operations/dashboard/'] {
   display: inline-block;
   margin: 0.25rem 0.5rem 0.75rem 0;
-  padding: 0.5rem 0.8rem;
-  border: 1px solid var(--sentinel-primary);
+  padding: 0.46rem 0.72rem;
+  border: 1px solid #c8d5ff;
+  border-radius: 999px;
   background: var(--sentinel-primary-soft);
   color: #1f3ea8;
   text-decoration: none;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .contents a[href*='/docs/start-here']:hover,
-.contents a[href*='sentinel.local/dashboard']:hover {
+.contents a[href*='sentinel.local/dashboard']:hover,
+.contents a[href*='/operations/dashboard/']:hover {
   background: #d6e1ff;
 }
 
@@ -261,9 +452,20 @@ async function loadEnvFile(envPath) {
 
 async function resolveEnv() {
   const fromEnvFile = await loadEnvFile(path.join(ROOT, '.env'))
+  const fromDeployEnvFile = await loadEnvFile(path.join(ROOT, 'deploy/.env'))
   return {
-    wikiBaseUrl: (process.env.WIKI_BASE_URL || fromEnvFile.WIKI_BASE_URL || '').trim(),
-    wikiApiKey: (process.env.WIKI_API_KEY || fromEnvFile.WIKI_API_KEY || '').trim(),
+    wikiBaseUrl: (
+      process.env.WIKI_BASE_URL ||
+      fromEnvFile.WIKI_BASE_URL ||
+      fromDeployEnvFile.WIKI_BASE_URL ||
+      ''
+    ).trim(),
+    wikiApiKey: (
+      process.env.WIKI_API_KEY ||
+      fromEnvFile.WIKI_API_KEY ||
+      fromDeployEnvFile.WIKI_API_KEY ||
+      ''
+    ).trim(),
   }
 }
 
@@ -288,6 +490,69 @@ async function graphQLRequest({ baseUrl, apiKey, query, variables = {} }) {
     throw new Error(`GraphQL errors: ${JSON.stringify(payload.errors)}`)
   }
   return payload.data
+}
+
+function wikiEndpoint(baseUrl, suffix) {
+  return baseUrl.endsWith('/') ? `${baseUrl}${suffix}` : `${baseUrl}/${suffix}`
+}
+
+async function listFolders({ baseUrl, apiKey, parentFolderId }) {
+  const data = await graphQLRequest({
+    baseUrl,
+    apiKey,
+    query: LIST_ASSET_FOLDERS_QUERY,
+    variables: { parentFolderId },
+  })
+  return data.assets.folders || []
+}
+
+async function ensureFolder({ baseUrl, apiKey, parentFolderId, slug }) {
+  const normalizedSlug = slug.toLowerCase()
+  let folders = await listFolders({ baseUrl, apiKey, parentFolderId })
+  const existing = folders.find((folder) => folder.slug === normalizedSlug)
+  if (existing) return existing.id
+
+  const created = await graphQLRequest({
+    baseUrl,
+    apiKey,
+    query: CREATE_ASSET_FOLDER_MUTATION,
+    variables: { parentFolderId, slug: normalizedSlug, name: normalizedSlug },
+  })
+
+  const result = created.assets.createFolder.responseResult
+  if (!result.succeeded) {
+    throw new Error(
+      `Asset folder create failed (${normalizedSlug}): ${result.message || 'unknown error'}`
+    )
+  }
+
+  folders = await listFolders({ baseUrl, apiKey, parentFolderId })
+  const next = folders.find((folder) => folder.slug === normalizedSlug)
+  if (!next) throw new Error(`Asset folder was created but not found: ${normalizedSlug}`)
+  return next.id
+}
+
+async function uploadAsset({ baseUrl, apiKey, folderId, source, filename }) {
+  const data = await fs.readFile(source)
+  const form = new FormData()
+  form.append('mediaUpload', JSON.stringify({ folderId }))
+  form.append('mediaUpload', new Blob([data], { type: 'image/png' }), filename)
+
+  const response = await fetch(wikiEndpoint(baseUrl, 'u'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: form,
+  })
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Asset upload failed (${filename}, ${response.status}): ${text}`)
+  }
+
+  const body = await response.text()
+  if (body.trim() !== 'ok') {
+    throw new Error(`Asset upload failed (${filename}): ${body}`)
+  }
 }
 
 async function findTerminologyViolations(rootDir) {
@@ -319,11 +584,67 @@ async function findTerminologyViolations(rootDir) {
 
 function assertRequiredEnv({ wikiBaseUrl, wikiApiKey }) {
   if (!wikiBaseUrl) {
-    throw new Error('Missing WIKI_BASE_URL (env or .env)')
+    throw new Error('Missing WIKI_BASE_URL (env, .env, or deploy/.env)')
   }
   if (!wikiApiKey) {
-    throw new Error('Missing WIKI_API_KEY (env or .env)')
+    throw new Error('Missing WIKI_API_KEY (env, .env, or deploy/.env)')
   }
+}
+
+async function applySiteConfig({ baseUrl, apiKey, dryRun }) {
+  if (dryRun) {
+    console.log(`[dry-run] would upload Sentinel logo to ${SITE_LOGO_URL}`)
+    console.log('[dry-run] would update Wiki.js site title, description, company, footer, and logo')
+    return
+  }
+
+  const uploadsFolderId = await ensureFolder({
+    baseUrl,
+    apiKey,
+    parentFolderId: 0,
+    slug: 'uploads',
+  })
+  const wikiDashboardFolderId = await ensureFolder({
+    baseUrl,
+    apiKey,
+    parentFolderId: uploadsFolderId,
+    slug: 'wiki-dashboard',
+  })
+  const brandingFolderId = await ensureFolder({
+    baseUrl,
+    apiKey,
+    parentFolderId: wikiDashboardFolderId,
+    slug: 'branding',
+  })
+
+  await uploadAsset({
+    baseUrl,
+    apiKey,
+    folderId: brandingFolderId,
+    source: SITE_LOGO_SOURCE,
+    filename: 'sentinel-logo.png',
+  })
+
+  const updated = await graphQLRequest({
+    baseUrl,
+    apiKey,
+    query: SITE_UPDATE_CONFIG_MUTATION,
+    variables: {
+      title: 'Sentinel Documentation',
+      description:
+        'Sentinel operational guidance for Dashboard, Presence, lockup, and help workflows.',
+      company: 'Sentinel',
+      footerOverride: 'Sentinel Operations Wiki - internal operational guidance.',
+      logoUrl: SITE_LOGO_URL,
+    },
+  })
+
+  const result = updated.site.updateConfig.responseResult
+  if (!result.succeeded) {
+    throw new Error(`Site configuration update failed: ${result.message || 'unknown error'}`)
+  }
+
+  console.log('Applied Sentinel site branding and logo.')
 }
 
 async function upsertHomePage({ baseUrl, apiKey, content, dryRun }) {
@@ -337,7 +658,9 @@ async function upsertHomePage({ baseUrl, apiKey, content, dryRun }) {
     variables: { locale, limit: 1000 },
   })
 
-  const existingPage = (existingList.pages.list || []).find((page) => page.path === pathSlug && page.locale === locale)
+  const existingPage = (existingList.pages.list || []).find(
+    (page) => page.path === pathSlug && page.locale === locale
+  )
 
   if (dryRun) {
     if (existingPage?.id) {
@@ -370,7 +693,9 @@ async function upsertHomePage({ baseUrl, apiKey, content, dryRun }) {
     if (!result.succeeded) {
       throw new Error(`Update failed: ${result.message || 'unknown error'}`)
     }
-    console.log(`Updated page id=${updated.pages.update.page.id} path=${updated.pages.update.page.path}`)
+    console.log(
+      `Updated page id=${updated.pages.update.page.id} path=${updated.pages.update.page.path}`
+    )
   } else {
     const created = await graphQLRequest({
       baseUrl,
@@ -395,7 +720,9 @@ async function upsertHomePage({ baseUrl, apiKey, content, dryRun }) {
     if (!result.succeeded) {
       throw new Error(`Create failed: ${result.message || 'unknown error'}`)
     }
-    console.log(`Created page id=${created.pages.create.page.id} path=${created.pages.create.page.path}`)
+    console.log(
+      `Created page id=${created.pages.create.page.id} path=${created.pages.create.page.path}`
+    )
   }
 }
 
@@ -409,7 +736,9 @@ async function applyThemeInjection({ baseUrl, apiKey, dryRun }) {
   const current = themeData.theming.config
 
   if (dryRun) {
-    console.log('[dry-run] would apply Sentinel injectCSS and preserve existing theme/iconset/mode/toc')
+    console.log(
+      '[dry-run] would apply Sentinel injectCSS and preserve existing theme/iconset/mode/toc'
+    )
     return
   }
 
@@ -456,6 +785,12 @@ async function main() {
     baseUrl: env.wikiBaseUrl,
     apiKey: env.wikiApiKey,
     content: homeContent,
+    dryRun: args.dryRun,
+  })
+
+  await applySiteConfig({
+    baseUrl: env.wikiBaseUrl,
+    apiKey: env.wikiApiKey,
     dryRun: args.dryRun,
   })
 
