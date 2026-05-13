@@ -7,6 +7,7 @@ import { CheckinsTable } from '@/components/checkins/checkins-table'
 import { CheckinsFilters } from '@/components/checkins/checkins-filters'
 import { ManualCheckinModal } from '@/components/checkins/manual-checkin-modal'
 import { SimulateScanModal } from '@/components/dev/simulate-scan-modal'
+import { HistoryHelpLauncher } from '@/components/help/section-help-launchers'
 import { TID } from '@/lib/test-ids'
 import { getCurrentDdsEditorId, canEditHistoryEntries } from '@/lib/history-permissions'
 import { isSentinelBootstrapServiceNumber } from '@/lib/system-bootstrap'
@@ -47,7 +48,7 @@ export default function CheckinsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-help-id="history.header">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CheckCheck className="h-6 w-6" aria-hidden="true" />
@@ -58,7 +59,7 @@ export default function CheckinsPage() {
             for special cases
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-help-id="history.actions">
           {canSimulateScan && (
             <button
               type="button"
@@ -79,6 +80,7 @@ export default function CheckinsPage() {
               onClick={() => setIsManualCheckinModalOpen(true)}
               aria-label="Create manual check-in"
               data-testid={TID.checkins.manualCheckinBtn}
+              data-help-id="history.manual-checkin"
             >
               <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Manual Check-in
@@ -108,6 +110,7 @@ export default function CheckinsPage() {
           onOpenChange={setIsSimulateScanModalOpen}
         />
       )}
+      <HistoryHelpLauncher />
     </div>
   )
 }

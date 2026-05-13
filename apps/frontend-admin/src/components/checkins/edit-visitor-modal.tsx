@@ -127,7 +127,12 @@ export function EditVisitorModal({ visitorId, open, onOpenChange }: EditVisitorM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="full" showCloseButton={false} className="max-w-4xl">
+      <DialogContent
+        size="full"
+        showCloseButton={false}
+        className="max-w-4xl"
+        data-help-id="history.edit-visitor-modal"
+      >
         <DialogHeader>
           <DialogTitle className="font-display flex items-center" style={{ gap: 'var(--space-2)' }}>
             <Pencil className="h-5 w-5" aria-hidden="true" />

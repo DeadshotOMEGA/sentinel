@@ -96,7 +96,7 @@ export function SetPinModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent size="sm">
+      <DialogContent size="sm" data-help-id="members.pin-modal">
         <DialogHeader>
           <DialogTitle>Set PIN</DialogTitle>
           <DialogDescription>Set a new 4-digit PIN for {memberName}.</DialogDescription>

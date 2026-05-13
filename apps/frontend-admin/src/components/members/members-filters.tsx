@@ -63,7 +63,7 @@ export function MembersFilters({
     filters.qualificationCode
 
   return (
-    <div className="p-4">
+    <div className="p-4" data-help-id="members.filters">
       <div
         className={`grid grid-cols-1 gap-4 ${canViewPersonnelScope ? 'md:grid-cols-7' : 'md:grid-cols-6'}`}
       >

@@ -395,7 +395,7 @@ export function MembersTable({
           cell: (info) => {
             const member = info.row.original
             return (
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center" data-help-id="members.row-actions">
                 <button
                   className="btn btn-ghost btn-sm btn-square"
                   onClick={() => setQualificationsMember(member)}
@@ -490,6 +490,7 @@ export function MembersTable({
               ? 'bg-base-200/50 opacity-100'
               : 'opacity-0 h-0 py-0 overflow-hidden border-b-0'
           )}
+          data-help-id="members.bulk-actions"
         >
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium">
@@ -552,7 +553,7 @@ export function MembersTable({
           )}
         </div>
 
-        <div className="relative w-full overflow-x-auto">
+        <div className="relative w-full overflow-x-auto" data-help-id="members.table">
           <table className="table table-fixed" data-testid={TID.members.table}>
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (

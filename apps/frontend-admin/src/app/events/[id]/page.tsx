@@ -20,6 +20,7 @@ import { useUnitEvent, useDeleteUnitEvent, useUpdateUnitEventStatus } from '@/ho
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventDutyWatchCard } from '@/components/events/event-duty-watch-card'
 import { EventFormModal } from '@/components/events/event-form-modal'
+import { EventsHelpLauncher } from '@/components/help/section-help-launchers'
 import { Chip } from '@/components/ui/chip'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -161,10 +162,10 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4" data-help-id="events.detail.header">
         <div className="flex-1">
           <h1 className="text-2xl font-bold mb-2">{event.title}</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-help-id="events.detail.status">
             <EventStatusBadge status={event.status} />
             {event.eventType && <Chip variant="bordered">{event.eventType.name}</Chip>}
             {event.eventType?.category && (
@@ -174,7 +175,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-help-id="events.detail.actions">
           {canEdit && (
             <button
               type="button"
@@ -206,7 +207,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
       {/* Status transition buttons */}
       {(transitions.next || (transitions.actions && transitions.actions.length > 0)) && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-help-id="events.detail.status-actions">
           {transitions.next && transitions.label && (
             <button
               type="button"
@@ -244,7 +245,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList role="tablist" aria-label="Event details tabs">
+        <TabsList role="tablist" aria-label="Event details tabs" data-help-id="events.detail.tabs">
           <TabsTrigger value="overview" aria-controls="overview-panel">
             Overview
           </TabsTrigger>
@@ -254,7 +255,12 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" id="overview-panel" aria-labelledby="overview-tab">
+        <TabsContent
+          value="overview"
+          id="overview-panel"
+          aria-labelledby="overview-tab"
+          data-help-id="events.detail.overview"
+        >
           <Card>
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
@@ -356,7 +362,12 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
         </TabsContent>
 
         {/* Duty Watch Tab */}
-        <TabsContent value="duty-watch" id="duty-watch-panel" aria-labelledby="duty-watch-tab">
+        <TabsContent
+          value="duty-watch"
+          id="duty-watch-panel"
+          aria-labelledby="duty-watch-tab"
+          data-help-id="events.detail.duty-watch"
+        >
           <EventDutyWatchCard
             eventId={id}
             positions={event.dutyPositions || []}
@@ -368,6 +379,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
       {/* Edit Modal */}
       <EventFormModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} event={event} />
+      <EventsHelpLauncher />
     </div>
   )
 }

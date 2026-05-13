@@ -95,7 +95,7 @@ export function MemberTagsModal({ open, onOpenChange, member }: MemberTagsModalP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent size="lg">
+        <DialogContent size="lg" data-help-id="members.tags-modal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5" />

@@ -403,7 +403,7 @@ export function DutyWatchCard({
 
   if (isError) {
     return (
-      <AppCard status="error">
+      <AppCard status="error" data-help-id="schedules.duty-watch-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -423,7 +423,7 @@ export function DutyWatchCard({
 
   if (isLoading || positionsLoading) {
     return (
-      <AppCard>
+      <AppCard data-help-id="schedules.duty-watch-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -439,7 +439,7 @@ export function DutyWatchCard({
 
   if (!dutyWatchRole) {
     return (
-      <AppCard status="error">
+      <AppCard status="error" data-help-id="schedules.duty-watch-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -461,7 +461,7 @@ export function DutyWatchCard({
 
   if (positionsList.length === 0) {
     return (
-      <AppCard status="error">
+      <AppCard status="error" data-help-id="schedules.duty-watch-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -491,7 +491,7 @@ export function DutyWatchCard({
       : 'No Duty Watch occurrence configured for this week.'
 
   return (
-    <AppCard status={cardStatus}>
+    <AppCard status={cardStatus} data-help-id="schedules.duty-watch-card">
       <AppCardHeader>
         <div className="flex items-center justify-between">
           <div>

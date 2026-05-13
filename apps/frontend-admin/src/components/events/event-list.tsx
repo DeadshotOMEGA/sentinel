@@ -91,7 +91,7 @@ export function EventList() {
   return (
     <div className="p-0">
       {/* Filters */}
-      <div className="p-4" role="search" aria-label="Event filters">
+      <div className="p-4" role="search" aria-label="Event filters" data-help-id="events.filters">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <label className="select w-full">
             <span className="label">Category</span>
@@ -167,7 +167,7 @@ export function EventList() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-base-100 border shadow-sm">
+      <div className="overflow-x-auto bg-base-100 border shadow-sm" data-help-id="events.list">
         {isLoading ? (
           <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
             <LoadingSpinner size="lg" label="Loading events..." />

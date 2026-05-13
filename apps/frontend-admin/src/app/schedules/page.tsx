@@ -11,6 +11,7 @@ import { QuarterPicker } from '@/components/schedules/quarter-picker'
 import { MonthCalendarView } from '@/components/schedules/month-calendar-view'
 import { QuarterView } from '@/components/schedules/quarter-view'
 import { ScheduleErrorBoundary } from '@/components/schedules/error-boundary'
+import { SchedulesHelpLauncher } from '@/components/help/section-help-launchers'
 import { CalendarDays } from 'lucide-react'
 import { getMonday, formatDateISO, getQuarterStart, parseDateString } from '@/lib/date-utils'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
@@ -83,7 +84,10 @@ export default function SchedulesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div
+        className="flex items-center justify-between flex-wrap gap-4"
+        data-help-id="schedules.header"
+      >
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CalendarDays className="h-6 w-6" />
@@ -94,13 +98,19 @@ export default function SchedulesPage() {
         <div className="flex items-center gap-4">
           <ScheduleViewTabs activeView={activeView} onViewChange={setActiveView} />
           {activeView === 'week' && (
-            <WeekPicker weekStartDate={weekStartDate} onWeekChange={handleWeekChange} />
+            <div data-help-id="schedules.date-picker">
+              <WeekPicker weekStartDate={weekStartDate} onWeekChange={handleWeekChange} />
+            </div>
           )}
           {activeView === 'month' && (
-            <MonthPicker currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
+            <div data-help-id="schedules.date-picker">
+              <MonthPicker currentMonth={currentMonth} onMonthChange={setCurrentMonth} />
+            </div>
           )}
           {activeView === 'quarter' && (
-            <QuarterPicker quarterStart={quarterStart} onQuarterChange={setQuarterStart} />
+            <div data-help-id="schedules.date-picker">
+              <QuarterPicker quarterStart={quarterStart} onQuarterChange={setQuarterStart} />
+            </div>
           )}
         </div>
       </div>
@@ -118,6 +128,7 @@ export default function SchedulesPage() {
                 animate="animate"
                 exit="exit"
                 className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                data-help-id="schedules.week-columns"
               >
                 <WeekColumn weekStartDate={weekStartDate} />
                 <WeekColumn weekStartDate={nextWeekStartDate} />
@@ -126,17 +137,22 @@ export default function SchedulesPage() {
           )}
 
           {activeView === 'month' && (
-            <MonthCalendarView
-              currentMonth={currentMonth}
-              onWeekClick={handleWeekClickFromCalendar}
-            />
+            <div data-help-id="schedules.month-quarter-view">
+              <MonthCalendarView
+                currentMonth={currentMonth}
+                onWeekClick={handleWeekClickFromCalendar}
+              />
+            </div>
           )}
 
           {activeView === 'quarter' && (
-            <QuarterView quarterStart={quarterStart} onWeekClick={handleWeekClickFromCalendar} />
+            <div data-help-id="schedules.month-quarter-view">
+              <QuarterView quarterStart={quarterStart} onWeekClick={handleWeekClickFromCalendar} />
+            </div>
           )}
         </ScheduleErrorBoundary>
       </div>
+      <SchedulesHelpLauncher />
     </div>
   )
 }

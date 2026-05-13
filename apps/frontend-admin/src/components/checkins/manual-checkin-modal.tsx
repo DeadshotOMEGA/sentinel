@@ -239,6 +239,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
           size="lg"
           className="max-h-[85vh] overflow-hidden"
           testId={TID.checkins.manualModal.dialog}
+          data-help-id="history.manual-checkin-modal"
         >
           <DialogHeader className="mb-0">
             <div className="flex items-start justify-between gap-(--space-3) pr-10">

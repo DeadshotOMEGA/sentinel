@@ -112,7 +112,7 @@ export function MemberQualificationsModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent size="lg">
+        <DialogContent size="lg" data-help-id="members.qualifications-modal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />

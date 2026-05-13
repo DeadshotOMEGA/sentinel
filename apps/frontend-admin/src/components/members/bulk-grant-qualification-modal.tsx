@@ -93,7 +93,7 @@ export function BulkGrantQualificationModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent size="md">
+      <DialogContent size="md" data-help-id="members.bulk-qualification-modal">
         <DialogHeader>
           <DialogTitle>Grant Qualification to {memberIds.length} Members</DialogTitle>
           <DialogDescription>Grant a qualification to all selected members.</DialogDescription>

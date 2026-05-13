@@ -112,7 +112,7 @@ export function BulkEditMemberModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent size="md">
+      <DialogContent size="md" data-help-id="members.bulk-edit-modal">
         <DialogHeader>
           <DialogTitle>Edit {memberIds.length} Members</DialogTitle>
           <DialogDescription>

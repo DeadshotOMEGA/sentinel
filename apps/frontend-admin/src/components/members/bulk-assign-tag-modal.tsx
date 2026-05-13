@@ -102,7 +102,7 @@ export function BulkAssignTagModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent size="md">
+      <DialogContent size="md" data-help-id="members.bulk-tag-modal">
         <DialogHeader>
           <DialogTitle>Assign Tag to {memberIds.length} Members</DialogTitle>
           <DialogDescription>Assign a tag to all selected members.</DialogDescription>

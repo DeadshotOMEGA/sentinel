@@ -21,7 +21,12 @@ interface ScheduleViewTabsProps {
 
 export function ScheduleViewTabs({ activeView, onViewChange }: ScheduleViewTabsProps) {
   return (
-    <div role="tablist" className="tabs tabs-box" aria-label="Schedule view options">
+    <div
+      role="tablist"
+      className="tabs tabs-box"
+      aria-label="Schedule view options"
+      data-help-id="schedules.view-tabs"
+    >
       <button
         role="tab"
         className={`tab ${activeView === 'week' ? 'tab-active' : ''}`}

@@ -405,7 +405,7 @@ export function DutyWatchModal() {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent size="xl" showCloseButton={false}>
+        <DialogContent size="xl" showCloseButton={false} data-help-id="schedules.duty-watch-modal">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -424,7 +424,11 @@ export function DutyWatchModal() {
           </DialogHeader>
 
           {/* Tabs */}
-          <div role="tablist" className="tabs tabs-box mb-4">
+          <div
+            role="tablist"
+            className="tabs tabs-box mb-4"
+            data-help-id="schedules.night-overrides"
+          >
             <button
               type="button"
               role="tab"
@@ -543,7 +547,7 @@ export function DutyWatchModal() {
 
           {/* Actions */}
           {isDraft && (
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end" data-help-id="schedules.publish-controls">
               <button
                 className="btn btn-primary btn-md"
                 onClick={handlePublish}
@@ -556,7 +560,7 @@ export function DutyWatchModal() {
           )}
 
           {isPublished && (
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end" data-help-id="schedules.publish-controls">
               <button
                 className="btn btn-outline btn-md"
                 onClick={handleEdit}
