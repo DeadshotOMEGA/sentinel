@@ -50,7 +50,7 @@ function createService(options?: {
   const networkSettingsService = {
     getNetworkSettings: vi.fn().mockResolvedValue({
       settings: {
-        approvedSsids: options?.approvedSsids ?? ['Stone Frigate'],
+        approvedSsids: options?.approvedSsids ?? ['GC Public'],
       },
       metadata: {
         source: 'stored',
@@ -176,13 +176,13 @@ describe('SystemStatusService', () => {
 
   it('keeps network status healthy when internet reachability is unavailable but Wi-Fi is approved', async () => {
     const { service } = createService({
-      approvedSsids: ['Stone Frigate'],
+      approvedSsids: ['GC Public'],
       telemetryResult: {
         telemetry: {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           issueCode: 'none',
           wifiConnected: true,
-          currentSsid: 'Stone Frigate',
+          currentSsid: 'GC Public',
           hostIpAddress: '192.168.8.1',
           hotspotProfilePresent: true,
           hotspotAdapterApproved: true,
@@ -218,7 +218,7 @@ describe('SystemStatusService', () => {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           issueCode: 'hotspot_not_visible',
           wifiConnected: true,
-          currentSsid: 'Stone Frigate',
+          currentSsid: 'GC Public',
           hostIpAddress: '10.42.0.1',
           hotspotProfilePresent: true,
           hotspotAdapterApproved: true,
@@ -252,7 +252,7 @@ describe('SystemStatusService', () => {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           issueCode: 'scan_adapter_missing',
           wifiConnected: true,
-          currentSsid: 'Stone Frigate',
+          currentSsid: 'GC Public',
           hostIpAddress: '10.42.0.1',
           hotspotProfilePresent: true,
           hotspotAdapterApproved: true,
@@ -286,7 +286,7 @@ describe('SystemStatusService', () => {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           issueCode: 'hotspot_profile_missing',
           wifiConnected: true,
-          currentSsid: 'Stone Frigate',
+          currentSsid: 'GC Public',
           hostIpAddress: '10.42.0.1',
           hotspotProfilePresent: false,
           hotspotAdapterApproved: true,
@@ -320,7 +320,7 @@ describe('SystemStatusService', () => {
           generatedAt: new Date('2026-04-01T11:59:40.000Z'),
           issueCode: 'none',
           wifiConnected: true,
-          currentSsid: 'Stone Frigate',
+          currentSsid: 'GC Public',
           hostIpAddress: '10.42.0.1',
           hotspotProfilePresent: true,
           hotspotAdapterApproved: true,

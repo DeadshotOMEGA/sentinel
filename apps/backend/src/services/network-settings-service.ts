@@ -6,10 +6,20 @@ import { SettingRepository } from '../repositories/setting-repository.js'
 import { logger } from '../lib/logger.js'
 
 const NETWORK_SETTINGS_KEY = 'network.approved_ssids'
-const DEFAULT_APPROVED_SSID = process.env.HOTSPOT_SSID?.trim() || 'Stone Frigate'
-const LEGACY_DEFAULT_APPROVED_SSID_KEYS = new Set(['hmcschippawa'])
+const DEFAULT_APPROVED_WIFI_SSID = 'GC Public'
+const DEFAULT_APPROVED_SSIDS = (
+  process.env.APPROVED_WIFI_SSIDS?.trim() ||
+  process.env.APPROVED_WIFI_SSID?.trim() ||
+  DEFAULT_APPROVED_WIFI_SSID
+)
+  .split(',')
+  .map((ssid) => ssid.trim())
+  .filter((ssid) => ssid.length > 0)
+const DEFAULT_APPROVED_SSID = DEFAULT_APPROVED_SSIDS[0] ?? DEFAULT_APPROVED_WIFI_SSID
+const LEGACY_DEFAULT_APPROVED_SSID_KEYS = new Set(['hmcschippawa', 'stonefrigate'])
 const DEFAULT_NETWORK_SETTINGS: NetworkSettings = {
-  approvedSsids: [DEFAULT_APPROVED_SSID],
+  approvedSsids:
+    DEFAULT_APPROVED_SSIDS.length > 0 ? DEFAULT_APPROVED_SSIDS : [DEFAULT_APPROVED_SSID],
 }
 
 export interface NetworkSettingsState {
@@ -108,7 +118,7 @@ export class NetworkSettingsService {
     if (existing) {
       const updated = await this.settingRepository.updateByKey(NETWORK_SETTINGS_KEY, {
         value: normalizedSettings,
-        description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
+        description: 'Approved Wi-Fi SSID allowlist used for host-network status validation.',
       })
 
       return {
@@ -124,7 +134,7 @@ export class NetworkSettingsService {
       key: NETWORK_SETTINGS_KEY,
       value: normalizedSettings,
       category: 'network',
-      description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
+      description: 'Approved Wi-Fi SSID allowlist used for host-network status validation.',
     })
 
     return {

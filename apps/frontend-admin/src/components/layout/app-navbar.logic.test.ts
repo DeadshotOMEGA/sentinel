@@ -30,7 +30,7 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
       message: 'Connected to approved Wi-Fi network',
       issueCode: 'none',
       wifiConnected: true,
-      currentSsid: 'Stone Frigate',
+      currentSsid: 'GC Public',
       hostIpAddress: '192.168.8.1',
       hotspotProfilePresent: true,
       hotspotAdapterApproved: true,
@@ -39,7 +39,7 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
       hotspotSsid: 'Stone Frigate',
       hotspotScanDevice: 'wlp2s0',
       hotspotSsidVisibleFromLaptop: true,
-      approvedSsids: ['Stone Frigate'],
+      approvedSsids: ['GC Public'],
       approvedSsid: true,
       internetReachable: true,
       remoteTarget: null,
@@ -107,7 +107,7 @@ describe('app-navbar logic', () => {
     })
 
     expect(result.showConnectLaptop).toBe(true)
-    expect(result.connectLaptopHref).toBe('sentinel-hotspot://connect?ssid=Stone%20Frigate')
+    expect(result.connectLaptopHref).toBe('sentinel-hotspot://connect?ssid=GC%20Public')
   })
 
   it('gates host hotspot repair to admin-capable users', () => {

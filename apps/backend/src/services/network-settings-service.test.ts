@@ -21,7 +21,7 @@ function createServiceWithRepository(repository: {
 }
 
 describe('NetworkSettingsService', () => {
-  it('normalizes legacy HMCS Chippawa SSID values to the default hotspot on read', async () => {
+  it('normalizes legacy HMCS Chippawa SSID values to the default approved Wi-Fi on read', async () => {
     const service = createServiceWithRepository({
       findByKey: vi.fn().mockResolvedValue({
         key: 'network.approved_ssids',
@@ -45,7 +45,7 @@ describe('NetworkSettingsService', () => {
     })
   })
 
-  it('normalizes legacy HMCS Chippawa SSID values to the default hotspot on write', async () => {
+  it('normalizes legacy HMCS Chippawa and hosted hotspot SSID values on write', async () => {
     const updateByKey = vi.fn().mockResolvedValue({
       updatedAt: new Date('2026-04-01T11:55:00.000Z'),
     })
@@ -60,14 +60,14 @@ describe('NetworkSettingsService', () => {
     })
 
     const result = await service.updateNetworkSettings({
-      approvedSsids: ['HMCS Chippawa', DEFAULT_APPROVED_SSID, 'Guest'],
+      approvedSsids: ['HMCS Chippawa', 'Stone Frigate', DEFAULT_APPROVED_SSID, 'Guest'],
     })
 
     expect(updateByKey).toHaveBeenCalledWith('network.approved_ssids', {
       value: {
         approvedSsids: [DEFAULT_APPROVED_SSID, 'Guest'],
       },
-      description: 'Approved Wi-Fi SSID allowlist used for Sentinel hotspot validation.',
+      description: 'Approved Wi-Fi SSID allowlist used for host-network status validation.',
     })
     expect(result.settings.approvedSsids).toEqual([DEFAULT_APPROVED_SSID, 'Guest'])
   })

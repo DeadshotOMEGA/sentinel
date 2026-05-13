@@ -34,7 +34,7 @@ export const networkSettingContract = c.router(
         500: ErrorResponseSchema,
       },
       summary: 'Update network settings',
-      description: 'Persist the approved Wi-Fi SSID allowlist for Sentinel hotspot validation.',
+      description: 'Persist the approved Wi-Fi SSID allowlist for host-network system status.',
     },
 
     hostHotspotRecovery: {
