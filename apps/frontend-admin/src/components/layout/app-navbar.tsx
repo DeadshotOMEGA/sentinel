@@ -104,8 +104,11 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     isDevelopmentEnvironment
   )
   const networkSubtitle =
-    systemStatus?.network.currentSsid ??
-    (isDevelopmentEnvironment ? 'Local development host' : 'Host telemetry')
+    (systemStatus?.network.currentSsid
+      ? `Internet: ${systemStatus.network.currentSsid}`
+      : systemStatus?.network.hotspotSsid
+        ? `Hotspot: ${systemStatus.network.hotspotSsid}`
+        : null) ?? (isDevelopmentEnvironment ? 'Local development host' : 'Host telemetry')
   const wikiBaseUrl = resolveWikiBaseUrl(process.env.NEXT_PUBLIC_WIKI_BASE_URL?.trim() ?? '')
   const wikiLocation = stripUrlProtocol(wikiBaseUrl)
   const wikiStatus = getWikiStatus(wikiBaseUrl)
@@ -294,7 +297,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                     </dd>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <dt>Approved SSID</dt>
+                    <dt>Approved internet</dt>
                     <dd className="font-mono text-right">
                       {systemStatus?.network.approvedSsids[0] ?? 'Not configured'}
                     </dd>
@@ -512,7 +515,7 @@ function formatNetworkIssueLabel(
     case 'wifi_disconnected':
       return 'Wi-Fi disconnected'
     case 'unapproved_ssid':
-      return 'Wrong SSID'
+      return 'Internet SSID'
     case 'hotspot_profile_missing':
       return 'Profile missing'
     case 'approved_hotspot_adapter_missing':
@@ -621,9 +624,9 @@ function getWirelessRecoveryCopy(
   const hotspotSsidLabel = systemStatus.network.hotspotSsid ?? 'the hosted Sentinel hotspot'
   switch (systemStatus.network.issueCode) {
     case 'wifi_disconnected':
-      return `Reconnect this laptop to ${approvedSsidLabel}, then requeue a host repair if the hotspot still needs attention.`
+      return `Internet Wi-Fi is disconnected. Reconnect this laptop to ${approvedSsidLabel} if internet access is needed, then requeue a host repair if the hotspot still needs attention.`
     case 'unapproved_ssid':
-      return `This laptop is on the wrong SSID. Reconnect it to ${approvedSsidLabel}, or requeue a host repair if the hotspot needs to be rebuilt.`
+      return `The host is connected to an unapproved internet Wi-Fi SSID. Use ${approvedSsidLabel} for internet access, or requeue a host repair if the Sentinel hotspot needs to be rebuilt.`
     case 'hotspot_profile_missing':
       return 'The host server is missing the managed hotspot profile. Requeue a host repair to recreate it.'
     case 'approved_hotspot_adapter_missing':
@@ -988,7 +991,7 @@ function getNetworkTooltip(
       reason = 'Red because Wi-Fi is disconnected.'
       break
     case 'unapproved_ssid':
-      reason = `Yellow because "${currentSsid}" is not in the approved Wi-Fi allowlist.`
+      reason = `Yellow because internet Wi-Fi "${currentSsid}" is not in the approved Wi-Fi allowlist.`
       break
     case 'hotspot_profile_missing':
       reason = 'Yellow because the managed host hotspot profile is missing.'
@@ -1023,9 +1026,10 @@ function getNetworkTooltip(
     network.wifiConnected === true
   ) {
     if (network.approvedSsids.length === 0) {
-      reason = 'Green because Wi-Fi is connected and no approved SSID allowlist is configured.'
+      reason =
+        'Green because Sentinel Wi-Fi is operational and no approved internet SSID allowlist is configured.'
     } else if (network.approvedSsid === true) {
-      reason = `Green because "${currentSsid}" is approved.`
+      reason = `Green because internet Wi-Fi "${currentSsid}" is approved.`
     } else {
       reason = `Green because ${network.message}.`
     }
@@ -1035,8 +1039,8 @@ function getNetworkTooltip(
     reason,
     `Detail: ${network.message}`,
     `Issue: ${formatNetworkIssueLabel(network.issueCode)}`,
-    `SSID: ${currentSsid}`,
-    `Approved SSIDs: ${approvedSsids}`,
+    `Internet SSID: ${currentSsid}`,
+    `Approved internet SSIDs: ${approvedSsids}`,
     `AP profile: ${formatHotspotProfilePresence(systemStatus)}`,
     `AP adapter: ${formatHotspotAdapter(systemStatus)}`,
     `Scan radio: ${formatScanRadio(systemStatus)}`,

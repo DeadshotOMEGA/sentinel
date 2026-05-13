@@ -140,7 +140,7 @@ function resolveNetworkStatusMessage(input: {
     case 'wifi_disconnected':
       return 'Wi-Fi disconnected'
     case 'unapproved_ssid':
-      return 'Connected to an unapproved Wi-Fi SSID'
+      return 'Connected to an unapproved internet Wi-Fi SSID'
     case 'hotspot_profile_missing':
       return 'The managed Sentinel hotspot profile is missing.'
     case 'approved_hotspot_adapter_missing':
@@ -165,7 +165,7 @@ function resolveNetworkStatusMessage(input: {
   }
 
   if (input.approvedSsidsConfigured && input.approvedSsid === true) {
-    return 'Connected to approved Wi-Fi network'
+    return 'Connected to approved internet Wi-Fi'
   }
 
   if (input.fallbackMessage) {

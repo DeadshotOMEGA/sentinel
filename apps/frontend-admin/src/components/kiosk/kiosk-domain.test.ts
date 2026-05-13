@@ -1,6 +1,8 @@
 import type { SystemStatusResponse } from '@sentinel/contracts'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { getKioskConnectivityBadge } from './kiosk-domain'
+
+vi.mock('@/lib/api-client', () => ({ apiClient: {} }))
 
 function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemStatusResponse {
   return {
@@ -79,6 +81,50 @@ describe('getKioskConnectivityBadge', () => {
     expect(badge).toMatchObject({
       status: 'error',
       label: 'DISCONNECTED',
+    })
+  })
+
+  it('does not treat the host internet Wi-Fi SSID as the kiosk Wi-Fi status', () => {
+    const badge = getKioskConnectivityBadge({
+      systemStatus: createSystemStatus({
+        network: {
+          ...createSystemStatus().network,
+          status: 'warning',
+          issueCode: 'unapproved_ssid',
+          currentSsid: 'Coffee-Shop',
+          approvedSsids: ['GC Public'],
+          approvedSsid: false,
+          message: 'Connected to an unapproved internet Wi-Fi SSID',
+        },
+      }),
+      isLoading: false,
+      isError: false,
+    })
+
+    expect(badge).toMatchObject({
+      status: 'success',
+      label: 'CONNECTED',
+    })
+  })
+
+  it('surfaces host hotspot warnings without saying the kiosk is off Wi-Fi', () => {
+    const badge = getKioskConnectivityBadge({
+      systemStatus: createSystemStatus({
+        network: {
+          ...createSystemStatus().network,
+          status: 'warning',
+          issueCode: 'hotspot_not_visible',
+          hotspotSsidVisibleFromLaptop: false,
+          message: 'Hotspot SSID "Stone Frigate" is not visible from the laptop Wi-Fi adapter',
+        },
+      }),
+      isLoading: false,
+      isError: false,
+    })
+
+    expect(badge).toMatchObject({
+      status: 'warning',
+      label: 'CONNECTED (HOTSPOT WARNING)',
     })
   })
 })

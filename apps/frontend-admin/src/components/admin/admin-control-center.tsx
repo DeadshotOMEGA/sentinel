@@ -231,7 +231,7 @@ function getApprovedWifiTelemetry(
   if (network.wifiConnected === false) {
     return {
       value: 'Wi-Fi disconnected',
-      detail: `Expected ${network.approvedSsids[0] ?? 'approved network'}.`,
+      detail: `Expected internet Wi-Fi ${network.approvedSsids[0] ?? 'approved network'} when internet access is needed.`,
       badge: 'Check',
       badgeStatus: 'warning',
     }
@@ -240,7 +240,7 @@ function getApprovedWifiTelemetry(
   if (network.approvedSsid === true) {
     return {
       value: network.currentSsid ?? network.approvedSsids[0] ?? 'Approved network',
-      detail: 'Current workstation is on an approved network.',
+      detail: 'Host internet Wi-Fi is on an approved network.',
       badge: 'Approved',
       badgeStatus: 'success',
     }
@@ -248,16 +248,25 @@ function getApprovedWifiTelemetry(
 
   if (network.approvedSsid === false) {
     return {
-      value: network.currentSsid ?? 'Wrong SSID',
-      detail: `Expected ${network.approvedSsids[0] ?? 'approved network'}.`,
+      value: network.currentSsid ?? 'Wrong internet SSID',
+      detail: `Expected internet Wi-Fi ${network.approvedSsids[0] ?? 'approved network'}.`,
       badge: 'Check',
       badgeStatus: 'warning',
     }
   }
 
+  if (network.hotspotSsidVisibleFromLaptop === true) {
+    return {
+      value: 'Internet optional',
+      detail: `${network.hotspotSsid ?? 'Sentinel hotspot'} is visible; internet Wi-Fi is not required for Sentinel access.`,
+      badge: 'Optional',
+      badgeStatus: 'neutral',
+    }
+  }
+
   return {
-    value: network.currentSsid ?? 'Unverified',
-    detail: 'Wi-Fi approval could not be confirmed.',
+    value: network.currentSsid ?? 'Internet unverified',
+    detail: 'Internet Wi-Fi approval could not be confirmed.',
     badge: 'Unknown',
     badgeStatus: 'neutral',
   }

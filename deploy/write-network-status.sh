@@ -38,12 +38,42 @@ wifi_connected() {
   return 1
 }
 
-current_ssid() {
+internet_wifi_connection() {
+  local hotspot_device="${1:-}" connection_name
   if ! command -v nmcli >/dev/null 2>&1; then
     return 0
   fi
 
-  nmcli -t -f ACTIVE,SSID dev wifi 2>/dev/null | awk -F: '$1=="yes"{print substr($0, index($0,$2)); exit}'
+  connection_name="$(
+    nmcli -t -f NAME,TYPE,DEVICE connection show --active 2>/dev/null |
+      awk -F: -v hotspot_conn="${HOTSPOT_CONNECTION_NAME}" -v hotspot_dev="${hotspot_device}" \
+        '$2 == "wifi" || $2 == "802-11-wireless" {
+          if ($1 != hotspot_conn && (hotspot_dev == "" || $3 != hotspot_dev)) {
+            print $1
+            exit
+          }
+        }'
+  )"
+
+  if [[ -n "${connection_name}" ]]; then
+    printf '%s\n' "${connection_name}"
+  fi
+}
+
+internet_wifi_ssid() {
+  local connection_name="${1:-}" configured_ssid
+  [[ -n "${connection_name}" ]] || return 0
+
+  configured_ssid="$(
+    nmcli -g 802-11-wireless.ssid connection show "${connection_name}" 2>/dev/null |
+      head -n1
+  )"
+  if [[ -n "${configured_ssid}" ]]; then
+    printf '%s\n' "${configured_ssid}"
+    return 0
+  fi
+
+  printf '%s\n' "${connection_name}"
 }
 
 hotspot_connection_device() {
@@ -230,6 +260,12 @@ hotspot_ssid_visible_from_laptop_value="${HOTSPOT_STATE_HOTSPOT_VISIBILITY:-null
 hotspot_adapter_busy_value="${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY:-false}"
 internet_wifi_connection_value="${HOTSPOT_STATE_INTERNET_WIFI_CONNECTION:-}"
 internet_wifi_ssid_value="${HOTSPOT_STATE_INTERNET_WIFI_SSID:-}"
+if [[ -z "${internet_wifi_connection_value}" ]]; then
+  internet_wifi_connection_value="$(internet_wifi_connection "${hotspot_device_value}" || true)"
+fi
+if [[ -z "${internet_wifi_ssid_value}" ]]; then
+  internet_wifi_ssid_value="$(internet_wifi_ssid "${internet_wifi_connection_value}" || true)"
+fi
 host_ip_address_value="$(resolve_host_ip_address "${hotspot_device_value}")"
 
 if [[ "${hotspot_issue_code_value}" != "none" && -n "${HOTSPOT_STATE_MESSAGE:-}" ]]; then
@@ -243,17 +279,17 @@ elif [[ $? -eq 1 ]]; then
   message_value="Wi-Fi disconnected"
 fi
 
-current_ssid_value="$(current_ssid || true)"
+current_ssid_value="${internet_wifi_ssid_value}"
 
 if check_url "${CHECK_URL}"; then
   internet_reachable_value="true"
 elif command -v curl >/dev/null 2>&1; then
   internet_reachable_value="false"
-  if [[ "${wifi_connected_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
+  if [[ -n "${current_ssid_value}" && "${hotspot_issue_code_value}" == "none" ]]; then
     portal_recovery_likely_value="true"
-    message_value="Internet reachability failed while Wi-Fi is connected"
+    message_value="Internet reachability failed while internet Wi-Fi is connected"
   elif [[ "${hotspot_issue_code_value}" == "none" ]]; then
-    message_value="Internet reachability failed"
+    message_value="Sentinel hotspot is visible; internet Wi-Fi is not connected"
   fi
 fi
 
@@ -268,8 +304,10 @@ if [[ -n "${REMOTE_TARGET}" ]]; then
   fi
 fi
 
-if [[ "${wifi_connected_value}" == "true" && "${internet_reachable_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
-  message_value="Connected to Wi-Fi and internet is reachable"
+if [[ -n "${current_ssid_value}" && "${internet_reachable_value}" == "true" && "${hotspot_issue_code_value}" == "none" ]]; then
+  message_value="Connected to internet Wi-Fi and internet is reachable"
+elif [[ -z "${current_ssid_value}" && "${hotspot_issue_code_value}" == "none" && "${hotspot_ssid_visible_from_laptop_value}" == "true" ]]; then
+  message_value="Sentinel hotspot is visible; internet Wi-Fi is not connected"
 fi
 
 tmp_file="$(mktemp "${OUTPUT_DIR}/network-status.XXXXXX")"
