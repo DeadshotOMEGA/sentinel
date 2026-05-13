@@ -122,6 +122,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlan0',
           hotspotSsidVisibleFromLaptop: true,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -191,6 +194,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlan0',
           hotspotSsidVisibleFromLaptop: true,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: false,
           remoteTarget: null,
           remoteReachable: null,
@@ -227,6 +233,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlp2s0',
           hotspotSsidVisibleFromLaptop: false,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -245,6 +254,46 @@ describe('SystemStatusService', () => {
     expect(result.network.message).toContain('not visible')
   })
 
+  it('marks network status warning when the AP dongle is connected to internet Wi-Fi', async () => {
+    const { service } = createService({
+      approvedSsids: ['ShipNet'],
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'hotspot_adapter_busy',
+          wifiConnected: true,
+          currentSsid: 'GC Public',
+          hostIpAddress: '192.168.8.32',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp2s0',
+          hotspotSsidVisibleFromLaptop: null,
+          hotspotAdapterBusy: true,
+          internetWifiConnection: 'GC PUBLIC',
+          internetWifiSsid: 'GC Public',
+          internetReachable: true,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message:
+            'The approved AP dongle is connected to internet Wi-Fi "GC Public" instead of hosting the Sentinel hotspot.',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('warning')
+    expect(result.network.issueCode).toBe('hotspot_adapter_busy')
+    expect(result.network.hotspotAdapterBusy).toBe(true)
+    expect(result.network.internetWifiSsid).toBe('GC Public')
+    expect(result.network.message).toContain('AP dongle')
+  })
+
   it('marks network status warning when a second scan radio is unavailable', async () => {
     const { service } = createService({
       telemetryResult: {
@@ -261,6 +310,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: null,
           hotspotSsidVisibleFromLaptop: null,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -295,6 +347,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlp2s0',
           hotspotSsidVisibleFromLaptop: null,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,
@@ -329,6 +384,9 @@ describe('SystemStatusService', () => {
           hotspotSsid: 'Stone Frigate',
           hotspotScanDevice: 'wlp2s0',
           hotspotSsidVisibleFromLaptop: true,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
           internetReachable: true,
           remoteTarget: null,
           remoteReachable: null,

@@ -159,6 +159,7 @@ Install/update now provisions hotspot and update helpers:
 
 - supported hotspot hosting expects exactly one approved external AP dongle plus a second Wi-Fi radio for verification
 - a canonical `ensure-host-hotspot-profile.sh` helper that detects approved AP dongles, creates or repairs the managed `Sentinel Hotspot` profile, and keeps the profile bound to the correct adapter
+- hotspot recovery also detects when NetworkManager has connected the approved AP dongle to internet Wi-Fi, moves that saved Wi-Fi profile to the scan radio, then reserves the AP dongle for broadcasting the Sentinel hotspot
 - a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to an approved internet Wi-Fi SSID, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
 - a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
@@ -198,6 +199,7 @@ What it checks:
 - whether an approved AP dongle is present
 - whether a second Wi-Fi radio is available for hotspot verification
 - which hotspot adapter and scan adapter Sentinel selected
+- whether the approved AP dongle is incorrectly busy on an internet Wi-Fi profile
 - whether the configured Sentinel hotspot SSID is visible from the laptop's non-host Wi-Fi adapter (when available)
 - whether the configured internet reachability URL succeeds
 - whether the optional `NETWORK_REMOTE_REACHABILITY_TARGET` is reachable

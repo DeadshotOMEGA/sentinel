@@ -517,6 +517,8 @@ function formatNetworkIssueLabel(
       return 'Profile missing'
     case 'approved_hotspot_adapter_missing':
       return 'AP dongle missing'
+    case 'hotspot_adapter_busy':
+      return 'AP dongle busy'
     case 'scan_adapter_missing':
       return 'Scan radio missing'
     case 'hotspot_not_visible':
@@ -545,6 +547,12 @@ function formatHotspotAdapter(systemStatus: SystemStatusResponse | null): string
   const network = systemStatus?.network
   if (!network) {
     return 'Unknown'
+  }
+
+  if (network.hotspotAdapterBusy === true) {
+    return network.internetWifiSsid
+      ? `${network.hotspotDevice ?? 'AP dongle'} on ${network.internetWifiSsid}`
+      : `${network.hotspotDevice ?? 'AP dongle'} busy`
   }
 
   if (network.hotspotAdapterApproved === true) {
@@ -620,6 +628,8 @@ function getWirelessRecoveryCopy(
       return 'The host server is missing the managed hotspot profile. Requeue a host repair to recreate it.'
     case 'approved_hotspot_adapter_missing':
       return 'The host server cannot find an approved AP dongle. Re-seat the external adapter, then requeue a host repair.'
+    case 'hotspot_adapter_busy':
+      return 'The approved AP dongle is being used for internet Wi-Fi. Requeue a host repair to move internet Wi-Fi to the scan radio and restore the hosted hotspot.'
     case 'scan_adapter_missing':
       return 'Hotspot hosting is configured, but Sentinel cannot verify visibility because no second Wi-Fi radio is available.'
     case 'hotspot_not_visible':
@@ -985,6 +995,10 @@ function getNetworkTooltip(
       break
     case 'approved_hotspot_adapter_missing':
       reason = 'Yellow because no approved AP dongle is available for the hosted hotspot.'
+      break
+    case 'hotspot_adapter_busy':
+      reason =
+        'Yellow because the approved AP dongle is connected to internet Wi-Fi instead of broadcasting the hosted hotspot.'
       break
     case 'scan_adapter_missing':
       reason =

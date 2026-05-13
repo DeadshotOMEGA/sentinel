@@ -41,6 +41,7 @@ export function getWirelessRecoveryState(input: {
     (issueCode === 'hotspot_not_visible' ||
       issueCode === 'hotspot_profile_missing' ||
       issueCode === 'approved_hotspot_adapter_missing' ||
+      issueCode === 'hotspot_adapter_busy' ||
       issueCode === 'scan_adapter_missing' ||
       issueCode === 'telemetry_unavailable')
 

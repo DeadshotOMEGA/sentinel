@@ -101,6 +101,69 @@ start_hotspot() {
   nmcli -w 30 connection up "${CONNECTION_NAME}" >/dev/null
 }
 
+connection_interface_name() {
+  local connection_name="${1:-}"
+  [[ -n "${connection_name}" ]] || return 0
+
+  nmcli -g connection.interface-name connection show "${connection_name}" 2>/dev/null |
+    head -n1
+}
+
+restore_connection_interface_name() {
+  local connection_name="${1:-}" original_interface="${2:-}"
+  [[ -n "${connection_name}" ]] || return 0
+
+  if [[ -n "${original_interface}" ]]; then
+    nmcli connection modify "${connection_name}" connection.interface-name "${original_interface}" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  nmcli connection modify "${connection_name}" connection.interface-name "" >/dev/null 2>&1 || true
+}
+
+move_client_wifi_off_hotspot_adapter() {
+  local hotspot_device scan_device client_connection client_ssid original_interface
+
+  hotspot_collect_runtime_state
+  if [[ "${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY}" != "true" ]]; then
+    return 0
+  fi
+
+  hotspot_device="${HOTSPOT_STATE_HOTSPOT_DEVICE:-}"
+  scan_device="${HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE:-}"
+  client_connection="${HOTSPOT_STATE_INTERNET_WIFI_CONNECTION:-}"
+  client_ssid="${HOTSPOT_STATE_INTERNET_WIFI_SSID:-internet Wi-Fi}"
+
+  [[ -n "${hotspot_device}" ]] || die "The approved AP dongle is busy, but Sentinel could not identify its interface."
+  [[ -n "${client_connection}" ]] || die "The approved AP dongle is busy, but Sentinel could not identify the active Wi-Fi profile."
+
+  if [[ -z "${scan_device}" ]]; then
+    scan_device="$(hotspot_pick_scan_device "${hotspot_device}")"
+  fi
+
+  [[ -n "${scan_device}" ]] || die "The AP dongle is connected to ${client_ssid}, and no scan radio is available to take over internet Wi-Fi."
+  [[ -d "/sys/class/net/${scan_device}" ]] || die "Scan radio ${scan_device} is not present."
+
+  original_interface="$(connection_interface_name "${client_connection}" || true)"
+
+  log "Moving internet Wi-Fi profile ${client_connection} (${client_ssid}) from AP dongle ${hotspot_device} to scan radio ${scan_device}"
+  nmcli connection modify "${client_connection}" \
+    connection.interface-name "${scan_device}" \
+    connection.autoconnect yes \
+    connection.autoconnect-priority 50 >/dev/null ||
+    die "Failed to update Wi-Fi profile ${client_connection} for scan radio ${scan_device}"
+
+  nmcli -w 15 connection down "${client_connection}" >/dev/null 2>&1 || true
+
+  if nmcli -w 45 connection up "${client_connection}" ifname "${scan_device}" >/dev/null; then
+    log "Internet Wi-Fi profile ${client_connection} is now using ${scan_device}"
+    return 0
+  fi
+
+  restore_connection_interface_name "${client_connection}" "${original_interface}"
+  die "Failed to reconnect ${client_connection} on scan radio ${scan_device}; hotspot repair stopped before taking over the AP dongle."
+}
+
 reset_driver_binding() {
   local driver_unbind="$1"
   local driver_bind="$2"
@@ -157,6 +220,8 @@ if ! flock -n 9; then
 fi
 
 skip_visibility_check="false"
+move_client_wifi_off_hotspot_adapter
+
 if ensure_host_hotspot_profile; then
   :
 else
