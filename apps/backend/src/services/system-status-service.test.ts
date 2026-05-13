@@ -105,7 +105,7 @@ describe('SystemStatusService', () => {
     vi.useRealTimers()
   })
 
-  it('marks network status as warning when connected to an unapproved SSID', async () => {
+  it('marks network status as warning when connected to an unapproved internet SSID', async () => {
     const { service } = createService({
       approvedSsids: ['ShipNet'],
       telemetryResult: {
@@ -142,7 +142,7 @@ describe('SystemStatusService', () => {
     expect(result.network.approvedSsid).toBe(false)
     expect(result.network.currentSsid).toBe('Coffee-Shop')
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
-    expect(result.network.message).toContain('unapproved Wi-Fi SSID')
+    expect(result.network.message).toContain('unapproved internet Wi-Fi SSID')
     expect(result.remoteSystems.sessions[0]?.ipAddress).toBe('192.168.0.20')
     expect(result.overall.status).toBe('warning')
   })
@@ -201,7 +201,7 @@ describe('SystemStatusService', () => {
           remoteTarget: null,
           remoteReachable: null,
           portalRecoveryLikely: false,
-          message: 'Connected to approved Wi-Fi network',
+          message: 'Connected to approved internet Wi-Fi',
         },
         error: null,
       },
@@ -213,8 +213,51 @@ describe('SystemStatusService', () => {
     expect(result.network.issueCode).toBe('none')
     expect(result.network.approvedSsid).toBe(true)
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
-    expect(result.network.message).toBe('Connected to approved Wi-Fi network')
+    expect(result.network.message).toBe('Connected to approved internet Wi-Fi')
     expect(result.overall.status).toBe('healthy')
+  })
+
+  it('keeps network status healthy when only the Sentinel hotspot is active', async () => {
+    const { service } = createService({
+      approvedSsids: ['GC Public'],
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'none',
+          wifiConnected: true,
+          currentSsid: null,
+          hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp0s20f3',
+          hotspotSsidVisibleFromLaptop: true,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
+          internetReachable: false,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: false,
+          message: 'Sentinel hotspot is visible; internet Wi-Fi is not connected',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('healthy')
+    expect(result.network.issueCode).toBe('none')
+    expect(result.network.approvedSsid).toBeNull()
+    expect(result.network.currentSsid).toBeNull()
+    expect(result.network.hotspotSsid).toBe('Stone Frigate')
+    expect(result.network.hotspotSsidVisibleFromLaptop).toBe(true)
+    expect(result.network.message).toBe(
+      'Sentinel hotspot is visible; internet Wi-Fi is not connected'
+    )
   })
 
   it('marks network status warning when hotspot SSID is not visible from laptop Wi-Fi', async () => {
@@ -391,7 +434,7 @@ describe('SystemStatusService', () => {
           remoteTarget: null,
           remoteReachable: null,
           portalRecoveryLikely: false,
-          message: 'Connected to approved Wi-Fi network',
+          message: 'Connected to approved internet Wi-Fi',
         },
         error: null,
       },

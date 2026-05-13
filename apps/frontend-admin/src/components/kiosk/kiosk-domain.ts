@@ -397,6 +397,13 @@ export function getKioskConnectivityBadge({
   }
 
   const network = systemStatus.network
+  const hotspotIssueCodes = new Set<SystemStatusResponse['network']['issueCode']>([
+    'hotspot_profile_missing',
+    'approved_hotspot_adapter_missing',
+    'hotspot_adapter_busy',
+    'scan_adapter_missing',
+    'hotspot_not_visible',
+  ])
 
   if (!network.telemetryAvailable) {
     return {
@@ -406,19 +413,11 @@ export function getKioskConnectivityBadge({
     }
   }
 
-  if (network.wifiConnected === false) {
-    return {
-      status: 'error',
-      label: 'WIFI DISCONNECTED',
-      detail: 'Backend link is unhealthy because the host Wi-Fi is disconnected.',
-    }
-  }
-
-  if (network.approvedSsids.length > 0 && network.approvedSsid === false) {
+  if (hotspotIssueCodes.has(network.issueCode)) {
     return {
       status: 'warning',
-      label: 'OFF SENTINEL WIFI',
-      detail: `Backend reachable, but current SSID (${network.currentSsid ?? 'unknown'}) is not approved.`,
+      label: 'CONNECTED (HOTSPOT WARNING)',
+      detail: network.message,
     }
   }
 
@@ -433,7 +432,7 @@ export function getKioskConnectivityBadge({
   return {
     status: 'success',
     label: 'CONNECTED',
-    detail: 'Backend is reachable on an approved Sentinel Wi-Fi context.',
+    detail: 'Backend is reachable from this kiosk.',
   }
 }
 
