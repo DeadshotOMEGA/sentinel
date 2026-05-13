@@ -1,6 +1,6 @@
 # Navbar Navigation
 
-![Dashboard navbar navigation links](/uploads/wiki-dashboard/operations/dashboard-navbar-overview.png)
+![Dashboard navbar navigation links](/uploads/wiki-dashboard/operations/dashboard-nav-links.png)
 
 The navbar is the map for Admin work. Use Dashboard for live operations and the other sections for records, planning, procedures, and configuration.
 

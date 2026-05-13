@@ -336,6 +336,7 @@ export function MemberFormModal({
         size="full"
         className="max-h-[92vh] w-[92vw] max-w-336 overflow-hidden p-0"
         testId={TID.members.form.modal}
+        data-help-id="members.member-form"
       >
         <DialogHeader className="border-b border-base-300 px-(--space-6) py-(--space-4) pr-(--space-10)">
           <DialogTitle>

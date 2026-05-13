@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,10 +9,7 @@ const SLUG_PATTERN = /^[a-z0-9][a-z0-9/-]*$/
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(scriptDir, '..')
 const registryPath = resolve(repoRoot, 'apps/frontend-admin/src/help/help-registry.ts')
-const dashboardProceduresPath = resolve(
-  repoRoot,
-  'apps/frontend-admin/src/help/dashboard-procedures.ts'
-)
+const helpSourceDir = resolve(repoRoot, 'apps/frontend-admin/src/help')
 const indexPath = resolve(repoRoot, 'docs/guides/reference/wiki-slug-index.json')
 
 function extractWikiSlugsFromRegistry(content) {
@@ -61,9 +58,16 @@ function collectDuplicates(values) {
   return [...counts.entries()].filter(([, count]) => count > 1).map(([value]) => value)
 }
 
+function collectProcedureSources() {
+  return readdirSync(helpSourceDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /procedures\.ts$/.test(entry.name))
+    .map((entry) => resolve(helpSourceDir, entry.name))
+    .sort()
+}
+
 function main() {
   const registrySource = readFileSync(registryPath, 'utf8')
-  const dashboardProceduresSource = readFileSync(dashboardProceduresPath, 'utf8')
+  const procedureSources = collectProcedureSources()
   const indexSource = readFileSync(indexPath, 'utf8')
   let slugIndex
 
@@ -81,7 +85,13 @@ function main() {
   }
 
   const { slugs: registrySlugs, unresolvedConstants } = extractWikiSlugsFromRegistry(registrySource)
-  const { slugs: procedureSlugs } = extractWikiSlugsFromRegistry(dashboardProceduresSource)
+  const procedureSlugs = procedureSources.flatMap((source) => {
+    const { slugs, unresolvedConstants: sourceUnresolvedConstants } = extractWikiSlugsFromRegistry(
+      readFileSync(source, 'utf8')
+    )
+    unresolvedConstants.push(...sourceUnresolvedConstants)
+    return slugs
+  })
   const combinedSourceSlugs = [...registrySlugs, ...procedureSlugs]
   const registryUnique = [...new Set(registrySlugs)]
   const procedureUnique = [...new Set(procedureSlugs)]
@@ -95,7 +105,6 @@ function main() {
     (slug) => typeof slug !== 'string' || !SLUG_PATTERN.test(slug)
   )
   const duplicateRegistrySlugs = collectDuplicates(registrySlugs)
-  const duplicateProcedureSlugs = collectDuplicates(procedureSlugs)
   const duplicateIndexSlugs = collectDuplicates(slugIndex.slugs)
   const missingFromIndex = sourceUnique.filter((slug) => !indexSet.has(slug))
 
@@ -105,7 +114,6 @@ function main() {
     invalidProcedureSlugs.length > 0 ||
     invalidIndexSlugs.length > 0 ||
     duplicateRegistrySlugs.length > 0 ||
-    duplicateProcedureSlugs.length > 0 ||
     duplicateIndexSlugs.length > 0 ||
     missingFromIndex.length > 0
 
@@ -123,7 +131,7 @@ function main() {
     }
     if (invalidProcedureSlugs.length > 0) {
       console.error(
-        `[help-slugs] Invalid wikiSlug values in dashboard procedures: ${invalidProcedureSlugs.join(', ')}`
+        `[help-slugs] Invalid wikiSlug values in procedure modules: ${invalidProcedureSlugs.join(', ')}`
       )
     }
     if (invalidIndexSlugs.length > 0) {
@@ -134,24 +142,19 @@ function main() {
         `[help-slugs] Duplicate wikiSlug values in help registry: ${duplicateRegistrySlugs.join(', ')}`
       )
     }
-    if (duplicateProcedureSlugs.length > 0) {
-      console.error(
-        `[help-slugs] Duplicate wikiSlug values in dashboard procedures: ${duplicateProcedureSlugs.join(', ')}`
-      )
-    }
     if (duplicateIndexSlugs.length > 0) {
-      console.error(`[help-slugs] Duplicate slug values in index: ${duplicateIndexSlugs.join(', ')}`)
+      console.error(
+        `[help-slugs] Duplicate slug values in index: ${duplicateIndexSlugs.join(', ')}`
+      )
     }
     if (missingFromIndex.length > 0) {
-      console.error(
-        `[help-slugs] Missing from wiki slug index: ${missingFromIndex.join(', ')}`
-      )
+      console.error(`[help-slugs] Missing from wiki slug index: ${missingFromIndex.join(', ')}`)
     }
     process.exit(1)
   }
 
   console.log(
-    `[help-slugs] OK. ${registryUnique.length} help-registry + ${procedureUnique.length} dashboard-procedure wiki slugs validated against wiki slug index.`
+    `[help-slugs] OK. ${registryUnique.length} help-registry + ${procedureUnique.length} procedure wiki slugs from ${procedureSources.length} module(s) validated against wiki slug index.`
   )
 }
 

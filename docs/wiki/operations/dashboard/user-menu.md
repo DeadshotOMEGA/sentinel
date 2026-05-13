@@ -1,6 +1,6 @@
 # User Menu
 
-![User menu area in the Dashboard navbar](/uploads/wiki-dashboard/operations/dashboard-navbar-overview.png)
+![User menu area in the Dashboard navbar](/uploads/wiki-dashboard/operations/dashboard-nav-user-menu.png)
 
 The user menu shows who is signed in and provides account/session actions.
 
@@ -24,6 +24,10 @@ Check this before making Admin changes, before lockup-related actions, and whene
 2. Confirm you are signed in as yourself.
 3. Change PIN only for your own account maintenance.
 4. Sign out when leaving the workstation or handing it to another person.
+
+## Shared Workstation Reminder
+
+DDS and Admin workstations may be used by more than one person during the day. Always sign out before leaving the desk, and never perform lockup, transfer, or correction actions under another person's session.
 
 ## Good / Caution / Stop
 

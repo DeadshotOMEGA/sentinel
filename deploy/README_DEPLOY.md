@@ -115,6 +115,7 @@ Port defaults in `.env`:
 - `HOTSPOT_SSID=Stone Frigate` (canonical hosted SSID Sentinel will create/repair)
 - `HOTSPOT_PSK=...` (fixed hotspot password supplied by the release package or operator-managed `.env`)
 - `HOTSPOT_APPROVED_DONGLES_FILE=hardware/approved-hotspot-dongles.json` (approved external AP dongle allowlist)
+- `APPROVED_WIFI_SSIDS=GC Public` (comma-separated approved internet Wi-Fi SSIDs for host-network status)
 - `SENTINEL_KIOSK_DEVICE_API_KEY=sk_...` (shared kiosk device auth key used by frontend and backend for kiosk no-user-login mode)
 - `NETWORK_REACHABILITY_CHECK_URL=https://connectivitycheck.gstatic.com/generate_204` (host-level internet probe)
 - `NETWORK_REMOTE_REACHABILITY_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
@@ -144,7 +145,7 @@ Kroki is internal-only by default:
 If install reports GHCR unreachable:
 
 1. Confirm the laptop has working internet access.
-2. If you are using the Sentinel hotspot, reconnect the laptop to the approved SSID.
+2. Reconnect the laptop to `GC Public`; it uses the same password as the retired HMCS Chippawa Wi-Fi profile.
 3. If you are using building/public Wi-Fi, complete any required captive portal in a browser.
 4. Re-run install:
 
@@ -158,7 +159,7 @@ Install/update now provisions hotspot and update helpers:
 
 - supported hotspot hosting expects exactly one approved external AP dongle plus a second Wi-Fi radio for verification
 - a canonical `ensure-host-hotspot-profile.sh` helper that detects approved AP dongles, creates or repairs the managed `Sentinel Hotspot` profile, and keeps the profile bound to the correct adapter
-- a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to the approved hotspot, then falls back to Wi-Fi settings
+- a local `sentinel-hotspot://connect?ssid=<approved-ssid>` URL handler that tries to reconnect the current laptop to an approved internet Wi-Fi SSID, then falls back to Wi-Fi settings
 - a host-side recovery queue watched by systemd so the webapp can ask the deployment server to repair the hosted hotspot without interactive root access
 - a managed sudoers entry for the desktop operator account so hotspot recovery commands can be run non-interactively (no password prompt) when needed
 - a packaged updater bridge/socket pair so the webapp and local CLI wrappers both use the same canonical update engine

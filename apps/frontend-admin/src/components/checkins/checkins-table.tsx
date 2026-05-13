@@ -155,6 +155,7 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
                       className="btn btn-ghost btn-xs gap-1"
                       title="Edit visitor"
                       onClick={() => setEditingVisitorId(visitorId)}
+                      data-help-id="history.visitor-edit-action"
                     >
                       <Pencil className="h-3 w-3" />
                       Edit Visitor
@@ -167,6 +168,7 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
                     className="btn btn-ghost btn-xs gap-1"
                     title="Edit record"
                     onClick={() => setEditingCheckin(row)}
+                    data-help-id="history.edit-action"
                   >
                     <Pencil className="h-3 w-3" />
                     Edit
@@ -198,7 +200,7 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
 
   if (isLoading) {
     return (
-      <div className="bg-base-100 border shadow-sm">
+      <div className="bg-base-100 border shadow-sm" data-help-id="history.records-table">
         <TableSkeleton rows={5} />
       </div>
     )
@@ -252,7 +254,10 @@ export function CheckinsTable({ filters, canEdit, onPageChange }: CheckinsTableP
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex items-center justify-between px-4 py-4 border-t">
+        <div
+          className="flex items-center justify-between px-4 py-4 border-t"
+          data-help-id="history.pagination"
+        >
           <label className="select select-bordered w-28">
             <span className="label">Rows</span>
             <select

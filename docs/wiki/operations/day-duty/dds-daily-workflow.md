@@ -4,6 +4,8 @@
 
 [Open Sentinel Dashboard](http://sentinel.local/dashboard)
 
+For the short operational DDS path, start with [DDS Start Here](/operations/day-duty/dds-start-here). This page is the deeper reference for how live DDS responsibility, scheduled DDS, rollover, and weekly handover work.
+
 ## Purpose
 
 This page explains how Sentinel now manages DDS responsibility day to day and during the weekly handover.

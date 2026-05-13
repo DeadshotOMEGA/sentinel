@@ -1,6 +1,6 @@
 # Presence: Filters
 
-![Presence filters and counts](/uploads/wiki-dashboard/operations/dashboard-presence-grid-focus.png)
+![Presence filters and counts](/uploads/wiki-dashboard/operations/dashboard-presence-filters.png)
 
 Filters narrow the live list so Admins can separate members, visitors, and all people on site.
 
@@ -18,6 +18,13 @@ Use filters whenever the Presence list is crowded or you need to review one pers
 - Members count.
 - Visitors count.
 - Whether a search term is also active.
+
+## DDS Filter Recipes
+
+- Visitors only: select Visitors before end-of-day visitor review.
+- Members only: select Members when checking Duty Watch or DDS coverage.
+- Unexpected people: clear search, select All, then scan for visitors or members who should have left.
+- Missing person: clear filters first, then search by last name, rank, organization, or duty role.
 
 ## Step-by-Step Admin Procedure
 

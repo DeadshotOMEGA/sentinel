@@ -399,7 +399,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                       </a>
                     ) : wirelessRecovery.showConnectLaptop ? (
                       <span className="text-[11px] text-base-content/70">
-                        No approved hotspot SSID is configured yet.
+                        No approved Wi-Fi SSID is configured yet.
                       </span>
                     ) : null}
                     {wirelessRecovery.showRepairHostHotspot && (
@@ -609,7 +609,8 @@ function getWirelessRecoveryCopy(
   }
 
   const approvedSsidLabel =
-    primaryApprovedSsid ?? systemStatus.network.hotspotSsid ?? 'the approved hotspot'
+    primaryApprovedSsid ?? systemStatus.network.hotspotSsid ?? 'the approved Wi-Fi network'
+  const hotspotSsidLabel = systemStatus.network.hotspotSsid ?? 'the hosted Sentinel hotspot'
   switch (systemStatus.network.issueCode) {
     case 'wifi_disconnected':
       return `Reconnect this laptop to ${approvedSsidLabel}, then requeue a host repair if the hotspot still needs attention.`
@@ -622,11 +623,11 @@ function getWirelessRecoveryCopy(
     case 'scan_adapter_missing':
       return 'Hotspot hosting is configured, but Sentinel cannot verify visibility because no second Wi-Fi radio is available.'
     case 'hotspot_not_visible':
-      return `Sentinel cannot see ${approvedSsidLabel} from the scan radio yet. Requeue a host repair after checking the AP dongle seating.`
+      return `Sentinel cannot see ${hotspotSsidLabel} from the scan radio yet. Requeue a host repair after checking the AP dongle seating.`
     case 'telemetry_unavailable':
       return 'The host telemetry snapshot is unavailable. Requeue a host repair to reprovision the hotspot and refresh telemetry.'
     default:
-      return 'Reconnect this laptop to the approved hotspot SSID, or ask the host server to requeue a hotspot repair.'
+      return 'Reconnect this laptop to the approved Wi-Fi SSID, or ask the host server to requeue a hotspot repair.'
   }
 }
 
@@ -990,7 +991,7 @@ function getNetworkTooltip(
         'Yellow because Sentinel cannot find a second Wi-Fi radio to verify hotspot visibility.'
       break
     case 'hotspot_not_visible': {
-      const hotspotSsidLabel = network.hotspotSsid ?? 'approved hotspot'
+      const hotspotSsidLabel = network.hotspotSsid ?? 'hosted Sentinel hotspot'
       reason = `Yellow because "${hotspotSsidLabel}" is not visible from the laptop Wi-Fi adapter.`
       break
     }

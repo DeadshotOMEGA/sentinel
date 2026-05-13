@@ -1,6 +1,6 @@
 # Daily Start: Duty Watch
 
-![Duty Watch readiness block in the status panel](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![Duty Watch readiness block in the status panel](/uploads/wiki-dashboard/operations/dashboard-stat-duty-watch.png)
 
 Duty Watch readiness shows whether scheduled watch positions are covered by checked-in or live-only people.
 
@@ -18,6 +18,10 @@ Use it at daily start and before the watch window begins.
 - Checked-in count is enough for the watch.
 - Uncovered positions are understood.
 - Live-only coverage has been confirmed with the watch team.
+
+## If One Position Is Uncovered
+
+First search Presence for the expected watch member. If they are present but not counted, verify schedule or duty assignment. If they are absent, confirm the replacement before operations depend on that position.
 
 ## Step-by-Step Admin Procedure
 

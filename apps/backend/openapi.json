@@ -4846,7 +4846,7 @@
         }
       },
       "put": {
-        "description": "Persist the approved Wi-Fi SSID allowlist for Sentinel hotspot validation.",
+        "description": "Persist the approved Wi-Fi SSID allowlist for host-network system status.",
         "summary": "Update network settings",
         "tags": ["network-settings"],
         "parameters": [],

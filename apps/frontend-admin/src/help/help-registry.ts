@@ -79,7 +79,8 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     pathPrefixes: ['/members'],
     wikiSlug: 'admin/members/member-records',
     roleScopes: ['manager', 'admin', 'developer'],
-    fallbackMode: 'wiki',
+    tourId: 'members.admin.orientation.v1',
+    fallbackMode: 'tour',
     localFallback: {
       title: 'Members Quick Help',
       summary: 'Use filters first, then apply edits with role-aware controls.',
@@ -127,7 +128,8 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     pathPrefixes: ['/events'],
     wikiSlug: 'operations/events/event-management',
     roleScopes: ['member', 'officer', 'manager', 'admin', 'developer'],
-    fallbackMode: 'wiki',
+    tourId: 'events.planner.orientation.v1',
+    fallbackMode: 'tour',
     localFallback: {
       title: 'Events Quick Help',
       summary: 'Capture event details accurately to support duty planning.',
@@ -143,7 +145,8 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
     pathPrefixes: ['/schedules'],
     wikiSlug: 'operations/schedules/dds-duty-watch-scheduling',
     roleScopes: ['officer', 'manager', 'admin', 'developer'],
-    fallbackMode: 'wiki',
+    tourId: 'schedules.scheduler.orientation.v1',
+    fallbackMode: 'tour',
     localFallback: {
       title: 'Schedules Quick Help',
       summary: 'Publish only after validating coverage and role eligibility.',
@@ -157,9 +160,10 @@ const HELP_REGISTRY: HelpRegistryEntry[] = [
   {
     routeId: 'checkins',
     pathPrefixes: ['/checkins'],
-    wikiSlug: 'operations/day-duty/checkins-history-and-corrections',
+    wikiSlug: 'operations/history/overview',
     roleScopes: ['manager', 'admin', 'developer'],
-    fallbackMode: 'wiki',
+    tourId: 'history.admin.orientation.v1',
+    fallbackMode: 'tour',
     localFallback: {
       title: 'Check-In History Quick Help',
       summary: 'Treat edits as controlled corrections with clear rationale.',

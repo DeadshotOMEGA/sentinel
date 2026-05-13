@@ -84,7 +84,7 @@ export function EventDutyWatchCard({
 
   return (
     <>
-      <Card>
+      <Card data-help-id="events.detail.duty-watch-card">
         <CardHeader>
           <CardTitle>Duty Watch Positions</CardTitle>
         </CardHeader>
@@ -103,6 +103,7 @@ export function EventDutyWatchCard({
                   <div
                     key={position.id}
                     className="flex items-center justify-between p-3 bg-base-200 rounded-lg"
+                    data-help-id="events.detail.duty-watch-position"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">

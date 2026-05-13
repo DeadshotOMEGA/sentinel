@@ -60,7 +60,7 @@ export function CheckinsFilters({ filters, onFilterChange }: CheckinsFiltersProp
     filters.divisionId || filters.direction || filters.startDate || filters.endDate
 
   return (
-    <div className="p-4">
+    <div className="p-4" data-help-id="history.filters">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <label className="input w-full">
           <span className="label">Start Date</span>

@@ -19,11 +19,22 @@ The Dashboard is the first place an Admin checks before making operational decis
 
 ## Start Here If
 
+- You are Duty Day Staff (DDS): use [DDS Start Here](/operations/day-duty/dds-start-here).
 - You are opening Sentinel for the first time today: start with [Daily Start: System Status](/operations/dashboard/daily-start/system-status).
 - You are about to leave, hand off, or secure the building: start with [Daily End: Security Alerts](/operations/dashboard/daily-end/security-alerts).
 - You do not know what a status block means: use [Status Panel](/operations/dashboard/status-panel).
 - You are looking for a person: use [Presence Grid](/operations/dashboard/presence-grid).
 - You are about to press a control action: read [Actions: Action Block](/operations/dashboard/actions/action-block) first.
+
+## DDS Quick Path
+
+- [DDS Start Here](/operations/day-duty/dds-start-here)
+- [Login And First Checks](/operations/day-duty/login-and-first-checks)
+- [Daily Start](/operations/day-duty/daily-start)
+- [Presence, Visitors, And Corrections](/operations/day-duty/presence-visitors-and-corrections)
+- [Transfer DDS](/operations/day-duty/transfer-dds)
+- [Transfer Lockup](/operations/day-duty/transfer-lockup)
+- [Execute Lockup](/operations/day-duty/execute-lockup)
 
 ## Dashboard Work Order
 

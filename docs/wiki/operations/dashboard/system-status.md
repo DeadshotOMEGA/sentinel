@@ -37,6 +37,15 @@ Caution: One non-critical service is warning, but Dashboard data still updates.
 
 Stop: Database, backend, network, or Wiki status is failing while you need live operational data.
 
+## DDS Decision Table
+
+| Status result             | Can DDS continue?                                               |
+| ------------------------- | --------------------------------------------------------------- |
+| Healthy                   | Yes. Continue normal checks and actions.                        |
+| Wiki down only            | Continue urgent operations, but use local SOPs and report it.   |
+| Backend or database down  | Stop control actions and escalate. Dashboard data may be stale. |
+| Network or kiosk degraded | Continue only after confirming the real person/building state.  |
+
 ## What To Confirm After Action
 
 After a failed action or stale display, confirm System Status returns to Healthy before relying on the Dashboard again.

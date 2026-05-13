@@ -145,7 +145,7 @@ export function DdsModal() {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent size="lg" showCloseButton={false}>
+        <DialogContent size="lg" showCloseButton={false} data-help-id="schedules.dds-modal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />

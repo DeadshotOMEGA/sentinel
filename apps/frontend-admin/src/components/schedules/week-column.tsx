@@ -15,7 +15,7 @@ export function WeekColumn({ weekStartDate }: WeekColumnProps) {
   const { data: dutyRoles, isLoading: rolesLoading } = useDutyRoles()
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-help-id="schedules.week-column">
       <h2 className="text-lg font-semibold">
         Week of{' '}
         {parseDateString(weekStartDate).toLocaleDateString('en-CA', {

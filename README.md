@@ -162,7 +162,7 @@ The Frontend Admin status dropdown tracks:
 
 It also supports hotspot recovery actions when connectivity is degraded:
 
-- `sentinel-hotspot://connect?ssid=<approved-ssid>` launcher for reconnecting the current laptop
+- `sentinel-hotspot://connect?ssid=<approved-ssid>` launcher for reconnecting the current laptop to an approved internet Wi-Fi SSID
 - admin-triggered host hotspot repair requests queued from the webapp to the deployment server
 
 ## Versioning and Release Policy

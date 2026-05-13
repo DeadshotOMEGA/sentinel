@@ -482,7 +482,7 @@ describe('system-update-panel logic', () => {
         ...createSystemStatus().network,
         status: 'warning',
         issueCode: 'hotspot_not_visible',
-        message: 'Sentinel cannot see the approved hotspot from the scan radio yet.',
+        message: 'Sentinel cannot see the hosted Sentinel hotspot from the scan radio yet.',
       },
     })
 

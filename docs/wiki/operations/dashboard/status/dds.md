@@ -1,6 +1,6 @@
 # Status: DDS
 
-![DDS status block](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![DDS status block](/uploads/wiki-dashboard/operations/dashboard-stat-dds.png)
 
 DDS identifies the Duty Day Staff member responsible for the day in Sentinel.
 

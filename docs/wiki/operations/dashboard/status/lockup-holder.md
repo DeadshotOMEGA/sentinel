@@ -1,6 +1,6 @@
 # Status: Lockup Holder
 
-![Lockup Holder block](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Lockup Holder block](/uploads/wiki-dashboard/operations/dashboard-stat-lockup-holder.png)
 
 The lockup holder owns responsibility for securing the building.
 

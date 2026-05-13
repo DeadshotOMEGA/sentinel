@@ -19,6 +19,14 @@ Use it when a button is missing, disabled, or unexpected.
 - DDS and lockup holder state.
 - Eligible recipients or required people.
 
+## Why Actions May Be Disabled
+
+- You are not signed in with an account that can perform the action.
+- The building is already in the target state.
+- No eligible checked-in person can receive DDS or lockup responsibility.
+- Visitors or unresolved people block a safe lockup.
+- System Status is not healthy enough to trust the action.
+
 ## Step-by-Step Admin Procedure
 
 1. Read the disabled or available action.

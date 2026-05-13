@@ -1,6 +1,6 @@
 # Navbar Brand
 
-![Navbar brand and environment badge](/uploads/wiki-dashboard/operations/dashboard-navbar-overview.png)
+![Navbar brand and environment badge](/uploads/wiki-dashboard/operations/dashboard-nav-brand.png)
 
 The left side of the navbar identifies the Sentinel appliance you are operating.
 

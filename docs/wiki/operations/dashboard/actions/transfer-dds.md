@@ -1,6 +1,6 @@
 # Actions: Transfer DDS
 
-![Transfer DDS action](/uploads/wiki-dashboard/operations/dashboard-quick-actions-focus.png)
+![Transfer DDS action](/uploads/wiki-dashboard/operations/dashboard-action-transfer-dds.png)
 
 Transfer DDS moves Duty Day Staff responsibility.
 
@@ -11,6 +11,12 @@ Transfer DDS moves Duty Day Staff responsibility.
 ## When To Use It
 
 Use it only after confirming both current and incoming DDS expectations.
+
+## Common DDS Scenarios
+
+- Weekly turnover: the scheduled DDS changes and both people understand the handover.
+- Sick call or absence: the expected DDS cannot serve and a replacement accepts responsibility.
+- Mid-day handoff: the current DDS is leaving and a qualified replacement is present.
 
 ## What To Check
 
@@ -52,3 +58,4 @@ Escalate disputed DDS handover.
 - [Transfer DDS](/operations/dashboard/actions/transfer-dds)
 - [Transfer Lockup](/operations/dashboard/actions/transfer-lockup)
 - [Manual In Out](/operations/dashboard/actions/manual-in-out)
+- [DDS: Transfer DDS](/operations/day-duty/transfer-dds)

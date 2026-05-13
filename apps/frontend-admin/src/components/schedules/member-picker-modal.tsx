@@ -67,7 +67,11 @@ export function MemberPickerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg" className="max-h-[80vh] flex flex-col">
+      <DialogContent
+        size="lg"
+        className="max-h-[80vh] flex flex-col"
+        data-help-id="schedules.member-picker"
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

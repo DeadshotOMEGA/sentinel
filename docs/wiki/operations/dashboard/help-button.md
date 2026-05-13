@@ -1,6 +1,6 @@
 # Dashboard Help Button
 
-![Help button beside System Status](/uploads/wiki-dashboard/operations/dashboard-navbar-overview.png)
+![Help button beside System Status](/uploads/wiki-dashboard/operations/dashboard-nav-help.png)
 
 The Help button starts Dashboard-specific guidance. During a tour, it opens help for the active guided step.
 

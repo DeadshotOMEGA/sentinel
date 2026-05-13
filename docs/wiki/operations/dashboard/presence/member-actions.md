@@ -19,6 +19,10 @@ Use them when the operation applies to one selected member.
 - Recent activity.
 - Any duty, lockup, or role state shown in the panel.
 
+## DDS Versus Admin Actions
+
+DDS can use member actions for operational corrections they are authorized to make during the duty period. Admin-only changes, account changes, badge lifecycle work, and disputed history edits should stay with an Admin or supervisor.
+
 ## Step-by-Step Admin Procedure
 
 1. Open the correct member card.

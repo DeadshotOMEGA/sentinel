@@ -100,7 +100,11 @@ export function EditCheckinModal({ checkin, open, onOpenChange }: EditCheckinMod
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent showCloseButton={false} className="max-w-md">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-md"
+        data-help-id="history.edit-member-modal"
+      >
         <DialogHeader>
           <DialogTitle
             className="font-display flex items-center gap-2"

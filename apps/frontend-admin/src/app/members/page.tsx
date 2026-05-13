@@ -6,6 +6,7 @@ import { MembersTable } from '@/components/members/members-table'
 import { MembersFilters } from '@/components/members/members-filters'
 import { MemberFormModal } from '@/components/members/member-form-modal'
 import { NominalRollImportDialog } from '@/components/members/nominal-roll-import-dialog'
+import { MembersHelpLauncher } from '@/components/help/section-help-launchers'
 import { useAuthStore, AccountLevel } from '@/store/auth-store'
 
 import { UsersRound, Plus, Upload, RefreshCw, BriefcaseBusiness } from 'lucide-react'
@@ -79,7 +80,7 @@ function MembersPageContent() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-help-id="members.header">
         <div className="col-start-1">
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <UsersRound className="h-6 w-6" aria-hidden="true" />
@@ -89,9 +90,10 @@ function MembersPageContent() {
             Review and manage member information, including manual adjustments for special cases
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4" data-help-id="members.header-actions">
           <button
             className="btn btn-outline btn-md"
+            data-help-id="members.sync-qualifications"
             onClick={() => {
               syncAutoQuals.mutate(undefined, {
                 onSuccess: (data) => {
@@ -112,7 +114,11 @@ function MembersPageContent() {
             />
             Sync Qualifications
           </button>
-          <button className="btn btn-outline btn-md" onClick={() => setIsImportModalOpen(true)}>
+          <button
+            className="btn btn-outline btn-md"
+            onClick={() => setIsImportModalOpen(true)}
+            data-help-id="members.import-csv"
+          >
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
           </button>
@@ -120,11 +126,16 @@ function MembersPageContent() {
             className="btn btn-outline btn-md"
             onClick={() => setIsCreateCivilianModalOpen(true)}
             data-testid={TID.members.newCivilianBtn}
+            data-help-id="members.create-civilian"
           >
             <BriefcaseBusiness className="h-4 w-4 mr-2" />
             New Civilian Staff
           </button>
-          <button className="btn btn-primary btn-md" onClick={() => setIsCreateModalOpen(true)}>
+          <button
+            className="btn btn-primary btn-md"
+            onClick={() => setIsCreateModalOpen(true)}
+            data-help-id="members.create-member"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Member
           </button>
@@ -158,6 +169,7 @@ function MembersPageContent() {
         createProfile="civilian"
       />
       <NominalRollImportDialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen} />
+      <MembersHelpLauncher />
     </div>
   )
 }

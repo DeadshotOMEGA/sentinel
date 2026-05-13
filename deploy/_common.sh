@@ -283,7 +283,7 @@ print_network_recovery_help() {
 GHCR is unreachable from this network.
 
 1. Make sure this laptop is connected to the internet-facing network.
-2. If you use the Sentinel hotspot, reconnect to the approved hotspot SSID and retry.
+2. Reconnect to the approved internet Wi-Fi SSID and retry.
 3. If you use building/public Wi-Fi, complete any required captive portal in a browser.
 4. Re-run this command.
 
@@ -474,6 +474,10 @@ bootstrap_env_defaults() {
 
   if is_placeholder_env_value "$(env_value HOTSPOT_CONNECTION_NAME)"; then
     upsert_env "HOTSPOT_CONNECTION_NAME" "Sentinel Hotspot"
+  fi
+
+  if is_placeholder_env_value "$(env_value APPROVED_WIFI_SSIDS)"; then
+    upsert_env "APPROVED_WIFI_SSIDS" "GC Public"
   fi
 
   if is_placeholder_env_value "$(env_value HOTSPOT_SSID)"; then

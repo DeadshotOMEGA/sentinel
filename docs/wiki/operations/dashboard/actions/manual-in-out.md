@@ -20,6 +20,13 @@ Use it sparingly and only with authorization.
 - Clear reason.
 - History review impact.
 
+## Acceptable Evidence Examples
+
+- The member is physically at the duty desk and DDS verifies the missed scan.
+- The visitor sheet, kiosk record, or duty desk note confirms the time.
+- A supervisor directs the correction and accepts responsibility for the reason.
+- History shows a duplicate or missing paired event that matches the reported issue.
+
 ## Step-by-Step Admin Procedure
 
 1. Search for the person.
@@ -34,7 +41,7 @@ Good: Correction is accurate and understandable later.
 
 Caution: Reason is vague or missing detail.
 
-Stop: The correction is being used for convenience rather than an attendance issue.
+Stop: The correction is being used for convenience rather than an attendance issue, or DDS cannot prove the real person state.
 
 ## What To Confirm After Action
 

@@ -336,8 +336,8 @@ const SENTINEL_INJECT_CSS = `/* Sentinel Wiki.js Theme Injection */
 
 .contents img {
   display: block;
-  width: 100%;
-  max-width: 1060px;
+  width: auto;
+  max-width: min(100%, 1060px);
   height: auto;
   margin: 1.1rem 0 1.55rem;
   border: 1px solid var(--sentinel-border);

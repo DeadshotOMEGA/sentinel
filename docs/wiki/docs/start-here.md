@@ -1,52 +1,96 @@
 # Sentinel Operations Wiki
 
-Welcome to the Sentinel operations knowledge base.
-
-This wiki is the operational source of truth for Duty Day Staff (DDS) workflows, dashboard response procedures, scheduling, lockup control, and system administration.
+Welcome to the Sentinel operations knowledge base. Start by choosing the role or situation that matches what you need to do right now.
 
 ## Quick Links
 
-- [Home](/home)
 - [Open Sentinel Dashboard](http://sentinel.local/dashboard)
+- [Wiki Home](/home)
+- [DDS Start Here](/operations/day-duty/dds-start-here)
+- [Dashboard Overview](/operations/dashboard/overview)
 
-## Start Here Sequence
+## Choose Your Path
 
-If you are on watch and need the fastest operational path:
+### I Am DDS
 
-1. Open Dashboard and check **Security Alerts** first.
-2. Verify **DDS / Duty Watch / Building / Lockup Holder** status blocks.
-3. Use **Quick Actions** only after status confirmation.
-4. Validate attendance changes in the **Presence Grid**.
+1. [Login And First Checks](/operations/day-duty/login-and-first-checks)
+2. [Daily Start](/operations/day-duty/daily-start)
+3. [Dashboard Status For DDS](/operations/day-duty/dashboard-status-for-dds)
+4. [Presence, Visitors, And Corrections](/operations/day-duty/presence-visitors-and-corrections)
+5. [End Of Day Handoff](/operations/day-duty/end-of-day-handoff)
 
-## Core Operations
+Use these reference pages when DDS needs evidence or schedule awareness:
 
-- Dashboard overview: `/operations/dashboard/overview`
-- Check-ins and corrections: `/operations/day-duty/checkins-history-and-corrections`
-- DDS workflow: `/operations/day-duty/dds-daily-workflow`
-- Kiosk operations: `/operations/kiosk/kiosk-operations`
-- Event management: `/operations/events/event-management`
-- Scheduling: `/operations/schedules/dds-duty-watch-scheduling`
+- [Check-In/Out History Overview](/operations/history/overview)
+- [Manual History Corrections](/operations/history/manual-corrections)
+- [Schedules Week View](/operations/schedules/week-view)
 
-## Administration
+Use these action pages when responsibility changes:
 
-- Members management: `/admin/members/member-records`
-- Badge lifecycle: `/admin/badges/badge-lifecycle`
-- Configuration and reference data: `/technical/configuration/reference-data-settings`
-- Database explorer (read-only): `/technical/database/read-only-explorer`
+- [Transfer DDS](/operations/day-duty/transfer-dds)
+- [Transfer Lockup](/operations/day-duty/transfer-lockup)
+- [Execute Lockup](/operations/day-duty/execute-lockup)
 
-## Screenshot Placeholder: Start Here Entry
+### I Am A New Admin
 
-![TODO: Start Here Entry](https://placehold.co/1600x900?text=TODO+start-here-ops-entry)
+1. [Dashboard Overview](/operations/dashboard/overview)
+2. [Navbar Navigation](/operations/dashboard/navbar-navigation)
+3. [System Status](/operations/dashboard/system-status)
+4. [Status Panel](/operations/dashboard/status-panel)
+5. [Presence Grid](/operations/dashboard/presence-grid)
+6. [Member Records](/admin/members/member-records)
+7. [Check-In/Out History Overview](/operations/history/overview)
 
-**Capture note**
+### I Manage Members
 
-- Screen/state: Start Here page with quick links and sequence list visible.
-- Preconditions: Wiki access in normal operator role.
-- Suggested filename: `start-here-ops-entry.png`
-- Target Wiki.js asset path: `wiki-dashboard/docs/start-here-ops-entry.png`
-- Replacement: Replace this placeholder with uploaded Wiki.js asset URL after capture.
+1. [Member Records](/admin/members/member-records)
+2. [Filters And Search](/admin/members/filters-and-search)
+3. [Create Member](/admin/members/create-member)
+4. [Create Civilian Staff](/admin/members/create-civilian-staff)
+5. [Import CSV](/admin/members/import-csv)
+6. [Sync Qualifications](/admin/members/sync-qualifications)
+7. [Bulk Actions](/admin/members/bulk-actions)
 
-## Rules of Use
+### I Plan Events
+
+1. [Event Management](/operations/events/event-management)
+2. [List And Filters](/operations/events/list-and-filters)
+3. [Create Event](/operations/events/create-event)
+4. [Event Detail](/operations/events/event-detail)
+5. [Event Status Workflow](/operations/events/status-workflow)
+6. [Event Duty Watch](/operations/events/duty-watch)
+
+### I Build Schedules
+
+1. [DDS And Duty Watch Scheduling](/operations/schedules/dds-duty-watch-scheduling)
+2. [Week View](/operations/schedules/week-view)
+3. [Assign DDS](/operations/schedules/assign-dds)
+4. [Assign Duty Watch](/operations/schedules/assign-duty-watch)
+5. [Night Overrides](/operations/schedules/night-overrides)
+6. [Publish And Edit](/operations/schedules/publish-and-edit)
+
+### I Am Running The Kiosk Or Visitor Flow
+
+- [Kiosk Operations](/operations/kiosk/kiosk-operations)
+- [Kiosk Check-In](/operations/day-duty/kiosk-check-in)
+- [Visitor Sign-In](/operations/day-duty/visitor-sign-in)
+
+### I Am Maintaining Sentinel
+
+- [Wiki Page Review](/docs/wiki-page-review)
+- [Image Capture Manifest](/docs/image-capture-manifest)
+- [Labeling And Automation](/labeling-and-automation/README)
+
+## Sentinel Work Order
+
+1. Check System Status first.
+2. Resolve or escalate Security Alerts before high-impact actions.
+3. Confirm DDS, Duty Watch, Building Status, and Lockup Holder.
+4. Confirm Presence before deciding someone is missing or the building is ready for lockup.
+5. Use actions only after Sentinel and the real situation agree.
+6. Confirm the result in Dashboard.
+
+## Rules Of Use
 
 - Treat this wiki as operational guidance, not policy override.
 - If live system behavior conflicts with this page, escalate and capture evidence.
@@ -54,5 +98,5 @@ If you are on watch and need the fastest operational path:
 
 ## Version Notes
 
-- Target release track: `v1.5.0`
-- Last updated: `2026-02-27`
+- Last updated: `2026-05-08`
+- Content owner: `Sentinel Operations`

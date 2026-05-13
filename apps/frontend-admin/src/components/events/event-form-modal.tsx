@@ -3,7 +3,13 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { ButtonSpinner } from '@/components/ui/loading-spinner'
 import { TID } from '@/lib/test-ids'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useCreateUnitEvent, useUpdateUnitEvent, useEventTypes } from '@/hooks/use-events'
 import type {
@@ -225,6 +231,7 @@ export function EventFormModal({
         size="xl"
         className="max-h-[90vh] overflow-y-auto bg-base-100 p-[var(--space-4)]"
         testId="event-form-modal"
+        data-help-id="events.form"
       >
         <form onSubmit={handleSubmit} noValidate>
           <DialogHeader className="mb-[var(--space-3)]">
@@ -316,7 +323,9 @@ export function EventFormModal({
                 )}
                 {isEventTypesError && (
                   <div className="alert alert-warning" role="alert">
-                    <span>Event types are unavailable right now. You can continue with "None".</span>
+                    <span>
+                      Event types are unavailable right now. You can continue with "None".
+                    </span>
                   </div>
                 )}
 
@@ -338,13 +347,19 @@ export function EventFormModal({
                         }}
                         aria-required="true"
                         aria-invalid={formErrors.eventDate ? 'true' : 'false'}
-                        aria-describedby={formErrors.eventDate ? 'event-form-date-error' : undefined}
+                        aria-describedby={
+                          formErrors.eventDate ? 'event-form-date-error' : undefined
+                        }
                         disabled={isSubmitting}
                         data-testid={TID.events.form.date}
                       />
                     </label>
                     {formErrors.eventDate && (
-                      <p id="event-form-date-error" className="mt-[var(--space-1)] text-sm text-error" role="alert">
+                      <p
+                        id="event-form-date-error"
+                        className="mt-[var(--space-1)] text-sm text-error"
+                        role="alert"
+                      >
                         {formErrors.eventDate}
                       </p>
                     )}
@@ -509,14 +524,23 @@ export function EventFormModal({
                     rows={5}
                     placeholder='{"key": "value"}'
                     aria-invalid={formErrors.metadata ? 'true' : 'false'}
-                    aria-describedby={formErrors.metadata ? 'event-form-metadata-error' : 'event-form-metadata-help'}
+                    aria-describedby={
+                      formErrors.metadata ? 'event-form-metadata-error' : 'event-form-metadata-help'
+                    }
                     disabled={isSubmitting}
                   />
-                  <p id="event-form-metadata-help" className="mt-[var(--space-1)] text-xs text-base-content/60">
+                  <p
+                    id="event-form-metadata-help"
+                    className="mt-[var(--space-1)] text-xs text-base-content/60"
+                  >
                     Optional machine-readable context as a JSON object.
                   </p>
                   {formErrors.metadata && (
-                    <p id="event-form-metadata-error" className="mt-[var(--space-1)] text-sm text-error" role="alert">
+                    <p
+                      id="event-form-metadata-error"
+                      className="mt-[var(--space-1)] text-sm text-error"
+                      role="alert"
+                    >
                       {formErrors.metadata}
                     </p>
                   )}

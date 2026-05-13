@@ -1,6 +1,6 @@
 # Daily End: Duty Handoff
 
-![Duty Watch block used for handoff checks](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![Duty Watch block used for handoff checks](/uploads/wiki-dashboard/operations/dashboard-stat-duty-watch.png)
 
 Duty handoff confirms the next responsible person understands the current Dashboard state.
 

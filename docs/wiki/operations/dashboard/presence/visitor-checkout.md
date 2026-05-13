@@ -1,6 +1,6 @@
 # Presence: Visitor Checkout
 
-![Visitor checkout action](/uploads/wiki-dashboard/operations/dashboard-visitor-checkout.png)
+![Visitor card with checkout action](/uploads/wiki-dashboard/operations/dashboard-visitor-card-checkout.png)
 
 Visitor checkout signs a visitor out of the building.
 
@@ -18,6 +18,10 @@ Use it when a visitor is actually leaving or a visit needs authorized correction
 - Host or visit details.
 - Whether the visitor is physically leaving.
 - Visitor count after checkout.
+
+## Lockup Stop Condition
+
+If a visitor remains checked in at lockup, stop and resolve that visitor before executing lockup. Confirm whether the visitor is still physically present, already left without checkout, or was entered under the wrong record.
 
 ## Step-by-Step Admin Procedure
 
@@ -41,7 +45,7 @@ Confirm the visitor no longer appears in active Presence.
 
 ## When To Escalate
 
-Escalate if visitor state cannot be verified.
+Escalate if visitor state cannot be verified, if the host cannot confirm departure, or if the visitor is still active when the building is otherwise ready for lockup.
 
 ## Related Dashboard Help Pages
 

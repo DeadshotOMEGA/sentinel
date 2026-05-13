@@ -172,7 +172,7 @@ export function DdsScheduleCard({
 
   if (isError) {
     return (
-      <AppCard status="error">
+      <AppCard status="error" data-help-id="schedules.dds-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -192,7 +192,7 @@ export function DdsScheduleCard({
 
   if (isLoading) {
     return (
-      <AppCard>
+      <AppCard data-help-id="schedules.dds-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -208,7 +208,7 @@ export function DdsScheduleCard({
 
   if (!ddsRole) {
     return (
-      <AppCard status="error">
+      <AppCard status="error" data-help-id="schedules.dds-card">
         <AppCardHeader>
           <AppCardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -231,7 +231,7 @@ export function DdsScheduleCard({
   const cardStatus = ddsSchedule?.status === 'draft' ? ('warning' as const) : undefined
 
   return (
-    <AppCard status={cardStatus}>
+    <AppCard status={cardStatus} data-help-id="schedules.dds-card">
       <AppCardHeader>
         <div className="flex items-center justify-between">
           <div>

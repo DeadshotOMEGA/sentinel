@@ -25,3 +25,10 @@ Applies when editing files under: `scripts/`
 - Keep shell scripts portable and explicit.
 - Prefer environment-variable overrides for credentials, base URLs, and output paths.
 - When a Playwright script writes artifacts, keep them under `test-results/` unless the task explicitly requires another location.
+
+## Wiki.js Scripts
+
+- Canonical Wiki.js base URL is `http://docs.sentinel.local/`.
+- Wiki publishing/configuration scripts SHOULD load `WIKI_BASE_URL` and `WIKI_API_KEY` from the shell environment first, then repo `.env`, then `deploy/.env`.
+- If the shell is missing Wiki.js env, check `deploy/.env` before reporting that publishing cannot run.
+- Do not print, persist, or commit the actual `WIKI_API_KEY`; redact it in logs and summaries.

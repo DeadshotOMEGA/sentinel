@@ -1,6 +1,6 @@
 # Actions: Open or Lockup
 
-![Open Building and Execute Lockup controls](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Open Building and Execute Lockup control](/uploads/wiki-dashboard/operations/dashboard-action-open-lockup.png)
 
 Open Building and Execute Lockup are opposite building-state actions.
 
@@ -11,6 +11,14 @@ Open Building and Execute Lockup are opposite building-state actions.
 ## When To Use It
 
 Use Open Building when a qualified person is taking responsibility for an already secured building. Use Execute Lockup when the building should be secured.
+
+## Open Building Example
+
+Use Open Building when Sentinel says the building is secured, the real building is now open, and the responsible person is present and accepting responsibility.
+
+## Execute Lockup Example
+
+Use Execute Lockup when all people and visitors are resolved, the lockup holder is correct, and the real building has been secured or is ready to be secured.
 
 ## What To Check
 
@@ -33,7 +41,7 @@ Good: Building Status changes to the expected state.
 
 Caution: The button is available but pre-checks are not complete.
 
-Stop: Sentinel and the real building disagree.
+Stop: Sentinel and the real building disagree, visitors remain checked in, or lockup holder identity is unclear.
 
 ## What To Confirm After Action
 
@@ -52,3 +60,5 @@ Escalate mismatched or failed building-state changes.
 - [Transfer DDS](/operations/dashboard/actions/transfer-dds)
 - [Transfer Lockup](/operations/dashboard/actions/transfer-lockup)
 - [Manual In Out](/operations/dashboard/actions/manual-in-out)
+- [DDS: Daily Start](/operations/day-duty/daily-start)
+- [DDS: Execute Lockup](/operations/day-duty/execute-lockup)

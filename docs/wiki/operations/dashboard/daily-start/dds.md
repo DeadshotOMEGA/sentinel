@@ -1,6 +1,6 @@
 # Daily Start: DDS
 
-![DDS status block in the status panel](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![DDS status block in the status panel](/uploads/wiki-dashboard/operations/dashboard-stat-dds.png)
 
 DDS means Duty Day Staff: the person responsible for the day's duty coordination in Sentinel.
 
