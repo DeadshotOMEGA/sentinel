@@ -2,6 +2,10 @@ export const HOST_HOTSPOT_ANTENNA_WAIT_SECONDS = 3
 
 export const HOST_HOTSPOT_REPAIR_STEPS = [
   {
+    id: 'check-wifi',
+    label: 'Check radios',
+  },
+  {
     id: 'run-repair',
     label: 'Run repair',
   },

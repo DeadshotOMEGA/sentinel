@@ -39,6 +39,9 @@ function createSystemStatus(overrides?: Partial<SystemStatusResponse>): SystemSt
       hotspotSsid: 'Stone Frigate',
       hotspotScanDevice: 'wlp2s0',
       hotspotSsidVisibleFromLaptop: true,
+      hotspotAdapterBusy: false,
+      internetWifiConnection: null,
+      internetWifiSsid: null,
       approvedSsids: ['GC Public'],
       approvedSsid: true,
       internetReachable: true,
@@ -137,6 +140,26 @@ describe('app-navbar logic', () => {
           ...createSystemStatus().network,
           issueCode: 'hotspot_not_visible',
           hotspotSsidVisibleFromLaptop: false,
+        },
+      }),
+      isLoading: false,
+      isError: false,
+      hasAdminAccess: false,
+    })
+
+    expect(result.showSection).toBe(true)
+    expect(result.showRepairHostHotspot).toBe(false)
+  })
+
+  it('keeps wireless recovery section visible when the AP dongle is busy on internet Wi-Fi', () => {
+    const result = getWirelessRecoveryState({
+      systemStatus: createSystemStatus({
+        network: {
+          ...createSystemStatus().network,
+          status: 'warning',
+          issueCode: 'hotspot_adapter_busy',
+          hotspotAdapterBusy: true,
+          internetWifiSsid: 'GC Public',
         },
       }),
       isLoading: false,

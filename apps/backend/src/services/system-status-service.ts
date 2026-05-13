@@ -57,6 +57,7 @@ function normalizeTelemetryIssueCode(value: string | null): NetworkIssueCode {
     case 'unapproved_ssid':
     case 'hotspot_profile_missing':
     case 'approved_hotspot_adapter_missing':
+    case 'hotspot_adapter_busy':
     case 'scan_adapter_missing':
     case 'hotspot_not_visible':
     case 'remote_reachability_failed':
@@ -91,11 +92,15 @@ function resolveNetworkIssueCode(input: {
     return 'wifi_disconnected'
   }
 
+  const telemetryIssueCode = normalizeTelemetryIssueCode(input.telemetryIssueCode)
+  if (telemetryIssueCode === 'hotspot_adapter_busy') {
+    return telemetryIssueCode
+  }
+
   if (input.approvedSsid === false) {
     return 'unapproved_ssid'
   }
 
-  const telemetryIssueCode = normalizeTelemetryIssueCode(input.telemetryIssueCode)
   if (telemetryIssueCode !== 'none') {
     return telemetryIssueCode
   }
@@ -140,6 +145,8 @@ function resolveNetworkStatusMessage(input: {
       return 'The managed Sentinel hotspot profile is missing.'
     case 'approved_hotspot_adapter_missing':
       return 'No approved hotspot dongle is available on this laptop.'
+    case 'hotspot_adapter_busy':
+      return 'The approved AP dongle is connected to internet Wi-Fi instead of hosting the Sentinel hotspot.'
     case 'scan_adapter_missing':
       return 'A second Wi-Fi radio is unavailable for hotspot verification.'
     case 'hotspot_not_visible':
@@ -369,6 +376,9 @@ export class SystemStatusService {
         hotspotSsid: telemetry?.hotspotSsid ?? null,
         hotspotScanDevice: telemetry?.hotspotScanDevice ?? null,
         hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
+        hotspotAdapterBusy: telemetry?.hotspotAdapterBusy ?? null,
+        internetWifiConnection: telemetry?.internetWifiConnection ?? null,
+        internetWifiSsid: telemetry?.internetWifiSsid ?? null,
         approvedSsids,
         approvedSsid,
         internetReachable: telemetry?.internetReachable ?? null,

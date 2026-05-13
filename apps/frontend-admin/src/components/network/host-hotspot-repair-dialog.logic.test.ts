@@ -7,12 +7,14 @@ import {
 
 describe('host hotspot repair dialog logic', () => {
   it('marks earlier steps complete and later steps pending', () => {
+    expect(getHostHotspotRepairStepState('run-repair', 'check-wifi')).toBe('complete')
     expect(getHostHotspotRepairStepState('reset-antenna', 'run-repair')).toBe('complete')
     expect(getHostHotspotRepairStepState('reset-antenna', 'reset-antenna')).toBe('active')
     expect(getHostHotspotRepairStepState('reset-antenna', 'retry-repair')).toBe('pending')
   })
 
   it('marks all steps complete after the final repair is queued', () => {
+    expect(getHostHotspotRepairStepState('complete', 'check-wifi')).toBe('complete')
     expect(getHostHotspotRepairStepState('complete', 'run-repair')).toBe('complete')
     expect(getHostHotspotRepairStepState('complete', 'reset-antenna')).toBe('complete')
     expect(getHostHotspotRepairStepState('complete', 'retry-repair')).toBe('complete')

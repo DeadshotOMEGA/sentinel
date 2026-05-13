@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, RotateCcw, Usb, Wrench, type LucideIcon } from 'lucide-react'
+import { CheckCircle2, RotateCcw, Usb, Wifi, Wrench, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBadge } from '@/components/ui/AppBadge'
 import {
@@ -41,6 +41,7 @@ const stepToneClasses: Record<HostHotspotRepairStepState, string> = {
 }
 
 const instructionSurfaceClasses: Record<HostHotspotRepairStage, string> = {
+  'check-wifi': 'border-info/40 bg-info-fadded text-info-fadded-content',
   'run-repair': 'border-info/40 bg-info-fadded text-info-fadded-content',
   'reset-antenna': 'border-warning/45 bg-warning-fadded text-warning-fadded-content',
   'retry-repair': 'border-info/40 bg-info-fadded text-info-fadded-content',
@@ -54,7 +55,7 @@ export function HostHotspotRepairDialog({
 }: HostHotspotRepairDialogProps) {
   const queryClient = useQueryClient()
   const hostHotspotRecovery = useHostHotspotRecovery()
-  const [stage, setStage] = useState<HostHotspotRepairStage>('run-repair')
+  const [stage, setStage] = useState<HostHotspotRepairStage>('check-wifi')
   const [antennaWaitStarted, setAntennaWaitStarted] = useState(false)
   const [antennaSecondsRemaining, setAntennaSecondsRemaining] = useState(
     HOST_HOTSPOT_ANTENNA_WAIT_SECONDS
@@ -62,7 +63,7 @@ export function HostHotspotRepairDialog({
   const [queuedMessage, setQueuedMessage] = useState<string | null>(null)
 
   const resetFlow = () => {
-    setStage('run-repair')
+    setStage('check-wifi')
     setAntennaWaitStarted(false)
     setAntennaSecondsRemaining(HOST_HOTSPOT_ANTENNA_WAIT_SECONDS)
     setQueuedMessage(null)
@@ -126,6 +127,11 @@ export function HostHotspotRepairDialog({
   }
 
   const handlePrimaryAction = () => {
+    if (stage === 'check-wifi') {
+      setStage('run-repair')
+      return
+    }
+
     if (stage === 'run-repair') {
       void handleRepair('reset-antenna')
       return
@@ -250,6 +256,21 @@ function renderInstruction(
     queuedMessage: string | null
   }
 ) {
+  if (stage === 'check-wifi') {
+    return (
+      <div className="flex items-start gap-(--space-3)">
+        <InstructionIcon icon={Wifi} />
+        <div className="min-w-0">
+          <h4 className="font-bold">Keep the AP dongle for Sentinel</h4>
+          <p className="mt-(--space-1) text-sm leading-relaxed">
+            Sentinel will check whether the USB AP adapter is stuck on internet Wi-Fi and move that
+            connection to the scan radio before restarting the hotspot.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (stage === 'run-repair') {
     return (
       <div className="flex items-start gap-(--space-3)">
@@ -257,8 +278,8 @@ function renderInstruction(
         <div className="min-w-0">
           <h4 className="font-bold">Run the repair first</h4>
           <p className="mt-(--space-1) text-sm leading-relaxed">
-            Click Run repair. Sentinel will queue the host action that rebuilds and restarts the
-            managed hotspot.
+            Click Run repair. Sentinel will queue the host action that reserves the AP dongle,
+            rebuilds the managed hotspot profile, and restarts the hotspot.
           </p>
         </div>
       </div>
@@ -342,6 +363,10 @@ function getPrimaryActionLabel(
 ): string {
   if (input.isPending) {
     return stage === 'retry-repair' ? 'Queueing again...' : 'Queueing...'
+  }
+
+  if (stage === 'check-wifi') {
+    return 'Continue'
   }
 
   if (stage === 'run-repair') {

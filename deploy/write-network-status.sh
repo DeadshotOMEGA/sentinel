@@ -215,6 +215,9 @@ hotspot_device_value=""
 hotspot_ssid_value="$(env_value HOTSPOT_SSID 'Stone Frigate')"
 hotspot_scan_device_value=""
 hotspot_ssid_visible_from_laptop_value="null"
+hotspot_adapter_busy_value="false"
+internet_wifi_connection_value=""
+internet_wifi_ssid_value=""
 hotspot_collect_runtime_state || true
 hotspot_issue_code_value="${HOTSPOT_STATE_ISSUE_CODE:-none}"
 hotspot_profile_present_value="${HOTSPOT_STATE_PROFILE_PRESENT:-false}"
@@ -224,6 +227,9 @@ hotspot_device_value="${HOTSPOT_STATE_HOTSPOT_DEVICE:-}"
 hotspot_ssid_value="${HOTSPOT_STATE_HOTSPOT_SSID:-${hotspot_ssid_value}}"
 hotspot_scan_device_value="${HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE:-}"
 hotspot_ssid_visible_from_laptop_value="${HOTSPOT_STATE_HOTSPOT_VISIBILITY:-null}"
+hotspot_adapter_busy_value="${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY:-false}"
+internet_wifi_connection_value="${HOTSPOT_STATE_INTERNET_WIFI_CONNECTION:-}"
+internet_wifi_ssid_value="${HOTSPOT_STATE_INTERNET_WIFI_SSID:-}"
 host_ip_address_value="$(resolve_host_ip_address "${hotspot_device_value}")"
 
 if [[ "${hotspot_issue_code_value}" != "none" && -n "${HOTSPOT_STATE_MESSAGE:-}" ]]; then
@@ -281,6 +287,9 @@ cat >"${tmp_file}" <<JSON
   "hotspotSsid": $(json_string_or_null "${hotspot_ssid_value}"),
   "hotspotScanDevice": $(json_string_or_null "${hotspot_scan_device_value}"),
   "hotspotSsidVisibleFromLaptop": ${hotspot_ssid_visible_from_laptop_value},
+  "hotspotAdapterBusy": $(json_bool "${hotspot_adapter_busy_value}"),
+  "internetWifiConnection": $(json_string_or_null "${internet_wifi_connection_value}"),
+  "internetWifiSsid": $(json_string_or_null "${internet_wifi_ssid_value}"),
   "internetReachable": ${internet_reachable_value},
   "remoteTarget": $(json_string_or_null "${REMOTE_TARGET}"),
   "remoteReachable": ${remote_reachable_value},

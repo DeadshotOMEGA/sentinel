@@ -23,6 +23,9 @@ HOTSPOT_STATE_HOTSPOT_SSID=""
 HOTSPOT_STATE_HOTSPOT_VISIBILITY="null"
 HOTSPOT_STATE_APPROVED_ADAPTER_COUNT="0"
 HOTSPOT_STATE_ENV_PSK_CONFIGURED="false"
+HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY="false"
+HOTSPOT_STATE_INTERNET_WIFI_CONNECTION=""
+HOTSPOT_STATE_INTERNET_WIFI_SSID=""
 
 hotspot_log() {
   printf '[host-hotspot-profile] %s\n' "$*"
@@ -100,6 +103,46 @@ hotspot_connection_ssid() {
   fi
 
   printf '%s\n' "${HOTSPOT_CONFIG_SSID}"
+}
+
+hotspot_active_connection_for_device() {
+  local device="${1:-}" active_connection
+  [[ -n "${device}" ]] || return 0
+
+  active_connection="$(
+    nmcli -g GENERAL.CONNECTION device show "${device}" 2>/dev/null |
+      head -n1
+  )"
+
+  if [[ -n "${active_connection}" && "${active_connection}" != "--" ]]; then
+    printf '%s\n' "${active_connection}"
+  fi
+}
+
+hotspot_wifi_connection_ssid() {
+  local connection_name="${1:-}" configured_ssid
+  [[ -n "${connection_name}" ]] || return 0
+
+  configured_ssid="$(
+    nmcli -g 802-11-wireless.ssid connection show "${connection_name}" 2>/dev/null |
+      head -n1
+  )"
+  if [[ -n "${configured_ssid}" ]]; then
+    printf '%s\n' "${configured_ssid}"
+    return 0
+  fi
+
+  nmcli -t -f ACTIVE,SSID dev wifi 2>/dev/null |
+    awk -F: '$1 == "yes" { print substr($0, index($0, $2)); exit }'
+}
+
+hotspot_adapter_client_connection() {
+  local device="${1:-}" active_connection
+  active_connection="$(hotspot_active_connection_for_device "${device}" || true)"
+
+  if [[ -n "${active_connection}" && "${active_connection}" != "${HOTSPOT_CONFIG_CONNECTION_NAME}" ]]; then
+    printf '%s\n' "${active_connection}"
+  fi
 }
 
 hotspot_device_property() {
@@ -239,7 +282,7 @@ hotspot_find_approved_adapters() {
 }
 
 hotspot_pick_scan_device() {
-  local hotspot_device="${1:-}" preferred_device fallback_device line device type state
+  local hotspot_device="${1:-}" preferred_device="" fallback_device="" line="" device="" type="" state=""
   [[ -n "${hotspot_device}" ]] || return 0
 
   while IFS= read -r line; do
@@ -304,10 +347,13 @@ hotspot_reset_state() {
   HOTSPOT_STATE_HOTSPOT_VISIBILITY="null"
   HOTSPOT_STATE_APPROVED_ADAPTER_COUNT="0"
   HOTSPOT_STATE_ENV_PSK_CONFIGURED="false"
+  HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY="false"
+  HOTSPOT_STATE_INTERNET_WIFI_CONNECTION=""
+  HOTSPOT_STATE_INTERNET_WIFI_SSID=""
 }
 
 hotspot_collect_runtime_state() {
-  local profile_device profile_ssid approved_devices approved_count visibility_rc
+  local profile_device profile_ssid approved_devices approved_count visibility_rc client_connection
 
   hotspot_refresh_config
   hotspot_reset_state
@@ -341,6 +387,13 @@ hotspot_collect_runtime_state() {
     HOTSPOT_STATE_HOTSPOT_DEVICE="${approved_devices[0]}"
   elif [[ -n "${profile_device}" ]]; then
     HOTSPOT_STATE_HOTSPOT_DEVICE="${profile_device}"
+  fi
+
+  client_connection="$(hotspot_adapter_client_connection "${HOTSPOT_STATE_HOTSPOT_DEVICE}" || true)"
+  if [[ -n "${client_connection}" ]]; then
+    HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY="true"
+    HOTSPOT_STATE_INTERNET_WIFI_CONNECTION="${client_connection}"
+    HOTSPOT_STATE_INTERNET_WIFI_SSID="$(hotspot_wifi_connection_ssid "${client_connection}" || true)"
   fi
 
   HOTSPOT_STATE_HOTSPOT_SCAN_DEVICE="$(hotspot_pick_scan_device "${HOTSPOT_STATE_HOTSPOT_DEVICE}")"
@@ -389,6 +442,16 @@ hotspot_collect_runtime_state() {
     return 0
   fi
 
+  if [[ "${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY}" == "true" ]]; then
+    HOTSPOT_STATE_ISSUE_CODE="hotspot_adapter_busy"
+    if [[ -n "${HOTSPOT_STATE_INTERNET_WIFI_SSID}" ]]; then
+      HOTSPOT_STATE_MESSAGE="The approved AP dongle is connected to internet Wi-Fi \"${HOTSPOT_STATE_INTERNET_WIFI_SSID}\" instead of hosting the Sentinel hotspot."
+    else
+      HOTSPOT_STATE_MESSAGE="The approved AP dongle is connected to an internet Wi-Fi profile instead of hosting the Sentinel hotspot."
+    fi
+    return 0
+  fi
+
   if [[ "${HOTSPOT_STATE_SCAN_ADAPTER_PRESENT}" != "true" ]]; then
     HOTSPOT_STATE_ISSUE_CODE="scan_adapter_missing"
     HOTSPOT_STATE_MESSAGE="A second Wi-Fi radio is unavailable for hotspot verification."
@@ -410,7 +473,7 @@ hotspot_state_exit_code() {
     none)
       return 0
       ;;
-    scan_adapter_missing|hotspot_not_visible)
+    hotspot_adapter_busy|scan_adapter_missing|hotspot_not_visible)
       return 2
       ;;
     *)
@@ -432,7 +495,10 @@ emit_hotspot_state_json() {
   "hotspotSsid": $(hotspot_json_string_or_null "${HOTSPOT_STATE_HOTSPOT_SSID}"),
   "hotspotVisibility": ${HOTSPOT_STATE_HOTSPOT_VISIBILITY},
   "approvedAdapterCount": ${HOTSPOT_STATE_APPROVED_ADAPTER_COUNT},
-  "hotspotPskConfigured": $(json_bool "${HOTSPOT_STATE_ENV_PSK_CONFIGURED}")
+  "hotspotPskConfigured": $(json_bool "${HOTSPOT_STATE_ENV_PSK_CONFIGURED}"),
+  "hotspotAdapterBusy": $(json_bool "${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY}"),
+  "internetWifiConnection": $(hotspot_json_string_or_null "${HOTSPOT_STATE_INTERNET_WIFI_CONNECTION}"),
+  "internetWifiSsid": $(hotspot_json_string_or_null "${HOTSPOT_STATE_INTERNET_WIFI_SSID}")
 }
 JSON
 }
@@ -487,6 +553,11 @@ ensure_host_hotspot_profile() {
   if [[ "${HOTSPOT_STATE_ENV_PSK_CONFIGURED}" != "true" ]]; then
     hotspot_warn "HOTSPOT_PSK is not configured; Sentinel cannot create or repair the hosted hotspot profile."
     return 1
+  fi
+
+  if [[ "${HOTSPOT_STATE_HOTSPOT_ADAPTER_BUSY}" == "true" ]]; then
+    hotspot_warn "${HOTSPOT_STATE_MESSAGE}"
+    return 2
   fi
 
   recreate_hotspot_profile_if_needed "${HOTSPOT_STATE_HOTSPOT_DEVICE}"

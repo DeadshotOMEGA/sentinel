@@ -144,6 +144,7 @@ const HOTSPOT_WARNING_ISSUES = new Set<SystemStatusResponse['network']['issueCod
   'telemetry_stale',
   'hotspot_profile_missing',
   'approved_hotspot_adapter_missing',
+  'hotspot_adapter_busy',
   'scan_adapter_missing',
   'hotspot_not_visible',
 ])
