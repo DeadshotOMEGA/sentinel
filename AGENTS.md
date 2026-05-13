@@ -51,6 +51,14 @@ This file migrates project guidance from Claude-style rules into Codex.
 - MUST update deployment files and deployment docs together when adding/changing a port mapping.
 - MUST avoid assigning new services to reserved but currently unused ranges unless explicitly approved.
 
+## Wiki.js Operations
+
+- Canonical Wiki.js base URL is `http://docs.sentinel.local/`.
+- MUST use `http://docs.sentinel.local/` for Navbar/wiki links and Wiki.js publishing targets, not `http://sentinel.local:3020/` or localhost dev URLs.
+- Wiki publishing scripts read `WIKI_BASE_URL` and `WIKI_API_KEY` from the shell environment, repo `.env`, or `deploy/.env`; prefer `deploy/.env` for local appliance publishing when the shell is missing those values.
+- MUST NOT write the `WIKI_API_KEY` value into tracked files, docs, AGENTS instructions, commit messages, PR descriptions, or chat transcripts. Document only the variable name and approved secret source.
+- If publishing fails due to missing Wiki.js env, check `deploy/.env` before concluding the API key is unavailable.
+
 ## High-traffic local instruction files
 
 - `apps/backend/AGENTS.md`

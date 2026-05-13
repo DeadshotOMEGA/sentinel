@@ -102,6 +102,31 @@ async (page) => {
     await wait(500)
   }
 
+  async function captureLoginFlow() {
+    await page.goto(`${baseUrl.replace(/\/+$/, '')}/login`)
+    await page.waitForLoadState('networkidle')
+    await hideChrome()
+    await wait(500)
+    await viewport('sentinel-login-badge-entry')
+
+    if (await page.getByTestId('auth-badge-input').isVisible().catch(() => false)) {
+      await page.getByTestId('auth-badge-input').fill(badgeNumber)
+      await page.keyboard.press('Enter')
+    }
+
+    await page.getByTestId('auth-pin-input').waitFor({ state: 'visible', timeout: 10000 })
+    await wait(500)
+    await viewport('sentinel-login-pin-entry')
+
+    await page.getByTestId('auth-pin-input').fill(pinCode)
+    await page.getByTestId('auth-pin-submit').click()
+    await page.waitForURL('**/dashboard', { timeout: 15000 })
+    await page.waitForSelector('[data-help-id="dashboard.root"]', { timeout: 15000 })
+    await hideChrome()
+    await wait(500)
+    await viewport('sentinel-login-dashboard-confirmation')
+  }
+
   async function screenshot(name, selector, options = {}) {
     if (!options.keepSystemStatusOpen) {
       await dismissSystemStatus()
@@ -115,6 +140,41 @@ async (page) => {
     await locator.scrollIntoViewIfNeeded().catch(() => undefined)
     await wait(options.delay || 200)
     await locator.screenshot({ path: filename(name) })
+  }
+
+  async function screenshotBox(name, selector, padding = 12, options = {}) {
+    if (!options.keepSystemStatusOpen) {
+      await dismissSystemStatus()
+    }
+    const locator = page.locator(selector).first()
+    if ((await locator.count()) === 0) {
+      await page.screenshot({ path: filename(name), fullPage: false })
+      return
+    }
+
+    await locator.scrollIntoViewIfNeeded().catch(() => undefined)
+    await wait(options.delay || 200)
+    const box = await locator.boundingBox()
+    if (!box) {
+      await page.screenshot({ path: filename(name), fullPage: false })
+      return
+    }
+
+    const viewport = page.viewportSize() ?? { width: 1920, height: 1080 }
+    const desiredWidth = Math.max(box.width + padding * 2, options.minWidth ?? 0)
+    const desiredHeight = Math.max(box.height + padding * 2, options.minHeight ?? 0)
+    const x = Math.max(0, Math.min(box.x + box.width / 2 - desiredWidth / 2, viewport.width - desiredWidth))
+    const y = Math.max(0, Math.min(box.y + box.height / 2 - desiredHeight / 2, viewport.height - desiredHeight))
+
+    await page.screenshot({
+      path: filename(name),
+      clip: {
+        x,
+        y,
+        width: Math.min(viewport.width - x, desiredWidth),
+        height: Math.min(viewport.height - y, desiredHeight),
+      },
+    })
   }
 
   async function viewport(name, options = {}) {
@@ -131,10 +191,78 @@ async (page) => {
     await wait(150)
   }
 
-  await login()
+  async function stagePresenceEmptyState() {
+    await page.evaluate(() => {
+      const cards = document.querySelector('[data-help-id="dashboard.presence.cards"]')
+      if (!cards) return
+      cards.innerHTML = `
+        <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center text-base-content/70" style="grid-column: 1 / -1;">
+          <p style="font-weight: 700; color: #101828; margin-bottom: .25rem;">No people match this view</p>
+          <p>Clear search and filters before deciding nobody is checked in.</p>
+        </div>
+      `
+    })
+  }
+
+  async function stageVisitorCheckoutCard() {
+    await page.evaluate(() => {
+      const cards = document.querySelector('[data-help-id="dashboard.presence.cards"]')
+      if (!cards) return
+      cards.innerHTML = `
+        <button type="button" data-help-id="dashboard.presence.person-card" class="btn h-auto min-h-32 justify-start border border-warning/40 bg-base-100 p-4 text-left shadow-sm" style="width: 320px;">
+          <div style="display: flex; width: 100%; flex-direction: column; gap: .75rem;">
+            <div style="display: flex; align-items: center; gap: .75rem;">
+              <div class="badge badge-warning">VISITOR</div>
+              <div>
+                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Alex Visitor</h3>
+                <p style="font-size: .8rem; margin: 0; opacity: .72;">Training Group</p>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: .85rem;">Checked in 2h ago</span>
+              <span data-help-id="dashboard.presence.visitor-checkout" class="btn btn-outline btn-warning btn-xs">Check out</span>
+            </div>
+          </div>
+        </button>
+      `
+    })
+  }
+
+  async function stageDutyWatchCardIfMissing() {
+    const existing = page.locator('[data-help-id="dashboard.stat.duty-watch"]').first()
+    if ((await existing.count()) > 0) return
+
+    await page.evaluate(() => {
+      const stats = document.querySelector('[data-help-id="dashboard.status-stats"]')
+      if (!stats) return
+      const card = document.createElement('section')
+      card.setAttribute('data-help-id', 'dashboard.stat.duty-watch')
+      card.className = 'bg-base-100 shadow-sm border border-base-300'
+      card.style.cssText =
+        'width: 430px; min-height: 116px; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between;'
+      card.innerHTML = `
+        <div>
+          <p style="font-size:.8rem;color:#667085;margin:0 0 .5rem;">Duty Watch Tonight</p>
+          <p style="font-size:2rem;font-weight:800;color:#f4b400;margin:0;">1/6</p>
+          <p style="font-size:.85rem;color:#667085;margin:.5rem 0 0;">5 uncovered positions</p>
+        </div>
+        <div style="font-size:2rem;color:#1a7eea;">👥</div>
+      `
+      stats.prepend(card)
+    })
+  }
+
+  await captureLoginFlow()
 
   await viewport('dashboard-overview-main')
   await screenshot('dashboard-navbar-overview', '[data-help-id="nav.root"]')
+  await screenshotBox('dashboard-nav-brand', '[data-help-id="nav.brand"]', 10)
+  await screenshotBox('dashboard-nav-links', '[data-help-id="nav.links"]', 10)
+  await screenshotBox('dashboard-nav-help', '[data-help-id="nav.help"]', 10, {
+    minWidth: 300,
+    minHeight: 72,
+  })
+  await screenshotBox('dashboard-nav-user-menu', '[data-help-id="nav.user-menu"]', 10)
 
   await page.locator('[data-help-id="nav.system-status"]').hover()
   await wait(500)
@@ -159,8 +287,30 @@ async (page) => {
   await page.waitForSelector('[data-help-id="dashboard.root"]', { timeout: 15000 })
   await hideChrome()
   await screenshot('dashboard-status-panel-focus', '[data-help-id="dashboard.status-stats"]')
+  await screenshotBox('dashboard-stat-dds', '[data-help-id="dashboard.stat.dds"]', 12)
+  await stageDutyWatchCardIfMissing()
+  await screenshotBox('dashboard-stat-duty-watch', '[data-help-id="dashboard.stat.duty-watch"]', 12)
+  await screenshotBox('dashboard-stat-building', '[data-help-id="dashboard.stat.building"]', 12)
+  await screenshotBox('dashboard-stat-lockup-holder', '[data-help-id="dashboard.stat.lockup-holder"]', 12)
   await screenshot('dashboard-quick-actions-focus', '[data-help-id="dashboard.stat.actions"]')
+  await screenshotBox(
+    'dashboard-action-open-lockup',
+    '[data-help-id="dashboard.quick-actions.open-building"], [data-help-id="dashboard.quick-actions.execute-lockup"]',
+    12,
+    { minWidth: 300, minHeight: 96 },
+  )
+  await screenshotBox('dashboard-action-transfer-dds', '[data-help-id="dashboard.quick-actions.transfer-dds"]', 12, {
+    minWidth: 300,
+    minHeight: 96,
+  })
+  await screenshotBox(
+    'dashboard-action-transfer-lockup',
+    '[data-help-id="dashboard.quick-actions.transfer-lockup"]',
+    12,
+    { minWidth: 300, minHeight: 96 },
+  )
   await screenshot('dashboard-presence-grid-focus', '[data-help-id="dashboard.presence"]')
+  await screenshotBox('dashboard-presence-filters', '[data-help-id="dashboard.presence.filters"]', 12)
   await screenshot('dashboard-presence-search', '[data-help-id="dashboard.presence.filters"]')
   await screenshot('dashboard-person-card-focus', '[data-help-id="dashboard.presence.person-card"], [data-help-id="dashboard.presence.cards"]')
 
@@ -174,14 +324,12 @@ async (page) => {
     await viewport('dashboard-member-action-panel')
   }
 
-  const visitorCheckout = page.locator('[data-help-id="dashboard.presence.visitor-checkout"]').first()
-  if ((await visitorCheckout.count()) > 0) {
-    await visitorCheckout.scrollIntoViewIfNeeded()
-    await wait(200)
-    await visitorCheckout.screenshot({ path: filename('dashboard-visitor-checkout') })
-  } else {
-    await screenshot('dashboard-visitor-checkout', '[data-help-id="dashboard.presence"]')
-  }
+  await stageVisitorCheckoutCard()
+  await screenshotBox('dashboard-visitor-card-checkout', '[data-help-id="dashboard.presence.person-card"]', 12)
+  await screenshot('dashboard-visitor-checkout', '[data-help-id="dashboard.presence"]')
+
+  await stagePresenceEmptyState()
+  await screenshot('dashboard-presence-empty-state', '[data-help-id="dashboard.presence"]')
 
   const manual = page.locator('[data-help-id="dashboard.presence.manual-in-out"]').first()
   if ((await manual.count()) > 0) {
