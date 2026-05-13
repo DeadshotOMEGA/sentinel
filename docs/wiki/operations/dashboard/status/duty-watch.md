@@ -1,6 +1,6 @@
 # Status: Duty Watch
 
-![Duty Watch status block](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![Duty Watch status block](/uploads/wiki-dashboard/operations/dashboard-stat-duty-watch.png)
 
 Duty Watch shows whether scheduled watch positions are covered.
 

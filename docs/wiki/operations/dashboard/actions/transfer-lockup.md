@@ -1,6 +1,6 @@
 # Actions: Transfer Lockup
 
-![Transfer Lockup action](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Transfer Lockup action](/uploads/wiki-dashboard/operations/dashboard-action-transfer-lockup.png)
 
 Transfer Lockup moves lockup responsibility to another qualified checked-in member.
 
@@ -11,6 +11,10 @@ Transfer Lockup moves lockup responsibility to another qualified checked-in memb
 ## When To Use It
 
 Use it when responsibility is moving before lockup or checkout.
+
+## Holder Leaving Scenario
+
+If the current holder is leaving before lockup, transfer lockup responsibility before that person checks out. Sentinel should show the new holder before the old holder leaves.
 
 ## What To Check
 
@@ -33,7 +37,7 @@ Good: Lockup Holder updates to the correct recipient.
 
 Caution: Recipient is qualified but acceptance has not been confirmed.
 
-Stop: Recipient is not present, not qualified, or not accepting responsibility.
+Stop: Recipient is not present, not qualified, or not accepting responsibility. Do not transfer to someone just to clear a warning.
 
 ## What To Confirm After Action
 
@@ -52,3 +56,4 @@ Escalate disputed lockup transfer.
 - [Transfer DDS](/operations/dashboard/actions/transfer-dds)
 - [Transfer Lockup](/operations/dashboard/actions/transfer-lockup)
 - [Manual In Out](/operations/dashboard/actions/manual-in-out)
+- [DDS: Transfer Lockup](/operations/day-duty/transfer-lockup)

@@ -1,6 +1,6 @@
 # Daily End: Building Recheck
 
-![Building Status after lockup](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Building Status after lockup](/uploads/wiki-dashboard/operations/dashboard-stat-building.png)
 
 Building recheck confirms Sentinel recorded the secured state after lockup.
 

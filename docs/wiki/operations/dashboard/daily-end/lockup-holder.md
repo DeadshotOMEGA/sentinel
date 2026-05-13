@@ -1,6 +1,6 @@
 # Daily End: Lockup Holder
 
-![Lockup holder status before lockup](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Lockup holder status before lockup](/uploads/wiki-dashboard/operations/dashboard-stat-lockup-holder.png)
 
 The lockup holder is the person responsible for securing the building.
 

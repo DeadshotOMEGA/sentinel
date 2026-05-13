@@ -19,6 +19,12 @@ Use it only after reviewing alerts, status, and Presence.
 - Whether real-world conditions match Sentinel.
 - Whether you have authority to make the change.
 
+## Common DDS Actions That Start Here
+
+- [Transfer DDS](/operations/day-duty/transfer-dds) when Duty Day Staff responsibility is changing.
+- [Transfer Lockup](/operations/day-duty/transfer-lockup) when the current lockup holder is leaving or handing off.
+- [Execute Lockup](/operations/day-duty/execute-lockup) only after alerts, visitors, remaining people, and holder identity are resolved.
+
 ## Step-by-Step Admin Procedure
 
 1. Read the status panel first.

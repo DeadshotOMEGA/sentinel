@@ -1,6 +1,6 @@
 # Status: Building State
 
-![Building Status block](/uploads/wiki-dashboard/operations/dashboard-status-panel-focus.png)
+![Building Status block](/uploads/wiki-dashboard/operations/dashboard-stat-building.png)
 
 Building State is Sentinel's record of whether the building is open, secured, or in transition.
 

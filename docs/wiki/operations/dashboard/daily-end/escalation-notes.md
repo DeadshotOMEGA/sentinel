@@ -20,6 +20,13 @@ Use it when anything remains mismatched, unresolved, or handed off at end of day
 - Current building and lockup state.
 - Whether any alerts remain.
 
+## Note Templates
+
+- Unresolved alert: "Sentinel still shows [alert]. DDS checked [real condition]. Escalated to [person] at [time]."
+- Person still present: "Presence shows [name/type] still on site. DDS confirmed [location/status] and handed off to [person]."
+- Lockup mismatch: "Sentinel says [state], real building is [state]. Lockup action was not completed. Escalated to [person]."
+- System issue: "System Status shows [service/problem]. No further action taken until health is confirmed."
+
 ## Step-by-Step Admin Procedure
 
 1. Write the issue in plain language.

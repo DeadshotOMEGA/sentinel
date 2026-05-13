@@ -1,6 +1,6 @@
 # Daily End: Execute Lockup
 
-![Lockup-ready Dashboard state](/uploads/wiki-dashboard/operations/dashboard-lockup-ready-state.png)
+![Execute Lockup control](/uploads/wiki-dashboard/operations/dashboard-action-open-lockup.png)
 
 Execute Lockup records that the building has been secured.
 
@@ -16,6 +16,7 @@ Use it only when the building should be secured and all pre-checks are complete.
 
 - Alerts are handled or escalated.
 - Presence does not show unresolved people.
+- Visitors are checked out or physically accounted for.
 - Lockup holder is correct.
 - The real building is ready to be secured.
 
@@ -34,7 +35,7 @@ Good: Building Status changes to Secured and Presence is cleared or expected.
 
 Caution: The button is available, but a person count or alert still needs review.
 
-Stop: People, alerts, or holder state are unresolved.
+Stop: People, visitors, alerts, or holder state are unresolved. Do not execute lockup while any visitor is still unexpectedly checked in.
 
 ## What To Confirm After Action
 
@@ -54,3 +55,4 @@ Escalate failed or mismatched lockup state immediately.
 - [Execute Lockup](/operations/dashboard/daily-end/execute-lockup)
 - [Building Recheck](/operations/dashboard/daily-end/building-recheck)
 - [Escalation Notes](/operations/dashboard/daily-end/escalation-notes)
+- [DDS: Execute Lockup](/operations/day-duty/execute-lockup)

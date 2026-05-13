@@ -1,6 +1,6 @@
 # Presence: Empty States
 
-![Presence grid empty or filtered state](/uploads/wiki-dashboard/operations/dashboard-presence-grid-focus.png)
+![Presence grid empty or filtered state](/uploads/wiki-dashboard/operations/dashboard-presence-empty-state.png)
 
 Empty states explain whether nobody is checked in or filters/search are hiding results.
 
