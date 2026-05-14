@@ -609,7 +609,11 @@ export class OperationalReportService {
           ).length,
           byVisitType: this.countByLabel(rows.map((row) => row.visitType)),
           byPurpose: this.countByLabel(rows.map((row) => row.visitPurpose ?? 'Unspecified')),
-          byEvent: this.countByLabel(rows.map((row) => row.event?.name ?? 'No event link')),
+          byEvent: this.countByLabel(
+            visitors.map(
+              (visitor) => visitor.unitEvent?.title ?? visitor.event?.name ?? 'No event link'
+            )
+          ),
         },
         rows,
       },
@@ -1395,12 +1399,17 @@ export class OperationalReportService {
             Math.round((visitor.checkOutTime.getTime() - visitor.checkInTime.getTime()) / 60_000)
           )
         : null,
-      event: visitor.event
+      event: visitor.unitEvent
         ? {
-            id: visitor.event.id,
-            name: visitor.event.name,
+            id: visitor.unitEvent.id,
+            name: visitor.unitEvent.title,
           }
-        : null,
+        : visitor.event
+          ? {
+              id: visitor.event.id,
+              name: visitor.event.name,
+            }
+          : null,
       host:
         hostMember && hostName
           ? {

@@ -360,7 +360,7 @@ export function buildReasonFirstVisitorPayload(
 
   if (reasonRequiresEventSelection(input.reason)) {
     const eventId = requireValue(input.eventId, 'Select an event before continuing')
-    payload.eventId = eventId
+    payload.unitEventId = eventId
 
     const eventTitle = trimValue(input.eventTitle)
     const eventDateLabel = trimValue(input.eventDateLabel)
@@ -464,7 +464,7 @@ export function buildReasonFirstVisitorGroupPayload(
       input.reason === 'contract_work'
         ? requireValue(workDescription, 'Work description is required for contract work visits')
         : purposeDetailsForEvent,
-    eventId: reasonRequiresEventSelection(input.reason)
+    unitEventId: reasonRequiresEventSelection(input.reason)
       ? requireValue(input.eventId, 'Select an event before continuing')
       : trimValue(input.eventId),
     hostMemberId: reasonRequiresMemberSelection(input.reason)

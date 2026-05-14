@@ -379,6 +379,7 @@ model Visitor {
   purposeDetails   String?       @map("purpose_details")
   recruitmentStep  String?       @map("recruitment_step") @db.VarChar(50)
   eventId          String?       @map("event_id") @db.Uuid
+  unitEventId      String?       @map("unit_event_id") @db.Uuid
   hostMemberId     String?       @map("host_member_id") @db.Uuid
   checkInTime      DateTime      @default(now()) @map("check_in_time") @db.Timestamp(6)
   checkOutTime     DateTime?     @map("check_out_time") @db.Timestamp(6)
@@ -391,6 +392,7 @@ model Visitor {
   visitorGroupId   String?       @map("visitor_group_id") @db.Uuid
   createdByMember  Member?       @relation("VisitorCreatedBy", fields: [createdByAdmin], references: [id], onDelete: SetNull, onUpdate: NoAction)
   event            Event?        @relation(fields: [eventId], references: [id], onUpdate: NoAction)
+  unitEvent        UnitEvent?    @relation(fields: [unitEventId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   hostMember       Member?       @relation("VisitorHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
   badge            Badge?        @relation(fields: [temporaryBadgeId], references: [id], onUpdate: NoAction)
   visitTypeRef     VisitType?    @relation(fields: [visitTypeId], references: [id], onDelete: Restrict, onUpdate: NoAction)
@@ -399,6 +401,7 @@ model Visitor {
   @@index([checkInTime(sort: Desc)], map: "idx_visitors_check_in_time")
   @@index([checkOutTime], map: "idx_visitors_check_out_time")
   @@index([eventId], map: "idx_visitors_event")
+  @@index([unitEventId], map: "idx_visitors_unit_event")
   @@index([hostMemberId], map: "idx_visitors_host")
   @@index([checkInMethod], map: "idx_visitors_check_in_method")
   @@index([temporaryBadgeId], map: "idx_visitors_temporary_badge")
@@ -414,15 +417,18 @@ model VisitorGroup {
   visitPurpose   String?               @map("visit_purpose") @db.VarChar(50)
   purposeDetails String?               @map("purpose_details")
   eventId        String?               @map("event_id") @db.Uuid
+  unitEventId    String?               @map("unit_event_id") @db.Uuid
   hostMemberId   String?               @map("host_member_id") @db.Uuid
   checkInMethod  String?               @default("kiosk_self_service") @map("check_in_method") @db.VarChar(20)
   createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamp(6)
   event          Event?                @relation(fields: [eventId], references: [id], onUpdate: NoAction)
+  unitEvent      UnitEvent?            @relation(fields: [unitEventId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   hostMember     Member?               @relation("VisitorGroupHost", fields: [hostMemberId], references: [id], onUpdate: NoAction)
   members        Visitor[]
   vehicles       VisitorGroupVehicle[]
 
   @@index([eventId], map: "idx_visitor_groups_event_id")
+  @@index([unitEventId], map: "idx_visitor_groups_unit_event_id")
   @@index([hostMemberId], map: "idx_visitor_groups_host_member_id")
   @@index([checkInMethod], map: "idx_visitor_groups_check_in_method")
   @@index([createdAt(sort: Desc)], map: "idx_visitor_groups_created_at")
@@ -1102,6 +1108,8 @@ model UnitEvent {
   eventType         UnitEventType?            @relation(fields: [eventTypeId], references: [id], onDelete: SetNull, onUpdate: NoAction)
   dutyPositions     UnitEventDutyPosition[]
   dutyAssignments   UnitEventDutyAssignment[]
+  visitors          Visitor[]
+  visitorGroups     VisitorGroup[]
 
   @@index([eventDate, endDate], map: "idx_unit_events_date_range")
   @@index([status], map: "idx_unit_events_status")

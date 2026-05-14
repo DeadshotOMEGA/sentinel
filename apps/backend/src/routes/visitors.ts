@@ -13,7 +13,10 @@ import type {
 } from '@sentinel/contracts'
 import type { Request } from 'express'
 import type { Visitor } from '@sentinel/types'
-import { VisitorRepository } from '../repositories/visitor-repository.js'
+import {
+  VisitorEventAssociationError,
+  VisitorRepository,
+} from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
 import { broadcastVisitorSignin, broadcastVisitorSignout } from '../websocket/broadcast.js'
 import { resolveVisitReason } from '../utils/visitor-intake.js'
@@ -42,6 +45,7 @@ function toVisitorResponse(v: Visitor) {
     purposeDetails: v.purposeDetails ?? null,
     recruitmentStep: v.recruitmentStep ?? null,
     eventId: v.eventId ?? null,
+    unitEventId: v.unitEventId ?? null,
     hostMemberId: v.hostMemberId ?? null,
     checkInTime: v.checkInTime.toISOString(),
     checkOutTime: v.checkOutTime?.toISOString() ?? null,
@@ -166,6 +170,7 @@ export const visitorsRouter = s.router(visitorContract, {
         purposeDetails: body.purposeDetails,
         recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
+        unitEventId: body.unitEventId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,
         checkOutTime: body.checkOutTime ? new Date(body.checkOutTime) : undefined,
@@ -191,6 +196,16 @@ export const visitorsRouter = s.router(visitorContract, {
         body: toVisitorResponse(visitor),
       }
     } catch (error) {
+      if (error instanceof VisitorEventAssociationError) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
       return {
         status: 500 as const,
         body: {
@@ -227,6 +242,7 @@ export const visitorsRouter = s.router(visitorContract, {
         visitPurpose: body.visitPurpose,
         purposeDetails: body.purposeDetails,
         eventId: body.eventId,
+        unitEventId: body.unitEventId,
         hostMemberId: body.hostMemberId,
         checkInMethod: body.checkInMethod,
         adminNotes: body.adminNotes,
@@ -267,6 +283,16 @@ export const visitorsRouter = s.router(visitorContract, {
         },
       }
     } catch (error) {
+      if (error instanceof VisitorEventAssociationError) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
       if (error instanceof Error && error.message.includes('duplicate')) {
         return {
           status: 409 as const,
@@ -480,6 +506,7 @@ export const visitorsRouter = s.router(visitorContract, {
         purposeDetails: body.purposeDetails,
         recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
+        unitEventId: body.unitEventId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,
         checkOutTime: body.checkOutTime ? new Date(body.checkOutTime) : undefined,
@@ -494,6 +521,16 @@ export const visitorsRouter = s.router(visitorContract, {
         body: toVisitorResponse(visitor),
       }
     } catch (error) {
+      if (error instanceof VisitorEventAssociationError) {
+        return {
+          status: 400 as const,
+          body: {
+            error: 'VALIDATION_ERROR',
+            message: error.message,
+          },
+        }
+      }
+
       if (error instanceof Error && error.message.includes('not found')) {
         return {
           status: 404 as const,

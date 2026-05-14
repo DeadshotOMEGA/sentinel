@@ -37,6 +37,7 @@ export interface Visitor {
   purposeDetails?: string
   recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
+  unitEventId?: string
   hostMemberId?: string
   checkInTime: Date
   checkOutTime?: Date
@@ -65,6 +66,7 @@ export interface CreateVisitorInput {
   purposeDetails?: string
   recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
+  unitEventId?: string
   hostMemberId?: string
   checkInTime?: Date
   checkOutTime?: Date
@@ -92,6 +94,7 @@ export interface UpdateVisitorInput {
   purposeDetails?: string
   recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
+  unitEventId?: string
   hostMemberId?: string
   checkInTime?: Date
   checkOutTime?: Date
@@ -122,6 +125,7 @@ export interface CreateVisitorGroupInput {
   visitPurpose?: VisitorVisitPurpose
   purposeDetails?: string
   eventId?: string
+  unitEventId?: string
   hostMemberId?: string
   checkInMethod?: VisitorCheckInMethod
   adminNotes?: string

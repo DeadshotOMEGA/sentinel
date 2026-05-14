@@ -61,6 +61,12 @@ const visitorInclude = {
       name: true,
     },
   },
+  unitEvent: {
+    select: {
+      id: true,
+      title: true,
+    },
+  },
   hostMember: {
     select: {
       id: true,
@@ -613,7 +619,13 @@ export class OperationalReportRepository {
     }
 
     if (filters.eventLinked !== undefined) {
-      where.eventId = filters.eventLinked ? { not: null } : null
+      where.AND = [
+        {
+          OR: filters.eventLinked
+            ? [{ eventId: { not: null } }, { unitEventId: { not: null } }]
+            : [{ eventId: null }, { unitEventId: null }],
+        },
+      ]
     }
 
     if (filters.hostMemberId) {

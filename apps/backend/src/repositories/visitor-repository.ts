@@ -38,6 +38,18 @@ interface VisitorGroupVehicleEntity {
 
 type VisitorDbClient = PrismaClientInstance | Prisma.TransactionClient
 
+interface VisitorEventAssociation {
+  eventId: string | null
+  unitEventId: string | null
+}
+
+export class VisitorEventAssociationError extends Error {
+  constructor(message = 'Selected event is no longer available') {
+    super(message)
+    this.name = 'VisitorEventAssociationError'
+  }
+}
+
 export class VisitorRepository {
   private prisma: PrismaClientInstance
 
@@ -104,7 +116,78 @@ export class VisitorRepository {
     return licensePlate.trim().toUpperCase()
   }
 
-  private buildVisitorCreateRecord(data: CreateVisitorInput) {
+  private async resolveVisitorEventAssociation(
+    tx: VisitorDbClient,
+    input: { eventId?: string; unitEventId?: string }
+  ): Promise<VisitorEventAssociation> {
+    const eventId = input.eventId?.trim()
+    const unitEventId = input.unitEventId?.trim()
+
+    if (!eventId && !unitEventId) {
+      return { eventId: null, unitEventId: null }
+    }
+
+    if (unitEventId) {
+      const unitEvent = await tx.unitEvent.findUnique({
+        where: { id: unitEventId },
+        select: { id: true },
+      })
+
+      if (!unitEvent) {
+        throw new VisitorEventAssociationError(
+          'Selected event is no longer available. Refresh the visitor sign-in and select the event again.'
+        )
+      }
+
+      if (!eventId || eventId === unitEventId) {
+        return { eventId: null, unitEventId }
+      }
+
+      const legacyEvent = await tx.event.findUnique({
+        where: { id: eventId },
+        select: { id: true },
+      })
+
+      if (!legacyEvent) {
+        throw new VisitorEventAssociationError(
+          'Selected event is no longer available. Refresh the visitor sign-in and select the event again.'
+        )
+      }
+
+      return { eventId, unitEventId }
+    }
+
+    if (!eventId) {
+      return { eventId: null, unitEventId: null }
+    }
+
+    const legacyEvent = await tx.event.findUnique({
+      where: { id: eventId },
+      select: { id: true },
+    })
+
+    if (legacyEvent) {
+      return { eventId, unitEventId: null }
+    }
+
+    const unitEvent = await tx.unitEvent.findUnique({
+      where: { id: eventId },
+      select: { id: true },
+    })
+
+    if (unitEvent) {
+      return { eventId: null, unitEventId: eventId }
+    }
+
+    throw new VisitorEventAssociationError(
+      'Selected event is no longer available. Refresh the visitor sign-in and select the event again.'
+    )
+  }
+
+  private buildVisitorCreateRecord(
+    data: CreateVisitorInput,
+    eventAssociation: VisitorEventAssociation
+  ) {
     const fallbackSplit = splitLegacyVisitorName(data.name ?? '')
     const rankPrefix = normalizeNamePart(data.rankPrefix ?? fallbackSplit.rankPrefix)
     const firstName = normalizeNamePart(data.firstName ?? fallbackSplit.firstName)
@@ -132,7 +215,8 @@ export class VisitorRepository {
         visitType: data.visitType,
         visitTypeId: data.visitTypeId ?? null,
         hostMemberId: data.hostMemberId ?? null,
-        eventId: data.eventId ?? null,
+        eventId: eventAssociation.eventId,
+        unitEventId: eventAssociation.unitEventId,
         visitReason: data.visitReason ?? null,
         visitPurpose: data.visitPurpose ?? null,
         purposeDetails: data.purposeDetails ?? null,
@@ -152,9 +236,12 @@ export class VisitorRepository {
   private async createVisitorInTransaction(
     tx: VisitorDbClient,
     data: CreateVisitorInput,
-    keysToRecompute?: Set<string>
+    keysToRecompute?: Set<string>,
+    resolvedEventAssociation?: VisitorEventAssociation
   ): Promise<PrismaVisitor> {
-    const record = this.buildVisitorCreateRecord(data)
+    const eventAssociation =
+      resolvedEventAssociation ?? (await this.resolveVisitorEventAssociation(tx, data))
+    const record = this.buildVisitorCreateRecord(data, eventAssociation)
     const created = await tx.visitor.create({
       data: record.data,
     })
@@ -186,6 +273,7 @@ export class VisitorRepository {
       where: { id: created.id },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
       },
@@ -223,6 +311,7 @@ export class VisitorRepository {
       },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
       },
@@ -239,6 +328,7 @@ export class VisitorRepository {
       where: { id },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
       },
@@ -264,6 +354,7 @@ export class VisitorRepository {
       },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
       },
@@ -293,6 +384,7 @@ export class VisitorRepository {
       },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
         visitTypeRef: true,
@@ -315,13 +407,15 @@ export class VisitorRepository {
 
   async createGroup(data: CreateVisitorGroupInput): Promise<CreateVisitorGroupResult> {
     const result = await this.prisma.$transaction(async (tx) => {
+      const eventAssociation = await this.resolveVisitorEventAssociation(tx, data)
       const group = await tx.visitorGroup.create({
         data: {
           kioskId: data.kioskId,
           visitReason: data.visitReason ?? null,
           visitPurpose: data.visitPurpose ?? null,
           purposeDetails: data.purposeDetails ?? null,
-          eventId: data.eventId ?? null,
+          eventId: eventAssociation.eventId,
+          unitEventId: eventAssociation.unitEventId,
           hostMemberId: data.hostMemberId ?? null,
           checkInMethod: data.checkInMethod ?? 'kiosk_self_service',
         },
@@ -357,7 +451,8 @@ export class VisitorRepository {
             visitReason: data.visitReason,
             visitPurpose: data.visitPurpose,
             purposeDetails: data.purposeDetails,
-            eventId: data.eventId,
+            eventId: eventAssociation.eventId ?? undefined,
+            unitEventId: eventAssociation.unitEventId ?? undefined,
             hostMemberId: data.hostMemberId,
             kioskId: data.kioskId,
             adminNotes: data.adminNotes,
@@ -365,7 +460,8 @@ export class VisitorRepository {
             createdByAdmin: data.createdByAdmin,
             visitorGroupId: group.id,
           },
-          keysToRecompute
+          keysToRecompute,
+          eventAssociation
         )
         createdMembers.push(created)
       }
@@ -458,6 +554,7 @@ export class VisitorRepository {
               },
               include: {
                 event: true,
+                unitEvent: true,
                 hostMember: true,
                 badge: true,
               },
@@ -479,6 +576,10 @@ export class VisitorRepository {
    */
   async update(id: string, data: UpdateVisitorInput): Promise<Visitor> {
     const visitor = await this.prisma.$transaction(async (tx) => {
+      const eventAssociation =
+        data.eventId !== undefined || data.unitEventId !== undefined
+          ? await this.resolveVisitorEventAssociation(tx, data)
+          : undefined
       const existing = await tx.visitor.findUniqueOrThrow({
         where: { id },
         select: { id: true, name: true, rankPrefix: true, firstName: true, lastName: true },
@@ -528,7 +629,18 @@ export class VisitorRepository {
           licensePlate: data.licensePlate !== undefined ? data.licensePlate : undefined,
           visitType: data.visitType !== undefined ? data.visitType : undefined,
           visitTypeId: data.visitTypeId !== undefined ? data.visitTypeId : undefined,
-          eventId: data.eventId !== undefined ? data.eventId : undefined,
+          eventId:
+            eventAssociation !== undefined
+              ? eventAssociation.eventId
+              : data.eventId !== undefined
+                ? data.eventId
+                : undefined,
+          unitEventId:
+            eventAssociation !== undefined
+              ? eventAssociation.unitEventId
+              : data.unitEventId !== undefined
+                ? data.unitEventId
+                : undefined,
           hostMemberId: data.hostMemberId !== undefined ? data.hostMemberId : undefined,
           visitReason: data.visitReason !== undefined ? data.visitReason : undefined,
           visitPurpose: data.visitPurpose !== undefined ? data.visitPurpose : undefined,
@@ -554,6 +666,7 @@ export class VisitorRepository {
         where: { id },
         include: {
           event: true,
+          unitEvent: true,
           hostMember: true,
           badge: true,
         },
@@ -574,6 +687,7 @@ export class VisitorRepository {
       },
       include: {
         event: true,
+        unitEvent: true,
         hostMember: true,
         badge: true,
       },
@@ -673,6 +787,11 @@ export class VisitorRepository {
               name: true,
             },
           },
+          unitEvent: {
+            select: {
+              title: true,
+            },
+          },
         },
       }),
     ])
@@ -692,7 +811,7 @@ export class VisitorRepository {
           hostName: v.hostMember
             ? (v.hostMember.displayName ?? `${v.hostMember.firstName} ${v.hostMember.lastName}`)
             : undefined,
-          eventName: v.event?.name ? v.event.name : undefined,
+          eventName: v.unitEvent?.title ?? v.event?.name ?? undefined,
           checkInTime: v.checkInTime,
           checkOutTime: v.checkOutTime ? v.checkOutTime : undefined,
           duration,
@@ -735,6 +854,7 @@ export class VisitorRepository {
       visitTypeId: visitor.visitTypeId ? visitor.visitTypeId : undefined,
       hostMemberId: visitor.hostMemberId ? visitor.hostMemberId : undefined,
       eventId: visitor.eventId ? visitor.eventId : undefined,
+      unitEventId: visitor.unitEventId ? visitor.unitEventId : undefined,
       visitReason: visitor.visitReason ? visitor.visitReason : undefined,
       visitPurpose: visitor.visitPurpose
         ? (visitor.visitPurpose as Visitor['visitPurpose'])
@@ -767,6 +887,7 @@ export class VisitorRepository {
         displayName?: string | null
       } | null
       event?: { name: string } | null
+      unitEvent?: { title: string } | null
       visitTypeRef?: {
         id: string
         name: string
@@ -789,7 +910,7 @@ export class VisitorRepository {
       hostName: hostMember
         ? (hostMember.displayName ?? `${hostMember.firstName} ${hostMember.lastName}`)
         : undefined,
-      eventName: visitor.event?.name ?? undefined,
+      eventName: visitor.unitEvent?.title ?? visitor.event?.name ?? undefined,
       visitTypeInfo: visitor.visitTypeRef
         ? {
             id: visitor.visitTypeRef.id,

@@ -81,6 +81,21 @@ describe('buildReasonFirstVisitorPayload', () => {
       })
     ).toThrow('Select an event before continuing')
   })
+
+  it('sends selected unit events through unitEventId', () => {
+    const payload = buildReasonFirstVisitorPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'event',
+      branch: 'civilian',
+      firstName: 'Alex',
+      lastName: 'Taylor',
+      eventId: '11111111-1111-1111-1111-111111111111',
+      eventTitle: 'Standing Court Martial',
+    })
+
+    expect(payload.unitEventId).toBe('11111111-1111-1111-1111-111111111111')
+    expect(payload.eventId).toBeUndefined()
+  })
 })
 
 describe('buildReasonFirstVisitSummary', () => {
@@ -131,5 +146,19 @@ describe('buildReasonFirstVisitorGroupPayload', () => {
         members: [],
       })
     ).toThrow('At least one visitor is required')
+  })
+
+  it('sends selected unit events through unitEventId for groups', () => {
+    const payload = buildReasonFirstVisitorGroupPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'event',
+      branch: 'civilian',
+      eventId: '22222222-2222-2222-2222-222222222222',
+      eventTitle: 'Standing Court Martial',
+      members: [{ firstName: 'Alex', lastName: 'Taylor' }],
+    })
+
+    expect(payload.unitEventId).toBe('22222222-2222-2222-2222-222222222222')
+    expect(payload.eventId).toBeUndefined()
   })
 })

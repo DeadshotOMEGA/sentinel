@@ -347,6 +347,7 @@ exports.Prisma.VisitorScalarFieldEnum = {
   purposeDetails: 'purposeDetails',
   recruitmentStep: 'recruitmentStep',
   eventId: 'eventId',
+  unitEventId: 'unitEventId',
   hostMemberId: 'hostMemberId',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
@@ -366,6 +367,7 @@ exports.Prisma.VisitorGroupScalarFieldEnum = {
   visitPurpose: 'visitPurpose',
   purposeDetails: 'purposeDetails',
   eventId: 'eventId',
+  unitEventId: 'unitEventId',
   hostMemberId: 'hostMemberId',
   checkInMethod: 'checkInMethod',
   createdAt: 'createdAt'
