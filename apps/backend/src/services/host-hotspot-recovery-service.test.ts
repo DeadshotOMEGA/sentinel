@@ -1,7 +1,12 @@
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_HOST_HOTSPOT_RECOVERY_REQUEST_DIR,
+  DEFAULT_HOST_HOTSPOT_RECOVERY_STATUS_FILE,
   HostHotspotRecoveryQueueError,
+  HostHotspotRecoveryService,
 } from './host-hotspot-recovery-service.js'
 
 describe('HostHotspotRecoveryService', () => {
@@ -9,6 +14,35 @@ describe('HostHotspotRecoveryService', () => {
     expect(DEFAULT_HOST_HOTSPOT_RECOVERY_REQUEST_DIR).toBe(
       '/opt/sentinel/deploy/runtime/hotspot-recovery/requests'
     )
+    expect(DEFAULT_HOST_HOTSPOT_RECOVERY_STATUS_FILE).toBe(
+      '/opt/sentinel/deploy/runtime/hotspot-recovery/status.json'
+    )
+  })
+
+  it('writes and reads a queued recovery status when a repair is requested', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
+    const requestDir = join(rootDir, 'requests')
+    const statusFile = join(rootDir, 'status.json')
+    const service = new HostHotspotRecoveryService(requestDir, statusFile)
+
+    const queued = await service.queueRecoveryRequest({
+      requestedByMemberId: 'member-1',
+      requestedByMemberName: 'PO2 Alex Example',
+      requestedByRemoteSystemName: 'Server',
+      requestedFromIp: '10.42.0.1',
+      requestedFromUserAgent: 'vitest',
+    })
+    const status = await service.readLatestStatus()
+
+    expect(status).toMatchObject({
+      state: 'queued',
+      stage: 'request_queued',
+      requestId: queued.requestId,
+      message: 'Host hotspot repair request queued. Waiting for the host processor to start.',
+    })
+    expect(status?.updatedAt).toBeTruthy()
+
+    await rm(rootDir, { recursive: true, force: true })
   })
 
   it('explains permission failures without leaking raw EACCES text to operators', () => {

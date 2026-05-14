@@ -60,7 +60,8 @@ describe('networkSettingsRouter', () => {
   })
 
   it('queues a host hotspot recovery request for admins', async () => {
-    const requestDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
+    const rootDir = await mkdtemp(join(tmpdir(), 'sentinel-hotspot-recovery-'))
+    const requestDir = join(rootDir, 'requests')
     process.env.HOST_HOTSPOT_RECOVERY_REQUEST_DIR = requestDir
 
     const app = createTestApp(5)
@@ -93,6 +94,6 @@ describe('networkSettingsRouter', () => {
       requestedFromUserAgent: 'vitest',
     })
 
-    await rm(requestDir, { recursive: true, force: true })
+    await rm(rootDir, { recursive: true, force: true })
   })
 })

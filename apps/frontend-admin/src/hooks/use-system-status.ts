@@ -17,7 +17,7 @@ function getErrorMessage(body: unknown, fallback: string): string {
   return fallback
 }
 
-export function useSystemStatus(options?: { enabled?: boolean }) {
+export function useSystemStatus(options?: { enabled?: boolean; refetchIntervalMs?: number }) {
   return useQuery({
     queryKey: systemStatusQueryKey,
     queryFn: async (): Promise<SystemStatusResponse> => {
@@ -30,7 +30,7 @@ export function useSystemStatus(options?: { enabled?: boolean }) {
       return response.body
     },
     enabled: options?.enabled,
-    refetchInterval: 30_000,
+    refetchInterval: options?.refetchIntervalMs ?? 30_000,
     refetchOnWindowFocus: true,
     retry: 1,
   })

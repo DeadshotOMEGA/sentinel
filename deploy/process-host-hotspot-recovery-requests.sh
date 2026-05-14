@@ -31,9 +31,10 @@ fi
 
 for request_file in "${requests[@]}"; do
   base_name="$(basename "${request_file}")"
+  request_id="${base_name%.json}"
   log "Processing host hotspot recovery request ${base_name}"
 
-  if "${SCRIPT_DIR}/recover-host-hotspot.sh" "${CONNECTION_NAME}"; then
+  if "${SCRIPT_DIR}/recover-host-hotspot.sh" "${CONNECTION_NAME}" "${request_id}"; then
     mv "${request_file}" "${PROCESSED_DIR}/${base_name}"
     log "Host hotspot recovery request ${base_name} completed."
   else
