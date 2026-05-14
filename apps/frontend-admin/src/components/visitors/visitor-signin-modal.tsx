@@ -132,7 +132,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
       if (data.organization) visitorData.organization = data.organization
       if (data.visitReason) visitorData.visitReason = data.visitReason
       if (data.hostMemberId) visitorData.hostMemberId = data.hostMemberId
-      if (data.eventId) visitorData.eventId = data.eventId
+      if (data.eventId) visitorData.unitEventId = data.eventId
       if (data.temporaryBadgeId) visitorData.temporaryBadgeId = data.temporaryBadgeId
       if (data.adminNotes) visitorData.adminNotes = data.adminNotes
 
