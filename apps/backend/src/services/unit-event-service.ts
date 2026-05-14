@@ -37,6 +37,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 }
 
+function effectiveEndDate(eventDate: Date, endDate?: Date | null): Date {
+  return endDate ?? eventDate
+}
+
+function timeValue(time: Date | null | undefined): string | null {
+  return time ? time.toISOString().substring(11, 16) : null
+}
+
 // ============================================================================
 // Service Class
 // ============================================================================
@@ -122,6 +130,9 @@ export class UnitEventService {
   }
 
   async createEvent(input: CreateUnitEventInput): Promise<UnitEventWithDetails> {
+    this.validateDateRange(input.eventDate, input.endDate ?? null)
+    this.validateTimeRange(input.eventDate, input.endDate ?? null, input.startTime, input.endTime)
+
     // Determine requiresDutyWatch - use provided value or inherit from event type
     let requiresDutyWatch = input.requiresDutyWatch ?? false
 
@@ -152,6 +163,14 @@ export class UnitEventService {
     if (!event) {
       throw new NotFoundError('Unit Event', id)
     }
+
+    const nextEventDate = input.eventDate ?? event.eventDate
+    const nextEndDate = input.endDate !== undefined ? input.endDate : event.endDate
+    const nextStartTime = input.startTime !== undefined ? input.startTime : event.startTime
+    const nextEndTime = input.endTime !== undefined ? input.endTime : event.endTime
+
+    this.validateDateRange(nextEventDate, nextEndDate)
+    this.validateTimeRange(nextEventDate, nextEndDate, nextStartTime, nextEndTime)
 
     await this.repository.updateEvent(id, input)
 
@@ -270,10 +289,11 @@ export class UnitEventService {
       throw new ConflictError('Member is already assigned to this position on this event')
     }
 
-    // Check if member has assignments on other events on the same date
-    const conflictingAssignments = await this.repository.findMemberEventAssignmentsOnDate(
+    // Check if member has assignments on other events that overlap this event's dates.
+    const conflictingAssignments = await this.repository.findMemberEventAssignmentsOverlappingRange(
       input.memberId,
-      event.eventDate
+      event.eventDate,
+      effectiveEndDate(event.eventDate, event.endDate)
     )
     const otherEventConflicts = conflictingAssignments.filter(
       (a: UnitEventDutyAssignmentEntity) => a.eventId !== eventId
@@ -333,6 +353,27 @@ export class UnitEventService {
       throw new ValidationError(
         `Cannot transition from '${currentStatus}' to '${newStatus}'. Allowed: ${allowedTransitions.join(', ') || 'none (terminal state)'}`
       )
+    }
+  }
+
+  private validateDateRange(eventDate: Date, endDate?: Date | null): void {
+    if (effectiveEndDate(eventDate, endDate) < eventDate) {
+      throw new ValidationError('End date must be the same as or later than start date')
+    }
+  }
+
+  private validateTimeRange(
+    eventDate: Date,
+    endDate: Date | null | undefined,
+    startTime: Date | null | undefined,
+    endTime: Date | null | undefined
+  ): void {
+    const isSingleDay = effectiveEndDate(eventDate, endDate).getTime() === eventDate.getTime()
+    const start = timeValue(startTime)
+    const end = timeValue(endTime)
+
+    if (isSingleDay && start && end && end < start) {
+      throw new ValidationError('End time must be later than start time for a single-day event')
     }
   }
 

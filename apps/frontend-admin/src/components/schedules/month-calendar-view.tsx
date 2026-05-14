@@ -16,6 +16,7 @@ import { DdsModal } from './modals/dds-modal'
 import { DutyWatchModal } from './modals/duty-watch-modal'
 import { EventDetailModal } from './modals/event-detail-modal'
 import { useCalendarDates } from './month-calendar/use-calendar-dates'
+import { expandUnitEventDateKeys } from '@/lib/unit-event-dates'
 
 interface MonthCalendarViewProps {
   currentMonth: Date
@@ -26,6 +27,7 @@ interface EventData {
   id: string
   title: string
   eventDate: string
+  endDate: string | null
   startTime: string | null
   endTime: string | null
 }
@@ -100,11 +102,12 @@ export function MonthCalendarView({ currentMonth, onWeekClick }: MonthCalendarVi
     const map = new Map<string, EventData[]>()
     const events = (eventsData?.data ?? []) as EventData[]
     for (const event of events) {
-      const dateKey = event.eventDate
-      if (!map.has(dateKey)) {
-        map.set(dateKey, [])
+      for (const dateKey of expandUnitEventDateKeys(event)) {
+        if (!map.has(dateKey)) {
+          map.set(dateKey, [])
+        }
+        map.get(dateKey)!.push(event)
       }
-      map.get(dateKey)!.push(event)
     }
     return map
   }, [eventsData])

@@ -41,7 +41,16 @@ function eventTypeToApiFormat(et: {
   return {
     id: et.id,
     name: et.name,
-    category: et.category as 'mess_dinner' | 'ceremonial' | 'training' | 'social' | 'exercise' | 'vip_visit' | 'remembrance' | 'administrative' | 'other',
+    category: et.category as
+      | 'mess_dinner'
+      | 'ceremonial'
+      | 'training'
+      | 'social'
+      | 'exercise'
+      | 'vip_visit'
+      | 'remembrance'
+      | 'administrative'
+      | 'other',
     defaultDurationMinutes: et.defaultDurationMinutes,
     requiresDutyWatch: et.requiresDutyWatch,
     defaultMetadata: (et.defaultMetadata as Record<string, unknown>) ?? null,
@@ -56,6 +65,7 @@ function eventToApiFormat(event: {
   title: string
   eventTypeId: string | null
   eventDate: Date
+  endDate: Date | null
   startTime: Date | null
   endTime: Date | null
   location: string | null
@@ -75,13 +85,21 @@ function eventToApiFormat(event: {
     title: event.title,
     eventTypeId: event.eventTypeId,
     eventDate: event.eventDate.toISOString().substring(0, 10),
+    endDate: event.endDate ? event.endDate.toISOString().substring(0, 10) : null,
     startTime: event.startTime ? event.startTime.toISOString().substring(11, 16) : null,
     endTime: event.endTime ? event.endTime.toISOString().substring(11, 16) : null,
     location: event.location,
     description: event.description,
     organizer: event.organizer,
     requiresDutyWatch: event.requiresDutyWatch,
-    status: event.status as 'draft' | 'planned' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'postponed',
+    status: event.status as
+      | 'draft'
+      | 'planned'
+      | 'confirmed'
+      | 'in_progress'
+      | 'completed'
+      | 'cancelled'
+      | 'postponed',
     metadata: (event.metadata as Record<string, unknown>) ?? null,
     notes: event.notes,
     createdBy: event.createdBy,
@@ -160,6 +178,7 @@ function eventWithDetailsToApiFormat(event: {
   title: string
   eventTypeId: string | null
   eventDate: Date
+  endDate: Date | null
   startTime: Date | null
   endTime: Date | null
   location: string | null
@@ -352,6 +371,7 @@ export const unitEventsRouter = s.router(unitEventContract, {
         title: body.title,
         eventTypeId: body.eventTypeId ?? null,
         eventDate: new Date(body.eventDate),
+        endDate: body.endDate ? new Date(body.endDate) : null,
         startTime: body.startTime ? new Date(`1970-01-01T${body.startTime}:00`) : null,
         endTime: body.endTime ? new Date(`1970-01-01T${body.endTime}:00`) : null,
         location: body.location ?? null,
@@ -383,14 +403,32 @@ export const unitEventsRouter = s.router(unitEventContract, {
     }
   },
 
-  updateUnitEvent: async ({ params, body }: { params: UnitEventIdParam; body: UpdateUnitEventInput }) => {
+  updateUnitEvent: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventIdParam
+    body: UpdateUnitEventInput
+  }) => {
     try {
       const event = await unitEventService.updateEvent(params.id, {
         title: body.title,
         eventTypeId: body.eventTypeId,
         eventDate: body.eventDate ? new Date(body.eventDate) : undefined,
-        startTime: body.startTime !== undefined ? (body.startTime ? new Date(`1970-01-01T${body.startTime}:00`) : null) : undefined,
-        endTime: body.endTime !== undefined ? (body.endTime ? new Date(`1970-01-01T${body.endTime}:00`) : null) : undefined,
+        endDate:
+          body.endDate !== undefined ? (body.endDate ? new Date(body.endDate) : null) : undefined,
+        startTime:
+          body.startTime !== undefined
+            ? body.startTime
+              ? new Date(`1970-01-01T${body.startTime}:00`)
+              : null
+            : undefined,
+        endTime:
+          body.endTime !== undefined
+            ? body.endTime
+              ? new Date(`1970-01-01T${body.endTime}:00`)
+              : null
+            : undefined,
         location: body.location,
         description: body.description,
         organizer: body.organizer,
@@ -419,7 +457,13 @@ export const unitEventsRouter = s.router(unitEventContract, {
     }
   },
 
-  updateUnitEventStatus: async ({ params, body }: { params: UnitEventIdParam; body: UpdateUnitEventStatusInput }) => {
+  updateUnitEventStatus: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventIdParam
+    body: UpdateUnitEventStatusInput
+  }) => {
     try {
       const event = await unitEventService.updateEventStatus(params.id, body.status)
       return {
@@ -435,7 +479,13 @@ export const unitEventsRouter = s.router(unitEventContract, {
   // Event Duty Positions
   // ==========================================================================
 
-  createEventPosition: async ({ params, body }: { params: UnitEventIdParam; body: CreateUnitEventPositionInput }) => {
+  createEventPosition: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventIdParam
+    body: CreateUnitEventPositionInput
+  }) => {
     try {
       const position = await unitEventService.createPosition(params.id, {
         code: body.code,
@@ -452,7 +502,13 @@ export const unitEventsRouter = s.router(unitEventContract, {
     }
   },
 
-  updateEventPosition: async ({ params, body }: { params: UnitEventPositionParams; body: UpdateUnitEventPositionInput }) => {
+  updateEventPosition: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventPositionParams
+    body: UpdateUnitEventPositionInput
+  }) => {
     try {
       const position = await unitEventService.updatePosition(params.id, params.positionId, {
         name: body.name,
@@ -484,7 +540,13 @@ export const unitEventsRouter = s.router(unitEventContract, {
   // Event Duty Assignments
   // ==========================================================================
 
-  createEventAssignment: async ({ params, body }: { params: UnitEventIdParam; body: CreateUnitEventAssignmentInput }) => {
+  createEventAssignment: async ({
+    params,
+    body,
+  }: {
+    params: UnitEventIdParam
+    body: CreateUnitEventAssignmentInput
+  }) => {
     try {
       const assignment = await unitEventService.createAssignment(params.id, {
         eventDutyPositionId: body.eventDutyPositionId ?? null,

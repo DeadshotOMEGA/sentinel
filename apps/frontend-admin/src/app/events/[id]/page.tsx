@@ -24,6 +24,7 @@ import { EventsHelpLauncher } from '@/components/help/section-help-launchers'
 import { Chip } from '@/components/ui/chip'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
@@ -102,7 +103,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
   const handleStatusChange = async (newStatus: UnitEventStatus) => {
     try {
       await updateStatus.mutateAsync({ id, status: newStatus })
-    } catch (_error) {
+    } catch {
       window.alert('Failed to update event status. Please try again.')
     }
   }
@@ -274,30 +275,27 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
                     aria-hidden="true"
                   />
                   <div>
-                    <p className="text-sm text-base-content/60">Date</p>
+                    <p className="text-sm text-base-content/60">Dates</p>
                     <p className="font-medium">
-                      {new Date(event.eventDate + 'T00:00:00').toLocaleDateString('en-CA', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                      {formatUnitEventDateRange(event, 'EEEE, MMMM d, yyyy')}
                     </p>
                   </div>
                 </div>
 
                 {/* Time */}
-                {(event.startTime || event.endTime) && (
-                  <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-base-content/60 mt-0.5" aria-hidden="true" />
-                    <div>
-                      <p className="text-sm text-base-content/60">Time</p>
-                      <p className="font-medium">
-                        {event.startTime || 'N/A'} {event.endTime && `- ${event.endTime}`}
-                      </p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-base-content/60 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm text-base-content/60">Time</p>
+                    <p className="font-medium">
+                      {event.startTime
+                        ? event.endTime
+                          ? `${event.startTime} - ${event.endTime}`
+                          : `Starts ${event.startTime}`
+                        : 'All day'}
+                    </p>
                   </div>
-                )}
+                </div>
 
                 {/* Location */}
                 {event.location && (

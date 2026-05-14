@@ -1,6 +1,5 @@
 'use client'
 
-import { format } from 'date-fns'
 import { Calendar, Clock, MapPin } from 'lucide-react'
 import {
   Dialog,
@@ -13,7 +12,7 @@ import {
 import { AppBadge } from '@/components/ui/AppBadge'
 import { useUnitEvent } from '@/hooks/use-events'
 import { useModalContext } from './modal-context'
-import { parseDateString } from '@/lib/date-utils'
+import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 
 export function EventDetailModal() {
   const { modal, closeModal } = useModalContext()
@@ -47,18 +46,20 @@ export function EventDetailModal() {
               {/* Date */}
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-base-content/60" />
-                <span>{format(parseDateString(event.eventDate), 'EEEE, MMMM d, yyyy')}</span>
+                <span>{formatUnitEventDateRange(event, 'EEEE, MMMM d, yyyy')}</span>
               </div>
 
               {/* Time */}
-              {(event.startTime || event.endTime) && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-base-content/60" />
-                  <span>
-                    {event.startTime ?? '—'} — {event.endTime ?? '—'}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-base-content/60" />
+                <span>
+                  {event.startTime
+                    ? event.endTime
+                      ? `${event.startTime} — ${event.endTime}`
+                      : `Starts ${event.startTime}`
+                    : 'All day'}
+                </span>
+              </div>
 
               {/* Location */}
               {event.location && (

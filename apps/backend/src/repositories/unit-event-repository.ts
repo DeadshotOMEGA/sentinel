@@ -28,6 +28,7 @@ export interface UnitEventEntity {
   title: string
   eventTypeId: string | null
   eventDate: Date
+  endDate: Date | null
   startTime: Date | null
   endTime: Date | null
   location: string | null
@@ -103,6 +104,7 @@ export interface CreateUnitEventInput {
   title: string
   eventTypeId?: string | null
   eventDate: Date
+  endDate?: Date | null
   startTime?: Date | null
   endTime?: Date | null
   location?: string | null
@@ -122,6 +124,7 @@ export interface UpdateUnitEventInput {
   title?: string
   eventTypeId?: string | null
   eventDate?: Date
+  endDate?: Date | null
   startTime?: Date | null
   endTime?: Date | null
   location?: string | null
@@ -247,6 +250,41 @@ function getEventFullInclude() {
   }
 }
 
+function buildUnitEventWhere(filter: UnitEventListFilter): Prisma.UnitEventWhereInput {
+  const where: Prisma.UnitEventWhereInput = {}
+
+  if (filter.startDate && filter.endDate) {
+    where.AND = [
+      { eventDate: { lte: filter.endDate } },
+      {
+        OR: [
+          { endDate: { gte: filter.startDate } },
+          { endDate: null, eventDate: { gte: filter.startDate } },
+        ],
+      },
+    ]
+  } else if (filter.startDate) {
+    where.OR = [
+      { endDate: { gte: filter.startDate } },
+      { endDate: null, eventDate: { gte: filter.startDate } },
+    ]
+  } else if (filter.endDate) {
+    where.eventDate = { lte: filter.endDate }
+  }
+
+  if (filter.category) {
+    where.eventType = { is: { category: filter.category } }
+  }
+  if (filter.status) {
+    where.status = filter.status
+  }
+  if (filter.requiresDutyWatch !== undefined) {
+    where.requiresDutyWatch = filter.requiresDutyWatch
+  }
+
+  return where
+}
+
 // ============================================================================
 // Repository Class
 // ============================================================================
@@ -306,11 +344,12 @@ export class UnitEventRepository {
       category: input.category,
       defaultDurationMinutes: input.defaultDurationMinutes,
       requiresDutyWatch: input.requiresDutyWatch ?? false,
-      defaultMetadata: input.defaultMetadata === null
-        ? Prisma.JsonNull
-        : input.defaultMetadata !== undefined
-          ? (input.defaultMetadata as Prisma.InputJsonValue)
-          : undefined,
+      defaultMetadata:
+        input.defaultMetadata === null
+          ? Prisma.JsonNull
+          : input.defaultMetadata !== undefined
+            ? (input.defaultMetadata as Prisma.InputJsonValue)
+            : undefined,
       displayOrder: input.displayOrder ?? 0,
     }
 
@@ -331,9 +370,10 @@ export class UnitEventRepository {
     }
     if (input.requiresDutyWatch !== undefined) data.requiresDutyWatch = input.requiresDutyWatch
     if (input.defaultMetadata !== undefined) {
-      data.defaultMetadata = input.defaultMetadata === null
-        ? Prisma.JsonNull
-        : (input.defaultMetadata as Prisma.InputJsonValue)
+      data.defaultMetadata =
+        input.defaultMetadata === null
+          ? Prisma.JsonNull
+          : (input.defaultMetadata as Prisma.InputJsonValue)
     }
     if (input.displayOrder !== undefined) data.displayOrder = input.displayOrder
 
@@ -374,27 +414,7 @@ export class UnitEventRepository {
   async findEvents(
     filter: UnitEventListFilter = {}
   ): Promise<{ events: UnitEventEntity[]; total: number }> {
-    const where: Record<string, unknown> = {}
-
-    if (filter.startDate) {
-      where.eventDate = { gte: filter.startDate }
-    }
-    if (filter.endDate) {
-      if (where.eventDate && typeof where.eventDate === 'object' && 'gte' in where.eventDate) {
-        ;(where.eventDate as Record<string, unknown>).lte = filter.endDate
-      } else {
-        where.eventDate = { lte: filter.endDate }
-      }
-    }
-    if (filter.category) {
-      where.eventType = { category: filter.category }
-    }
-    if (filter.status) {
-      where.status = filter.status
-    }
-    if (filter.requiresDutyWatch !== undefined) {
-      where.requiresDutyWatch = filter.requiresDutyWatch
-    }
+    const where = buildUnitEventWhere(filter)
 
     const [events, total] = await Promise.all([
       this.prisma.unitEvent.findMany({
@@ -408,7 +428,7 @@ export class UnitEventRepository {
             },
           },
         },
-        orderBy: { eventDate: 'desc' },
+        orderBy: [{ eventDate: 'desc' }, { endDate: 'desc' }, { title: 'asc' }],
         take: filter.limit,
         skip: filter.offset,
       }),
@@ -421,16 +441,15 @@ export class UnitEventRepository {
   /**
    * Get events by date range (basic list without full details)
    */
-  async findEventsByDateRange(
-    startDate: Date,
-    endDate: Date
-  ): Promise<UnitEventEntity[]> {
+  async findEventsByDateRange(startDate: Date, endDate: Date): Promise<UnitEventEntity[]> {
     const events = await this.prisma.unitEvent.findMany({
       where: {
-        eventDate: {
-          gte: startDate,
-          lte: endDate,
-        },
+        AND: [
+          { eventDate: { lte: endDate } },
+          {
+            OR: [{ endDate: { gte: startDate } }, { endDate: null, eventDate: { gte: startDate } }],
+          },
+        ],
       },
       include: {
         eventType: {
@@ -441,7 +460,7 @@ export class UnitEventRepository {
           },
         },
       },
-      orderBy: { eventDate: 'asc' },
+      orderBy: [{ eventDate: 'asc' }, { endDate: 'asc' }, { title: 'asc' }],
     })
     return events
   }
@@ -466,6 +485,7 @@ export class UnitEventRepository {
         title: input.title,
         eventTypeId: input.eventTypeId,
         eventDate: input.eventDate,
+        endDate: input.endDate,
         startTime: input.startTime,
         endTime: input.endTime,
         location: input.location,
@@ -473,11 +493,12 @@ export class UnitEventRepository {
         organizer: input.organizer,
         requiresDutyWatch: input.requiresDutyWatch ?? false,
         status: input.status ?? 'draft',
-        metadata: input.metadata === null
-          ? Prisma.JsonNull
-          : input.metadata !== undefined
-            ? (input.metadata as Prisma.InputJsonValue)
-            : undefined,
+        metadata:
+          input.metadata === null
+            ? Prisma.JsonNull
+            : input.metadata !== undefined
+              ? (input.metadata as Prisma.InputJsonValue)
+              : undefined,
         notes: input.notes,
         createdBy: input.createdBy,
       },
@@ -501,6 +522,9 @@ export class UnitEventRepository {
     if (data.eventDate !== undefined) {
       updateData.eventDate = data.eventDate
     }
+    if (data.endDate !== undefined) {
+      updateData.endDate = data.endDate
+    }
     if (data.startTime !== undefined) {
       updateData.startTime = data.startTime
     }
@@ -520,9 +544,8 @@ export class UnitEventRepository {
       updateData.requiresDutyWatch = data.requiresDutyWatch
     }
     if (data.metadata !== undefined) {
-      updateData.metadata = data.metadata === null
-        ? Prisma.JsonNull
-        : (data.metadata as Prisma.InputJsonValue)
+      updateData.metadata =
+        data.metadata === null ? Prisma.JsonNull : (data.metadata as Prisma.InputJsonValue)
     }
     if (data.notes !== undefined) {
       updateData.notes = data.notes
@@ -561,27 +584,7 @@ export class UnitEventRepository {
    * Count events with filters
    */
   async countEvents(filter: UnitEventListFilter = {}): Promise<number> {
-    const where: Record<string, unknown> = {}
-
-    if (filter.startDate) {
-      where.eventDate = { gte: filter.startDate }
-    }
-    if (filter.endDate) {
-      if (where.eventDate && typeof where.eventDate === 'object' && 'gte' in where.eventDate) {
-        ;(where.eventDate as Record<string, unknown>).lte = filter.endDate
-      } else {
-        where.eventDate = { lte: filter.endDate }
-      }
-    }
-    if (filter.category) {
-      where.eventType = { category: filter.category }
-    }
-    if (filter.status) {
-      where.status = filter.status
-    }
-    if (filter.requiresDutyWatch !== undefined) {
-      where.requiresDutyWatch = filter.requiresDutyWatch
-    }
+    const where = buildUnitEventWhere(filter)
 
     return this.prisma.unitEvent.count({ where })
   }
@@ -665,7 +668,10 @@ export class UnitEventRepository {
   /**
    * Find a position by event ID and code
    */
-  async findPositionByEventAndCode(eventId: string, code: string): Promise<UnitEventDutyPositionEntity | null> {
+  async findPositionByEventAndCode(
+    eventId: string,
+    code: string
+  ): Promise<UnitEventDutyPositionEntity | null> {
     const position = await this.prisma.unitEventDutyPosition.findUnique({
       where: {
         eventId_code: {
@@ -743,10 +749,7 @@ export class UnitEventRepository {
   /**
    * Count active assignments for a position in an event
    */
-  async countAssignmentsForPosition(
-    eventId: string,
-    eventDutyPositionId: string
-  ): Promise<number> {
+  async countAssignmentsForPosition(eventId: string, eventDutyPositionId: string): Promise<number> {
     return this.prisma.unitEventDutyAssignment.count({
       where: {
         eventId,
@@ -757,17 +760,19 @@ export class UnitEventRepository {
   }
 
   /**
-   * Find member's event assignments on a specific date (for conflict detection)
+   * Find member's event assignments that overlap a date range (for conflict detection)
    */
-  async findMemberEventAssignmentsOnDate(
+  async findMemberEventAssignmentsOverlappingRange(
     memberId: string,
-    date: Date
+    startDate: Date,
+    endDate: Date
   ): Promise<UnitEventDutyAssignmentEntity[]> {
     const assignments = await this.prisma.unitEventDutyAssignment.findMany({
       where: {
         memberId,
         event: {
-          eventDate: date,
+          eventDate: { lte: endDate },
+          OR: [{ endDate: { gte: startDate } }, { endDate: null, eventDate: { gte: startDate } }],
         },
         releasedAt: null,
       },

@@ -46,9 +46,7 @@ export const CreateUnitEventTypeInputSchema = v.object({
   ),
   requiresDutyWatch: v.optional(v.boolean()),
   defaultMetadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
-  displayOrder: v.optional(
-    v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))
-  ),
+  displayOrder: v.optional(v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))),
 })
 
 export const UpdateUnitEventTypeInputSchema = v.object({
@@ -69,9 +67,7 @@ export const UpdateUnitEventTypeInputSchema = v.object({
   ),
   requiresDutyWatch: v.optional(v.boolean()),
   defaultMetadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
-  displayOrder: v.optional(
-    v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))
-  ),
+  displayOrder: v.optional(v.pipe(v.number(), v.minValue(0, 'Display order must be 0 or greater'))),
 })
 
 // ============================================================================
@@ -87,6 +83,16 @@ export const UnitEventStatusSchema = v.picklist([
   'cancelled',
   'postponed',
 ])
+
+const UnitEventDateSchema = v.pipe(
+  v.string('Event date is required'),
+  v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+)
+
+const UnitEventTimeSchema = v.pipe(
+  v.string(),
+  v.regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
+)
 
 export const UnitEventDutyAssignmentStatusSchema = v.picklist([
   'assigned',
@@ -150,6 +156,7 @@ export const UnitEventResponseSchema = v.object({
   title: v.string(),
   eventTypeId: v.nullable(v.string()),
   eventDate: v.string(),
+  endDate: v.nullable(v.string()),
   startTime: v.nullable(v.string()),
   endTime: v.nullable(v.string()),
   location: v.nullable(v.string()),
@@ -202,23 +209,17 @@ export const CreateUnitEventInputSchema = v.object({
     v.maxLength(200, 'Title must be at most 200 characters')
   ),
   eventTypeId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid event type ID format')))),
-  eventDate: v.pipe(
-    v.string('Event date is required'),
-    v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+  eventDate: UnitEventDateSchema,
+  endDate: v.optional(v.nullable(UnitEventDateSchema)),
+  startTime: v.optional(v.nullable(UnitEventTimeSchema)),
+  endTime: v.optional(v.nullable(UnitEventTimeSchema)),
+  location: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(200, 'Location must be at most 200 characters')))
   ),
-  startTime: v.optional(
-    v.nullable(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'))
-    )
-  ),
-  endTime: v.optional(
-    v.nullable(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'))
-    )
-  ),
-  location: v.optional(v.nullable(v.pipe(v.string(), v.maxLength(200, 'Location must be at most 200 characters')))),
   description: v.optional(v.nullable(v.string())),
-  organizer: v.optional(v.nullable(v.pipe(v.string(), v.maxLength(200, 'Organizer must be at most 200 characters')))),
+  organizer: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(200, 'Organizer must be at most 200 characters')))
+  ),
   requiresDutyWatch: v.optional(v.boolean()),
   status: v.optional(UnitEventStatusSchema),
   metadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
@@ -237,22 +238,17 @@ export const UpdateUnitEventInputSchema = v.object({
     )
   ),
   eventTypeId: v.optional(v.nullable(v.pipe(v.string(), v.uuid('Invalid event type ID format')))),
-  eventDate: v.optional(
-    v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'))
+  eventDate: v.optional(UnitEventDateSchema),
+  endDate: v.optional(v.nullable(UnitEventDateSchema)),
+  startTime: v.optional(v.nullable(UnitEventTimeSchema)),
+  endTime: v.optional(v.nullable(UnitEventTimeSchema)),
+  location: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(200, 'Location must be at most 200 characters')))
   ),
-  startTime: v.optional(
-    v.nullable(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'))
-    )
-  ),
-  endTime: v.optional(
-    v.nullable(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format'))
-    )
-  ),
-  location: v.optional(v.nullable(v.pipe(v.string(), v.maxLength(200, 'Location must be at most 200 characters')))),
   description: v.optional(v.nullable(v.string())),
-  organizer: v.optional(v.nullable(v.pipe(v.string(), v.maxLength(200, 'Organizer must be at most 200 characters')))),
+  organizer: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(200, 'Organizer must be at most 200 characters')))
+  ),
   requiresDutyWatch: v.optional(v.boolean()),
   metadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
   notes: v.optional(v.nullable(v.string())),
@@ -315,12 +311,8 @@ export const CreateUnitEventAssignmentInputSchema = v.object({
 // ============================================================================
 
 export const UnitEventListQuerySchema = v.object({
-  startDate: v.optional(
-    v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'))
-  ),
-  endDate: v.optional(
-    v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'))
-  ),
+  startDate: v.optional(UnitEventDateSchema),
+  endDate: v.optional(UnitEventDateSchema),
   category: v.optional(UnitEventCategorySchema),
   status: v.optional(UnitEventStatusSchema),
   requiresDutyWatch: v.optional(
@@ -362,10 +354,7 @@ export const UnitEventTypeIdParamSchema = v.object({
 
 export const UnitEventPositionParamsSchema = v.object({
   id: v.pipe(v.string('Event ID is required'), v.uuid('Invalid event ID format')),
-  positionId: v.pipe(
-    v.string('Position ID is required'),
-    v.uuid('Invalid position ID format')
-  ),
+  positionId: v.pipe(v.string('Position ID is required'), v.uuid('Invalid position ID format')),
 })
 
 export const UnitEventAssignmentParamsSchema = v.object({
@@ -382,13 +371,19 @@ export const UnitEventAssignmentParamsSchema = v.object({
 
 export type UnitEventCategory = v.InferOutput<typeof UnitEventCategorySchema>
 export type UnitEventStatus = v.InferOutput<typeof UnitEventStatusSchema>
-export type UnitEventDutyAssignmentStatus = v.InferOutput<typeof UnitEventDutyAssignmentStatusSchema>
+export type UnitEventDutyAssignmentStatus = v.InferOutput<
+  typeof UnitEventDutyAssignmentStatusSchema
+>
 export type UnitEventTypeResponse = v.InferOutput<typeof UnitEventTypeResponseSchema>
 export type UnitEventTypeListResponse = v.InferOutput<typeof UnitEventTypeListResponseSchema>
 export type CreateUnitEventTypeInput = v.InferOutput<typeof CreateUnitEventTypeInputSchema>
 export type UpdateUnitEventTypeInput = v.InferOutput<typeof UpdateUnitEventTypeInputSchema>
-export type UnitEventDutyPositionResponse = v.InferOutput<typeof UnitEventDutyPositionResponseSchema>
-export type UnitEventDutyAssignmentResponse = v.InferOutput<typeof UnitEventDutyAssignmentResponseSchema>
+export type UnitEventDutyPositionResponse = v.InferOutput<
+  typeof UnitEventDutyPositionResponseSchema
+>
+export type UnitEventDutyAssignmentResponse = v.InferOutput<
+  typeof UnitEventDutyAssignmentResponseSchema
+>
 export type UnitEventResponse = v.InferOutput<typeof UnitEventResponseSchema>
 export type UnitEventWithDetailsResponse = v.InferOutput<typeof UnitEventWithDetailsResponseSchema>
 export type UnitEventListResponse = v.InferOutput<typeof UnitEventListResponseSchema>
@@ -397,7 +392,9 @@ export type UpdateUnitEventInput = v.InferOutput<typeof UpdateUnitEventInputSche
 export type UpdateUnitEventStatusInput = v.InferOutput<typeof UpdateUnitEventStatusInputSchema>
 export type CreateUnitEventPositionInput = v.InferOutput<typeof CreateUnitEventPositionInputSchema>
 export type UpdateUnitEventPositionInput = v.InferOutput<typeof UpdateUnitEventPositionInputSchema>
-export type CreateUnitEventAssignmentInput = v.InferOutput<typeof CreateUnitEventAssignmentInputSchema>
+export type CreateUnitEventAssignmentInput = v.InferOutput<
+  typeof CreateUnitEventAssignmentInputSchema
+>
 export type UnitEventListQuery = v.InferOutput<typeof UnitEventListQuerySchema>
 export type UnitEventIdParam = v.InferOutput<typeof UnitEventIdParamSchema>
 export type UnitEventTypeIdParam = v.InferOutput<typeof UnitEventTypeIdParamSchema>

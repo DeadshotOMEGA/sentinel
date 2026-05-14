@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { format } from 'date-fns'
 import { Eye, CheckCircle, XCircle, Calendar } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
@@ -9,6 +8,7 @@ import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TID } from '@/lib/test-ids'
+import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 
 import type { UnitEventCategory, UnitEventStatus } from '@sentinel/contracts'
 
@@ -64,7 +64,11 @@ export function EventList() {
 
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => {
-      return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+      const dateCompare = new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+      if (dateCompare !== 0) {
+        return dateCompare
+      }
+      return a.title.localeCompare(b.title)
     })
   }, [events])
 
@@ -178,7 +182,7 @@ export function EventList() {
           <table className="table table-zebra w-full" role="table">
             <thead>
               <tr>
-                <th scope="col">Date</th>
+                <th scope="col">Dates</th>
                 <th scope="col">Title</th>
                 <th scope="col">Type</th>
                 <th scope="col">Status</th>
@@ -191,9 +195,7 @@ export function EventList() {
             <tbody>
               {sortedEvents.map((event) => (
                 <tr key={event.id} data-testid={TID.events.listItem(event.id)}>
-                  <td className="whitespace-nowrap">
-                    {format(new Date(event.eventDate), 'MMM dd, yyyy')}
-                  </td>
+                  <td className="whitespace-nowrap">{formatUnitEventDateRange(event)}</td>
                   <td className="font-medium">{event.title}</td>
                   <td>{getEventTypeName(event.eventTypeId)}</td>
                   <td>
