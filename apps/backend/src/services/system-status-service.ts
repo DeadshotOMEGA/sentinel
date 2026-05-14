@@ -22,6 +22,7 @@ import { resolveServiceVersionDisplay } from '../lib/service-version.js'
 import { DEPLOYMENT_REMOTE_SYSTEM_CODE } from '../repositories/remote-system-repository.js'
 import { SessionRepository } from '../repositories/session-repository.js'
 import { HostNetworkStatusService } from './host-network-status-service.js'
+import { HostHotspotRecoveryService } from './host-hotspot-recovery-service.js'
 import { NetworkSettingsService } from './network-settings-service.js'
 
 const REMOTE_SESSION_LIMIT = 5
@@ -237,12 +238,14 @@ export class SystemStatusService {
   private sessionRepository: SessionRepository
   private networkSettingsService: NetworkSettingsService
   private hostNetworkStatusService: HostNetworkStatusService
+  private hostHotspotRecoveryService: HostHotspotRecoveryService
   private kioskPresenceStore: KioskDevicePresenceStore
 
   constructor(
     prismaClient: PrismaClientInstance = defaultPrisma,
     options?: {
       hostNetworkStatusService?: HostNetworkStatusService
+      hostHotspotRecoveryService?: HostHotspotRecoveryService
       networkSettingsService?: NetworkSettingsService
       kioskPresenceStore?: KioskDevicePresenceStore
     }
@@ -253,6 +256,8 @@ export class SystemStatusService {
       options?.networkSettingsService ?? new NetworkSettingsService(prismaClient)
     this.hostNetworkStatusService =
       options?.hostNetworkStatusService ?? new HostNetworkStatusService()
+    this.hostHotspotRecoveryService =
+      options?.hostHotspotRecoveryService ?? new HostHotspotRecoveryService()
     this.kioskPresenceStore = options?.kioskPresenceStore ?? kioskDevicePresenceStore
   }
 
@@ -261,16 +266,22 @@ export class SystemStatusService {
     const developmentBuild = isDevelopmentBuild()
     const runningInsideContainer = isRunningInsideContainer()
 
-    const [networkSettingsState, telemetryResult, memberRemoteSessions, activeSessionCount] =
-      await Promise.all([
-        this.networkSettingsService.getNetworkSettings(),
-        this.hostNetworkStatusService.readTelemetry(),
-        this.sessionRepository.findActiveRemoteSessions({
-          limit: REMOTE_SESSION_LIMIT,
-          activeWithinSeconds: ACTIVE_REMOTE_SESSION_THRESHOLD_SECONDS,
-        }),
-        this.sessionRepository.countActiveSessions(),
-      ])
+    const [
+      networkSettingsState,
+      telemetryResult,
+      hostHotspotRecoveryStatus,
+      memberRemoteSessions,
+      activeSessionCount,
+    ] = await Promise.all([
+      this.networkSettingsService.getNetworkSettings(),
+      this.hostNetworkStatusService.readTelemetry(),
+      this.hostHotspotRecoveryService.readLatestStatus(),
+      this.sessionRepository.findActiveRemoteSessions({
+        limit: REMOTE_SESSION_LIMIT,
+        activeWithinSeconds: ACTIVE_REMOTE_SESSION_THRESHOLD_SECONDS,
+      }),
+      this.sessionRepository.countActiveSessions(),
+    ])
 
     let databaseHealthy = false
     try {
@@ -385,6 +396,7 @@ export class SystemStatusService {
         remoteTarget: telemetry?.remoteTarget ?? null,
         remoteReachable: telemetry?.remoteReachable ?? null,
         portalRecoveryLikely: telemetry?.portalRecoveryLikely ?? null,
+        hostHotspotRecovery: hostHotspotRecoveryStatus,
         generatedAt: telemetry?.generatedAt.toISOString() ?? null,
       },
       remoteSystems: {

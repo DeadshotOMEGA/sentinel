@@ -7,20 +7,97 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/ensure-host-hotspot-profile.sh"
 
 CONNECTION_NAME="${1:-$(env_value HOTSPOT_CONNECTION_NAME 'Sentinel Hotspot')}"
+REQUEST_ID="${2:-}"
 SSID_WAIT_TIMEOUT="${SSID_WAIT_TIMEOUT:-20}"
 SSID_POLL_INTERVAL="${SSID_POLL_INTERVAL:-2}"
 HOTSPOT_BAND="$(env_value HOTSPOT_BAND 'bg')"
 HOTSPOT_CHANNEL="$(env_value HOTSPOT_CHANNEL '1')"
 LOCK_FILE="${LOCK_FILE:-/run/lock/sentinel-host-hotspot-recover.lock}"
+STATUS_FILE="${HOST_HOTSPOT_RECOVERY_STATUS_FILE:-${SCRIPT_DIR}/runtime/hotspot-recovery/status.json}"
 export HOTSPOT_CONNECTION_NAME_OVERRIDE="${CONNECTION_NAME}"
+
+STARTED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+DEVICE=""
+SSID=""
+SCAN_DEVICE=""
+USB_DEVICE_NAME=""
+hardware_reset_applied="false"
 
 log() {
   printf '[host-hotspot-recover] %s\n' "$*"
 }
 
 die() {
+  recovery_write_status "failed" "failed" "$*" "true" || true
   printf '[host-hotspot-recover] %s\n' "$*" >&2
   exit 1
+}
+
+json_string_or_null() {
+  local value="${1:-}"
+  if [[ -z "${value}" ]]; then
+    printf 'null'
+    return 0
+  fi
+
+  printf '"%s"' "$(json_escape "${value}")"
+}
+
+recovery_write_status() {
+  local state="$1"
+  local stage="$2"
+  local message="$3"
+  local completed="${4:-false}"
+  local updated_at completed_at tmp_file had_errexit
+
+  updated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+  if [[ "${completed}" == "true" ]]; then
+    completed_at="${updated_at}"
+  else
+    completed_at=""
+  fi
+
+  had_errexit="false"
+  case "$-" in
+    *e*)
+      had_errexit="true"
+      set +e
+      ;;
+  esac
+
+  mkdir -p "$(dirname "${STATUS_FILE}")" >/dev/null 2>&1
+  tmp_file="$(mktemp "$(dirname "${STATUS_FILE}")/status.XXXXXX" 2>/dev/null)"
+  if [[ -z "${tmp_file}" ]]; then
+    if [[ "${had_errexit}" == "true" ]]; then
+      set -e
+    fi
+    return 0
+  fi
+
+  cat >"${tmp_file}" <<JSON
+{
+  "state": "$(json_escape "${state}")",
+  "stage": "$(json_escape "${stage}")",
+  "message": "$(json_escape "${message}")",
+  "requestId": $(json_string_or_null "${REQUEST_ID}"),
+  "connectionName": $(json_string_or_null "${CONNECTION_NAME}"),
+  "hotspotSsid": $(json_string_or_null "${SSID:-}"),
+  "hotspotDevice": $(json_string_or_null "${DEVICE:-}"),
+  "scanDevice": $(json_string_or_null "${SCAN_DEVICE:-}"),
+  "usbDevice": $(json_string_or_null "${USB_DEVICE_NAME:-}"),
+  "hardwareResetApplied": $(json_bool "${hardware_reset_applied:-false}"),
+  "startedAt": "$(json_escape "${STARTED_AT}")",
+  "updatedAt": "$(json_escape "${updated_at}")",
+  "completedAt": $(json_string_or_null "${completed_at}")
+}
+JSON
+  chmod 664 "${tmp_file}" >/dev/null 2>&1 || true
+  mv "${tmp_file}" "${STATUS_FILE}" >/dev/null 2>&1 || rm -f "${tmp_file}" >/dev/null 2>&1 || true
+
+  if [[ "${had_errexit}" == "true" ]]; then
+    set -e
+  fi
+  return 0
 }
 
 have_command() {
@@ -85,6 +162,7 @@ wait_for_ssid() {
 
 stop_hotspot() {
   log "Bringing hotspot connection down"
+  recovery_write_status "running" "stopping_hotspot" "Stopping the hotspot before resetting the USB AP dongle."
   nmcli -w 15 connection down "${CONNECTION_NAME}" >/dev/null 2>&1 || true
 }
 
@@ -147,6 +225,7 @@ move_client_wifi_off_hotspot_adapter() {
   original_interface="$(connection_interface_name "${client_connection}" || true)"
 
   log "Moving internet Wi-Fi profile ${client_connection} (${client_ssid}) from AP dongle ${hotspot_device} to scan radio ${scan_device}"
+  recovery_write_status "running" "moving_internet_wifi" "Moving internet Wi-Fi off the USB AP dongle so the dongle can host the Sentinel hotspot."
   nmcli connection modify "${client_connection}" \
     connection.interface-name "${scan_device}" \
     connection.autoconnect yes \
@@ -174,6 +253,7 @@ reset_driver_binding() {
   fi
 
   log "Rebinding driver function ${usb_function_name}"
+  recovery_write_status "running" "resetting_driver" "Resetting the USB AP dongle driver. The adapter may disappear briefly."
   printf '%s' "${usb_function_name}" >"${driver_unbind}"
   sleep 2
   printf '%s' "${usb_function_name}" >"${driver_bind}"
@@ -188,6 +268,7 @@ reset_usb_device() {
 
   if [[ -w "${usb_authorized}" ]]; then
     log "Toggling USB authorization for ${usb_device_name}"
+    recovery_write_status "running" "resetting_usb" "Power-cycling the USB AP dongle. The adapter may take about 10 seconds to return."
     printf '0' >"${usb_authorized}"
     sleep 2
     printf '1' >"${usb_authorized}"
@@ -196,6 +277,7 @@ reset_usb_device() {
 
   if [[ -w "${usb_unbind}" && -w "${usb_bind}" ]]; then
     log "Rebinding USB device ${usb_device_name}"
+    recovery_write_status "running" "resetting_usb" "Rebinding the USB AP dongle. The adapter may take about 10 seconds to return."
     printf '%s' "${usb_device_name}" >"${usb_unbind}"
     sleep 2
     printf '%s' "${usb_device_name}" >"${usb_bind}"
@@ -215,13 +297,16 @@ have_command flock || die "flock is required"
 mkdir -p "$(dirname "${LOCK_FILE}")"
 exec 9>"${LOCK_FILE}"
 if ! flock -n 9; then
+  recovery_write_status "running" "processing_request" "Host hotspot recovery is already running; reusing the active recovery attempt."
   log "Host hotspot recovery is already running; reusing the active recovery attempt"
   exit 0
 fi
 
 skip_visibility_check="false"
+recovery_write_status "running" "processing_request" "Host hotspot recovery started."
 move_client_wifi_off_hotspot_adapter
 
+recovery_write_status "running" "ensuring_profile" "Checking and repairing the managed Sentinel hotspot profile."
 if ensure_host_hotspot_profile; then
   :
 else
@@ -294,6 +379,7 @@ log "Driver: ${DRIVER_NAME:-unknown}"
 log "Security mode: ${KEY_MGMT:-unknown}"
 
 log "Reapplying known-good hotspot radio settings"
+recovery_write_status "running" "ensuring_profile" "Reapplying known-good hotspot radio settings."
 nmcli connection modify "${CONNECTION_NAME}" \
   802-11-wireless.band "${HOTSPOT_BAND}" \
   802-11-wireless.channel "${HOTSPOT_CHANNEL}" \
@@ -305,7 +391,6 @@ fi
 
 stop_hotspot
 
-hardware_reset_applied="false"
 if [[ -n "${USB_FUNCTION_NAME}" && -n "${DRIVER_NAME}" ]] && reset_driver_binding "${DRIVER_UNBIND}" "${DRIVER_BIND}" "${USB_FUNCTION_NAME}"; then
   hardware_reset_applied="true"
 elif [[ -n "${USB_DEVICE_NAME}" ]]; then
@@ -323,9 +408,11 @@ if [[ "${hardware_reset_applied}" == "true" ]] && have_command udevadm; then
   udevadm settle || true
 fi
 
+recovery_write_status "running" "waiting_for_adapter" "Waiting for the USB AP dongle to reappear after reset. This can take about 10 seconds."
 wait_for_path "/sys/class/net/${DEVICE}" 20 || die "Interface ${DEVICE} did not come back after recovery"
 wait_for_nm_device "${DEVICE}" 20 || die "NetworkManager did not rediscover ${DEVICE} after recovery"
 
+recovery_write_status "running" "starting_hotspot" "Starting the Sentinel hotspot on the USB AP dongle."
 if ! start_hotspot "${DEVICE}"; then
   die "Failed to bring hotspot connection ${CONNECTION_NAME} up on ${DEVICE}"
 fi
@@ -340,17 +427,21 @@ fi
 
 if [[ "${skip_visibility_check}" == "true" || -z "${SCAN_DEVICE}" || -z "${SSID}" ]]; then
   log "Host hotspot recovery complete without a scan-radio visibility check"
+  recovery_write_status "completed" "completed" "Host hotspot recovery completed without a scan-radio visibility check." "true"
   exit 0
 fi
 
 if [[ -n "${SCAN_DEVICE}" && -n "${SSID}" ]]; then
   log "Waiting up to ${SSID_WAIT_TIMEOUT}s for ${SSID} to appear on ${SCAN_DEVICE}"
+  recovery_write_status "running" "verifying_visibility" "Checking whether the scan radio can see the Sentinel hotspot."
   if wait_for_ssid "${SCAN_DEVICE}" "${SSID}" "${SSID_WAIT_TIMEOUT}" "${SSID_POLL_INTERVAL}"; then
     log "The SSID ${SSID} is visible from ${SCAN_DEVICE}"
   else
     log "The hotspot restarted, but ${SCAN_DEVICE} still cannot see ${SSID} after ${SSID_WAIT_TIMEOUT}s"
+    recovery_write_status "failed" "failed" "The hotspot restarted, but the scan radio still cannot see ${SSID} after ${SSID_WAIT_TIMEOUT}s." "true"
     exit 2
   fi
 fi
 
 log "Host hotspot recovery complete"
+recovery_write_status "completed" "completed" "Host hotspot recovery completed. The Sentinel hotspot is visible from the scan radio." "true"

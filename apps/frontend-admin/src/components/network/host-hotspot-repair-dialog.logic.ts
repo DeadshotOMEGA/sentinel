@@ -1,4 +1,5 @@
 export const HOST_HOTSPOT_ANTENNA_WAIT_SECONDS = 3
+export const HOST_HOTSPOT_RESET_WATCH_SECONDS = 10
 
 export const HOST_HOTSPOT_REPAIR_STEPS = [
   {
@@ -10,8 +11,12 @@ export const HOST_HOTSPOT_REPAIR_STEPS = [
     label: 'Run repair',
   },
   {
+    id: 'watch-reset',
+    label: 'Watch reset',
+  },
+  {
     id: 'reset-antenna',
-    label: 'Reset antenna',
+    label: 'Reseat antenna',
   },
   {
     id: 'retry-repair',
@@ -25,6 +30,10 @@ export type HostHotspotRepairStepState = 'complete' | 'active' | 'pending'
 
 export interface HostHotspotAntennaWaitState {
   started: boolean
+  secondsRemaining: number
+}
+
+export interface HostHotspotResetWatchState {
   secondsRemaining: number
 }
 
@@ -62,6 +71,20 @@ export function getHostHotspotAntennaWaitLabel(state: HostHotspotAntennaWaitStat
   }
 
   return `Wait ${secondsRemaining}s`
+}
+
+export function getHostHotspotResetWatchLabel(state: HostHotspotResetWatchState): string {
+  const secondsRemaining = Math.max(0, Math.ceil(state.secondsRemaining))
+
+  if (secondsRemaining === 0) {
+    return 'Continue if needed'
+  }
+
+  return `Watching reset ${secondsRemaining}s`
+}
+
+export function isHostHotspotResetWatchActionDisabled(state: HostHotspotResetWatchState): boolean {
+  return state.secondsRemaining > 0
 }
 
 export function isHostHotspotAntennaWaitActionDisabled(

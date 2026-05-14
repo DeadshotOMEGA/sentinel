@@ -1454,6 +1454,65 @@
         }
       }
     },
+    "/api/visitors/groups": {
+      "post": {
+        "description": "Atomically create a visitor group with one or more members and optional group-level vehicles",
+        "summary": "Create visitor group",
+        "tags": ["visitors"],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "201"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/visitors/groups/{groupId}/checkout": {
+      "post": {
+        "description": "Sign out an entire visitor group or selected active members from that visitor group",
+        "summary": "Checkout visitor group members",
+        "tags": ["visitors"],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "404": {
+            "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
     "/api/visitors/{id}/checkout": {
       "post": {
         "description": "Sign out a visitor",
@@ -4006,6 +4065,192 @@
           },
           "404": {
             "description": "404"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/presence/daily": {
+      "post": {
+        "description": "Generate an operational daily presence report with first arrival, final departure, session count, leave-and-return state, and warning metadata.",
+        "summary": "Generate daily presence report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/presence/weekly": {
+      "post": {
+        "description": "Generate an operational weekly presence report grouped around daily presence markers and Training/Admin night attendance.",
+        "summary": "Generate weekly presence report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/presence/monthly": {
+      "post": {
+        "description": "Generate an operational monthly presence overview with compact day markers, key-night attendance, and scoped member summaries.",
+        "summary": "Generate monthly presence report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/training-night/monthly": {
+      "post": {
+        "description": "Generate a department training night matrix for a selected month, including all active department members and each Training Night.",
+        "summary": "Generate monthly training night report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/visitors/activity": {
+      "post": {
+        "description": "Generate an operational visitor report using existing visitor visit type, purpose/reason, event association, host, organization, and date range data.",
+        "summary": "Generate visitor activity report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
+          },
+          "500": {
+            "description": "500"
+          }
+        }
+      }
+    },
+    "/api/reports/operations/exceptions": {
+      "post": {
+        "description": "Generate a report of forced member checkouts and lockup days where the building was not properly secured before daily reset.",
+        "summary": "Generate operational exceptions report",
+        "tags": ["reports"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200"
+          },
+          "400": {
+            "description": "400"
+          },
+          "401": {
+            "description": "401"
+          },
+          "403": {
+            "description": "403"
+          },
+          "404": {
+            "description": "404"
+          },
+          "409": {
+            "description": "409"
           },
           "500": {
             "description": "500"

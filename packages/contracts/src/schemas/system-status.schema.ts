@@ -35,6 +35,45 @@ export const NetworkIssueCodeSchema = v.picklist(
   'Choose a valid network issue code'
 )
 
+export const HostHotspotRecoveryStateSchema = v.picklist(
+  ['queued', 'running', 'completed', 'failed'],
+  'Choose a valid host hotspot recovery state'
+)
+
+export const HostHotspotRecoveryStageSchema = v.picklist(
+  [
+    'request_queued',
+    'processing_request',
+    'moving_internet_wifi',
+    'ensuring_profile',
+    'stopping_hotspot',
+    'resetting_driver',
+    'resetting_usb',
+    'waiting_for_adapter',
+    'starting_hotspot',
+    'verifying_visibility',
+    'completed',
+    'failed',
+  ],
+  'Choose a valid host hotspot recovery stage'
+)
+
+export const HostHotspotRecoveryStatusSchema = v.object({
+  state: HostHotspotRecoveryStateSchema,
+  stage: HostHotspotRecoveryStageSchema,
+  message: v.string(),
+  requestId: v.nullable(v.string()),
+  connectionName: v.nullable(v.string()),
+  hotspotSsid: v.nullable(v.string()),
+  hotspotDevice: v.nullable(v.string()),
+  scanDevice: v.nullable(v.string()),
+  usbDevice: v.nullable(v.string()),
+  hardwareResetApplied: v.nullable(v.boolean()),
+  startedAt: v.nullable(v.string()),
+  updatedAt: v.string(),
+  completedAt: v.nullable(v.string()),
+})
+
 export const NetworkFactsSchema = v.object({
   status: SystemHealthStatusSchema,
   telemetryAvailable: v.boolean(),
@@ -60,6 +99,7 @@ export const NetworkFactsSchema = v.object({
   remoteTarget: v.nullable(v.string()),
   remoteReachable: v.nullable(v.boolean()),
   portalRecoveryLikely: v.nullable(v.boolean()),
+  hostHotspotRecovery: v.optional(v.nullable(HostHotspotRecoveryStatusSchema)),
   generatedAt: v.nullable(v.string()),
 })
 
@@ -101,6 +141,9 @@ export type SystemHealthStatus = v.InferOutput<typeof SystemHealthStatusSchema>
 export type BackendHealth = v.InferOutput<typeof BackendHealthSchema>
 export type DatabaseHealth = v.InferOutput<typeof DatabaseHealthSchema>
 export type NetworkIssueCode = v.InferOutput<typeof NetworkIssueCodeSchema>
+export type HostHotspotRecoveryState = v.InferOutput<typeof HostHotspotRecoveryStateSchema>
+export type HostHotspotRecoveryStage = v.InferOutput<typeof HostHotspotRecoveryStageSchema>
+export type HostHotspotRecoveryStatus = v.InferOutput<typeof HostHotspotRecoveryStatusSchema>
 export type NetworkFacts = v.InferOutput<typeof NetworkFactsSchema>
 export type ActiveRemoteSession = v.InferOutput<typeof ActiveRemoteSessionSchema>
 export type ActiveRemoteSystemsSummary = v.InferOutput<typeof ActiveRemoteSystemsSummarySchema>
