@@ -39,6 +39,7 @@ interface EventData {
   id: string
   title: string
   eventDate: string
+  endDate: string | null
   startTime: string | null
   endTime: string | null
 }

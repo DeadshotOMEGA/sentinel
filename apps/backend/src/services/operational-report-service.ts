@@ -1108,13 +1108,14 @@ export class OperationalReportService {
 
   private toKeyNightFromEvent(event: OperationalReportUnitEventRecord): KeyNightWindow {
     const date = event.eventDate.toISOString().substring(0, 10)
+    const endDate = event.endDate?.toISOString().substring(0, 10) ?? date
     const category = event.eventType?.category === 'administrative' ? 'administrative' : 'training'
     const startTime = event.startTime ? event.startTime.toISOString().substring(11, 16) : null
     const endTime = event.endTime ? event.endTime.toISOString().substring(11, 16) : null
     const start = startTime ? this.dateTimeFromLocalDateAndTime(date, startTime) : null
     const end = start
       ? endTime
-        ? this.ensureEndAfterStart(start, this.dateTimeFromLocalDateAndTime(date, endTime))
+        ? this.ensureEndAfterStart(start, this.dateTimeFromLocalDateAndTime(endDate, endTime))
         : DateTime.fromJSDate(start, { zone: DEFAULT_TIMEZONE })
             .plus({ minutes: event.eventType?.defaultDurationMinutes ?? 120 })
             .toJSDate()

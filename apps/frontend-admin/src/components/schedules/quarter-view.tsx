@@ -20,6 +20,7 @@ import { AppBadge } from '@/components/ui/AppBadge'
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { apiClient } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
+import { expandUnitEventDateKeys, formatUnitEventDateRange } from '@/lib/unit-event-dates'
 
 interface QuarterViewProps {
   quarterStart: Date
@@ -58,6 +59,7 @@ interface EventData {
   id: string
   title: string
   eventDate: string
+  endDate: string | null
   startTime: string | null
   endTime: string | null
   location: string | null
@@ -291,13 +293,19 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
     const map = new Map<string, EventData[]>()
     const events = (eventsData?.data ?? []) as EventData[]
     for (const event of events) {
-      const weekStart = startOfWeek(new Date(event.eventDate), { weekStartsOn: 1 })
-      const weekKey = format(weekStart, 'yyyy-MM-dd')
-      const existingEvents = map.get(weekKey)
-      if (existingEvents) {
-        existingEvents.push(event)
-      } else {
-        map.set(weekKey, [event])
+      const weekKeys = new Set(
+        expandUnitEventDateKeys(event).map((dateKey) =>
+          format(startOfWeek(new Date(`${dateKey}T00:00:00`), { weekStartsOn: 1 }), 'yyyy-MM-dd')
+        )
+      )
+
+      for (const weekKey of weekKeys) {
+        const existingEvents = map.get(weekKey)
+        if (existingEvents) {
+          existingEvents.push(event)
+        } else {
+          map.set(weekKey, [event])
+        }
       }
     }
     return map
@@ -508,7 +516,7 @@ export function QuarterView({ quarterStart, onWeekClick }: QuarterViewProps) {
                                         {event.title}
                                       </p>
                                       <p className="text-xs text-base-content/65">
-                                        {format(new Date(event.eventDate), 'EEE, MMM d')}
+                                        {formatUnitEventDateRange(event, 'EEE, MMM d')}
                                         {event.startTime ? ` • ${event.startTime}` : ''}
                                         {event.endTime ? `-${event.endTime}` : ''}
                                       </p>

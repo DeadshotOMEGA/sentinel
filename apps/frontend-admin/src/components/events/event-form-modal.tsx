@@ -28,9 +28,12 @@ interface EventFormModalProps {
 type FormErrors = {
   title?: string
   eventDate?: string
+  endDate?: string
   metadata?: string
   timeRange?: string
 }
+
+type DurationMode = 'single' | 'multi'
 
 function parseMetadataInput(rawMetadata: string): {
   value: Record<string, unknown> | null
@@ -51,7 +54,7 @@ function parseMetadataInput(rawMetadata: string): {
     }
 
     return { value: parsed as Record<string, unknown> }
-  } catch (_error) {
+  } catch {
     return {
       value: null,
       error: 'Metadata must be valid JSON (for example: {"key": "value"}).',
@@ -61,7 +64,10 @@ function parseMetadataInput(rawMetadata: string): {
 
 function validateForm(input: {
   title: string
+  durationMode: DurationMode
   eventDate: string
+  endDate: string
+  allDay: boolean
   startTime: string
   endTime: string
   metadata: string
@@ -73,10 +79,26 @@ function validateForm(input: {
   }
 
   if (!input.eventDate.trim()) {
-    errors.eventDate = 'Date is required.'
+    errors.eventDate = 'Start date is required.'
   }
 
-  if (input.startTime && input.endTime && input.endTime < input.startTime) {
+  if (input.durationMode === 'multi' && !input.endDate.trim()) {
+    errors.endDate = 'End date is required for a multi-day event.'
+  }
+
+  if (input.eventDate && input.endDate && input.endDate < input.eventDate) {
+    errors.endDate = 'End date must be the same as or later than start date.'
+  }
+
+  const isSingleDay =
+    input.durationMode === 'single' || !input.endDate || input.endDate === input.eventDate
+  if (
+    !input.allDay &&
+    isSingleDay &&
+    input.startTime &&
+    input.endTime &&
+    input.endTime < input.startTime
+  ) {
     errors.timeRange = 'End time must be later than start time.'
   }
 
@@ -101,7 +123,10 @@ export function EventFormModal({
 
   const [title, setTitle] = useState('')
   const [eventTypeId, setEventTypeId] = useState<string | null>(null)
+  const [durationMode, setDurationMode] = useState<DurationMode>('single')
   const [eventDate, setEventDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [allDay, setAllDay] = useState(true)
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [location, setLocation] = useState('')
@@ -132,7 +157,10 @@ export function EventFormModal({
     if (event) {
       setTitle(event.title)
       setEventTypeId(event.eventTypeId)
+      setDurationMode(event.endDate && event.endDate !== event.eventDate ? 'multi' : 'single')
       setEventDate(event.eventDate)
+      setEndDate(event.endDate ?? '')
+      setAllDay(!event.startTime && !event.endTime)
       setStartTime(event.startTime ?? '')
       setEndTime(event.endTime ?? '')
       setLocation(event.location ?? '')
@@ -144,7 +172,10 @@ export function EventFormModal({
     } else {
       setTitle('')
       setEventTypeId(null)
+      setDurationMode('single')
       setEventDate('')
+      setEndDate('')
+      setAllDay(true)
       setStartTime('')
       setEndTime('')
       setLocation('')
@@ -176,7 +207,10 @@ export function EventFormModal({
 
     const { errors, parsedMetadata } = validateForm({
       title,
+      durationMode,
       eventDate,
+      endDate,
+      allDay,
       startTime,
       endTime,
       metadata,
@@ -194,8 +228,9 @@ export function EventFormModal({
       title: title.trim(),
       eventTypeId: eventTypeId || null,
       eventDate,
-      startTime: startTime || null,
-      endTime: endTime || null,
+      endDate: durationMode === 'multi' ? endDate : null,
+      startTime: allDay ? null : startTime || null,
+      endTime: allDay ? null : endTime || null,
       location: location.trim() || null,
       description: description.trim() || null,
       organizer: organizer.trim() || null,
@@ -318,22 +353,72 @@ export function EventFormModal({
                 )}
                 {hasNoEventTypes && (
                   <p className="text-xs text-base-content/60">
-                    No event types configured yet. You can continue with "None".
+                    No event types configured yet. You can continue with None.
                   </p>
                 )}
                 {isEventTypesError && (
                   <div className="alert alert-warning" role="alert">
-                    <span>
-                      Event types are unavailable right now. You can continue with "None".
-                    </span>
+                    <span>Event types are unavailable right now. You can continue with None.</span>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 gap-[var(--space-3)] xl:grid-cols-3">
+                <fieldset className="space-y-[var(--space-2)]">
+                  <legend className="text-sm font-medium text-base-content">Duration</legend>
+                  <div className="grid gap-[var(--space-2)] sm:grid-cols-2">
+                    <label className="flex cursor-pointer items-start gap-[var(--space-2)] rounded-md border border-base-300 bg-base-100 p-[var(--space-3)]">
+                      <input
+                        type="radio"
+                        name="event-duration-mode"
+                        className="radio radio-primary radio-sm mt-0.5"
+                        checked={durationMode === 'single'}
+                        onChange={() => {
+                          setDurationMode('single')
+                          setEndDate('')
+                          clearFieldError('endDate')
+                          clearFieldError('timeRange')
+                          setSubmitError(null)
+                        }}
+                        disabled={isSubmitting}
+                        data-testid={TID.events.form.durationSingle}
+                      />
+                      <span>
+                        <span className="block text-sm font-medium">Single day</span>
+                        <span className="block text-xs text-base-content/60">
+                          Event starts and ends on one calendar day.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label className="flex cursor-pointer items-start gap-[var(--space-2)] rounded-md border border-base-300 bg-base-100 p-[var(--space-3)]">
+                      <input
+                        type="radio"
+                        name="event-duration-mode"
+                        className="radio radio-primary radio-sm mt-0.5"
+                        checked={durationMode === 'multi'}
+                        onChange={() => {
+                          setDurationMode('multi')
+                          setEndDate((current) => current || eventDate)
+                          clearFieldError('endDate')
+                          setSubmitError(null)
+                        }}
+                        disabled={isSubmitting}
+                        data-testid={TID.events.form.durationMulti}
+                      />
+                      <span>
+                        <span className="block text-sm font-medium">Multiple days</span>
+                        <span className="block text-xs text-base-content/60">
+                          Event continues across two or more dates.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div className="grid grid-cols-1 gap-[var(--space-3)] xl:grid-cols-2">
                   <div>
                     <label className="input input-bordered w-full">
                       <span className="label">
-                        Date <span className="text-error">*</span>
+                        Start date <span className="text-error">*</span>
                       </span>
                       <input
                         className="grow"
@@ -343,6 +428,7 @@ export function EventFormModal({
                         onChange={(e) => {
                           setEventDate(e.target.value)
                           clearFieldError('eventDate')
+                          clearFieldError('endDate')
                           setSubmitError(null)
                         }}
                         aria-required="true"
@@ -365,48 +451,128 @@ export function EventFormModal({
                     )}
                   </div>
 
-                  <label className="input input-bordered w-full">
-                    <span className="label">Start time</span>
-                    <input
-                      className="grow"
-                      id="start-time"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => {
-                        setStartTime(e.target.value)
-                        clearFieldError('timeRange')
-                        setSubmitError(null)
-                      }}
-                      aria-invalid={formErrors.timeRange ? 'true' : 'false'}
-                      aria-describedby={formErrors.timeRange ? 'event-form-time-error' : undefined}
-                      disabled={isSubmitting}
-                      data-testid={TID.events.form.startTime}
-                    />
-                  </label>
+                  {durationMode === 'multi' && (
+                    <div>
+                      <label className="input input-bordered w-full">
+                        <span className="label">
+                          End date <span className="text-error">*</span>
+                        </span>
+                        <input
+                          className="grow"
+                          id="event-end-date"
+                          type="date"
+                          value={endDate}
+                          min={eventDate || undefined}
+                          onChange={(e) => {
+                            setEndDate(e.target.value)
+                            clearFieldError('endDate')
+                            clearFieldError('timeRange')
+                            setSubmitError(null)
+                          }}
+                          aria-required="true"
+                          aria-invalid={formErrors.endDate ? 'true' : 'false'}
+                          aria-describedby={
+                            formErrors.endDate ? 'event-form-end-date-error' : undefined
+                          }
+                          disabled={isSubmitting}
+                          data-testid={TID.events.form.endDate}
+                        />
+                      </label>
+                      {formErrors.endDate && (
+                        <p
+                          id="event-form-end-date-error"
+                          className="mt-[var(--space-1)] text-sm text-error"
+                          role="alert"
+                        >
+                          {formErrors.endDate}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                  <label className="input input-bordered w-full">
-                    <span className="label">End time</span>
-                    <input
-                      className="grow"
-                      id="end-time"
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => {
-                        setEndTime(e.target.value)
-                        clearFieldError('timeRange')
+                <div className="rounded-md border border-base-300 bg-base-100 p-[var(--space-3)]">
+                  <label
+                    htmlFor="event-all-day"
+                    className="flex cursor-pointer items-start gap-[var(--space-2)]"
+                  >
+                    <Checkbox
+                      id="event-all-day"
+                      checked={allDay}
+                      onCheckedChange={(checked) => {
+                        const nextAllDay = checked === true
+                        setAllDay(nextAllDay)
+                        if (nextAllDay) {
+                          setStartTime('')
+                          setEndTime('')
+                          clearFieldError('timeRange')
+                        }
                         setSubmitError(null)
                       }}
-                      aria-invalid={formErrors.timeRange ? 'true' : 'false'}
-                      aria-describedby={formErrors.timeRange ? 'event-form-time-error' : undefined}
                       disabled={isSubmitting}
-                      data-testid={TID.events.form.endTime}
+                      data-testid={TID.events.form.allDay}
                     />
+                    <span className="space-y-1">
+                      <span className="text-sm font-medium">All day</span>
+                      <span className="block text-xs text-base-content/60">
+                        Use this when exact start and end times are not needed.
+                      </span>
+                    </span>
                   </label>
                 </div>
 
-                <p className="text-xs text-base-content/60">
-                  If both times are set, end time must be later than start time.
-                </p>
+                {!allDay && (
+                  <div className="grid grid-cols-1 gap-[var(--space-3)] xl:grid-cols-2">
+                    <label className="input input-bordered w-full">
+                      <span className="label">Start time</span>
+                      <input
+                        className="grow"
+                        id="start-time"
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => {
+                          setStartTime(e.target.value)
+                          clearFieldError('timeRange')
+                          setSubmitError(null)
+                        }}
+                        aria-invalid={formErrors.timeRange ? 'true' : 'false'}
+                        aria-describedby={
+                          formErrors.timeRange ? 'event-form-time-error' : undefined
+                        }
+                        disabled={isSubmitting || allDay}
+                        data-testid={TID.events.form.startTime}
+                      />
+                    </label>
+
+                    <label className="input input-bordered w-full">
+                      <span className="label">End time</span>
+                      <input
+                        className="grow"
+                        id="end-time"
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => {
+                          setEndTime(e.target.value)
+                          clearFieldError('timeRange')
+                          setSubmitError(null)
+                        }}
+                        aria-invalid={formErrors.timeRange ? 'true' : 'false'}
+                        aria-describedby={
+                          formErrors.timeRange ? 'event-form-time-error' : undefined
+                        }
+                        disabled={isSubmitting || allDay}
+                        data-testid={TID.events.form.endTime}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {!allDay && (
+                  <p className="text-xs text-base-content/60">
+                    End time is optional. For single-day events, end time must be later than start
+                    time when both are set.
+                  </p>
+                )}
                 {formErrors.timeRange && (
                   <p id="event-form-time-error" className="text-sm text-error" role="alert">
                     {formErrors.timeRange}

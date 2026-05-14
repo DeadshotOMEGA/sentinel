@@ -20,6 +20,7 @@ import {
   type SelfServiceVisitorBranch,
 } from '@/lib/visitor-self-signin'
 import { useCreateVisitorGroup } from '@/hooks/use-visitors'
+import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 import {
   TouchScreenKeyboard,
   type TouchKeyboardMode,
@@ -116,19 +117,6 @@ type KeyboardFieldElement = globalThis.HTMLInputElement | globalThis.HTMLTextAre
 function trimValue(value: string): string | undefined {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
-}
-
-function formatEventDateLabel(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 export function VisitorSelfSigninFlow({
@@ -247,7 +235,7 @@ export function VisitorSelfSigninFlow({
       return response.body.data.map((event) => ({
         id: event.id,
         title: event.title,
-        eventDateLabel: formatEventDateLabel(event.eventDate),
+        eventDateLabel: formatUnitEventDateRange(event, 'MMM d, yyyy'),
       }))
     },
   })

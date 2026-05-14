@@ -156,7 +156,11 @@ export const TID = {
     form: {
       title: 'event-form-title',
       type: 'event-form-type',
+      durationSingle: 'event-form-duration-single',
+      durationMulti: 'event-form-duration-multi',
       date: 'event-form-date',
+      endDate: 'event-form-end-date',
+      allDay: 'event-form-all-day',
       startTime: 'event-form-start-time',
       endTime: 'event-form-end-time',
       location: 'event-form-location',

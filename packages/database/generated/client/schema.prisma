@@ -1086,6 +1086,7 @@ model UnitEvent {
   title             String                    @db.VarChar(200)
   eventTypeId       String?                   @map("event_type_id") @db.Uuid
   eventDate         DateTime                  @map("event_date") @db.Date
+  endDate           DateTime?                 @map("end_date") @db.Date
   startTime         DateTime?                 @map("start_time") @db.Time(6)
   endTime           DateTime?                 @map("end_time") @db.Time(6)
   location          String?                   @db.VarChar(200)
@@ -1102,7 +1103,7 @@ model UnitEvent {
   dutyPositions     UnitEventDutyPosition[]
   dutyAssignments   UnitEventDutyAssignment[]
 
-  @@index([eventDate], map: "idx_unit_events_date")
+  @@index([eventDate, endDate], map: "idx_unit_events_date_range")
   @@index([status], map: "idx_unit_events_status")
   @@index([eventTypeId], map: "idx_unit_events_type")
   @@map("unit_events")

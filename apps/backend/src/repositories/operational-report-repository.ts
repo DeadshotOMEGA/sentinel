@@ -535,10 +535,12 @@ export class OperationalReportRepository {
   ): Promise<OperationalReportUnitEventRecord[]> {
     return this.prisma.unitEvent.findMany({
       where: {
-        eventDate: {
-          gte: start,
-          lt: end,
-        },
+        AND: [
+          { eventDate: { lt: end } },
+          {
+            OR: [{ endDate: { gte: start } }, { endDate: null, eventDate: { gte: start } }],
+          },
+        ],
         status: {
           notIn: ['cancelled', 'postponed'],
         },
