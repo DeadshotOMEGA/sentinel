@@ -356,13 +356,13 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
             </div>
 
             {selectedMemberInfo ? (
-              <AppCard className="border border-base-300 bg-base-200/50">
-                <AppCardContent className="flex items-center gap-(--space-3) p-(--space-3)">
+              <div className="rounded-box border border-base-300 bg-base-200/50 p-(--space-3)">
+                <div className="flex items-center gap-(--space-3)">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-fadded text-primary-fadded-content">
                     <ArrowRightLeft className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs uppercase tracking-wide text-base-content/55">
+                    <p className="text-xs font-medium uppercase text-base-content/55">
                       Selected member
                     </p>
                     <p className="truncate text-sm font-semibold text-base-content">
@@ -379,8 +379,8 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                     <X className="size-3.5" />
                     <span className="sr-only">Clear selected member</span>
                   </button>
-                </AppCardContent>
-              </AppCard>
+                </div>
+              </div>
             ) : null}
 
             <div className="min-h-64 overflow-hidden rounded-box border border-base-300 bg-base-100">
@@ -415,12 +415,12 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                   </p>
                 </div>
               ) : (
-                <ul className="menu max-h-64 overflow-y-auto p-(--space-2)">
+                <ul className="max-h-64 overflow-y-auto p-(--space-2)">
                   {eligibility.eligibleMembers.map((member) => (
                     <li key={member.id}>
                       <button
                         type="button"
-                        className="flex items-center justify-between gap-(--space-3)"
+                        className="flex w-full items-center justify-between gap-(--space-3) rounded-md px-(--space-3) py-(--space-2) text-left transition-colors hover:bg-base-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         data-testid={TID.checkins.manualModal.memberOption(member.id)}
                         onClick={() => {
                           setSelectedMemberInfo({
@@ -435,7 +435,7 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                           setSubmitError(null)
                         }}
                       >
-                        <span className="min-w-0 text-left">
+                        <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-base-content">
                             {member.displayName ??
                               `${member.rank} ${member.lastName}, ${member.firstName}`}
@@ -444,7 +444,11 @@ export function ManualCheckinModal({ open, onOpenChange }: ManualCheckinModalPro
                             {member.serviceNumber.slice(-3)}
                           </span>
                         </span>
-                        <AppBadge status={direction === 'in' ? 'success' : 'neutral'} size="sm">
+                        <AppBadge
+                          status={direction === 'in' ? 'success' : 'neutral'}
+                          size="sm"
+                          className="shrink-0"
+                        >
                           {direction === 'in' ? 'Ready in' : 'Present'}
                         </AppBadge>
                       </button>
