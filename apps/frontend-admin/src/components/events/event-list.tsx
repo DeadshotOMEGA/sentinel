@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Eye, CheckCircle, XCircle, Calendar } from 'lucide-react'
+import { Eye, CheckCircle, XCircle, Calendar, Edit, Trash2 } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
 import { useUnitEvents, useEventTypes } from '@/hooks/use-events'
 import { EventStatusBadge } from './event-status-badge'
+import { EventDeleteDialog } from './event-delete-dialog'
+import { EventFormModal } from './event-form-modal'
 import { EmptyState } from '@/components/ui/empty-state'
 import { TID } from '@/lib/test-ids'
 import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 
-import type { UnitEventCategory, UnitEventStatus } from '@sentinel/contracts'
+import type { UnitEventCategory, UnitEventResponse, UnitEventStatus } from '@sentinel/contracts'
 
 const categories: Array<{ value: UnitEventCategory; label: string }> = [
   { value: 'mess_dinner', label: 'Mess Dinner' },
@@ -39,6 +41,8 @@ export function EventList() {
   const [statusFilter, setStatusFilter] = useState<UnitEventStatus | ''>('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [eventToEdit, setEventToEdit] = useState<UnitEventResponse | null>(null)
+  const [eventToDelete, setEventToDelete] = useState<UnitEventResponse | null>(null)
 
   const queryParams = useMemo(() => {
     const params: {
@@ -215,15 +219,38 @@ export function EventList() {
                     )}
                   </td>
                   <td className="text-right">
-                    <Link href={`/events/${event.id}`} passHref>
+                    <div className="flex justify-end gap-1">
+                      <Link href={`/events/${event.id}`} passHref>
+                        <button
+                          className="btn btn-ghost btn-square btn-sm"
+                          aria-label={`View ${event.title}`}
+                          title="View event"
+                          data-testid={TID.events.viewBtn(event.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </Link>
                       <button
+                        type="button"
                         className="btn btn-ghost btn-square btn-sm"
-                        aria-label={`View ${event.title}`}
-                        data-testid={TID.events.viewBtn(event.id)}
+                        aria-label={`Edit ${event.title}`}
+                        title="Edit event"
+                        onClick={() => setEventToEdit(event)}
+                        data-testid={TID.events.editBtn(event.id)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Edit className="h-4 w-4" aria-hidden="true" />
                       </button>
-                    </Link>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-square btn-sm text-error hover:bg-error-fadded"
+                        aria-label={`Delete ${event.title}`}
+                        title="Delete event"
+                        onClick={() => setEventToDelete(event)}
+                        data-testid={TID.events.deleteBtn(event.id)}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -231,6 +258,21 @@ export function EventList() {
           </table>
         )}
       </div>
+
+      <EventFormModal
+        open={eventToEdit !== null}
+        onOpenChange={(open) => {
+          if (!open) setEventToEdit(null)
+        }}
+        event={eventToEdit}
+      />
+      <EventDeleteDialog
+        event={eventToDelete}
+        open={eventToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setEventToDelete(null)
+        }}
+      />
     </div>
   )
 }

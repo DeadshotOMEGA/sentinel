@@ -95,6 +95,24 @@ describe('buildReasonFirstVisitorPayload', () => {
 
     expect(payload.unitEventId).toBe('11111111-1111-1111-1111-111111111111')
     expect(payload.eventId).toBeUndefined()
+    expect(payload.unitEventVisitorOptionId).toBeUndefined()
+  })
+
+  it('sends selected event options through unitEventVisitorOptionId', () => {
+    const payload = buildReasonFirstVisitorPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'event',
+      branch: 'civilian',
+      firstName: 'Alex',
+      lastName: 'Taylor',
+      eventId: '11111111-1111-1111-1111-111111111111',
+      eventTitle: 'Wedding Reception',
+      eventOptionId: '33333333-3333-3333-3333-333333333333',
+      eventOptionTitle: 'Bride side',
+    })
+
+    expect(payload.unitEventVisitorOptionId).toBe('33333333-3333-3333-3333-333333333333')
+    expect(payload.purposeDetails).toContain('Option: Bride side')
   })
 })
 
@@ -113,6 +131,17 @@ describe('buildReasonFirstVisitSummary', () => {
     expect(summary).toContain('Rank: Lt(N)')
     expect(summary).toContain('Unit: HMCS Example')
     expect(summary).toContain('Meeting with: Lt(N) Patel')
+  })
+
+  it('includes event option labels in the visit summary', () => {
+    const summary = buildReasonFirstVisitSummary({
+      reason: 'event',
+      branch: 'civilian',
+      eventTitle: 'Standing Court Martial',
+      eventOptionTitle: 'Gallery Attendee',
+    })
+
+    expect(summary).toContain('Event option: Gallery Attendee')
   })
 })
 
@@ -160,5 +189,22 @@ describe('buildReasonFirstVisitorGroupPayload', () => {
 
     expect(payload.unitEventId).toBe('22222222-2222-2222-2222-222222222222')
     expect(payload.eventId).toBeUndefined()
+    expect(payload.unitEventVisitorOptionId).toBeUndefined()
+  })
+
+  it('sends selected event options through unitEventVisitorOptionId for groups', () => {
+    const payload = buildReasonFirstVisitorGroupPayload({
+      kioskId: 'DASHBOARD_KIOSK',
+      reason: 'event',
+      branch: 'civilian',
+      eventId: '22222222-2222-2222-2222-222222222222',
+      eventTitle: 'Standing Court Martial',
+      eventOptionId: '44444444-4444-4444-4444-444444444444',
+      eventOptionTitle: 'Gallery Attendee',
+      members: [{ firstName: 'Alex', lastName: 'Taylor' }],
+    })
+
+    expect(payload.unitEventVisitorOptionId).toBe('44444444-4444-4444-4444-444444444444')
+    expect(payload.purposeDetails).toContain('Option: Gallery Attendee')
   })
 })

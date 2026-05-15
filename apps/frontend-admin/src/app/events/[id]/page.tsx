@@ -16,15 +16,18 @@ import { LoadingSpinner, ButtonSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { UnitEventStatus } from '@sentinel/contracts'
-import { useUnitEvent, useDeleteUnitEvent, useUpdateUnitEventStatus } from '@/hooks/use-events'
+import { useUnitEvent, useUpdateUnitEventStatus } from '@/hooks/use-events'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventDutyWatchCard } from '@/components/events/event-duty-watch-card'
 import { EventFormModal } from '@/components/events/event-form-modal'
+import { EventDeleteDialog } from '@/components/events/event-delete-dialog'
 import { EventsHelpLauncher } from '@/components/help/section-help-launchers'
 import { Chip } from '@/components/ui/chip'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
+import { TID } from '@/lib/test-ids'
+import { toast } from 'sonner'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
@@ -76,35 +79,17 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
   const { id } = use(params)
   const router = useRouter()
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
 
   const { data: event, isLoading, isError } = useUnitEvent(id)
-  const deleteEvent = useDeleteUnitEvent()
   const updateStatus = useUpdateUnitEventStatus()
-
-  const handleDelete = async () => {
-    if (!event) return
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${event.title}"? This action cannot be undone.`
-    )
-
-    if (!confirmed) return
-
-    try {
-      await deleteEvent.mutateAsync(id)
-      router.push('/events')
-    } catch (error) {
-      console.error('Failed to delete event:', error)
-      window.alert('Failed to delete event. Please try again.')
-    }
-  }
 
   const handleStatusChange = async (newStatus: UnitEventStatus) => {
     try {
       await updateStatus.mutateAsync({ id, status: newStatus })
     } catch {
-      window.alert('Failed to update event status. Please try again.')
+      toast.error('Failed to update event status')
     }
   }
 
@@ -146,8 +131,6 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
   }
 
   const transitions = STATUS_TRANSITIONS[event.status] || {}
-  const canEdit = event.status === 'draft' || event.status === 'planned'
-  const canDelete = event.status === 'draft'
   const isDutyWatchEditable = event.status === 'draft' || event.status === 'planned'
 
   return (
@@ -177,32 +160,25 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2" data-help-id="events.detail.actions">
-          {canEdit && (
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => setIsEditModalOpen(true)}
-              aria-label="Edit event"
-            >
-              <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
-              Edit
-            </button>
-          )}
-          {canDelete && (
-            <button
-              type="button"
-              className="btn btn-error btn-sm"
-              onClick={handleDelete}
-              disabled={deleteEvent.isPending}
-              aria-label="Delete event"
-            >
-              {deleteEvent.isPending ? (
-                <ButtonSpinner />
-              ) : (
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => setIsEditModalOpen(true)}
+            aria-label="Edit event"
+            data-testid={TID.events.editBtn(event.id)}
+          >
+            <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
+            Edit
+          </button>
+          <button
+            type="button"
+            className="btn btn-error btn-sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            aria-label="Delete event"
+            data-testid={TID.events.deleteBtn(event.id)}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -377,6 +353,14 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
       {/* Edit Modal */}
       <EventFormModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} event={event} />
+      <EventDeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        event={event}
+        onDeleted={() => {
+          router.push('/events')
+        }}
+      />
       <EventsHelpLauncher />
     </div>
   )

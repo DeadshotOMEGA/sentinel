@@ -79,6 +79,16 @@ function eventToApiFormat(event: {
   createdAt: Date
   updatedAt: Date
   eventType: { id: string; name: string; category: string } | null
+  visitorOptions: Array<{
+    id: string
+    eventId: string
+    title: string
+    maxSelections: number | null
+    selectedCount: number
+    displayOrder: number
+    createdAt: Date
+    updatedAt: Date
+  }>
 }) {
   return {
     id: event.id,
@@ -106,6 +116,16 @@ function eventToApiFormat(event: {
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
     eventType: event.eventType,
+    visitorOptions: event.visitorOptions.map((option) => ({
+      id: option.id,
+      eventId: option.eventId,
+      title: option.title,
+      maxSelections: option.maxSelections,
+      selectedCount: option.selectedCount,
+      displayOrder: option.displayOrder,
+      createdAt: option.createdAt.toISOString(),
+      updatedAt: option.updatedAt.toISOString(),
+    })),
   }
 }
 
@@ -192,6 +212,16 @@ function eventWithDetailsToApiFormat(event: {
   createdAt: Date
   updatedAt: Date
   eventType: { id: string; name: string; category: string } | null
+  visitorOptions: Array<{
+    id: string
+    eventId: string
+    title: string
+    maxSelections: number | null
+    selectedCount: number
+    displayOrder: number
+    createdAt: Date
+    updatedAt: Date
+  }>
   dutyPositions: Array<{
     id: string
     eventId: string
@@ -381,6 +411,7 @@ export const unitEventsRouter = s.router(unitEventContract, {
         status: body.status,
         metadata: body.metadata ?? null,
         notes: body.notes ?? null,
+        visitorOptions: body.visitorOptions,
       })
       return {
         status: 201 as const,
@@ -435,6 +466,7 @@ export const unitEventsRouter = s.router(unitEventContract, {
         requiresDutyWatch: body.requiresDutyWatch,
         metadata: body.metadata,
         notes: body.notes,
+        visitorOptions: body.visitorOptions,
       })
       return {
         status: 200 as const,

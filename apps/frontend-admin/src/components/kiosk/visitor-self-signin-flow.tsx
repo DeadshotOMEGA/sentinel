@@ -61,6 +61,12 @@ interface EventOption {
   id: string
   title: string
   eventDateLabel: string
+  visitorOptions: Array<{
+    id: string
+    title: string
+    maxSelections: number | null
+    selectedCount: number
+  }>
 }
 
 type KeyboardFieldName =
@@ -93,6 +99,7 @@ interface VisitorSelfSigninFormValues {
   licensePlate: string
   hostMemberId: string
   eventId: string
+  unitEventVisitorOptionId: string
 }
 
 type FlowStep = 1 | 2 | 3 | 4 | 5
@@ -110,6 +117,7 @@ const DEFAULT_FORM_VALUES: VisitorSelfSigninFormValues = {
   licensePlate: '',
   hostMemberId: '',
   eventId: '',
+  unitEventVisitorOptionId: '',
 }
 
 type KeyboardFieldElement = globalThis.HTMLInputElement | globalThis.HTMLTextAreaElement
@@ -163,6 +171,7 @@ export function VisitorSelfSigninFlow({
   const organization = useWatch({ control, name: 'organization' })
   const workDescription = useWatch({ control, name: 'workDescription' })
   const licensePlate = useWatch({ control, name: 'licensePlate' })
+  const unitEventVisitorOptionId = useWatch({ control, name: 'unitEventVisitorOptionId' })
 
   const requiresBranch = reason ? reasonRequiresBranch(reason) : false
   const requiresMemberSelection = reason ? reasonRequiresMemberSelection(reason) : false
@@ -236,6 +245,12 @@ export function VisitorSelfSigninFlow({
         id: event.id,
         title: event.title,
         eventDateLabel: formatUnitEventDateRange(event, 'MMM d, yyyy'),
+        visitorOptions: event.visitorOptions.map((option) => ({
+          id: option.id,
+          title: option.title,
+          maxSelections: option.maxSelections,
+          selectedCount: option.selectedCount,
+        })),
       }))
     },
   })
@@ -290,6 +305,7 @@ export function VisitorSelfSigninFlow({
       setEventSearch('')
       setValue('hostMemberId', '')
       setValue('eventId', '')
+      setValue('unitEventVisitorOptionId', '')
       setGroupMembers([])
       setGroupVehicles([])
       return
@@ -311,7 +327,9 @@ export function VisitorSelfSigninFlow({
       setSelectedEvent(null)
       setEventSearch('')
       setValue('eventId', '')
+      setValue('unitEventVisitorOptionId', '')
       clearErrors('eventId')
+      clearErrors('unitEventVisitorOptionId')
     }
 
     if (!usesContractInputs) {
@@ -526,12 +544,15 @@ export function VisitorSelfSigninFlow({
     setSelectedEvent(event)
     setEventSearch('')
     setValue('eventId', event.id, { shouldValidate: true })
+    setValue('unitEventVisitorOptionId', '', { shouldValidate: true })
     clearErrors('eventId')
+    clearErrors('unitEventVisitorOptionId')
   }
 
   const handleClearEvent = () => {
     setSelectedEvent(null)
     setValue('eventId', '')
+    setValue('unitEventVisitorOptionId', '')
   }
 
   const getKeyboardFieldOrder = (): KeyboardFieldName[] => {
@@ -662,7 +683,6 @@ export function VisitorSelfSigninFlow({
       if (requiresEventSelection) {
         fields.push('eventId')
       }
-
       const valid = fields.length > 0 ? await trigger(fields) : true
       if (valid) {
         setStep((routingStep ?? personalInfoStep) as FlowStep)
@@ -842,6 +862,10 @@ export function VisitorSelfSigninFlow({
         eventId: values.eventId,
         eventTitle: selectedEvent?.title,
         eventDateLabel: selectedEvent?.eventDateLabel,
+        eventOptionId: values.unitEventVisitorOptionId,
+        eventOptionTitle: selectedEvent?.visitorOptions.find(
+          (option) => option.id === values.unitEventVisitorOptionId
+        )?.title,
       })
 
       await createVisitorGroup.mutateAsync(payload)
@@ -910,6 +934,9 @@ export function VisitorSelfSigninFlow({
   const reviewHostName = selectedHost?.displayName
   const reviewEventTitle = selectedEvent?.title
   const reviewEventDate = selectedEvent?.eventDateLabel
+  const selectedEventOption = selectedEvent?.visitorOptions.find(
+    (option) => option.id === unitEventVisitorOptionId
+  )
   const hasCurrentMemberForReview = followsMilitaryPath
     ? Boolean(rankPrefix.trim() || lastName.trim() || initials.trim() || unit.trim())
     : Boolean(firstName.trim() || lastName.trim())
@@ -959,6 +986,7 @@ export function VisitorSelfSigninFlow({
     validate: (value) =>
       !requiresEventSelection || Boolean(value) || 'Select an event before continuing',
   })
+  const eventOptionRegistration = register('unitEventVisitorOptionId')
 
   const rankPrefixRegistration = register('rankPrefix', {
     validate: (value) =>
@@ -1194,6 +1222,7 @@ export function VisitorSelfSigninFlow({
           <input type="hidden" {...branchRegistration} />
           <input type="hidden" {...hostMemberRegistration} />
           <input type="hidden" {...eventIdRegistration} />
+          <input type="hidden" {...eventOptionRegistration} />
 
           <div
             className="min-h-0 flex-1 overflow-y-auto pr-1"
@@ -1265,28 +1294,113 @@ export function VisitorSelfSigninFlow({
                         </div>
 
                         {selectedEvent ? (
-                          <div
-                            className="flex items-center justify-between rounded-box bg-base-100 px-3 py-3"
-                            style={{ gap: 'var(--space-2)', padding: 'var(--space-3)' }}
-                          >
-                            <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
-                              <CalendarDays className="h-5 w-5 text-primary" />
-                              <div>
-                                <p className="font-semibold">{selectedEvent.title}</p>
-                                <p className="text-sm text-base-content/70">
-                                  {selectedEvent.eventDateLabel}
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-sm"
-                              onClick={handleClearEvent}
+                          <>
+                            <div
+                              className="flex items-center justify-between rounded-box bg-base-100 px-3 py-3"
+                              style={{ gap: 'var(--space-2)', padding: 'var(--space-3)' }}
                             >
-                              <X className="h-4 w-4" />
-                              Clear
-                            </button>
-                          </div>
+                              <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+                                <CalendarDays className="h-5 w-5 text-primary" />
+                                <div>
+                                  <p className="font-semibold">{selectedEvent.title}</p>
+                                  <p className="text-sm text-base-content/70">
+                                    {selectedEvent.eventDateLabel}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-sm"
+                                onClick={handleClearEvent}
+                              >
+                                <X className="h-4 w-4" />
+                                Clear
+                              </button>
+                            </div>
+
+                            {selectedEvent.visitorOptions.length > 0 && (
+                              <div
+                                className="rounded-box border border-base-300 bg-base-100"
+                                style={{ padding: 'var(--space-3)' }}
+                              >
+                                <p className="text-sm font-semibold">
+                                  Choose an option if it applies
+                                </p>
+                                <p className="text-xs text-base-content/70">
+                                  You can continue without an option. Full options are only blocked
+                                  for that choice.
+                                </p>
+                                <div className="mt-2 grid grid-cols-1 gap-2">
+                                  <button
+                                    type="button"
+                                    className={cn(
+                                      'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
+                                      !unitEventVisitorOptionId && 'border-primary bg-base-200'
+                                    )}
+                                    style={{
+                                      minHeight: '3rem',
+                                      padding: 'var(--space-2) var(--space-3)',
+                                    }}
+                                    onClick={() => {
+                                      setValue('unitEventVisitorOptionId', '', {
+                                        shouldValidate: true,
+                                      })
+                                      clearErrors('unitEventVisitorOptionId')
+                                    }}
+                                  >
+                                    <span className="truncate">General event visitor</span>
+                                    <span className="text-sm font-normal text-base-content/70">
+                                      No option
+                                    </span>
+                                  </button>
+                                  {selectedEvent.visitorOptions.map((option) => {
+                                    const remaining =
+                                      option.maxSelections === null
+                                        ? null
+                                        : Math.max(option.maxSelections - option.selectedCount, 0)
+                                    const isFull = remaining === 0
+                                    const isSelected = unitEventVisitorOptionId === option.id
+
+                                    return (
+                                      <button
+                                        key={option.id}
+                                        type="button"
+                                        className={cn(
+                                          'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
+                                          isSelected && 'border-primary bg-base-200'
+                                        )}
+                                        style={{
+                                          minHeight: '3rem',
+                                          padding: 'var(--space-2) var(--space-3)',
+                                        }}
+                                        onClick={() => {
+                                          setValue('unitEventVisitorOptionId', option.id, {
+                                            shouldValidate: true,
+                                          })
+                                          clearErrors('unitEventVisitorOptionId')
+                                        }}
+                                        disabled={isFull}
+                                      >
+                                        <span className="truncate">{option.title}</span>
+                                        <span className="text-sm font-normal text-base-content/70">
+                                          {remaining === null
+                                            ? 'No limit'
+                                            : isFull
+                                              ? 'Full'
+                                              : `${remaining} available`}
+                                        </span>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                                {errors.unitEventVisitorOptionId && (
+                                  <p className="mt-2 text-sm text-error">
+                                    {errors.unitEventVisitorOptionId.message}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <>
                             <label
@@ -1817,6 +1931,8 @@ export function VisitorSelfSigninFlow({
                             ? `${reviewEventTitle} (${reviewEventDate})`
                             : reviewEventTitle
                         )}
+                      {selectedEventOption &&
+                        renderReviewValue('Event option', selectedEventOption.title)}
                     </div>
                   </section>
 

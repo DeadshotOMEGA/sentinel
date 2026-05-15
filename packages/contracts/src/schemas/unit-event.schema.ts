@@ -101,6 +101,36 @@ export const UnitEventDutyAssignmentStatusSchema = v.picklist([
   'released',
 ])
 
+export const UnitEventVisitorOptionInputSchema = v.object({
+  id: v.optional(v.pipe(v.string(), v.uuid('Invalid visitor option ID format'))),
+  title: v.pipe(
+    v.string('Visitor option title is required'),
+    v.minLength(1, 'Visitor option title cannot be empty'),
+    v.maxLength(100, 'Visitor option title must be at most 100 characters')
+  ),
+  maxSelections: v.optional(
+    v.nullable(
+      v.pipe(
+        v.number('Max selections must be a number'),
+        v.integer('Max selections must be a whole number'),
+        v.minValue(1, 'Max selections must be at least 1'),
+        v.maxValue(10000, 'Max selections must be at most 10000')
+      )
+    )
+  ),
+})
+
+export const UnitEventVisitorOptionResponseSchema = v.object({
+  id: v.string(),
+  eventId: v.string(),
+  title: v.string(),
+  maxSelections: v.nullable(v.number()),
+  selectedCount: v.number(),
+  displayOrder: v.number(),
+  createdAt: v.string(),
+  updatedAt: v.string(),
+})
+
 /**
  * Unit event duty position response (nested in event)
  */
@@ -176,6 +206,7 @@ export const UnitEventResponseSchema = v.object({
       category: v.string(),
     })
   ),
+  visitorOptions: v.array(UnitEventVisitorOptionResponseSchema),
 })
 
 /**
@@ -224,6 +255,12 @@ export const CreateUnitEventInputSchema = v.object({
   status: v.optional(UnitEventStatusSchema),
   metadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
   notes: v.optional(v.nullable(v.string())),
+  visitorOptions: v.optional(
+    v.pipe(
+      v.array(UnitEventVisitorOptionInputSchema),
+      v.maxLength(12, 'An event can have at most 12 visitor sign-in options')
+    )
+  ),
 })
 
 /**
@@ -252,6 +289,12 @@ export const UpdateUnitEventInputSchema = v.object({
   requiresDutyWatch: v.optional(v.boolean()),
   metadata: v.optional(v.nullable(v.record(v.string(), v.unknown()))),
   notes: v.optional(v.nullable(v.string())),
+  visitorOptions: v.optional(
+    v.pipe(
+      v.array(UnitEventVisitorOptionInputSchema),
+      v.maxLength(12, 'An event can have at most 12 visitor sign-in options')
+    )
+  ),
 })
 
 /**
@@ -383,6 +426,10 @@ export type UnitEventDutyPositionResponse = v.InferOutput<
 >
 export type UnitEventDutyAssignmentResponse = v.InferOutput<
   typeof UnitEventDutyAssignmentResponseSchema
+>
+export type UnitEventVisitorOptionInput = v.InferOutput<typeof UnitEventVisitorOptionInputSchema>
+export type UnitEventVisitorOptionResponse = v.InferOutput<
+  typeof UnitEventVisitorOptionResponseSchema
 >
 export type UnitEventResponse = v.InferOutput<typeof UnitEventResponseSchema>
 export type UnitEventWithDetailsResponse = v.InferOutput<typeof UnitEventWithDetailsResponseSchema>

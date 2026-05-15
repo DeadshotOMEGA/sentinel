@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useCreateUnitEvent, useUpdateUnitEvent, useEventTypes } from '@/hooks/use-events'
+import { Plus, Trash2 } from 'lucide-react'
 import type {
-  UnitEventWithDetailsResponse,
+  UnitEventResponse,
   CreateUnitEventInput,
   UpdateUnitEventInput,
 } from '@sentinel/contracts'
@@ -21,7 +22,7 @@ import type {
 interface EventFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  event?: UnitEventWithDetailsResponse | null
+  event?: UnitEventResponse | null
   onSuccess?: () => void
 }
 
@@ -31,9 +32,21 @@ type FormErrors = {
   endDate?: string
   metadata?: string
   timeRange?: string
+  visitorOptions?: string
 }
 
 type DurationMode = 'single' | 'multi'
+
+type VisitorOptionDraft = {
+  id?: string
+  title: string
+  maxSelections: string
+}
+
+const emptyVisitorOption = (): VisitorOptionDraft => ({
+  title: '',
+  maxSelections: '',
+})
 
 function parseMetadataInput(rawMetadata: string): {
   value: Record<string, unknown> | null
@@ -71,6 +84,8 @@ function validateForm(input: {
   startTime: string
   endTime: string
   metadata: string
+  enableVisitorOptions: boolean
+  visitorOptions: VisitorOptionDraft[]
 }): { errors: FormErrors; parsedMetadata: Record<string, unknown> | null } {
   const errors: FormErrors = {}
 
@@ -107,6 +122,36 @@ function validateForm(input: {
     errors.metadata = metadataResult.error
   }
 
+  if (input.enableVisitorOptions) {
+    if (input.visitorOptions.length === 0) {
+      errors.visitorOptions = 'Add at least one visitor sign-in option, or turn this off.'
+    }
+
+    const seenTitles = new Set<string>()
+    for (const [index, option] of input.visitorOptions.entries()) {
+      const title = option.title.trim()
+      if (!title) {
+        errors.visitorOptions = `Visitor option ${index + 1} needs a title.`
+        break
+      }
+
+      const titleKey = title.toLowerCase()
+      if (seenTitles.has(titleKey)) {
+        errors.visitorOptions = `Visitor option titles must be unique. "${title}" is repeated.`
+        break
+      }
+      seenTitles.add(titleKey)
+
+      if (option.maxSelections.trim()) {
+        const parsedMaxSelections = Number(option.maxSelections)
+        if (!Number.isInteger(parsedMaxSelections) || parsedMaxSelections < 1) {
+          errors.visitorOptions = `Max selections for "${title}" must be a whole number above 0.`
+          break
+        }
+      }
+    }
+  }
+
   return {
     errors,
     parsedMetadata: metadataResult.value,
@@ -133,6 +178,8 @@ export function EventFormModal({
   const [description, setDescription] = useState('')
   const [organizer, setOrganizer] = useState('')
   const [requiresDutyWatch, setRequiresDutyWatch] = useState(false)
+  const [enableVisitorOptions, setEnableVisitorOptions] = useState(false)
+  const [visitorOptions, setVisitorOptions] = useState<VisitorOptionDraft[]>([emptyVisitorOption()])
   const [notes, setNotes] = useState('')
   const [metadata, setMetadata] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -167,6 +214,16 @@ export function EventFormModal({
       setDescription(event.description ?? '')
       setOrganizer(event.organizer ?? '')
       setRequiresDutyWatch(event.requiresDutyWatch)
+      setEnableVisitorOptions(event.visitorOptions.length > 0)
+      setVisitorOptions(
+        event.visitorOptions.length > 0
+          ? event.visitorOptions.map((option) => ({
+              id: option.id,
+              title: option.title,
+              maxSelections: option.maxSelections === null ? '' : String(option.maxSelections),
+            }))
+          : [emptyVisitorOption()]
+      )
       setNotes(event.notes ?? '')
       setMetadata(event.metadata ? JSON.stringify(event.metadata, null, 2) : '')
     } else {
@@ -182,6 +239,8 @@ export function EventFormModal({
       setDescription('')
       setOrganizer('')
       setRequiresDutyWatch(false)
+      setEnableVisitorOptions(false)
+      setVisitorOptions([emptyVisitorOption()])
       setNotes('')
       setMetadata('')
     }
@@ -202,6 +261,31 @@ export function EventFormModal({
     }))
   }
 
+  const updateVisitorOption = (
+    index: number,
+    changes: Partial<Pick<VisitorOptionDraft, 'title' | 'maxSelections'>>
+  ) => {
+    setVisitorOptions((current) =>
+      current.map((option, optionIndex) =>
+        optionIndex === index ? { ...option, ...changes } : option
+      )
+    )
+    clearFieldError('visitorOptions')
+    setSubmitError(null)
+  }
+
+  const buildVisitorOptionsPayload = ():
+    | NonNullable<CreateUnitEventInput['visitorOptions']>
+    | [] => {
+    if (!enableVisitorOptions) return []
+
+    return visitorOptions.map((option) => ({
+      id: option.id,
+      title: option.title.trim(),
+      maxSelections: option.maxSelections.trim() ? Number(option.maxSelections) : null,
+    }))
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
@@ -214,6 +298,8 @@ export function EventFormModal({
       startTime,
       endTime,
       metadata,
+      enableVisitorOptions,
+      visitorOptions,
     })
 
     if (Object.keys(errors).length > 0) {
@@ -237,6 +323,7 @@ export function EventFormModal({
       requiresDutyWatch,
       metadata: parsedMetadata,
       notes: notes.trim() || null,
+      visitorOptions: buildVisitorOptionsPayload(),
     }
 
     try {
@@ -597,6 +684,122 @@ export function EventFormModal({
                       </span>
                     </span>
                   </label>
+                </div>
+
+                <div className="rounded-md border border-base-300 bg-base-100 p-[var(--space-3)]">
+                  <label
+                    htmlFor="visitor-options-enabled"
+                    className="flex cursor-pointer items-start gap-[var(--space-2)]"
+                  >
+                    <Checkbox
+                      id="visitor-options-enabled"
+                      checked={enableVisitorOptions}
+                      onCheckedChange={(checked) => {
+                        const nextEnabled = checked === true
+                        setEnableVisitorOptions(nextEnabled)
+                        if (nextEnabled && visitorOptions.length === 0) {
+                          setVisitorOptions([emptyVisitorOption()])
+                        }
+                        clearFieldError('visitorOptions')
+                        setSubmitError(null)
+                      }}
+                      disabled={isSubmitting}
+                      data-testid={TID.events.form.visitorOptionsEnabled}
+                    />
+                    <span className="space-y-1">
+                      <span className="text-sm font-medium">Show visitor sign-in options</span>
+                      <span className="block text-xs text-base-content/60">
+                        Add choices visitors must select for this event, such as Gallery Attendee or
+                        Bride side.
+                      </span>
+                    </span>
+                  </label>
+
+                  {enableVisitorOptions && (
+                    <div className="mt-[var(--space-3)] space-y-[var(--space-3)] border-t border-base-300 pt-[var(--space-3)]">
+                      <div className="grid grid-cols-[minmax(0,1fr)_180px_40px] gap-[var(--space-2)] text-xs font-medium uppercase tracking-wide text-base-content/60">
+                        <span>Option title</span>
+                        <span>Max people</span>
+                        <span className="sr-only">Remove</span>
+                      </div>
+
+                      {visitorOptions.map((option, index) => (
+                        <div
+                          key={option.id ?? `new-${index}`}
+                          className="grid grid-cols-[minmax(0,1fr)_180px_40px] gap-[var(--space-2)]"
+                        >
+                          <label className="input input-bordered input-sm w-full">
+                            <input
+                              value={option.title}
+                              onChange={(e) =>
+                                updateVisitorOption(index, { title: e.target.value })
+                              }
+                              placeholder={index === 0 ? 'Gallery Attendee' : 'Bride side'}
+                              maxLength={100}
+                              disabled={isSubmitting}
+                              data-testid={TID.events.form.visitorOptionTitle(index)}
+                            />
+                          </label>
+
+                          <label className="input input-bordered input-sm w-full">
+                            <input
+                              type="number"
+                              min={1}
+                              step={1}
+                              inputMode="numeric"
+                              value={option.maxSelections}
+                              onChange={(e) =>
+                                updateVisitorOption(index, { maxSelections: e.target.value })
+                              }
+                              placeholder="No limit"
+                              disabled={isSubmitting}
+                              data-testid={TID.events.form.visitorOptionMax(index)}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-square btn-sm"
+                            onClick={() => {
+                              setVisitorOptions((current) =>
+                                current.length > 1
+                                  ? current.filter((_, optionIndex) => optionIndex !== index)
+                                  : [emptyVisitorOption()]
+                              )
+                              clearFieldError('visitorOptions')
+                              setSubmitError(null)
+                            }}
+                            aria-label={`Remove visitor option ${index + 1}`}
+                            disabled={isSubmitting}
+                            data-testid={TID.events.form.visitorOptionRemove(index)}
+                          >
+                            <Trash2 aria-hidden="true" className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {formErrors.visitorOptions && (
+                        <p className="text-sm text-error" role="alert">
+                          {formErrors.visitorOptions}
+                        </p>
+                      )}
+
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setVisitorOptions((current) => [...current, emptyVisitorOption()])
+                          clearFieldError('visitorOptions')
+                          setSubmitError(null)
+                        }}
+                        disabled={isSubmitting || visitorOptions.length >= 12}
+                        data-testid={TID.events.form.visitorOptionAdd}
+                      >
+                        <Plus aria-hidden="true" className="h-4 w-4" />
+                        Add option
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

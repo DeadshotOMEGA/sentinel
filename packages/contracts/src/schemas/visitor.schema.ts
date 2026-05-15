@@ -112,6 +112,9 @@ const BaseCreateVisitorSchema = v.object({
   recruitmentStep: v.optional(RecruitmentStepEnum),
   eventId: v.optional(v.pipe(v.string(), v.uuid('Invalid event ID'))),
   unitEventId: v.optional(v.pipe(v.string(), v.uuid('Invalid unit event ID'))),
+  unitEventVisitorOptionId: v.optional(
+    v.pipe(v.string(), v.uuid('Invalid unit event visitor option ID'))
+  ),
   hostMemberId: v.optional(v.pipe(v.string(), v.uuid('Invalid host member ID'))),
   checkInTime: v.optional(v.pipe(v.string(), v.isoTimestamp('Invalid check-in time'))),
   checkOutTime: v.optional(v.pipe(v.string(), v.isoTimestamp('Invalid checkout time'))),
@@ -202,6 +205,9 @@ export const CreateVisitorGroupSchema = v.pipe(
     purposeDetails: v.optional(PurposeDetailsSchema),
     eventId: v.optional(v.pipe(v.string(), v.uuid('Invalid event ID'))),
     unitEventId: v.optional(v.pipe(v.string(), v.uuid('Invalid unit event ID'))),
+    unitEventVisitorOptionId: v.optional(
+      v.pipe(v.string(), v.uuid('Invalid unit event visitor option ID'))
+    ),
     hostMemberId: v.optional(v.pipe(v.string(), v.uuid('Invalid host member ID'))),
     checkInMethod: v.optional(VisitorCheckInMethodEnum),
     adminNotes: v.optional(AdminNotesSchema),
@@ -262,6 +268,9 @@ export const UpdateVisitorSchema = v.object({
   recruitmentStep: v.optional(RecruitmentStepEnum),
   eventId: v.optional(v.pipe(v.string(), v.uuid('Invalid event ID'))),
   unitEventId: v.optional(v.pipe(v.string(), v.uuid('Invalid unit event ID'))),
+  unitEventVisitorOptionId: v.optional(
+    v.pipe(v.string(), v.uuid('Invalid unit event visitor option ID'))
+  ),
   hostMemberId: v.optional(v.pipe(v.string(), v.uuid('Invalid host member ID'))),
   checkInTime: v.optional(v.pipe(v.string(), v.isoTimestamp('Invalid check-in time'))),
   checkOutTime: v.optional(v.pipe(v.string(), v.isoTimestamp('Invalid checkout time'))),
@@ -294,6 +303,7 @@ export const VisitorResponseSchema = v.object({
   recruitmentStep: v.nullable(RecruitmentStepEnum),
   eventId: v.nullable(v.string()),
   unitEventId: v.nullable(v.string()),
+  unitEventVisitorOptionId: v.nullable(v.string()),
   hostMemberId: v.nullable(v.string()),
   checkInTime: v.string(),
   checkOutTime: v.nullable(v.string()),

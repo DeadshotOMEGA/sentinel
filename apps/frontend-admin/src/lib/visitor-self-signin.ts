@@ -175,6 +175,7 @@ export interface ReasonFirstVisitSummaryInput {
   workDescription?: string
   eventTitle?: string
   eventDateLabel?: string
+  eventOptionTitle?: string
   hostDisplayName?: string
   rankPrefix?: string
   unit?: string
@@ -213,6 +214,11 @@ export function buildReasonFirstVisitSummary(input: ReasonFirstVisitSummaryInput
     parts.push(eventDate ? `Event: ${eventTitle} (${eventDate})` : `Event: ${eventTitle}`)
   }
 
+  const eventOptionTitle = trimValue(input.eventOptionTitle)
+  if (eventOptionTitle) {
+    parts.push(`Event option: ${eventOptionTitle}`)
+  }
+
   const hostDisplayName = trimValue(input.hostDisplayName)
   if (hostDisplayName) {
     parts.push(`Meeting with: ${hostDisplayName}`)
@@ -238,6 +244,8 @@ export interface BuildReasonFirstVisitorPayloadInput {
   eventId?: string
   eventTitle?: string
   eventDateLabel?: string
+  eventOptionId?: string
+  eventOptionTitle?: string
 }
 
 export interface ReasonFirstGroupMemberInput {
@@ -261,6 +269,8 @@ export interface BuildReasonFirstVisitorGroupPayloadInput {
   eventId?: string
   eventTitle?: string
   eventDateLabel?: string
+  eventOptionId?: string
+  eventOptionTitle?: string
 }
 
 export function buildReasonFirstVisitorPayload(
@@ -309,6 +319,7 @@ export function buildReasonFirstVisitorPayload(
       workDescription: input.workDescription,
       eventTitle: input.eventTitle,
       eventDateLabel: input.eventDateLabel,
+      eventOptionTitle: input.eventOptionTitle,
       hostDisplayName: input.hostDisplayName,
       rankPrefix,
       unit,
@@ -364,13 +375,22 @@ export function buildReasonFirstVisitorPayload(
 
     const eventTitle = trimValue(input.eventTitle)
     const eventDateLabel = trimValue(input.eventDateLabel)
+    const eventOptionTitle = trimValue(input.eventOptionTitle)
 
     if (eventTitle) {
-      payload.purposeDetails = eventDateLabel
+      const eventDetails = eventDateLabel
         ? `Event selected: ${eventTitle} (${eventDateLabel})`
         : `Event selected: ${eventTitle}`
+      payload.purposeDetails = eventOptionTitle
+        ? `${eventDetails}; Option: ${eventOptionTitle}`
+        : eventDetails
     } else {
       payload.purposeDetails = 'Event visit'
+    }
+
+    const eventOptionId = trimValue(input.eventOptionId)
+    if (eventOptionId) {
+      payload.unitEventVisitorOptionId = eventOptionId
     }
   }
 
@@ -397,8 +417,16 @@ export function buildReasonFirstVisitorGroupPayload(
   const purposeDetailsForEvent =
     reasonRequiresEventSelection(input.reason) && trimValue(input.eventTitle)
       ? trimValue(input.eventDateLabel)
-        ? `Event selected: ${trimValue(input.eventTitle)} (${trimValue(input.eventDateLabel)})`
-        : `Event selected: ${trimValue(input.eventTitle)}`
+        ? `Event selected: ${trimValue(input.eventTitle)} (${trimValue(input.eventDateLabel)})${
+            trimValue(input.eventOptionTitle)
+              ? `; Option: ${trimValue(input.eventOptionTitle)}`
+              : ''
+          }`
+        : `Event selected: ${trimValue(input.eventTitle)}${
+            trimValue(input.eventOptionTitle)
+              ? `; Option: ${trimValue(input.eventOptionTitle)}`
+              : ''
+          }`
       : undefined
 
   const sharedVisitReason = buildReasonFirstVisitSummary({
@@ -408,6 +436,7 @@ export function buildReasonFirstVisitorGroupPayload(
     workDescription: input.workDescription,
     eventTitle: input.eventTitle,
     eventDateLabel: input.eventDateLabel,
+    eventOptionTitle: input.eventOptionTitle,
     hostDisplayName: input.hostDisplayName,
   })
 
@@ -467,6 +496,7 @@ export function buildReasonFirstVisitorGroupPayload(
     unitEventId: reasonRequiresEventSelection(input.reason)
       ? requireValue(input.eventId, 'Select an event before continuing')
       : trimValue(input.eventId),
+    unitEventVisitorOptionId: trimValue(input.eventOptionId),
     hostMemberId: reasonRequiresMemberSelection(input.reason)
       ? requireValue(input.hostMemberId, 'Select a member for meeting visits before continuing')
       : trimValue(input.hostMemberId),

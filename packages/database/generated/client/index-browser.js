@@ -348,6 +348,7 @@ exports.Prisma.VisitorScalarFieldEnum = {
   recruitmentStep: 'recruitmentStep',
   eventId: 'eventId',
   unitEventId: 'unitEventId',
+  unitEventVisitorOptionId: 'unitEventVisitorOptionId',
   hostMemberId: 'hostMemberId',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
@@ -368,6 +369,7 @@ exports.Prisma.VisitorGroupScalarFieldEnum = {
   purposeDetails: 'purposeDetails',
   eventId: 'eventId',
   unitEventId: 'unitEventId',
+  unitEventVisitorOptionId: 'unitEventVisitorOptionId',
   hostMemberId: 'hostMemberId',
   checkInMethod: 'checkInMethod',
   createdAt: 'createdAt'
@@ -794,6 +796,16 @@ exports.Prisma.UnitEventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.UnitEventVisitorOptionScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  title: 'title',
+  maxSelections: 'maxSelections',
+  displayOrder: 'displayOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.UnitEventDutyPositionScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -905,6 +917,7 @@ exports.Prisma.ModelName = {
   MissedCheckout: 'MissedCheckout',
   UnitEventType: 'UnitEventType',
   UnitEvent: 'UnitEvent',
+  UnitEventVisitorOption: 'UnitEventVisitorOption',
   UnitEventDutyPosition: 'UnitEventDutyPosition',
   UnitEventDutyAssignment: 'UnitEventDutyAssignment'
 };

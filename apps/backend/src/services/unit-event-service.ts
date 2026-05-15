@@ -132,6 +132,7 @@ export class UnitEventService {
   async createEvent(input: CreateUnitEventInput): Promise<UnitEventWithDetails> {
     this.validateDateRange(input.eventDate, input.endDate ?? null)
     this.validateTimeRange(input.eventDate, input.endDate ?? null, input.startTime, input.endTime)
+    this.validateVisitorOptions(input.visitorOptions)
 
     // Determine requiresDutyWatch - use provided value or inherit from event type
     let requiresDutyWatch = input.requiresDutyWatch ?? false
@@ -171,6 +172,7 @@ export class UnitEventService {
 
     this.validateDateRange(nextEventDate, nextEndDate)
     this.validateTimeRange(nextEventDate, nextEndDate, nextStartTime, nextEndTime)
+    this.validateVisitorOptions(input.visitorOptions)
 
     await this.repository.updateEvent(id, input)
 
@@ -359,6 +361,32 @@ export class UnitEventService {
   private validateDateRange(eventDate: Date, endDate?: Date | null): void {
     if (effectiveEndDate(eventDate, endDate) < eventDate) {
       throw new ValidationError('End date must be the same as or later than start date')
+    }
+  }
+
+  private validateVisitorOptions(
+    visitorOptions: Array<{ title: string; maxSelections?: number | null }> | undefined
+  ): void {
+    if (visitorOptions === undefined) return
+
+    const seenTitles = new Set<string>()
+    for (const option of visitorOptions) {
+      const title = option.title.trim()
+      if (!title) {
+        throw new ValidationError('Visitor sign-in option titles cannot be empty')
+      }
+
+      const titleKey = title.toLowerCase()
+      if (seenTitles.has(titleKey)) {
+        throw new ValidationError(`Duplicate visitor sign-in option: ${title}`)
+      }
+      seenTitles.add(titleKey)
+
+      if (option.maxSelections !== undefined && option.maxSelections !== null) {
+        if (!Number.isInteger(option.maxSelections) || option.maxSelections < 1) {
+          throw new ValidationError('Visitor sign-in option limits must be whole numbers above 0')
+        }
+      }
     }
   }
 
