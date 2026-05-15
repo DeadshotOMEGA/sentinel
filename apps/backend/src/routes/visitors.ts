@@ -15,6 +15,7 @@ import type { Request } from 'express'
 import type { Visitor } from '@sentinel/types'
 import {
   VisitorEventAssociationError,
+  VisitorEventOptionError,
   VisitorRepository,
 } from '../repositories/visitor-repository.js'
 import { getPrismaClient } from '../lib/database.js'
@@ -46,6 +47,7 @@ function toVisitorResponse(v: Visitor) {
     recruitmentStep: v.recruitmentStep ?? null,
     eventId: v.eventId ?? null,
     unitEventId: v.unitEventId ?? null,
+    unitEventVisitorOptionId: v.unitEventVisitorOptionId ?? null,
     hostMemberId: v.hostMemberId ?? null,
     checkInTime: v.checkInTime.toISOString(),
     checkOutTime: v.checkOutTime?.toISOString() ?? null,
@@ -171,6 +173,7 @@ export const visitorsRouter = s.router(visitorContract, {
         recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
         unitEventId: body.unitEventId,
+        unitEventVisitorOptionId: body.unitEventVisitorOptionId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,
         checkOutTime: body.checkOutTime ? new Date(body.checkOutTime) : undefined,
@@ -196,7 +199,10 @@ export const visitorsRouter = s.router(visitorContract, {
         body: toVisitorResponse(visitor),
       }
     } catch (error) {
-      if (error instanceof VisitorEventAssociationError) {
+      if (
+        error instanceof VisitorEventAssociationError ||
+        error instanceof VisitorEventOptionError
+      ) {
         return {
           status: 400 as const,
           body: {
@@ -243,6 +249,7 @@ export const visitorsRouter = s.router(visitorContract, {
         purposeDetails: body.purposeDetails,
         eventId: body.eventId,
         unitEventId: body.unitEventId,
+        unitEventVisitorOptionId: body.unitEventVisitorOptionId,
         hostMemberId: body.hostMemberId,
         checkInMethod: body.checkInMethod,
         adminNotes: body.adminNotes,
@@ -283,7 +290,10 @@ export const visitorsRouter = s.router(visitorContract, {
         },
       }
     } catch (error) {
-      if (error instanceof VisitorEventAssociationError) {
+      if (
+        error instanceof VisitorEventAssociationError ||
+        error instanceof VisitorEventOptionError
+      ) {
         return {
           status: 400 as const,
           body: {
@@ -507,6 +517,7 @@ export const visitorsRouter = s.router(visitorContract, {
         recruitmentStep: body.recruitmentStep,
         eventId: body.eventId,
         unitEventId: body.unitEventId,
+        unitEventVisitorOptionId: body.unitEventVisitorOptionId,
         hostMemberId: body.hostMemberId,
         checkInTime: body.checkInTime ? new Date(body.checkInTime) : undefined,
         checkOutTime: body.checkOutTime ? new Date(body.checkOutTime) : undefined,
@@ -521,7 +532,10 @@ export const visitorsRouter = s.router(visitorContract, {
         body: toVisitorResponse(visitor),
       }
     } catch (error) {
-      if (error instanceof VisitorEventAssociationError) {
+      if (
+        error instanceof VisitorEventAssociationError ||
+        error instanceof VisitorEventOptionError
+      ) {
         return {
           status: 400 as const,
           body: {

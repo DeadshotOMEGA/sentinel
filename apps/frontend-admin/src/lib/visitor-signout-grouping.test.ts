@@ -23,6 +23,7 @@ function createVisitor(overrides: Partial<VisitorResponse>): VisitorResponse {
     recruitmentStep: overrides.recruitmentStep ?? null,
     eventId: overrides.eventId ?? null,
     unitEventId: overrides.unitEventId ?? null,
+    unitEventVisitorOptionId: overrides.unitEventVisitorOptionId ?? null,
     hostMemberId: overrides.hostMemberId ?? null,
     checkInTime: overrides.checkInTime ?? '2026-05-04T12:00:00.000Z',
     checkOutTime: overrides.checkOutTime ?? null,

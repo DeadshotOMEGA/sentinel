@@ -20,6 +20,17 @@ export interface UnitEventTypeEntity {
   updatedAt: Date
 }
 
+export interface UnitEventVisitorOptionEntity {
+  id: string
+  eventId: string
+  title: string
+  maxSelections: number | null
+  selectedCount: number
+  displayOrder: number
+  createdAt: Date
+  updatedAt: Date
+}
+
 /**
  * Unit event entity from database
  */
@@ -42,6 +53,7 @@ export interface UnitEventEntity {
   createdAt: Date
   updatedAt: Date
   eventType: { id: string; name: string; category: string } | null
+  visitorOptions: UnitEventVisitorOptionEntity[]
 }
 
 /**
@@ -115,6 +127,7 @@ export interface CreateUnitEventInput {
   metadata?: Record<string, unknown> | null
   notes?: string | null
   createdBy?: string | null
+  visitorOptions?: UnitEventVisitorOptionInput[]
 }
 
 /**
@@ -133,6 +146,13 @@ export interface UpdateUnitEventInput {
   requiresDutyWatch?: boolean
   metadata?: Record<string, unknown> | null
   notes?: string | null
+  visitorOptions?: UnitEventVisitorOptionInput[]
+}
+
+export interface UnitEventVisitorOptionInput {
+  id?: string
+  title: string
+  maxSelections?: number | null
 }
 
 export interface CreateUnitEventTypeInput {
@@ -225,18 +245,60 @@ const assignmentInclude = {
   },
 }
 
+const eventTypeSelect = {
+  select: {
+    id: true,
+    name: true,
+    category: true,
+  },
+}
+
+const visitorOptionsInclude = {
+  orderBy: { displayOrder: 'asc' as const },
+  include: {
+    _count: {
+      select: { visitors: true },
+    },
+  },
+}
+
+type UnitEventVisitorOptionRecord = Prisma.UnitEventVisitorOptionGetPayload<{
+  include: typeof visitorOptionsInclude.include
+}>
+
+type UnitEventRecordWithVisitorOptions = Omit<UnitEventEntity, 'visitorOptions'> & {
+  visitorOptions?: UnitEventVisitorOptionRecord[]
+}
+
+function mapVisitorOptions(
+  options: UnitEventVisitorOptionRecord[] | undefined
+): UnitEventVisitorOptionEntity[] {
+  return (options ?? []).map((option) => ({
+    id: option.id,
+    eventId: option.eventId,
+    title: option.title,
+    maxSelections: option.maxSelections,
+    selectedCount: option._count.visitors,
+    displayOrder: option.displayOrder,
+    createdAt: option.createdAt,
+    updatedAt: option.updatedAt,
+  }))
+}
+
+function mapUnitEvent<T extends UnitEventRecordWithVisitorOptions>(event: T): T & UnitEventEntity {
+  return {
+    ...event,
+    visitorOptions: mapVisitorOptions(event.visitorOptions),
+  }
+}
+
 /**
  * Get full include object for unit event with all related data
  */
 function getEventFullInclude() {
   return {
-    eventType: {
-      select: {
-        id: true,
-        name: true,
-        category: true,
-      },
-    },
+    eventType: eventTypeSelect,
+    visitorOptions: visitorOptionsInclude,
     dutyPositions: {
       orderBy: { displayOrder: 'asc' as const },
     },
@@ -247,6 +309,13 @@ function getEventFullInclude() {
         { createdAt: 'asc' as const },
       ],
     },
+  }
+}
+
+function getEventListInclude() {
+  return {
+    eventType: eventTypeSelect,
+    visitorOptions: visitorOptionsInclude,
   }
 }
 
@@ -419,15 +488,7 @@ export class UnitEventRepository {
     const [events, total] = await Promise.all([
       this.prisma.unitEvent.findMany({
         where,
-        include: {
-          eventType: {
-            select: {
-              id: true,
-              name: true,
-              category: true,
-            },
-          },
-        },
+        include: getEventListInclude(),
         orderBy: [{ eventDate: 'desc' }, { endDate: 'desc' }, { title: 'asc' }],
         take: filter.limit,
         skip: filter.offset,
@@ -435,7 +496,7 @@ export class UnitEventRepository {
       this.prisma.unitEvent.count({ where }),
     ])
 
-    return { events, total }
+    return { events: events.map(mapUnitEvent), total }
   }
 
   /**
@@ -451,18 +512,10 @@ export class UnitEventRepository {
           },
         ],
       },
-      include: {
-        eventType: {
-          select: {
-            id: true,
-            name: true,
-            category: true,
-          },
-        },
-      },
+      include: getEventListInclude(),
       orderBy: [{ eventDate: 'asc' }, { endDate: 'asc' }, { title: 'asc' }],
     })
-    return events
+    return events.map(mapUnitEvent)
   }
 
   /**
@@ -473,15 +526,76 @@ export class UnitEventRepository {
       where: { id },
       include: getEventFullInclude(),
     })
-    return event as UnitEventWithDetails | null
+    return event ? (mapUnitEvent(event) as UnitEventWithDetails) : null
+  }
+
+  private normalizeVisitorOptions(
+    visitorOptions: UnitEventVisitorOptionInput[] | undefined
+  ): Array<{ id?: string; title: string; maxSelections: number | null; displayOrder: number }> {
+    return (visitorOptions ?? []).map((option, index) => ({
+      id: option.id,
+      title: option.title.trim(),
+      maxSelections: option.maxSelections ?? null,
+      displayOrder: index,
+    }))
+  }
+
+  private async syncVisitorOptions(
+    tx: Prisma.TransactionClient,
+    eventId: string,
+    visitorOptions: UnitEventVisitorOptionInput[] | undefined
+  ): Promise<void> {
+    if (visitorOptions === undefined) return
+
+    const normalizedOptions = this.normalizeVisitorOptions(visitorOptions)
+    const existingOptions = await tx.unitEventVisitorOption.findMany({
+      where: { eventId },
+      select: { id: true },
+    })
+    const existingIds = new Set(existingOptions.map((option) => option.id))
+    const incomingIds = new Set(
+      normalizedOptions
+        .map((option) => option.id)
+        .filter((id): id is string => Boolean(id && existingIds.has(id)))
+    )
+
+    await tx.unitEventVisitorOption.deleteMany({
+      where: {
+        eventId,
+        id: { notIn: Array.from(incomingIds) },
+      },
+    })
+
+    for (const option of normalizedOptions) {
+      if (option.id && existingIds.has(option.id)) {
+        await tx.unitEventVisitorOption.update({
+          where: { id: option.id },
+          data: {
+            title: option.title,
+            maxSelections: option.maxSelections,
+            displayOrder: option.displayOrder,
+          },
+        })
+        continue
+      }
+
+      await tx.unitEventVisitorOption.create({
+        data: {
+          eventId,
+          title: option.title,
+          maxSelections: option.maxSelections,
+          displayOrder: option.displayOrder,
+        },
+      })
+    }
   }
 
   /**
    * Create a new event
    */
   async createEvent(input: CreateUnitEventInput): Promise<UnitEventWithDetails> {
-    const event = await this.prisma.unitEvent.create({
-      data: {
+    const event = await this.prisma.$transaction(async (tx) => {
+      const createData: Prisma.UnitEventUncheckedCreateInput = {
         title: input.title,
         eventTypeId: input.eventTypeId,
         eventDate: input.eventDate,
@@ -501,17 +615,27 @@ export class UnitEventRepository {
               : undefined,
         notes: input.notes,
         createdBy: input.createdBy,
-      },
-      include: getEventFullInclude(),
+      }
+
+      const created = await tx.unitEvent.create({
+        data: createData,
+      })
+
+      await this.syncVisitorOptions(tx, created.id, input.visitorOptions)
+
+      return tx.unitEvent.findUniqueOrThrow({
+        where: { id: created.id },
+        include: getEventFullInclude(),
+      })
     })
-    return event as UnitEventWithDetails
+    return mapUnitEvent(event) as UnitEventWithDetails
   }
 
   /**
    * Update an event
    */
   async updateEvent(id: string, data: UpdateUnitEventInput): Promise<UnitEventWithDetails> {
-    const updateData: Record<string, unknown> = {}
+    const updateData: Prisma.UnitEventUncheckedUpdateInput = {}
 
     if (data.title !== undefined) {
       updateData.title = data.title
@@ -551,12 +675,20 @@ export class UnitEventRepository {
       updateData.notes = data.notes
     }
 
-    const event = await this.prisma.unitEvent.update({
-      where: { id },
-      data: updateData,
-      include: getEventFullInclude(),
+    const event = await this.prisma.$transaction(async (tx) => {
+      await tx.unitEvent.update({
+        where: { id },
+        data: updateData,
+      })
+
+      await this.syncVisitorOptions(tx, id, data.visitorOptions)
+
+      return tx.unitEvent.findUniqueOrThrow({
+        where: { id },
+        include: getEventFullInclude(),
+      })
     })
-    return event as UnitEventWithDetails
+    return mapUnitEvent(event) as UnitEventWithDetails
   }
 
   /**
@@ -568,7 +700,7 @@ export class UnitEventRepository {
       data: { status },
       include: getEventFullInclude(),
     })
-    return event as UnitEventWithDetails
+    return mapUnitEvent(event) as UnitEventWithDetails
   }
 
   /**
