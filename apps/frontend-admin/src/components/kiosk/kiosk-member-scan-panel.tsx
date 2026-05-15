@@ -305,7 +305,7 @@ export function KioskMemberScanPanel({
                 if (scanningDisabled) return
                 onSubmitScan()
               }}
-              className="mt-(--space-4) grid gap-(--space-4) rounded-box border border-base-300 bg-base-200/50 p-(--space-4) xl:grid-cols-[minmax(0,1fr)_auto]"
+              className="mt-auto grid gap-(--space-4) rounded-box border border-base-300 bg-base-200/50 p-(--space-4) xl:grid-cols-[minmax(0,1fr)_auto]"
             >
               <div className="space-y-(--space-3)">
                 <div>
