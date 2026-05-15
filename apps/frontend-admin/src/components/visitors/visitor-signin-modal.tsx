@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateVisitor, useAvailableTemporaryBadges } from '@/hooks/use-visitors'
 import { useMembers } from '@/hooks/use-members'
 import { useUnitEvents } from '@/hooks/use-events'
 import { useAuthStore } from '@/store/auth-store'
+import { cn } from '@/lib/utils'
 import { Search, X } from 'lucide-react'
 import type { CreateVisitorInput } from '@sentinel/contracts'
 
@@ -23,6 +24,7 @@ interface FormData {
   visitReason: string
   hostMemberId: string
   eventId: string
+  unitEventVisitorOptionId: string
   temporaryBadgeId: string
   adminNotes: string
 }
@@ -76,14 +78,24 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
       visitReason: '',
       hostMemberId: '',
       eventId: '',
+      unitEventVisitorOptionId: '',
       temporaryBadgeId: '',
       adminNotes: '',
     },
   })
 
   const selectedBadgeId = watch('temporaryBadgeId')
+  const selectedEventId = watch('eventId')
+  const selectedEventOptionId = watch('unitEventVisitorOptionId')
   const firstNameRegister = register('firstName', { required: 'First name is required' })
   const lastNameRegister = register('lastName', { required: 'Last name is required' })
+  const eventIdRegister = register('eventId')
+  const eventOptionRegister = register('unitEventVisitorOptionId')
+  const selectedEvent = useMemo(
+    () => eventsData?.data.find((event) => event.id === selectedEventId) ?? null,
+    [eventsData?.data, selectedEventId]
+  )
+  const selectedEventVisitorOptions = selectedEvent?.visitorOptions ?? []
 
   // Sync open prop with dialog element
   useEffect(() => {
@@ -133,6 +145,9 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
       if (data.visitReason) visitorData.visitReason = data.visitReason
       if (data.hostMemberId) visitorData.hostMemberId = data.hostMemberId
       if (data.eventId) visitorData.unitEventId = data.eventId
+      if (data.unitEventVisitorOptionId) {
+        visitorData.unitEventVisitorOptionId = data.unitEventVisitorOptionId
+      }
       if (data.temporaryBadgeId) visitorData.temporaryBadgeId = data.temporaryBadgeId
       if (data.adminNotes) visitorData.adminNotes = data.adminNotes
 
@@ -317,17 +332,84 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
 
           {/* Event */}
           {eventsData?.data && eventsData.data.length > 0 && (
-            <label className="select select-neutral w-full">
-              <span className="label">Event</span>
-              <select {...register('eventId')} disabled={isSubmitting}>
-                <option value="">No event</option>
-                {eventsData.data.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="space-y-2">
+              <label className="select select-neutral w-full">
+                <span className="label">Event</span>
+                <select
+                  {...eventIdRegister}
+                  disabled={isSubmitting}
+                  onChange={(event) => {
+                    void eventIdRegister.onChange(event)
+                    setValue('unitEventVisitorOptionId', '')
+                  }}
+                >
+                  <option value="">No event</option>
+                  {eventsData.data.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <input type="hidden" {...eventOptionRegister} />
+
+              {selectedEventVisitorOptions.length > 0 && (
+                <section className="rounded-box border border-base-300 bg-base-200 p-(--space-3)">
+                  <div>
+                    <p className="text-sm font-semibold text-base-content">Event option</p>
+                    <p className="text-xs text-base-content/65">
+                      Select one if it applies. Visitors can still sign in without choosing an
+                      option.
+                    </p>
+                  </div>
+                  <div className="mt-(--space-2) grid gap-(--space-2)">
+                    <button
+                      type="button"
+                      className={cn(
+                        'btn btn-outline h-auto justify-between border-base-300 bg-base-100 px-(--space-3) py-(--space-2) text-left',
+                        !selectedEventOptionId && 'border-primary bg-primary-fadded'
+                      )}
+                      onClick={() => setValue('unitEventVisitorOptionId', '')}
+                      disabled={isSubmitting}
+                    >
+                      <span className="truncate">General event visitor</span>
+                      <span className="text-xs font-normal text-base-content/65">No option</span>
+                    </button>
+
+                    {selectedEventVisitorOptions.map((option) => {
+                      const remaining =
+                        option.maxSelections === null
+                          ? null
+                          : Math.max(option.maxSelections - option.selectedCount, 0)
+                      const isFull = remaining === 0
+                      const isSelected = selectedEventOptionId === option.id
+
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={cn(
+                            'btn btn-outline h-auto justify-between border-base-300 bg-base-100 px-(--space-3) py-(--space-2) text-left',
+                            isSelected && 'border-primary bg-primary-fadded'
+                          )}
+                          onClick={() => setValue('unitEventVisitorOptionId', option.id)}
+                          disabled={isSubmitting || isFull}
+                        >
+                          <span className="truncate">{option.title}</span>
+                          <span className="text-xs font-normal text-base-content/65">
+                            {remaining === null
+                              ? 'No limit'
+                              : isFull
+                                ? 'Full'
+                                : `${remaining} available`}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              )}
+            </div>
           )}
 
           {/* Temporary Badge */}

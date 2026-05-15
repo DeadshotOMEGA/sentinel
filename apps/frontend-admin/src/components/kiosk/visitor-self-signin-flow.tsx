@@ -268,6 +268,39 @@ export function VisitorSelfSigninFlow({
     })
   }, [eventListQuery.data, normalizedEventSearch])
 
+  const selectedEventDetailsQuery = useQuery({
+    queryKey: ['kiosk-unit-event', selectedEvent?.id],
+    enabled: requiresEventSelection && Boolean(selectedEvent?.id),
+    queryFn: async (): Promise<EventOption> => {
+      if (!selectedEvent?.id) {
+        throw new Error('Select an event before loading event options')
+      }
+
+      const response = await apiClient.unitEvents.getUnitEvent({
+        params: { id: selectedEvent.id },
+      })
+
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch event options')
+      }
+
+      return {
+        id: response.body.id,
+        title: response.body.title,
+        eventDateLabel: formatUnitEventDateRange(response.body, 'MMM d, yyyy'),
+        visitorOptions: response.body.visitorOptions.map((option) => ({
+          id: option.id,
+          title: option.title,
+          maxSelections: option.maxSelections,
+          selectedCount: option.selectedCount,
+        })),
+      }
+    },
+  })
+
+  const selectedEventForDisplay = selectedEventDetailsQuery.data ?? selectedEvent
+  const selectedEventVisitorOptions = selectedEventForDisplay?.visitorOptions ?? []
+
   const focusKeyboardField = (name: KeyboardFieldName, nextValueLength?: number) => {
     const fieldElement = fieldRefs.current[name]
     if (!fieldElement) return
@@ -860,10 +893,10 @@ export function VisitorSelfSigninFlow({
         hostMemberId: values.hostMemberId,
         hostDisplayName: selectedHost?.displayName,
         eventId: values.eventId,
-        eventTitle: selectedEvent?.title,
-        eventDateLabel: selectedEvent?.eventDateLabel,
+        eventTitle: selectedEventForDisplay?.title,
+        eventDateLabel: selectedEventForDisplay?.eventDateLabel,
         eventOptionId: values.unitEventVisitorOptionId,
-        eventOptionTitle: selectedEvent?.visitorOptions.find(
+        eventOptionTitle: selectedEventForDisplay?.visitorOptions.find(
           (option) => option.id === values.unitEventVisitorOptionId
         )?.title,
       })
@@ -932,9 +965,9 @@ export function VisitorSelfSigninFlow({
   const reviewOrganization = trimValue(organization)
   const reviewWorkDescription = trimValue(workDescription)
   const reviewHostName = selectedHost?.displayName
-  const reviewEventTitle = selectedEvent?.title
-  const reviewEventDate = selectedEvent?.eventDateLabel
-  const selectedEventOption = selectedEvent?.visitorOptions.find(
+  const reviewEventTitle = selectedEventForDisplay?.title
+  const reviewEventDate = selectedEventForDisplay?.eventDateLabel
+  const selectedEventOption = selectedEventForDisplay?.visitorOptions.find(
     (option) => option.id === unitEventVisitorOptionId
   )
   const hasCurrentMemberForReview = followsMilitaryPath
@@ -1304,7 +1337,8 @@ export function VisitorSelfSigninFlow({
                                 <div>
                                   <p className="font-semibold">{selectedEvent.title}</p>
                                   <p className="text-sm text-base-content/70">
-                                    {selectedEvent.eventDateLabel}
+                                    {selectedEventForDisplay?.eventDateLabel ??
+                                      selectedEvent.eventDateLabel}
                                   </p>
                                 </div>
                               </div>
@@ -1318,7 +1352,9 @@ export function VisitorSelfSigninFlow({
                               </button>
                             </div>
 
-                            {selectedEvent.visitorOptions.length > 0 && (
+                            {(selectedEventDetailsQuery.isLoading ||
+                              selectedEventDetailsQuery.isError ||
+                              selectedEventVisitorOptions.length > 0) && (
                               <div
                                 className="rounded-box border border-base-300 bg-base-100"
                                 style={{ padding: 'var(--space-3)' }}
@@ -1330,69 +1366,86 @@ export function VisitorSelfSigninFlow({
                                   You can continue without an option. Full options are only blocked
                                   for that choice.
                                 </p>
-                                <div className="mt-2 grid grid-cols-1 gap-2">
-                                  <button
-                                    type="button"
-                                    className={cn(
-                                      'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
-                                      !unitEventVisitorOptionId && 'border-primary bg-base-200'
-                                    )}
-                                    style={{
-                                      minHeight: '3rem',
-                                      padding: 'var(--space-2) var(--space-3)',
-                                    }}
-                                    onClick={() => {
-                                      setValue('unitEventVisitorOptionId', '', {
-                                        shouldValidate: true,
-                                      })
-                                      clearErrors('unitEventVisitorOptionId')
-                                    }}
+                                {selectedEventDetailsQuery.isLoading && (
+                                  <div
+                                    className="mt-2 flex items-center text-sm text-base-content/70"
+                                    style={{ gap: 'var(--space-2)' }}
                                   >
-                                    <span className="truncate">General event visitor</span>
-                                    <span className="text-sm font-normal text-base-content/70">
-                                      No option
-                                    </span>
-                                  </button>
-                                  {selectedEvent.visitorOptions.map((option) => {
-                                    const remaining =
-                                      option.maxSelections === null
-                                        ? null
-                                        : Math.max(option.maxSelections - option.selectedCount, 0)
-                                    const isFull = remaining === 0
-                                    const isSelected = unitEventVisitorOptionId === option.id
+                                    <span className="loading loading-spinner loading-xs" />
+                                    Loading event options.
+                                  </div>
+                                )}
+                                {selectedEventDetailsQuery.isError && (
+                                  <p className="mt-2 text-sm text-error">
+                                    Event options could not be loaded. Clear the event and try
+                                    again.
+                                  </p>
+                                )}
+                                {selectedEventVisitorOptions.length > 0 && (
+                                  <div className="mt-2 grid grid-cols-1 gap-2">
+                                    <button
+                                      type="button"
+                                      className={cn(
+                                        'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
+                                        !unitEventVisitorOptionId && 'border-primary bg-base-200'
+                                      )}
+                                      style={{
+                                        minHeight: '3rem',
+                                        padding: 'var(--space-2) var(--space-3)',
+                                      }}
+                                      onClick={() => {
+                                        setValue('unitEventVisitorOptionId', '', {
+                                          shouldValidate: true,
+                                        })
+                                        clearErrors('unitEventVisitorOptionId')
+                                      }}
+                                    >
+                                      <span className="truncate">General event visitor</span>
+                                      <span className="text-sm font-normal text-base-content/70">
+                                        No option
+                                      </span>
+                                    </button>
+                                    {selectedEventVisitorOptions.map((option) => {
+                                      const remaining =
+                                        option.maxSelections === null
+                                          ? null
+                                          : Math.max(option.maxSelections - option.selectedCount, 0)
+                                      const isFull = remaining === 0
+                                      const isSelected = unitEventVisitorOptionId === option.id
 
-                                    return (
-                                      <button
-                                        key={option.id}
-                                        type="button"
-                                        className={cn(
-                                          'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
-                                          isSelected && 'border-primary bg-base-200'
-                                        )}
-                                        style={{
-                                          minHeight: '3rem',
-                                          padding: 'var(--space-2) var(--space-3)',
-                                        }}
-                                        onClick={() => {
-                                          setValue('unitEventVisitorOptionId', option.id, {
-                                            shouldValidate: true,
-                                          })
-                                          clearErrors('unitEventVisitorOptionId')
-                                        }}
-                                        disabled={isFull}
-                                      >
-                                        <span className="truncate">{option.title}</span>
-                                        <span className="text-sm font-normal text-base-content/70">
-                                          {remaining === null
-                                            ? 'No limit'
-                                            : isFull
-                                              ? 'Full'
-                                              : `${remaining} available`}
-                                        </span>
-                                      </button>
-                                    )
-                                  })}
-                                </div>
+                                      return (
+                                        <button
+                                          key={option.id}
+                                          type="button"
+                                          className={cn(
+                                            'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
+                                            isSelected && 'border-primary bg-base-200'
+                                          )}
+                                          style={{
+                                            minHeight: '3rem',
+                                            padding: 'var(--space-2) var(--space-3)',
+                                          }}
+                                          onClick={() => {
+                                            setValue('unitEventVisitorOptionId', option.id, {
+                                              shouldValidate: true,
+                                            })
+                                            clearErrors('unitEventVisitorOptionId')
+                                          }}
+                                          disabled={isFull}
+                                        >
+                                          <span className="truncate">{option.title}</span>
+                                          <span className="text-sm font-normal text-base-content/70">
+                                            {remaining === null
+                                              ? 'No limit'
+                                              : isFull
+                                                ? 'Full'
+                                                : `${remaining} available`}
+                                          </span>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                )}
                                 {errors.unitEventVisitorOptionId && (
                                   <p className="mt-2 text-sm text-error">
                                     {errors.unitEventVisitorOptionId.message}
