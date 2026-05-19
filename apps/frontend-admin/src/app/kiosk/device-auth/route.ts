@@ -4,6 +4,7 @@ import { KIOSK_DEVICE_COOKIE_NAME, resolveKioskBootstrapNext } from '@/lib/kiosk
 import {
   getConfiguredKioskDeviceApiKey,
   getKioskDeviceCookieMaxAgeSeconds,
+  resolvePublicRequestUrl,
 } from '@/lib/kiosk-device-auth.server'
 
 function shouldUseSecureCookie(request: NextRequest): boolean {
@@ -12,7 +13,8 @@ function shouldUseSecureCookie(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   const nextPath = resolveKioskBootstrapNext(request.nextUrl.searchParams.get('next'))
-  const loginUrl = new globalThis.URL(buildLoginUrl('/kiosk'), request.url)
+  const publicRequestUrl = resolvePublicRequestUrl(request)
+  const loginUrl = new globalThis.URL(buildLoginUrl('/kiosk'), publicRequestUrl)
   const configuredApiKey = getConfiguredKioskDeviceApiKey()
 
   if (!configuredApiKey) {
@@ -21,7 +23,7 @@ export async function GET(request: NextRequest) {
     return response
   }
 
-  const response = NextResponse.redirect(new globalThis.URL(nextPath, request.url))
+  const response = NextResponse.redirect(new globalThis.URL(nextPath, publicRequestUrl))
   response.cookies.set(KIOSK_DEVICE_COOKIE_NAME, configuredApiKey, {
     httpOnly: true,
     sameSite: 'lax',
