@@ -117,9 +117,21 @@ Port defaults in `.env`:
 - `HOTSPOT_APPROVED_DONGLES_FILE=hardware/approved-hotspot-dongles.json` (approved external AP dongle allowlist)
 - `APPROVED_WIFI_SSIDS=GC Public` (comma-separated approved internet Wi-Fi SSIDs for host-network status)
 - `SENTINEL_KIOSK_DEVICE_API_KEY=sk_...` (shared kiosk device auth key used by frontend and backend for kiosk no-user-login mode)
-- `NETWORK_REACHABILITY_CHECK_URL=https://connectivitycheck.gstatic.com/generate_204` (host-level internet probe)
+- `NETWORK_REACHABILITY_CHECK_URL=` optional host-level internet probe. Leave empty for closed local deployments.
 - `NETWORK_REMOTE_REACHABILITY_TARGET=` optional extra reachability target, such as a Tailscale IP or HTTPS health URL
 - `NETWORK_STATUS_SNAPSHOT_INTERVAL_SECONDS=30` (how often the Ubuntu host writes Wi-Fi/internet telemetry for Sentinel)
+
+### Offline / closed-system operation
+
+Sentinel is designed to keep operating on the local appliance network without Internet access after installation and updates are complete.
+
+- `Stone Frigate` is the operational Sentinel hotspot. It is the network other laptops use to reach Sentinel in a browser.
+- `GC Public` is only an optional Internet path for development, Codex work, install/update downloads, and other maintenance tasks.
+- If `GC Public` is disconnected, blocked by the daily captive portal, or intentionally not used, Sentinel should still report healthy local network status when the managed hotspot profile, approved AP dongle, scan radio, and `Stone Frigate` visibility are healthy.
+- The frontend does not depend on Internet-hosted fonts during normal operation.
+- The navbar does not poll GitHub release metadata during normal operation. Open **Admin > Updates** only when intentionally checking or applying updates.
+- Leave `NETWORK_REACHABILITY_CHECK_URL=` empty for a closed local deployment. Configure an external URL only during development or maintenance when you intentionally want Sentinel to report Internet reachability.
+- Leave `NETWORK_REMOTE_REACHABILITY_TARGET=` empty for a closed local deployment unless there is a specific internal target that should be checked.
 
 Canonical Sentinel port allocation policy (host/LAN):
 
@@ -201,7 +213,7 @@ What it checks:
 - which hotspot adapter and scan adapter Sentinel selected
 - whether the approved AP dongle is incorrectly busy on an internet Wi-Fi profile
 - whether the configured Sentinel hotspot SSID is visible from the laptop's non-host Wi-Fi adapter (when available)
-- whether the configured internet reachability URL succeeds
+- whether the configured internet reachability URL succeeds, when one is configured
 - whether the optional `NETWORK_REMOTE_REACHABILITY_TARGET` is reachable
 
 Where it lives:

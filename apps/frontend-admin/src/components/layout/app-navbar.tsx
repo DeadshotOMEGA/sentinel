@@ -4,12 +4,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
-import type {
-  SystemHealthStatus,
-  SystemUpdateJob,
-  SystemStatusResponse,
-  SystemUpdateJobStatus,
-} from '@sentinel/contracts'
+import type { SystemHealthStatus, SystemStatusResponse } from '@sentinel/contracts'
 import { Menu, PanelLeftOpen } from 'lucide-react'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
 import { Chip } from '@/components/ui/chip'
@@ -19,7 +14,6 @@ import { UserMenu } from '@/components/layout/user-menu'
 import { HelpButton } from '@/components/help/HelpButton'
 import { HostHotspotRepairDialog } from '@/components/network/host-hotspot-repair-dialog'
 import { useSystemStatus } from '@/hooks/use-system-status'
-import { useSystemUpdateStatus } from '@/hooks/use-system-update'
 import { TID } from '@/lib/test-ids'
 import { AccountLevel, useAuthStore } from '@/store/auth-store'
 import { getWirelessRecoveryState, resolveWikiBaseUrl } from './app-navbar.logic'
@@ -46,12 +40,7 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
   const authSession = useAuthStore((state) => state.session)
   const [hostHotspotRepairOpen, setHostHotspotRepairOpen] = useState(false)
   const systemStatusQuery = useSystemStatus({ enabled: isAuthenticated })
-  const systemUpdateQuery = useSystemUpdateStatus({
-    enabled: isAuthenticated,
-    refetchIntervalMs: 30_000,
-  })
   const systemStatus = systemStatusQuery.data ?? null
-  const systemUpdateStatus = systemUpdateQuery.data ?? null
   const isStatusLoading = !isAuthenticated || systemStatusQuery.isLoading
   const { dot, label, badgeStatus } = getSystemSummaryBadge({
     systemStatus,
@@ -124,16 +113,10 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
     isError: systemStatusQuery.isError,
     hasAdminAccess,
   })
-  const currentVersion =
-    systemUpdateStatus?.currentVersion ??
-    normalizeVersionTag(systemStatus?.backend.version ?? null) ??
-    'unknown'
-  const latestVersion = systemUpdateStatus?.latestVersion ?? null
+  const currentVersion = normalizeVersionTag(systemStatus?.backend.version ?? null) ?? 'unknown'
+  const latestVersion = null
   const versionStatusLabel = getVersionStatus(currentVersion, latestVersion)
-  const updateAvailable = systemUpdateStatus?.updateAvailable ?? false
-  const currentSystemUpdateJob = systemUpdateStatus?.currentJob ?? null
-  const hasActiveSystemUpdate =
-    currentSystemUpdateJob !== null && !isSystemUpdateJobTerminal(currentSystemUpdateJob)
+  const updateAvailable = false
 
   return (
     <div
@@ -432,21 +415,14 @@ export function AppNavbar({ drawerId, isDrawerOpen }: AppNavbarProps) {
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide">Updates</p>
                   <p className="mt-1 text-xs leading-relaxed">
-                    {hasActiveSystemUpdate && currentSystemUpdateJob
-                      ? `Update ${currentSystemUpdateJob.targetVersion} is ${formatSystemUpdateStatus(currentSystemUpdateJob.status).toLowerCase()}.`
-                      : updateAvailable && latestVersion
-                        ? `${latestVersion} is available for this appliance.`
-                        : 'Sentinel is on the latest known stable release.'}
+                    {updateAvailable && latestVersion
+                      ? `${latestVersion} is available for this appliance.`
+                      : 'Release lookup is only checked from the Updates page.'}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-(--space-2)">
                     <Link href="/admin/updates" className="btn btn-xs btn-outline">
                       Open updates
                     </Link>
-                    {hasActiveSystemUpdate && currentSystemUpdateJob && (
-                      <AppBadge status="warning" size="sm">
-                        {formatSystemUpdateStatus(currentSystemUpdateJob.status)}
-                      </AppBadge>
-                    )}
                   </div>
                 </div>
                 <p>
@@ -622,6 +598,23 @@ function getWirelessRecoveryCopy(
   const approvedSsidLabel =
     primaryApprovedSsid ?? systemStatus.network.hotspotSsid ?? 'the approved Wi-Fi network'
   const hotspotSsidLabel = systemStatus.network.hotspotSsid ?? 'the hosted Sentinel hotspot'
+
+  if (
+    systemStatus.network.issueCode === 'none' &&
+    systemStatus.network.portalRecoveryLikely === true &&
+    systemStatus.network.internetReachable === false
+  ) {
+    return `${approvedSsidLabel} is connected, but internet access likely needs the daily portal acceptance. Sentinel can still verify ${hotspotSsidLabel} as long as AP visibility is shown as visible.`
+  }
+
+  if (
+    systemStatus.network.issueCode === 'none' &&
+    systemStatus.network.internetReachable === null &&
+    systemStatus.network.hotspotSsidVisibleFromLaptop === true
+  ) {
+    return `${hotspotSsidLabel} is visible. Internet reachability checks are not configured, which is expected for a closed local deployment.`
+  }
+
   switch (systemStatus.network.issueCode) {
     case 'wifi_disconnected':
       return `Internet Wi-Fi is disconnected. Reconnect this laptop to ${approvedSsidLabel} if internet access is needed, then requeue a host repair if the hotspot still needs attention.`
@@ -1028,6 +1021,15 @@ function getNetworkTooltip(
     if (network.approvedSsids.length === 0) {
       reason =
         'Green because Sentinel Wi-Fi is operational and no approved internet SSID allowlist is configured.'
+    } else if (network.portalRecoveryLikely === true && network.internetReachable === false) {
+      const hotspotSsidLabel = network.hotspotSsid ?? 'hosted Sentinel hotspot'
+      reason = `Green because Sentinel can still verify "${hotspotSsidLabel}" even though internet access likely needs daily portal acceptance.`
+    } else if (
+      network.internetReachable === null &&
+      network.hotspotSsidVisibleFromLaptop === true
+    ) {
+      const hotspotSsidLabel = network.hotspotSsid ?? 'hosted Sentinel hotspot'
+      reason = `Green because Sentinel can verify "${hotspotSsidLabel}" and no Internet reachability check is configured.`
     } else if (network.approvedSsid === true) {
       reason = `Green because internet Wi-Fi "${currentSsid}" is approved.`
     } else {
@@ -1098,24 +1100,6 @@ function formatBooleanLabel(value: boolean | null): string {
 
 function stripUrlProtocol(value: string): string {
   return value.replace(/^https?:\/\//, '')
-}
-
-function isSystemUpdateJobTerminal(
-  job: Pick<SystemUpdateJob, 'status' | 'finishedAt'> | null
-): boolean {
-  if (!job) {
-    return true
-  }
-
-  if (job.status === 'rollback_attempted') {
-    return job.finishedAt !== null
-  }
-
-  return job.status === 'completed' || job.status === 'failed' || job.status === 'rolled_back'
-}
-
-function formatSystemUpdateStatus(status: SystemUpdateJobStatus): string {
-  return status.replace(/_/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase())
 }
 
 function getVersionStatus(currentVersion: string, latestTag: string | null): string {
