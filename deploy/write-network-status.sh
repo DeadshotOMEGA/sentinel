@@ -7,7 +7,7 @@ source "${SCRIPT_DIR}/_common.sh"
 
 OUTPUT_DIR="${SCRIPT_DIR}/runtime/network-status"
 OUTPUT_FILE="${OUTPUT_DIR}/network-status.json"
-CHECK_URL="$(env_value NETWORK_REACHABILITY_CHECK_URL "$(env_value CAPTIVE_PORTAL_RECOVERY_CHECK_URL https://connectivitycheck.gstatic.com/generate_204)")"
+CHECK_URL="$(env_value NETWORK_REACHABILITY_CHECK_URL "$(env_value CAPTIVE_PORTAL_RECOVERY_CHECK_URL)")"
 REMOTE_TARGET="$(env_value NETWORK_REMOTE_REACHABILITY_TARGET "$(env_value CAPTIVE_PORTAL_TAILSCALE_TARGET)")"
 HOTSPOT_CONNECTION_NAME="$(env_value HOTSPOT_CONNECTION_NAME 'Sentinel Hotspot')"
 BACKEND_READER_GROUP="${BACKEND_READER_GROUP:-sentinel-backend}"
@@ -281,15 +281,17 @@ fi
 
 current_ssid_value="${internet_wifi_ssid_value}"
 
-if check_url "${CHECK_URL}"; then
-  internet_reachable_value="true"
-elif command -v curl >/dev/null 2>&1; then
-  internet_reachable_value="false"
-  if [[ -n "${current_ssid_value}" && "${hotspot_issue_code_value}" == "none" ]]; then
-    portal_recovery_likely_value="true"
-    message_value="Internet reachability failed while internet Wi-Fi is connected"
-  elif [[ "${hotspot_issue_code_value}" == "none" ]]; then
-    message_value="Sentinel hotspot is visible; internet Wi-Fi is not connected"
+if [[ -n "${CHECK_URL}" ]]; then
+  if check_url "${CHECK_URL}"; then
+    internet_reachable_value="true"
+  elif command -v curl >/dev/null 2>&1; then
+    internet_reachable_value="false"
+    if [[ -n "${current_ssid_value}" && "${hotspot_issue_code_value}" == "none" ]]; then
+      portal_recovery_likely_value="true"
+      message_value="Internet reachability failed while internet Wi-Fi is connected"
+    elif [[ "${hotspot_issue_code_value}" == "none" ]]; then
+      message_value="Sentinel hotspot is visible; internet Wi-Fi is not connected"
+    fi
   fi
 fi
 
@@ -308,6 +310,8 @@ if [[ -n "${current_ssid_value}" && "${internet_reachable_value}" == "true" && "
   message_value="Connected to internet Wi-Fi and internet is reachable"
 elif [[ -z "${current_ssid_value}" && "${hotspot_issue_code_value}" == "none" && "${hotspot_ssid_visible_from_laptop_value}" == "true" ]]; then
   message_value="Sentinel hotspot is visible; internet Wi-Fi is not connected"
+elif [[ -n "${current_ssid_value}" && "${internet_reachable_value}" == "null" && "${hotspot_issue_code_value}" == "none" && "${hotspot_ssid_visible_from_laptop_value}" == "true" ]]; then
+  message_value="Sentinel hotspot is visible; internet reachability check is not configured"
 fi
 
 tmp_file="$(mktemp "${OUTPUT_DIR}/network-status.XXXXXX")"

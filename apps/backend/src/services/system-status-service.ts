@@ -121,6 +121,9 @@ function resolveNetworkStatusMessage(input: {
   approvedSsidsConfigured: boolean
   wifiConnected: boolean | null
   approvedSsid: boolean | null
+  internetReachable: boolean | null
+  portalRecoveryLikely: boolean | null
+  hotspotSsidVisibleFromLaptop: boolean | null
   hotspotSsid: string | null
   remoteTarget: string | null
   fallbackMessage: string | null
@@ -163,6 +166,22 @@ function resolveNetworkStatusMessage(input: {
     case 'none':
     default:
       break
+  }
+
+  if (input.portalRecoveryLikely === true && input.internetReachable === false) {
+    if (input.hotspotSsidVisibleFromLaptop === true && input.hotspotSsid) {
+      return `Connected to approved internet Wi-Fi, but internet access likely needs portal acceptance. The "${input.hotspotSsid}" hotspot is still visible.`
+    }
+
+    return 'Connected to approved internet Wi-Fi, but internet access likely needs portal acceptance.'
+  }
+
+  if (
+    input.internetReachable === null &&
+    input.hotspotSsidVisibleFromLaptop === true &&
+    input.fallbackMessage?.includes('internet reachability check is not configured')
+  ) {
+    return input.fallbackMessage
   }
 
   if (input.approvedSsidsConfigured && input.approvedSsid === true) {
@@ -373,6 +392,9 @@ export class SystemStatusService {
           approvedSsidsConfigured: approvedSsids.length > 0,
           wifiConnected: telemetry?.wifiConnected ?? null,
           approvedSsid,
+          internetReachable: telemetry?.internetReachable ?? null,
+          portalRecoveryLikely: telemetry?.portalRecoveryLikely ?? null,
+          hotspotSsidVisibleFromLaptop: telemetry?.hotspotSsidVisibleFromLaptop ?? null,
           hotspotSsid: telemetry?.hotspotSsid ?? null,
           remoteTarget: telemetry?.remoteTarget ?? null,
           fallbackMessage: telemetry?.message ?? null,

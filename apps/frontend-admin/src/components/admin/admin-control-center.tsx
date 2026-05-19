@@ -237,6 +237,15 @@ function getApprovedWifiTelemetry(
     }
   }
 
+  if (network.hotspotSsidVisibleFromLaptop === true && network.internetReachable !== true) {
+    return {
+      value: network.currentSsid ? `${network.currentSsid} optional` : 'Internet optional',
+      detail: `${network.hotspotSsid ?? 'Sentinel hotspot'} is visible; external internet is not required for Sentinel access.`,
+      badge: 'Local',
+      badgeStatus: 'info',
+    }
+  }
+
   if (network.approvedSsid === true) {
     return {
       value: network.currentSsid ?? network.approvedSsids[0] ?? 'Approved network',
@@ -549,6 +558,35 @@ function getSyncActionableSignal(
       routeId: 'network',
       badge: 'Ready',
       badgeStatus: 'success',
+    }
+  }
+
+  if (network.internetReachable === null && network.hotspotSsidVisibleFromLaptop === true) {
+    return {
+      id: 'sync-status',
+      label: 'Sync path',
+      value: 'Closed local',
+      detail: 'Internet reachability is not checked; Sentinel local access is available.',
+      href: '/admin/network',
+      routeId: 'network',
+      badge: 'Local',
+      badgeStatus: 'info',
+    }
+  }
+
+  if (network.internetReachable === false && network.hotspotSsidVisibleFromLaptop === true) {
+    return {
+      id: 'sync-status',
+      label: 'Sync path',
+      value: network.portalRecoveryLikely === true ? 'Portal pending' : 'Local only',
+      detail:
+        network.portalRecoveryLikely === true
+          ? 'Internet access likely needs daily portal acceptance; Sentinel local access is still available.'
+          : 'External internet is unavailable; Sentinel local access is still available.',
+      href: '/admin/network',
+      routeId: 'network',
+      badge: 'Local',
+      badgeStatus: 'info',
     }
   }
 

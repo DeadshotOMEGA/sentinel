@@ -493,7 +493,7 @@ bootstrap_env_defaults() {
   fi
 
   if is_placeholder_env_value "$(env_value NETWORK_REACHABILITY_CHECK_URL)"; then
-    upsert_env "NETWORK_REACHABILITY_CHECK_URL" "https://connectivitycheck.gstatic.com/generate_204"
+    upsert_env "NETWORK_REACHABILITY_CHECK_URL" ""
   fi
 
   if is_placeholder_env_value "$(env_value NETWORK_REMOTE_REACHABILITY_TARGET)"; then

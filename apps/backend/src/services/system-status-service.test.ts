@@ -177,7 +177,7 @@ describe('SystemStatusService', () => {
     ).toBe(true)
   })
 
-  it('keeps network status healthy when internet reachability is unavailable but Wi-Fi is approved', async () => {
+  it('keeps network status healthy when captive portal blocks internet but hotspot is visible', async () => {
     const { service } = createService({
       approvedSsids: ['GC Public'],
       telemetryResult: {
@@ -200,8 +200,8 @@ describe('SystemStatusService', () => {
           internetReachable: false,
           remoteTarget: null,
           remoteReachable: null,
-          portalRecoveryLikely: false,
-          message: 'Connected to approved internet Wi-Fi',
+          portalRecoveryLikely: true,
+          message: 'Internet reachability failed while internet Wi-Fi is connected',
         },
         error: null,
       },
@@ -212,8 +212,12 @@ describe('SystemStatusService', () => {
     expect(result.network.status).toBe('healthy')
     expect(result.network.issueCode).toBe('none')
     expect(result.network.approvedSsid).toBe(true)
+    expect(result.network.internetReachable).toBe(false)
+    expect(result.network.portalRecoveryLikely).toBe(true)
+    expect(result.network.hotspotSsidVisibleFromLaptop).toBe(true)
     expect(result.network.hostIpAddress).toBe('192.168.8.1')
-    expect(result.network.message).toBe('Connected to approved internet Wi-Fi')
+    expect(result.network.message).toContain('internet access likely needs portal acceptance')
+    expect(result.network.message).toContain('"Stone Frigate" hotspot is still visible')
     expect(result.overall.status).toBe('healthy')
   })
 
@@ -257,6 +261,48 @@ describe('SystemStatusService', () => {
     expect(result.network.hotspotSsidVisibleFromLaptop).toBe(true)
     expect(result.network.message).toBe(
       'Sentinel hotspot is visible; internet Wi-Fi is not connected'
+    )
+  })
+
+  it('keeps network status healthy when internet reachability checks are disabled', async () => {
+    const { service } = createService({
+      approvedSsids: ['GC Public'],
+      telemetryResult: {
+        telemetry: {
+          generatedAt: new Date('2026-04-01T11:59:40.000Z'),
+          issueCode: 'none',
+          wifiConnected: true,
+          currentSsid: 'GC Public',
+          hostIpAddress: '10.42.0.1',
+          hotspotProfilePresent: true,
+          hotspotAdapterApproved: true,
+          scanAdapterPresent: true,
+          hotspotDevice: 'wlxb8fbb3c4e8ae',
+          hotspotSsid: 'Stone Frigate',
+          hotspotScanDevice: 'wlp0s20f3',
+          hotspotSsidVisibleFromLaptop: true,
+          hotspotAdapterBusy: false,
+          internetWifiConnection: null,
+          internetWifiSsid: null,
+          internetReachable: null,
+          remoteTarget: null,
+          remoteReachable: null,
+          portalRecoveryLikely: null,
+          message: 'Sentinel hotspot is visible; internet reachability check is not configured',
+        },
+        error: null,
+      },
+    })
+
+    const result = await service.getSystemStatus()
+
+    expect(result.network.status).toBe('healthy')
+    expect(result.network.issueCode).toBe('none')
+    expect(result.network.approvedSsid).toBe(true)
+    expect(result.network.internetReachable).toBeNull()
+    expect(result.network.hotspotSsidVisibleFromLaptop).toBe(true)
+    expect(result.network.message).toBe(
+      'Sentinel hotspot is visible; internet reachability check is not configured'
     )
   })
 
