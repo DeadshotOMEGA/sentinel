@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronRight, UserRoundPlus } from 'lucide-react'
+import { UserRoundPlus } from 'lucide-react'
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard'
 import { Chip } from '@/components/ui/chip'
 import {
@@ -153,13 +153,11 @@ export function KioskVisitorRail({
               >
                 <button
                   type="button"
-                  className="btn btn-secondary btn-lg gap-(--space-4) px-(--space-5) py-(--space-4) text-xl"
+                  className="btn btn-secondary btn-lg px-(--space-5) py-(--space-4) text-xl font-semibold tracking-[0.12em]"
                   onClick={() => onStart('signin')}
                   disabled={fatalOperationalOutage}
                 >
-                  <span className="text-left text-xl font-semibold">Start</span>
-                  <span className="text-base font-medium opacity-85">Sign in</span>
-                  <ChevronRight className="h-6 w-6" />
+                  START
                 </button>
 
                 <div className="mt-(--space-2) border-t border-base-300 pt-(--space-3)">

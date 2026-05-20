@@ -3,6 +3,8 @@ import {
   buildReasonFirstVisitSummary,
   buildReasonFirstVisitorGroupPayload,
   buildReasonFirstVisitorPayload,
+  resolveVisitorSelfSigninSubmissionMode,
+  SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE,
 } from './visitor-self-signin'
 
 describe('buildReasonFirstVisitorPayload', () => {
@@ -206,5 +208,28 @@ describe('buildReasonFirstVisitorGroupPayload', () => {
 
     expect(payload.unitEventVisitorOptionId).toBe('44444444-4444-4444-4444-444444444444')
     expect(payload.purposeDetails).toContain('Option: Gallery Attendee')
+  })
+})
+
+describe('resolveVisitorSelfSigninSubmissionMode', () => {
+  it('submits a single listed visitor as an individual', () => {
+    expect(resolveVisitorSelfSigninSubmissionMode({ memberCount: 1, vehicleCount: 0 })).toBe(
+      'individual'
+    )
+    expect(resolveVisitorSelfSigninSubmissionMode({ memberCount: 1, vehicleCount: 1 })).toBe(
+      'individual'
+    )
+  })
+
+  it('submits multiple listed visitors as a group', () => {
+    expect(resolveVisitorSelfSigninSubmissionMode({ memberCount: 2, vehicleCount: 0 })).toBe(
+      'group'
+    )
+  })
+
+  it('blocks one visitor with multiple vehicles', () => {
+    expect(() =>
+      resolveVisitorSelfSigninSubmissionMode({ memberCount: 1, vehicleCount: 2 })
+    ).toThrow(SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE)
   })
 })

@@ -918,7 +918,12 @@ export class VisitorRepository {
   /**
    * Convert Prisma visitor to shared Visitor type
    */
-  private toVisitorType(visitor: PrismaVisitor): Visitor {
+  private toVisitorType(
+    visitor: PrismaVisitor & {
+      event?: { name: string } | null
+      unitEvent?: { title: string } | null
+    }
+  ): Visitor {
     const checkInMethod = visitor.checkInMethod
       ? (visitor.checkInMethod as Visitor['checkInMethod'])
       : 'kiosk'
@@ -945,7 +950,9 @@ export class VisitorRepository {
       visitTypeId: visitor.visitTypeId ? visitor.visitTypeId : undefined,
       hostMemberId: visitor.hostMemberId ? visitor.hostMemberId : undefined,
       eventId: visitor.eventId ? visitor.eventId : undefined,
+      eventName: visitor.event?.name ? visitor.event.name : undefined,
       unitEventId: visitor.unitEventId ? visitor.unitEventId : undefined,
+      unitEventTitle: visitor.unitEvent?.title ? visitor.unitEvent.title : undefined,
       unitEventVisitorOptionId: visitor.unitEventVisitorOptionId
         ? visitor.unitEventVisitorOptionId
         : undefined,

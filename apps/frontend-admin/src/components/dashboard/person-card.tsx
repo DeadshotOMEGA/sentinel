@@ -13,6 +13,7 @@ import {
 import type { PresentPerson } from '@sentinel/contracts'
 import { TID } from '@/lib/test-ids'
 import { formatPersonLabel } from '@/lib/name-format'
+import { getDashboardVisitorCardDetails } from '@/lib/dashboard-visitor-card-details'
 
 function formatRelativeTime(isoString: string): string {
   const now = Date.now()
@@ -69,75 +70,6 @@ function hasNonDutyWatchTag(person: PresentPerson): boolean {
   return Boolean(
     person.tags?.some((tag) => !DUTY_WATCH_TAG_NAMES.includes(tag.name.trim().toUpperCase()))
   )
-}
-
-function getVisitorTypeName(person: PresentPerson): string | undefined {
-  return person.visitType?.name?.trim().toLowerCase()
-}
-
-function getVisitorTitle(person: PresentPerson, displayName: string): string {
-  const visitorType = getVisitorTypeName(person)
-  const firstName = getOptionalString(person, 'firstName')
-  const lastName = getOptionalString(person, 'lastName')
-
-  if (visitorType !== 'military' && firstName && lastName) {
-    return `${firstName} ${lastName}`
-  }
-
-  return displayName
-}
-
-function getVisitorSubtitle(person: PresentPerson): string | undefined {
-  if (person.organization) {
-    return person.organization
-  }
-
-  const visitReason = person.visitReason?.trim()
-  if (!visitReason) return undefined
-
-  const firstSegment = visitReason
-    .split('|')
-    .map((segment) => segment.trim())
-    .find(Boolean)
-
-  if (!firstSegment) return undefined
-
-  const militaryMatch = firstSegment.match(/^Military visitor from\s+(.+)$/i)
-  return militaryMatch?.[1]?.trim() || undefined
-}
-
-function getVisitorSummary(person: PresentPerson): string | undefined {
-  const visitReason = person.visitReason?.trim()
-  if (!visitReason) return undefined
-
-  const segments = visitReason
-    .split('|')
-    .map((segment) => segment.trim())
-    .filter(Boolean)
-
-  if (segments.length === 0) return undefined
-
-  const organization = person.organization?.trim()
-  const firstSegment = segments[0]
-
-  if (
-    organization &&
-    firstSegment.localeCompare(`Contractor visit for ${organization}`, undefined, {
-      sensitivity: 'accent',
-    }) === 0
-  ) {
-    segments.shift()
-  } else if (/^Military visitor from\s+.+$/i.test(firstSegment)) {
-    segments.shift()
-  }
-
-  if (segments[0]?.localeCompare('Other', undefined, { sensitivity: 'accent' }) === 0) {
-    segments.shift()
-  }
-
-  if (segments.length === 0) return undefined
-
-  return segments.join(' • ')
 }
 
 function PersonAvatar({ person, dutyPosition, isDds }: PersonAvatarProps) {
@@ -252,9 +184,7 @@ export const PersonCard = memo(function PersonCard({
       : fallbackSplit[0]?.trim() || displayName
   const memberSubtitle = memberFirstName ?? memberInitials
   const memberFallbackSubtitle = fallbackSplit.slice(1).join(',').trim()
-  const visitorTitle = getVisitorTitle(person, displayName)
-  const visitorSubtitle = getVisitorSubtitle(person)
-  const visitorSummary = getVisitorSummary(person)
+  const visitorDetails = getDashboardVisitorCardDetails(person, displayName)
   const memberTypeInfo = isMember ? person.memberTypeInfo : undefined
   const shouldShowMemberTypeBadge = Boolean(memberTypeInfo && !hasNonDutyWatchTag(person))
 
@@ -310,9 +240,11 @@ export const PersonCard = memo(function PersonCard({
         ) : (
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-[0.95rem] leading-tight truncate">{visitorTitle}</h3>
-              {visitorSubtitle && (
-                <p className="text-xs text-base-content/60 truncate">{visitorSubtitle}</p>
+              <h3 className="font-bold text-[0.95rem] leading-tight truncate">
+                {visitorDetails.title}
+              </h3>
+              {visitorDetails.subtitle && (
+                <p className="text-xs text-base-content/60 truncate">{visitorDetails.subtitle}</p>
               )}
             </div>
             {person.visitType && (
@@ -386,12 +318,10 @@ export const PersonCard = memo(function PersonCard({
                   </span>
                 </span>
               )}
-              {visitorSummary && (
+              {visitorDetails.detail && (
                 <span className="flex min-w-0 items-start gap-1">
                   <Building2 size={10} className="mt-0.5 shrink-0" />
-                  <span className="line-clamp-2 break-words">
-                    <span className="text-base-content/55">Details:</span> {visitorSummary}
-                  </span>
+                  <span className="line-clamp-2 break-words">{visitorDetails.detail}</span>
                 </span>
               )}
             </div>

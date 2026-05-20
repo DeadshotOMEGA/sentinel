@@ -37,7 +37,9 @@ export interface Visitor {
   purposeDetails?: string
   recruitmentStep?: VisitorRecruitmentStep
   eventId?: string
+  eventName?: string
   unitEventId?: string
+  unitEventTitle?: string
   unitEventVisitorOptionId?: string
   hostMemberId?: string
   checkInTime: Date

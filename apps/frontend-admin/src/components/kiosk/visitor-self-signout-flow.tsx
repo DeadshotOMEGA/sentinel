@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Clock3, Layers3, UserRoundMinus, Users } from 'lucide-react'
 import {
   useActiveVisitors,
@@ -11,8 +11,11 @@ import { Chip } from '@/components/ui/chip'
 import type { VisitorResponse } from '@sentinel/contracts'
 import type { VisitorSelfSigninCompletion } from '@/components/kiosk/visitor-self-signin-flow'
 import {
+  buildVisitorEventTabs,
   buildVisitorSignoutGrouping,
   filterVisitorSignoutGroups,
+  getPublicVisitorContextLine,
+  getPublicVisitorTitle,
   type VisitorSignoutGroupSummary,
 } from '@/lib/visitor-signout-grouping'
 
@@ -67,9 +70,15 @@ export function VisitorSelfSignoutFlow({
   const [busyKey, setBusyKey] = useState<string | null>(null)
   const [selectedByGroup, setSelectedByGroup] = useState<Record<string, string[]>>({})
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
+  const [selectedEventTabId, setSelectedEventTabId] = useState<string | null>(null)
 
-  const activeVisitors = data?.visitors ?? []
-  const grouped = useMemo(() => buildVisitorSignoutGrouping(activeVisitors), [activeVisitors])
+  const activeVisitors = useMemo(() => data?.visitors ?? [], [data?.visitors])
+  const eventTabs = useMemo(() => buildVisitorEventTabs(activeVisitors), [activeVisitors])
+  const visibleVisitors = useMemo(() => {
+    if (!selectedEventTabId) return activeVisitors
+    return activeVisitors.filter((visitor) => visitor.unitEventId === selectedEventTabId)
+  }, [activeVisitors, selectedEventTabId])
+  const grouped = useMemo(() => buildVisitorSignoutGrouping(visibleVisitors), [visibleVisitors])
   const filtered = useMemo(() => filterVisitorSignoutGroups(grouped, search), [grouped, search])
   const canInteract =
     !interactionDisabled && !checkoutVisitor.isPending && !checkoutVisitorGroup.isPending
@@ -79,6 +88,13 @@ export function VisitorSelfSignoutFlow({
   const activeGroupCount = filtered.groups.length
   const activeUngroupedCount = filtered.ungroupedVisitors.length
   const activeVisitorCount = filtered.activeVisitorCount
+  const selectedEventTabExists = eventTabs.some((tab) => tab.unitEventId === selectedEventTabId)
+
+  useEffect(() => {
+    if (selectedEventTabId && !selectedEventTabExists) {
+      setSelectedEventTabId(null)
+    }
+  }, [selectedEventTabExists, selectedEventTabId])
 
   const complete = (title: string, message: string) => {
     onComplete?.({
@@ -210,7 +226,7 @@ export function VisitorSelfSignoutFlow({
             <input
               type="text"
               className="grow"
-              placeholder="Group code, name, company, reason"
+              placeholder="Group code, name, company, event"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               disabled={!canInteract}
@@ -235,6 +251,39 @@ export function VisitorSelfSignoutFlow({
             isEmbedded ? 'max-h-[26rem]' : 'flex-1'
           }`}
         >
+          {eventTabs.length > 0 ? (
+            <div
+              role="tablist"
+              aria-label="Visitor sign-out event filter"
+              className="tabs tabs-box bg-base-100"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!selectedEventTabId}
+                className={`tab ${!selectedEventTabId ? 'tab-active' : ''}`}
+                onClick={() => setSelectedEventTabId(null)}
+              >
+                All ({activeVisitors.length})
+              </button>
+              {eventTabs.map((tab) => (
+                <button
+                  key={tab.unitEventId}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedEventTabId === tab.unitEventId}
+                  title={`${tab.title} (${tab.count})`}
+                  className={`tab min-w-0 max-w-64 ${selectedEventTabId === tab.unitEventId ? 'tab-active' : ''}`}
+                  onClick={() => setSelectedEventTabId(tab.unitEventId)}
+                >
+                  <span className="truncate">
+                    {tab.title} ({tab.count})
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+
           {activeGroupCount > 0 && (
             <section className="space-y-(--space-2)">
               <p className="text-xs uppercase tracking-[0.18em] text-base-content/55">
@@ -267,11 +316,13 @@ export function VisitorSelfSignoutFlow({
                                 {group.identityTitle}
                               </p>
                             </div>
+                            {group.contextLine ? (
+                              <p className="mt-(--space-1) truncate text-sm font-medium text-base-content/75">
+                                {compactText(group.contextLine)}
+                              </p>
+                            ) : null}
                             <p className="mt-(--space-1) text-sm text-base-content/70">
                               {group.identityDetail}
-                            </p>
-                            <p className="mt-(--space-1) truncate text-sm text-base-content/60">
-                              {compactText(group.contextLine)}
                             </p>
                             <p className="mt-(--space-1) flex items-center gap-(--space-1) text-xs text-base-content/55">
                               <Clock3 className="h-3 w-3" />
@@ -338,7 +389,6 @@ export function VisitorSelfSignoutFlow({
                                   </p>
                                   <p className="text-sm text-base-content/70">
                                     Checked in {formatTime(visitor.checkInTime)}
-                                    {visitor.organization ? ` • ${visitor.organization}` : ''}
                                   </p>
                                 </div>
                               </label>
@@ -365,10 +415,14 @@ export function VisitorSelfSignoutFlow({
                     className="flex flex-wrap items-center justify-between gap-(--space-3) rounded-box border border-base-300 bg-base-100 p-(--space-3)"
                   >
                     <div className="min-w-0">
-                      <p className="font-semibold">{displayName(visitor)}</p>
+                      <p className="font-semibold">{getPublicVisitorTitle(visitor)}</p>
                       <p className="text-sm text-base-content/70">
-                        Checked in {formatTime(visitor.checkInTime)}
-                        {visitor.organization ? ` • ${visitor.organization}` : ''}
+                        {[
+                          getPublicVisitorContextLine(visitor),
+                          `Checked in ${formatTime(visitor.checkInTime)}`,
+                        ]
+                          .filter(Boolean)
+                          .join(' | ')}
                       </p>
                     </div>
                     <button

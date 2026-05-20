@@ -116,6 +116,8 @@ interface RecentActivityItem {
   organization?: string
   visitType?: string
   visitReason?: string
+  visitPurpose?: string
+  purposeDetails?: string
   hostName?: string
   // Event context
   eventId?: string
@@ -155,10 +157,15 @@ interface PresentPerson {
   organization?: string
   visitType?: { id: string; name: string; chipVariant?: string; chipColor?: string }
   visitReason?: string
+  visitPurpose?: string
+  purposeDetails?: string
   hostMemberId?: string
   hostName?: string
   eventId?: string
   eventName?: string
+  unitEventId?: string
+  unitEventTitle?: string
+  unitEventVisitorOptionId?: string
   activeCheckinId?: string
   checkInTime: Date
   kioskId?: string
@@ -285,10 +292,15 @@ export class PresenceService {
           chipColor: undefined,
         },
         visitReason: v.visitReason,
+        visitPurpose: v.visitPurpose,
+        purposeDetails: v.purposeDetails,
         hostMemberId: v.hostMemberId,
         hostName: v.hostName,
         eventId: v.eventId,
         eventName: v.eventName,
+        unitEventId: v.unitEventId,
+        unitEventTitle: v.unitEventTitle,
+        unitEventVisitorOptionId: v.unitEventVisitorOptionId,
         checkInTime: v.checkInTime,
         kioskId: undefined, // Not tracked for visitors
         kioskName: undefined,
