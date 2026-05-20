@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { invalidateDashboardQueries } from '@/lib/dashboard-query-invalidation'
+import { invalidateVisitorEventAvailabilityQueries } from '@/lib/visitor-event-availability-invalidation'
 import type {
   CreateVisitorInput,
   CreateVisitorGroupInput,
@@ -39,6 +40,7 @@ export function useCreateVisitor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      invalidateVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -63,6 +65,7 @@ export function useCreateVisitorGroup() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      invalidateVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
@@ -150,6 +153,7 @@ export function useUpdateVisitor() {
       queryClient.invalidateQueries({ queryKey: ['recent-activity'] })
       queryClient.invalidateQueries({ queryKey: ['active-visitors'] })
       queryClient.invalidateQueries({ queryKey: ['present-people'] })
+      invalidateVisitorEventAvailabilityQueries(queryClient)
       void invalidateDashboardQueries(queryClient)
     },
   })
