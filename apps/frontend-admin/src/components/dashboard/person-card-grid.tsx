@@ -211,21 +211,21 @@ export function PersonCardGrid() {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <div className="flex flex-wrap gap-1" data-help-id="dashboard.presence.filter-buttons">
             <MotionButton
-              className={`btn btn-xs ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
               aria-pressed={filter === 'all'}
               onClick={() => handleFilterChange('all')}
             >
               All ({data?.total ?? 0})
             </MotionButton>
             <MotionButton
-              className={`btn btn-xs ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
+              className={`btn btn-sm ${filter === 'member' ? 'btn-success' : 'btn-ghost'}`}
               aria-pressed={filter === 'member'}
               onClick={() => handleFilterChange('member')}
             >
               Members ({memberCount})
             </MotionButton>
             <MotionButton
-              className={`btn btn-xs ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
+              className={`btn btn-sm ${filter === 'visitor' ? 'btn-info' : 'btn-ghost'}`}
               aria-pressed={filter === 'visitor'}
               onClick={() => handleFilterChange('visitor')}
             >
@@ -234,7 +234,7 @@ export function PersonCardGrid() {
           </div>
           {(isDevMode || isSentinelSystem) && (
             <MotionButton
-              className="btn btn-xs btn-ghost border-base-300 text-base-content/70 hover:text-base-content"
+              className="btn btn-sm btn-ghost border-base-300 text-base-content/70 hover:text-base-content"
               onClick={() => setIsScanModalOpen(true)}
               data-testid={TID.dashboard.quickAction.simulateScan}
             >
@@ -244,7 +244,7 @@ export function PersonCardGrid() {
           )}
           {canCreateManualCheckin && (
             <MotionButton
-              className="btn btn-xs btn-outline border-base-300 bg-base-100 text-base-content/80 hover:border-primary/40 hover:bg-primary-fadded hover:text-primary-fadded-content"
+              className="btn btn-sm btn-outline border-base-300 bg-base-100 text-base-content/80 hover:border-primary/40 hover:bg-primary-fadded hover:text-primary-fadded-content"
               onClick={() => setIsManualCheckinModalOpen(true)}
               data-testid={TID.dashboard.quickAction.manualCheckin}
               data-help-id="dashboard.presence.manual-in-out"

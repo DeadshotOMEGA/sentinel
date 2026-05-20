@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { HelpCircle, Play, RotateCcw } from 'lucide-react'
+import { HelpCircle, Play, RotateCcw, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { MotionButton } from '@/components/ui/motion-button'
 import { AppBadge, type AppBadgeStatus } from '@/components/ui/AppBadge'
@@ -170,24 +170,50 @@ export function ProcedureHelpLauncher({
 
   return (
     <div
-      className="fixed bottom-3 left-3 right-3 z-(--z-sticky) hidden sm:block sm:bottom-6 sm:left-auto sm:right-6"
+      className="fixed bottom-3 left-3 right-3 z-(--z-sticky) hidden sm:block sm:bottom-20 sm:left-auto sm:right-6"
       data-testid={testId}
     >
-      <AppCard className="w-full border border-base-300 bg-base-100 shadow-xl sm:w-[28rem]">
-        <div className="p-(--space-3)">
-          <MotionButton
-            className="btn btn-primary btn-sm justify-start"
-            onClick={() => setIsOpen((prev) => !prev)}
-            aria-expanded={isOpen}
-          >
-            <HelpCircle className="h-4 w-4" />
-            {title}
-          </MotionButton>
+      {!isOpen && (
+        <MotionButton
+          className="btn btn-info btn-sm gap-(--space-2) border-info/45 px-(--space-4) text-info-content shadow-[var(--shadow-2)] transition-shadow duration-(--duration-fast) hover:shadow-[var(--shadow-3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info"
+          onClick={() => setIsOpen(true)}
+          aria-expanded={isOpen}
+        >
+          <HelpCircle className="h-4 w-4" />
+          <span className="font-semibold normal-case">{title}</span>
+        </MotionButton>
+      )}
 
-          {isOpen && (
-            <div className="mt-(--space-3) space-y-(--space-3)">
-              <p className="text-xs leading-5 text-base-content/70">{intro}</p>
+      {isOpen && (
+        <AppCard
+          status="info"
+          className="w-full overflow-hidden border border-base-300 bg-base-100 shadow-xl sm:w-[30rem]"
+        >
+          <div className="bg-info-fadded px-(--space-4) py-(--space-3) text-info-fadded-content">
+            <div className="flex items-start justify-between gap-(--space-3)">
+              <div className="flex min-w-0 items-start gap-(--space-3)">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-box bg-base-100 text-info-fadded-content shadow-[var(--shadow-1)]">
+                  <HelpCircle className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-sm font-semibold leading-5 text-base-content">{title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-info-fadded-content">{intro}</p>
+                </div>
+              </div>
+              <MotionButton
+                className="btn btn-ghost btn-square btn-sm shrink-0 text-info-fadded-content hover:bg-base-100/70"
+                hoverPreset="micro"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close procedures"
+                aria-expanded={isOpen}
+              >
+                <X className="h-4 w-4" />
+              </MotionButton>
+            </div>
+          </div>
 
+          <div className="p-(--space-3)">
+            <div className="space-y-(--space-3)">
               <div className="max-h-[min(34rem,calc(100vh-12rem))] space-y-(--space-3) overflow-y-auto pr-(--space-1)">
                 {procedureGroups.map((group) => (
                   <section key={group.title} className="space-y-(--space-2)">
@@ -283,9 +309,9 @@ export function ProcedureHelpLauncher({
                 ))}
               </div>
             </div>
-          )}
-        </div>
-      </AppCard>
+          </div>
+        </AppCard>
+      )}
     </div>
   )
 }
