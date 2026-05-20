@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import { LiveDutyAssignmentResponseSchema } from './operational-duty-assignment.schema.js'
+import { VisitPurposeEnum } from './visitor.schema.js'
 
 /**
  * Checkin direction enum
@@ -210,10 +211,15 @@ export const PresentPersonSchema = v.object({
     })
   ),
   visitReason: v.optional(v.string()),
+  visitPurpose: v.optional(VisitPurposeEnum),
+  purposeDetails: v.optional(v.string()),
   hostMemberId: v.optional(v.string()),
   hostName: v.optional(v.string()),
   eventId: v.optional(v.string()),
   eventName: v.optional(v.string()),
+  unitEventId: v.optional(v.string()),
+  unitEventTitle: v.optional(v.string()),
+  unitEventVisitorOptionId: v.optional(v.string()),
   activeCheckinId: v.optional(v.string()),
   liveDutyAssignment: v.optional(v.nullable(LiveDutyAssignmentResponseSchema)),
   scheduledDutyTonight: v.optional(
