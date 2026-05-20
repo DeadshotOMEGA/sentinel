@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import {
+  buildReasonFirstVisitorPayload,
   buildReasonFirstVisitorGroupPayload,
   getVisitorFinalInstructions,
   type ReasonFirstGroupMemberInput,
@@ -13,13 +14,15 @@ import {
   reasonRequiresEventSelection,
   reasonRequiresMemberSelection,
   reasonUsesContractInputs,
+  resolveVisitorSelfSigninSubmissionMode,
+  SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE,
   SELF_SERVICE_BRANCH_OPTIONS,
   SELF_SERVICE_REASON_OPTIONS,
   type SelfServiceVisitReason,
   type SelfServiceVisitType,
   type SelfServiceVisitorBranch,
 } from '@/lib/visitor-self-signin'
-import { useCreateVisitorGroup } from '@/hooks/use-visitors'
+import { useCreateVisitor, useCreateVisitorGroup } from '@/hooks/use-visitors'
 import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
 import {
   TouchScreenKeyboard,
@@ -36,6 +39,7 @@ import {
   UsersRound,
   X,
 } from 'lucide-react'
+import type { VisitPurpose } from '@sentinel/contracts'
 
 const FINAL_RESET_SECONDS = 15
 
@@ -135,6 +139,7 @@ export function VisitorSelfSigninFlow({
 }: VisitorSelfSigninFlowProps) {
   const fieldRefs = useRef<Partial<Record<KeyboardFieldName, KeyboardFieldElement | null>>>({})
   const previousStepRef = useRef<FlowStep>(1)
+  const createVisitor = useCreateVisitor()
   const createVisitorGroup = useCreateVisitorGroup()
   const [step, setStep] = useState<FlowStep>(1)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -882,12 +887,19 @@ export function VisitorSelfSigninFlow({
         throw new Error('Duplicate vehicle license plates are not allowed')
       }
 
-      const payload = buildReasonFirstVisitorGroupPayload({
+      const submissionMode = resolveVisitorSelfSigninSubmissionMode({
+        memberCount: membersForSubmission.length,
+        vehicleCount: vehiclesForSubmission.length,
+      })
+
+      const selectedEventOptionTitle = selectedEventForDisplay?.visitorOptions.find(
+        (option) => option.id === values.unitEventVisitorOptionId
+      )?.title
+
+      const commonPayloadContext = {
         kioskId,
         reason: values.reason,
         branch: values.branch || undefined,
-        members: membersForSubmission,
-        vehicles: vehiclesForSubmission,
         organization: values.organization,
         workDescription: values.workDescription,
         hostMemberId: values.hostMemberId,
@@ -896,16 +908,34 @@ export function VisitorSelfSigninFlow({
         eventTitle: selectedEventForDisplay?.title,
         eventDateLabel: selectedEventForDisplay?.eventDateLabel,
         eventOptionId: values.unitEventVisitorOptionId,
-        eventOptionTitle: selectedEventForDisplay?.visitorOptions.find(
-          (option) => option.id === values.unitEventVisitorOptionId
-        )?.title,
-      })
+        eventOptionTitle: selectedEventOptionTitle,
+      }
 
-      await createVisitorGroup.mutateAsync(payload)
+      let completionVisitType: SelfServiceVisitType
+      let completionVisitPurpose: VisitPurpose | undefined
+      if (submissionMode === 'individual') {
+        const payload = buildReasonFirstVisitorPayload({
+          ...commonPayloadContext,
+          ...membersForSubmission[0],
+          licensePlate: vehiclesForSubmission[0],
+        })
+        await createVisitor.mutateAsync(payload)
+        completionVisitType = payload.visitType as SelfServiceVisitType
+        completionVisitPurpose = payload.visitPurpose
+      } else {
+        const payload = buildReasonFirstVisitorGroupPayload({
+          ...commonPayloadContext,
+          members: membersForSubmission,
+          vehicles: vehiclesForSubmission,
+        })
+        await createVisitorGroup.mutateAsync(payload)
+        completionVisitType = (payload.members[0]?.visitType ?? 'guest') as SelfServiceVisitType
+        completionVisitPurpose = payload.visitPurpose
+      }
 
       const completion = getVisitorFinalInstructions({
-        visitType: (payload.members[0]?.visitType ?? 'guest') as SelfServiceVisitType,
-        visitPurpose: payload.visitPurpose,
+        visitType: completionVisitType,
+        visitPurpose: completionVisitPurpose,
         hostDisplayName: selectedHost?.displayName,
       })
 
@@ -1074,6 +1104,10 @@ export function VisitorSelfSigninFlow({
   const licensePlateRegistration = register('licensePlate')
   const pendingVehicle = trimValue(licensePlate)
   const reviewVehicles = pendingVehicle ? [...groupVehicles, pendingVehicle] : groupVehicles
+  const hasSingleVisitorMultipleVehicleDiscrepancy =
+    reviewMemberCount === 1 && reviewVehicles.length > 1
+  const willSubmitSingleVisitorAsIndividual = reviewMemberCount === 1 && reviewVehicles.length <= 1
+  const isSubmitting = createVisitor.isPending || createVisitorGroup.isPending
   const reviewReasonLabel =
     SELF_SERVICE_REASON_OPTIONS.find((option) => option.value === reviewReason)?.label ?? 'Other'
   const reviewBranchLabel = branch
@@ -1962,6 +1996,22 @@ export function VisitorSelfSigninFlow({
                   </div>
                 </div>
 
+                {hasSingleVisitorMultipleVehicleDiscrepancy && (
+                  <div className="alert alert-warning" role="alert">
+                    <CarFront className="h-5 w-5" />
+                    <span>{SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE}</span>
+                  </div>
+                )}
+
+                {willSubmitSingleVisitorAsIndividual && (
+                  <div className="alert bg-info-fadded text-info-fadded-content" role="status">
+                    <UserRound className="h-5 w-5" />
+                    <span>
+                      Only one visitor is listed. This will be signed in as an individual visitor.
+                    </span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                   <section
                     className="rounded-box border border-base-300 bg-base-200"
@@ -2125,10 +2175,10 @@ export function VisitorSelfSigninFlow({
                 <button
                   type="button"
                   className="btn btn-primary btn-md min-w-44 lg:btn-lg lg:min-w-56"
-                  disabled={createVisitorGroup.isPending}
+                  disabled={isSubmitting || hasSingleVisitorMultipleVehicleDiscrepancy}
                   onClick={() => void onSubmit()}
                 >
-                  {createVisitorGroup.isPending ? 'Finishing...' : 'Finish Sign-In'}
+                  {isSubmitting ? 'Finishing...' : 'Finish Sign-In'}
                 </button>
               )}
             </div>

@@ -1,6 +1,11 @@
 import type { VisitorResponse } from '@sentinel/contracts'
 import { describe, expect, it } from 'vitest'
-import { buildVisitorSignoutGrouping } from './visitor-signout-grouping'
+import {
+  buildVisitorEventTabs,
+  buildVisitorSignoutGrouping,
+  getPublicVisitorContextLine,
+  getPublicVisitorTitle,
+} from './visitor-signout-grouping'
 
 function createVisitor(overrides: Partial<VisitorResponse>): VisitorResponse {
   const id = overrides.id ?? '00000000-0000-0000-0000-000000000000'
@@ -22,7 +27,9 @@ function createVisitor(overrides: Partial<VisitorResponse>): VisitorResponse {
     purposeDetails: overrides.purposeDetails ?? null,
     recruitmentStep: overrides.recruitmentStep ?? null,
     eventId: overrides.eventId ?? null,
+    eventName: overrides.eventName ?? null,
     unitEventId: overrides.unitEventId ?? null,
+    unitEventTitle: overrides.unitEventTitle ?? null,
     unitEventVisitorOptionId: overrides.unitEventVisitorOptionId ?? null,
     hostMemberId: overrides.hostMemberId ?? null,
     checkInTime: overrides.checkInTime ?? '2026-05-04T12:00:00.000Z',
@@ -62,6 +69,35 @@ describe('buildVisitorSignoutGrouping', () => {
 
     expect(grouping.groups[0]?.identityTitle).toBe('Black & MacDonald')
     expect(grouping.groups[0]?.identityDetail).toBe('3 contractors')
+    expect(grouping.groups[0]?.contextLine).toBe('')
+  })
+
+  it('uses public event titles for visitor group context without event option details', () => {
+    const grouping = buildVisitorSignoutGrouping([
+      createVisitor({
+        id: '10101010-1111-1111-1111-111111111111',
+        visitorGroupId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        firstName: 'Alex',
+        lastName: 'Smith',
+        unitEventId: 'event-1',
+        unitEventTitle: 'Standing Court Martial',
+        unitEventVisitorOptionId: 'option-1',
+        visitReason: 'Reason: Event | Category: Civilian | Event option: Gallery Attendee',
+      }),
+      createVisitor({
+        id: '20202020-2222-2222-2222-222222222222',
+        visitorGroupId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+        firstName: 'Morgan',
+        lastName: 'Smith',
+        unitEventId: 'event-1',
+        unitEventTitle: 'Standing Court Martial',
+        unitEventVisitorOptionId: 'option-1',
+        visitReason: 'Reason: Event | Category: Civilian | Event option: Gallery Attendee',
+      }),
+    ])
+
+    expect(grouping.groups[0]?.contextLine).toBe('Standing Court Martial')
+    expect(grouping.groups[0]?.contextLine).not.toContain('Gallery Attendee')
   })
 
   it('labels civilian-style groups with a shared surname', () => {
@@ -131,7 +167,7 @@ describe('buildVisitorSignoutGrouping', () => {
     ])
 
     expect(grouping.groups[0]?.identityTitle.length).toBeGreaterThan(0)
-    expect(grouping.groups[0]?.contextLine.length).toBeGreaterThan(0)
+    expect(grouping.groups[0]?.contextLine).toBe('')
   })
 
   it('assigns stable group codes based on sorted recency', () => {
@@ -154,5 +190,81 @@ describe('buildVisitorSignoutGrouping', () => {
     expect(first.groups.map((group) => group.groupCode)).toEqual(['G-01', 'G-02'])
     expect(second.groups.map((group) => group.groupCode)).toEqual(['G-01', 'G-02'])
     expect(first.groups[0]?.groupId).toBe('group-newer')
+  })
+})
+
+describe('public visitor kiosk display', () => {
+  it('uses company names as contractor primary titles without work descriptions', () => {
+    const visitor = createVisitor({
+      visitType: 'contractor',
+      organization: 'Black & MacDonald',
+      purposeDetails: 'Repair panel beside admin office',
+    })
+
+    expect(getPublicVisitorTitle(visitor)).toBe('Black & MacDonald')
+    expect(getPublicVisitorContextLine(visitor)).toBe('Black & MacDonald')
+    expect(getPublicVisitorContextLine(visitor)).not.toContain('Repair panel')
+  })
+
+  it('keeps meeting host and civilian category text off the public context line', () => {
+    const visitor = createVisitor({
+      visitReason: 'Reason: Meeting | Category: Civilian | Meeting with: Lt(N) Patel',
+      visitPurpose: 'appointment',
+    })
+
+    expect(getPublicVisitorContextLine(visitor)).toBeUndefined()
+  })
+
+  it('shows military rank and unit cleanly when there is no event context', () => {
+    const visitor = createVisitor({
+      visitType: 'military',
+      rankPrefix: 'PO2',
+      unit: 'HMCS Example',
+      visitReason: 'Reason: Meeting | Category: Military | Meeting with: Lt(N) Patel',
+    })
+
+    expect(getPublicVisitorContextLine(visitor)).toBe('PO2 • HMCS Example')
+  })
+
+  it('builds event tabs from active unit event visitors using total people counts', () => {
+    const tabs = buildVisitorEventTabs([
+      createVisitor({
+        id: '30303030-3333-3333-3333-333333333333',
+        unitEventId: 'event-2',
+        unitEventTitle: 'Mess Dinner',
+      }),
+      createVisitor({
+        id: '40404040-4444-4444-4444-444444444444',
+        unitEventId: 'event-1',
+        unitEventTitle: 'Standing Court Martial',
+      }),
+      createVisitor({
+        id: '50505050-5555-5555-5555-555555555555',
+        unitEventId: 'event-1',
+        unitEventTitle: 'Standing Court Martial',
+      }),
+      createVisitor({
+        id: '60606060-6666-6666-6666-666666666666',
+        unitEventId: null,
+      }),
+    ])
+
+    expect(tabs).toEqual([
+      { unitEventId: 'event-2', title: 'Mess Dinner', count: 1 },
+      { unitEventId: 'event-1', title: 'Standing Court Martial', count: 2 },
+    ])
+  })
+
+  it('keeps fallback event tab labels focused on the event name', () => {
+    const tabs = buildVisitorEventTabs([
+      createVisitor({
+        unitEventId: 'event-1',
+        unitEventTitle: null,
+        visitReason:
+          'Reason: Event | Category: Civilian | Event: Standing Court Martial (May 22, 2026 - Jun 15, 2026)',
+      }),
+    ])
+
+    expect(tabs).toEqual([{ unitEventId: 'event-1', title: 'Standing Court Martial', count: 1 }])
   })
 })

@@ -19,6 +19,12 @@ export interface VisitorSignoutGroupingResult {
   activeVisitorCount: number
 }
 
+export interface VisitorEventTabSummary {
+  unitEventId: string
+  title: string
+  count: number
+}
+
 const ACCENT_BUCKET_COUNT = 6
 
 function clean(value: string | null | undefined): string | undefined {
@@ -37,6 +43,93 @@ function titleCase(value: string): string {
 
 function visitorDisplayName(visitor: VisitorResponse): string {
   return clean(visitor.displayName) ?? clean(visitor.name) ?? 'Visitor'
+}
+
+function extractVisitReasonField(visitor: VisitorResponse, fieldName: string): string | undefined {
+  const visitReason = clean(visitor.visitReason)
+  if (!visitReason) return undefined
+
+  const prefix = `${fieldName}:`
+  const part = visitReason
+    .split('|')
+    .map((entry) => entry.trim())
+    .find((entry) => entry.toLowerCase().startsWith(prefix.toLowerCase()))
+
+  if (!part) return undefined
+  return clean(part.slice(prefix.length))
+}
+
+function stripDateLikeEventSuffix(value: string): string {
+  return value.replace(/\s+\([^)]*\d{4}[^)]*\)\s*$/, '').trim()
+}
+
+function getVisitReasonLabel(visitor: VisitorResponse): string | undefined {
+  return extractVisitReasonField(visitor, 'Reason')
+}
+
+function getVisitorEventTitle(visitor: VisitorResponse): string | undefined {
+  const structuredTitle = clean(visitor.unitEventTitle) ?? clean(visitor.eventName)
+  if (structuredTitle) return structuredTitle
+
+  const fallbackTitle = extractVisitReasonField(visitor, 'Event')
+  return fallbackTitle ? stripDateLikeEventSuffix(fallbackTitle) : undefined
+}
+
+function getMilitaryContext(visitor: VisitorResponse): string | undefined {
+  if (visitor.visitType !== 'military') return undefined
+
+  return [clean(visitor.rankPrefix), clean(visitor.unit)].filter(Boolean).join(' • ') || undefined
+}
+
+export function getPublicVisitorContextLine(visitor: VisitorResponse): string | undefined {
+  const eventTitle = getVisitorEventTitle(visitor)
+  if (eventTitle) return eventTitle
+
+  if (visitor.visitType === 'contractor') {
+    return clean(visitor.organization)
+  }
+
+  if (visitor.visitType === 'recruitment') {
+    return 'Recruitment'
+  }
+
+  const reasonLabel = getVisitReasonLabel(visitor)
+  if (reasonLabel === 'Museum') return 'Museum'
+
+  return getMilitaryContext(visitor)
+}
+
+export function getPublicVisitorTitle(visitor: VisitorResponse): string {
+  if (visitor.visitType === 'contractor') {
+    return clean(visitor.organization) ?? visitorDisplayName(visitor)
+  }
+
+  return visitorDisplayName(visitor)
+}
+
+export function buildVisitorEventTabs(activeVisitors: VisitorResponse[]): VisitorEventTabSummary[] {
+  const tabMap = new Map<string, VisitorEventTabSummary>()
+
+  for (const visitor of activeVisitors) {
+    const unitEventId = clean(visitor.unitEventId)
+    if (!unitEventId) continue
+
+    const existing = tabMap.get(unitEventId)
+    if (existing) {
+      existing.count += 1
+      continue
+    }
+
+    tabMap.set(unitEventId, {
+      unitEventId,
+      title: getVisitorEventTitle(visitor) ?? 'Event',
+      count: 1,
+    })
+  }
+
+  return Array.from(tabMap.values()).sort((left, right) =>
+    left.title.localeCompare(right.title, 'en-CA')
+  )
 }
 
 function extractFallbackSurname(visitor: VisitorResponse): string | undefined {
@@ -90,13 +183,17 @@ function buildIdentity(members: VisitorResponse[]): {
   const dominantCompany = mostCommonValue(companyNames)
 
   if (allContractors && dominantCompany) {
-    const context = clean(members[0]?.visitReason) ?? 'Contractor group'
     return {
       identityTitle: dominantCompany,
       identityDetail: `${memberCount} contractor${memberCount === 1 ? '' : 's'}`,
-      contextLine: context,
+      contextLine: '',
     }
   }
+
+  const publicContexts = members
+    .map((member) => getPublicVisitorContextLine(member))
+    .filter(Boolean) as string[]
+  const dominantPublicContext = mostCommonValue(publicContexts)
 
   const surnames = members
     .map((member) => extractFallbackSurname(member))
@@ -105,12 +202,10 @@ function buildIdentity(members: VisitorResponse[]): {
     const normalizedSurnames = new Set(surnames.map((surname) => surname.toLowerCase()))
     if (normalizedSurnames.size === 1) {
       const surname = titleCase(surnames[0] ?? 'Visitor')
-      const context =
-        clean(members[0]?.visitReason) ?? clean(members[0]?.organization) ?? 'Visitor group'
       return {
         identityTitle: `${surname} group`,
         identityDetail: `${memberCount} visitor${memberCount === 1 ? '' : 's'}`,
-        contextLine: context,
+        contextLine: dominantPublicContext ?? '',
       }
     }
   }
@@ -130,11 +225,7 @@ function buildIdentity(members: VisitorResponse[]): {
       ? `${shownNames.join(' • ')}${overflow > 0 ? ` +${overflow} more` : ''}`
       : `${memberCount} visitors`
 
-  const context =
-    dominantCompany ??
-    clean(members[0]?.visitReason) ??
-    clean(members[0]?.organization) ??
-    'Mixed visitor group'
+  const context = dominantCompany ?? dominantPublicContext ?? clean(members[0]?.organization) ?? ''
 
   return {
     identityTitle: title,
@@ -159,7 +250,7 @@ function buildSearchText(group: VisitorSignoutGroupSummary): string {
         clean(member.firstName),
         clean(member.lastName),
         clean(member.organization),
-        clean(member.visitReason),
+        getPublicVisitorContextLine(member),
       ]
         .filter(Boolean)
         .join(' ')
@@ -260,7 +351,7 @@ export function filterVisitorSignoutGroups(
       clean(visitor.firstName),
       clean(visitor.lastName),
       clean(visitor.organization),
-      clean(visitor.visitReason),
+      getPublicVisitorContextLine(visitor),
     ]
       .filter(Boolean)
       .join(' ')

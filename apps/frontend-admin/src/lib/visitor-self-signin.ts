@@ -19,6 +19,11 @@ export type SelfServiceVisitorBranch = 'military' | 'civilian'
 
 export const RECRUITMENT_DEFAULT_STEP: RecruitmentStep = 'information'
 
+export const SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE =
+  'This sign-in has one visitor but multiple vehicles. Did you forget to add someone to the group? Go back to add another visitor or remove the extra vehicle before signing in.'
+
+export type VisitorSelfSigninSubmissionMode = 'individual' | 'group'
+
 export const SELF_SERVICE_REASON_OPTIONS: Array<{
   value: SelfServiceVisitReason
   label: string
@@ -146,6 +151,17 @@ export function reasonRequiresEventSelection(reason: SelfServiceVisitReason): bo
 
 export function reasonUsesContractInputs(reason: SelfServiceVisitReason): boolean {
   return reason === 'contract_work'
+}
+
+export function resolveVisitorSelfSigninSubmissionMode(input: {
+  memberCount: number
+  vehicleCount: number
+}): VisitorSelfSigninSubmissionMode {
+  if (input.memberCount === 1 && input.vehicleCount > 1) {
+    throw new Error(SINGLE_VISITOR_MULTIPLE_VEHICLES_MESSAGE)
+  }
+
+  return input.memberCount === 1 ? 'individual' : 'group'
 }
 
 function resolveVisitType(
