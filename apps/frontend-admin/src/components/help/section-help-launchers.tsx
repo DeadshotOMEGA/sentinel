@@ -69,7 +69,7 @@ export function HistoryHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="checkins"
       routePath="/checkins"
-      title="History Help Procedures"
+      title="History procedures"
       intro="Choose the procedure that matches your review or correction task. Use History as evidence, then confirm live Presence when changes affect who is on site."
       procedureGroups={HISTORY_GROUPS}
       procedures={historyProcedureDefinitions}
@@ -84,7 +84,7 @@ export function MembersHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="members"
       routePath="/members"
-      title="Members Help Procedures"
+      title="Members procedures"
       intro="Choose the procedure that matches your member-record task. Member changes can affect access, schedules, badges, and qualifications."
       procedureGroups={MEMBERS_GROUPS}
       procedures={membersProcedureDefinitions}
@@ -99,7 +99,7 @@ export function EventsHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="events"
       routePath="/events"
-      title="Events Help Procedures"
+      title="Events procedures"
       intro="Choose the procedure that matches your event-planning task. Keep event details current before planning supporting duties."
       procedureGroups={EVENTS_GROUPS}
       procedures={eventsProcedureDefinitions}
@@ -114,7 +114,7 @@ export function SchedulesHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="schedules"
       routePath="/schedules"
-      title="Schedules Help Procedures"
+      title="Schedules procedures"
       intro="Choose the procedure that matches your scheduling task. Publish only after validating people, dates, and coverage gaps."
       procedureGroups={SCHEDULES_GROUPS}
       procedures={schedulesProcedureDefinitions}

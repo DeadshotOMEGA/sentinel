@@ -31,7 +31,7 @@ export function DashboardHelpLauncher() {
     <ProcedureHelpLauncher
       routeId="dashboard"
       routePath="/dashboard"
-      title="Dashboard Help Procedures"
+      title="Dashboard procedures"
       intro="Choose the procedure that matches your task. Each step explains what to check and links to the deeper wiki page when more detail is needed."
       procedureGroups={PROCEDURE_GROUPS}
       procedures={dashboardProcedureDefinitions}
