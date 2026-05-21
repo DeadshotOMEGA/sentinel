@@ -1,6 +1,6 @@
 {
   "name": "@sentinel/contracts",
-  "version": "3.3.17",
+  "version": "3.3.18",
   "private": true,
   "type": "module",
   "description": "API contracts for Sentinel (ts-rest + Valibot)",

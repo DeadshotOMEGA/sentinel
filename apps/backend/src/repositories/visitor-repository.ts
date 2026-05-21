@@ -222,7 +222,10 @@ export class VisitorRepository {
 
     if (option.maxSelections !== null) {
       const selectedCount = await tx.visitor.count({
-        where: { unitEventVisitorOptionId: option.id },
+        where: {
+          unitEventVisitorOptionId: option.id,
+          checkOutTime: null,
+        },
       })
       if (selectedCount + visitorCount > option.maxSelections) {
         throw new VisitorEventOptionError(
