@@ -24,6 +24,7 @@ import {
 } from '@/lib/visitor-self-signin'
 import { useCreateVisitor, useCreateVisitorGroup } from '@/hooks/use-visitors'
 import { formatUnitEventDateRange } from '@/lib/unit-event-dates'
+import { allowsGeneralEventVisitorOption } from '@/lib/unit-event-visitor-options'
 import {
   TouchScreenKeyboard,
   type TouchKeyboardMode,
@@ -65,6 +66,7 @@ interface EventOption {
   id: string
   title: string
   eventDateLabel: string
+  allowGeneralEventVisitorOption: boolean
   visitorOptions: Array<{
     id: string
     title: string
@@ -234,6 +236,7 @@ export function VisitorSelfSigninFlow({
   const eventListQuery = useQuery({
     queryKey: ['kiosk-unit-events'],
     enabled: requiresEventSelection,
+    refetchOnMount: 'always',
     queryFn: async (): Promise<EventOption[]> => {
       const response = await apiClient.unitEvents.listUnitEvents({
         query: {
@@ -250,6 +253,7 @@ export function VisitorSelfSigninFlow({
         id: event.id,
         title: event.title,
         eventDateLabel: formatUnitEventDateRange(event, 'MMM d, yyyy'),
+        allowGeneralEventVisitorOption: allowsGeneralEventVisitorOption(event.metadata),
         visitorOptions: event.visitorOptions.map((option) => ({
           id: option.id,
           title: option.title,
@@ -276,6 +280,7 @@ export function VisitorSelfSigninFlow({
   const selectedEventDetailsQuery = useQuery({
     queryKey: ['kiosk-unit-event', selectedEvent?.id],
     enabled: requiresEventSelection && Boolean(selectedEvent?.id),
+    refetchOnMount: 'always',
     queryFn: async (): Promise<EventOption> => {
       if (!selectedEvent?.id) {
         throw new Error('Select an event before loading event options')
@@ -293,6 +298,7 @@ export function VisitorSelfSigninFlow({
         id: response.body.id,
         title: response.body.title,
         eventDateLabel: formatUnitEventDateRange(response.body, 'MMM d, yyyy'),
+        allowGeneralEventVisitorOption: allowsGeneralEventVisitorOption(response.body.metadata),
         visitorOptions: response.body.visitorOptions.map((option) => ({
           id: option.id,
           title: option.title,
@@ -303,8 +309,16 @@ export function VisitorSelfSigninFlow({
     },
   })
 
-  const selectedEventForDisplay = selectedEventDetailsQuery.data ?? selectedEvent
+  const selectedEventFromList = eventListQuery.data?.find((event) => event.id === selectedEvent?.id)
+  const selectedEventForDisplay =
+    selectedEventDetailsQuery.data ?? selectedEventFromList ?? selectedEvent
   const selectedEventVisitorOptions = selectedEventForDisplay?.visitorOptions ?? []
+  const showGeneralEventVisitorOption =
+    selectedEventForDisplay?.allowGeneralEventVisitorOption === true
+  const requiresEventOptionSelection =
+    requiresEventSelection &&
+    selectedEventVisitorOptions.length > 0 &&
+    !showGeneralEventVisitorOption
 
   const focusKeyboardField = (name: KeyboardFieldName, nextValueLength?: number) => {
     const fieldElement = fieldRefs.current[name]
@@ -556,9 +570,23 @@ export function VisitorSelfSigninFlow({
     }
   }
 
+  const clearCurrentMemberFields = () => {
+    setValue('rankPrefix', '')
+    setValue('initials', '')
+    setValue('firstName', '')
+    setValue('lastName', '')
+    setValue('unit', '')
+    clearErrors(['rankPrefix', 'initials', 'firstName', 'lastName', 'unit'])
+  }
+
   const handleBranchSelect = (value: SelfServiceVisitorBranch) => {
+    const branchChanged = branch !== value
     setValue('branch', value, { shouldValidate: true })
     clearErrors('branch')
+
+    if (branchChanged) {
+      clearCurrentMemberFields()
+    }
 
     const isOnRoutingStep = routingStep !== null && step === routingStep
     if (isOnRoutingStep) {
@@ -721,6 +749,9 @@ export function VisitorSelfSigninFlow({
       if (requiresEventSelection) {
         fields.push('eventId')
       }
+      if (requiresEventOptionSelection) {
+        fields.push('unitEventVisitorOptionId')
+      }
       const valid = fields.length > 0 ? await trigger(fields) : true
       if (valid) {
         setStep((routingStep ?? personalInfoStep) as FlowStep)
@@ -775,6 +806,7 @@ export function VisitorSelfSigninFlow({
   }): ReasonFirstGroupMemberInput => {
     if (followsMilitaryPath) {
       return {
+        branch: reason && reasonRequiresBranch(reason) ? 'military' : undefined,
         rankPrefix: values.rankPrefix,
         initials: values.initials,
         lastName: values.lastName,
@@ -783,6 +815,7 @@ export function VisitorSelfSigninFlow({
     }
 
     return {
+      branch: reason && reasonRequiresBranch(reason) ? 'civilian' : undefined,
       firstName: values.firstName,
       lastName: values.lastName,
     }
@@ -797,8 +830,8 @@ export function VisitorSelfSigninFlow({
     if (!hasPendingMemberInput) {
       setSubmitError(
         followsMilitaryPath
-          ? 'Enter rank, initials, last name, and unit before adding another member'
-          : 'Enter first and last name before adding another member'
+          ? 'Enter rank, initials, last name, and unit before adding another visitor'
+          : 'Enter first and last name before adding another visitor'
       )
       return
     }
@@ -818,12 +851,7 @@ export function VisitorSelfSigninFlow({
     }
 
     setGroupMembers((current) => [...current, buildCurrentMemberFromValues(currentValues)])
-    setValue('rankPrefix', '')
-    setValue('initials', '')
-    setValue('firstName', '')
-    setValue('lastName', '')
-    setValue('unit', '')
-    clearErrors(['rankPrefix', 'initials', 'firstName', 'lastName', 'unit'])
+    clearCurrentMemberFields()
     setSubmitError(null)
   }
 
@@ -895,11 +923,12 @@ export function VisitorSelfSigninFlow({
       const selectedEventOptionTitle = selectedEventForDisplay?.visitorOptions.find(
         (option) => option.id === values.unitEventVisitorOptionId
       )?.title
+      const submissionBranch = (membersForSubmission[0]?.branch ?? values.branch) || undefined
 
       const commonPayloadContext = {
         kioskId,
         reason: values.reason,
-        branch: values.branch || undefined,
+        branch: submissionBranch,
         organization: values.organization,
         workDescription: values.workDescription,
         hostMemberId: values.hostMemberId,
@@ -1049,7 +1078,10 @@ export function VisitorSelfSigninFlow({
     validate: (value) =>
       !requiresEventSelection || Boolean(value) || 'Select an event before continuing',
   })
-  const eventOptionRegistration = register('unitEventVisitorOptionId')
+  const eventOptionRegistration = register('unitEventVisitorOptionId', {
+    validate: (value) =>
+      !requiresEventOptionSelection || Boolean(value) || 'Select an event option before continuing',
+  })
 
   const rankPrefixRegistration = register('rankPrefix', {
     validate: (value) =>
@@ -1110,9 +1142,6 @@ export function VisitorSelfSigninFlow({
   const isSubmitting = createVisitor.isPending || createVisitorGroup.isPending
   const reviewReasonLabel =
     SELF_SERVICE_REASON_OPTIONS.find((option) => option.value === reviewReason)?.label ?? 'Other'
-  const reviewBranchLabel = branch
-    ? SELF_SERVICE_BRANCH_OPTIONS.find((option) => option.value === branch)?.label
-    : undefined
   const currentMemberForReview = hasCurrentMemberForReview
     ? buildCurrentMemberFromValues({
         rankPrefix,
@@ -1125,6 +1154,18 @@ export function VisitorSelfSigninFlow({
   const reviewMembers = currentMemberForReview
     ? [...groupMembers, currentMemberForReview]
     : groupMembers
+
+  const getMemberBranchLabel = (member: ReasonFirstGroupMemberInput): string | undefined => {
+    if (!member.branch) return undefined
+    return SELF_SERVICE_BRANCH_OPTIONS.find((option) => option.value === member.branch)?.label
+  }
+  const reviewBranchValues = reviewMembers
+    .map((member) => member.branch)
+    .filter((value): value is SelfServiceVisitorBranch => Boolean(value))
+  const reviewBranchLabel =
+    reviewBranchValues.length > 0 && new Set(reviewBranchValues).size === 1
+      ? SELF_SERVICE_BRANCH_OPTIONS.find((option) => option.value === reviewBranchValues[0])?.label
+      : undefined
 
   const formatReviewMember = (member: ReasonFirstGroupMemberInput): string => {
     if (member.rankPrefix || member.initials || member.unit) {
@@ -1393,12 +1434,10 @@ export function VisitorSelfSigninFlow({
                                 className="rounded-box border border-base-300 bg-base-100"
                                 style={{ padding: 'var(--space-3)' }}
                               >
-                                <p className="text-sm font-semibold">
-                                  Choose an option if it applies
-                                </p>
+                                <p className="text-sm font-semibold">Choose an event option</p>
                                 <p className="text-xs text-base-content/70">
-                                  You can continue without an option. Full options are only blocked
-                                  for that choice.
+                                  Select the option that matches your visit. Full options are
+                                  blocked for that choice.
                                 </p>
                                 {selectedEventDetailsQuery.isLoading && (
                                   <div
@@ -1417,28 +1456,30 @@ export function VisitorSelfSigninFlow({
                                 )}
                                 {selectedEventVisitorOptions.length > 0 && (
                                   <div className="mt-2 grid grid-cols-1 gap-2">
-                                    <button
-                                      type="button"
-                                      className={cn(
-                                        'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
-                                        !unitEventVisitorOptionId && 'border-primary bg-base-200'
-                                      )}
-                                      style={{
-                                        minHeight: '3rem',
-                                        padding: 'var(--space-2) var(--space-3)',
-                                      }}
-                                      onClick={() => {
-                                        setValue('unitEventVisitorOptionId', '', {
-                                          shouldValidate: true,
-                                        })
-                                        clearErrors('unitEventVisitorOptionId')
-                                      }}
-                                    >
-                                      <span className="truncate">General event visitor</span>
-                                      <span className="text-sm font-normal text-base-content/70">
-                                        No option
-                                      </span>
-                                    </button>
+                                    {showGeneralEventVisitorOption && (
+                                      <button
+                                        type="button"
+                                        className={cn(
+                                          'btn btn-outline btn-md h-auto justify-between border-base-300 bg-base-100 text-left text-base-content hover:border-primary hover:bg-base-200',
+                                          !unitEventVisitorOptionId && 'border-primary bg-base-200'
+                                        )}
+                                        style={{
+                                          minHeight: '3rem',
+                                          padding: 'var(--space-2) var(--space-3)',
+                                        }}
+                                        onClick={() => {
+                                          setValue('unitEventVisitorOptionId', '', {
+                                            shouldValidate: true,
+                                          })
+                                          clearErrors('unitEventVisitorOptionId')
+                                        }}
+                                      >
+                                        <span className="truncate">General event visitor</span>
+                                        <span className="text-sm font-normal text-base-content/70">
+                                          No option
+                                        </span>
+                                      </button>
+                                    )}
                                     {selectedEventVisitorOptions.map((option) => {
                                       const remaining =
                                         option.maxSelections === null
@@ -1692,6 +1733,37 @@ export function VisitorSelfSigninFlow({
 
             {step === personalInfoStep && (
               <div className="flex flex-col" style={{ gap: 'var(--space-4)' }}>
+                {requiresBranch && (
+                  <div
+                    className="rounded-box border border-base-300 bg-base-200"
+                    style={{ padding: 'var(--space-3)' }}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-base-content">Current visitor type</p>
+                        <p className="text-sm text-base-content/70">
+                          Choose the type for the visitor you are entering now.
+                        </p>
+                      </div>
+                      <div className="join">
+                        {SELF_SERVICE_BRANCH_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={cn(
+                              'btn join-item btn-sm',
+                              branch === option.value ? 'btn-primary' : 'btn-outline'
+                            )}
+                            onClick={() => handleBranchSelect(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                   {followsMilitaryPath && (
                     <>
@@ -1869,14 +1941,14 @@ export function VisitorSelfSigninFlow({
                   style={{ padding: 'var(--space-3)' }}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold">Group members added: {groupMembers.length}</p>
+                    <p className="font-semibold">Visitors added: {groupMembers.length}</p>
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
                       disabled={!hasPendingMemberInput}
                       onClick={() => void handleAddCurrentMember()}
                     >
-                      Add member
+                      Add visitor
                     </button>
                   </div>
 
@@ -1888,6 +1960,9 @@ export function VisitorSelfSigninFlow({
                           className="flex items-center justify-between rounded-box border border-base-300 bg-base-100 px-3 py-2"
                         >
                           <span className="text-sm">
+                            {getMemberBranchLabel(member)
+                              ? `${getMemberBranchLabel(member)} - `
+                              : ''}
                             {member.rankPrefix ? `${member.rankPrefix} ` : ''}
                             {member.firstName ?? member.initials ?? 'Visitor'} {member.lastName}
                             {member.unit ? ` (${member.unit})` : ''}
@@ -1905,7 +1980,7 @@ export function VisitorSelfSigninFlow({
                   ) : (
                     <p className="mt-2 text-sm text-base-content/70">
                       Add each visitor in the group. The current form fields are for the next
-                      member.
+                      visitor.
                     </p>
                   )}
                 </div>
@@ -2065,6 +2140,11 @@ export function VisitorSelfSigninFlow({
                           <p className="font-semibold text-base-content">
                             {formatReviewMember(member) || `Visitor ${index + 1}`}
                           </p>
+                          {getMemberBranchLabel(member) && (
+                            <p className="mt-1 text-sm text-base-content/70">
+                              {getMemberBranchLabel(member)}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>

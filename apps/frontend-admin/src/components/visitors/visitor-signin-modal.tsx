@@ -7,6 +7,7 @@ import { useMembers } from '@/hooks/use-members'
 import { useUnitEvents } from '@/hooks/use-events'
 import { useAuthStore } from '@/store/auth-store'
 import { cn } from '@/lib/utils'
+import { allowsGeneralEventVisitorOption } from '@/lib/unit-event-visitor-options'
 import { Search, X } from 'lucide-react'
 import type { CreateVisitorInput } from '@sentinel/contracts'
 
@@ -96,6 +97,7 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
     [eventsData?.data, selectedEventId]
   )
   const selectedEventVisitorOptions = selectedEvent?.visitorOptions ?? []
+  const showGeneralEventVisitorOption = allowsGeneralEventVisitorOption(selectedEvent?.metadata)
 
   // Sync open prop with dialog element
   useEffect(() => {
@@ -129,6 +131,14 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
   const onSubmit = async (data: FormData) => {
     setSubmitError(null)
     try {
+      if (
+        selectedEventVisitorOptions.length > 0 &&
+        !showGeneralEventVisitorOption &&
+        !data.unitEventVisitorOptionId
+      ) {
+        throw new Error('Select an event option before signing in this visitor')
+      }
+
       const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       const visitorData: CreateVisitorInput = {
         rankPrefix: data.rankPrefix || undefined,
@@ -358,23 +368,24 @@ export function VisitorSigninModal({ open, onOpenChange }: VisitorSigninModalPro
                   <div>
                     <p className="text-sm font-semibold text-base-content">Event option</p>
                     <p className="text-xs text-base-content/65">
-                      Select one if it applies. Visitors can still sign in without choosing an
-                      option.
+                      Select the option that matches this visit.
                     </p>
                   </div>
                   <div className="mt-(--space-2) grid gap-(--space-2)">
-                    <button
-                      type="button"
-                      className={cn(
-                        'btn btn-outline h-auto justify-between border-base-300 bg-base-100 px-(--space-3) py-(--space-2) text-left',
-                        !selectedEventOptionId && 'border-primary bg-primary-fadded'
-                      )}
-                      onClick={() => setValue('unitEventVisitorOptionId', '')}
-                      disabled={isSubmitting}
-                    >
-                      <span className="truncate">General event visitor</span>
-                      <span className="text-xs font-normal text-base-content/65">No option</span>
-                    </button>
+                    {showGeneralEventVisitorOption && (
+                      <button
+                        type="button"
+                        className={cn(
+                          'btn btn-outline h-auto justify-between border-base-300 bg-base-100 px-(--space-3) py-(--space-2) text-left',
+                          !selectedEventOptionId && 'border-primary bg-primary-fadded'
+                        )}
+                        onClick={() => setValue('unitEventVisitorOptionId', '')}
+                        disabled={isSubmitting}
+                      >
+                        <span className="truncate">General event visitor</span>
+                        <span className="text-xs font-normal text-base-content/65">No option</span>
+                      </button>
+                    )}
 
                     {selectedEventVisitorOptions.map((option) => {
                       const remaining =
